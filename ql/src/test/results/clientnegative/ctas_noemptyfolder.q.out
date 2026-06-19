@@ -1,0 +1,21 @@
+PREHOOK: query: create table ctas1 
+#### A masked pattern was here ####
+as 
+select * from src limit 3
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas1
+POSTHOOK: query: create table ctas1 
+#### A masked pattern was here ####
+as 
+select * from src limit 3
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ctas1
+POSTHOOK: Lineage: ctas1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ctas1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+#### A masked pattern was here ####

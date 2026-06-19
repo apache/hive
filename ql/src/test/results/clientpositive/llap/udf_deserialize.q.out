@@ -1,0 +1,43 @@
+PREHOOK: query: DESCRIBE FUNCTION deserialize
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION deserialize
+POSTHOOK: type: DESCFUNCTION
+deserialize(base64 encoded message, compressionFormat) - Returns plain text string of given message which was compressed in compressionFormat and base64 encoded.
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED deserialize
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED deserialize
+POSTHOOK: type: DESCFUNCTION
+deserialize(base64 encoded message, compressionFormat) - Returns plain text string of given message which was compressed in compressionFormat and base64 encoded.
+Currently, Supports only 'gzip' for Gzip compressed and base 64 encoded strings.
+Example:
+  > SELECT deserialize('H4sIAAAAAAAA/ytJLS4BAAx+f9gEAAAA', 'gzip') FROM src LIMIT 1;
+  test
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFDeserialize
+Function type:BUILTIN
+PREHOOK: query: SELECT deserialize("H4sIAAAAAAAA/ytJLS4BAAx+f9gEAAAA", "gzip")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT deserialize("H4sIAAAAAAAA/ytJLS4BAAx+f9gEAAAA", "gzip")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+test
+PREHOOK: query: SELECT deserialize("H4sIAAAAAAAA/ytJLS4BAAx+f9gEAAAA", "gzip(json-2.0)")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT deserialize("H4sIAAAAAAAA/ytJLS4BAAx+f9gEAAAA", "gzip(json-2.0)")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+test
+PREHOOK: query: SELECT deserialize("{unitTest:'udf-deserialize'}", "json-0.2")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT deserialize("{unitTest:'udf-deserialize'}", "json-0.2")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+{unitTest:'udf-deserialize'}

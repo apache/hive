@@ -1,0 +1,204 @@
+PREHOOK: query: create table customer_demographics (cd_marital_status char(1), cd_education_status char(20))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@customer_demographics
+POSTHOOK: query: create table customer_demographics (cd_marital_status char(1), cd_education_status char(20))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@customer_demographics
+PREHOOK: query: insert into customer_demographics values
+('M','Unknown'),
+('W','Advanced Degree'),
+('W','Advanced Degree '),
+('W',' Advanced Degree')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@customer_demographics
+POSTHOOK: query: insert into customer_demographics values
+('M','Unknown'),
+('W','Advanced Degree'),
+('W','Advanced Degree '),
+('W',' Advanced Degree')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@customer_demographics
+POSTHOOK: Lineage: customer_demographics.cd_education_status SCRIPT []
+POSTHOOK: Lineage: customer_demographics.cd_marital_status SCRIPT []
+PREHOOK: query: explain
+select count(1)
+from customer_demographics
+where ( (cd_marital_status = 'M' and cd_education_status = 'Unknown')
+or      (cd_marital_status = 'W' and cd_education_status = 'Advanced Degree'))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_demographics
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select count(1)
+from customer_demographics
+where ( (cd_marital_status = 'M' and cd_education_status = 'Unknown')
+or      (cd_marital_status = 'W' and cd_education_status = 'Advanced Degree'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_demographics
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: customer_demographics
+                  filterExpr: (((cd_marital_status = 'M') and (cd_education_status = 'Unknown             ')) or ((cd_marital_status = 'W') and (cd_education_status = 'Advanced Degree     '))) (type: boolean)
+                  Statistics: Num rows: 4 Data size: 728 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (((cd_marital_status = 'M') and (cd_education_status = 'Unknown             ')) or ((cd_marital_status = 'W') and (cd_education_status = 'Advanced Degree     '))) (type: boolean)
+                    Statistics: Num rows: 2 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 2 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.5
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select '3 is expected:',count(1) 
+from customer_demographics
+where ( (cd_marital_status = 'M' and cd_education_status = 'Unknown')
+or      (cd_marital_status = 'W' and cd_education_status = 'Advanced Degree'))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_demographics
+#### A masked pattern was here ####
+POSTHOOK: query: select '3 is expected:',count(1) 
+from customer_demographics
+where ( (cd_marital_status = 'M' and cd_education_status = 'Unknown')
+or      (cd_marital_status = 'W' and cd_education_status = 'Advanced Degree'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_demographics
+#### A masked pattern was here ####
+3 is expected:	3
+PREHOOK: query: explain
+select count(1)
+from customer_demographics
+where ( (cd_marital_status = 'M' and cd_education_status = 'Unknown')
+or      (cd_marital_status = 'W' and cd_education_status = 'Advanced Degree'))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_demographics
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select count(1)
+from customer_demographics
+where ( (cd_marital_status = 'M' and cd_education_status = 'Unknown')
+or      (cd_marital_status = 'W' and cd_education_status = 'Advanced Degree'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_demographics
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: customer_demographics
+                  filterExpr: (struct(cd_marital_status,cd_education_status)) IN (const struct('M','Unknown             '), const struct('W','Advanced Degree     ')) (type: boolean)
+                  Statistics: Num rows: 4 Data size: 728 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (struct(cd_marital_status,cd_education_status)) IN (const struct('M','Unknown             '), const struct('W','Advanced Degree     ')) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select '3 is expected:',count(1) 
+from customer_demographics
+where ( (cd_marital_status = 'M' and cd_education_status = 'Unknown')
+or      (cd_marital_status = 'W' and cd_education_status = 'Advanced Degree'))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_demographics
+#### A masked pattern was here ####
+POSTHOOK: query: select '3 is expected:',count(1) 
+from customer_demographics
+where ( (cd_marital_status = 'M' and cd_education_status = 'Unknown')
+or      (cd_marital_status = 'W' and cd_education_status = 'Advanced Degree'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_demographics
+#### A masked pattern was here ####
+3 is expected:	3

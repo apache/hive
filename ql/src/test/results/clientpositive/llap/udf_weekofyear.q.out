@@ -1,0 +1,57 @@
+PREHOOK: query: DESCRIBE FUNCTION weekofyear
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION weekofyear
+POSTHOOK: type: DESCFUNCTION
+weekofyear(date) - Returns the week of the year of the given date. A week is considered to start on a Monday and week 1 is the first week with >3 days.
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED weekofyear
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED weekofyear
+POSTHOOK: type: DESCFUNCTION
+weekofyear(date) - Returns the week of the year of the given date. A week is considered to start on a Monday and week 1 is the first week with >3 days.
+Examples:
+  > SELECT weekofyear('2008-02-20') FROM src LIMIT 1;
+  8
+  > SELECT weekofyear('1980-12-31 12:59:59') FROM src LIMIT 1;
+  1
+Function class:org.apache.hadoop.hive.ql.udf.UDFWeekOfYear
+Function type:BUILTIN
+PREHOOK: query: SELECT weekofyear('1980-01-01'), weekofyear('1980-01-06'), weekofyear('1980-01-07'), weekofyear('1980-12-31'),
+weekofyear('1984-1-1'), weekofyear('2008-02-20 00:00:00'), weekofyear('1980-12-28 23:59:59'), weekofyear('1980-12-29 23:59:59')
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT weekofyear('1980-01-01'), weekofyear('1980-01-06'), weekofyear('1980-01-07'), weekofyear('1980-12-31'),
+weekofyear('1984-1-1'), weekofyear('2008-02-20 00:00:00'), weekofyear('1980-12-28 23:59:59'), weekofyear('1980-12-29 23:59:59')
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1	1	2	1	52	8	52	1
+PREHOOK: query: SELECT weekofyear('1007-01-01 10:13:14')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT weekofyear('1007-01-01 10:13:14')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1
+PREHOOK: query: SELECT weekofyear('1008-01-01 10:13:14')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT weekofyear('1008-01-01 10:13:14')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+53
+PREHOOK: query: SELECT weekofyear('1009-01-01 10:13:14')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT weekofyear('1009-01-01 10:13:14')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+52

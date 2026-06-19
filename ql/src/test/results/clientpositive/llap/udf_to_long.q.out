@@ -1,0 +1,81 @@
+PREHOOK: query: SELECT CAST(NULL AS BIGINT) FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CAST(NULL AS BIGINT) FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT CAST(TRUE AS BIGINT) FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CAST(TRUE AS BIGINT) FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1
+PREHOOK: query: SELECT CAST(CAST(-7 AS TINYINT) AS BIGINT) FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CAST(CAST(-7 AS TINYINT) AS BIGINT) FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+-7
+PREHOOK: query: SELECT CAST(CAST(-18 AS SMALLINT) AS BIGINT) FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CAST(CAST(-18 AS SMALLINT) AS BIGINT) FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+-18
+PREHOOK: query: SELECT CAST(-129 AS BIGINT) FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CAST(-129 AS BIGINT) FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+-129
+PREHOOK: query: SELECT CAST(CAST(-3.14 AS DOUBLE) AS BIGINT) FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CAST(CAST(-3.14 AS DOUBLE) AS BIGINT) FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+-3
+PREHOOK: query: SELECT CAST(CAST(-3.14 AS FLOAT) AS BIGINT) FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CAST(CAST(-3.14 AS FLOAT) AS BIGINT) FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+-3
+PREHOOK: query: SELECT CAST(CAST(-3.14 AS DECIMAL) AS BIGINT) FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CAST(CAST(-3.14 AS DECIMAL) AS BIGINT) FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+-3
+PREHOOK: query: SELECT CAST('-38' AS BIGINT) FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CAST('-38' AS BIGINT) FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+-38

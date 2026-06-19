@@ -1,0 +1,145 @@
+PREHOOK: query: DROP VIEW IF EXISTS a_view
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW IF EXISTS a_view
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: DROP TABLE IF EXISTS table_a1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS table_a1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS table_a2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS table_a2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS table_b1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS table_b1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS table_b2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS table_b2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE table_a1
+(composite_key STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_a1
+POSTHOOK: query: CREATE TABLE table_a1
+(composite_key STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_a1
+PREHOOK: query: CREATE TABLE table_a2
+(composite_key STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_a2
+POSTHOOK: query: CREATE TABLE table_a2
+(composite_key STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_a2
+PREHOOK: query: CREATE TABLE table_b1
+(composite_key STRING, col1 STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_b1
+POSTHOOK: query: CREATE TABLE table_b1
+(composite_key STRING, col1 STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_b1
+PREHOOK: query: CREATE TABLE table_b2
+(composite_key STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_b2
+POSTHOOK: query: CREATE TABLE table_b2
+(composite_key STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_b2
+PREHOOK: query: CREATE VIEW a_view AS
+SELECT
+substring(a1.composite_key, 1, locate('|',a1.composite_key) - 1) AS autoname,
+cast(NULL as string) AS col1
+FROM table_a1 a1
+FULL OUTER JOIN table_a2 a2
+ON a1.composite_key = a2.composite_key
+UNION ALL
+SELECT
+substring(b1.composite_key, 1, locate('|',b1.composite_key) - 1) AS autoname,
+b1.col1 AS col1
+FROM table_b1 b1
+FULL OUTER JOIN table_b2 b2
+ON b1.composite_key = b2.composite_key
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@table_a1
+PREHOOK: Input: default@table_a2
+PREHOOK: Input: default@table_b1
+PREHOOK: Input: default@table_b2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@a_view
+POSTHOOK: query: CREATE VIEW a_view AS
+SELECT
+substring(a1.composite_key, 1, locate('|',a1.composite_key) - 1) AS autoname,
+cast(NULL as string) AS col1
+FROM table_a1 a1
+FULL OUTER JOIN table_a2 a2
+ON a1.composite_key = a2.composite_key
+UNION ALL
+SELECT
+substring(b1.composite_key, 1, locate('|',b1.composite_key) - 1) AS autoname,
+b1.col1 AS col1
+FROM table_b1 b1
+FULL OUTER JOIN table_b2 b2
+ON b1.composite_key = b2.composite_key
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@table_a1
+POSTHOOK: Input: default@table_a2
+POSTHOOK: Input: default@table_b1
+POSTHOOK: Input: default@table_b2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@a_view
+POSTHOOK: Lineage: a_view.autoname EXPRESSION [(table_a1)a1.FieldSchema(name:composite_key, type:string, comment:null), (table_b1)b1.FieldSchema(name:composite_key, type:string, comment:null), ]
+POSTHOOK: Lineage: a_view.col1 EXPRESSION [(table_b1)b1.FieldSchema(name:col1, type:string, comment:null), ]
+PREHOOK: query: INSERT INTO TABLE table_b1
+SELECT * FROM (
+SELECT 'something|awful', 'col1'
+)s
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table_b1
+POSTHOOK: query: INSERT INTO TABLE table_b1
+SELECT * FROM (
+SELECT 'something|awful', 'col1'
+)s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table_b1
+POSTHOOK: Lineage: table_b1.col1 SIMPLE []
+POSTHOOK: Lineage: table_b1.composite_key SIMPLE []
+PREHOOK: query: SELECT autoname FROM a_view WHERE autoname='something'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@a_view
+PREHOOK: Input: default@table_a1
+PREHOOK: Input: default@table_a2
+PREHOOK: Input: default@table_b1
+PREHOOK: Input: default@table_b2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT autoname FROM a_view WHERE autoname='something'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@a_view
+POSTHOOK: Input: default@table_a1
+POSTHOOK: Input: default@table_a2
+POSTHOOK: Input: default@table_b1
+POSTHOOK: Input: default@table_b2
+#### A masked pattern was here ####
+something

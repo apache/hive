@@ -1,0 +1,1 @@
+SELECT array_compact(3);

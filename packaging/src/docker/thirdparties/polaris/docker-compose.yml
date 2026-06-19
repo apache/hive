@@ -1,0 +1,94 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+version: "3.9"
+
+name: hive-polaris-rest-catalog-integration
+
+services:
+
+  polaris:
+    image: apache/polaris:latest
+    container_name: polaris
+    ports:
+      # API port
+      - "8181:8181"
+      # Management port (metrics and health checks)
+      - "8182:8182"
+    environment:
+      polaris.realm-context.realms: POLARIS
+      quarkus.otel.sdk.disabled: "true"
+      POLARIS_BOOTSTRAP_CREDENTIALS: POLARIS,iceberg-client,iceberg-client-secret
+      polaris.features."ALLOW_INSECURE_STORAGE_TYPES": "true"
+      polaris.features."SUPPORTED_CATALOG_STORAGE_TYPES": "[\"FILE\"]"
+      polaris.readiness.ignore-severe-issues: "true"
+    healthcheck:
+      test: ["CMD", "curl", "http://localhost:8182/q/health"]
+      interval: 2s
+      timeout: 10s
+      retries: 10
+      start_period: 10s
+    volumes:
+      - warehouse:/warehouse
+    networks:
+      - hive-net
+
+  polaris-init:
+    image: alpine/curl
+    container_name: polaris-init
+    user: "0:0"   # run as root
+    depends_on:
+      polaris:
+        condition: service_healthy
+    environment:
+      - CLIENT_ID=iceberg-client
+      - CLIENT_SECRET=iceberg-client-secret
+      - WAREHOUSE=/warehouse
+      - REALM=POLARIS
+      - POLARIS_USER_ID=10000
+      - HIVE_USER_ID=1000
+    volumes:
+      - ./polaris/:/polaris
+      - warehouse:/warehouse
+    entrypoint: '/bin/sh -c "chmod +x /polaris/init.sh && /polaris/init.sh"'
+    networks:
+      - hive-net
+
+  hive:
+    image: apache/hive:${HIVE_VERSION}
+    container_name: hive
+    depends_on:
+      polaris:
+          condition: service_healthy
+    environment:
+      SERVICE_NAME: hiveserver2
+    volumes:
+      - ./hive/hive-site.xml:/opt/hive/conf/hive-site.xml
+      - warehouse:/warehouse
+    ports:
+      - "10001:10000"
+    networks:
+      - hive-net
+    entrypoint: '/bin/sh -c "mkdir -p /tmp/hive/jars && \
+      /opt/hive/bin/schematool -dbType derby -initOrUpgradeSchema && sh /entrypoint.sh"'
+
+networks:
+  hive-net:
+    driver: bridge
+
+volumes:
+  warehouse:
+  realm-data:

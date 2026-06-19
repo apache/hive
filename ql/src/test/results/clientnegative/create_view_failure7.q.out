@@ -1,0 +1,5 @@
+PREHOOK: query: DROP VIEW xxx16
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW xxx16
+POSTHOOK: type: DROPVIEW
+FAILED: SemanticException [Error 10092]: At least one non-partitioning column must be present in view

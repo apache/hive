@@ -1,0 +1,9 @@
+PREHOOK: query: create table stat_test (a int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@stat_test
+POSTHOOK: query: create table stat_test (a int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@stat_test
+FAILED: SemanticException AlterTable numFiles failed with value NaN

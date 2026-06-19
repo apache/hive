@@ -1,0 +1,230 @@
+PREHOOK: query: DROP TABLE IF EXISTS t1_n72_temp
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS t1_n72_temp
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS t2_n44_temp
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS t2_n44_temp
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS t3_n15_temp
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS t3_n15_temp
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS t4_n7_temp
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS t4_n7_temp
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TEMPORARY TABLE t1_n72_temp (a int) PARTITIONED BY (d1 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1_n72_temp
+POSTHOOK: query: CREATE TEMPORARY TABLE t1_n72_temp (a int) PARTITIONED BY (d1 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1_n72_temp
+PREHOOK: query: CREATE TEMPORARY TABLE t2_n44_temp (a int) PARTITIONED BY (d1 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2_n44_temp
+POSTHOOK: query: CREATE TEMPORARY TABLE t2_n44_temp (a int) PARTITIONED BY (d1 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2_n44_temp
+PREHOOK: query: CREATE TEMPORARY TABLE t3_n15_temp (a int) PARTITIONED BY (d1 int, d2 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t3_n15_temp
+POSTHOOK: query: CREATE TEMPORARY TABLE t3_n15_temp (a int) PARTITIONED BY (d1 int, d2 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t3_n15_temp
+PREHOOK: query: CREATE TEMPORARY TABLE t4_n7_temp (a int) PARTITIONED BY (d1 int, d2 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t4_n7_temp
+POSTHOOK: query: CREATE TEMPORARY TABLE t4_n7_temp (a int) PARTITIONED BY (d1 int, d2 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t4_n7_temp
+PREHOOK: query: CREATE TEMPORARY TABLE t5_n3_temp (a int) PARTITIONED BY (d1 int, d2 int, d3 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t5_n3_temp
+POSTHOOK: query: CREATE TEMPORARY TABLE t5_n3_temp (a int) PARTITIONED BY (d1 int, d2 int, d3 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t5_n3_temp
+PREHOOK: query: CREATE TEMPORARY TABLE t6_n2_temp (a int) PARTITIONED BY (d1 int, d2 int, d3 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t6_n2_temp
+POSTHOOK: query: CREATE TEMPORARY TABLE t6_n2_temp (a int) PARTITIONED BY (d1 int, d2 int, d3 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t6_n2_temp
+PREHOOK: query: INSERT OVERWRITE TABLE t1_n72_temp PARTITION (d1 = 1) SELECT key FROM src where key = 100 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t1_n72_temp@d1=1
+POSTHOOK: query: INSERT OVERWRITE TABLE t1_n72_temp PARTITION (d1 = 1) SELECT key FROM src where key = 100 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t1_n72_temp@d1=1
+POSTHOOK: Lineage: t1_n72_temp PARTITION(d1=1).a EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE t3_n15_temp PARTITION (d1 = 1, d2 = 1) SELECT key FROM src where key = 100 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t3_n15_temp@d1=1/d2=1
+POSTHOOK: query: INSERT OVERWRITE TABLE t3_n15_temp PARTITION (d1 = 1, d2 = 1) SELECT key FROM src where key = 100 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t3_n15_temp@d1=1/d2=1
+POSTHOOK: Lineage: t3_n15_temp PARTITION(d1=1,d2=1).a EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE t5_n3_temp PARTITION (d1 = 1, d2 = 1, d3=1) SELECT key FROM src where key = 100 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t5_n3_temp@d1=1/d2=1/d3=1
+POSTHOOK: query: INSERT OVERWRITE TABLE t5_n3_temp PARTITION (d1 = 1, d2 = 1, d3=1) SELECT key FROM src where key = 100 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t5_n3_temp@d1=1/d2=1/d3=1
+POSTHOOK: Lineage: t5_n3_temp PARTITION(d1=1,d2=1,d3=1).a EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: SELECT * FROM t1_n72_temp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n72_temp
+PREHOOK: Input: default@t1_n72_temp@d1=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t1_n72_temp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n72_temp
+POSTHOOK: Input: default@t1_n72_temp@d1=1
+#### A masked pattern was here ####
+100	1
+PREHOOK: query: SELECT * FROM t3_n15_temp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3_n15_temp
+PREHOOK: Input: default@t3_n15_temp@d1=1/d2=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t3_n15_temp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3_n15_temp
+POSTHOOK: Input: default@t3_n15_temp@d1=1/d2=1
+#### A masked pattern was here ####
+100	1	1
+PREHOOK: query: ALTER TABLE t2_n44_temp EXCHANGE PARTITION (d1 = 1) WITH TABLE t1_n72_temp
+PREHOOK: type: ALTERTABLE_EXCHANGEPARTITION
+PREHOOK: Input: default@t1_n72_temp
+PREHOOK: Output: default@t2_n44_temp
+POSTHOOK: query: ALTER TABLE t2_n44_temp EXCHANGE PARTITION (d1 = 1) WITH TABLE t1_n72_temp
+POSTHOOK: type: ALTERTABLE_EXCHANGEPARTITION
+POSTHOOK: Input: default@t1_n72_temp
+POSTHOOK: Input: default@t1_n72_temp@d1=1
+POSTHOOK: Output: default@t1_n72_temp@d1=1
+POSTHOOK: Output: default@t2_n44_temp
+POSTHOOK: Output: default@t2_n44_temp@d1=1
+PREHOOK: query: SELECT * FROM t1_n72_temp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n72_temp
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t1_n72_temp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n72_temp
+#### A masked pattern was here ####
+PREHOOK: query: SELECT * FROM t2_n44_temp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_n44_temp
+PREHOOK: Input: default@t2_n44_temp@d1=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t2_n44_temp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_n44_temp
+POSTHOOK: Input: default@t2_n44_temp@d1=1
+#### A masked pattern was here ####
+100	1
+PREHOOK: query: ALTER TABLE t4_n7_temp EXCHANGE PARTITION (d1 = 1, d2 = 1) WITH TABLE t3_n15_temp
+PREHOOK: type: ALTERTABLE_EXCHANGEPARTITION
+PREHOOK: Input: default@t3_n15_temp
+PREHOOK: Output: default@t4_n7_temp
+POSTHOOK: query: ALTER TABLE t4_n7_temp EXCHANGE PARTITION (d1 = 1, d2 = 1) WITH TABLE t3_n15_temp
+POSTHOOK: type: ALTERTABLE_EXCHANGEPARTITION
+POSTHOOK: Input: default@t3_n15_temp
+POSTHOOK: Input: default@t3_n15_temp@d1=1/d2=1
+POSTHOOK: Output: default@t3_n15_temp@d1=1/d2=1
+POSTHOOK: Output: default@t4_n7_temp
+POSTHOOK: Output: default@t4_n7_temp@d1=1/d2=1
+PREHOOK: query: SELECT * FROM t3_n15_temp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3_n15_temp
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t3_n15_temp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3_n15_temp
+#### A masked pattern was here ####
+PREHOOK: query: SELECT * FROM t4_n7_temp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t4_n7_temp
+PREHOOK: Input: default@t4_n7_temp@d1=1/d2=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t4_n7_temp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t4_n7_temp
+POSTHOOK: Input: default@t4_n7_temp@d1=1/d2=1
+#### A masked pattern was here ####
+100	1	1
+PREHOOK: query: EXPLAIN ALTER TABLE t6_n2_temp EXCHANGE PARTITION (d1 = 1, d2 = 1, d3 = 1) WITH TABLE t5_n3_temp
+PREHOOK: type: ALTERTABLE_EXCHANGEPARTITION
+PREHOOK: Input: default@t5_n3_temp
+PREHOOK: Output: default@t6_n2_temp
+POSTHOOK: query: EXPLAIN ALTER TABLE t6_n2_temp EXCHANGE PARTITION (d1 = 1, d2 = 1, d3 = 1) WITH TABLE t5_n3_temp
+POSTHOOK: type: ALTERTABLE_EXCHANGEPARTITION
+POSTHOOK: Input: default@t5_n3_temp
+POSTHOOK: Output: default@t6_n2_temp
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Exchange Partitions
+      partitions:
+        d1 1
+        d2 1
+        d3 1
+
+PREHOOK: query: ALTER TABLE t6_n2_temp EXCHANGE PARTITION (d1 = 1, d2 = 1, d3 = 1) WITH TABLE t5_n3_temp
+PREHOOK: type: ALTERTABLE_EXCHANGEPARTITION
+PREHOOK: Input: default@t5_n3_temp
+PREHOOK: Output: default@t6_n2_temp
+POSTHOOK: query: ALTER TABLE t6_n2_temp EXCHANGE PARTITION (d1 = 1, d2 = 1, d3 = 1) WITH TABLE t5_n3_temp
+POSTHOOK: type: ALTERTABLE_EXCHANGEPARTITION
+POSTHOOK: Input: default@t5_n3_temp
+POSTHOOK: Input: default@t5_n3_temp@d1=1/d2=1/d3=1
+POSTHOOK: Output: default@t5_n3_temp@d1=1/d2=1/d3=1
+POSTHOOK: Output: default@t6_n2_temp
+POSTHOOK: Output: default@t6_n2_temp@d1=1/d2=1/d3=1
+PREHOOK: query: SELECT * FROM t5_n3_temp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t5_n3_temp
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t5_n3_temp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t5_n3_temp
+#### A masked pattern was here ####
+PREHOOK: query: SELECT * FROM t6_n2_temp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t6_n2_temp
+PREHOOK: Input: default@t6_n2_temp@d1=1/d2=1/d3=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t6_n2_temp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t6_n2_temp
+POSTHOOK: Input: default@t6_n2_temp@d1=1/d2=1/d3=1
+#### A masked pattern was here ####
+100	1	1	1

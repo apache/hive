@@ -1,0 +1,9 @@
+PREHOOK: query: CREATE TABLE load_wrong_fileformat_T1(name STRING) STORED AS SEQUENCEFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@load_wrong_fileformat_T1
+POSTHOOK: query: CREATE TABLE load_wrong_fileformat_T1(name STRING) STORED AS SEQUENCEFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@load_wrong_fileformat_T1
+FAILED: SemanticException Unable to load data to destination table. Error: The file that you are trying to load does not match the file format of the destination table.

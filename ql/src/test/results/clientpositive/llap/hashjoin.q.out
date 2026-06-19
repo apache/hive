@@ -1,0 +1,593 @@
+PREHOOK: query: CREATE TABLE t_hashjoin_big(
+  cint int,
+  cvarchar varchar(50),
+  cdouble double,
+  a int
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_hashjoin_big
+POSTHOOK: query: CREATE TABLE t_hashjoin_big(
+  cint int,
+  cvarchar varchar(50),
+  cdouble double,
+  a int
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_hashjoin_big
+PREHOOK: query: CREATE TABLE t_hashjoin_small(
+  cint int,
+  cvarchar varchar(50),
+  cdouble double
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_hashjoin_small
+POSTHOOK: query: CREATE TABLE t_hashjoin_small(
+  cint int,
+  cvarchar varchar(50),
+  cdouble double
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_hashjoin_small
+PREHOOK: query: INSERT INTO t_hashjoin_big VALUES
+(5, 'two', 3.0, 1),
+(6, 'two', 1.5, 2),
+(NULL, NULL, NULL, NULL),
+(7, 'eight', 4.2, 3), (7, 'eight', 4.2, 4), (7, 'eight', 4.2, 5),
+(5, 'one', 2.8, 6), (5, 'one', 2.8, 7), (5, 'one', 2.8, 8)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_hashjoin_big
+POSTHOOK: query: INSERT INTO t_hashjoin_big VALUES
+(5, 'two', 3.0, 1),
+(6, 'two', 1.5, 2),
+(NULL, NULL, NULL, NULL),
+(7, 'eight', 4.2, 3), (7, 'eight', 4.2, 4), (7, 'eight', 4.2, 5),
+(5, 'one', 2.8, 6), (5, 'one', 2.8, 7), (5, 'one', 2.8, 8)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_hashjoin_big
+POSTHOOK: Lineage: t_hashjoin_big.a SCRIPT []
+POSTHOOK: Lineage: t_hashjoin_big.cdouble SCRIPT []
+POSTHOOK: Lineage: t_hashjoin_big.cint SCRIPT []
+POSTHOOK: Lineage: t_hashjoin_big.cvarchar SCRIPT []
+PREHOOK: query: INSERT INTO t_hashjoin_small VALUES
+(7, 'two', 1.5),
+(5, 'two', 4.2),
+(NULL, NULL, NULL),
+(5, 'one', 1.1), (5, 'one', 1.1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_hashjoin_small
+POSTHOOK: query: INSERT INTO t_hashjoin_small VALUES
+(7, 'two', 1.5),
+(5, 'two', 4.2),
+(NULL, NULL, NULL),
+(5, 'one', 1.1), (5, 'one', 1.1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_hashjoin_small
+POSTHOOK: Lineage: t_hashjoin_small.cdouble SCRIPT []
+POSTHOOK: Lineage: t_hashjoin_small.cint SCRIPT []
+POSTHOOK: Lineage: t_hashjoin_small.cvarchar SCRIPT []
+PREHOOK: query: EXPLAIN
+SELECT * FROM t_hashjoin_big x JOIN t_hashjoin_small z ON (x.cint = z.cint)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_hashjoin_big
+PREHOOK: Input: default@t_hashjoin_small
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT * FROM t_hashjoin_big x JOIN t_hashjoin_small z ON (x.cint = z.cint)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_hashjoin_big
+POSTHOOK: Input: default@t_hashjoin_small
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Map 2 (BROADCAST_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: x
+                  filterExpr: cint is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_23_container, bigKeyColName:cint, smallTablePos:1, keyRatio:3.3333333333333335
+                  Statistics: Num rows: 9 Data size: 927 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: cint is not null (type: boolean)
+                    Statistics: Num rows: 8 Data size: 824 Basic stats: COMPLETE Column stats: COMPLETE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 cint (type: int)
+                        1 cint (type: int)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col8, _col9, _col10
+                      input vertices:
+                        1 Map 2
+                      Statistics: Num rows: 10 Data size: 2010 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: _col0 (type: int), _col1 (type: varchar(50)), _col2 (type: double), _col3 (type: int), _col8 (type: int), _col9 (type: varchar(50)), _col10 (type: double)
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                        Statistics: Num rows: 10 Data size: 2010 Basic stats: COMPLETE Column stats: COMPLETE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 10 Data size: 2010 Basic stats: COMPLETE Column stats: COMPLETE
+                          table:
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: z
+                  filterExpr: cint is not null (type: boolean)
+                  Statistics: Num rows: 5 Data size: 490 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: cint is not null (type: boolean)
+                    Statistics: Num rows: 4 Data size: 392 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: cint (type: int)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: cint (type: int)
+                      Statistics: Num rows: 4 Data size: 392 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: cvarchar (type: varchar(50)), cdouble (type: double)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT * FROM t_hashjoin_big x JOIN t_hashjoin_small z ON (x.cint = z.cint)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_hashjoin_big
+PREHOOK: Input: default@t_hashjoin_small
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t_hashjoin_big x JOIN t_hashjoin_small z ON (x.cint = z.cint)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_hashjoin_big
+POSTHOOK: Input: default@t_hashjoin_small
+#### A masked pattern was here ####
+7	eight	4.2	3	7	two	1.5
+7	eight	4.2	4	7	two	1.5
+7	eight	4.2	5	7	two	1.5
+5	two	3.0	1	5	two	4.2
+5	two	3.0	1	5	one	1.1
+5	two	3.0	1	5	one	1.1
+5	one	2.8	6	5	two	4.2
+5	one	2.8	6	5	one	1.1
+5	one	2.8	6	5	one	1.1
+5	one	2.8	7	5	two	4.2
+5	one	2.8	7	5	one	1.1
+5	one	2.8	7	5	one	1.1
+5	one	2.8	8	5	two	4.2
+5	one	2.8	8	5	one	1.1
+5	one	2.8	8	5	one	1.1
+PREHOOK: query: EXPLAIN
+SELECT * FROM t_hashjoin_big x JOIN t_hashjoin_small z ON (x.cvarchar = z.cvarchar)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_hashjoin_big
+PREHOOK: Input: default@t_hashjoin_small
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT * FROM t_hashjoin_big x JOIN t_hashjoin_small z ON (x.cvarchar = z.cvarchar)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_hashjoin_big
+POSTHOOK: Input: default@t_hashjoin_small
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Map 2 (BROADCAST_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: x
+                  filterExpr: cvarchar is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_23_container, bigKeyColName:cvarchar, smallTablePos:1, keyRatio:3.3333333333333335
+                  Statistics: Num rows: 9 Data size: 927 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: cvarchar is not null (type: boolean)
+                    Statistics: Num rows: 8 Data size: 824 Basic stats: COMPLETE Column stats: COMPLETE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 cvarchar (type: varchar(50))
+                        1 cvarchar (type: varchar(50))
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col8, _col9, _col10
+                      input vertices:
+                        1 Map 2
+                      Statistics: Num rows: 10 Data size: 2010 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: _col0 (type: int), _col1 (type: varchar(50)), _col2 (type: double), _col3 (type: int), _col8 (type: int), _col9 (type: varchar(50)), _col10 (type: double)
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                        Statistics: Num rows: 10 Data size: 2010 Basic stats: COMPLETE Column stats: COMPLETE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 10 Data size: 2010 Basic stats: COMPLETE Column stats: COMPLETE
+                          table:
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: z
+                  filterExpr: cvarchar is not null (type: boolean)
+                  Statistics: Num rows: 5 Data size: 490 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: cvarchar is not null (type: boolean)
+                    Statistics: Num rows: 4 Data size: 392 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: cvarchar (type: varchar(50))
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: cvarchar (type: varchar(50))
+                      Statistics: Num rows: 4 Data size: 392 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: cint (type: int), cdouble (type: double)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT * FROM t_hashjoin_big x JOIN t_hashjoin_small z ON (x.cvarchar = z.cvarchar)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_hashjoin_big
+PREHOOK: Input: default@t_hashjoin_small
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t_hashjoin_big x JOIN t_hashjoin_small z ON (x.cvarchar = z.cvarchar)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_hashjoin_big
+POSTHOOK: Input: default@t_hashjoin_small
+#### A masked pattern was here ####
+5	two	3.0	1	7	two	1.5
+5	two	3.0	1	5	two	4.2
+6	two	1.5	2	7	two	1.5
+6	two	1.5	2	5	two	4.2
+5	one	2.8	6	5	one	1.1
+5	one	2.8	6	5	one	1.1
+5	one	2.8	7	5	one	1.1
+5	one	2.8	7	5	one	1.1
+5	one	2.8	8	5	one	1.1
+5	one	2.8	8	5	one	1.1
+PREHOOK: query: EXPLAIN
+SELECT * FROM t_hashjoin_big x JOIN t_hashjoin_small z ON (x.cint = z.cint AND x.cvarchar = z.cvarchar)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_hashjoin_big
+PREHOOK: Input: default@t_hashjoin_small
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT * FROM t_hashjoin_big x JOIN t_hashjoin_small z ON (x.cint = z.cint AND x.cvarchar = z.cvarchar)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_hashjoin_big
+POSTHOOK: Input: default@t_hashjoin_small
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Map 2 (BROADCAST_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: x
+                  filterExpr: (cint is not null and cvarchar is not null) (type: boolean)
+                  Statistics: Num rows: 9 Data size: 927 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (cint is not null and cvarchar is not null) (type: boolean)
+                    Statistics: Num rows: 7 Data size: 721 Basic stats: COMPLETE Column stats: COMPLETE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 cint (type: int), cvarchar (type: varchar(50))
+                        1 cint (type: int), cvarchar (type: varchar(50))
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col8, _col9, _col10
+                      input vertices:
+                        1 Map 2
+                      Statistics: Num rows: 7 Data size: 1407 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: _col0 (type: int), _col1 (type: varchar(50)), _col2 (type: double), _col3 (type: int), _col8 (type: int), _col9 (type: varchar(50)), _col10 (type: double)
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                        Statistics: Num rows: 7 Data size: 1407 Basic stats: COMPLETE Column stats: COMPLETE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 7 Data size: 1407 Basic stats: COMPLETE Column stats: COMPLETE
+                          table:
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: z
+                  filterExpr: (cint is not null and cvarchar is not null) (type: boolean)
+                  Statistics: Num rows: 5 Data size: 490 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (cint is not null and cvarchar is not null) (type: boolean)
+                    Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: cint (type: int), cvarchar (type: varchar(50))
+                      null sort order: zz
+                      sort order: ++
+                      Map-reduce partition columns: cint (type: int), cvarchar (type: varchar(50))
+                      Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: cdouble (type: double)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT * FROM t_hashjoin_big x JOIN t_hashjoin_small z ON (x.cint = z.cint AND x.cvarchar = z.cvarchar)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_hashjoin_big
+PREHOOK: Input: default@t_hashjoin_small
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t_hashjoin_big x JOIN t_hashjoin_small z ON (x.cint = z.cint AND x.cvarchar = z.cvarchar)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_hashjoin_big
+POSTHOOK: Input: default@t_hashjoin_small
+#### A masked pattern was here ####
+5	two	3.0	1	5	two	4.2
+5	one	2.8	6	5	one	1.1
+5	one	2.8	6	5	one	1.1
+5	one	2.8	7	5	one	1.1
+5	one	2.8	7	5	one	1.1
+5	one	2.8	8	5	one	1.1
+5	one	2.8	8	5	one	1.1
+PREHOOK: query: EXPLAIN
+SELECT * FROM t_hashjoin_big x LEFT OUTER JOIN t_hashjoin_small z ON (x.cint = z.cint AND x.cvarchar = z.cvarchar)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_hashjoin_big
+PREHOOK: Input: default@t_hashjoin_small
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT * FROM t_hashjoin_big x LEFT OUTER JOIN t_hashjoin_small z ON (x.cint = z.cint AND x.cvarchar = z.cvarchar)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_hashjoin_big
+POSTHOOK: Input: default@t_hashjoin_small
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Map 2 (BROADCAST_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: x
+                  Statistics: Num rows: 9 Data size: 927 Basic stats: COMPLETE Column stats: COMPLETE
+                  Map Join Operator
+                    condition map:
+                         Left Outer Join 0 to 1
+                    keys:
+                      0 cint (type: int), cvarchar (type: varchar(50))
+                      1 cint (type: int), cvarchar (type: varchar(50))
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col8, _col9, _col10
+                    input vertices:
+                      1 Map 2
+                    Statistics: Num rows: 19 Data size: 3427 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col0 (type: int), _col1 (type: varchar(50)), _col2 (type: double), _col3 (type: int), _col8 (type: int), _col9 (type: varchar(50)), _col10 (type: double)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                      Statistics: Num rows: 19 Data size: 3427 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 19 Data size: 3427 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: z
+                  Statistics: Num rows: 5 Data size: 490 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: cint (type: int), cvarchar (type: varchar(50))
+                    null sort order: zz
+                    sort order: ++
+                    Map-reduce partition columns: cint (type: int), cvarchar (type: varchar(50))
+                    Statistics: Num rows: 5 Data size: 490 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: cdouble (type: double)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT * FROM t_hashjoin_big x LEFT OUTER JOIN t_hashjoin_small z ON (x.cint = z.cint AND x.cvarchar = z.cvarchar)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_hashjoin_big
+PREHOOK: Input: default@t_hashjoin_small
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t_hashjoin_big x LEFT OUTER JOIN t_hashjoin_small z ON (x.cint = z.cint AND x.cvarchar = z.cvarchar)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_hashjoin_big
+POSTHOOK: Input: default@t_hashjoin_small
+#### A masked pattern was here ####
+5	two	3.0	1	5	two	4.2
+6	two	1.5	2	NULL	NULL	NULL
+NULL	NULL	NULL	NULL	NULL	NULL	NULL
+7	eight	4.2	3	NULL	NULL	NULL
+7	eight	4.2	4	NULL	NULL	NULL
+7	eight	4.2	5	NULL	NULL	NULL
+5	one	2.8	6	5	one	1.1
+5	one	2.8	6	5	one	1.1
+5	one	2.8	7	5	one	1.1
+5	one	2.8	7	5	one	1.1
+5	one	2.8	8	5	one	1.1
+5	one	2.8	8	5	one	1.1
+PREHOOK: query: EXPLAIN
+SELECT * FROM t_hashjoin_big x JOIN t_hashjoin_small z ON (x.cdouble = z.cdouble)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_hashjoin_big
+PREHOOK: Input: default@t_hashjoin_small
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT * FROM t_hashjoin_big x JOIN t_hashjoin_small z ON (x.cdouble = z.cdouble)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_hashjoin_big
+POSTHOOK: Input: default@t_hashjoin_small
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Map 2 (BROADCAST_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: x
+                  filterExpr: cdouble is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_23_container, bigKeyColName:cdouble, smallTablePos:1, keyRatio:2.0
+                  Statistics: Num rows: 9 Data size: 927 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: cdouble is not null (type: boolean)
+                    Statistics: Num rows: 8 Data size: 824 Basic stats: COMPLETE Column stats: COMPLETE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 cdouble (type: double)
+                        1 cdouble (type: double)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col8, _col9, _col10
+                      input vertices:
+                        1 Map 2
+                      Statistics: Num rows: 8 Data size: 1608 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: _col0 (type: int), _col1 (type: varchar(50)), _col2 (type: double), _col3 (type: int), _col8 (type: int), _col9 (type: varchar(50)), _col10 (type: double)
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                        Statistics: Num rows: 8 Data size: 1608 Basic stats: COMPLETE Column stats: COMPLETE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 8 Data size: 1608 Basic stats: COMPLETE Column stats: COMPLETE
+                          table:
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: z
+                  filterExpr: cdouble is not null (type: boolean)
+                  Statistics: Num rows: 5 Data size: 490 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: cdouble is not null (type: boolean)
+                    Statistics: Num rows: 4 Data size: 392 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: cdouble (type: double)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: cdouble (type: double)
+                      Statistics: Num rows: 4 Data size: 392 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: cint (type: int), cvarchar (type: varchar(50))
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT * FROM t_hashjoin_big x JOIN t_hashjoin_small z ON (x.cdouble = z.cdouble)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_hashjoin_big
+PREHOOK: Input: default@t_hashjoin_small
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t_hashjoin_big x JOIN t_hashjoin_small z ON (x.cdouble = z.cdouble)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_hashjoin_big
+POSTHOOK: Input: default@t_hashjoin_small
+#### A masked pattern was here ####
+6	two	1.5	2	7	two	1.5
+7	eight	4.2	3	5	two	4.2
+7	eight	4.2	4	5	two	4.2
+7	eight	4.2	5	5	two	4.2
+PREHOOK: query: DROP TABLE t_hashjoin_big
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t_hashjoin_big
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_hashjoin_big
+POSTHOOK: query: DROP TABLE t_hashjoin_big
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t_hashjoin_big
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_hashjoin_big
+PREHOOK: query: DROP TABLE t_hashjoin_small
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t_hashjoin_small
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_hashjoin_small
+POSTHOOK: query: DROP TABLE t_hashjoin_small
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t_hashjoin_small
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_hashjoin_small

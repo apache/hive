@@ -1,0 +1,350 @@
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part_1_n2_tmp1 (key INT, value STRING) PARTITIONED BY (part STRING)
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@srcbucket_mapjoin_part_1_n2_tmp1
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part_1_n2_tmp1 (key INT, value STRING) PARTITIONED BY (part STRING)
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@srcbucket_mapjoin_part_1_n2_tmp1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_1_n2_tmp1 PARTITION (part='1')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@srcbucket_mapjoin_part_1_n2_tmp1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_1_n2_tmp1 PARTITION (part='1')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@srcbucket_mapjoin_part_1_n2_tmp1
+POSTHOOK: Output: default@srcbucket_mapjoin_part_1_n2_tmp1@part=1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_1_n2_tmp1 PARTITION (part='1')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@srcbucket_mapjoin_part_1_n2_tmp1@part=1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_1_n2_tmp1 PARTITION (part='1')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@srcbucket_mapjoin_part_1_n2_tmp1@part=1
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part_1_n2 (key INT, value STRING, part STRING) PARTITIONED BY SPEC (part, bucket(2, key)) STORED BY ICEBERG
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@srcbucket_mapjoin_part_1_n2
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part_1_n2 (key INT, value STRING, part STRING) PARTITIONED BY SPEC (part, bucket(2, key)) STORED BY ICEBERG
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@srcbucket_mapjoin_part_1_n2
+PREHOOK: query: INSERT INTO srcbucket_mapjoin_part_1_n2 SELECT * FROM srcbucket_mapjoin_part_1_n2_tmp1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n2_tmp1
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n2_tmp1@part=1
+PREHOOK: Output: default@srcbucket_mapjoin_part_1_n2
+POSTHOOK: query: INSERT INTO srcbucket_mapjoin_part_1_n2 SELECT * FROM srcbucket_mapjoin_part_1_n2_tmp1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n2_tmp1
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n2_tmp1@part=1
+POSTHOOK: Output: default@srcbucket_mapjoin_part_1_n2
+PREHOOK: query: ALTER TABLE srcbucket_mapjoin_part_1_n2 SET PARTITION SPEC (part, bucket(4, key))
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n2
+POSTHOOK: query: ALTER TABLE srcbucket_mapjoin_part_1_n2 SET PARTITION SPEC (part, bucket(4, key))
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n2
+POSTHOOK: Output: default@srcbucket_mapjoin_part_1_n2
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part_1_n2_tmp2 (key INT, value STRING) PARTITIONED BY (part STRING)
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@srcbucket_mapjoin_part_1_n2_tmp2
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part_1_n2_tmp2 (key INT, value STRING) PARTITIONED BY (part STRING)
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@srcbucket_mapjoin_part_1_n2_tmp2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_1_n2_tmp2 PARTITION (part='2')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@srcbucket_mapjoin_part_1_n2_tmp2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_1_n2_tmp2 PARTITION (part='2')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@srcbucket_mapjoin_part_1_n2_tmp2
+POSTHOOK: Output: default@srcbucket_mapjoin_part_1_n2_tmp2@part=2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_1_n2_tmp2 PARTITION (part='2')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@srcbucket_mapjoin_part_1_n2_tmp2@part=2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_1_n2_tmp2 PARTITION (part='2')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@srcbucket_mapjoin_part_1_n2_tmp2@part=2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part_1_n2_tmp2 PARTITION (part='2')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@srcbucket_mapjoin_part_1_n2_tmp2@part=2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part_1_n2_tmp2 PARTITION (part='2')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@srcbucket_mapjoin_part_1_n2_tmp2@part=2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part_1_n2_tmp2 PARTITION (part='2')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@srcbucket_mapjoin_part_1_n2_tmp2@part=2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part_1_n2_tmp2 PARTITION (part='2')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@srcbucket_mapjoin_part_1_n2_tmp2@part=2
+PREHOOK: query: INSERT INTO srcbucket_mapjoin_part_1_n2 SELECT * FROM srcbucket_mapjoin_part_1_n2_tmp2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n2_tmp2
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n2_tmp2@part=2
+PREHOOK: Output: default@srcbucket_mapjoin_part_1_n2
+POSTHOOK: query: INSERT INTO srcbucket_mapjoin_part_1_n2 SELECT * FROM srcbucket_mapjoin_part_1_n2_tmp2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n2_tmp2
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n2_tmp2@part=2
+POSTHOOK: Output: default@srcbucket_mapjoin_part_1_n2
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part_2_n6_tmp1 (key INT, value STRING) PARTITIONED BY (part STRING)
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@srcbucket_mapjoin_part_2_n6_tmp1
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part_2_n6_tmp1 (key INT, value STRING) PARTITIONED BY (part STRING)
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@srcbucket_mapjoin_part_2_n6_tmp1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_2_n6_tmp1 PARTITION (part='1')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@srcbucket_mapjoin_part_2_n6_tmp1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_2_n6_tmp1 PARTITION (part='1')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@srcbucket_mapjoin_part_2_n6_tmp1
+POSTHOOK: Output: default@srcbucket_mapjoin_part_2_n6_tmp1@part=1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_2_n6_tmp1 PARTITION (part='1')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@srcbucket_mapjoin_part_2_n6_tmp1@part=1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_2_n6_tmp1 PARTITION (part='1')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@srcbucket_mapjoin_part_2_n6_tmp1@part=1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part_2_n6_tmp1 PARTITION (part='1')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@srcbucket_mapjoin_part_2_n6_tmp1@part=1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000002_0' INTO TABLE srcbucket_mapjoin_part_2_n6_tmp1 PARTITION (part='1')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@srcbucket_mapjoin_part_2_n6_tmp1@part=1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part_2_n6_tmp1 PARTITION (part='1')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@srcbucket_mapjoin_part_2_n6_tmp1@part=1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000003_0' INTO TABLE srcbucket_mapjoin_part_2_n6_tmp1 PARTITION (part='1')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@srcbucket_mapjoin_part_2_n6_tmp1@part=1
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part_2_n6 (key INT, value STRING, part STRING) PARTITIONED BY SPEC (part, bucket(4, key)) STORED BY ICEBERG
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@srcbucket_mapjoin_part_2_n6
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part_2_n6 (key INT, value STRING, part STRING) PARTITIONED BY SPEC (part, bucket(4, key)) STORED BY ICEBERG
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@srcbucket_mapjoin_part_2_n6
+PREHOOK: query: INSERT INTO srcbucket_mapjoin_part_2_n6 SELECT * FROM srcbucket_mapjoin_part_2_n6_tmp1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n6_tmp1
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n6_tmp1@part=1
+PREHOOK: Output: default@srcbucket_mapjoin_part_2_n6
+POSTHOOK: query: INSERT INTO srcbucket_mapjoin_part_2_n6 SELECT * FROM srcbucket_mapjoin_part_2_n6_tmp1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n6_tmp1
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n6_tmp1@part=1
+POSTHOOK: Output: default@srcbucket_mapjoin_part_2_n6
+PREHOOK: query: ALTER TABLE srcbucket_mapjoin_part_2_n6 SET PARTITION SPEC (part, bucket(2, key))
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n6
+POSTHOOK: query: ALTER TABLE srcbucket_mapjoin_part_2_n6 SET PARTITION SPEC (part, bucket(2, key))
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n6
+POSTHOOK: Output: default@srcbucket_mapjoin_part_2_n6
+PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part_2_n6_tmp2 (key INT, value STRING) PARTITIONED BY (part STRING)
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@srcbucket_mapjoin_part_2_n6_tmp2
+POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part_2_n6_tmp2 (key INT, value STRING) PARTITIONED BY (part STRING)
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@srcbucket_mapjoin_part_2_n6_tmp2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_2_n6_tmp2 PARTITION (part='2')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@srcbucket_mapjoin_part_2_n6_tmp2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_2_n6_tmp2 PARTITION (part='2')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@srcbucket_mapjoin_part_2_n6_tmp2
+POSTHOOK: Output: default@srcbucket_mapjoin_part_2_n6_tmp2@part=2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_2_n6_tmp2 PARTITION (part='2')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@srcbucket_mapjoin_part_2_n6_tmp2@part=2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_2_n6_tmp2 PARTITION (part='2')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@srcbucket_mapjoin_part_2_n6_tmp2@part=2
+PREHOOK: query: INSERT INTO srcbucket_mapjoin_part_2_n6 SELECT * FROM srcbucket_mapjoin_part_2_n6_tmp2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n6_tmp2
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n6_tmp2@part=2
+PREHOOK: Output: default@srcbucket_mapjoin_part_2_n6
+POSTHOOK: query: INSERT INTO srcbucket_mapjoin_part_2_n6 SELECT * FROM srcbucket_mapjoin_part_2_n6_tmp2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n6_tmp2
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n6_tmp2@part=2
+POSTHOOK: Output: default@srcbucket_mapjoin_part_2_n6
+PREHOOK: query: EXPLAIN
+SELECT /*+ MAPJOIN(b) */ count(*)
+FROM srcbucket_mapjoin_part_1_n2 a JOIN srcbucket_mapjoin_part_2_n6 b
+ON a.key = b.key AND a.part IS NOT NULL AND b.part IS NOT NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n2
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n6
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT /*+ MAPJOIN(b) */ count(*)
+FROM srcbucket_mapjoin_part_1_n2 a JOIN srcbucket_mapjoin_part_2_n6 b
+ON a.key = b.key AND a.part IS NOT NULL AND b.part IS NOT NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n2
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n6
+#### A masked pattern was here ####
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Map 1 <- Map 3 (BROADCAST_EDGE)
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized, llap
+      File Output Operator [FS_40]
+        Group By Operator [GBY_39] (rows=1 width=8)
+          Output:["_col0"],aggregations:["count(VALUE._col0)"]
+        <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized, llap
+          PARTITION_ONLY_SHUFFLE [RS_38]
+            Group By Operator [GBY_37] (rows=1 width=8)
+              Output:["_col0"],aggregations:["count()"]
+              Map Join Operator [MAPJOIN_36] (rows=1797 width=8)
+                Conds:SEL_35._col0=RS_33._col0(Inner)
+              <-Map 3 [BROADCAST_EDGE] vectorized, llap
+                BROADCAST [RS_33]
+                  PartitionCols:_col0
+                  Select Operator [SEL_32] (rows=738 width=4)
+                    Output:["_col0"]
+                    Filter Operator [FIL_31] (rows=738 width=89)
+                      predicate:(part is not null and key is not null)
+                      TableScan [TS_3] (rows=738 width=89)
+                        default@srcbucket_mapjoin_part_2_n6,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","part"]
+              <-Select Operator [SEL_35] (rows=738 width=4)
+                  Output:["_col0"]
+                  Filter Operator [FIL_34] (rows=738 width=89)
+                    predicate:(part is not null and key is not null)
+                    TableScan [TS_0] (rows=738 width=89)
+                      default@srcbucket_mapjoin_part_1_n2,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key","part"]
+
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ count(*)
+FROM srcbucket_mapjoin_part_1_n2 a JOIN srcbucket_mapjoin_part_2_n6 b
+ON a.key = b.key AND a.part IS NOT NULL AND b.part IS NOT NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n2
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n6
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ count(*)
+FROM srcbucket_mapjoin_part_1_n2 a JOIN srcbucket_mapjoin_part_2_n6 b
+ON a.key = b.key AND a.part IS NOT NULL AND b.part IS NOT NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n2
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n6
+#### A masked pattern was here ####
+2420
+PREHOOK: query: EXPLAIN
+SELECT /*+ MAPJOIN(b) */ count(*)
+FROM srcbucket_mapjoin_part_1_n2 a JOIN srcbucket_mapjoin_part_2_n6 b
+ON a.key = b.key AND a.part = b.part AND a.part IS NOT NULL AND b.part IS NOT NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n2
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n6
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT /*+ MAPJOIN(b) */ count(*)
+FROM srcbucket_mapjoin_part_1_n2 a JOIN srcbucket_mapjoin_part_2_n6 b
+ON a.key = b.key AND a.part = b.part AND a.part IS NOT NULL AND b.part IS NOT NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n2
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n6
+#### A masked pattern was here ####
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Map 1 <- Map 3 (BROADCAST_EDGE)
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized, llap
+      File Output Operator [FS_49]
+        Group By Operator [GBY_48] (rows=1 width=8)
+          Output:["_col0"],aggregations:["count(VALUE._col0)"]
+        <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized, llap
+          PARTITION_ONLY_SHUFFLE [RS_47]
+            Group By Operator [GBY_46] (rows=1 width=8)
+              Output:["_col0"],aggregations:["count()"]
+              Map Join Operator [MAPJOIN_45] (rows=1797 width=8)
+                Conds:SEL_44._col0, _col1=RS_39._col0, _col1(Inner)
+              <-Map 3 [BROADCAST_EDGE] vectorized, llap
+                BROADCAST [RS_39]
+                  PartitionCols:_col0, _col1
+                  Select Operator [SEL_38] (rows=738 width=89)
+                    Output:["_col0","_col1"]
+                    Filter Operator [FIL_37] (rows=738 width=89)
+                      predicate:(part is not null and key is not null)
+                      TableScan [TS_3] (rows=738 width=89)
+                        default@srcbucket_mapjoin_part_2_n6,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","part"]
+                Dynamic Partitioning Event Operator [EVENT_42] (rows=2 width=85)
+                  Group By Operator [GBY_41] (rows=2 width=85)
+                    Output:["_col0"],keys:_col0
+                    Select Operator [SEL_40] (rows=738 width=85)
+                      Output:["_col0"]
+                       Please refer to the previous Select Operator [SEL_38]
+              <-Select Operator [SEL_44] (rows=738 width=89)
+                  Output:["_col0","_col1"]
+                  Filter Operator [FIL_43] (rows=738 width=89)
+                    predicate:(part is not null and key is not null)
+                    TableScan [TS_0] (rows=738 width=89)
+                      default@srcbucket_mapjoin_part_1_n2,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key","part"]
+
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ count(*)
+FROM srcbucket_mapjoin_part_1_n2 a JOIN srcbucket_mapjoin_part_2_n6 b
+ON a.key = b.key AND a.part = b.part AND a.part IS NOT NULL AND b.part IS NOT NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_mapjoin_part_1_n2
+PREHOOK: Input: default@srcbucket_mapjoin_part_2_n6
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ count(*)
+FROM srcbucket_mapjoin_part_1_n2 a JOIN srcbucket_mapjoin_part_2_n6 b
+ON a.key = b.key AND a.part = b.part AND a.part IS NOT NULL AND b.part IS NOT NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_mapjoin_part_1_n2
+POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n6
+#### A masked pattern was here ####
+928

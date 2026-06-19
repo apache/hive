@@ -1,0 +1,77 @@
+PREHOOK: query: CREATE TABLE test_table_n13(
+    col1 INT COMMENT 'col1 one line comment',
+    col2 STRING COMMENT 'col2
+two lines comment',
+    col3 STRING COMMENT 'col3
+three lines
+comment') 
+COMMENT 'table comment
+two lines'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table_n13
+POSTHOOK: query: CREATE TABLE test_table_n13(
+    col1 INT COMMENT 'col1 one line comment',
+    col2 STRING COMMENT 'col2
+two lines comment',
+    col3 STRING COMMENT 'col3
+three lines
+comment') 
+COMMENT 'table comment
+two lines'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table_n13
+PREHOOK: query: DESCRIBE test_table_n13
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table_n13
+POSTHOOK: query: DESCRIBE test_table_n13
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table_n13
+col1                	int                 	col1 one line comment
+col2                	string              	col2                
+                    	                    	two lines comment   
+col3                	string              	col3                
+                    	                    	three lines         
+                    	                    	comment             
+PREHOOK: query: DESCRIBE FORMATTED test_table_n13
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table_n13
+POSTHOOK: query: DESCRIBE FORMATTED test_table_n13
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table_n13
+# col_name            	data_type           	comment             
+col1                	int                 	col1 one line comment
+col2                	string              	col2                
+                    	                    	two lines comment   
+col3                	string              	col3                
+                    	                    	three lines         
+                    	                    	comment             
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
+	bucketing_version   	2                   
+	comment             	table comment       
+	                    	two lines           
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

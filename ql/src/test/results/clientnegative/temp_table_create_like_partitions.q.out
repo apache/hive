@@ -1,0 +1,17 @@
+PREHOOK: query: create table tab1 (c1 string) partitioned by (p1 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tab1
+POSTHOOK: query: create table tab1 (c1 string) partitioned by (p1 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tab1
+PREHOOK: query: create table tmp1 like tab1
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp1
+POSTHOOK: query: create table tmp1 like tab1
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp1
+FAILED: ParseException line 2:11 mismatched input 'create' expecting EXTENDED near 'table' in show statement

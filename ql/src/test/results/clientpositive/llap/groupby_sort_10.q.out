@@ -1,0 +1,169 @@
+PREHOOK: query: CREATE TABLE T1_n149(key STRING, val STRING) PARTITIONED BY (ds string)
+CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T1_n149
+POSTHOOK: query: CREATE TABLE T1_n149(key STRING, val STRING) PARTITIONED BY (ds string)
+CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T1_n149
+PREHOOK: query: INSERT OVERWRITE TABLE T1_n149 PARTITION (ds='1')
+SELECT * from src where key = 0 or key = 11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t1_n149@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE T1_n149 PARTITION (ds='1')
+SELECT * from src where key = 0 or key = 11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t1_n149@ds=1
+POSTHOOK: Lineage: t1_n149 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1_n149 PARTITION(ds=1).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: EXPLAIN select distinct key from T1_n149
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n149
+PREHOOK: Input: default@t1_n149@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN select distinct key from T1_n149
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n149
+POSTHOOK: Input: default@t1_n149@ds=1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: t1_n149
+          Select Operator
+            expressions: key (type: string)
+            outputColumnNames: key
+            Group By Operator
+              keys: key (type: string)
+              mode: final
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: select distinct key from T1_n149
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n149
+PREHOOK: Input: default@t1_n149@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: select distinct key from T1_n149
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n149
+POSTHOOK: Input: default@t1_n149@ds=1
+#### A masked pattern was here ####
+0
+11
+PREHOOK: query: INSERT OVERWRITE TABLE T1_n149 PARTITION (ds='2')
+SELECT * from src where key = 0 or key = 11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t1_n149@ds=2
+POSTHOOK: query: INSERT OVERWRITE TABLE T1_n149 PARTITION (ds='2')
+SELECT * from src where key = 0 or key = 11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t1_n149@ds=2
+POSTHOOK: Lineage: t1_n149 PARTITION(ds=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1_n149 PARTITION(ds=2).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: EXPLAIN select distinct key from T1_n149
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n149
+PREHOOK: Input: default@t1_n149@ds=1
+PREHOOK: Input: default@t1_n149@ds=2
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN select distinct key from T1_n149
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n149
+POSTHOOK: Input: default@t1_n149@ds=1
+POSTHOOK: Input: default@t1_n149@ds=2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1_n149
+                  Statistics: Num rows: 8 Data size: 680 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: key
+                    Statistics: Num rows: 8 Data size: 680 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      bucketGroup: true
+                      keys: key (type: string)
+                      minReductionHashAggr: 0.75
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select distinct key from T1_n149
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n149
+PREHOOK: Input: default@t1_n149@ds=1
+PREHOOK: Input: default@t1_n149@ds=2
+#### A masked pattern was here ####
+POSTHOOK: query: select distinct key from T1_n149
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n149
+POSTHOOK: Input: default@t1_n149@ds=1
+POSTHOOK: Input: default@t1_n149@ds=2
+#### A masked pattern was here ####
+0
+11
+PREHOOK: query: DROP TABLE T1_n149
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t1_n149
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1_n149
+POSTHOOK: query: DROP TABLE T1_n149
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t1_n149
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1_n149

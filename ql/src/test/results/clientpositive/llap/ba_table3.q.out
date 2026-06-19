@@ -1,0 +1,47 @@
+PREHOOK: query: drop table ba_test_n2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table ba_test_n2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table ba_test_n2 (ba_key binary, ba_val binary)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ba_test_n2
+POSTHOOK: query: create table ba_test_n2 (ba_key binary, ba_val binary)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ba_test_n2
+PREHOOK: query: from src insert overwrite table ba_test_n2 select cast (src.key as binary), cast (src.value as binary)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ba_test_n2
+POSTHOOK: query: from src insert overwrite table ba_test_n2 select cast (src.key as binary), cast (src.value as binary)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ba_test_n2
+POSTHOOK: Lineage: ba_test_n2.ba_key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ba_test_n2.ba_val EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select ba_test_n2.ba_key, count(ba_test_n2.ba_val) from ba_test_n2 group by ba_test_n2.ba_key order by ba_key limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ba_test_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select ba_test_n2.ba_key, count(ba_test_n2.ba_val) from ba_test_n2 group by ba_test_n2.ba_key order by ba_key limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ba_test_n2
+#### A masked pattern was here ####
+0	3
+10	1
+100	2
+103	2
+104	2
+PREHOOK: query: drop table ba_test_n2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ba_test_n2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ba_test_n2
+POSTHOOK: query: drop table ba_test_n2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ba_test_n2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ba_test_n2

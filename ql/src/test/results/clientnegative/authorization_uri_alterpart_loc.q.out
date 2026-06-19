@@ -1,0 +1,18 @@
+PREHOOK: query: create table tpart(i int, j int) partitioned by (k string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tpart
+POSTHOOK: query: create table tpart(i int, j int) partitioned by (k string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tpart
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+PREHOOK: Output: default@tpart
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+POSTHOOK: Output: default@tpart
+POSTHOOK: Output: default@tpart@k=abc
+#### A masked pattern was here ####

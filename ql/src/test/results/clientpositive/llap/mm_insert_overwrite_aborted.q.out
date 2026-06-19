@@ -1,0 +1,54 @@
+PREHOOK: query: drop table if exists studentparttab30k
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists studentparttab30k
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table studentparttab30k (name string) row format delimited fields terminated by '\\t' stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@studentparttab30k
+POSTHOOK: query: create table studentparttab30k (name string) row format delimited fields terminated by '\\t' stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@studentparttab30k
+PREHOOK: query: insert into studentparttab30k values('a')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@studentparttab30k
+POSTHOOK: query: insert into studentparttab30k values('a')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@studentparttab30k
+POSTHOOK: Lineage: studentparttab30k.name SCRIPT []
+PREHOOK: query: drop table if exists multi_insert_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists multi_insert_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table multi_insert_1 (name string) row format delimited fields terminated by '\\t' stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multi_insert_1
+POSTHOOK: query: create table multi_insert_1 (name string) row format delimited fields terminated by '\\t' stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multi_insert_1
+PREHOOK: query: insert overwrite table multi_insert_1 select name FROM studentparttab30k
+PREHOOK: type: QUERY
+PREHOOK: Input: default@studentparttab30k
+PREHOOK: Output: default@multi_insert_1
+POSTHOOK: query: insert overwrite table multi_insert_1 select name FROM studentparttab30k
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@studentparttab30k
+POSTHOOK: Output: default@multi_insert_1
+POSTHOOK: Lineage: multi_insert_1.name SIMPLE [(studentparttab30k)studentparttab30k.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: select * from multi_insert_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multi_insert_1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from multi_insert_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multi_insert_1
+#### A masked pattern was here ####

@@ -1,0 +1,9 @@
+PREHOOK: query: create table testTable(col1 int, col2 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testTable
+POSTHOOK: query: create table testTable(col1 int, col2 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testTable
+FAILED: ParseException line 4:45 missing StringLiteral at ')' near '<EOF>'

@@ -1,0 +1,33 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+13/05/09 09:58:26 WARN util.NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+13/05/09 09:58:26 WARN snappy.LoadSnappy: Snappy native library not loaded
+13/05/09 09:58:26 INFO mapred.FileInputFormat: Total input paths to process : 1
+13/05/09 09:58:26 INFO streaming.StreamJob: getLocalDirs(): [/Users/daijy/hadoop-1.0.3/tmp/mapred/local]
+13/05/09 09:58:26 INFO streaming.StreamJob: Running job: job_201305090950_0006
+13/05/09 09:58:26 INFO streaming.StreamJob: To kill this job, run:
+13/05/09 09:58:26 INFO streaming.StreamJob: /Users/daijy/hadoop-1.0.3/libexec/../bin/hadoop job  -Dmapred.job.tracker=localhost:9001 -kill job_201305090950_0006
+13/05/09 09:58:26 INFO streaming.StreamJob: Tracking URL: http://localhost:50030/jobdetails.jsp?jobid=job_201305090950_0006
+13/05/09 09:58:27 INFO streaming.StreamJob:  map 0%  reduce 0%
+13/05/09 09:58:39 INFO streaming.StreamJob:  map 50%  reduce 0%
+13/05/09 09:58:45 INFO streaming.StreamJob:  map 100%  reduce 0%
+13/05/09 09:58:48 INFO streaming.StreamJob:  map 100%  reduce 17%
+13/05/09 09:58:57 INFO streaming.StreamJob:  map 100%  reduce 100%
+13/05/09 09:59:03 INFO streaming.StreamJob: Job complete: job_201305090950_0006
+13/05/09 09:59:03 INFO streaming.StreamJob: Output: ooo4

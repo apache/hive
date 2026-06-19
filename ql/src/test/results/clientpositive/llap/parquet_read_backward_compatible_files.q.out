@@ -1,0 +1,49 @@
+PREHOOK: query: CREATE TABLE alltypesparquet_old (
+    bo1 boolean,
+    ti1 tinyint,
+    si1 smallint,
+    i1 int,
+    bi1 bigint,
+    f1 float,
+    d1 double,
+    s1 string,
+    m1 map<string,string>,
+    l1 array<int>,
+    st1 struct<c1:int,c2:string>
+) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alltypesparquet_old
+POSTHOOK: query: CREATE TABLE alltypesparquet_old (
+    bo1 boolean,
+    ti1 tinyint,
+    si1 smallint,
+    i1 int,
+    bi1 bigint,
+    f1 float,
+    d1 double,
+    s1 string,
+    m1 map<string,string>,
+    l1 array<int>,
+    st1 struct<c1:int,c2:string>
+) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alltypesparquet_old
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/alltypesparquet' OVERWRITE INTO TABLE alltypesparquet_old
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@alltypesparquet_old
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/alltypesparquet' OVERWRITE INTO TABLE alltypesparquet_old
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@alltypesparquet_old
+PREHOOK: query: SELECT * FROM alltypesparquet_old
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet_old
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM alltypesparquet_old
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet_old
+#### A masked pattern was here ####
+true	10	100	1000	10000	4.0	20.0	hello	{"k1":"v1"}	[100,200]	{"c1":10,"c2":"foo"}

@@ -1,0 +1,4 @@
+Ln:2 COPY
+Ln:2 Statement:
+select * from src
+Ln:2 Query executed: 2 columns, output file: /user/hplsql/src2.txt

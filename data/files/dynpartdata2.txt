@@ -1,0 +1,6 @@
+20150317,16,reqB,clusterIdB,cacheId6
+20150318,16,reqA,clusterIdC,cacheId6
+20150317,15,reqD,clusterIdD,cacheId7
+20150316,16,reqA,clusterIdD,cacheId8
+20150316,16,reqD,clusterIdB,cacheId9
+20150316,16,reqB,clusterIdA,cacheId1

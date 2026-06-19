@@ -1,0 +1,22 @@
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: CREATE TABLE max_parts(key STRING) PARTITIONED BY (value STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@max_parts
+POSTHOOK: query: CREATE TABLE max_parts(key STRING) PARTITIONED BY (value STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@max_parts
+PREHOOK: query: INSERT OVERWRITE TABLE max_parts PARTITION(value)
+SELECT key, value
+FROM src
+LIMIT 50
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@max_parts
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.exec.MoveTask. Number of dynamic partitions created is 49, which is more than 10. To solve this try to set hive.exec.max.dynamic.partitions to at least 49.

@@ -1,0 +1,247 @@
+PREHOOK: query: create table src_auth_tmp_n0 as select * from src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_auth_tmp_n0
+POSTHOOK: query: create table src_auth_tmp_n0 as select * from src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_auth_tmp_n0
+POSTHOOK: Lineage: src_auth_tmp_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_auth_tmp_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table authorization_part_n0 (key int, value string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@authorization_part_n0
+POSTHOOK: query: create table authorization_part_n0 (key int, value string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@authorization_part_n0
+PREHOOK: query: ALTER TABLE authorization_part_n0 SET TBLPROPERTIES ("PARTITION_LEVEL_PRIVILEGE"="TRUE")
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@authorization_part_n0
+PREHOOK: Output: default@authorization_part_n0
+POSTHOOK: query: ALTER TABLE authorization_part_n0 SET TBLPROPERTIES ("PARTITION_LEVEL_PRIVILEGE"="TRUE")
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@authorization_part_n0
+POSTHOOK: Output: default@authorization_part_n0
+PREHOOK: query: grant select on table src_auth_tmp_n0 to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@src_auth_tmp_n0
+POSTHOOK: query: grant select on table src_auth_tmp_n0 to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@src_auth_tmp_n0
+PREHOOK: query: grant Create on table authorization_part_n0 to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@authorization_part_n0
+POSTHOOK: query: grant Create on table authorization_part_n0 to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@authorization_part_n0
+PREHOOK: query: grant Update on table authorization_part_n0 to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@authorization_part_n0
+POSTHOOK: query: grant Update on table authorization_part_n0 to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@authorization_part_n0
+PREHOOK: query: grant Drop on table authorization_part_n0 to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@authorization_part_n0
+POSTHOOK: query: grant Drop on table authorization_part_n0 to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@authorization_part_n0
+PREHOOK: query: show grant user hive_test_user on table authorization_part_n0
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on table authorization_part_n0
+POSTHOOK: type: SHOW_GRANT
+default	authorization_part_n0			hive_test_user	USER	CREATE	false	-1	hive_test_user
+default	authorization_part_n0			hive_test_user	USER	DROP	false	-1	hive_test_user
+default	authorization_part_n0			hive_test_user	USER	UPDATE	false	-1	hive_test_user
+PREHOOK: query: grant select(key) on table authorization_part_n0 to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@authorization_part_n0
+POSTHOOK: query: grant select(key) on table authorization_part_n0 to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@authorization_part_n0
+PREHOOK: query: insert overwrite table authorization_part_n0 partition (ds='2010') select key, value from src_auth_tmp_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_auth_tmp_n0
+PREHOOK: Output: default@authorization_part_n0@ds=2010
+POSTHOOK: query: insert overwrite table authorization_part_n0 partition (ds='2010') select key, value from src_auth_tmp_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_auth_tmp_n0
+POSTHOOK: Output: default@authorization_part_n0@ds=2010
+POSTHOOK: Lineage: authorization_part_n0 PARTITION(ds=2010).key EXPRESSION [(src_auth_tmp_n0)src_auth_tmp_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: authorization_part_n0 PARTITION(ds=2010).value SIMPLE [(src_auth_tmp_n0)src_auth_tmp_n0.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: insert overwrite table authorization_part_n0 partition (ds='2011') select key, value from src_auth_tmp_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_auth_tmp_n0
+PREHOOK: Output: default@authorization_part_n0@ds=2011
+POSTHOOK: query: insert overwrite table authorization_part_n0 partition (ds='2011') select key, value from src_auth_tmp_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_auth_tmp_n0
+POSTHOOK: Output: default@authorization_part_n0@ds=2011
+POSTHOOK: Lineage: authorization_part_n0 PARTITION(ds=2011).key EXPRESSION [(src_auth_tmp_n0)src_auth_tmp_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: authorization_part_n0 PARTITION(ds=2011).value SIMPLE [(src_auth_tmp_n0)src_auth_tmp_n0.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: show grant user hive_test_user on table authorization_part_n0(key) partition (ds='2010')
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on table authorization_part_n0(key) partition (ds='2010')
+POSTHOOK: type: SHOW_GRANT
+default	authorization_part_n0	[2010]	[key]	hive_test_user	USER	SELECT	false	-1	hive_test_user
+PREHOOK: query: show grant user hive_test_user on table authorization_part_n0(key) partition (ds='2011')
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on table authorization_part_n0(key) partition (ds='2011')
+POSTHOOK: type: SHOW_GRANT
+default	authorization_part_n0	[2011]	[key]	hive_test_user	USER	SELECT	false	-1	hive_test_user
+PREHOOK: query: show grant user hive_test_user on table authorization_part_n0(key)
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on table authorization_part_n0(key)
+POSTHOOK: type: SHOW_GRANT
+default	authorization_part_n0		[key]	hive_test_user	USER	SELECT	false	-1	hive_test_user
+PREHOOK: query: select key from authorization_part_n0 where ds>='2010' order by key limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@authorization_part_n0
+PREHOOK: Input: default@authorization_part_n0@ds=2010
+PREHOOK: Input: default@authorization_part_n0@ds=2011
+#### A masked pattern was here ####
+POSTHOOK: query: select key from authorization_part_n0 where ds>='2010' order by key limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@authorization_part_n0
+POSTHOOK: Input: default@authorization_part_n0@ds=2010
+POSTHOOK: Input: default@authorization_part_n0@ds=2011
+#### A masked pattern was here ####
+0
+0
+0
+0
+0
+0
+2
+2
+4
+4
+5
+5
+5
+5
+5
+5
+8
+8
+9
+9
+PREHOOK: query: drop table authorization_part_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@authorization_part_n0
+PREHOOK: Output: database:default
+PREHOOK: Output: default@authorization_part_n0
+POSTHOOK: query: drop table authorization_part_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@authorization_part_n0
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@authorization_part_n0
+PREHOOK: query: create table authorization_part_n0 (key int, value string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@authorization_part_n0
+POSTHOOK: query: create table authorization_part_n0 (key int, value string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@authorization_part_n0
+PREHOOK: query: ALTER TABLE authorization_part_n0 SET TBLPROPERTIES ("PARTITION_LEVEL_PRIVILEGE"="FALSE")
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@authorization_part_n0
+PREHOOK: Output: default@authorization_part_n0
+POSTHOOK: query: ALTER TABLE authorization_part_n0 SET TBLPROPERTIES ("PARTITION_LEVEL_PRIVILEGE"="FALSE")
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@authorization_part_n0
+POSTHOOK: Output: default@authorization_part_n0
+PREHOOK: query: grant Create on table authorization_part_n0 to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@authorization_part_n0
+POSTHOOK: query: grant Create on table authorization_part_n0 to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@authorization_part_n0
+PREHOOK: query: grant Update on table authorization_part_n0 to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@authorization_part_n0
+POSTHOOK: query: grant Update on table authorization_part_n0 to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@authorization_part_n0
+PREHOOK: query: show grant user hive_test_user on table authorization_part_n0
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on table authorization_part_n0
+POSTHOOK: type: SHOW_GRANT
+default	authorization_part_n0			hive_test_user	USER	CREATE	false	-1	hive_test_user
+default	authorization_part_n0			hive_test_user	USER	UPDATE	false	-1	hive_test_user
+PREHOOK: query: grant select(key) on table authorization_part_n0 to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@authorization_part_n0
+POSTHOOK: query: grant select(key) on table authorization_part_n0 to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@authorization_part_n0
+PREHOOK: query: insert overwrite table authorization_part_n0 partition (ds='2010') select key, value from src_auth_tmp_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_auth_tmp_n0
+PREHOOK: Output: default@authorization_part_n0@ds=2010
+POSTHOOK: query: insert overwrite table authorization_part_n0 partition (ds='2010') select key, value from src_auth_tmp_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_auth_tmp_n0
+POSTHOOK: Output: default@authorization_part_n0@ds=2010
+POSTHOOK: Lineage: authorization_part_n0 PARTITION(ds=2010).key EXPRESSION [(src_auth_tmp_n0)src_auth_tmp_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: authorization_part_n0 PARTITION(ds=2010).value SIMPLE [(src_auth_tmp_n0)src_auth_tmp_n0.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: insert overwrite table authorization_part_n0 partition (ds='2011') select key, value from src_auth_tmp_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_auth_tmp_n0
+PREHOOK: Output: default@authorization_part_n0@ds=2011
+POSTHOOK: query: insert overwrite table authorization_part_n0 partition (ds='2011') select key, value from src_auth_tmp_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_auth_tmp_n0
+POSTHOOK: Output: default@authorization_part_n0@ds=2011
+POSTHOOK: Lineage: authorization_part_n0 PARTITION(ds=2011).key EXPRESSION [(src_auth_tmp_n0)src_auth_tmp_n0.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: authorization_part_n0 PARTITION(ds=2011).value SIMPLE [(src_auth_tmp_n0)src_auth_tmp_n0.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: show grant user hive_test_user on table authorization_part_n0(key) partition (ds='2010')
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on table authorization_part_n0(key) partition (ds='2010')
+POSTHOOK: type: SHOW_GRANT
+PREHOOK: query: show grant user hive_test_user on table authorization_part_n0(key) partition (ds='2011')
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on table authorization_part_n0(key) partition (ds='2011')
+POSTHOOK: type: SHOW_GRANT
+PREHOOK: query: show grant user hive_test_user on table authorization_part_n0(key)
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on table authorization_part_n0(key)
+POSTHOOK: type: SHOW_GRANT
+default	authorization_part_n0		[key]	hive_test_user	USER	SELECT	false	-1	hive_test_user
+PREHOOK: query: select key from authorization_part_n0 where ds>='2010' order by key limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@authorization_part_n0
+PREHOOK: Input: default@authorization_part_n0@ds=2010
+PREHOOK: Input: default@authorization_part_n0@ds=2011
+#### A masked pattern was here ####
+POSTHOOK: query: select key from authorization_part_n0 where ds>='2010' order by key limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@authorization_part_n0
+POSTHOOK: Input: default@authorization_part_n0@ds=2010
+POSTHOOK: Input: default@authorization_part_n0@ds=2011
+#### A masked pattern was here ####
+0
+0
+0
+0
+0
+0
+2
+2
+4
+4
+5
+5
+5
+5
+5
+5
+8
+8
+9
+9

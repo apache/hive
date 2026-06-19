@@ -1,0 +1,924 @@
+PREHOOK: query: create table t1(id int) partitioned by (month int, year string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1(id int) partitioned by (month int, year string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: insert into t1 select 2,2,'2020'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: insert into t1 select 2,2,'2020'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Output: default@t1@month=2/year=2020
+POSTHOOK: Lineage: t1 PARTITION(month=2,year=2020).id SIMPLE []
+PREHOOK: query: insert into t1 select 3,3,'2024'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: insert into t1 select 3,3,'2024'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Output: default@t1@month=3/year=2024
+POSTHOOK: Lineage: t1 PARTITION(month=3,year=2024).id SIMPLE []
+PREHOOK: query: insert into t1 select 4,4,'2020'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: insert into t1 select 4,4,'2020'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Output: default@t1@month=4/year=2020
+POSTHOOK: Lineage: t1 PARTITION(month=4,year=2020).id SIMPLE []
+PREHOOK: query: select id from t1 where (CASE WHEN (month=3) THEN true else false END)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (CASE WHEN (month=3) THEN true else false END)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+3
+PREHOOK: query: select id from t1 where (CASE WHEN (month=3) THEN false else true END)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=2/year=2020
+PREHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (CASE WHEN (month=3) THEN false else true END)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=2/year=2020
+POSTHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+2
+4
+PREHOOK: query: select id from t1 where (CASE WHEN (year='2024') THEN true else false END)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (CASE WHEN (year='2024') THEN true else false END)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+3
+PREHOOK: query: select id from t1 where (CASE WHEN (year='2024') THEN false else true END)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=2/year=2020
+PREHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (CASE WHEN (year='2024') THEN false else true END)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=2/year=2020
+POSTHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+2
+4
+PREHOOK: query: select id from t1 where (CASE WHEN (month=3 and year='2024') THEN true else false END)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (CASE WHEN (month=3 and year='2024') THEN true else false END)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+3
+PREHOOK: query: select id from t1 where (CASE WHEN (month=3 and year='2024') THEN false else true END)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=2/year=2020
+PREHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (CASE WHEN (month=3 and year='2024') THEN false else true END)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=2/year=2020
+POSTHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+2
+4
+PREHOOK: query: select id from t1 where (CASE WHEN (month=3 or month=4) THEN true else false END)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+PREHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (CASE WHEN (month=3 or month=4) THEN true else false END)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+POSTHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+3
+4
+PREHOOK: query: select id from t1 where (CASE WHEN (month=3 or month=4) THEN false else true END)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=2/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (CASE WHEN (month=3 or month=4) THEN false else true END)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=2/year=2020
+#### A masked pattern was here ####
+2
+PREHOOK: query: select id from t1 where (month=3) is not true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=2/year=2020
+PREHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (month=3) is not true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=2/year=2020
+POSTHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+2
+4
+PREHOOK: query: select id from t1 where (month=3) is true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (month=3) is true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+3
+PREHOOK: query: select id from t1 where (month=3) is not false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (month=3) is not false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+3
+PREHOOK: query: select id from t1 where (month=3) is false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=2/year=2020
+PREHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (month=3) is false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=2/year=2020
+POSTHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+2
+4
+PREHOOK: query: select id from t1 where (month=3 or month=4) is not true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=2/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (month=3 or month=4) is not true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=2/year=2020
+#### A masked pattern was here ####
+2
+PREHOOK: query: select id from t1 where (month=3 or month=4) is true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+PREHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (month=3 or month=4) is true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+POSTHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+3
+4
+PREHOOK: query: select id from t1 where (month=3 or month=4) is not false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+PREHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (month=3 or month=4) is not false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+POSTHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+3
+4
+PREHOOK: query: select id from t1 where (month=3 or month=4) is false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=2/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (month=3 or month=4) is false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=2/year=2020
+#### A masked pattern was here ####
+2
+PREHOOK: query: select id from t1 where (month=3 and id=3) is not true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=2/year=2020
+PREHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (month=3 and id=3) is not true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=2/year=2020
+POSTHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+2
+4
+PREHOOK: query: select id from t1 where (month=3 and id=3) is true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (month=3 and id=3) is true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+3
+PREHOOK: query: select id from t1 where (month=3 and id=3) is not false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (month=3 and id=3) is not false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+3
+PREHOOK: query: select id from t1 where (month=3 and id=3) is false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=2/year=2020
+PREHOOK: Input: default@t1@month=3/year=2024
+PREHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (month=3 and id=3) is false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=2/year=2020
+POSTHOOK: Input: default@t1@month=3/year=2024
+POSTHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+2
+4
+PREHOOK: query: select id from t1 where (month=3) and (id=3) is not true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (month=3) and (id=3) is not true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+PREHOOK: query: select id from t1 where (month=3) and (id=3) is true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (month=3) and (id=3) is true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+3
+PREHOOK: query: select id from t1 where (month=3) and (id=3) is not false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (month=3) and (id=3) is not false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+3
+PREHOOK: query: select id from t1 where (month=3) and (id=3) is false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (month=3) and (id=3) is false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+PREHOOK: query: select id from t1 where ((month=3 or month=4) and year='2024') is not true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=2/year=2020
+PREHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where ((month=3 or month=4) and year='2024') is not true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=2/year=2020
+POSTHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+2
+4
+PREHOOK: query: select id from t1 where ((month=3 or month=4) and year='2024') is true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where ((month=3 or month=4) and year='2024') is true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+3
+PREHOOK: query: select id from t1 where ((month=3 or month=4) and year='2024') is not false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where ((month=3 or month=4) and year='2024') is not false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+3
+PREHOOK: query: select id from t1 where ((month=3 or month=4) and year='2024') is false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=2/year=2020
+PREHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where ((month=3 or month=4) and year='2024') is false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=2/year=2020
+POSTHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+2
+4
+PREHOOK: query: select id from t1 where month in (3,4) is not true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=2/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where month in (3,4) is not true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=2/year=2020
+#### A masked pattern was here ####
+2
+PREHOOK: query: select id from t1 where month not in (3,4) is not true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+PREHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where month not in (3,4) is not true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+POSTHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+3
+4
+PREHOOK: query: select id from t1 where month in (3,4) is not false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+PREHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where month in (3,4) is not false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+POSTHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+3
+4
+PREHOOK: query: select id from t1 where month not in (3,4) is not false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=2/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where month not in (3,4) is not false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=2/year=2020
+#### A masked pattern was here ####
+2
+PREHOOK: query: select id from t1 where month in (3,4) is  true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+PREHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where month in (3,4) is  true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+POSTHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+3
+4
+PREHOOK: query: select id from t1 where month not in (3,4) is true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=2/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where month not in (3,4) is true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=2/year=2020
+#### A masked pattern was here ####
+2
+PREHOOK: query: select id from t1 where month in (3,4) is  false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=2/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where month in (3,4) is  false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=2/year=2020
+#### A masked pattern was here ####
+2
+PREHOOK: query: select id from t1 where month not in (3,4) is false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+PREHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where month not in (3,4) is false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+POSTHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+3
+4
+PREHOOK: query: select id from t1 where (CASE WHEN (month=3) THEN true else false END)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (CASE WHEN (month=3) THEN true else false END)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+3
+PREHOOK: query: select id from t1 where (CASE WHEN (month=3) THEN false else true END)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=2/year=2020
+PREHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (CASE WHEN (month=3) THEN false else true END)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=2/year=2020
+POSTHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+2
+4
+PREHOOK: query: select id from t1 where (CASE WHEN (year='2024') THEN true else false END)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (CASE WHEN (year='2024') THEN true else false END)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+3
+PREHOOK: query: select id from t1 where (CASE WHEN (year='2024') THEN false else true END)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=2/year=2020
+PREHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (CASE WHEN (year='2024') THEN false else true END)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=2/year=2020
+POSTHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+2
+4
+PREHOOK: query: select id from t1 where (CASE WHEN (month=3 and year='2024') THEN true else false END)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (CASE WHEN (month=3 and year='2024') THEN true else false END)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+3
+PREHOOK: query: select id from t1 where (CASE WHEN (month=3 and year='2024') THEN false else true END)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=2/year=2020
+PREHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (CASE WHEN (month=3 and year='2024') THEN false else true END)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=2/year=2020
+POSTHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+2
+4
+PREHOOK: query: select id from t1 where (CASE WHEN (month=3 or month=4) THEN true else false END)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+PREHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (CASE WHEN (month=3 or month=4) THEN true else false END)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+POSTHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+3
+4
+PREHOOK: query: select id from t1 where (CASE WHEN (month=3 or month=4) THEN false else true END)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=2/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (CASE WHEN (month=3 or month=4) THEN false else true END)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=2/year=2020
+#### A masked pattern was here ####
+2
+PREHOOK: query: select id from t1 where (month=3) is not true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=2/year=2020
+PREHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (month=3) is not true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=2/year=2020
+POSTHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+2
+4
+PREHOOK: query: select id from t1 where (month=3) is true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (month=3) is true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+3
+PREHOOK: query: select id from t1 where (month=3) is not false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (month=3) is not false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+3
+PREHOOK: query: select id from t1 where (month=3) is false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=2/year=2020
+PREHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (month=3) is false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=2/year=2020
+POSTHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+2
+4
+PREHOOK: query: select id from t1 where (month=3 or month=4) is not true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=2/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (month=3 or month=4) is not true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=2/year=2020
+#### A masked pattern was here ####
+2
+PREHOOK: query: select id from t1 where (month=3 or month=4) is true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+PREHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (month=3 or month=4) is true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+POSTHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+3
+4
+PREHOOK: query: select id from t1 where (month=3 or month=4) is not false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+PREHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (month=3 or month=4) is not false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+POSTHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+3
+4
+PREHOOK: query: select id from t1 where (month=3 or month=4) is false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=2/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (month=3 or month=4) is false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=2/year=2020
+#### A masked pattern was here ####
+2
+PREHOOK: query: select id from t1 where (month=3 and id=3) is not true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=2/year=2020
+PREHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (month=3 and id=3) is not true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=2/year=2020
+POSTHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+2
+4
+PREHOOK: query: select id from t1 where (month=3 and id=3) is true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (month=3 and id=3) is true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+3
+PREHOOK: query: select id from t1 where (month=3 and id=3) is not false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (month=3 and id=3) is not false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+3
+PREHOOK: query: select id from t1 where (month=3 and id=3) is false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=2/year=2020
+PREHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (month=3 and id=3) is false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=2/year=2020
+POSTHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+2
+4
+PREHOOK: query: select id from t1 where (month=3) and (id=3) is not true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (month=3) and (id=3) is not true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+PREHOOK: query: select id from t1 where (month=3) and (id=3) is true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (month=3) and (id=3) is true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+3
+PREHOOK: query: select id from t1 where (month=3) and (id=3) is not false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (month=3) and (id=3) is not false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+3
+PREHOOK: query: select id from t1 where (month=3) and (id=3) is false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where (month=3) and (id=3) is false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+PREHOOK: query: select id from t1 where ((month=3 or month=4) and year='2024') is not true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=2/year=2020
+PREHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where ((month=3 or month=4) and year='2024') is not true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=2/year=2020
+POSTHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+2
+4
+PREHOOK: query: select id from t1 where ((month=3 or month=4) and year='2024') is true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where ((month=3 or month=4) and year='2024') is true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+3
+PREHOOK: query: select id from t1 where ((month=3 or month=4) and year='2024') is not false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where ((month=3 or month=4) and year='2024') is not false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+#### A masked pattern was here ####
+3
+PREHOOK: query: select id from t1 where ((month=3 or month=4) and year='2024') is false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=2/year=2020
+PREHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where ((month=3 or month=4) and year='2024') is false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=2/year=2020
+POSTHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+2
+4
+PREHOOK: query: select id from t1 where month in (3,4) is not true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=2/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where month in (3,4) is not true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=2/year=2020
+#### A masked pattern was here ####
+2
+PREHOOK: query: select id from t1 where month not in (3,4) is not true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+PREHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where month not in (3,4) is not true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+POSTHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+3
+4
+PREHOOK: query: select id from t1 where month in (3,4) is not false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+PREHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where month in (3,4) is not false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+POSTHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+3
+4
+PREHOOK: query: select id from t1 where month not in (3,4) is not false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=2/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where month not in (3,4) is not false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=2/year=2020
+#### A masked pattern was here ####
+2
+PREHOOK: query: select id from t1 where month in (3,4) is  true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+PREHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where month in (3,4) is  true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+POSTHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+3
+4
+PREHOOK: query: select id from t1 where month not in (3,4) is true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=2/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where month not in (3,4) is true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=2/year=2020
+#### A masked pattern was here ####
+2
+PREHOOK: query: select id from t1 where month in (3,4) is  false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=2/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where month in (3,4) is  false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=2/year=2020
+#### A masked pattern was here ####
+2
+PREHOOK: query: select id from t1 where month not in (3,4) is false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t1@month=3/year=2024
+PREHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+POSTHOOK: query: select id from t1 where month not in (3,4) is false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t1@month=3/year=2024
+POSTHOOK: Input: default@t1@month=4/year=2020
+#### A masked pattern was here ####
+3
+4

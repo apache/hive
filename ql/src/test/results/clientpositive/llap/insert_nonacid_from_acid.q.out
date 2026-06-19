@@ -1,0 +1,64 @@
+PREHOOK: query: create table sample_06(name varchar(50), age int, gpa decimal(3, 2)) clustered by (age) into 2 buckets stored as orc TBLPROPERTIES ("transactional"="true")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sample_06
+POSTHOOK: query: create table sample_06(name varchar(50), age int, gpa decimal(3, 2)) clustered by (age) into 2 buckets stored as orc TBLPROPERTIES ("transactional"="true")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sample_06
+PREHOOK: query: insert into table sample_06 values ('aaa', 35, 3.00), ('bbb', 32, 3.00), ('ccc', 32, 3.00), ('ddd', 35, 3.00), ('eee', 32, 3.00)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@sample_06
+POSTHOOK: query: insert into table sample_06 values ('aaa', 35, 3.00), ('bbb', 32, 3.00), ('ccc', 32, 3.00), ('ddd', 35, 3.00), ('eee', 32, 3.00)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@sample_06
+POSTHOOK: Lineage: sample_06.age SCRIPT []
+POSTHOOK: Lineage: sample_06.gpa SCRIPT []
+POSTHOOK: Lineage: sample_06.name SCRIPT []
+PREHOOK: query: select * from sample_06 where gpa = 3.00
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sample_06
+#### A masked pattern was here ####
+POSTHOOK: query: select * from sample_06 where gpa = 3.00
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sample_06
+#### A masked pattern was here ####
+aaa	35	3.00
+bbb	32	3.00
+ccc	32	3.00
+ddd	35	3.00
+eee	32	3.00
+PREHOOK: query: create table tab1_n2 (name varchar(50), age int, gpa decimal(3, 2))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tab1_n2
+POSTHOOK: query: create table tab1_n2 (name varchar(50), age int, gpa decimal(3, 2))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tab1_n2
+PREHOOK: query: insert into table tab1_n2 select * from sample_06 where gpa = 3.00
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sample_06
+PREHOOK: Output: default@tab1_n2
+POSTHOOK: query: insert into table tab1_n2 select * from sample_06 where gpa = 3.00
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sample_06
+POSTHOOK: Output: default@tab1_n2
+POSTHOOK: Lineage: tab1_n2.age SIMPLE [(sample_06)sample_06.FieldSchema(name:age, type:int, comment:null), ]
+POSTHOOK: Lineage: tab1_n2.gpa SIMPLE []
+POSTHOOK: Lineage: tab1_n2.name SIMPLE [(sample_06)sample_06.FieldSchema(name:name, type:varchar(50), comment:null), ]
+PREHOOK: query: select * from tab1_n2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab1_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tab1_n2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab1_n2
+#### A masked pattern was here ####
+aaa	35	3.00
+bbb	32	3.00
+ccc	32	3.00
+ddd	35	3.00
+eee	32	3.00

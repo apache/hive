@@ -1,0 +1,120 @@
+PREHOOK: query: CREATE TABLE stats_invalid (key string, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@stats_invalid
+POSTHOOK: query: CREATE TABLE stats_invalid (key string, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@stats_invalid
+PREHOOK: query: insert overwrite table stats_invalid
+select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@stats_invalid
+POSTHOOK: query: insert overwrite table stats_invalid
+select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@stats_invalid
+POSTHOOK: Lineage: stats_invalid.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: stats_invalid.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: analyze table stats_invalid compute statistics for columns key,value
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@stats_invalid
+PREHOOK: Output: default@stats_invalid
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table stats_invalid compute statistics for columns key,value
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@stats_invalid
+POSTHOOK: Output: default@stats_invalid
+#### A masked pattern was here ####
+PREHOOK: query: desc formatted stats_invalid
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_invalid
+POSTHOOK: query: desc formatted stats_invalid
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_invalid
+# col_name            	data_type           	comment             
+key                 	string              	                    
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table stats_invalid add  columns (new_col string)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@stats_invalid
+PREHOOK: Output: default@stats_invalid
+POSTHOOK: query: alter table stats_invalid add  columns (new_col string)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@stats_invalid
+POSTHOOK: Output: default@stats_invalid
+PREHOOK: query: desc formatted stats_invalid
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_invalid
+POSTHOOK: query: desc formatted stats_invalid
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_invalid
+# col_name            	data_type           	comment             
+key                 	string              	                    
+value               	string              	                    
+new_col             	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table stats_invalid
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@stats_invalid
+PREHOOK: Output: database:default
+PREHOOK: Output: default@stats_invalid
+POSTHOOK: query: drop table stats_invalid
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@stats_invalid
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@stats_invalid

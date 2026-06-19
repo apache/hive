@@ -1,0 +1,9 @@
+PREHOOK: query: create table dynamic_partition (key string) partitioned by (value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dynamic_partition
+POSTHOOK: query: create table dynamic_partition (key string) partitioned by (value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dynamic_partition
+FAILED: ValidationFailureSemanticException default.dynamic_partition: Partition spec {hr=null} contains non-partition columns

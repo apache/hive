@@ -1,0 +1,30 @@
+PREHOOK: query: FROM src
+SELECT cast('-30.33' as DOUBLE)
+GROUP BY cast('-30.33' as DOUBLE)
+LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: FROM src
+SELECT cast('-30.33' as DOUBLE)
+GROUP BY cast('-30.33' as DOUBLE)
+LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+-30.33
+PREHOOK: query: FROM src
+SELECT '-30.33'
+GROUP BY '-30.33'
+LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: FROM src
+SELECT '-30.33'
+GROUP BY '-30.33'
+LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+-30.33

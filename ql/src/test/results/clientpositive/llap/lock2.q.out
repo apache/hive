@@ -1,0 +1,163 @@
+PREHOOK: query: drop table tstsrc
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table tstsrc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table tstsrc like src
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tstsrc
+POSTHOOK: query: create table tstsrc like src
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tstsrc
+PREHOOK: query: insert overwrite table tstsrc select key, value from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tstsrc
+POSTHOOK: query: insert overwrite table tstsrc select key, value from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tstsrc
+POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: drop table tstsrcpart_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table tstsrcpart_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table tstsrcpart_n0 like srcpart
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tstsrcpart_n0
+POSTHOOK: query: create table tstsrcpart_n0 like srcpart
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tstsrcpart_n0
+PREHOOK: query: insert overwrite table tstsrcpart_n0 partition (ds='2008-04-08', hr='11')
+select key, value from srcpart where ds='2008-04-08' and hr='11'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: default@tstsrcpart_n0@ds=2008-04-08/hr=11
+POSTHOOK: query: insert overwrite table tstsrcpart_n0 partition (ds='2008-04-08', hr='11')
+select key, value from srcpart where ds='2008-04-08' and hr='11'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@tstsrcpart_n0@ds=2008-04-08/hr=11
+POSTHOOK: Lineage: tstsrcpart_n0 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart_n0 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: LOCK TABLE tstsrc SHARED
+PREHOOK: type: LOCKTABLE
+POSTHOOK: query: LOCK TABLE tstsrc SHARED
+POSTHOOK: type: LOCKTABLE
+PREHOOK: query: LOCK TABLE tstsrcpart_n0 SHARED
+PREHOOK: type: LOCKTABLE
+POSTHOOK: query: LOCK TABLE tstsrcpart_n0 SHARED
+POSTHOOK: type: LOCKTABLE
+PREHOOK: query: LOCK TABLE tstsrcpart_n0 PARTITION(ds='2008-04-08', hr='11') EXCLUSIVE
+PREHOOK: type: LOCKTABLE
+POSTHOOK: query: LOCK TABLE tstsrcpart_n0 PARTITION(ds='2008-04-08', hr='11') EXCLUSIVE
+POSTHOOK: type: LOCKTABLE
+PREHOOK: query: SHOW LOCKS
+PREHOOK: type: SHOWLOCKS
+POSTHOOK: query: SHOW LOCKS
+POSTHOOK: type: SHOWLOCKS
+default@tstsrc	SHARED
+default@tstsrcpart_n0	SHARED
+default@tstsrcpart_n0@ds=2008-04-08/hr=11	EXCLUSIVE
+PREHOOK: query: SHOW LOCKS tstsrcpart_n0
+PREHOOK: type: SHOWLOCKS
+POSTHOOK: query: SHOW LOCKS tstsrcpart_n0
+POSTHOOK: type: SHOWLOCKS
+default@tstsrcpart_n0	SHARED
+PREHOOK: query: SHOW LOCKS tstsrcpart_n0 PARTITION(ds='2008-04-08', hr='11')
+PREHOOK: type: SHOWLOCKS
+POSTHOOK: query: SHOW LOCKS tstsrcpart_n0 PARTITION(ds='2008-04-08', hr='11')
+POSTHOOK: type: SHOWLOCKS
+default@tstsrcpart_n0@ds=2008-04-08/hr=11	EXCLUSIVE
+PREHOOK: query: SHOW LOCKS tstsrcpart_n0 PARTITION(ds='2008-04-08', hr='11') extended
+PREHOOK: type: SHOWLOCKS
+POSTHOOK: query: SHOW LOCKS tstsrcpart_n0 PARTITION(ds='2008-04-08', hr='11') extended
+POSTHOOK: type: SHOWLOCKS
+default@tstsrcpart_n0@ds=2008-04-08/hr=11	EXCLUSIVE
+#### A masked pattern was here ####
+LOCK_MODE:EXPLICIT	 
+LOCK_QUERYSTRING:LOCK TABLE tstsrcpart_n0 PARTITION(ds='2008-04-08', hr='11') EXCLUSIVE	 
+PREHOOK: query: UNLOCK TABLE tstsrc
+PREHOOK: type: UNLOCKTABLE
+POSTHOOK: query: UNLOCK TABLE tstsrc
+POSTHOOK: type: UNLOCKTABLE
+PREHOOK: query: SHOW LOCKS
+PREHOOK: type: SHOWLOCKS
+POSTHOOK: query: SHOW LOCKS
+POSTHOOK: type: SHOWLOCKS
+default@tstsrcpart_n0	SHARED
+default@tstsrcpart_n0@ds=2008-04-08/hr=11	EXCLUSIVE
+PREHOOK: query: SHOW LOCKS tstsrcpart_n0
+PREHOOK: type: SHOWLOCKS
+POSTHOOK: query: SHOW LOCKS tstsrcpart_n0
+POSTHOOK: type: SHOWLOCKS
+default@tstsrcpart_n0	SHARED
+PREHOOK: query: SHOW LOCKS tstsrcpart_n0 PARTITION(ds='2008-04-08', hr='11')
+PREHOOK: type: SHOWLOCKS
+POSTHOOK: query: SHOW LOCKS tstsrcpart_n0 PARTITION(ds='2008-04-08', hr='11')
+POSTHOOK: type: SHOWLOCKS
+default@tstsrcpart_n0@ds=2008-04-08/hr=11	EXCLUSIVE
+PREHOOK: query: UNLOCK TABLE tstsrcpart_n0
+PREHOOK: type: UNLOCKTABLE
+POSTHOOK: query: UNLOCK TABLE tstsrcpart_n0
+POSTHOOK: type: UNLOCKTABLE
+PREHOOK: query: SHOW LOCKS
+PREHOOK: type: SHOWLOCKS
+POSTHOOK: query: SHOW LOCKS
+POSTHOOK: type: SHOWLOCKS
+default@tstsrcpart_n0@ds=2008-04-08/hr=11	EXCLUSIVE
+PREHOOK: query: SHOW LOCKS tstsrcpart_n0
+PREHOOK: type: SHOWLOCKS
+POSTHOOK: query: SHOW LOCKS tstsrcpart_n0
+POSTHOOK: type: SHOWLOCKS
+PREHOOK: query: SHOW LOCKS tstsrcpart_n0 PARTITION(ds='2008-04-08', hr='11')
+PREHOOK: type: SHOWLOCKS
+POSTHOOK: query: SHOW LOCKS tstsrcpart_n0 PARTITION(ds='2008-04-08', hr='11')
+POSTHOOK: type: SHOWLOCKS
+default@tstsrcpart_n0@ds=2008-04-08/hr=11	EXCLUSIVE
+PREHOOK: query: UNLOCK TABLE tstsrcpart_n0 PARTITION(ds='2008-04-08', hr='11')
+PREHOOK: type: UNLOCKTABLE
+POSTHOOK: query: UNLOCK TABLE tstsrcpart_n0 PARTITION(ds='2008-04-08', hr='11')
+POSTHOOK: type: UNLOCKTABLE
+PREHOOK: query: SHOW LOCKS
+PREHOOK: type: SHOWLOCKS
+POSTHOOK: query: SHOW LOCKS
+POSTHOOK: type: SHOWLOCKS
+PREHOOK: query: SHOW LOCKS tstsrcpart_n0
+PREHOOK: type: SHOWLOCKS
+POSTHOOK: query: SHOW LOCKS tstsrcpart_n0
+POSTHOOK: type: SHOWLOCKS
+PREHOOK: query: SHOW LOCKS tstsrcpart_n0 PARTITION(ds='2008-04-08', hr='11')
+PREHOOK: type: SHOWLOCKS
+POSTHOOK: query: SHOW LOCKS tstsrcpart_n0 PARTITION(ds='2008-04-08', hr='11')
+POSTHOOK: type: SHOWLOCKS
+PREHOOK: query: drop table tstsrc
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tstsrc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tstsrc
+POSTHOOK: query: drop table tstsrc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tstsrc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tstsrc
+PREHOOK: query: drop table tstsrcpart_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tstsrcpart_n0
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tstsrcpart_n0
+POSTHOOK: query: drop table tstsrcpart_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tstsrcpart_n0
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tstsrcpart_n0

@@ -1,0 +1,100 @@
+PREHOOK: query: create table stats_part(key int,value string) partitioned by (p int) tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@stats_part
+POSTHOOK: query: create table stats_part(key int,value string) partitioned by (p int) tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@stats_part
+PREHOOK: query: insert into table stats_part partition(p=101) values (1, "foo")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@stats_part@p=101
+POSTHOOK: query: insert into table stats_part partition(p=101) values (1, "foo")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@stats_part@p=101
+POSTHOOK: Lineage: stats_part PARTITION(p=101).key SCRIPT []
+POSTHOOK: Lineage: stats_part PARTITION(p=101).value SCRIPT []
+PREHOOK: query: explain select count(key) from stats_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(key) from stats_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: insert into table stats_part partition(p=102) values (1, "bar")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@stats_part@p=102
+POSTHOOK: query: insert into table stats_part partition(p=102) values (1, "bar")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@stats_part@p=102
+POSTHOOK: Lineage: stats_part PARTITION(p=102).key SCRIPT []
+POSTHOOK: Lineage: stats_part PARTITION(p=102).value SCRIPT []
+PREHOOK: query: explain select count(key) from stats_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(key) from stats_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: alter table stats_part drop partition (p=102)
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@stats_part
+PREHOOK: Output: default@stats_part@p=102
+POSTHOOK: query: alter table stats_part drop partition (p=102)
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@stats_part
+POSTHOOK: Output: default@stats_part@p=102
+PREHOOK: query: explain select count(key) from stats_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(key) from stats_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: drop table stats_part
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@stats_part
+PREHOOK: Output: database:default
+PREHOOK: Output: default@stats_part
+POSTHOOK: query: drop table stats_part
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@stats_part
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@stats_part

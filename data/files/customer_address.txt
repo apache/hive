@@ -1,0 +1,20 @@
+1|AAAAAAAABAAAAAAA|18|Jackson |Parkway|Suite 280|Fairfield|Maricopa County|AZ|86192|United States|-7|condo|
+2|AAAAAAAACAAAAAAA|362|Washington 6th|RD|Suite 80|Fairview|Taos County|NM|85709|United States|-7|condo|
+3|AAAAAAAADAAAAAAA|585|Dogwood Washington|Circle|Suite Q|Pleasant Valley|York County|PA|12477|United States|-5|single family|
+4|AAAAAAAAEAAAAAAA|111|Smith |Wy|Suite A|Oak Ridge|Kit Carson County|CO|88371|United States|-7|condo|
+5|AAAAAAAAFAAAAAAA|31|College |Blvd|Suite 180|Glendale|Barry County|MO|63951|United States|-6|single family|
+6|AAAAAAAAGAAAAAAA|59|Williams Sixth|Parkway|Suite 100|Lakeview|Chelan County|WA|98579|United States|-8|single family|
+7|AAAAAAAAHAAAAAAA||Hill 7th|Road|Suite U|Farmington|||39145|United States|||
+8|AAAAAAAAIAAAAAAA|875|Lincoln |Ct.|Suite Y|Union|Bledsoe County|TN|38721|United States|-5|apartment|
+9|AAAAAAAAJAAAAAAA|819|1st Laurel|Ave|Suite 70|New Hope|Perry County|AL|39431|United States|-6|condo|
+10|AAAAAAAAKAAAAAAA|851|Woodland Poplar|ST|Suite Y|Martinsville|Haines Borough|AK|90419|United States|-9|condo|
+11|AAAAAAAALAAAAAAA|189|13th 2nd|Street|Suite 470|Maple Grove|Madison County|MT|68252|United States|-7|single family|
+12|AAAAAAAAMAAAAAAA|76|Ash 8th|Ct.|Suite O|Edgewood|Mifflin County|PA|10069|United States|-5|apartment|
+13|AAAAAAAANAAAAAAA|424|Main Second|Ln|Suite 130|Greenville|Noxubee County|MS|51387|United States|-6|single family|
+14|AAAAAAAAOAAAAAAA|923|Pine Oak|Dr.|Suite 100||Lipscomb County|TX|77752||-6||
+15|AAAAAAAAPAAAAAAA|314|Spring |Ct.|Suite B|Oakland|Washington County|OH|49843|United States|-5|apartment|
+16|AAAAAAAAABAAAAAA|576|Adams Center|Street|Suite J|Valley View|Oldham County|TX|75124|United States|-6|condo|
+17|AAAAAAAABBAAAAAA|801|Green |Dr.|Suite 0|Montpelier|Richland County|OH|48930|United States|-5|single family|
+18|AAAAAAAACBAAAAAA|460|Maple Spruce|Court|Suite 480|Somerville|Potter County|SD|57783|United States|-7|condo|
+19|AAAAAAAADBAAAAAA|611|Wilson |Way|Suite O|Oakdale|Tangipahoa Parish|LA|79584|United States|-6|apartment|
+20|AAAAAAAAEBAAAAAA|675|Elm Wilson|Street|Suite I|Hopewell|Williams County|OH|40587|United States|-5|condo|

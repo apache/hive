@@ -1,0 +1,103 @@
+PREHOOK: query: DROP TABLE IF EXISTS base_tab_n1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS base_tab_n1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE base_tab_n1(a STRING, b STRING, c STRING, d STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@base_tab_n1
+POSTHOOK: query: CREATE TABLE base_tab_n1(a STRING, b STRING, c STRING, d STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@base_tab_n1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/null.txt' INTO TABLE base_tab_n1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@base_tab_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/null.txt' INTO TABLE base_tab_n1
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@base_tab_n1
+PREHOOK: query: DESCRIBE EXTENDED base_tab_n1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@base_tab_n1
+POSTHOOK: query: DESCRIBE EXTENDED base_tab_n1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@base_tab_n1
+a                   	string              	                    
+b                   	string              	                    
+c                   	string              	                    
+d                   	string              	                    
+	 	 
+#### A masked pattern was here ####
+   ROW FORMAT DELIMITED NULL DEFINED AS 'fooNull' SELECT a,b FROM base_tab_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@base_tab_n1
+#### A masked pattern was here ####
+   ROW FORMAT DELIMITED NULL DEFINED AS 'fooNull' SELECT a,b FROM base_tab_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@base_tab_n1
+#### A masked pattern was here ####
+1.01
+1.01
+1.01
+1.01
+1.01
+fooNull1
+fooNullfooNull
+1.0fooNull
+1.01
+1.01
+PREHOOK: query: DROP TABLE IF EXISTS null_tab2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS null_tab2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE null_tab2(a STRING, b STRING) ROW FORMAT DELIMITED NULL DEFINED AS 'fooNull'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@null_tab2
+POSTHOOK: query: CREATE TABLE null_tab2(a STRING, b STRING) ROW FORMAT DELIMITED NULL DEFINED AS 'fooNull'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@null_tab2
+#### A masked pattern was here ####
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@null_tab2
+#### A masked pattern was here ####
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@null_tab2
+PREHOOK: query: SELECT * FROM null_tab2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@null_tab2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM null_tab2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@null_tab2
+#### A masked pattern was here ####
+1.0	1
+1.0	1
+1.0	1
+1.0	1
+1.0	1
+NULL	1
+NULL	NULL
+1.0	NULL
+1.0	1
+1.0	1
+#### A masked pattern was here ####
+PREHOOK: query: DROP TABLE base_tab_n1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@base_tab_n1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@base_tab_n1
+POSTHOOK: query: DROP TABLE base_tab_n1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@base_tab_n1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@base_tab_n1

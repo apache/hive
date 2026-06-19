@@ -1,0 +1,62 @@
+PREHOOK: query: create table orcstr (vcol varchar(20)) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orcstr
+POSTHOOK: query: create table orcstr (vcol varchar(20)) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orcstr
+PREHOOK: query: insert overwrite table orcstr select null from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@orcstr
+POSTHOOK: query: insert overwrite table orcstr select null from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@orcstr
+POSTHOOK: Lineage: orcstr.vcol EXPRESSION []
+PREHOOK: query: select vcol from orcstr limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orcstr
+#### A masked pattern was here ####
+POSTHOOK: query: select vcol from orcstr limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orcstr
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select vcol from orcstr limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orcstr
+#### A masked pattern was here ####
+POSTHOOK: query: select vcol from orcstr limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orcstr
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: insert overwrite table orcstr select "" from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@orcstr
+POSTHOOK: query: insert overwrite table orcstr select "" from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@orcstr
+POSTHOOK: Lineage: orcstr.vcol EXPRESSION []
+PREHOOK: query: select vcol from orcstr limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orcstr
+#### A masked pattern was here ####
+POSTHOOK: query: select vcol from orcstr limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orcstr
+#### A masked pattern was here ####
+
+PREHOOK: query: select vcol from orcstr limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orcstr
+#### A masked pattern was here ####
+POSTHOOK: query: select vcol from orcstr limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orcstr
+#### A masked pattern was here ####
+

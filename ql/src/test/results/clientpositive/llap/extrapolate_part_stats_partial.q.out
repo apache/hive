@@ -1,0 +1,1793 @@
+PREHOOK: query: create table if not exists ext_loc_n1 (
+  state string,
+  locid int,
+  zip int,
+  year string
+) row format delimited fields terminated by '|' stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ext_loc_n1
+POSTHOOK: query: create table if not exists ext_loc_n1 (
+  state string,
+  locid int,
+  zip int,
+  year string
+) row format delimited fields terminated by '|' stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ext_loc_n1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/extrapolate_stats_partial.txt' OVERWRITE INTO TABLE ext_loc_n1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@ext_loc_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/extrapolate_stats_partial.txt' OVERWRITE INTO TABLE ext_loc_n1
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@ext_loc_n1
+PREHOOK: query: create table if not exists loc_orc_1d_n1 (
+  state string,
+  locid int,
+  zip int
+) partitioned by(year string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@loc_orc_1d_n1
+POSTHOOK: query: create table if not exists loc_orc_1d_n1 (
+  state string,
+  locid int,
+  zip int
+) partitioned by(year string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@loc_orc_1d_n1
+PREHOOK: query: insert overwrite table loc_orc_1d_n1 partition(year) select * from ext_loc_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ext_loc_n1
+PREHOOK: Output: default@loc_orc_1d_n1
+POSTHOOK: query: insert overwrite table loc_orc_1d_n1 partition(year) select * from ext_loc_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ext_loc_n1
+POSTHOOK: Output: default@loc_orc_1d_n1
+POSTHOOK: Output: default@loc_orc_1d_n1@year=2000
+POSTHOOK: Output: default@loc_orc_1d_n1@year=2001
+POSTHOOK: Output: default@loc_orc_1d_n1@year=2002
+POSTHOOK: Output: default@loc_orc_1d_n1@year=2003
+POSTHOOK: Lineage: loc_orc_1d_n1 PARTITION(year=2000).locid SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_1d_n1 PARTITION(year=2000).state SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_1d_n1 PARTITION(year=2000).zip SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:zip, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_1d_n1 PARTITION(year=2001).locid SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_1d_n1 PARTITION(year=2001).state SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_1d_n1 PARTITION(year=2001).zip SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:zip, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_1d_n1 PARTITION(year=2002).locid SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_1d_n1 PARTITION(year=2002).state SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_1d_n1 PARTITION(year=2002).zip SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:zip, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_1d_n1 PARTITION(year=2003).locid SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_1d_n1 PARTITION(year=2003).state SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_1d_n1 PARTITION(year=2003).zip SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:zip, type:int, comment:null), ]
+PREHOOK: query: analyze table loc_orc_1d_n1 partition(year='2001') compute statistics for columns state,locid
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@loc_orc_1d_n1
+PREHOOK: Input: default@loc_orc_1d_n1@year=2001
+PREHOOK: Output: default@loc_orc_1d_n1
+PREHOOK: Output: default@loc_orc_1d_n1@year=2001
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table loc_orc_1d_n1 partition(year='2001') compute statistics for columns state,locid
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@loc_orc_1d_n1
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2001
+POSTHOOK: Output: default@loc_orc_1d_n1
+POSTHOOK: Output: default@loc_orc_1d_n1@year=2001
+#### A masked pattern was here ####
+PREHOOK: query: analyze table loc_orc_1d_n1 partition(year='2002') compute statistics for columns state,locid
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@loc_orc_1d_n1
+PREHOOK: Input: default@loc_orc_1d_n1@year=2002
+PREHOOK: Output: default@loc_orc_1d_n1
+PREHOOK: Output: default@loc_orc_1d_n1@year=2002
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table loc_orc_1d_n1 partition(year='2002') compute statistics for columns state,locid
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@loc_orc_1d_n1
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2002
+POSTHOOK: Output: default@loc_orc_1d_n1
+POSTHOOK: Output: default@loc_orc_1d_n1@year=2002
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted loc_orc_1d_n1 PARTITION(year='2001') state
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@loc_orc_1d_n1
+POSTHOOK: query: describe formatted loc_orc_1d_n1 PARTITION(year='2001') state
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@loc_orc_1d_n1
+col_name            	state               
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	0.75                
+max_col_len         	2                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted loc_orc_1d_n1 PARTITION(year='2002') state
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@loc_orc_1d_n1
+POSTHOOK: query: describe formatted loc_orc_1d_n1 PARTITION(year='2002') state
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@loc_orc_1d_n1
+col_name            	state               
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	6                   
+avg_col_len         	3.0                 
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: explain extended select state from loc_orc_1d_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_1d_n1
+PREHOOK: Input: default@loc_orc_1d_n1@year=2000
+PREHOOK: Input: default@loc_orc_1d_n1@year=2001
+PREHOOK: Input: default@loc_orc_1d_n1@year=2002
+PREHOOK: Input: default@loc_orc_1d_n1@year=2003
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select state from loc_orc_1d_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_1d_n1
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2000
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2001
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2002
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2003
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `state`
+FROM `default`.`loc_orc_1d_n1`
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Partition Description:
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2000
+            properties:
+              column.name.delimiter ,
+              columns state,locid,zip
+              columns.types string:int:int
+#### A masked pattern was here ####
+              name default.loc_orc_1d_n1
+              partition_columns year
+              partition_columns.types string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid,zip
+                columns.comments 
+                columns.types string:int:int
+#### A masked pattern was here ####
+                name default.loc_orc_1d_n1
+                partition_columns year
+                partition_columns.types string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_1d_n1
+            name: default.loc_orc_1d_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2001
+            properties:
+              column.name.delimiter ,
+              columns state,locid,zip
+              columns.types string:int:int
+#### A masked pattern was here ####
+              name default.loc_orc_1d_n1
+              partition_columns year
+              partition_columns.types string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid,zip
+                columns.comments 
+                columns.types string:int:int
+#### A masked pattern was here ####
+                name default.loc_orc_1d_n1
+                partition_columns year
+                partition_columns.types string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_1d_n1
+            name: default.loc_orc_1d_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2002
+            properties:
+              column.name.delimiter ,
+              columns state,locid,zip
+              columns.types string:int:int
+#### A masked pattern was here ####
+              name default.loc_orc_1d_n1
+              partition_columns year
+              partition_columns.types string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid,zip
+                columns.comments 
+                columns.types string:int:int
+#### A masked pattern was here ####
+                name default.loc_orc_1d_n1
+                partition_columns year
+                partition_columns.types string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_1d_n1
+            name: default.loc_orc_1d_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2003
+            properties:
+              column.name.delimiter ,
+              columns state,locid,zip
+              columns.types string:int:int
+#### A masked pattern was here ####
+              name default.loc_orc_1d_n1
+              partition_columns year
+              partition_columns.types string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid,zip
+                columns.comments 
+                columns.types string:int:int
+#### A masked pattern was here ####
+                name default.loc_orc_1d_n1
+                partition_columns year
+                partition_columns.types string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_1d_n1
+            name: default.loc_orc_1d_n1
+      Processor Tree:
+        TableScan
+          alias: loc_orc_1d_n1
+          GatherStats: false
+          Select Operator
+            expressions: state (type: string)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: explain extended select state,locid from loc_orc_1d_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_1d_n1
+PREHOOK: Input: default@loc_orc_1d_n1@year=2000
+PREHOOK: Input: default@loc_orc_1d_n1@year=2001
+PREHOOK: Input: default@loc_orc_1d_n1@year=2002
+PREHOOK: Input: default@loc_orc_1d_n1@year=2003
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select state,locid from loc_orc_1d_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_1d_n1
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2000
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2001
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2002
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2003
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `state`, `locid`
+FROM `default`.`loc_orc_1d_n1`
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Partition Description:
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2000
+            properties:
+              column.name.delimiter ,
+              columns state,locid,zip
+              columns.types string:int:int
+#### A masked pattern was here ####
+              name default.loc_orc_1d_n1
+              partition_columns year
+              partition_columns.types string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid,zip
+                columns.comments 
+                columns.types string:int:int
+#### A masked pattern was here ####
+                name default.loc_orc_1d_n1
+                partition_columns year
+                partition_columns.types string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_1d_n1
+            name: default.loc_orc_1d_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2001
+            properties:
+              column.name.delimiter ,
+              columns state,locid,zip
+              columns.types string:int:int
+#### A masked pattern was here ####
+              name default.loc_orc_1d_n1
+              partition_columns year
+              partition_columns.types string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid,zip
+                columns.comments 
+                columns.types string:int:int
+#### A masked pattern was here ####
+                name default.loc_orc_1d_n1
+                partition_columns year
+                partition_columns.types string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_1d_n1
+            name: default.loc_orc_1d_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2002
+            properties:
+              column.name.delimiter ,
+              columns state,locid,zip
+              columns.types string:int:int
+#### A masked pattern was here ####
+              name default.loc_orc_1d_n1
+              partition_columns year
+              partition_columns.types string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid,zip
+                columns.comments 
+                columns.types string:int:int
+#### A masked pattern was here ####
+                name default.loc_orc_1d_n1
+                partition_columns year
+                partition_columns.types string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_1d_n1
+            name: default.loc_orc_1d_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2003
+            properties:
+              column.name.delimiter ,
+              columns state,locid,zip
+              columns.types string:int:int
+#### A masked pattern was here ####
+              name default.loc_orc_1d_n1
+              partition_columns year
+              partition_columns.types string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid,zip
+                columns.comments 
+                columns.types string:int:int
+#### A masked pattern was here ####
+                name default.loc_orc_1d_n1
+                partition_columns year
+                partition_columns.types string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_1d_n1
+            name: default.loc_orc_1d_n1
+      Processor Tree:
+        TableScan
+          alias: loc_orc_1d_n1
+          GatherStats: false
+          Select Operator
+            expressions: state (type: string), locid (type: int)
+            outputColumnNames: _col0, _col1
+            ListSink
+
+PREHOOK: query: analyze table loc_orc_1d_n1 partition(year='2000') compute statistics for columns state
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@loc_orc_1d_n1
+PREHOOK: Input: default@loc_orc_1d_n1@year=2000
+PREHOOK: Output: default@loc_orc_1d_n1
+PREHOOK: Output: default@loc_orc_1d_n1@year=2000
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table loc_orc_1d_n1 partition(year='2000') compute statistics for columns state
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@loc_orc_1d_n1
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2000
+POSTHOOK: Output: default@loc_orc_1d_n1
+POSTHOOK: Output: default@loc_orc_1d_n1@year=2000
+#### A masked pattern was here ####
+PREHOOK: query: analyze table loc_orc_1d_n1 partition(year='2003') compute statistics for columns state
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@loc_orc_1d_n1
+PREHOOK: Input: default@loc_orc_1d_n1@year=2003
+PREHOOK: Output: default@loc_orc_1d_n1
+PREHOOK: Output: default@loc_orc_1d_n1@year=2003
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table loc_orc_1d_n1 partition(year='2003') compute statistics for columns state
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@loc_orc_1d_n1
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2003
+POSTHOOK: Output: default@loc_orc_1d_n1
+POSTHOOK: Output: default@loc_orc_1d_n1@year=2003
+#### A masked pattern was here ####
+PREHOOK: query: explain extended select state from loc_orc_1d_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_1d_n1
+PREHOOK: Input: default@loc_orc_1d_n1@year=2000
+PREHOOK: Input: default@loc_orc_1d_n1@year=2001
+PREHOOK: Input: default@loc_orc_1d_n1@year=2002
+PREHOOK: Input: default@loc_orc_1d_n1@year=2003
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select state from loc_orc_1d_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_1d_n1
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2000
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2001
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2002
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2003
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `state`
+FROM `default`.`loc_orc_1d_n1`
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Partition Description:
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2000
+            properties:
+              column.name.delimiter ,
+              columns state,locid,zip
+              columns.types string:int:int
+#### A masked pattern was here ####
+              name default.loc_orc_1d_n1
+              partition_columns year
+              partition_columns.types string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid,zip
+                columns.comments 
+                columns.types string:int:int
+#### A masked pattern was here ####
+                name default.loc_orc_1d_n1
+                partition_columns year
+                partition_columns.types string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_1d_n1
+            name: default.loc_orc_1d_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2001
+            properties:
+              column.name.delimiter ,
+              columns state,locid,zip
+              columns.types string:int:int
+#### A masked pattern was here ####
+              name default.loc_orc_1d_n1
+              partition_columns year
+              partition_columns.types string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid,zip
+                columns.comments 
+                columns.types string:int:int
+#### A masked pattern was here ####
+                name default.loc_orc_1d_n1
+                partition_columns year
+                partition_columns.types string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_1d_n1
+            name: default.loc_orc_1d_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2002
+            properties:
+              column.name.delimiter ,
+              columns state,locid,zip
+              columns.types string:int:int
+#### A masked pattern was here ####
+              name default.loc_orc_1d_n1
+              partition_columns year
+              partition_columns.types string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid,zip
+                columns.comments 
+                columns.types string:int:int
+#### A masked pattern was here ####
+                name default.loc_orc_1d_n1
+                partition_columns year
+                partition_columns.types string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_1d_n1
+            name: default.loc_orc_1d_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2003
+            properties:
+              column.name.delimiter ,
+              columns state,locid,zip
+              columns.types string:int:int
+#### A masked pattern was here ####
+              name default.loc_orc_1d_n1
+              partition_columns year
+              partition_columns.types string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid,zip
+                columns.comments 
+                columns.types string:int:int
+#### A masked pattern was here ####
+                name default.loc_orc_1d_n1
+                partition_columns year
+                partition_columns.types string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_1d_n1
+            name: default.loc_orc_1d_n1
+      Processor Tree:
+        TableScan
+          alias: loc_orc_1d_n1
+          GatherStats: false
+          Select Operator
+            expressions: state (type: string)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: explain extended select state,locid from loc_orc_1d_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_1d_n1
+PREHOOK: Input: default@loc_orc_1d_n1@year=2000
+PREHOOK: Input: default@loc_orc_1d_n1@year=2001
+PREHOOK: Input: default@loc_orc_1d_n1@year=2002
+PREHOOK: Input: default@loc_orc_1d_n1@year=2003
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select state,locid from loc_orc_1d_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_1d_n1
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2000
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2001
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2002
+POSTHOOK: Input: default@loc_orc_1d_n1@year=2003
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `state`, `locid`
+FROM `default`.`loc_orc_1d_n1`
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Partition Description:
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2000
+            properties:
+              column.name.delimiter ,
+              columns state,locid,zip
+              columns.types string:int:int
+#### A masked pattern was here ####
+              name default.loc_orc_1d_n1
+              partition_columns year
+              partition_columns.types string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid,zip
+                columns.comments 
+                columns.types string:int:int
+#### A masked pattern was here ####
+                name default.loc_orc_1d_n1
+                partition_columns year
+                partition_columns.types string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_1d_n1
+            name: default.loc_orc_1d_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2001
+            properties:
+              column.name.delimiter ,
+              columns state,locid,zip
+              columns.types string:int:int
+#### A masked pattern was here ####
+              name default.loc_orc_1d_n1
+              partition_columns year
+              partition_columns.types string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid,zip
+                columns.comments 
+                columns.types string:int:int
+#### A masked pattern was here ####
+                name default.loc_orc_1d_n1
+                partition_columns year
+                partition_columns.types string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_1d_n1
+            name: default.loc_orc_1d_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2002
+            properties:
+              column.name.delimiter ,
+              columns state,locid,zip
+              columns.types string:int:int
+#### A masked pattern was here ####
+              name default.loc_orc_1d_n1
+              partition_columns year
+              partition_columns.types string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid,zip
+                columns.comments 
+                columns.types string:int:int
+#### A masked pattern was here ####
+                name default.loc_orc_1d_n1
+                partition_columns year
+                partition_columns.types string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_1d_n1
+            name: default.loc_orc_1d_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2003
+            properties:
+              column.name.delimiter ,
+              columns state,locid,zip
+              columns.types string:int:int
+#### A masked pattern was here ####
+              name default.loc_orc_1d_n1
+              partition_columns year
+              partition_columns.types string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid,zip
+                columns.comments 
+                columns.types string:int:int
+#### A masked pattern was here ####
+                name default.loc_orc_1d_n1
+                partition_columns year
+                partition_columns.types string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_1d_n1
+            name: default.loc_orc_1d_n1
+      Processor Tree:
+        TableScan
+          alias: loc_orc_1d_n1
+          GatherStats: false
+          Select Operator
+            expressions: state (type: string), locid (type: int)
+            outputColumnNames: _col0, _col1
+            ListSink
+
+PREHOOK: query: create table if not exists loc_orc_2d_n1 (
+  state string,
+  locid int
+) partitioned by(zip int, year string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@loc_orc_2d_n1
+POSTHOOK: query: create table if not exists loc_orc_2d_n1 (
+  state string,
+  locid int
+) partitioned by(zip int, year string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@loc_orc_2d_n1
+PREHOOK: query: insert overwrite table loc_orc_2d_n1 partition(zip, year) select * from ext_loc_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ext_loc_n1
+PREHOOK: Output: default@loc_orc_2d_n1
+POSTHOOK: query: insert overwrite table loc_orc_2d_n1 partition(zip, year) select * from ext_loc_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ext_loc_n1
+POSTHOOK: Output: default@loc_orc_2d_n1
+POSTHOOK: Output: default@loc_orc_2d_n1@zip=43201/year=2001
+POSTHOOK: Output: default@loc_orc_2d_n1@zip=43201/year=2002
+POSTHOOK: Output: default@loc_orc_2d_n1@zip=43201/year=2003
+POSTHOOK: Output: default@loc_orc_2d_n1@zip=94086/year=2000
+POSTHOOK: Output: default@loc_orc_2d_n1@zip=94086/year=2001
+POSTHOOK: Output: default@loc_orc_2d_n1@zip=94086/year=2002
+POSTHOOK: Output: default@loc_orc_2d_n1@zip=94086/year=2003
+POSTHOOK: Output: default@loc_orc_2d_n1@zip=94087/year=2000
+POSTHOOK: Output: default@loc_orc_2d_n1@zip=94087/year=2001
+POSTHOOK: Output: default@loc_orc_2d_n1@zip=94087/year=2002
+POSTHOOK: Output: default@loc_orc_2d_n1@zip=94087/year=2003
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=43201,year=2001).locid SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=43201,year=2001).state SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=43201,year=2002).locid SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=43201,year=2002).state SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=43201,year=2003).locid SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=43201,year=2003).state SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=94086,year=2000).locid SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=94086,year=2000).state SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=94086,year=2001).locid SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=94086,year=2001).state SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=94086,year=2002).locid SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=94086,year=2002).state SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=94086,year=2003).locid SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=94086,year=2003).state SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=94087,year=2000).locid SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=94087,year=2000).state SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=94087,year=2001).locid SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=94087,year=2001).state SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=94087,year=2002).locid SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=94087,year=2002).state SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=94087,year=2003).locid SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n1 PARTITION(zip=94087,year=2003).state SIMPLE [(ext_loc_n1)ext_loc_n1.FieldSchema(name:state, type:string, comment:null), ]
+PREHOOK: query: analyze table loc_orc_2d_n1 partition(zip=94086, year='2001') compute statistics for columns state,locid
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@loc_orc_2d_n1
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2001
+PREHOOK: Output: default@loc_orc_2d_n1
+PREHOOK: Output: default@loc_orc_2d_n1@zip=94086/year=2001
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table loc_orc_2d_n1 partition(zip=94086, year='2001') compute statistics for columns state,locid
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@loc_orc_2d_n1
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2001
+POSTHOOK: Output: default@loc_orc_2d_n1
+POSTHOOK: Output: default@loc_orc_2d_n1@zip=94086/year=2001
+#### A masked pattern was here ####
+PREHOOK: query: analyze table loc_orc_2d_n1 partition(zip=94087, year='2002') compute statistics for columns state,locid
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@loc_orc_2d_n1
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2002
+PREHOOK: Output: default@loc_orc_2d_n1
+PREHOOK: Output: default@loc_orc_2d_n1@zip=94087/year=2002
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table loc_orc_2d_n1 partition(zip=94087, year='2002') compute statistics for columns state,locid
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@loc_orc_2d_n1
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2002
+POSTHOOK: Output: default@loc_orc_2d_n1
+POSTHOOK: Output: default@loc_orc_2d_n1@zip=94087/year=2002
+#### A masked pattern was here ####
+PREHOOK: query: explain extended select state from loc_orc_2d_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_2d_n1
+PREHOOK: Input: default@loc_orc_2d_n1@zip=43201/year=2001
+PREHOOK: Input: default@loc_orc_2d_n1@zip=43201/year=2002
+PREHOOK: Input: default@loc_orc_2d_n1@zip=43201/year=2003
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2000
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2001
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2002
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2003
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2000
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2001
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2002
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2003
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select state from loc_orc_2d_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_2d_n1
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=43201/year=2001
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=43201/year=2002
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=43201/year=2003
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2000
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2001
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2002
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2003
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2000
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2001
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2002
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2003
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `state`
+FROM `default`.`loc_orc_2d_n1`
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Partition Description:
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2001
+              zip 43201
+            properties:
+              column.name.delimiter ,
+              columns state,locid
+              columns.types string:int
+#### A masked pattern was here ####
+              name default.loc_orc_2d_n1
+              partition_columns zip/year
+              partition_columns.types int:string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid
+                columns.comments 
+                columns.types string:int
+#### A masked pattern was here ####
+                name default.loc_orc_2d_n1
+                partition_columns zip/year
+                partition_columns.types int:string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2002
+              zip 43201
+            properties:
+              column.name.delimiter ,
+              columns state,locid
+              columns.types string:int
+#### A masked pattern was here ####
+              name default.loc_orc_2d_n1
+              partition_columns zip/year
+              partition_columns.types int:string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid
+                columns.comments 
+                columns.types string:int
+#### A masked pattern was here ####
+                name default.loc_orc_2d_n1
+                partition_columns zip/year
+                partition_columns.types int:string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2003
+              zip 43201
+            properties:
+              column.name.delimiter ,
+              columns state,locid
+              columns.types string:int
+#### A masked pattern was here ####
+              name default.loc_orc_2d_n1
+              partition_columns zip/year
+              partition_columns.types int:string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid
+                columns.comments 
+                columns.types string:int
+#### A masked pattern was here ####
+                name default.loc_orc_2d_n1
+                partition_columns zip/year
+                partition_columns.types int:string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2000
+              zip 94086
+            properties:
+              column.name.delimiter ,
+              columns state,locid
+              columns.types string:int
+#### A masked pattern was here ####
+              name default.loc_orc_2d_n1
+              partition_columns zip/year
+              partition_columns.types int:string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid
+                columns.comments 
+                columns.types string:int
+#### A masked pattern was here ####
+                name default.loc_orc_2d_n1
+                partition_columns zip/year
+                partition_columns.types int:string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2001
+              zip 94086
+            properties:
+              column.name.delimiter ,
+              columns state,locid
+              columns.types string:int
+#### A masked pattern was here ####
+              name default.loc_orc_2d_n1
+              partition_columns zip/year
+              partition_columns.types int:string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid
+                columns.comments 
+                columns.types string:int
+#### A masked pattern was here ####
+                name default.loc_orc_2d_n1
+                partition_columns zip/year
+                partition_columns.types int:string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2002
+              zip 94086
+            properties:
+              column.name.delimiter ,
+              columns state,locid
+              columns.types string:int
+#### A masked pattern was here ####
+              name default.loc_orc_2d_n1
+              partition_columns zip/year
+              partition_columns.types int:string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid
+                columns.comments 
+                columns.types string:int
+#### A masked pattern was here ####
+                name default.loc_orc_2d_n1
+                partition_columns zip/year
+                partition_columns.types int:string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2003
+              zip 94086
+            properties:
+              column.name.delimiter ,
+              columns state,locid
+              columns.types string:int
+#### A masked pattern was here ####
+              name default.loc_orc_2d_n1
+              partition_columns zip/year
+              partition_columns.types int:string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid
+                columns.comments 
+                columns.types string:int
+#### A masked pattern was here ####
+                name default.loc_orc_2d_n1
+                partition_columns zip/year
+                partition_columns.types int:string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2000
+              zip 94087
+            properties:
+              column.name.delimiter ,
+              columns state,locid
+              columns.types string:int
+#### A masked pattern was here ####
+              name default.loc_orc_2d_n1
+              partition_columns zip/year
+              partition_columns.types int:string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid
+                columns.comments 
+                columns.types string:int
+#### A masked pattern was here ####
+                name default.loc_orc_2d_n1
+                partition_columns zip/year
+                partition_columns.types int:string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2001
+              zip 94087
+            properties:
+              column.name.delimiter ,
+              columns state,locid
+              columns.types string:int
+#### A masked pattern was here ####
+              name default.loc_orc_2d_n1
+              partition_columns zip/year
+              partition_columns.types int:string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid
+                columns.comments 
+                columns.types string:int
+#### A masked pattern was here ####
+                name default.loc_orc_2d_n1
+                partition_columns zip/year
+                partition_columns.types int:string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2002
+              zip 94087
+            properties:
+              column.name.delimiter ,
+              columns state,locid
+              columns.types string:int
+#### A masked pattern was here ####
+              name default.loc_orc_2d_n1
+              partition_columns zip/year
+              partition_columns.types int:string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid
+                columns.comments 
+                columns.types string:int
+#### A masked pattern was here ####
+                name default.loc_orc_2d_n1
+                partition_columns zip/year
+                partition_columns.types int:string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2003
+              zip 94087
+            properties:
+              column.name.delimiter ,
+              columns state,locid
+              columns.types string:int
+#### A masked pattern was here ####
+              name default.loc_orc_2d_n1
+              partition_columns zip/year
+              partition_columns.types int:string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid
+                columns.comments 
+                columns.types string:int
+#### A masked pattern was here ####
+                name default.loc_orc_2d_n1
+                partition_columns zip/year
+                partition_columns.types int:string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
+      Processor Tree:
+        TableScan
+          alias: loc_orc_2d_n1
+          GatherStats: false
+          Select Operator
+            expressions: state (type: string)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: explain extended select state,locid from loc_orc_2d_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc_2d_n1
+PREHOOK: Input: default@loc_orc_2d_n1@zip=43201/year=2001
+PREHOOK: Input: default@loc_orc_2d_n1@zip=43201/year=2002
+PREHOOK: Input: default@loc_orc_2d_n1@zip=43201/year=2003
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2000
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2001
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2002
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2003
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2000
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2001
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2002
+PREHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2003
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select state,locid from loc_orc_2d_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc_2d_n1
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=43201/year=2001
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=43201/year=2002
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=43201/year=2003
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2000
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2001
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2002
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94086/year=2003
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2000
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2001
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2002
+POSTHOOK: Input: default@loc_orc_2d_n1@zip=94087/year=2003
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `state`, `locid`
+FROM `default`.`loc_orc_2d_n1`
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Partition Description:
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2001
+              zip 43201
+            properties:
+              column.name.delimiter ,
+              columns state,locid
+              columns.types string:int
+#### A masked pattern was here ####
+              name default.loc_orc_2d_n1
+              partition_columns zip/year
+              partition_columns.types int:string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid
+                columns.comments 
+                columns.types string:int
+#### A masked pattern was here ####
+                name default.loc_orc_2d_n1
+                partition_columns zip/year
+                partition_columns.types int:string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2002
+              zip 43201
+            properties:
+              column.name.delimiter ,
+              columns state,locid
+              columns.types string:int
+#### A masked pattern was here ####
+              name default.loc_orc_2d_n1
+              partition_columns zip/year
+              partition_columns.types int:string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid
+                columns.comments 
+                columns.types string:int
+#### A masked pattern was here ####
+                name default.loc_orc_2d_n1
+                partition_columns zip/year
+                partition_columns.types int:string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2003
+              zip 43201
+            properties:
+              column.name.delimiter ,
+              columns state,locid
+              columns.types string:int
+#### A masked pattern was here ####
+              name default.loc_orc_2d_n1
+              partition_columns zip/year
+              partition_columns.types int:string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid
+                columns.comments 
+                columns.types string:int
+#### A masked pattern was here ####
+                name default.loc_orc_2d_n1
+                partition_columns zip/year
+                partition_columns.types int:string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2000
+              zip 94086
+            properties:
+              column.name.delimiter ,
+              columns state,locid
+              columns.types string:int
+#### A masked pattern was here ####
+              name default.loc_orc_2d_n1
+              partition_columns zip/year
+              partition_columns.types int:string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid
+                columns.comments 
+                columns.types string:int
+#### A masked pattern was here ####
+                name default.loc_orc_2d_n1
+                partition_columns zip/year
+                partition_columns.types int:string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2001
+              zip 94086
+            properties:
+              column.name.delimiter ,
+              columns state,locid
+              columns.types string:int
+#### A masked pattern was here ####
+              name default.loc_orc_2d_n1
+              partition_columns zip/year
+              partition_columns.types int:string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid
+                columns.comments 
+                columns.types string:int
+#### A masked pattern was here ####
+                name default.loc_orc_2d_n1
+                partition_columns zip/year
+                partition_columns.types int:string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2002
+              zip 94086
+            properties:
+              column.name.delimiter ,
+              columns state,locid
+              columns.types string:int
+#### A masked pattern was here ####
+              name default.loc_orc_2d_n1
+              partition_columns zip/year
+              partition_columns.types int:string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid
+                columns.comments 
+                columns.types string:int
+#### A masked pattern was here ####
+                name default.loc_orc_2d_n1
+                partition_columns zip/year
+                partition_columns.types int:string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2003
+              zip 94086
+            properties:
+              column.name.delimiter ,
+              columns state,locid
+              columns.types string:int
+#### A masked pattern was here ####
+              name default.loc_orc_2d_n1
+              partition_columns zip/year
+              partition_columns.types int:string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid
+                columns.comments 
+                columns.types string:int
+#### A masked pattern was here ####
+                name default.loc_orc_2d_n1
+                partition_columns zip/year
+                partition_columns.types int:string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2000
+              zip 94087
+            properties:
+              column.name.delimiter ,
+              columns state,locid
+              columns.types string:int
+#### A masked pattern was here ####
+              name default.loc_orc_2d_n1
+              partition_columns zip/year
+              partition_columns.types int:string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid
+                columns.comments 
+                columns.types string:int
+#### A masked pattern was here ####
+                name default.loc_orc_2d_n1
+                partition_columns zip/year
+                partition_columns.types int:string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2001
+              zip 94087
+            properties:
+              column.name.delimiter ,
+              columns state,locid
+              columns.types string:int
+#### A masked pattern was here ####
+              name default.loc_orc_2d_n1
+              partition_columns zip/year
+              partition_columns.types int:string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid
+                columns.comments 
+                columns.types string:int
+#### A masked pattern was here ####
+                name default.loc_orc_2d_n1
+                partition_columns zip/year
+                partition_columns.types int:string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2002
+              zip 94087
+            properties:
+              column.name.delimiter ,
+              columns state,locid
+              columns.types string:int
+#### A masked pattern was here ####
+              name default.loc_orc_2d_n1
+              partition_columns zip/year
+              partition_columns.types int:string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid
+                columns.comments 
+                columns.types string:int
+#### A masked pattern was here ####
+                name default.loc_orc_2d_n1
+                partition_columns zip/year
+                partition_columns.types int:string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
+          Partition
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2003
+              zip 94087
+            properties:
+              column.name.delimiter ,
+              columns state,locid
+              columns.types string:int
+#### A masked pattern was here ####
+              name default.loc_orc_2d_n1
+              partition_columns zip/year
+              partition_columns.types int:string
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns state,locid
+                columns.comments 
+                columns.types string:int
+#### A masked pattern was here ####
+                name default.loc_orc_2d_n1
+                partition_columns zip/year
+                partition_columns.types int:string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc_2d_n1
+            name: default.loc_orc_2d_n1
+      Processor Tree:
+        TableScan
+          alias: loc_orc_2d_n1
+          GatherStats: false
+          Select Operator
+            expressions: state (type: string), locid (type: int)
+            outputColumnNames: _col0, _col1
+            ListSink
+

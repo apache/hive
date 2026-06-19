@@ -1,0 +1,193 @@
+PREHOOK: query: CREATE TABLE tmp_showcrt1_n0 (key int, value string, newvalue bigint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp_showcrt1_n0
+POSTHOOK: query: CREATE TABLE tmp_showcrt1_n0 (key int, value string, newvalue bigint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp_showcrt1_n0
+PREHOOK: query: ALTER TABLE tmp_showcrt1_n0 SET SERDEPROPERTIES ('custom.property.key1'='custom.property.value1', 'custom.property.key2'='custom.property.value2')
+PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
+PREHOOK: Input: default@tmp_showcrt1_n0
+PREHOOK: Output: default@tmp_showcrt1_n0
+POSTHOOK: query: ALTER TABLE tmp_showcrt1_n0 SET SERDEPROPERTIES ('custom.property.key1'='custom.property.value1', 'custom.property.key2'='custom.property.value2')
+POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: Input: default@tmp_showcrt1_n0
+POSTHOOK: Output: default@tmp_showcrt1_n0
+PREHOOK: query: SHOW CREATE TABLE tmp_showcrt1_n0
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@tmp_showcrt1_n0
+POSTHOOK: query: SHOW CREATE TABLE tmp_showcrt1_n0
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@tmp_showcrt1_n0
+CREATE TABLE `tmp_showcrt1_n0`(
+  `key` int, 
+  `value` string, 
+  `newvalue` bigint)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+WITH SERDEPROPERTIES ( 
+  'custom.property.key1'='custom.property.value1', 
+  'custom.property.key2'='custom.property.value2') 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: DROP TABLE tmp_showcrt1_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tmp_showcrt1_n0
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp_showcrt1_n0
+POSTHOOK: query: DROP TABLE tmp_showcrt1_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tmp_showcrt1_n0
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp_showcrt1_n0
+PREHOOK: query: CREATE TABLE tmp_showcrt1_n0 (key int, value string, newvalue bigint)
+COMMENT 'temporary table'
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp_showcrt1_n0
+POSTHOOK: query: CREATE TABLE tmp_showcrt1_n0 (key int, value string, newvalue bigint)
+COMMENT 'temporary table'
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp_showcrt1_n0
+PREHOOK: query: SHOW CREATE TABLE tmp_showcrt1_n0
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@tmp_showcrt1_n0
+POSTHOOK: query: SHOW CREATE TABLE tmp_showcrt1_n0
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@tmp_showcrt1_n0
+CREATE TABLE `tmp_showcrt1_n0`(
+  `key` int, 
+  `value` string, 
+  `newvalue` bigint)
+COMMENT 'temporary table'
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.RCFileInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: DROP TABLE tmp_showcrt1_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tmp_showcrt1_n0
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp_showcrt1_n0
+POSTHOOK: query: DROP TABLE tmp_showcrt1_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tmp_showcrt1_n0
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp_showcrt1_n0
+PREHOOK: query: CREATE TABLE tmp_showcrt1_n0 (key int, value string, newvalue bigint)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+WITH SERDEPROPERTIES ('custom.property.key1'='custom.property.value1', 'custom.property.key2'='custom.property.value2')
+STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp_showcrt1_n0
+POSTHOOK: query: CREATE TABLE tmp_showcrt1_n0 (key int, value string, newvalue bigint)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+WITH SERDEPROPERTIES ('custom.property.key1'='custom.property.value1', 'custom.property.key2'='custom.property.value2')
+STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp_showcrt1_n0
+PREHOOK: query: SHOW CREATE TABLE tmp_showcrt1_n0
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@tmp_showcrt1_n0
+POSTHOOK: query: SHOW CREATE TABLE tmp_showcrt1_n0
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@tmp_showcrt1_n0
+CREATE TABLE `tmp_showcrt1_n0`(
+  `key` int, 
+  `value` string, 
+  `newvalue` bigint)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe' 
+WITH SERDEPROPERTIES ( 
+  'custom.property.key1'='custom.property.value1', 
+  'custom.property.key2'='custom.property.value2') 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.RCFileInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: DROP TABLE tmp_showcrt1_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tmp_showcrt1_n0
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp_showcrt1_n0
+POSTHOOK: query: DROP TABLE tmp_showcrt1_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tmp_showcrt1_n0
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp_showcrt1_n0
+PREHOOK: query: CREATE EXTERNAL TABLE tmp_showcrt1_n0 (key string, value boolean)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+STORED BY 'org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler'
+WITH SERDEPROPERTIES ('field.delim'=',', 'serialization.format'='$')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp_showcrt1_n0
+POSTHOOK: query: CREATE EXTERNAL TABLE tmp_showcrt1_n0 (key string, value boolean)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+STORED BY 'org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler'
+WITH SERDEPROPERTIES ('field.delim'=',', 'serialization.format'='$')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp_showcrt1_n0
+PREHOOK: query: SHOW CREATE TABLE tmp_showcrt1_n0
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@tmp_showcrt1_n0
+POSTHOOK: query: SHOW CREATE TABLE tmp_showcrt1_n0
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@tmp_showcrt1_n0
+CREATE EXTERNAL TABLE `tmp_showcrt1_n0`(
+  `key` string, 
+  `value` boolean)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe' 
+STORED BY 
+  'org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler' 
+WITH SERDEPROPERTIES ( 
+  'field.delim'=',', 
+  'serialization.format'='$')
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: DROP TABLE tmp_showcrt1_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tmp_showcrt1_n0
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp_showcrt1_n0
+POSTHOOK: query: DROP TABLE tmp_showcrt1_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tmp_showcrt1_n0
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp_showcrt1_n0

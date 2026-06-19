@@ -1,0 +1,311 @@
+PREHOOK: query: create table original (key STRING, value STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@original
+POSTHOOK: query: create table original (key STRING, value STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@original
+PREHOOK: query: describe formatted original
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@original
+POSTHOOK: query: describe formatted original
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@original
+# col_name            	data_type           	comment             
+key                 	string              	                    
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table original SKEWED BY (key) ON (1,5,6)
+PREHOOK: type: ALTERTABLE_SKEWED
+PREHOOK: Input: default@original
+PREHOOK: Output: default@original
+POSTHOOK: query: alter table original SKEWED BY (key) ON (1,5,6)
+POSTHOOK: type: ALTERTABLE_SKEWED
+POSTHOOK: Input: default@original
+POSTHOOK: Output: default@original
+PREHOOK: query: describe formatted original
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@original
+POSTHOOK: query: describe formatted original
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@original
+# col_name            	data_type           	comment             
+key                 	string              	                    
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Skewed Columns:     	[key]               	 
+Skewed Values:      	[[1], [5], [6]]     	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table original
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@original
+PREHOOK: Output: database:default
+PREHOOK: Output: default@original
+POSTHOOK: query: drop table original
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@original
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@original
+PREHOOK: query: create database skew_test
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:skew_test
+POSTHOOK: query: create database skew_test
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:skew_test
+PREHOOK: query: create table skew_test.original2 (key STRING, value STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:skew_test
+PREHOOK: Output: skew_test@original2
+POSTHOOK: query: create table skew_test.original2 (key STRING, value STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:skew_test
+POSTHOOK: Output: skew_test@original2
+PREHOOK: query: describe formatted skew_test.original2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: skew_test@original2
+POSTHOOK: query: describe formatted skew_test.original2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: skew_test@original2
+# col_name            	data_type           	comment             
+key                 	string              	                    
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	skew_test           	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table skew_test.original2 SKEWED BY (key, value) ON ((1,1),(5,6))
+PREHOOK: type: ALTERTABLE_SKEWED
+PREHOOK: Input: skew_test@original2
+PREHOOK: Output: skew_test@original2
+POSTHOOK: query: alter table skew_test.original2 SKEWED BY (key, value) ON ((1,1),(5,6))
+POSTHOOK: type: ALTERTABLE_SKEWED
+POSTHOOK: Input: skew_test@original2
+POSTHOOK: Output: skew_test@original2
+PREHOOK: query: describe formatted skew_test.original2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: skew_test@original2
+POSTHOOK: query: describe formatted skew_test.original2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: skew_test@original2
+# col_name            	data_type           	comment             
+key                 	string              	                    
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	skew_test           	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Skewed Columns:     	[key, value]        	 
+Skewed Values:      	[[1, 1], [5, 6]]    	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table skew_test.original2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: skew_test@original2
+PREHOOK: Output: database:skew_test
+PREHOOK: Output: skew_test@original2
+POSTHOOK: query: drop table skew_test.original2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: skew_test@original2
+POSTHOOK: Output: database:skew_test
+POSTHOOK: Output: skew_test@original2
+PREHOOK: query: create table skew_test.original3 (key STRING, value STRING) SKEWED BY (key, value) ON ((1,1),(5,6))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:skew_test
+PREHOOK: Output: skew_test@original3
+POSTHOOK: query: create table skew_test.original3 (key STRING, value STRING) SKEWED BY (key, value) ON ((1,1),(5,6))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:skew_test
+POSTHOOK: Output: skew_test@original3
+PREHOOK: query: describe formatted skew_test.original3
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: skew_test@original3
+POSTHOOK: query: describe formatted skew_test.original3
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: skew_test@original3
+# col_name            	data_type           	comment             
+key                 	string              	                    
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	skew_test           	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Skewed Columns:     	[key, value]        	 
+Skewed Values:      	[[1, 1], [5, 6]]    	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table skew_test.original3 not skewed
+PREHOOK: type: ALTERTABLE_SKEWED
+PREHOOK: Input: skew_test@original3
+PREHOOK: Output: skew_test@original3
+POSTHOOK: query: alter table skew_test.original3 not skewed
+POSTHOOK: type: ALTERTABLE_SKEWED
+POSTHOOK: Input: skew_test@original3
+POSTHOOK: Output: skew_test@original3
+PREHOOK: query: describe formatted skew_test.original3
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: skew_test@original3
+POSTHOOK: query: describe formatted skew_test.original3
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: skew_test@original3
+# col_name            	data_type           	comment             
+key                 	string              	                    
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	skew_test           	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table skew_test.original3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: skew_test@original3
+PREHOOK: Output: database:skew_test
+PREHOOK: Output: skew_test@original3
+POSTHOOK: query: drop table skew_test.original3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: skew_test@original3
+POSTHOOK: Output: database:skew_test
+POSTHOOK: Output: skew_test@original3
+PREHOOK: query: drop database skew_test
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:skew_test
+PREHOOK: Output: database:skew_test
+POSTHOOK: query: drop database skew_test
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:skew_test
+POSTHOOK: Output: database:skew_test

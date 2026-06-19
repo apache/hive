@@ -1,0 +1,252 @@
+PREHOOK: query: DROP TABLE alter_rename_partition_src
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE alter_rename_partition_src
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE alter_rename_partition
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE alter_rename_partition
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table alter_rename_partition_src ( col1 string ) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter_rename_partition_src
+POSTHOOK: query: create table alter_rename_partition_src ( col1 string ) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter_rename_partition_src
+PREHOOK: query: load data local inpath '../../data/files/test.dat' overwrite into table alter_rename_partition_src
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@alter_rename_partition_src
+POSTHOOK: query: load data local inpath '../../data/files/test.dat' overwrite into table alter_rename_partition_src
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@alter_rename_partition_src
+PREHOOK: query: create table alter_rename_partition ( col1 string ) partitioned by (pcol1 string , pcol2 string) stored as sequencefile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter_rename_partition
+POSTHOOK: query: create table alter_rename_partition ( col1 string ) partitioned by (pcol1 string , pcol2 string) stored as sequencefile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter_rename_partition
+PREHOOK: query: insert overwrite table alter_rename_partition partition (pCol1='old_part1:', pcol2='old_part2:') select col1 from alter_rename_partition_src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_rename_partition_src
+PREHOOK: Output: default@alter_rename_partition@pcol1=old_part1%3A/pcol2=old_part2%3A
+POSTHOOK: query: insert overwrite table alter_rename_partition partition (pCol1='old_part1:', pcol2='old_part2:') select col1 from alter_rename_partition_src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_rename_partition_src
+POSTHOOK: Output: default@alter_rename_partition@pcol1=old_part1%3A/pcol2=old_part2%3A
+POSTHOOK: Lineage: alter_rename_partition PARTITION(pcol1=old_part1:,pcol2=old_part2:).col1 SIMPLE [(alter_rename_partition_src)alter_rename_partition_src.FieldSchema(name:col1, type:string, comment:null), ]
+PREHOOK: query: select * from alter_rename_partition where pcol1='old_part1:' and pcol2='old_part2:'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_rename_partition
+PREHOOK: Input: default@alter_rename_partition@pcol1=old_part1%3A/pcol2=old_part2%3A
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_rename_partition where pcol1='old_part1:' and pcol2='old_part2:'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_rename_partition
+POSTHOOK: Input: default@alter_rename_partition@pcol1=old_part1%3A/pcol2=old_part2%3A
+#### A masked pattern was here ####
+1	old_part1:	old_part2:
+2	old_part1:	old_part2:
+3	old_part1:	old_part2:
+4	old_part1:	old_part2:
+5	old_part1:	old_part2:
+6	old_part1:	old_part2:
+PREHOOK: query: alter table alter_rename_partition partition (pCol1='old_part1:', pcol2='old_part2:') rename to partition (pCol1='new_part1:', pcol2='new_part2:')
+PREHOOK: type: ALTERTABLE_RENAMEPART
+PREHOOK: Input: default@alter_rename_partition
+PREHOOK: Output: default@alter_rename_partition@pcol1=old_part1%3A/pcol2=old_part2%3A
+POSTHOOK: query: alter table alter_rename_partition partition (pCol1='old_part1:', pcol2='old_part2:') rename to partition (pCol1='new_part1:', pcol2='new_part2:')
+POSTHOOK: type: ALTERTABLE_RENAMEPART
+POSTHOOK: Input: default@alter_rename_partition
+POSTHOOK: Input: default@alter_rename_partition@pcol1=old_part1%3A/pcol2=old_part2%3A
+POSTHOOK: Output: default@alter_rename_partition@pcol1=new_part1%3A/pcol2=new_part2%3A
+POSTHOOK: Output: default@alter_rename_partition@pcol1=old_part1%3A/pcol2=old_part2%3A
+PREHOOK: query: SHOW PARTITIONS alter_rename_partition
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@alter_rename_partition
+POSTHOOK: query: SHOW PARTITIONS alter_rename_partition
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@alter_rename_partition
+pcol1=new_part1%3A/pcol2=new_part2%3A
+PREHOOK: query: select * from alter_rename_partition where pcol1='old_part1:' and pcol2='old_part2:'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_rename_partition
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_rename_partition where pcol1='old_part1:' and pcol2='old_part2:'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_rename_partition
+#### A masked pattern was here ####
+PREHOOK: query: select * from alter_rename_partition where pcol1='new_part1:' and pcol2='new_part2:'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_rename_partition
+PREHOOK: Input: default@alter_rename_partition@pcol1=new_part1%3A/pcol2=new_part2%3A
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_rename_partition where pcol1='new_part1:' and pcol2='new_part2:'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_rename_partition
+POSTHOOK: Input: default@alter_rename_partition@pcol1=new_part1%3A/pcol2=new_part2%3A
+#### A masked pattern was here ####
+1	new_part1:	new_part2:
+2	new_part1:	new_part2:
+3	new_part1:	new_part2:
+4	new_part1:	new_part2:
+5	new_part1:	new_part2:
+6	new_part1:	new_part2:
+PREHOOK: query: DROP TABLE alter_rename_partition_src
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@alter_rename_partition_src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter_rename_partition_src
+POSTHOOK: query: DROP TABLE alter_rename_partition_src
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@alter_rename_partition_src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter_rename_partition_src
+PREHOOK: query: DROP TABLE alter_rename_partition
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@alter_rename_partition
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter_rename_partition
+POSTHOOK: query: DROP TABLE alter_rename_partition
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@alter_rename_partition
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter_rename_partition
+PREHOOK: query: CREATE DATABASE alter_rename_partition_db
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:alter_rename_partition_db
+POSTHOOK: query: CREATE DATABASE alter_rename_partition_db
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:alter_rename_partition_db
+PREHOOK: query: USE alter_rename_partition_db
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:alter_rename_partition_db
+POSTHOOK: query: USE alter_rename_partition_db
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:alter_rename_partition_db
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:alter_rename_partition_db
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:alter_rename_partition_db
+PREHOOK: query: CREATE TABLE alter_rename_partition_src (col1 STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: alter_rename_partition_db@alter_rename_partition_src
+PREHOOK: Output: database:alter_rename_partition_db
+POSTHOOK: query: CREATE TABLE alter_rename_partition_src (col1 STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: alter_rename_partition_db@alter_rename_partition_src
+POSTHOOK: Output: database:alter_rename_partition_db
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/test.dat' OVERWRITE INTO TABLE alter_rename_partition_src
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: alter_rename_partition_db@alter_rename_partition_src
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/test.dat' OVERWRITE INTO TABLE alter_rename_partition_src
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: alter_rename_partition_db@alter_rename_partition_src
+PREHOOK: query: CREATE TABLE alter_rename_partition (col1 STRING) PARTITIONED BY (pcol1 STRING, pcol2 STRING) STORED AS SEQUENCEFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: alter_rename_partition_db@alter_rename_partition
+PREHOOK: Output: database:alter_rename_partition_db
+POSTHOOK: query: CREATE TABLE alter_rename_partition (col1 STRING) PARTITIONED BY (pcol1 STRING, pcol2 STRING) STORED AS SEQUENCEFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: alter_rename_partition_db@alter_rename_partition
+POSTHOOK: Output: database:alter_rename_partition_db
+PREHOOK: query: INSERT OVERWRITE TABLE alter_rename_partition PARTITION (pCol1='old_part1:', pcol2='old_part2:') SELECT col1 FROM alter_rename_partition_src
+PREHOOK: type: QUERY
+PREHOOK: Input: alter_rename_partition_db@alter_rename_partition_src
+PREHOOK: Output: alter_rename_partition_db@alter_rename_partition@pcol1=old_part1%3A/pcol2=old_part2%3A
+POSTHOOK: query: INSERT OVERWRITE TABLE alter_rename_partition PARTITION (pCol1='old_part1:', pcol2='old_part2:') SELECT col1 FROM alter_rename_partition_src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: alter_rename_partition_db@alter_rename_partition_src
+POSTHOOK: Output: alter_rename_partition_db@alter_rename_partition@pcol1=old_part1%3A/pcol2=old_part2%3A
+POSTHOOK: Lineage: alter_rename_partition PARTITION(pcol1=old_part1:,pcol2=old_part2:).col1 SIMPLE [(alter_rename_partition_src)alter_rename_partition_src.FieldSchema(name:col1, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM alter_rename_partition WHERE pcol1='old_part1:' AND pcol2='old_part2:'
+PREHOOK: type: QUERY
+PREHOOK: Input: alter_rename_partition_db@alter_rename_partition
+PREHOOK: Input: alter_rename_partition_db@alter_rename_partition@pcol1=old_part1%3A/pcol2=old_part2%3A
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM alter_rename_partition WHERE pcol1='old_part1:' AND pcol2='old_part2:'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: alter_rename_partition_db@alter_rename_partition
+POSTHOOK: Input: alter_rename_partition_db@alter_rename_partition@pcol1=old_part1%3A/pcol2=old_part2%3A
+#### A masked pattern was here ####
+1	old_part1:	old_part2:
+2	old_part1:	old_part2:
+3	old_part1:	old_part2:
+4	old_part1:	old_part2:
+5	old_part1:	old_part2:
+6	old_part1:	old_part2:
+PREHOOK: query: EXPLAIN ALTER TABLE alter_rename_partition PARTITION (pCol1='old_part1:', pcol2='old_part2:') RENAME TO PARTITION (pCol1='new_part1:', pcol2='new_part2:')
+PREHOOK: type: ALTERTABLE_RENAMEPART
+PREHOOK: Input: alter_rename_partition_db@alter_rename_partition
+PREHOOK: Output: alter_rename_partition_db@alter_rename_partition@pcol1=old_part1%3A/pcol2=old_part2%3A
+POSTHOOK: query: EXPLAIN ALTER TABLE alter_rename_partition PARTITION (pCol1='old_part1:', pcol2='old_part2:') RENAME TO PARTITION (pCol1='new_part1:', pcol2='new_part2:')
+POSTHOOK: type: ALTERTABLE_RENAMEPART
+POSTHOOK: Input: alter_rename_partition_db@alter_rename_partition
+POSTHOOK: Output: alter_rename_partition_db@alter_rename_partition@pcol1=old_part1%3A/pcol2=old_part2%3A
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Rename Partition
+      new partitions:
+        pcol1 new_part1:
+        pcol2 new_part2:
+      old partitions:
+        pcol1 old_part1:
+        pcol2 old_part2:
+      table: alter_rename_partition_db.alter_rename_partition
+
+PREHOOK: query: ALTER TABLE alter_rename_partition PARTITION (pCol1='old_part1:', pcol2='old_part2:') RENAME TO PARTITION (pCol1='new_part1:', pcol2='new_part2:')
+PREHOOK: type: ALTERTABLE_RENAMEPART
+PREHOOK: Input: alter_rename_partition_db@alter_rename_partition
+PREHOOK: Output: alter_rename_partition_db@alter_rename_partition@pcol1=old_part1%3A/pcol2=old_part2%3A
+POSTHOOK: query: ALTER TABLE alter_rename_partition PARTITION (pCol1='old_part1:', pcol2='old_part2:') RENAME TO PARTITION (pCol1='new_part1:', pcol2='new_part2:')
+POSTHOOK: type: ALTERTABLE_RENAMEPART
+POSTHOOK: Input: alter_rename_partition_db@alter_rename_partition
+POSTHOOK: Input: alter_rename_partition_db@alter_rename_partition@pcol1=old_part1%3A/pcol2=old_part2%3A
+POSTHOOK: Output: alter_rename_partition_db@alter_rename_partition@pcol1=new_part1%3A/pcol2=new_part2%3A
+POSTHOOK: Output: alter_rename_partition_db@alter_rename_partition@pcol1=old_part1%3A/pcol2=old_part2%3A
+PREHOOK: query: SHOW PARTITIONS alter_rename_partition
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: alter_rename_partition_db@alter_rename_partition
+POSTHOOK: query: SHOW PARTITIONS alter_rename_partition
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: alter_rename_partition_db@alter_rename_partition
+pcol1=new_part1%3A/pcol2=new_part2%3A
+PREHOOK: query: SELECT * FROM alter_rename_partition WHERE pcol1='old_part1:' and pcol2='old_part2:'
+PREHOOK: type: QUERY
+PREHOOK: Input: alter_rename_partition_db@alter_rename_partition
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM alter_rename_partition WHERE pcol1='old_part1:' and pcol2='old_part2:'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: alter_rename_partition_db@alter_rename_partition
+#### A masked pattern was here ####
+PREHOOK: query: SELECT * FROM alter_rename_partition WHERE pcol1='new_part1:' and pcol2='new_part2:'
+PREHOOK: type: QUERY
+PREHOOK: Input: alter_rename_partition_db@alter_rename_partition
+PREHOOK: Input: alter_rename_partition_db@alter_rename_partition@pcol1=new_part1%3A/pcol2=new_part2%3A
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM alter_rename_partition WHERE pcol1='new_part1:' and pcol2='new_part2:'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: alter_rename_partition_db@alter_rename_partition
+POSTHOOK: Input: alter_rename_partition_db@alter_rename_partition@pcol1=new_part1%3A/pcol2=new_part2%3A
+#### A masked pattern was here ####
+1	new_part1:	new_part2:
+2	new_part1:	new_part2:
+3	new_part1:	new_part2:
+4	new_part1:	new_part2:
+5	new_part1:	new_part2:
+6	new_part1:	new_part2:

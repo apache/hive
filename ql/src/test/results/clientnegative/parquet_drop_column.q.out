@@ -1,0 +1,30 @@
+PREHOOK: query: drop table if exists tbl_parq
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists tbl_parq
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create external table tbl_parq(a int, b string, c int) partitioned by (d string) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_parq
+POSTHOOK: query: create external table tbl_parq(a int, b string, c int) partitioned by (d string) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_parq
+PREHOOK: query: show columns in tbl_parq
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: default@tbl_parq
+POSTHOOK: query: show columns in tbl_parq
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: default@tbl_parq
+field
+a                   
+b                   
+c                   
+d                   
+PREHOOK: query: alter table tbl_parq drop column if exists c
+PREHOOK: type: ALTERTABLE_DROPCOL
+PREHOOK: Input: default@tbl_parq
+PREHOOK: Output: default@tbl_parq
+FAILED: Execution Error, return code 10266 from org.apache.hadoop.hive.ql.ddl.DDLTask. Drop column is not supported without cascade for partitioned table. SerDe may be incompatible.

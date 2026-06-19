@@ -1,0 +1,33 @@
+PREHOOK: query: create table tbl1(col1 string, col2 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl1
+POSTHOOK: query: create table tbl1(col1 string, col2 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl1
+PREHOOK: query: create table tbl2 as (select * from tbl1)
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@tbl1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl2
+POSTHOOK: query: create table tbl2 as (select * from tbl1)
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@tbl1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl2
+POSTHOOK: Lineage: tbl2.col1 SIMPLE [(tbl1)tbl1.FieldSchema(name:col1, type:string, comment:null), ]
+POSTHOOK: Lineage: tbl2.col2 SIMPLE [(tbl1)tbl1.FieldSchema(name:col2, type:string, comment:null), ]
+PREHOOK: query: create table tbl3 partitioned by (col2) as (select * from tbl1)
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@tbl1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl3
+PREHOOK: Output: default@tbl3
+POSTHOOK: query: create table tbl3 partitioned by (col2) as (select * from tbl1)
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@tbl1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl3
+POSTHOOK: Output: default@tbl3
+POSTHOOK: Lineage: tbl3.col1 SIMPLE [(tbl1)tbl1.FieldSchema(name:col1, type:string, comment:null), ]

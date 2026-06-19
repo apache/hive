@@ -1,0 +1,281 @@
+PREHOOK: query: create table union38_test1( name String, id int, address String)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union38_test1
+POSTHOOK: query: create table union38_test1( name String, id int, address String)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union38_test1
+PREHOOK: query: insert into union38_test1 values("Young", 1, "Sydney"), ("Jin", 2, "Mel")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@union38_test1
+POSTHOOK: query: insert into union38_test1 values("Young", 1, "Sydney"), ("Jin", 2, "Mel")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@union38_test1
+POSTHOOK: Lineage: union38_test1.address SCRIPT []
+POSTHOOK: Lineage: union38_test1.id SCRIPT []
+POSTHOOK: Lineage: union38_test1.name SCRIPT []
+PREHOOK: query: analyze table union38_test1 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@union38_test1
+PREHOOK: Output: default@union38_test1
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table union38_test1 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@union38_test1
+POSTHOOK: Output: default@union38_test1
+#### A masked pattern was here ####
+PREHOOK: query: create view union38_test1_view as select * from union38_test1
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@union38_test1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union38_test1_view
+POSTHOOK: query: create view union38_test1_view as select * from union38_test1
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@union38_test1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union38_test1_view
+POSTHOOK: Lineage: union38_test1_view.address SIMPLE [(union38_test1)union38_test1.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: union38_test1_view.id SIMPLE [(union38_test1)union38_test1.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: union38_test1_view.name SIMPLE [(union38_test1)union38_test1.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: select * from union38_test1_view
+PREHOOK: type: QUERY
+PREHOOK: Input: default@union38_test1
+PREHOOK: Input: default@union38_test1_view
+#### A masked pattern was here ####
+POSTHOOK: query: select * from union38_test1_view
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@union38_test1
+POSTHOOK: Input: default@union38_test1_view
+#### A masked pattern was here ####
+Jin	2	Mel
+Young	1	Sydney
+PREHOOK: query: create table union38_test2( name String, id int, address String)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union38_test2
+POSTHOOK: query: create table union38_test2( name String, id int, address String)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union38_test2
+PREHOOK: query: insert into union38_test2 values("Eun", 3, "Bri"), ("Kim", 4, "Ad")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@union38_test2
+POSTHOOK: query: insert into union38_test2 values("Eun", 3, "Bri"), ("Kim", 4, "Ad")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@union38_test2
+POSTHOOK: Lineage: union38_test2.address SCRIPT []
+POSTHOOK: Lineage: union38_test2.id SCRIPT []
+POSTHOOK: Lineage: union38_test2.name SCRIPT []
+PREHOOK: query: create view union38_test2_view as select * from union38_test2
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@union38_test2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union38_test2_view
+POSTHOOK: query: create view union38_test2_view as select * from union38_test2
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@union38_test2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union38_test2_view
+POSTHOOK: Lineage: union38_test2_view.address SIMPLE [(union38_test2)union38_test2.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: union38_test2_view.id SIMPLE [(union38_test2)union38_test2.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: union38_test2_view.name SIMPLE [(union38_test2)union38_test2.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: select * from union38_test2_view
+PREHOOK: type: QUERY
+PREHOOK: Input: default@union38_test2
+PREHOOK: Input: default@union38_test2_view
+#### A masked pattern was here ####
+POSTHOOK: query: select * from union38_test2_view
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@union38_test2
+POSTHOOK: Input: default@union38_test2_view
+#### A masked pattern was here ####
+Eun	3	Bri
+Kim	4	Ad
+PREHOOK: query: select * from union38_test1 union select * from union38_test2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@union38_test1
+PREHOOK: Input: default@union38_test2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from union38_test1 union select * from union38_test2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@union38_test1
+POSTHOOK: Input: default@union38_test2
+#### A masked pattern was here ####
+Eun	3	Bri
+Jin	2	Mel
+Kim	4	Ad
+Young	1	Sydney
+PREHOOK: query: select * from union38_test1_view union select * from union38_test2_view
+PREHOOK: type: QUERY
+PREHOOK: Input: default@union38_test1
+PREHOOK: Input: default@union38_test1_view
+PREHOOK: Input: default@union38_test2
+PREHOOK: Input: default@union38_test2_view
+#### A masked pattern was here ####
+POSTHOOK: query: select * from union38_test1_view union select * from union38_test2_view
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@union38_test1
+POSTHOOK: Input: default@union38_test1_view
+POSTHOOK: Input: default@union38_test2
+POSTHOOK: Input: default@union38_test2_view
+#### A masked pattern was here ####
+Eun	3	Bri
+Jin	2	Mel
+Kim	4	Ad
+Young	1	Sydney
+PREHOOK: query: create view union38_test_view as select * from union38_test1 union select * from union38_test2
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@union38_test1
+PREHOOK: Input: default@union38_test2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union38_test_view
+POSTHOOK: query: create view union38_test_view as select * from union38_test1 union select * from union38_test2
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@union38_test1
+POSTHOOK: Input: default@union38_test2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union38_test_view
+POSTHOOK: Lineage: union38_test_view.address EXPRESSION [(union38_test1)union38_test1.FieldSchema(name:address, type:string, comment:null), (union38_test2)union38_test2.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: union38_test_view.id EXPRESSION [(union38_test1)union38_test1.FieldSchema(name:id, type:int, comment:null), (union38_test2)union38_test2.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: union38_test_view.name EXPRESSION [(union38_test1)union38_test1.FieldSchema(name:name, type:string, comment:null), (union38_test2)union38_test2.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: select * from union38_test_view
+PREHOOK: type: QUERY
+PREHOOK: Input: default@union38_test1
+PREHOOK: Input: default@union38_test2
+PREHOOK: Input: default@union38_test_view
+#### A masked pattern was here ####
+POSTHOOK: query: select * from union38_test_view
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@union38_test1
+POSTHOOK: Input: default@union38_test2
+POSTHOOK: Input: default@union38_test_view
+#### A masked pattern was here ####
+Eun	3	Bri
+Jin	2	Mel
+Kim	4	Ad
+Young	1	Sydney
+PREHOOK: query: create view union38_test_view1 as select * from union38_test1 union all select * from union38_test2
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@union38_test1
+PREHOOK: Input: default@union38_test2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union38_test_view1
+POSTHOOK: query: create view union38_test_view1 as select * from union38_test1 union all select * from union38_test2
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@union38_test1
+POSTHOOK: Input: default@union38_test2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union38_test_view1
+POSTHOOK: Lineage: union38_test_view1.address EXPRESSION [(union38_test1)union38_test1.FieldSchema(name:address, type:string, comment:null), (union38_test2)union38_test2.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: union38_test_view1.id EXPRESSION [(union38_test1)union38_test1.FieldSchema(name:id, type:int, comment:null), (union38_test2)union38_test2.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: union38_test_view1.name EXPRESSION [(union38_test1)union38_test1.FieldSchema(name:name, type:string, comment:null), (union38_test2)union38_test2.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: select * from union38_test_view1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@union38_test1
+PREHOOK: Input: default@union38_test2
+PREHOOK: Input: default@union38_test_view1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from union38_test_view1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@union38_test1
+POSTHOOK: Input: default@union38_test2
+POSTHOOK: Input: default@union38_test_view1
+#### A masked pattern was here ####
+Eun	3	Bri
+Jin	2	Mel
+Kim	4	Ad
+Young	1	Sydney
+PREHOOK: query: create view union38_test_view2 as with union38_tmp_1 as ( select * from union38_test1 ), union38_tmp_2 as (select * from union38_test2 ) select * from union38_tmp_1 union select * from union38_tmp_2
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@union38_test1
+PREHOOK: Input: default@union38_test2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union38_test_view2
+POSTHOOK: query: create view union38_test_view2 as with union38_tmp_1 as ( select * from union38_test1 ), union38_tmp_2 as (select * from union38_test2 ) select * from union38_tmp_1 union select * from union38_tmp_2
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@union38_test1
+POSTHOOK: Input: default@union38_test2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union38_test_view2
+POSTHOOK: Lineage: union38_test_view2.address EXPRESSION [(union38_test1)union38_test1.FieldSchema(name:address, type:string, comment:null), (union38_test2)union38_test2.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: union38_test_view2.id EXPRESSION [(union38_test1)union38_test1.FieldSchema(name:id, type:int, comment:null), (union38_test2)union38_test2.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: union38_test_view2.name EXPRESSION [(union38_test1)union38_test1.FieldSchema(name:name, type:string, comment:null), (union38_test2)union38_test2.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: select * from union38_test_view2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@union38_test1
+PREHOOK: Input: default@union38_test2
+PREHOOK: Input: default@union38_test_view2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from union38_test_view2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@union38_test1
+POSTHOOK: Input: default@union38_test2
+POSTHOOK: Input: default@union38_test_view2
+#### A masked pattern was here ####
+Eun	3	Bri
+Jin	2	Mel
+Kim	4	Ad
+Young	1	Sydney
+PREHOOK: query: create view union38_test_view3 as with union38_tmp_1 as ( select * from union38_test1 ), union38_tmp_2 as (select * from union38_test2 ) select * from union38_tmp_1 union all select * from union38_tmp_2
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@union38_test1
+PREHOOK: Input: default@union38_test2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union38_test_view3
+POSTHOOK: query: create view union38_test_view3 as with union38_tmp_1 as ( select * from union38_test1 ), union38_tmp_2 as (select * from union38_test2 ) select * from union38_tmp_1 union all select * from union38_tmp_2
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@union38_test1
+POSTHOOK: Input: default@union38_test2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union38_test_view3
+POSTHOOK: Lineage: union38_test_view3.address EXPRESSION [(union38_test1)union38_test1.FieldSchema(name:address, type:string, comment:null), (union38_test2)union38_test2.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: union38_test_view3.id EXPRESSION [(union38_test1)union38_test1.FieldSchema(name:id, type:int, comment:null), (union38_test2)union38_test2.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: union38_test_view3.name EXPRESSION [(union38_test1)union38_test1.FieldSchema(name:name, type:string, comment:null), (union38_test2)union38_test2.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: select * from union38_test_view3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@union38_test1
+PREHOOK: Input: default@union38_test2
+PREHOOK: Input: default@union38_test_view3
+#### A masked pattern was here ####
+POSTHOOK: query: select * from union38_test_view3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@union38_test1
+POSTHOOK: Input: default@union38_test2
+POSTHOOK: Input: default@union38_test_view3
+#### A masked pattern was here ####
+Eun	3	Bri
+Jin	2	Mel
+Kim	4	Ad
+Young	1	Sydney
+PREHOOK: query: create table union38_test_table1 as with union38_tmp_1 as ( select * from union38_test1 ), union38_tmp_2 as (select * from union38_test2 ) select * from union38_tmp_1 union all select * from union38_tmp_2
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@union38_test1
+PREHOOK: Input: default@union38_test2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union38_test_table1
+POSTHOOK: query: create table union38_test_table1 as with union38_tmp_1 as ( select * from union38_test1 ), union38_tmp_2 as (select * from union38_test2 ) select * from union38_tmp_1 union all select * from union38_tmp_2
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@union38_test1
+POSTHOOK: Input: default@union38_test2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union38_test_table1
+POSTHOOK: Lineage: union38_test_table1.address EXPRESSION [(union38_test1)union38_test1.FieldSchema(name:address, type:string, comment:null), (union38_test2)union38_test2.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: union38_test_table1.id EXPRESSION [(union38_test1)union38_test1.FieldSchema(name:id, type:int, comment:null), (union38_test2)union38_test2.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: union38_test_table1.name EXPRESSION [(union38_test1)union38_test1.FieldSchema(name:name, type:string, comment:null), (union38_test2)union38_test2.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: select * from union38_test_table1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@union38_test_table1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from union38_test_table1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@union38_test_table1
+#### A masked pattern was here ####
+Eun	3	Bri
+Jin	2	Mel
+Kim	4	Ad
+Young	1	Sydney

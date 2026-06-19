@@ -1,0 +1,45 @@
+PREHOOK: query: CREATE TABLE cities (Name string, CoOrdinate binary)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.udf.esri.serde.EsriJsonSerDe'
+STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.esriJson.UnenclosedEsriJsonInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cities
+POSTHOOK: query: CREATE TABLE cities (Name string, CoOrdinate binary)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.udf.esri.serde.EsriJsonSerDe'
+STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.esriJson.UnenclosedEsriJsonInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cities
+PREHOOK: query: load data local inpath "../../data/files/geo-json.json" OVERWRITE INTO TABLE cities
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@cities
+POSTHOOK: query: load data local inpath "../../data/files/geo-json.json" OVERWRITE INTO TABLE cities
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@cities
+PREHOOK: query: select name, ST_AsText(coordinate) from cities
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cities
+#### A masked pattern was here ####
+POSTHOOK: query: select name, ST_AsText(coordinate) from cities
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cities
+#### A masked pattern was here ####
+Delhi	POINT (10 15)
+Mumbai	POINT (40 45.3)
+Kolkata	POINT (23.5 12.4)
+Agra	POINT (55.32 56.55)
+New York	POINT (22 87)
+Beejing	POINT (123 56)
+Washington	POINT (333 22)
+Lucknow	POINT (450 54)
+Kanpur	POINT (109.2 90)
+London	POINT (332.1 22)
+Dubai	POINT (22.09 18)
+Paris	POINT (123.9 12)
+Sydney	POINT (98.7 33.4)
+Moscow	POINT (54.9 24.2)
+Colombo	POINT (67 91.9)

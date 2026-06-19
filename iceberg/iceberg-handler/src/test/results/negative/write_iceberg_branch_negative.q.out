@@ -1,0 +1,9 @@
+PREHOOK: query: create external table ice01(a int, b string, c int) stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice01
+POSTHOOK: query: create external table ice01(a int, b string, c int) stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice01
+FAILED: SemanticException org.apache.hadoop.hive.ql.parse.SemanticException: Cannot use snapshotRef (does not exist): test1

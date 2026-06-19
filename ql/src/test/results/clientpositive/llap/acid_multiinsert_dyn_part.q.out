@@ -1,0 +1,808 @@
+PREHOOK: query: drop table if exists multiinsert_test_text
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists multiinsert_test_text
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists multiinsert_test_text_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists multiinsert_test_text_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists multiinsert_test_acid
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists multiinsert_test_acid
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists multiinsert_test_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists multiinsert_test_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists multiinsert_test_acid_nondi
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists multiinsert_test_acid_nondi
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create external table multiinsert_test_text (a int, b int, c int) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multiinsert_test_text
+POSTHOOK: query: create external table multiinsert_test_text (a int, b int, c int) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multiinsert_test_text
+PREHOOK: query: insert into multiinsert_test_text values (1111, 11, 1111), (2222, 22, 1111), (3333, 33, 2222), (4444, 44, NULL), (5555, 55, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@multiinsert_test_text
+POSTHOOK: query: insert into multiinsert_test_text values (1111, 11, 1111), (2222, 22, 1111), (3333, 33, 2222), (4444, 44, NULL), (5555, 55, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@multiinsert_test_text
+POSTHOOK: Lineage: multiinsert_test_text.a SCRIPT []
+POSTHOOK: Lineage: multiinsert_test_text.b SCRIPT []
+POSTHOOK: Lineage: multiinsert_test_text.c SCRIPT []
+PREHOOK: query: create external table multiinsert_test_text_2 (a int, b int, c int) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multiinsert_test_text_2
+POSTHOOK: query: create external table multiinsert_test_text_2 (a int, b int, c int) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multiinsert_test_text_2
+PREHOOK: query: insert into multiinsert_test_text_2 values (1111, 11, 1111), (2222, 22, 1111), (3333, 33, 2222), (4444, 44, 4444), (5555, 55, 4444)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@multiinsert_test_text_2
+POSTHOOK: query: insert into multiinsert_test_text_2 values (1111, 11, 1111), (2222, 22, 1111), (3333, 33, 2222), (4444, 44, 4444), (5555, 55, 4444)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@multiinsert_test_text_2
+POSTHOOK: Lineage: multiinsert_test_text_2.a SCRIPT []
+POSTHOOK: Lineage: multiinsert_test_text_2.b SCRIPT []
+POSTHOOK: Lineage: multiinsert_test_text_2.c SCRIPT []
+PREHOOK: query: create table multiinsert_test_acid (a int, b int) partitioned by (c int) stored as orc tblproperties('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multiinsert_test_acid
+POSTHOOK: query: create table multiinsert_test_acid (a int, b int) partitioned by (c int) stored as orc tblproperties('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multiinsert_test_acid
+PREHOOK: query: create table multiinsert_test_mm (a int, b int) partitioned by (c int) stored as orc tblproperties('transactional'='true', 'transactional_properties'='insert_only')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multiinsert_test_mm
+POSTHOOK: query: create table multiinsert_test_mm (a int, b int) partitioned by (c int) stored as orc tblproperties('transactional'='true', 'transactional_properties'='insert_only')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multiinsert_test_mm
+PREHOOK: query: create table multiinsert_test_acid_nondi (a int, b int) partitioned by (c int) stored as orc tblproperties('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multiinsert_test_acid_nondi
+POSTHOOK: query: create table multiinsert_test_acid_nondi (a int, b int) partitioned by (c int) stored as orc tblproperties('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multiinsert_test_acid_nondi
+PREHOOK: query: from multiinsert_test_text a
+insert overwrite table multiinsert_test_acid partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+ where a.c is not null
+insert overwrite table multiinsert_test_acid partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+where a.c is null
+sort by a.c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multiinsert_test_text
+PREHOOK: Output: default@multiinsert_test_acid
+POSTHOOK: query: from multiinsert_test_text a
+insert overwrite table multiinsert_test_acid partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+ where a.c is not null
+insert overwrite table multiinsert_test_acid partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+where a.c is null
+sort by a.c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multiinsert_test_text
+POSTHOOK: Output: default@multiinsert_test_acid
+POSTHOOK: Output: default@multiinsert_test_acid@c=1111
+POSTHOOK: Output: default@multiinsert_test_acid@c=2222
+POSTHOOK: Output: default@multiinsert_test_acid@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: multiinsert_test_acid PARTITION(c=1111).a SIMPLE [(multiinsert_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_acid PARTITION(c=1111).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_acid PARTITION(c=2222).a SIMPLE [(multiinsert_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_acid PARTITION(c=2222).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_acid PARTITION(c=__HIVE_DEFAULT_PARTITION__).a SIMPLE [(multiinsert_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_acid PARTITION(c=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
+PREHOOK: query: select * from multiinsert_test_acid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multiinsert_test_acid
+PREHOOK: Input: default@multiinsert_test_acid@c=1111
+PREHOOK: Input: default@multiinsert_test_acid@c=2222
+PREHOOK: Input: default@multiinsert_test_acid@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from multiinsert_test_acid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multiinsert_test_acid
+POSTHOOK: Input: default@multiinsert_test_acid@c=1111
+POSTHOOK: Input: default@multiinsert_test_acid@c=2222
+POSTHOOK: Input: default@multiinsert_test_acid@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1111	11	1111
+2222	22	1111
+3333	33	2222
+4444	44	NULL
+5555	55	NULL
+PREHOOK: query: from multiinsert_test_text a
+insert overwrite table multiinsert_test_mm partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+ where a.c is not null
+insert overwrite table multiinsert_test_mm partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+where a.c is null
+sort by a.c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multiinsert_test_text
+PREHOOK: Output: default@multiinsert_test_mm
+POSTHOOK: query: from multiinsert_test_text a
+insert overwrite table multiinsert_test_mm partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+ where a.c is not null
+insert overwrite table multiinsert_test_mm partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+where a.c is null
+sort by a.c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multiinsert_test_text
+POSTHOOK: Output: default@multiinsert_test_mm
+POSTHOOK: Output: default@multiinsert_test_mm@c=1111
+POSTHOOK: Output: default@multiinsert_test_mm@c=2222
+POSTHOOK: Output: default@multiinsert_test_mm@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=1111).a SIMPLE [(multiinsert_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=1111).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=2222).a SIMPLE [(multiinsert_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=2222).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=__HIVE_DEFAULT_PARTITION__).a SIMPLE [(multiinsert_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
+PREHOOK: query: select * from multiinsert_test_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multiinsert_test_mm
+PREHOOK: Input: default@multiinsert_test_mm@c=1111
+PREHOOK: Input: default@multiinsert_test_mm@c=2222
+PREHOOK: Input: default@multiinsert_test_mm@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from multiinsert_test_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multiinsert_test_mm
+POSTHOOK: Input: default@multiinsert_test_mm@c=1111
+POSTHOOK: Input: default@multiinsert_test_mm@c=2222
+POSTHOOK: Input: default@multiinsert_test_mm@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1111	11	1111
+2222	22	1111
+3333	33	2222
+4444	44	NULL
+5555	55	NULL
+PREHOOK: query: from multiinsert_test_text a
+insert overwrite table multiinsert_test_acid_nondi partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+ where a.c is not null
+insert overwrite table multiinsert_test_acid_nondi partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+where a.c is null
+sort by a.c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multiinsert_test_text
+PREHOOK: Output: default@multiinsert_test_acid_nondi
+POSTHOOK: query: from multiinsert_test_text a
+insert overwrite table multiinsert_test_acid_nondi partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+ where a.c is not null
+insert overwrite table multiinsert_test_acid_nondi partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+where a.c is null
+sort by a.c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multiinsert_test_text
+POSTHOOK: Output: default@multiinsert_test_acid_nondi
+POSTHOOK: Output: default@multiinsert_test_acid_nondi@c=1111
+POSTHOOK: Output: default@multiinsert_test_acid_nondi@c=2222
+POSTHOOK: Output: default@multiinsert_test_acid_nondi@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: multiinsert_test_acid_nondi PARTITION(c=1111).a SIMPLE [(multiinsert_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_acid_nondi PARTITION(c=1111).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_acid_nondi PARTITION(c=2222).a SIMPLE [(multiinsert_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_acid_nondi PARTITION(c=2222).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_acid_nondi PARTITION(c=__HIVE_DEFAULT_PARTITION__).a SIMPLE [(multiinsert_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_acid_nondi PARTITION(c=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
+PREHOOK: query: select * from multiinsert_test_acid_nondi
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multiinsert_test_acid_nondi
+PREHOOK: Input: default@multiinsert_test_acid_nondi@c=1111
+PREHOOK: Input: default@multiinsert_test_acid_nondi@c=2222
+PREHOOK: Input: default@multiinsert_test_acid_nondi@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from multiinsert_test_acid_nondi
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multiinsert_test_acid_nondi
+POSTHOOK: Input: default@multiinsert_test_acid_nondi@c=1111
+POSTHOOK: Input: default@multiinsert_test_acid_nondi@c=2222
+POSTHOOK: Input: default@multiinsert_test_acid_nondi@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1111	11	1111
+2222	22	1111
+3333	33	2222
+4444	44	NULL
+5555	55	NULL
+PREHOOK: query: drop table if exists multiinsert_test_acid
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@multiinsert_test_acid
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multiinsert_test_acid
+POSTHOOK: query: drop table if exists multiinsert_test_acid
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@multiinsert_test_acid
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multiinsert_test_acid
+PREHOOK: query: drop table if exists multiinsert_test_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@multiinsert_test_mm
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multiinsert_test_mm
+POSTHOOK: query: drop table if exists multiinsert_test_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@multiinsert_test_mm
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multiinsert_test_mm
+PREHOOK: query: drop table if exists multiinsert_test_acid_nondi
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@multiinsert_test_acid_nondi
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multiinsert_test_acid_nondi
+POSTHOOK: query: drop table if exists multiinsert_test_acid_nondi
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@multiinsert_test_acid_nondi
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multiinsert_test_acid_nondi
+PREHOOK: query: create table multiinsert_test_acid (a int, b int) partitioned by (c int) stored as orc tblproperties('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multiinsert_test_acid
+POSTHOOK: query: create table multiinsert_test_acid (a int, b int) partitioned by (c int) stored as orc tblproperties('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multiinsert_test_acid
+PREHOOK: query: create table multiinsert_test_mm (a int, b int) partitioned by (c int) stored as orc tblproperties('transactional'='true', 'transactional_properties'='insert_only')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multiinsert_test_mm
+POSTHOOK: query: create table multiinsert_test_mm (a int, b int) partitioned by (c int) stored as orc tblproperties('transactional'='true', 'transactional_properties'='insert_only')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multiinsert_test_mm
+PREHOOK: query: create table multiinsert_test_acid_nondi (a int, b int) partitioned by (c int) stored as orc tblproperties('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multiinsert_test_acid_nondi
+POSTHOOK: query: create table multiinsert_test_acid_nondi (a int, b int) partitioned by (c int) stored as orc tblproperties('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multiinsert_test_acid_nondi
+PREHOOK: query: from multiinsert_test_text_2 a
+insert overwrite table multiinsert_test_acid partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+ where a.c is not null
+insert overwrite table multiinsert_test_acid partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+where a.c is null
+sort by a.c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multiinsert_test_text_2
+PREHOOK: Output: default@multiinsert_test_acid
+POSTHOOK: query: from multiinsert_test_text_2 a
+insert overwrite table multiinsert_test_acid partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+ where a.c is not null
+insert overwrite table multiinsert_test_acid partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+where a.c is null
+sort by a.c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multiinsert_test_text_2
+POSTHOOK: Output: default@multiinsert_test_acid
+POSTHOOK: Output: default@multiinsert_test_acid@c=1111
+POSTHOOK: Output: default@multiinsert_test_acid@c=2222
+POSTHOOK: Output: default@multiinsert_test_acid@c=4444
+POSTHOOK: Lineage: multiinsert_test_acid PARTITION(c=1111).a SIMPLE [(multiinsert_test_text_2)a.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_acid PARTITION(c=1111).b SIMPLE [(multiinsert_test_text_2)a.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_acid PARTITION(c=2222).a SIMPLE [(multiinsert_test_text_2)a.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_acid PARTITION(c=2222).b SIMPLE [(multiinsert_test_text_2)a.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_acid PARTITION(c=4444).a SIMPLE [(multiinsert_test_text_2)a.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_acid PARTITION(c=4444).b SIMPLE [(multiinsert_test_text_2)a.FieldSchema(name:b, type:int, comment:null), ]
+PREHOOK: query: select * from multiinsert_test_acid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multiinsert_test_acid
+PREHOOK: Input: default@multiinsert_test_acid@c=1111
+PREHOOK: Input: default@multiinsert_test_acid@c=2222
+PREHOOK: Input: default@multiinsert_test_acid@c=4444
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from multiinsert_test_acid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multiinsert_test_acid
+POSTHOOK: Input: default@multiinsert_test_acid@c=1111
+POSTHOOK: Input: default@multiinsert_test_acid@c=2222
+POSTHOOK: Input: default@multiinsert_test_acid@c=4444
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1111	11	1111
+2222	22	1111
+3333	33	2222
+4444	44	4444
+5555	55	4444
+PREHOOK: query: from multiinsert_test_text_2 a
+insert overwrite table multiinsert_test_mm partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+ where a.c is not null
+insert overwrite table multiinsert_test_mm partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+where a.c is null
+sort by a.c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multiinsert_test_text_2
+PREHOOK: Output: default@multiinsert_test_mm
+POSTHOOK: query: from multiinsert_test_text_2 a
+insert overwrite table multiinsert_test_mm partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+ where a.c is not null
+insert overwrite table multiinsert_test_mm partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+where a.c is null
+sort by a.c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multiinsert_test_text_2
+POSTHOOK: Output: default@multiinsert_test_mm
+POSTHOOK: Output: default@multiinsert_test_mm@c=1111
+POSTHOOK: Output: default@multiinsert_test_mm@c=2222
+POSTHOOK: Output: default@multiinsert_test_mm@c=4444
+POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=1111).a SIMPLE [(multiinsert_test_text_2)a.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=1111).b SIMPLE [(multiinsert_test_text_2)a.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=2222).a SIMPLE [(multiinsert_test_text_2)a.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=2222).b SIMPLE [(multiinsert_test_text_2)a.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=4444).a SIMPLE [(multiinsert_test_text_2)a.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=4444).b SIMPLE [(multiinsert_test_text_2)a.FieldSchema(name:b, type:int, comment:null), ]
+PREHOOK: query: select * from multiinsert_test_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multiinsert_test_mm
+PREHOOK: Input: default@multiinsert_test_mm@c=1111
+PREHOOK: Input: default@multiinsert_test_mm@c=2222
+PREHOOK: Input: default@multiinsert_test_mm@c=4444
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from multiinsert_test_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multiinsert_test_mm
+POSTHOOK: Input: default@multiinsert_test_mm@c=1111
+POSTHOOK: Input: default@multiinsert_test_mm@c=2222
+POSTHOOK: Input: default@multiinsert_test_mm@c=4444
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1111	11	1111
+2222	22	1111
+3333	33	2222
+4444	44	4444
+5555	55	4444
+PREHOOK: query: from multiinsert_test_text_2 a
+insert overwrite table multiinsert_test_acid_nondi partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+ where a.c is not null
+insert overwrite table multiinsert_test_acid_nondi partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+where a.c is null
+sort by a.c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multiinsert_test_text_2
+PREHOOK: Output: default@multiinsert_test_acid_nondi
+POSTHOOK: query: from multiinsert_test_text_2 a
+insert overwrite table multiinsert_test_acid_nondi partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+ where a.c is not null
+insert overwrite table multiinsert_test_acid_nondi partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+where a.c is null
+sort by a.c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multiinsert_test_text_2
+POSTHOOK: Output: default@multiinsert_test_acid_nondi
+POSTHOOK: Output: default@multiinsert_test_acid_nondi@c=1111
+POSTHOOK: Output: default@multiinsert_test_acid_nondi@c=2222
+POSTHOOK: Output: default@multiinsert_test_acid_nondi@c=4444
+POSTHOOK: Lineage: multiinsert_test_acid_nondi PARTITION(c=1111).a SIMPLE [(multiinsert_test_text_2)a.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_acid_nondi PARTITION(c=1111).b SIMPLE [(multiinsert_test_text_2)a.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_acid_nondi PARTITION(c=2222).a SIMPLE [(multiinsert_test_text_2)a.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_acid_nondi PARTITION(c=2222).b SIMPLE [(multiinsert_test_text_2)a.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_acid_nondi PARTITION(c=4444).a SIMPLE [(multiinsert_test_text_2)a.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_acid_nondi PARTITION(c=4444).b SIMPLE [(multiinsert_test_text_2)a.FieldSchema(name:b, type:int, comment:null), ]
+PREHOOK: query: select * from multiinsert_test_acid_nondi
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multiinsert_test_acid_nondi
+PREHOOK: Input: default@multiinsert_test_acid_nondi@c=1111
+PREHOOK: Input: default@multiinsert_test_acid_nondi@c=2222
+PREHOOK: Input: default@multiinsert_test_acid_nondi@c=4444
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from multiinsert_test_acid_nondi
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multiinsert_test_acid_nondi
+POSTHOOK: Input: default@multiinsert_test_acid_nondi@c=1111
+POSTHOOK: Input: default@multiinsert_test_acid_nondi@c=2222
+POSTHOOK: Input: default@multiinsert_test_acid_nondi@c=4444
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1111	11	1111
+2222	22	1111
+3333	33	2222
+4444	44	4444
+5555	55	4444
+PREHOOK: query: drop table if exists multiinsert_test_acid
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@multiinsert_test_acid
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multiinsert_test_acid
+POSTHOOK: query: drop table if exists multiinsert_test_acid
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@multiinsert_test_acid
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multiinsert_test_acid
+PREHOOK: query: drop table if exists multiinsert_test_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@multiinsert_test_mm
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multiinsert_test_mm
+POSTHOOK: query: drop table if exists multiinsert_test_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@multiinsert_test_mm
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multiinsert_test_mm
+PREHOOK: query: drop table if exists multiinsert_test_acid_nondi
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@multiinsert_test_acid_nondi
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multiinsert_test_acid_nondi
+POSTHOOK: query: drop table if exists multiinsert_test_acid_nondi
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@multiinsert_test_acid_nondi
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multiinsert_test_acid_nondi
+PREHOOK: query: create table multiinsert_test_acid (a int, b int) partitioned by (c int) stored as orc tblproperties('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multiinsert_test_acid
+POSTHOOK: query: create table multiinsert_test_acid (a int, b int) partitioned by (c int) stored as orc tblproperties('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multiinsert_test_acid
+PREHOOK: query: create table multiinsert_test_mm (a int, b int) partitioned by (c int) stored as orc tblproperties('transactional'='true', 'transactional_properties'='insert_only')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multiinsert_test_mm
+POSTHOOK: query: create table multiinsert_test_mm (a int, b int) partitioned by (c int) stored as orc tblproperties('transactional'='true', 'transactional_properties'='insert_only')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multiinsert_test_mm
+PREHOOK: query: create table multiinsert_test_acid_nondi (a int, b int) partitioned by (c int) stored as orc tblproperties('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multiinsert_test_acid_nondi
+POSTHOOK: query: create table multiinsert_test_acid_nondi (a int, b int) partitioned by (c int) stored as orc tblproperties('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multiinsert_test_acid_nondi
+PREHOOK: query: from multiinsert_test_text a
+insert into multiinsert_test_acid partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+ where a.c is not null
+insert into multiinsert_test_acid partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+where a.c is null
+sort by a.c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multiinsert_test_text
+PREHOOK: Output: default@multiinsert_test_acid
+POSTHOOK: query: from multiinsert_test_text a
+insert into multiinsert_test_acid partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+ where a.c is not null
+insert into multiinsert_test_acid partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+where a.c is null
+sort by a.c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multiinsert_test_text
+POSTHOOK: Output: default@multiinsert_test_acid
+POSTHOOK: Output: default@multiinsert_test_acid@c=1111
+POSTHOOK: Output: default@multiinsert_test_acid@c=2222
+POSTHOOK: Output: default@multiinsert_test_acid@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: multiinsert_test_acid PARTITION(c=1111).a SIMPLE [(multiinsert_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_acid PARTITION(c=1111).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_acid PARTITION(c=2222).a SIMPLE [(multiinsert_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_acid PARTITION(c=2222).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_acid PARTITION(c=__HIVE_DEFAULT_PARTITION__).a SIMPLE [(multiinsert_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_acid PARTITION(c=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
+PREHOOK: query: select * from multiinsert_test_acid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multiinsert_test_acid
+PREHOOK: Input: default@multiinsert_test_acid@c=1111
+PREHOOK: Input: default@multiinsert_test_acid@c=2222
+PREHOOK: Input: default@multiinsert_test_acid@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from multiinsert_test_acid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multiinsert_test_acid
+POSTHOOK: Input: default@multiinsert_test_acid@c=1111
+POSTHOOK: Input: default@multiinsert_test_acid@c=2222
+POSTHOOK: Input: default@multiinsert_test_acid@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1111	11	1111
+2222	22	1111
+3333	33	2222
+4444	44	NULL
+5555	55	NULL
+PREHOOK: query: from multiinsert_test_text a
+insert into multiinsert_test_mm partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+ where a.c is not null
+insert into multiinsert_test_mm partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+where a.c is null
+sort by a.c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multiinsert_test_text
+PREHOOK: Output: default@multiinsert_test_mm
+POSTHOOK: query: from multiinsert_test_text a
+insert into multiinsert_test_mm partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+ where a.c is not null
+insert into multiinsert_test_mm partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+where a.c is null
+sort by a.c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multiinsert_test_text
+POSTHOOK: Output: default@multiinsert_test_mm
+POSTHOOK: Output: default@multiinsert_test_mm@c=1111
+POSTHOOK: Output: default@multiinsert_test_mm@c=2222
+POSTHOOK: Output: default@multiinsert_test_mm@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=1111).a SIMPLE [(multiinsert_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=1111).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=2222).a SIMPLE [(multiinsert_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=2222).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=__HIVE_DEFAULT_PARTITION__).a SIMPLE [(multiinsert_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
+PREHOOK: query: select * from multiinsert_test_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multiinsert_test_mm
+PREHOOK: Input: default@multiinsert_test_mm@c=1111
+PREHOOK: Input: default@multiinsert_test_mm@c=2222
+PREHOOK: Input: default@multiinsert_test_mm@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from multiinsert_test_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multiinsert_test_mm
+POSTHOOK: Input: default@multiinsert_test_mm@c=1111
+POSTHOOK: Input: default@multiinsert_test_mm@c=2222
+POSTHOOK: Input: default@multiinsert_test_mm@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1111	11	1111
+2222	22	1111
+3333	33	2222
+4444	44	NULL
+5555	55	NULL
+PREHOOK: query: from multiinsert_test_text a
+insert into multiinsert_test_acid_nondi partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+ where a.c is not null
+insert into multiinsert_test_acid_nondi partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+where a.c is null
+sort by a.c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multiinsert_test_text
+PREHOOK: Output: default@multiinsert_test_acid_nondi
+POSTHOOK: query: from multiinsert_test_text a
+insert into multiinsert_test_acid_nondi partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+ where a.c is not null
+insert into multiinsert_test_acid_nondi partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+where a.c is null
+sort by a.c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multiinsert_test_text
+POSTHOOK: Output: default@multiinsert_test_acid_nondi
+POSTHOOK: Output: default@multiinsert_test_acid_nondi@c=1111
+POSTHOOK: Output: default@multiinsert_test_acid_nondi@c=2222
+POSTHOOK: Output: default@multiinsert_test_acid_nondi@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: multiinsert_test_acid_nondi PARTITION(c=1111).a SIMPLE [(multiinsert_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_acid_nondi PARTITION(c=1111).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_acid_nondi PARTITION(c=2222).a SIMPLE [(multiinsert_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_acid_nondi PARTITION(c=2222).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_acid_nondi PARTITION(c=__HIVE_DEFAULT_PARTITION__).a SIMPLE [(multiinsert_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: multiinsert_test_acid_nondi PARTITION(c=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
+PREHOOK: query: select * from multiinsert_test_acid_nondi
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multiinsert_test_acid_nondi
+PREHOOK: Input: default@multiinsert_test_acid_nondi@c=1111
+PREHOOK: Input: default@multiinsert_test_acid_nondi@c=2222
+PREHOOK: Input: default@multiinsert_test_acid_nondi@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from multiinsert_test_acid_nondi
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multiinsert_test_acid_nondi
+POSTHOOK: Input: default@multiinsert_test_acid_nondi@c=1111
+POSTHOOK: Input: default@multiinsert_test_acid_nondi@c=2222
+POSTHOOK: Input: default@multiinsert_test_acid_nondi@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1111	11	1111
+2222	22	1111
+3333	33	2222
+4444	44	NULL
+5555	55	NULL
+PREHOOK: query: drop table if exists multiinsert_test_text
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@multiinsert_test_text
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multiinsert_test_text
+POSTHOOK: query: drop table if exists multiinsert_test_text
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@multiinsert_test_text
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multiinsert_test_text
+PREHOOK: query: drop table if exists multiinsert_test_text_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@multiinsert_test_text_2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multiinsert_test_text_2
+POSTHOOK: query: drop table if exists multiinsert_test_text_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@multiinsert_test_text_2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multiinsert_test_text_2
+PREHOOK: query: drop table if exists multiinsert_test_acid
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@multiinsert_test_acid
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multiinsert_test_acid
+POSTHOOK: query: drop table if exists multiinsert_test_acid
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@multiinsert_test_acid
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multiinsert_test_acid
+PREHOOK: query: drop table if exists multiinsert_test_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@multiinsert_test_mm
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multiinsert_test_mm
+POSTHOOK: query: drop table if exists multiinsert_test_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@multiinsert_test_mm
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multiinsert_test_mm
+PREHOOK: query: drop table if exists multiinsert_test_acid_nondi
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@multiinsert_test_acid_nondi
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multiinsert_test_acid_nondi
+POSTHOOK: query: drop table if exists multiinsert_test_acid_nondi
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@multiinsert_test_acid_nondi
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multiinsert_test_acid_nondi

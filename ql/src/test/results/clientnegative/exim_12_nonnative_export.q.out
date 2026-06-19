@@ -1,0 +1,19 @@
+PREHOOK: query: create table exim_department ( dep_id int comment "department id") 	
+	clustered by (dep_id) sorted by (dep_id desc) into 10 buckets
+	stored by "org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler"	
+	tblproperties("creator"="krishna")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@exim_department
+POSTHOOK: query: create table exim_department ( dep_id int comment "department id") 	
+	clustered by (dep_id) sorted by (dep_id desc) into 10 buckets
+	stored by "org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler"	
+	tblproperties("creator"="krishna")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@exim_department
+PREHOOK: query: export table exim_department to 'ql/test/data/exports/exim_department'
+PREHOOK: type: EXPORT
+PREHOOK: Input: default@exim_department
+#### A masked pattern was here ####
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.ExportTask. The existing table is not compatible with the Export/Import spec. 

@@ -1,0 +1,602 @@
+PREHOOK: query: drop table over10k_n4
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table over10k_n4
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table over10k_n4(
+           t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+	   ts timestamp, 
+           `dec` decimal,  
+           bin binary)
+       row format delimited
+       fields terminated by '|'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@over10k_n4
+POSTHOOK: query: create table over10k_n4(
+           t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+	   ts timestamp, 
+           `dec` decimal,  
+           bin binary)
+       row format delimited
+       fields terminated by '|'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@over10k_n4
+PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n4
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@over10k_n4
+POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n4
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@over10k_n4
+PREHOOK: query: select s, min(i) over (partition by s) m from over10k_n4 order by s, m limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n4
+#### A masked pattern was here ####
+POSTHOOK: query: select s, min(i) over (partition by s) m from over10k_n4 order by s, m limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n4
+#### A masked pattern was here ####
+alice allen	65545
+alice allen	65545
+alice allen	65545
+alice allen	65545
+alice allen	65545
+alice allen	65545
+alice allen	65545
+alice allen	65545
+alice brown	65569
+alice brown	65569
+alice brown	65569
+alice brown	65569
+alice brown	65569
+alice brown	65569
+alice brown	65569
+alice brown	65569
+alice brown	65569
+alice brown	65569
+alice brown	65569
+alice brown	65569
+alice brown	65569
+alice brown	65569
+alice carson	65545
+alice carson	65545
+alice carson	65545
+alice carson	65545
+alice carson	65545
+alice carson	65545
+alice carson	65545
+alice carson	65545
+alice carson	65545
+alice carson	65545
+alice davidson	65544
+alice davidson	65544
+alice davidson	65544
+alice davidson	65544
+alice davidson	65544
+alice davidson	65544
+alice davidson	65544
+alice davidson	65544
+alice davidson	65544
+alice davidson	65544
+alice davidson	65544
+alice davidson	65544
+alice davidson	65544
+alice davidson	65544
+alice davidson	65544
+alice davidson	65544
+alice davidson	65544
+alice davidson	65544
+alice ellison	65537
+alice ellison	65537
+alice ellison	65537
+alice ellison	65537
+alice ellison	65537
+alice ellison	65537
+alice ellison	65537
+alice ellison	65537
+alice ellison	65537
+alice ellison	65537
+alice ellison	65537
+alice ellison	65537
+alice ellison	65537
+alice ellison	65537
+alice ellison	65537
+alice falkner	65596
+alice falkner	65596
+alice falkner	65596
+alice falkner	65596
+alice falkner	65596
+alice falkner	65596
+alice falkner	65596
+alice falkner	65596
+alice falkner	65596
+alice falkner	65596
+alice falkner	65596
+alice falkner	65596
+alice falkner	65596
+alice falkner	65596
+alice falkner	65596
+alice falkner	65596
+alice falkner	65596
+alice garcia	65573
+alice garcia	65573
+alice garcia	65573
+alice garcia	65573
+alice garcia	65573
+alice garcia	65573
+alice garcia	65573
+alice garcia	65573
+alice garcia	65573
+alice garcia	65573
+alice garcia	65573
+alice garcia	65573
+alice garcia	65573
+alice hernandez	65543
+alice hernandez	65543
+alice hernandez	65543
+alice hernandez	65543
+alice hernandez	65543
+PREHOOK: query: select s, avg(f) over (partition by si order by s) a from over10k_n4 order by s, a limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n4
+#### A masked pattern was here ####
+POSTHOOK: query: select s, avg(f) over (partition by si order by s) a from over10k_n4 order by s, a limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n4
+#### A masked pattern was here ####
+alice allen	21.450000762939453
+alice allen	33.51499891281128
+alice allen	33.51499891281128
+alice allen	66.88999938964844
+alice allen	73.62999725341797
+alice allen	75.9800033569336
+alice allen	76.30999755859375
+alice allen	89.56999969482422
+alice brown	1.9800000190734863
+alice brown	3.369999885559082
+alice brown	5.739999771118164
+alice brown	13.930000305175781
+alice brown	30.299999237060547
+alice brown	43.900001525878906
+alice brown	49.56999969482422
+alice brown	58.88999938964844
+alice brown	62.5099983215332
+alice brown	71.30999755859375
+alice brown	93.1500015258789
+alice brown	94.4800033569336
+alice brown	95.45999908447266
+alice brown	97.94000244140625
+alice carson	12.600000381469727
+alice carson	27.959999084472656
+alice carson	39.029998779296875
+alice carson	45.32499933242798
+alice carson	46.900001525878906
+alice carson	47.349998474121094
+alice carson	56.02000045776367
+alice carson	56.099998474121094
+alice carson	64.19999694824219
+alice carson	87.77999877929688
+alice davidson	6.340000152587891
+alice davidson	8.65999984741211
+alice davidson	24.540000915527344
+alice davidson	39.78999853134155
+alice davidson	39.78999853134155
+alice davidson	45.18000030517578
+alice davidson	53.84000015258789
+alice davidson	60.34000015258789
+alice davidson	60.38999938964844
+alice davidson	62.0
+alice davidson	69.80000305175781
+alice davidson	70.3499984741211
+alice davidson	71.97000122070312
+alice davidson	73.47000122070312
+alice davidson	78.23999786376953
+alice davidson	90.86000061035156
+alice davidson	92.22000122070312
+alice davidson	99.9800033569336
+alice ellison	3.0299999713897705
+alice ellison	23.049999237060547
+alice ellison	36.060001373291016
+alice ellison	38.15999984741211
+alice ellison	54.25
+alice ellison	56.13999938964844
+alice ellison	63.56999969482422
+alice ellison	68.2300033569336
+alice ellison	70.9000015258789
+alice ellison	73.94999694824219
+alice ellison	74.23999786376953
+alice ellison	75.0999984741211
+alice ellison	77.51000213623047
+alice ellison	91.52999877929688
+alice ellison	92.2300033569336
+alice falkner	17.600000381469727
+alice falkner	18.440000534057617
+alice falkner	18.450000762939453
+alice falkner	18.84000015258789
+alice falkner	32.15999984741211
+alice falkner	32.70000076293945
+alice falkner	35.59499931335449
+alice falkner	35.59499931335449
+alice falkner	44.77000045776367
+alice falkner	46.16499924659729
+alice falkner	46.16499924659729
+alice falkner	51.040000915527344
+alice falkner	57.13999938964844
+alice falkner	69.71500015258789
+alice falkner	90.25
+alice falkner	90.76000213623047
+alice falkner	97.30999755859375
+alice garcia	1.2899999618530273
+alice garcia	11.329999923706055
+alice garcia	15.5600004196167
+alice garcia	17.780000686645508
+alice garcia	18.8799991607666
+alice garcia	25.079999446868896
+alice garcia	43.64000129699707
+alice garcia	43.64000129699707
+alice garcia	51.599998474121094
+alice garcia	52.150001525878906
+alice garcia	58.89000129699707
+alice garcia	95.11000061035156
+alice garcia	97.12000274658203
+alice hernandez	5.760000228881836
+alice hernandez	16.020000457763672
+alice hernandez	29.579999923706055
+alice hernandez	42.28999900817871
+alice hernandez	42.57999897003174
+PREHOOK: query: select s, avg(i) over (partition by t, b order by s) a from over10k_n4 order by s, a limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n4
+#### A masked pattern was here ####
+POSTHOOK: query: select s, avg(i) over (partition by t, b order by s) a from over10k_n4 order by s, a limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n4
+#### A masked pattern was here ####
+alice allen	65545.0
+alice allen	65557.0
+alice allen	65600.0
+alice allen	65609.0
+alice allen	65662.0
+alice allen	65670.0
+alice allen	65720.0
+alice allen	65758.0
+alice brown	65569.0
+alice brown	65570.0
+alice brown	65666.0
+alice brown	65667.0
+alice brown	65673.0
+alice brown	65696.0
+alice brown	65704.0
+alice brown	65707.0
+alice brown	65708.0
+alice brown	65711.0
+alice brown	65733.0
+alice brown	65779.0
+alice brown	65781.0
+alice brown	65790.0
+alice carson	65545.0
+alice carson	65559.0
+alice carson	65559.0
+alice carson	65565.0
+alice carson	65576.0
+alice carson	65695.0
+alice carson	65710.0
+alice carson	65713.0
+alice carson	65747.0
+alice carson	65785.0
+alice davidson	65544.0
+alice davidson	65547.0
+alice davidson	65554.0
+alice davidson	65560.0
+alice davidson	65563.0
+alice davidson	65590.0
+alice davidson	65596.0
+alice davidson	65631.0
+alice davidson	65641.0
+alice davidson	65676.0
+alice davidson	65677.0
+alice davidson	65677.0
+alice davidson	65690.0
+alice davidson	65707.0
+alice davidson	65740.0
+alice davidson	65742.0
+alice davidson	65747.0
+alice davidson	65791.0
+alice ellison	65537.0
+alice ellison	65544.0
+alice ellison	65557.0
+alice ellison	65572.0
+alice ellison	65612.0
+alice ellison	65677.0
+alice ellison	65681.0
+alice ellison	65698.0
+alice ellison	65699.0
+alice ellison	65713.0
+alice ellison	65730.0
+alice ellison	65741.0
+alice ellison	65744.0
+alice ellison	65745.0
+alice ellison	65787.0
+alice falkner	65596.0
+alice falkner	65597.0
+alice falkner	65611.0
+alice falkner	65622.0
+alice falkner	65669.0
+alice falkner	65685.0
+alice falkner	65690.0
+alice falkner	65699.0
+alice falkner	65709.0
+alice falkner	65710.0
+alice falkner	65715.0
+alice falkner	65718.0
+alice falkner	65722.0
+alice falkner	65752.0
+alice falkner	65773.0
+alice falkner	65775.0
+alice falkner	65785.0
+alice garcia	65573.0
+alice garcia	65613.0
+alice garcia	65623.0
+alice garcia	65630.0
+alice garcia	65674.0
+alice garcia	65675.0
+alice garcia	65712.0
+alice garcia	65725.0
+alice garcia	65734.0
+alice garcia	65744.0
+alice garcia	65746.0
+alice garcia	65746.0
+alice garcia	65759.0
+alice hernandez	65543.0
+alice hernandez	65545.0
+alice hernandez	65569.0
+alice hernandez	65603.0
+alice hernandez	65633.0
+PREHOOK: query: select max(i) over w m from over10k_n4 window w as (partition by f) order by m limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n4
+#### A masked pattern was here ####
+POSTHOOK: query: select max(i) over w m from over10k_n4 window w as (partition by f) order by m limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n4
+#### A masked pattern was here ####
+65536
+65536
+65536
+65536
+65536
+65536
+65536
+65536
+65536
+65536
+65536
+65536
+65536
+65536
+65537
+65537
+65537
+65537
+65537
+65537
+65537
+65537
+65537
+65537
+65537
+65537
+65538
+65538
+65538
+65538
+65538
+65538
+65538
+65538
+65538
+65538
+65538
+65538
+65539
+65539
+65539
+65539
+65540
+65540
+65540
+65540
+65540
+65540
+65540
+65540
+65540
+65540
+65540
+65540
+65540
+65540
+65540
+65540
+65540
+65540
+65541
+65541
+65541
+65541
+65541
+65541
+65541
+65541
+65541
+65541
+65541
+65541
+65541
+65541
+65541
+65541
+65541
+65541
+65541
+65541
+65542
+65542
+65542
+65542
+65542
+65542
+65542
+65542
+65542
+65542
+65542
+65542
+65542
+65543
+65543
+65543
+65543
+65543
+65543
+65543
+PREHOOK: query: select s, avg(d) over (partition by t order by f) a from over10k_n4 order by s, a limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n4
+#### A masked pattern was here ####
+POSTHOOK: query: select s, avg(d) over (partition by t order by f) a from over10k_n4 order by s, a limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n4
+#### A masked pattern was here ####
+alice allen	20.579565217391302
+alice allen	23.349705882352943
+alice allen	24.678000000000004
+alice allen	25.389591836734677
+alice allen	27.962444444444447
+alice allen	28.006444444444437
+alice allen	30.302499999999995
+alice allen	31.700000000000003
+alice brown	21.293750000000003
+alice brown	21.46707692307692
+alice brown	23.952876712328763
+alice brown	24.202500000000004
+alice brown	24.234
+alice brown	24.425263157894733
+alice brown	24.49444444444445
+alice brown	25.258749999999996
+alice brown	25.529374999999998
+alice brown	25.63012987012987
+alice brown	26.472439024390237
+alice brown	27.27881720430106
+alice brown	28.227894736842114
+alice brown	44.05
+alice carson	22.345500000000005
+alice carson	24.326500000000006
+alice carson	25.226555555555564
+alice carson	25.888947368421054
+alice carson	26.372325581395355
+alice carson	27.384999999999994
+alice carson	28.077727272727273
+alice carson	28.166315789473682
+alice carson	29.507619047619045
+alice carson	32.073
+alice davidson	21.56061224489796
+alice davidson	21.625
+alice davidson	22.001052631578947
+alice davidson	23.074945054945047
+alice davidson	23.111538461538455
+alice davidson	23.27782608695653
+alice davidson	23.656984126984128
+alice davidson	24.0865625
+alice davidson	24.153333333333325
+alice davidson	24.50972222222222
+alice davidson	24.514761904761908
+alice davidson	24.891249999999992
+alice davidson	26.08603773584905
+alice davidson	26.59527777777778
+alice davidson	27.091372549019617
+alice davidson	27.163
+alice davidson	27.687500000000004
+alice davidson	28.655531914893622
+alice ellison	21.5972
+alice ellison	22.633442622950824
+alice ellison	22.777288135593214
+alice ellison	23.614909090909098
+alice ellison	24.031666666666666
+alice ellison	24.23236363636364
+alice ellison	25.414374999999996
+alice ellison	25.66529411764705
+alice ellison	25.81180555555555
+alice ellison	25.936527777777783
+alice ellison	25.945555555555543
+alice ellison	26.596727272727286
+alice ellison	26.871666666666666
+alice ellison	28.015151515151512
+alice ellison	31.14
+alice falkner	18.2505
+alice falkner	21.492727272727276
+alice falkner	22.251200000000004
+alice falkner	23.94578947368421
+alice falkner	24.45659574468085
+alice falkner	24.605937500000003
+alice falkner	24.75875
+alice falkner	24.81884615384616
+alice falkner	25.019436619718313
+alice falkner	25.978918918918925
+alice falkner	26.547000000000008
+alice falkner	26.620697674418604
+alice falkner	26.884000000000004
+alice falkner	27.02307692307693
+alice falkner	27.775000000000002
+alice falkner	28.922857142857143
+alice falkner	29.141014492753634
+alice garcia	8.685
+alice garcia	24.2375
+alice garcia	24.572352941176472
+alice garcia	24.673170731707316
+alice garcia	25.012045454545454
+alice garcia	25.18111111111111
+alice garcia	25.32999999999999
+alice garcia	25.456136363636368
+alice garcia	25.898285714285716
+alice garcia	25.955616438356166
+alice garcia	28.09714285714286
+alice garcia	28.243999999999996
+alice garcia	29.501935483870966
+alice hernandez	18.293333333333333
+alice hernandez	19.2875
+alice hernandez	21.496166666666664
+alice hernandez	22.30551020408164
+alice hernandez	23.183939393939397
+PREHOOK: query: select key, max(value) over
+  (order by key rows between 10 preceding and 20 following) m
+from src1 where length(key) > 10
+order by key, m
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: select key, max(value) over
+  (order by key rows between 10 preceding and 20 following) m
+from src1 where length(key) > 10
+order by key, m
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####

@@ -1,0 +1,20 @@
+Ln:1 PRINT
+null
+Ln:2 PRINT
+null
+Ln:3 PRINT
+null
+Ln:4 PRINT
+null
+Ln:5 PRINT
+null
+Ln:6 PRINT
+null
+Ln:7 PRINT
+null
+Ln:8 PRINT
+null
+Ln:9 PRINT
+null
+Ln:10 PRINT
+null

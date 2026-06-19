@@ -1,0 +1,78 @@
+PREHOOK: query: DESCRIBE FUNCTION negative
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION negative
+POSTHOOK: type: DESCFUNCTION
+negative a - Returns -a
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED negative
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED negative
+POSTHOOK: type: DESCFUNCTION
+negative a - Returns -a
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNegative
+Function type:BUILTIN
+PREHOOK: query: DESCRIBE FUNCTION -
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION -
+POSTHOOK: type: DESCFUNCTION
+a - b - Returns the difference a-b
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED -
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED -
+POSTHOOK: type: DESCFUNCTION
+a - b - Returns the difference a-b
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMinus
+Function type:BUILTIN
+PREHOOK: query: select - null from src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select - null from src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select - cast(null as int) from src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select - cast(null as int) from src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select - cast(null as smallint) from src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select - cast(null as smallint) from src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select - cast(null as bigint) from src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select - cast(null as bigint) from src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select - cast(null as double) from src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select - cast(null as double) from src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select - cast(null as float) from src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select - cast(null as float) from src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL

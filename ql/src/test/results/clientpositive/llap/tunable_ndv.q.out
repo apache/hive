@@ -1,0 +1,316 @@
+PREHOOK: query: create table if not exists ext_loc_n2 (
+  state string,
+  locid int,
+  zip int,
+  year string
+) row format delimited fields terminated by '|' stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ext_loc_n2
+POSTHOOK: query: create table if not exists ext_loc_n2 (
+  state string,
+  locid int,
+  zip int,
+  year string
+) row format delimited fields terminated by '|' stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ext_loc_n2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/extrapolate_stats_full.txt' OVERWRITE INTO TABLE ext_loc_n2
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@ext_loc_n2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/extrapolate_stats_full.txt' OVERWRITE INTO TABLE ext_loc_n2
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@ext_loc_n2
+PREHOOK: query: create table if not exists loc_orc_1d_n2 (
+  state string,
+  locid int,
+  zip int
+) partitioned by(year string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@loc_orc_1d_n2
+POSTHOOK: query: create table if not exists loc_orc_1d_n2 (
+  state string,
+  locid int,
+  zip int
+) partitioned by(year string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@loc_orc_1d_n2
+PREHOOK: query: insert overwrite table loc_orc_1d_n2 partition(year) select * from ext_loc_n2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ext_loc_n2
+PREHOOK: Output: default@loc_orc_1d_n2
+POSTHOOK: query: insert overwrite table loc_orc_1d_n2 partition(year) select * from ext_loc_n2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ext_loc_n2
+POSTHOOK: Output: default@loc_orc_1d_n2
+POSTHOOK: Output: default@loc_orc_1d_n2@year=2000
+POSTHOOK: Output: default@loc_orc_1d_n2@year=2001
+POSTHOOK: Lineage: loc_orc_1d_n2 PARTITION(year=2000).locid SIMPLE [(ext_loc_n2)ext_loc_n2.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_1d_n2 PARTITION(year=2000).state SIMPLE [(ext_loc_n2)ext_loc_n2.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_1d_n2 PARTITION(year=2000).zip SIMPLE [(ext_loc_n2)ext_loc_n2.FieldSchema(name:zip, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_1d_n2 PARTITION(year=2001).locid SIMPLE [(ext_loc_n2)ext_loc_n2.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_1d_n2 PARTITION(year=2001).state SIMPLE [(ext_loc_n2)ext_loc_n2.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_1d_n2 PARTITION(year=2001).zip SIMPLE [(ext_loc_n2)ext_loc_n2.FieldSchema(name:zip, type:int, comment:null), ]
+PREHOOK: query: analyze table loc_orc_1d_n2 compute statistics for columns state,locid
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@loc_orc_1d_n2
+PREHOOK: Input: default@loc_orc_1d_n2@year=2000
+PREHOOK: Input: default@loc_orc_1d_n2@year=2001
+PREHOOK: Output: default@loc_orc_1d_n2
+PREHOOK: Output: default@loc_orc_1d_n2@year=2000
+PREHOOK: Output: default@loc_orc_1d_n2@year=2001
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table loc_orc_1d_n2 compute statistics for columns state,locid
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@loc_orc_1d_n2
+POSTHOOK: Input: default@loc_orc_1d_n2@year=2000
+POSTHOOK: Input: default@loc_orc_1d_n2@year=2001
+POSTHOOK: Output: default@loc_orc_1d_n2
+POSTHOOK: Output: default@loc_orc_1d_n2@year=2000
+POSTHOOK: Output: default@loc_orc_1d_n2@year=2001
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted loc_orc_1d_n2 partition(year=2000) locid
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@loc_orc_1d_n2
+POSTHOOK: query: describe formatted loc_orc_1d_n2 partition(year=2000) locid
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@loc_orc_1d_n2
+col_name            	locid               
+data_type           	int                 
+min                 	1                   
+max                 	2                   
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted loc_orc_1d_n2 partition(year=2001) locid
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@loc_orc_1d_n2
+POSTHOOK: query: describe formatted loc_orc_1d_n2 partition(year=2001) locid
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@loc_orc_1d_n2
+col_name            	locid               
+data_type           	int                 
+min                 	1                   
+max                 	4                   
+num_nulls           	0                   
+distinct_count      	4                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted loc_orc_1d_n2 locid
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@loc_orc_1d_n2
+POSTHOOK: query: describe formatted loc_orc_1d_n2 locid
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@loc_orc_1d_n2
+col_name            	locid               
+data_type           	int                 
+min                 	1                   
+max                 	4                   
+num_nulls           	0                   
+distinct_count      	4                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"locid\":\"true\"}}
+PREHOOK: query: describe formatted loc_orc_1d_n2 locid
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@loc_orc_1d_n2
+POSTHOOK: query: describe formatted loc_orc_1d_n2 locid
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@loc_orc_1d_n2
+col_name            	locid               
+data_type           	int                 
+min                 	1                   
+max                 	4                   
+num_nulls           	0                   
+distinct_count      	4                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"locid\":\"true\"}}
+PREHOOK: query: describe formatted loc_orc_1d_n2 locid
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@loc_orc_1d_n2
+POSTHOOK: query: describe formatted loc_orc_1d_n2 locid
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@loc_orc_1d_n2
+col_name            	locid               
+data_type           	int                 
+min                 	1                   
+max                 	4                   
+num_nulls           	0                   
+distinct_count      	4                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"locid\":\"true\"}}
+PREHOOK: query: create table if not exists loc_orc_2d_n2 (
+  state string,
+  locid int
+) partitioned by(zip int, year string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@loc_orc_2d_n2
+POSTHOOK: query: create table if not exists loc_orc_2d_n2 (
+  state string,
+  locid int
+) partitioned by(zip int, year string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@loc_orc_2d_n2
+PREHOOK: query: insert overwrite table loc_orc_2d_n2 partition(zip, year) select * from ext_loc_n2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ext_loc_n2
+PREHOOK: Output: default@loc_orc_2d_n2
+POSTHOOK: query: insert overwrite table loc_orc_2d_n2 partition(zip, year) select * from ext_loc_n2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ext_loc_n2
+POSTHOOK: Output: default@loc_orc_2d_n2
+POSTHOOK: Output: default@loc_orc_2d_n2@zip=94086/year=2000
+POSTHOOK: Output: default@loc_orc_2d_n2@zip=94086/year=2001
+POSTHOOK: Output: default@loc_orc_2d_n2@zip=94087/year=2000
+POSTHOOK: Output: default@loc_orc_2d_n2@zip=94087/year=2001
+POSTHOOK: Lineage: loc_orc_2d_n2 PARTITION(zip=94086,year=2000).locid SIMPLE [(ext_loc_n2)ext_loc_n2.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n2 PARTITION(zip=94086,year=2000).state SIMPLE [(ext_loc_n2)ext_loc_n2.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n2 PARTITION(zip=94086,year=2001).locid SIMPLE [(ext_loc_n2)ext_loc_n2.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n2 PARTITION(zip=94086,year=2001).state SIMPLE [(ext_loc_n2)ext_loc_n2.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n2 PARTITION(zip=94087,year=2000).locid SIMPLE [(ext_loc_n2)ext_loc_n2.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n2 PARTITION(zip=94087,year=2000).state SIMPLE [(ext_loc_n2)ext_loc_n2.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n2 PARTITION(zip=94087,year=2001).locid SIMPLE [(ext_loc_n2)ext_loc_n2.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc_2d_n2 PARTITION(zip=94087,year=2001).state SIMPLE [(ext_loc_n2)ext_loc_n2.FieldSchema(name:state, type:string, comment:null), ]
+PREHOOK: query: analyze table loc_orc_2d_n2 partition(zip=94086, year='2000') compute statistics for columns state,locid
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@loc_orc_2d_n2
+PREHOOK: Input: default@loc_orc_2d_n2@zip=94086/year=2000
+PREHOOK: Output: default@loc_orc_2d_n2
+PREHOOK: Output: default@loc_orc_2d_n2@zip=94086/year=2000
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table loc_orc_2d_n2 partition(zip=94086, year='2000') compute statistics for columns state,locid
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@loc_orc_2d_n2
+POSTHOOK: Input: default@loc_orc_2d_n2@zip=94086/year=2000
+POSTHOOK: Output: default@loc_orc_2d_n2
+POSTHOOK: Output: default@loc_orc_2d_n2@zip=94086/year=2000
+#### A masked pattern was here ####
+PREHOOK: query: analyze table loc_orc_2d_n2 partition(zip=94087, year='2000') compute statistics for columns state,locid
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@loc_orc_2d_n2
+PREHOOK: Input: default@loc_orc_2d_n2@zip=94087/year=2000
+PREHOOK: Output: default@loc_orc_2d_n2
+PREHOOK: Output: default@loc_orc_2d_n2@zip=94087/year=2000
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table loc_orc_2d_n2 partition(zip=94087, year='2000') compute statistics for columns state,locid
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@loc_orc_2d_n2
+POSTHOOK: Input: default@loc_orc_2d_n2@zip=94087/year=2000
+POSTHOOK: Output: default@loc_orc_2d_n2
+POSTHOOK: Output: default@loc_orc_2d_n2@zip=94087/year=2000
+#### A masked pattern was here ####
+PREHOOK: query: analyze table loc_orc_2d_n2 partition(zip=94086, year='2001') compute statistics for columns state,locid
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@loc_orc_2d_n2
+PREHOOK: Input: default@loc_orc_2d_n2@zip=94086/year=2001
+PREHOOK: Output: default@loc_orc_2d_n2
+PREHOOK: Output: default@loc_orc_2d_n2@zip=94086/year=2001
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table loc_orc_2d_n2 partition(zip=94086, year='2001') compute statistics for columns state,locid
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@loc_orc_2d_n2
+POSTHOOK: Input: default@loc_orc_2d_n2@zip=94086/year=2001
+POSTHOOK: Output: default@loc_orc_2d_n2
+POSTHOOK: Output: default@loc_orc_2d_n2@zip=94086/year=2001
+#### A masked pattern was here ####
+PREHOOK: query: analyze table loc_orc_2d_n2 partition(zip=94087, year='2001') compute statistics for columns state,locid
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@loc_orc_2d_n2
+PREHOOK: Input: default@loc_orc_2d_n2@zip=94087/year=2001
+PREHOOK: Output: default@loc_orc_2d_n2
+PREHOOK: Output: default@loc_orc_2d_n2@zip=94087/year=2001
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table loc_orc_2d_n2 partition(zip=94087, year='2001') compute statistics for columns state,locid
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@loc_orc_2d_n2
+POSTHOOK: Input: default@loc_orc_2d_n2@zip=94087/year=2001
+POSTHOOK: Output: default@loc_orc_2d_n2
+POSTHOOK: Output: default@loc_orc_2d_n2@zip=94087/year=2001
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted loc_orc_2d_n2 locid
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@loc_orc_2d_n2
+POSTHOOK: query: describe formatted loc_orc_2d_n2 locid
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@loc_orc_2d_n2
+col_name            	locid               
+data_type           	int                 
+min                 	1                   
+max                 	4                   
+num_nulls           	0                   
+distinct_count      	4                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"locid\":\"true\"}}
+PREHOOK: query: describe formatted loc_orc_2d_n2 locid
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@loc_orc_2d_n2
+POSTHOOK: query: describe formatted loc_orc_2d_n2 locid
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@loc_orc_2d_n2
+col_name            	locid               
+data_type           	int                 
+min                 	1                   
+max                 	4                   
+num_nulls           	0                   
+distinct_count      	4                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"locid\":\"true\"}}
+PREHOOK: query: describe formatted loc_orc_2d_n2 locid
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@loc_orc_2d_n2
+POSTHOOK: query: describe formatted loc_orc_2d_n2 locid
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@loc_orc_2d_n2
+col_name            	locid               
+data_type           	int                 
+min                 	1                   
+max                 	4                   
+num_nulls           	0                   
+distinct_count      	4                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"locid\":\"true\"}}

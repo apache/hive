@@ -1,0 +1,220 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
+
+import org.apache.hadoop.hive.ql.exec.vector.expressions.OverflowUtils;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
+import org.apache.hadoop.hive.ql.exec.vector.*;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+
+/**
+ * Generated from template ColumnDivideColumn.txt, which covers division and modulo
+ * expressions between columns.
+ */
+public class <ClassName> extends VectorExpression {
+
+  private static final long serialVersionUID = 1L;
+
+  public <ClassName>(int colNum1, int colNum2, int outputColumnNum) {
+    super(colNum1, colNum2, outputColumnNum);
+  }
+
+  public <ClassName>() {
+    super();
+  }
+
+  @Override
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
+
+    // return immediately if batch is empty
+    final int n = batch.size;
+    if (n == 0) {
+      return;
+    }
+
+    if (childExpressions != null) {
+      super.evaluateChildren(batch);
+    }
+
+    <InputColumnVectorType1> inputColVector1 = (<InputColumnVectorType1>) batch.cols[inputColumnNum[0]];
+    <InputColumnVectorType2> inputColVector2 = (<InputColumnVectorType2>) batch.cols[inputColumnNum[1]];
+    <OutputColumnVectorType> outputColVector = (<OutputColumnVectorType>) batch.cols[outputColumnNum];
+    int[] sel = batch.selected;
+
+    <OperandType1>[] vector1 = inputColVector1.vector;
+    <OperandType2>[] vector2 = inputColVector2.vector;
+    <ReturnType>[] outputVector = outputColVector.vector;
+
+    /*
+     * Propagate null values for a two-input operator and set isRepeating and noNulls appropriately.
+     */
+    NullUtil.propagateNullsColCol(
+      inputColVector1, inputColVector2, outputColVector, sel, n, batch.selectedInUse);
+
+    /* Disregard nulls for processing. In other words,
+     * the arithmetic operation is performed even if one or
+     * more inputs are null. This is to improve speed by avoiding
+     * conditional checks in the inner loop.
+     */
+    boolean hasDivBy0 = false;
+    if (inputColVector1.isRepeating && inputColVector2.isRepeating) {
+      final <OperandType2> denom = vector2[0];
+      hasDivBy0 = hasDivBy0 || (denom == 0);
+#IF MANUAL_DIVIDE_BY_ZERO_CHECK
+      if (denom != 0) {
+        outputVector[0] = vector1[0] <OperatorSymbol> denom;
+      }
+#ELSE
+      outputVector[0] = vector1[0] <OperatorSymbol> denom;
+#ENDIF MANUAL_DIVIDE_BY_ZERO_CHECK
+    } else if (inputColVector1.isRepeating) {
+      final <OperandType1> vector1Value = vector1[0];
+      if (batch.selectedInUse) {
+        for(int j = 0; j != n; j++) {
+          int i = sel[j];
+          final <OperandType2> denom = vector2[i];
+          hasDivBy0 = hasDivBy0 || (denom == 0);
+#IF MANUAL_DIVIDE_BY_ZERO_CHECK
+          if (denom != 0) {
+            outputVector[i] = vector1Value <OperatorSymbol> denom;
+          }
+#ELSE
+          outputVector[i] = vector1Value <OperatorSymbol> denom;
+#ENDIF MANUAL_DIVIDE_BY_ZERO_CHECK
+        }
+      } else {
+#IF MANUAL_DIVIDE_BY_ZERO_CHECK
+        for(int i = 0; i != n; i++) {
+          final <OperandType2> denom = vector2[i];
+          hasDivBy0 = hasDivBy0 || (denom == 0);
+          if (denom != 0) {
+            outputVector[i] = vector1Value <OperatorSymbol> denom;
+          }
+        }
+#ELSE
+        for(int i = 0; i != n; i++) {
+          outputVector[i] = vector1Value <OperatorSymbol> vector2[i];
+        }
+
+        for(int i = 0; i != n; i++) {
+          hasDivBy0 = hasDivBy0 || (vector2[i] == 0);
+        }
+#ENDIF MANUAL_DIVIDE_BY_ZERO_CHECK
+      }
+    } else if (inputColVector2.isRepeating) {
+      final <OperandType2> vector2Value = vector2[0];
+      if (vector2Value == 0) {
+        // Denominator is zero, convert the batch to nulls
+        outputColVector.noNulls = false;
+        outputColVector.isRepeating = true;
+        outputColVector.isNull[0] = true;
+      } else if (batch.selectedInUse) {
+        for(int j = 0; j != n; j++) {
+          int i = sel[j];
+          outputVector[i] = vector1[i] <OperatorSymbol> vector2Value;
+        }
+      } else {
+        for(int i = 0; i != n; i++) {
+          outputVector[i] = vector1[i] <OperatorSymbol> vector2Value;
+        }
+      }
+    } else {
+      if (batch.selectedInUse) {
+        for(int j = 0; j != n; j++) {
+          int i = sel[j];
+          final <OperandType2> denom = vector2[i];
+          hasDivBy0 = hasDivBy0 || (denom == 0);
+#IF MANUAL_DIVIDE_BY_ZERO_CHECK
+          if (denom != 0) {
+            outputVector[i] = vector1[i] <OperatorSymbol> denom;
+          }
+#ELSE
+          outputVector[i] = vector1[i] <OperatorSymbol> denom;
+#ENDIF MANUAL_DIVIDE_BY_ZERO_CHECK
+        }
+      } else {
+#IF MANUAL_DIVIDE_BY_ZERO_CHECK
+        for(int i = 0; i != n; i++) {
+          final <OperandType2> denom = vector2[i];
+          hasDivBy0 = hasDivBy0 || (denom == 0);
+          if (denom != 0) {
+            outputVector[i] = vector1[i] <OperatorSymbol> denom;
+          }
+        }
+#ELSE
+        for(int i = 0; i != n; i++) {
+          outputVector[i] = vector1[i] <OperatorSymbol> vector2[i];
+        }
+
+        for(int i = 0; i != n; i++) {
+          hasDivBy0 = hasDivBy0 || (vector2[i] == 0);
+        }
+#ENDIF MANUAL_DIVIDE_BY_ZERO_CHECK
+      }
+    }
+
+#IF CHECKED
+    //when operating in checked mode make sure we handle overflows similar to non-vectorized expression
+    OverflowUtils.accountForOverflow<CamelReturnType>(getOutputTypeInfo(), outputColVector,
+        batch.selectedInUse, sel, n);
+#ELSE
+#ENDIF CHECKED
+    /* For the case when the output can have null values, follow
+     * the convention that the data values must be 1 for long and
+     * NaN for double. This is to prevent possible later zero-divide errors
+     * in complex arithmetic expressions like col2 <OperatorSymbol> (col1 - 1)
+     * in the case when some col1 entries are null.
+     */
+    if (!hasDivBy0) {
+      NullUtil.setNullDataEntries<CamelReturnType>(outputColVector, batch.selectedInUse, sel, n);
+    } else {
+      NullUtil.setNullAndDivBy0DataEntries<CamelReturnType>(
+          outputColVector, batch.selectedInUse, sel, n, inputColVector2);
+    }
+  }
+
+#IF CHECKED
+  @Override
+  public boolean supportsCheckedExecution() {
+    return true;
+  }
+#ENDIF CHECKED
+
+  @Override
+  public String vectorExpressionParameters() {
+    return getColumnParamString(0, inputColumnNum[0]) + ", " + getColumnParamString(1, inputColumnNum[1]);
+  }
+
+  @Override
+  public VectorExpressionDescriptor.Descriptor getDescriptor() {
+    return (new VectorExpressionDescriptor.Builder())
+        .setMode(
+            VectorExpressionDescriptor.Mode.PROJECTION)
+        .setNumArguments(2)
+        .setArgumentTypes(
+            VectorExpressionDescriptor.ArgumentType.getType("<OperandType1>"),
+            VectorExpressionDescriptor.ArgumentType.getType("<OperandType2>"))
+        .setInputExpressionTypes(
+            VectorExpressionDescriptor.InputExpressionType.COLUMN,
+            VectorExpressionDescriptor.InputExpressionType.COLUMN).build();
+  }
+}

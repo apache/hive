@@ -1,0 +1,30 @@
+PREHOOK: query: CREATE TEMPORARY FUNCTION udtfCount2 AS 'org.apache.hadoop.hive.contrib.udtf.example.GenericUDTFCount2'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: udtfcount2
+POSTHOOK: query: CREATE TEMPORARY FUNCTION udtfCount2 AS 'org.apache.hadoop.hive.contrib.udtf.example.GenericUDTFCount2'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: udtfcount2
+PREHOOK: query: SELECT udtfCount2(key) AS count FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT udtfCount2(key) AS count FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+500
+500
+PREHOOK: query: SELECT * FROM src LATERAL VIEW udtfCount2(key) myTable AS myCol
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM src LATERAL VIEW udtfCount2(key) myTable AS myCol
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+97	val_97	500
+97	val_97	500
+PREHOOK: query: DROP TEMPORARY FUNCTION udtfCount
+PREHOOK: type: DROPFUNCTION
+POSTHOOK: query: DROP TEMPORARY FUNCTION udtfCount
+POSTHOOK: type: DROPFUNCTION

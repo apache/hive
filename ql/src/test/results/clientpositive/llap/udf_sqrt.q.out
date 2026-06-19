@@ -1,0 +1,15 @@
+PREHOOK: query: DESCRIBE FUNCTION sqrt
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION sqrt
+POSTHOOK: type: DESCFUNCTION
+sqrt(x) - returns the square root of x
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED sqrt
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED sqrt
+POSTHOOK: type: DESCFUNCTION
+sqrt(x) - returns the square root of x
+Example:
+   > SELECT sqrt(4) FROM src LIMIT 1;
+  2
+Function class:org.apache.hadoop.hive.ql.udf.UDFSqrt
+Function type:BUILTIN

@@ -1,0 +1,217 @@
+PREHOOK: query: CREATE TABLE tmp_showcrt1 (key int, value string, newvalue bigint)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' COLLECTION ITEMS TERMINATED BY '|' MAP KEYS TERMINATED BY '\045' LINES TERMINATED BY '\n'
+STORED AS textfile
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp_showcrt1
+POSTHOOK: query: CREATE TABLE tmp_showcrt1 (key int, value string, newvalue bigint)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' COLLECTION ITEMS TERMINATED BY '|' MAP KEYS TERMINATED BY '\045' LINES TERMINATED BY '\n'
+STORED AS textfile
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp_showcrt1
+PREHOOK: query: SHOW CREATE TABLE tmp_showcrt1
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@tmp_showcrt1
+POSTHOOK: query: SHOW CREATE TABLE tmp_showcrt1
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@tmp_showcrt1
+CREATE TABLE `tmp_showcrt1`(
+  `key` int, 
+  `value` string, 
+  `newvalue` bigint)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+WITH SERDEPROPERTIES ( 
+  'collection.delim'='|', 
+  'field.delim'=',', 
+  'line.delim'='\n', 
+  'mapkey.delim'='%', 
+  'serialization.format'=',') 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: DROP TABLE tmp_showcrt1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tmp_showcrt1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp_showcrt1
+POSTHOOK: query: DROP TABLE tmp_showcrt1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tmp_showcrt1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp_showcrt1
+PREHOOK: query: create table esc_special_delimiter(age int, name string) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\u0001' stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@esc_special_delimiter
+POSTHOOK: query: create table esc_special_delimiter(age int, name string) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\u0001' stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@esc_special_delimiter
+PREHOOK: query: show create table esc_special_delimiter
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@esc_special_delimiter
+POSTHOOK: query: show create table esc_special_delimiter
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@esc_special_delimiter
+CREATE TABLE `esc_special_delimiter`(
+  `age` int, 
+  `name` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+WITH SERDEPROPERTIES ( 
+  'field.delim'='\u0001', 
+  'serialization.format'='\u0001') 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: drop table esc_special_delimiter
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@esc_special_delimiter
+PREHOOK: Output: database:default
+PREHOOK: Output: default@esc_special_delimiter
+POSTHOOK: query: drop table esc_special_delimiter
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@esc_special_delimiter
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@esc_special_delimiter
+PREHOOK: query: create table esc_special_delimiter(age int, name string) ROW FORMAT DELIMITED FIELDS TERMINATED BY '`' stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@esc_special_delimiter
+POSTHOOK: query: create table esc_special_delimiter(age int, name string) ROW FORMAT DELIMITED FIELDS TERMINATED BY '`' stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@esc_special_delimiter
+PREHOOK: query: show create table esc_special_delimiter
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@esc_special_delimiter
+POSTHOOK: query: show create table esc_special_delimiter
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@esc_special_delimiter
+CREATE TABLE `esc_special_delimiter`(
+  `age` int, 
+  `name` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+WITH SERDEPROPERTIES ( 
+  'field.delim'='`', 
+  'serialization.format'='`') 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: drop table esc_special_delimiter
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@esc_special_delimiter
+PREHOOK: Output: database:default
+PREHOOK: Output: default@esc_special_delimiter
+POSTHOOK: query: drop table esc_special_delimiter
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@esc_special_delimiter
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@esc_special_delimiter
+PREHOOK: query: create table esc_special_delimiter(age int, name string) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\'' stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@esc_special_delimiter
+POSTHOOK: query: create table esc_special_delimiter(age int, name string) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\'' stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@esc_special_delimiter
+PREHOOK: query: show create table esc_special_delimiter
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@esc_special_delimiter
+POSTHOOK: query: show create table esc_special_delimiter
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@esc_special_delimiter
+CREATE TABLE `esc_special_delimiter`(
+  `age` int, 
+  `name` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+WITH SERDEPROPERTIES ( 
+  'field.delim'='\'', 
+  'serialization.format'='\'') 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: drop table esc_special_delimiter
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@esc_special_delimiter
+PREHOOK: Output: database:default
+PREHOOK: Output: default@esc_special_delimiter
+POSTHOOK: query: drop table esc_special_delimiter
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@esc_special_delimiter
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@esc_special_delimiter
+PREHOOK: query: create table esc_special_delimiter(age int, name string) ROW FORMAT DELIMITED FIELDS TERMINATED BY ';' stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@esc_special_delimiter
+POSTHOOK: query: create table esc_special_delimiter(age int, name string) ROW FORMAT DELIMITED FIELDS TERMINATED BY ';' stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@esc_special_delimiter
+PREHOOK: query: show create table esc_special_delimiter
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@esc_special_delimiter
+POSTHOOK: query: show create table esc_special_delimiter
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@esc_special_delimiter
+CREATE TABLE `esc_special_delimiter`(
+  `age` int, 
+  `name` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+WITH SERDEPROPERTIES ( 
+  'field.delim'='\;', 
+  'serialization.format'='\;') 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: drop table esc_special_delimiter
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@esc_special_delimiter
+PREHOOK: Output: database:default
+PREHOOK: Output: default@esc_special_delimiter
+POSTHOOK: query: drop table esc_special_delimiter
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@esc_special_delimiter
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@esc_special_delimiter

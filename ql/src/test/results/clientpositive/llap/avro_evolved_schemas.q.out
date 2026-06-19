@@ -1,0 +1,111 @@
+PREHOOK: query: CREATE TABLE doctors_with_new_field 
+ROW FORMAT
+SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+STORED AS
+INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
+TBLPROPERTIES ('avro.schema.literal'='{
+  "namespace": "testing.hive.avro.serde",
+  "name": "doctors",
+  "type": "record",
+  "fields": [
+    {
+      "name":"number",
+      "type":"int",
+      "doc":"Order of playing the role"
+    },
+    {
+      "name":"first_name",
+      "type":"string",
+      "doc":"first name of actor playing role"
+    },
+    {
+      "name":"last_name",
+      "type":"string",
+      "doc":"last name of actor playing role"
+    },
+    {
+      "name":"extra_field",
+      "type":"string",
+      "doc":"an extra field not in the original file",
+      "default":"fishfingers and custard"
+    }
+  ]
+}')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@doctors_with_new_field
+POSTHOOK: query: CREATE TABLE doctors_with_new_field 
+ROW FORMAT
+SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+STORED AS
+INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
+TBLPROPERTIES ('avro.schema.literal'='{
+  "namespace": "testing.hive.avro.serde",
+  "name": "doctors",
+  "type": "record",
+  "fields": [
+    {
+      "name":"number",
+      "type":"int",
+      "doc":"Order of playing the role"
+    },
+    {
+      "name":"first_name",
+      "type":"string",
+      "doc":"first name of actor playing role"
+    },
+    {
+      "name":"last_name",
+      "type":"string",
+      "doc":"last name of actor playing role"
+    },
+    {
+      "name":"extra_field",
+      "type":"string",
+      "doc":"an extra field not in the original file",
+      "default":"fishfingers and custard"
+    }
+  ]
+}')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@doctors_with_new_field
+PREHOOK: query: DESCRIBE doctors_with_new_field
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@doctors_with_new_field
+POSTHOOK: query: DESCRIBE doctors_with_new_field
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@doctors_with_new_field
+number              	int                 	Order of playing the role
+first_name          	string              	first name of actor playing role
+last_name           	string              	last name of actor playing role
+extra_field         	string              	an extra field not in the original file
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors_with_new_field
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@doctors_with_new_field
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors_with_new_field
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@doctors_with_new_field
+PREHOOK: query: SELECT * FROM doctors_with_new_field
+PREHOOK: type: QUERY
+PREHOOK: Input: default@doctors_with_new_field
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM doctors_with_new_field
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@doctors_with_new_field
+#### A masked pattern was here ####
+1	William	Hartnell	fishfingers and custard
+10	David	Tennant	fishfingers and custard
+11	Matt	Smith	fishfingers and custard
+2	Patrick	Troughton	fishfingers and custard
+3	Jon	Pertwee	fishfingers and custard
+4	Tom	Baker	fishfingers and custard
+5	Peter	Davison	fishfingers and custard
+6	Colin	Baker	fishfingers and custard
+7	Sylvester	McCoy	fishfingers and custard
+8	Paul	McGann	fishfingers and custard
+9	Christopher	Eccleston	fishfingers and custard

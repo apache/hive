@@ -1,0 +1,8 @@
+ECHO listOfPolicies output is:
+Policy: RS-10-4-1024k DISABLED
+Policy: RS-3-2-1024k ENABLED
+Policy: RS-6-3-1024k ENABLED
+Policy: RS-LEGACY-6-3-1024k DISABLED
+Policy: XOR-2-1-1024k DISABLED
+ECHO original policy on /
+EC policy is 'RS-3-2-1024k'

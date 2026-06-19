@@ -1,0 +1,613 @@
+PREHOOK: query: CREATE VIEW V1_n8 AS SELECT key, value from src
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@V1_n8
+POSTHOOK: query: CREATE VIEW V1_n8 AS SELECT key, value from src
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@V1_n8
+POSTHOOK: Lineage: v1_n8.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v1_n8.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: CREATE VIEW V2_n3 AS SELECT ds, key, value FROM srcpart WHERE ds IS NOT NULL
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@srcpart
+PREHOOK: Output: database:default
+PREHOOK: Output: default@V2_n3
+POSTHOOK: query: CREATE VIEW V2_n3 AS SELECT ds, key, value FROM srcpart WHERE ds IS NOT NULL
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@V2_n3
+POSTHOOK: Lineage: v2_n3.ds SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: v2_n3.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v2_n3.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: CREATE VIEW V3_n1 AS 
+  SELECT src1.key, src2.value FROM V2_n3 src1 
+  JOIN src src2 ON src1.key = src2.key WHERE src1.ds IS NOT NULL
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@v2_n3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@V3_n1
+POSTHOOK: query: CREATE VIEW V3_n1 AS 
+  SELECT src1.key, src2.value FROM V2_n3 src1 
+  JOIN src src2 ON src1.key = src2.key WHERE src1.ds IS NOT NULL
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@v2_n3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@V3_n1
+POSTHOOK: Lineage: v3_n1.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v3_n1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: CREATE VIEW V4_n1 AS 
+  SELECT src1.key, src2.value as value1, src3.value as value2 
+  FROM V1_n8 src1 JOIN V2_n3 src2 on src1.key = src2.key JOIN src src3 ON src2.key = src3.key
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@v1_n8
+PREHOOK: Input: default@v2_n3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@V4_n1
+POSTHOOK: query: CREATE VIEW V4_n1 AS 
+  SELECT src1.key, src2.value as value1, src3.value as value2 
+  FROM V1_n8 src1 JOIN V2_n3 src2 on src1.key = src2.key JOIN src src3 ON src2.key = src3.key
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@v1_n8
+POSTHOOK: Input: default@v2_n3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@V4_n1
+POSTHOOK: Lineage: v4_n1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v4_n1.value1 SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: v4_n1.value2 SIMPLE [(src)src3.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: EXPLAIN LOGICAL 
+  SELECT key, count(1) FROM srcpart WHERE ds IS NOT NULL GROUP BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN LOGICAL 
+  SELECT key, count(1) FROM srcpart WHERE ds IS NOT NULL GROUP BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+#### A masked pattern was here ####
+LOGICAL PLAN:
+srcpart 
+  TableScan (TS_0)
+    alias: srcpart
+    filterExpr: ds is not null (type: boolean)
+    Select Operator (SEL_2)
+      expressions: key (type: string)
+      outputColumnNames: key
+      Group By Operator (GBY_3)
+        aggregations: count()
+        keys: key (type: string)
+        minReductionHashAggr: 0.99
+        mode: hash
+        outputColumnNames: _col0, _col1
+        Reduce Output Operator (RS_4)
+          key expressions: _col0 (type: string)
+          null sort order: z
+          sort order: +
+          Map-reduce partition columns: _col0 (type: string)
+          value expressions: _col1 (type: bigint)
+          Group By Operator (GBY_5)
+            aggregations: count(VALUE._col0)
+            keys: KEY._col0 (type: string)
+            mode: mergepartial
+            outputColumnNames: _col0, _col1
+            File Output Operator (FS_7)
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+PREHOOK: query: EXPLAIN LOGICAL 
+  SELECT key, count(1) FROM (SELECT key, value FROM src) subq1 GROUP BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN LOGICAL 
+  SELECT key, count(1) FROM (SELECT key, value FROM src) subq1 GROUP BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+LOGICAL PLAN:
+src 
+  TableScan (TS_0)
+    alias: src
+    Select Operator (SEL_1)
+      expressions: key (type: string)
+      outputColumnNames: key
+      Group By Operator (GBY_2)
+        aggregations: count()
+        keys: key (type: string)
+        minReductionHashAggr: 0.99
+        mode: hash
+        outputColumnNames: _col0, _col1
+        Reduce Output Operator (RS_3)
+          key expressions: _col0 (type: string)
+          null sort order: z
+          sort order: +
+          Map-reduce partition columns: _col0 (type: string)
+          value expressions: _col1 (type: bigint)
+          Group By Operator (GBY_4)
+            aggregations: count(VALUE._col0)
+            keys: KEY._col0 (type: string)
+            mode: mergepartial
+            outputColumnNames: _col0, _col1
+            File Output Operator (FS_6)
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+PREHOOK: query: EXPLAIN LOGICAL 
+  SELECT * FROM (
+    SELECT key, value FROM src UNION ALL SELECT key, value FROM srcpart WHERE ds IS NOT NULL
+  ) S1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@srcpart
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN LOGICAL 
+  SELECT * FROM (
+    SELECT key, value FROM src UNION ALL SELECT key, value FROM srcpart WHERE ds IS NOT NULL
+  ) S1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart
+#### A masked pattern was here ####
+LOGICAL PLAN:
+$hdt$_0-subquery1:src 
+  TableScan (TS_0)
+    alias: src
+    Select Operator (SEL_1)
+      expressions: key (type: string), value (type: string)
+      outputColumnNames: _col0, _col1
+      Union (UNION_5)
+        File Output Operator (FS_7)
+          compressed: false
+          table:
+              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+$hdt$_0-subquery2:srcpart 
+  TableScan (TS_2)
+    alias: srcpart
+    filterExpr: ds is not null (type: boolean)
+    Select Operator (SEL_4)
+      expressions: key (type: string), value (type: string)
+      outputColumnNames: _col0, _col1
+      Union (UNION_5)
+
+PREHOOK: query: EXPLAIN LOGICAL 
+  SELECT S1.key, S2.value FROM src S1 JOIN srcpart S2 ON S1.key = S2.key WHERE ds IS NOT NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@srcpart
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN LOGICAL 
+  SELECT S1.key, S2.value FROM src S1 JOIN srcpart S2 ON S1.key = S2.key WHERE ds IS NOT NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart
+#### A masked pattern was here ####
+LOGICAL PLAN:
+$hdt$_0:s1 
+  TableScan (TS_0)
+    alias: s1
+    filterExpr: (key is not null and (key) IN (RS[7])) (type: boolean)
+    Filter Operator (FIL_13)
+      predicate: (key is not null and (key) IN (RS[7])) (type: boolean)
+      Select Operator (SEL_2)
+        expressions: key (type: string)
+        outputColumnNames: _col0
+        Reduce Output Operator (RS_6)
+          key expressions: _col0 (type: string)
+          null sort order: z
+          sort order: +
+          Map-reduce partition columns: _col0 (type: string)
+          Join Operator (JOIN_8)
+            condition map:
+                 Inner Join 0 to 1
+            keys:
+              0 _col0 (type: string)
+              1 _col0 (type: string)
+            outputColumnNames: _col0, _col2
+            Select Operator (SEL_9)
+              expressions: _col0 (type: string), _col2 (type: string)
+              outputColumnNames: _col0, _col1
+              File Output Operator (FS_10)
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+$hdt$_1:s2 
+  TableScan (TS_3)
+    alias: s2
+    filterExpr: (key is not null and (key) IN (RS[6])) (type: boolean)
+    Filter Operator (FIL_14)
+      predicate: (key is not null and (key) IN (RS[6])) (type: boolean)
+      Select Operator (SEL_5)
+        expressions: key (type: string), value (type: string)
+        outputColumnNames: _col0, _col1
+        Reduce Output Operator (RS_7)
+          key expressions: _col0 (type: string)
+          null sort order: z
+          sort order: +
+          Map-reduce partition columns: _col0 (type: string)
+          value expressions: _col1 (type: string)
+          Join Operator (JOIN_8)
+            condition map:
+                 Inner Join 0 to 1
+            keys:
+              0 _col0 (type: string)
+              1 _col0 (type: string)
+            outputColumnNames: _col0, _col2
+
+PREHOOK: query: EXPLAIN LOGICAL SELECT * FROM V1_n8
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@v1_n8
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN LOGICAL SELECT * FROM V1_n8
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@v1_n8
+#### A masked pattern was here ####
+LOGICAL PLAN:
+src 
+  TableScan (TS_0)
+    alias: src
+    properties:
+      insideView TRUE
+    Select Operator (SEL_1)
+      expressions: key (type: string), value (type: string)
+      outputColumnNames: _col0, _col1
+      ListSink (LIST_SINK_3)
+
+PREHOOK: query: EXPLAIN LOGICAL SELECT * FROM V2_n3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@v2_n3
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN LOGICAL SELECT * FROM V2_n3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@v2_n3
+#### A masked pattern was here ####
+LOGICAL PLAN:
+srcpart 
+  TableScan (TS_0)
+    alias: srcpart
+    filterExpr: ds is not null (type: boolean)
+    properties:
+      insideView TRUE
+    Select Operator (SEL_2)
+      expressions: ds (type: string), key (type: string), value (type: string)
+      outputColumnNames: _col0, _col1, _col2
+      ListSink (LIST_SINK_5)
+
+PREHOOK: query: EXPLAIN LOGICAL SELECT * FROM V3_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@v2_n3
+PREHOOK: Input: default@v3_n1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN LOGICAL SELECT * FROM V3_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@v2_n3
+POSTHOOK: Input: default@v3_n1
+#### A masked pattern was here ####
+LOGICAL PLAN:
+$hdt$_0:srcpart 
+  TableScan (TS_0)
+    alias: srcpart
+    filterExpr: (key is not null and (key) IN (RS[7])) (type: boolean)
+    properties:
+      insideView TRUE
+    Filter Operator (FIL_13)
+      predicate: (key is not null and (key) IN (RS[7])) (type: boolean)
+      Select Operator (SEL_2)
+        expressions: key (type: string)
+        outputColumnNames: _col0
+        Reduce Output Operator (RS_6)
+          key expressions: _col0 (type: string)
+          null sort order: z
+          sort order: +
+          Map-reduce partition columns: _col0 (type: string)
+          Join Operator (JOIN_8)
+            condition map:
+                 Inner Join 0 to 1
+            keys:
+              0 _col0 (type: string)
+              1 _col0 (type: string)
+            outputColumnNames: _col0, _col2
+            Select Operator (SEL_9)
+              expressions: _col0 (type: string), _col2 (type: string)
+              outputColumnNames: _col0, _col1
+              File Output Operator (FS_10)
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+$hdt$_1:src2 
+  TableScan (TS_3)
+    alias: src2
+    filterExpr: (key is not null and (key) IN (RS[6])) (type: boolean)
+    properties:
+      insideView TRUE
+    Filter Operator (FIL_14)
+      predicate: (key is not null and (key) IN (RS[6])) (type: boolean)
+      Select Operator (SEL_5)
+        expressions: key (type: string), value (type: string)
+        outputColumnNames: _col0, _col1
+        Reduce Output Operator (RS_7)
+          key expressions: _col0 (type: string)
+          null sort order: z
+          sort order: +
+          Map-reduce partition columns: _col0 (type: string)
+          value expressions: _col1 (type: string)
+          Join Operator (JOIN_8)
+            condition map:
+                 Inner Join 0 to 1
+            keys:
+              0 _col0 (type: string)
+              1 _col0 (type: string)
+            outputColumnNames: _col0, _col2
+
+PREHOOK: query: EXPLAIN LOGICAL SELECT * FROM V4_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@v1_n8
+PREHOOK: Input: default@v2_n3
+PREHOOK: Input: default@v4_n1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN LOGICAL SELECT * FROM V4_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@v1_n8
+POSTHOOK: Input: default@v2_n3
+POSTHOOK: Input: default@v4_n1
+#### A masked pattern was here ####
+LOGICAL PLAN:
+$hdt$_0:srcpart 
+  TableScan (TS_0)
+    alias: srcpart
+    filterExpr: (key is not null and (key) IN (RS[10]) and (key) IN (RS[13])) (type: boolean)
+    properties:
+      insideView TRUE
+    Filter Operator (FIL_22)
+      predicate: (key is not null and (key) IN (RS[10]) and (key) IN (RS[13])) (type: boolean)
+      Select Operator (SEL_2)
+        expressions: key (type: string), value (type: string)
+        outputColumnNames: _col0, _col1
+        Reduce Output Operator (RS_9)
+          key expressions: _col0 (type: string)
+          null sort order: z
+          sort order: +
+          Map-reduce partition columns: _col0 (type: string)
+          value expressions: _col1 (type: string)
+          Join Operator (JOIN_11)
+            condition map:
+                 Inner Join 0 to 1
+            keys:
+              0 _col0 (type: string)
+              1 _col0 (type: string)
+            outputColumnNames: _col0, _col1, _col2
+            Reduce Output Operator (RS_12)
+              key expressions: _col0 (type: string)
+              null sort order: z
+              sort order: +
+              Map-reduce partition columns: _col0 (type: string)
+              value expressions: _col1 (type: string), _col2 (type: string)
+              Join Operator (JOIN_14)
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col1, _col2, _col4
+                Select Operator (SEL_15)
+                  expressions: _col2 (type: string), _col1 (type: string), _col4 (type: string)
+                  outputColumnNames: _col0, _col1, _col2
+                  File Output Operator (FS_16)
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+$hdt$_1:src 
+  TableScan (TS_3)
+    alias: src
+    filterExpr: (key is not null and (key) IN (RS[9]) and (key) IN (RS[13])) (type: boolean)
+    properties:
+      insideView TRUE
+    Filter Operator (FIL_23)
+      predicate: (key is not null and (key) IN (RS[9]) and (key) IN (RS[13])) (type: boolean)
+      Select Operator (SEL_5)
+        expressions: key (type: string)
+        outputColumnNames: _col0
+        Reduce Output Operator (RS_10)
+          key expressions: _col0 (type: string)
+          null sort order: z
+          sort order: +
+          Map-reduce partition columns: _col0 (type: string)
+          Join Operator (JOIN_11)
+            condition map:
+                 Inner Join 0 to 1
+            keys:
+              0 _col0 (type: string)
+              1 _col0 (type: string)
+            outputColumnNames: _col0, _col1, _col2
+$hdt$_2:src3 
+  TableScan (TS_6)
+    alias: src3
+    filterExpr: (key is not null and (key) IN (RS[12]) and (key) IN (RS[9]) and (key) IN (RS[10])) (type: boolean)
+    properties:
+      insideView TRUE
+    Filter Operator (FIL_24)
+      predicate: (key is not null and (key) IN (RS[12]) and (key) IN (RS[9]) and (key) IN (RS[10])) (type: boolean)
+      Select Operator (SEL_8)
+        expressions: key (type: string), value (type: string)
+        outputColumnNames: _col0, _col1
+        Reduce Output Operator (RS_13)
+          key expressions: _col0 (type: string)
+          null sort order: z
+          sort order: +
+          Map-reduce partition columns: _col0 (type: string)
+          value expressions: _col1 (type: string)
+          Join Operator (JOIN_14)
+            condition map:
+                 Inner Join 0 to 1
+            keys:
+              0 _col0 (type: string)
+              1 _col0 (type: string)
+            outputColumnNames: _col1, _col2, _col4
+
+PREHOOK: query: CREATE VIEW V5_n0 as SELECT * FROM srcpart where ds = '10'
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@srcpart
+PREHOOK: Output: database:default
+PREHOOK: Output: default@V5_n0
+POSTHOOK: query: CREATE VIEW V5_n0 as SELECT * FROM srcpart where ds = '10'
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@V5_n0
+POSTHOOK: Lineage: v5_n0.ds SIMPLE []
+POSTHOOK: Lineage: v5_n0.hr SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: v5_n0.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v5_n0.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: EXPLAIN LOGICAL SELECT * FROM V5_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@v5_n0
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN LOGICAL SELECT * FROM V5_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@v5_n0
+#### A masked pattern was here ####
+LOGICAL PLAN:
+srcpart 
+  TableScan (TS_0)
+    alias: srcpart
+    filterExpr: (ds = '10') (type: boolean)
+    properties:
+      insideView TRUE
+    Filter Operator (FIL_4)
+      predicate: (ds = '10') (type: boolean)
+      Select Operator (SEL_2)
+        expressions: key (type: string), value (type: string), '10' (type: string), hr (type: string)
+        outputColumnNames: _col0, _col1, _col2, _col3
+        ListSink (LIST_SINK_5)
+
+PREHOOK: query: EXPLAIN LOGICAL SELECT s1.key, s1.cnt, s2.value FROM (SELECT key, count(value) as cnt FROM src GROUP BY key) s1 JOIN src s2 ON (s1.key = s2.key) ORDER BY s1.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN LOGICAL SELECT s1.key, s1.cnt, s2.value FROM (SELECT key, count(value) as cnt FROM src GROUP BY key) s1 JOIN src s2 ON (s1.key = s2.key) ORDER BY s1.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+LOGICAL PLAN:
+$hdt$_0:src 
+  TableScan (TS_0)
+    alias: src
+    filterExpr: (key is not null and (key) IN (RS[11])) (type: boolean)
+    Filter Operator (FIL_19)
+      predicate: (key is not null and (key) IN (RS[11])) (type: boolean)
+      Group By Operator (GBY_3)
+        aggregations: count(value)
+        keys: key (type: string)
+        minReductionHashAggr: 0.99
+        mode: hash
+        outputColumnNames: _col0, _col1
+        Reduce Output Operator (RS_4)
+          key expressions: _col0 (type: string)
+          null sort order: z
+          sort order: +
+          Map-reduce partition columns: _col0 (type: string)
+          value expressions: _col1 (type: bigint)
+          Group By Operator (GBY_5)
+            aggregations: count(VALUE._col0)
+            keys: KEY._col0 (type: string)
+            mode: mergepartial
+            outputColumnNames: _col0, _col1
+            Reduce Output Operator (RS_10)
+              key expressions: _col0 (type: string)
+              null sort order: z
+              sort order: +
+              Map-reduce partition columns: _col0 (type: string)
+              value expressions: _col1 (type: bigint)
+              Join Operator (JOIN_12)
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col1, _col3
+                Select Operator (SEL_13)
+                  expressions: _col0 (type: string), _col1 (type: bigint), _col3 (type: string)
+                  outputColumnNames: _col0, _col1, _col2
+                  Reduce Output Operator (RS_14)
+                    key expressions: _col0 (type: string)
+                    null sort order: z
+                    sort order: +
+                    value expressions: _col1 (type: bigint), _col2 (type: string)
+                    Select Operator (SEL_15)
+                      expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint), VALUE._col1 (type: string)
+                      outputColumnNames: _col0, _col1, _col2
+                      File Output Operator (FS_16)
+                        compressed: false
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+$hdt$_1:s2 
+  TableScan (TS_7)
+    alias: s2
+    filterExpr: (key is not null and (key) IN (RS[10])) (type: boolean)
+    Filter Operator (FIL_20)
+      predicate: (key is not null and (key) IN (RS[10])) (type: boolean)
+      Select Operator (SEL_9)
+        expressions: key (type: string), value (type: string)
+        outputColumnNames: _col0, _col1
+        Reduce Output Operator (RS_11)
+          key expressions: _col0 (type: string)
+          null sort order: z
+          sort order: +
+          Map-reduce partition columns: _col0 (type: string)
+          value expressions: _col1 (type: string)
+          Join Operator (JOIN_12)
+            condition map:
+                 Inner Join 0 to 1
+            keys:
+              0 _col0 (type: string)
+              1 _col0 (type: string)
+            outputColumnNames: _col0, _col1, _col3
+

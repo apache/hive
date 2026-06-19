@@ -1,0 +1,21 @@
+PREHOOK: query: select
+  cast(key as decimal(10,2)) as c1,
+  cast(key as char(10)) as c2,
+  cast(key as varchar(10)) as c3
+from src
+order by c1, c2, c3
+limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  cast(key as decimal(10,2)) as c1,
+  cast(key as char(10)) as c2,
+  cast(key as varchar(10)) as c3
+from src
+order by c1, c2, c3
+limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0.00	0         	0

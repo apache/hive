@@ -1,0 +1,17 @@
+<configuration xmlns:xi="http://www.w3.org/2001/XInclude">
+
+    <property>
+        <name>beeline.hs2.jdbc.url.container</name>
+            <value>jdbc:hive2://zkhost1:2181,zkhost2:2181,zkhost3:2181/;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2</value>
+    </property>
+    <property>
+        <name>beeline.hs2.jdbc.url.test</name>
+        <value>${beeline.hs2.jdbc.url.container}?tez.queue.name=myqueue</value>
+    </property>
+
+    <property>
+        <name>beeline.hs2.jdbc.url.default</name>
+        <value>test</value>
+    </property>
+
+</configuration>

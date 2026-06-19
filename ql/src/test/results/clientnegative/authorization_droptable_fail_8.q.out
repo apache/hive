@@ -1,0 +1,21 @@
+PREHOOK: query: CREATE DATABASE auth_db_fail_2
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:auth_db_fail_2
+POSTHOOK: query: CREATE DATABASE auth_db_fail_2
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:auth_db_fail_2
+PREHOOK: query: use auth_db_fail_2
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:auth_db_fail_2
+POSTHOOK: query: use auth_db_fail_2
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:auth_db_fail_2
+PREHOOK: query: create table drop_table_auth_4 (key int, value string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: auth_db_fail_2@drop_table_auth_4
+PREHOOK: Output: database:auth_db_fail_2
+POSTHOOK: query: create table drop_table_auth_4 (key int, value string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: auth_db_fail_2@drop_table_auth_4
+POSTHOOK: Output: database:auth_db_fail_2
+Authorization failed:No privilege 'Drop' found for outputs { database:auth_db_fail_2}. Use SHOW GRANT to get more details.

@@ -1,0 +1,5 @@
+Ln:2 HOST
+Ln:2 HOST Command: abcd
+Ln:6 EXCEPTION HANDLER
+Ln:7 PRINT
+FAILED

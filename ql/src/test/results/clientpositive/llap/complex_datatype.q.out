@@ -1,0 +1,668 @@
+PREHOOK: query: create EXTERNAL table `complex_map_array_table` as
+select
+'bob' as name,
+  MAP(
+      "Key1",
+      ARRAY(
+        1,
+        2,
+        3
+        ),
+      "Key2",
+      ARRAY(
+        4,
+        5,
+        6
+        )
+     ) as column2
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@complex_map_array_table
+POSTHOOK: query: create EXTERNAL table `complex_map_array_table` as
+select
+'bob' as name,
+  MAP(
+      "Key1",
+      ARRAY(
+        1,
+        2,
+        3
+        ),
+      "Key2",
+      ARRAY(
+        4,
+        5,
+        6
+        )
+     ) as column2
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@complex_map_array_table
+POSTHOOK: Lineage: complex_map_array_table.column2 EXPRESSION []
+POSTHOOK: Lineage: complex_map_array_table.name SIMPLE []
+PREHOOK: query: create EXTERNAL table `complex_map_struct_table` as
+select
+'bob' as name,
+MAP(
+    "Map_Key1",
+    named_struct(
+      'Id',
+      'Id_Value1',
+      'Name',
+      'Name_Value1'
+      ),
+    "Map_Key2",
+    named_struct(
+      'Id',
+      'Id_Value2',
+      'Name',
+      'Name_Value2'
+      )
+   ) as column2
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@complex_map_struct_table
+POSTHOOK: query: create EXTERNAL table `complex_map_struct_table` as
+select
+'bob' as name,
+MAP(
+    "Map_Key1",
+    named_struct(
+      'Id',
+      'Id_Value1',
+      'Name',
+      'Name_Value1'
+      ),
+    "Map_Key2",
+    named_struct(
+      'Id',
+      'Id_Value2',
+      'Name',
+      'Name_Value2'
+      )
+   ) as column2
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@complex_map_struct_table
+POSTHOOK: Lineage: complex_map_struct_table.column2 EXPRESSION []
+POSTHOOK: Lineage: complex_map_struct_table.name SIMPLE []
+PREHOOK: query: create EXTERNAL table `complex_table1` as
+select
+MAP(
+    "Key1",
+    ARRAY(
+      1,
+      2,
+      3
+      ),
+    "Key2",
+    ARRAY(
+      4,
+      5,
+      6
+      )
+   ) as column1,
+'bob' as name,
+MAP(
+    "Map_Key1",
+    named_struct(
+      'Id',
+      'Id_Value1',
+      'Name',
+      'Name_Value1'
+      ),
+    "Map_Key2",
+    named_struct(
+      'Id',
+      'Id_Value2',
+      'Name',
+      'Name_Value2'
+      )
+   ) as column3
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@complex_table1
+POSTHOOK: query: create EXTERNAL table `complex_table1` as
+select
+MAP(
+    "Key1",
+    ARRAY(
+      1,
+      2,
+      3
+      ),
+    "Key2",
+    ARRAY(
+      4,
+      5,
+      6
+      )
+   ) as column1,
+'bob' as name,
+MAP(
+    "Map_Key1",
+    named_struct(
+      'Id',
+      'Id_Value1',
+      'Name',
+      'Name_Value1'
+      ),
+    "Map_Key2",
+    named_struct(
+      'Id',
+      'Id_Value2',
+      'Name',
+      'Name_Value2'
+      )
+   ) as column3
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@complex_table1
+POSTHOOK: Lineage: complex_table1.column1 EXPRESSION []
+POSTHOOK: Lineage: complex_table1.column3 EXPRESSION []
+POSTHOOK: Lineage: complex_table1.name SIMPLE []
+PREHOOK: query: create EXTERNAL table `complex_table2` as
+select
+MAP(
+    "Key1",
+    ARRAY(
+      1,
+      2,
+      3
+      ),
+    "Key2",
+    ARRAY(
+      4,
+      5,
+      6
+      )
+   ) as column1,
+MAP(
+    "Map_Key1",
+    named_struct(
+      'Id',
+      'Id_Value1',
+      'Name',
+      'Name_Value1'
+      ),
+    "Map_Key2",
+    named_struct(
+      'Id',
+      'Id_Value2',
+      'Name',
+      'Name_Value2'
+      )
+   ) as column2
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@complex_table2
+POSTHOOK: query: create EXTERNAL table `complex_table2` as
+select
+MAP(
+    "Key1",
+    ARRAY(
+      1,
+      2,
+      3
+      ),
+    "Key2",
+    ARRAY(
+      4,
+      5,
+      6
+      )
+   ) as column1,
+MAP(
+    "Map_Key1",
+    named_struct(
+      'Id',
+      'Id_Value1',
+      'Name',
+      'Name_Value1'
+      ),
+    "Map_Key2",
+    named_struct(
+      'Id',
+      'Id_Value2',
+      'Name',
+      'Name_Value2'
+      )
+   ) as column2
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@complex_table2
+POSTHOOK: Lineage: complex_table2.column1 EXPRESSION []
+POSTHOOK: Lineage: complex_table2.column2 EXPRESSION []
+PREHOOK: query: create EXTERNAL table `complex_table3` as
+select
+MAP(
+    "Key1",
+    ARRAY(
+      1,
+      2,
+      3
+      ),
+    "Key2",
+    ARRAY(
+      4,
+      5,
+      6
+      )
+   ) as column1,
+MAP(
+    "Key3",
+    ARRAY(
+      7,
+      8,
+      9
+      ),
+    "Key4",
+    ARRAY(
+      10,
+      11,
+      12
+      )
+   ) as column2
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@complex_table3
+POSTHOOK: query: create EXTERNAL table `complex_table3` as
+select
+MAP(
+    "Key1",
+    ARRAY(
+      1,
+      2,
+      3
+      ),
+    "Key2",
+    ARRAY(
+      4,
+      5,
+      6
+      )
+   ) as column1,
+MAP(
+    "Key3",
+    ARRAY(
+      7,
+      8,
+      9
+      ),
+    "Key4",
+    ARRAY(
+      10,
+      11,
+      12
+      )
+   ) as column2
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@complex_table3
+POSTHOOK: Lineage: complex_table3.column1 EXPRESSION []
+POSTHOOK: Lineage: complex_table3.column2 EXPRESSION []
+PREHOOK: query: create EXTERNAL table `complex_array_map_table` as
+select
+'bob' as name,
+ARRAY(
+    MAP(
+      "Key1",
+      "Value1"
+      ),
+    MAP(
+      "Key2",
+      "Value2"
+      )
+    ) as column2
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@complex_array_map_table
+POSTHOOK: query: create EXTERNAL table `complex_array_map_table` as
+select
+'bob' as name,
+ARRAY(
+    MAP(
+      "Key1",
+      "Value1"
+      ),
+    MAP(
+      "Key2",
+      "Value2"
+      )
+    ) as column2
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@complex_array_map_table
+POSTHOOK: Lineage: complex_array_map_table.column2 EXPRESSION []
+POSTHOOK: Lineage: complex_array_map_table.name SIMPLE []
+PREHOOK: query: create EXTERNAL table `complex_map_map_table` as
+select
+  'bob' as name,
+  MAP(
+    "Key1",
+    MAP(
+      1,
+      2
+    ),
+    "Key2",
+    MAP(
+    3,
+    4
+    )
+  ) as column2
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@complex_map_map_table
+POSTHOOK: query: create EXTERNAL table `complex_map_map_table` as
+select
+  'bob' as name,
+  MAP(
+    "Key1",
+    MAP(
+      1,
+      2
+    ),
+    "Key2",
+    MAP(
+    3,
+    4
+    )
+  ) as column2
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@complex_map_map_table
+POSTHOOK: Lineage: complex_map_map_table.column2 EXPRESSION []
+POSTHOOK: Lineage: complex_map_map_table.name SIMPLE []
+PREHOOK: query: create EXTERNAL table `complex_combined_table` as
+select
+  ARRAY('arr_val1', 'arr_val2', 'arr_val3') as column1,
+  'bob' as column2,
+  MAP(
+    "Key1",
+    ARRAY(
+      1,
+      2,
+      3
+      ),
+    "Key2",
+    ARRAY(
+      4,
+      5,
+      6
+      )
+   ) as column3,
+  NAMED_STRUCT('abc', '7', 'def', '8') as column4,
+  MAP(
+    "Key3",
+    "Value3",
+    "Key4",
+    "Value4"
+    ) as column5
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@complex_combined_table
+POSTHOOK: query: create EXTERNAL table `complex_combined_table` as
+select
+  ARRAY('arr_val1', 'arr_val2', 'arr_val3') as column1,
+  'bob' as column2,
+  MAP(
+    "Key1",
+    ARRAY(
+      1,
+      2,
+      3
+      ),
+    "Key2",
+    ARRAY(
+      4,
+      5,
+      6
+      )
+   ) as column3,
+  NAMED_STRUCT('abc', '7', 'def', '8') as column4,
+  MAP(
+    "Key3",
+    "Value3",
+    "Key4",
+    "Value4"
+    ) as column5
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@complex_combined_table
+POSTHOOK: Lineage: complex_combined_table.column1 EXPRESSION []
+POSTHOOK: Lineage: complex_combined_table.column2 SIMPLE []
+POSTHOOK: Lineage: complex_combined_table.column3 EXPRESSION []
+POSTHOOK: Lineage: complex_combined_table.column4 EXPRESSION []
+POSTHOOK: Lineage: complex_combined_table.column5 EXPRESSION []
+PREHOOK: query: select * from complex_map_array_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@complex_map_array_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from complex_map_array_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@complex_map_array_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+bob	{"Key1":[1,2,3],"Key2":[4,5,6]}
+PREHOOK: query: select * from complex_map_struct_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@complex_map_struct_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from complex_map_struct_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@complex_map_struct_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+bob	{"Map_Key1":{"id":"Id_Value1","name":"Name_Value1"},"Map_Key2":{"id":"Id_Value2","name":"Name_Value2"}}
+PREHOOK: query: select * from complex_table1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@complex_table1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from complex_table1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@complex_table1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"Key1":[1,2,3],"Key2":[4,5,6]}	bob	{"Map_Key1":{"id":"Id_Value1","name":"Name_Value1"},"Map_Key2":{"id":"Id_Value2","name":"Name_Value2"}}
+PREHOOK: query: select * from complex_table2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@complex_table2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from complex_table2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@complex_table2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"Key1":[1,2,3],"Key2":[4,5,6]}	{"Map_Key1":{"id":"Id_Value1","name":"Name_Value1"},"Map_Key2":{"id":"Id_Value2","name":"Name_Value2"}}
+PREHOOK: query: select * from complex_table3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@complex_table3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from complex_table3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@complex_table3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"Key1":[1,2,3],"Key2":[4,5,6]}	{"Key3":[7,8,9],"Key4":[10,11,12]}
+PREHOOK: query: select * from complex_array_map_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@complex_array_map_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from complex_array_map_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@complex_array_map_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+bob	[{"Key1":"Value1"},{"Key2":"Value2"}]
+PREHOOK: query: select * from complex_map_map_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@complex_map_map_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from complex_map_map_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@complex_map_map_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+bob	{"Key1":{1:2},"Key2":{3:4}}
+PREHOOK: query: select * from complex_combined_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@complex_combined_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from complex_combined_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@complex_combined_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+["arr_val1","arr_val2","arr_val3"]	bob	{"Key1":[1,2,3],"Key2":[4,5,6]}	{"abc":"7","def":"8"}	{"Key3":"Value3","Key4":"Value4"}
+PREHOOK: query: select * from complex_map_array_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@complex_map_array_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from complex_map_array_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@complex_map_array_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+bob	{"Key1":[1,2,3],"Key2":[4,5,6]}
+PREHOOK: query: select * from complex_map_struct_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@complex_map_struct_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from complex_map_struct_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@complex_map_struct_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+bob	{"Map_Key1":{"id":"Id_Value1","name":"Name_Value1"},"Map_Key2":{"id":"Id_Value2","name":"Name_Value2"}}
+PREHOOK: query: select * from complex_table1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@complex_table1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from complex_table1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@complex_table1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"Key1":[1,2,3],"Key2":[4,5,6]}	bob	{"Map_Key1":{"id":"Id_Value1","name":"Name_Value1"},"Map_Key2":{"id":"Id_Value2","name":"Name_Value2"}}
+PREHOOK: query: select * from complex_table2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@complex_table2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from complex_table2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@complex_table2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"Key1":[1,2,3],"Key2":[4,5,6]}	{"Map_Key1":{"id":"Id_Value1","name":"Name_Value1"},"Map_Key2":{"id":"Id_Value2","name":"Name_Value2"}}
+PREHOOK: query: select * from complex_table3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@complex_table3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from complex_table3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@complex_table3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"Key1":[1,2,3],"Key2":[4,5,6]}	{"Key3":[7,8,9],"Key4":[10,11,12]}
+PREHOOK: query: select * from complex_array_map_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@complex_array_map_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from complex_array_map_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@complex_array_map_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+bob	[{"Key1":"Value1"},{"Key2":"Value2"}]
+PREHOOK: query: select * from complex_map_map_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@complex_map_map_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from complex_map_map_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@complex_map_map_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+bob	{"Key1":{1:2},"Key2":{3:4}}
+PREHOOK: query: select * from complex_combined_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@complex_combined_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from complex_combined_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@complex_combined_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+["arr_val1","arr_val2","arr_val3"]	bob	{"Key1":[1,2,3],"Key2":[4,5,6]}	{"abc":"7","def":"8"}	{"Key3":"Value3","Key4":"Value4"}
+PREHOOK: query: select * from complex_map_array_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@complex_map_array_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from complex_map_array_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@complex_map_array_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+bob	{"Key1":[1,2,3],"Key2":[4,5,6]}
+PREHOOK: query: select * from complex_map_struct_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@complex_map_struct_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from complex_map_struct_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@complex_map_struct_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+bob	{"Map_Key1":{"id":"Id_Value1","name":"Name_Value1"},"Map_Key2":{"id":"Id_Value2","name":"Name_Value2"}}
+PREHOOK: query: select * from complex_table1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@complex_table1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from complex_table1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@complex_table1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"Key1":[1,2,3],"Key2":[4,5,6]}	bob	{"Map_Key1":{"id":"Id_Value1","name":"Name_Value1"},"Map_Key2":{"id":"Id_Value2","name":"Name_Value2"}}
+PREHOOK: query: select * from complex_table2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@complex_table2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from complex_table2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@complex_table2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"Key1":[1,2,3],"Key2":[4,5,6]}	{"Map_Key1":{"id":"Id_Value1","name":"Name_Value1"},"Map_Key2":{"id":"Id_Value2","name":"Name_Value2"}}
+PREHOOK: query: select * from complex_table3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@complex_table3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from complex_table3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@complex_table3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"Key1":[1,2,3],"Key2":[4,5,6]}	{"Key3":[7,8,9],"Key4":[10,11,12]}
+PREHOOK: query: select * from complex_array_map_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@complex_array_map_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from complex_array_map_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@complex_array_map_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+bob	[{"Key1":"Value1"},{"Key2":"Value2"}]
+PREHOOK: query: select * from complex_map_map_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@complex_map_map_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from complex_map_map_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@complex_map_map_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+bob	{"Key1":{1:2},"Key2":{3:4}}
+PREHOOK: query: select * from complex_combined_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@complex_combined_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from complex_combined_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@complex_combined_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+["arr_val1","arr_val2","arr_val3"]	bob	{"Key1":[1,2,3],"Key2":[4,5,6]}	{"abc":"7","def":"8"}	{"Key3":"Value3","Key4":"Value4"}

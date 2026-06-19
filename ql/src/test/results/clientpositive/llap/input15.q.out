@@ -1,0 +1,39 @@
+PREHOOK: query: EXPLAIN
+CREATE TABLE TEST15(key INT, value STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@TEST15
+POSTHOOK: query: EXPLAIN
+CREATE TABLE TEST15(key INT, value STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@TEST15
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Create Table
+      columns: key int, value string
+      name: default.TEST15
+      field delimiter: 	
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+PREHOOK: query: CREATE TABLE TEST15(key INT, value STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@TEST15
+POSTHOOK: query: CREATE TABLE TEST15(key INT, value STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@TEST15
+PREHOOK: query: DESCRIBE TEST15
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test15
+POSTHOOK: query: DESCRIBE TEST15
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test15
+key                 	int                 	                    
+value               	string              	                    

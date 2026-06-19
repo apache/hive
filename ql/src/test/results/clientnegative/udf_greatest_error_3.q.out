@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10016]: Line 2:23 Argument type mismatch ''b'': greatest only takes primitive types as 2nd argument, got LIST

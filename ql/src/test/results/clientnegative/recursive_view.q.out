@@ -1,0 +1,107 @@
+PREHOOK: query: drop table t
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table t
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop view r0
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: drop view r0
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: drop view r1
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: drop view r1
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: drop view r2
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: drop view r2
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: drop view r3
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: drop view r3
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: create table t (id int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: create table t (id int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: create view r0 as select * from t
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@t
+PREHOOK: Output: database:default
+PREHOOK: Output: default@r0
+POSTHOOK: query: create view r0 as select * from t
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@t
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@r0
+POSTHOOK: Lineage: r0.id SIMPLE [(t)t.FieldSchema(name:id, type:int, comment:null), ]
+PREHOOK: query: create view r1 as select * from r0
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@r0
+PREHOOK: Input: default@t
+PREHOOK: Output: database:default
+PREHOOK: Output: default@r1
+POSTHOOK: query: create view r1 as select * from r0
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@r0
+POSTHOOK: Input: default@t
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@r1
+POSTHOOK: Lineage: r1.id SIMPLE [(t)t.FieldSchema(name:id, type:int, comment:null), ]
+PREHOOK: query: create view r2 as select * from r1
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@r0
+PREHOOK: Input: default@r1
+PREHOOK: Input: default@t
+PREHOOK: Output: database:default
+PREHOOK: Output: default@r2
+POSTHOOK: query: create view r2 as select * from r1
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@r0
+POSTHOOK: Input: default@r1
+POSTHOOK: Input: default@t
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@r2
+POSTHOOK: Lineage: r2.id SIMPLE [(t)t.FieldSchema(name:id, type:int, comment:null), ]
+PREHOOK: query: create view r3 as select * from r2
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@r0
+PREHOOK: Input: default@r1
+PREHOOK: Input: default@r2
+PREHOOK: Input: default@t
+PREHOOK: Output: database:default
+PREHOOK: Output: default@r3
+POSTHOOK: query: create view r3 as select * from r2
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@r0
+POSTHOOK: Input: default@r1
+POSTHOOK: Input: default@r2
+POSTHOOK: Input: default@t
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@r3
+POSTHOOK: Lineage: r3.id SIMPLE [(t)t.FieldSchema(name:id, type:int, comment:null), ]
+PREHOOK: query: drop view r0
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@r0
+PREHOOK: Output: default@r0
+POSTHOOK: query: drop view r0
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@r0
+POSTHOOK: Output: default@r0
+PREHOOK: query: alter view r3 rename to r0
+PREHOOK: type: ALTERVIEW_RENAME
+PREHOOK: Input: default@r3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@r0
+PREHOOK: Output: default@r3
+POSTHOOK: query: alter view r3 rename to r0
+POSTHOOK: type: ALTERVIEW_RENAME
+POSTHOOK: Input: default@r3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@r0
+POSTHOOK: Output: default@r3
+FAILED: SemanticException Recursive view default.r0 detected (cycle: default.r0 -> default.r2 -> default.r1 -> default.r0).

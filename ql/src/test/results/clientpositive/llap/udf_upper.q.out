@@ -1,0 +1,16 @@
+PREHOOK: query: DESCRIBE FUNCTION upper
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION upper
+POSTHOOK: type: DESCFUNCTION
+upper(str) - Returns str with all characters changed to uppercase
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED upper
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED upper
+POSTHOOK: type: DESCFUNCTION
+upper(str) - Returns str with all characters changed to uppercase
+Synonyms: ucase
+Example:
+  > SELECT upper('Facebook') FROM src LIMIT 1;
+  'FACEBOOK'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper
+Function type:BUILTIN

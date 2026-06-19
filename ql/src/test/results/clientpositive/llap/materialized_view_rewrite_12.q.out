@@ -1,0 +1,133 @@
+PREHOOK: query: create table t1(a int, week_end_year int) stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1(a int, week_end_year int) stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+unix_timestamp(void) is deprecated. Use current_timestamp instead.
+unix_timestamp(void) is deprecated. Use current_timestamp instead.
+Cannot enable automatic rewriting for materialized view. UNIX_TIMESTAMP is not a deterministic function
+PREHOOK: query: create materialized view mat1 as
+SELECT a, week_end_year FROM t1 WHERE week_end_year = year(from_unixtime( unix_timestamp() ))
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mat1
+POSTHOOK: query: create materialized view mat1 as
+SELECT a, week_end_year FROM t1 WHERE week_end_year = year(from_unixtime( unix_timestamp() ))
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mat1
+POSTHOOK: Lineage: mat1.a SIMPLE [(t1)t1.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: mat1.week_end_year SIMPLE []
+Cannot enable automatic rewriting for materialized view. current_timestamp is not a deterministic function
+PREHOOK: query: create materialized view mat2 as
+SELECT a, week_end_year FROM t1 WHERE week_end_year = year( current_timestamp() )
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mat2
+POSTHOOK: query: create materialized view mat2 as
+SELECT a, week_end_year FROM t1 WHERE week_end_year = year( current_timestamp() )
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mat2
+POSTHOOK: Lineage: mat2.a SIMPLE [(t1)t1.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: mat2.week_end_year SIMPLE []
+PREHOOK: query: describe formatted mat1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@mat1
+POSTHOOK: query: describe formatted mat1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@mat1
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+week_end_year       	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MATERIALIZED_VIEW   	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"week_end_year\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Materialized View Information	 	 
+Original Query:     	SELECT a, week_end_year FROM t1 WHERE week_end_year = year(from_unixtime( unix_timestamp() ))	 
+Expanded Query:     	SELECT `t1`.`a`, `t1`.`week_end_year` FROM `default`.`t1` WHERE `t1`.`week_end_year` = year(from_unixtime( unix_timestamp() ))	 
+Rewrite Enabled:    	No                  	 
+Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	Snapshot            	 
+default.t1          	:0:9223372036854775807::	 
+PREHOOK: query: describe formatted mat2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@mat2
+POSTHOOK: query: describe formatted mat2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@mat2
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+week_end_year       	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MATERIALIZED_VIEW   	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"week_end_year\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Materialized View Information	 	 
+Original Query:     	SELECT a, week_end_year FROM t1 WHERE week_end_year = year( current_timestamp() )	 
+Expanded Query:     	SELECT `t1`.`a`, `t1`.`week_end_year` FROM `default`.`t1` WHERE `t1`.`week_end_year` = year( current_timestamp() )	 
+Rewrite Enabled:    	No                  	 
+Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	Snapshot            	 
+default.t1          	:0:9223372036854775807::	 
+PREHOOK: query: show materialized views
+PREHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: query: show materialized views
+POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+# MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
+mat1                	No                  	Manual refresh      	Not available       
+mat2                	No                  	Manual refresh      	Not available       

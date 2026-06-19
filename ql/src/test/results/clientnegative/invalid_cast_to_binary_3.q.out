@@ -1,0 +1,1 @@
+FAILED: SemanticException Line 0:-1 Wrong arguments '2': Only string, char, varchar or binary data can be cast into binary data types.

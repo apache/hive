@@ -1,0 +1,679 @@
+PREHOOK: query: DROP TABLE IF EXISTS cond_vector
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS cond_vector
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE cond_vector(a STRING) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cond_vector
+POSTHOOK: query: CREATE TABLE cond_vector(a STRING) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cond_vector
+PREHOOK: query: INSERT OVERWRITE TABLE cond_vector VALUES("a/b"),("a/b"),("c/d")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@cond_vector
+POSTHOOK: query: INSERT OVERWRITE TABLE cond_vector VALUES("a/b"),("a/b"),("c/d")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@cond_vector
+POSTHOOK: Lineage: cond_vector.a SCRIPT []
+PREHOOK: query: SELECT IF(1=1, MAP("a", "b"), NULL) FROM cond_vector
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cond_vector
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT IF(1=1, MAP("a", "b"), NULL) FROM cond_vector
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cond_vector
+#### A masked pattern was here ####
+{"a":"b"}
+{"a":"b"}
+{"a":"b"}
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT IF(1=1, MAP("a", "b"), NULL) FROM cond_vector
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cond_vector
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT IF(1=1, MAP("a", "b"), NULL) FROM cond_vector
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cond_vector
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: cond_vector
+                  Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:a:string, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 2:ROW__IS__DELETED:boolean]
+                  Select Operator
+                    expressions: map('a':'b') (type: map<string,string>)
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [3]
+                        selectExpressions: VectorUDFAdaptor(map('a':'b')) -> 3:map<string,string>
+                    Statistics: Num rows: 3 Data size: 978 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 3 Data size: 978 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    includeColumns: []
+                    dataColumns: a:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [map<string,string>]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT IF(1=1, MAP("a", MAP("b","c")), NULL) FROM cond_vector
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cond_vector
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT IF(1=1, MAP("a", MAP("b","c")), NULL) FROM cond_vector
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cond_vector
+#### A masked pattern was here ####
+{"a":{"b":"c"}}
+{"a":{"b":"c"}}
+{"a":{"b":"c"}}
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT IF(1=1, MAP("a", MAP("b","c")), NULL) FROM cond_vector
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cond_vector
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT IF(1=1, MAP("a", MAP("b","c")), NULL) FROM cond_vector
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cond_vector
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: cond_vector
+                  Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:a:string, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 2:ROW__IS__DELETED:boolean]
+                  Select Operator
+                    expressions: map('a':map('b':'c')) (type: map<string,map<string,string>>)
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [4]
+                        selectExpressions: VectorUDFAdaptor(map('a':map('b':'c')))(children: VectorUDFAdaptor(map('b':'c')) -> 3:map<string,string>) -> 4:map<string,map<string,string>>
+                    Statistics: Num rows: 3 Data size: 723 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 3 Data size: 723 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    includeColumns: []
+                    dataColumns: a:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [map<string,string>, map<string,map<string,string>>]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT IF(1=1, MAP("a", a), NULL) FROM cond_vector
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cond_vector
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT IF(1=1, MAP("a", a), NULL) FROM cond_vector
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cond_vector
+#### A masked pattern was here ####
+{"a":"a/b"}
+{"a":"a/b"}
+{"a":"c/d"}
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT IF(1=1, MAP("a", a), NULL) FROM cond_vector
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cond_vector
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT IF(1=1, MAP("a", a), NULL) FROM cond_vector
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cond_vector
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: cond_vector
+                  Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:a:string, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 2:ROW__IS__DELETED:boolean]
+                  Select Operator
+                    expressions: map('a':a) (type: map<string,string>)
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [3]
+                        selectExpressions: VectorUDFAdaptor(map('a':a)) -> 3:map<string,string>
+                    Statistics: Num rows: 3 Data size: 2760 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 3 Data size: 2760 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    includeColumns: [0]
+                    dataColumns: a:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [map<string,string>]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT IF(1=1, MAP("a", MAP("b", a)), NULL) FROM cond_vector
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cond_vector
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT IF(1=1, MAP("a", MAP("b", a)), NULL) FROM cond_vector
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cond_vector
+#### A masked pattern was here ####
+{"a":{"b":"a/b"}}
+{"a":{"b":"a/b"}}
+{"a":{"b":"c/d"}}
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT IF(1=1, MAP("a", MAP("b", a)), NULL) FROM cond_vector
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cond_vector
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT IF(1=1, MAP("a", MAP("b", a)), NULL) FROM cond_vector
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cond_vector
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: cond_vector
+                  Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:a:string, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 2:ROW__IS__DELETED:boolean]
+                  Select Operator
+                    expressions: map('a':map('b':a)) (type: map<string,map<string,string>>)
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [4]
+                        selectExpressions: VectorUDFAdaptor(map('a':map('b':a)))(children: VectorUDFAdaptor(map('b':a)) -> 3:map<string,string>) -> 4:map<string,map<string,string>>
+                    Statistics: Num rows: 3 Data size: 4968 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 3 Data size: 4968 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    includeColumns: [0]
+                    dataColumns: a:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [map<string,string>, map<string,map<string,string>>]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT IF(1=1, ARRAY("a", "b"), NULL) FROM cond_vector
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cond_vector
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT IF(1=1, ARRAY("a", "b"), NULL) FROM cond_vector
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cond_vector
+#### A masked pattern was here ####
+["a","b"]
+["a","b"]
+["a","b"]
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT IF(1=1, ARRAY("a", "b"), NULL) FROM cond_vector
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cond_vector
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT IF(1=1, ARRAY("a", "b"), NULL) FROM cond_vector
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cond_vector
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: cond_vector
+                  Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:a:string, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 2:ROW__IS__DELETED:boolean]
+                  Select Operator
+                    expressions: array('a','b') (type: array<string>)
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [3]
+                        selectExpressions: VectorUDFAdaptor(array('a','b')) -> 3:array<string>
+                    Statistics: Num rows: 3 Data size: 1224 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 3 Data size: 1224 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    includeColumns: []
+                    dataColumns: a:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [array<string>]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT IF(1=1, ARRAY(ARRAY("a", "b"), ARRAY("c", "d")), NULL) FROM cond_vector
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cond_vector
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT IF(1=1, ARRAY(ARRAY("a", "b"), ARRAY("c", "d")), NULL) FROM cond_vector
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cond_vector
+#### A masked pattern was here ####
+[["a","b"],["c","d"]]
+[["a","b"],["c","d"]]
+[["a","b"],["c","d"]]
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT IF(1=1, ARRAY(ARRAY("a", "b"), ARRAY("c", "d")), NULL) FROM cond_vector
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cond_vector
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT IF(1=1, ARRAY(ARRAY("a", "b"), ARRAY("c", "d")), NULL) FROM cond_vector
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cond_vector
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: cond_vector
+                  Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:a:string, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 2:ROW__IS__DELETED:boolean]
+                  Select Operator
+                    expressions: array(array('a','b'),array('c','d')) (type: array<array<string>>)
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: VectorUDFAdaptor(array(array('a','b'),array('c','d')))(children: VectorUDFAdaptor(array('a','b')) -> 3:array<string>, VectorUDFAdaptor(array('c','d')) -> 4:array<string>) -> 5:array<array<string>>
+                    Statistics: Num rows: 3 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 3 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    includeColumns: []
+                    dataColumns: a:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [array<string>, array<string>, array<array<string>>]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT IF(1=1, ARRAY("a", a), NULL) FROM cond_vector
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cond_vector
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT IF(1=1, ARRAY("a", a), NULL) FROM cond_vector
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cond_vector
+#### A masked pattern was here ####
+["a","a/b"]
+["a","a/b"]
+["a","c/d"]
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT IF(1=1, ARRAY("a", a), NULL) FROM cond_vector
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cond_vector
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT IF(1=1, ARRAY("a", a), NULL) FROM cond_vector
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cond_vector
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: cond_vector
+                  Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:a:string, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 2:ROW__IS__DELETED:boolean]
+                  Select Operator
+                    expressions: array('a',a) (type: array<string>)
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [3]
+                        selectExpressions: VectorUDFAdaptor(array('a',a)) -> 3:array<string>
+                    Statistics: Num rows: 3 Data size: 5760 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 3 Data size: 5760 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    includeColumns: [0]
+                    dataColumns: a:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [array<string>]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT IF(1=1, ARRAY(ARRAY("a", a), ARRAY("b", "c")), NULL) FROM cond_vector
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cond_vector
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT IF(1=1, ARRAY(ARRAY("a", a), ARRAY("b", "c")), NULL) FROM cond_vector
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cond_vector
+#### A masked pattern was here ####
+[["a","a/b"],["b","c"]]
+[["a","a/b"],["b","c"]]
+[["a","c/d"],["b","c"]]
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT IF(1=1, ARRAY(ARRAY("a", a), ARRAY("b", "c")), NULL) FROM cond_vector
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cond_vector
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL SELECT IF(1=1, ARRAY(ARRAY("a", a), ARRAY("b", "c")), NULL) FROM cond_vector
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cond_vector
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: cond_vector
+                  Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:a:string, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 2:ROW__IS__DELETED:boolean]
+                  Select Operator
+                    expressions: array(array('a',a),array('b','c')) (type: array<array<string>>)
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: VectorUDFAdaptor(array(array('a',a),array('b','c')))(children: VectorUDFAdaptor(array('a',a)) -> 3:array<string>, VectorUDFAdaptor(array('b','c')) -> 4:array<string>) -> 5:array<array<string>>
+                    Statistics: Num rows: 3 Data size: 57840 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 3 Data size: 57840 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    includeColumns: [0]
+                    dataColumns: a:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [array<string>, array<string>, array<array<string>>]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

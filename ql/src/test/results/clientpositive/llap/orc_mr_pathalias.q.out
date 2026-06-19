@@ -1,0 +1,81 @@
+PREHOOK: query: create database if not exists test
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test
+POSTHOOK: query: create database if not exists test
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test
+PREHOOK: query: drop table if exists test.test_orc_src
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:test
+POSTHOOK: query: drop table if exists test.test_orc_src
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:test
+PREHOOK: query: drop table if exists test.test_orc_src2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:test
+POSTHOOK: query: drop table if exists test.test_orc_src2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:test
+PREHOOK: query: create table test.test_orc_src (a int, b int, c int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test
+PREHOOK: Output: test@test_orc_src
+POSTHOOK: query: create table test.test_orc_src (a int, b int, c int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test
+POSTHOOK: Output: test@test_orc_src
+PREHOOK: query: create table test.test_orc_src2 (a int, b int, d int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test
+PREHOOK: Output: test@test_orc_src2
+POSTHOOK: query: create table test.test_orc_src2 (a int, b int, d int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test
+POSTHOOK: Output: test@test_orc_src2
+PREHOOK: query: insert overwrite table test.test_orc_src select 1,2,3 from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: test@test_orc_src
+POSTHOOK: query: insert overwrite table test.test_orc_src select 1,2,3 from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: test@test_orc_src
+POSTHOOK: Lineage: test_orc_src.a SIMPLE []
+POSTHOOK: Lineage: test_orc_src.b SIMPLE []
+POSTHOOK: Lineage: test_orc_src.c SIMPLE []
+PREHOOK: query: insert overwrite table test.test_orc_src2 select 1,2,4 from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: test@test_orc_src2
+POSTHOOK: query: insert overwrite table test.test_orc_src2 select 1,2,4 from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: test@test_orc_src2
+POSTHOOK: Lineage: test_orc_src2.a SIMPLE []
+POSTHOOK: Lineage: test_orc_src2.b SIMPLE []
+POSTHOOK: Lineage: test_orc_src2.d SIMPLE []
+PREHOOK: query: select
+    tb.c
+from test.test_orc_src tb
+join (
+    select * from test.test_orc_src2
+) tm
+on tb.a = tm.a
+where tb.b = 2
+PREHOOK: type: QUERY
+PREHOOK: Input: test@test_orc_src
+PREHOOK: Input: test@test_orc_src2
+#### A masked pattern was here ####
+POSTHOOK: query: select
+    tb.c
+from test.test_orc_src tb
+join (
+    select * from test.test_orc_src2
+) tm
+on tb.a = tm.a
+where tb.b = 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: test@test_orc_src
+POSTHOOK: Input: test@test_orc_src2
+#### A masked pattern was here ####
+3

@@ -1,0 +1,134 @@
+PREHOOK: query: create database tc
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:tc
+POSTHOOK: query: create database tc
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:tc
+PREHOOK: query: create table tc.tstsrc like default.src
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:tc
+PREHOOK: Output: tc@tstsrc
+POSTHOOK: query: create table tc.tstsrc like default.src
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:tc
+POSTHOOK: Output: tc@tstsrc
+PREHOOK: query: insert overwrite table tc.tstsrc select key, value from default.src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: tc@tstsrc
+POSTHOOK: query: insert overwrite table tc.tstsrc select key, value from default.src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: tc@tstsrc
+POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table tc.tstsrcpart like default.srcpart
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:tc
+PREHOOK: Output: tc@tstsrcpart
+POSTHOOK: query: create table tc.tstsrcpart like default.srcpart
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:tc
+POSTHOOK: Output: tc@tstsrcpart
+PREHOOK: query: insert overwrite table tc.tstsrcpart partition (ds='2008-04-08', hr='12')
+select key, value from default.srcpart where ds='2008-04-08' and hr='12'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: tc@tstsrcpart@ds=2008-04-08/hr=12
+POSTHOOK: query: insert overwrite table tc.tstsrcpart partition (ds='2008-04-08', hr='12')
+select key, value from default.srcpart where ds='2008-04-08' and hr='12'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: tc@tstsrcpart@ds=2008-04-08/hr=12
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: EXPLAIN ALTER TABLE tc.tstsrc TOUCH
+PREHOOK: type: ALTERTABLE_TOUCH
+PREHOOK: Input: tc@tstsrc
+PREHOOK: Output: tc@tstsrc
+POSTHOOK: query: EXPLAIN ALTER TABLE tc.tstsrc TOUCH
+POSTHOOK: type: ALTERTABLE_TOUCH
+POSTHOOK: Input: tc@tstsrc
+POSTHOOK: Output: tc@tstsrc
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Touch
+      table name: tc.tstsrc
+
+PREHOOK: query: ALTER TABLE tc.tstsrc TOUCH
+PREHOOK: type: ALTERTABLE_TOUCH
+PREHOOK: Input: tc@tstsrc
+PREHOOK: Output: tc@tstsrc
+POSTHOOK: query: ALTER TABLE tc.tstsrc TOUCH
+POSTHOOK: type: ALTERTABLE_TOUCH
+POSTHOOK: Input: tc@tstsrc
+POSTHOOK: Output: tc@tstsrc
+PREHOOK: query: ALTER TABLE tc.tstsrcpart TOUCH
+PREHOOK: type: ALTERTABLE_TOUCH
+PREHOOK: Input: tc@tstsrcpart
+PREHOOK: Output: tc@tstsrcpart
+POSTHOOK: query: ALTER TABLE tc.tstsrcpart TOUCH
+POSTHOOK: type: ALTERTABLE_TOUCH
+POSTHOOK: Input: tc@tstsrcpart
+POSTHOOK: Output: tc@tstsrcpart
+PREHOOK: query: EXPLAIN ALTER TABLE tc.tstsrcpart TOUCH PARTITION (ds='2008-04-08', hr='12')
+PREHOOK: type: ALTERTABLE_TOUCH
+PREHOOK: Input: tc@tstsrcpart
+PREHOOK: Output: tc@tstsrcpart@ds=2008-04-08/hr=12
+POSTHOOK: query: EXPLAIN ALTER TABLE tc.tstsrcpart TOUCH PARTITION (ds='2008-04-08', hr='12')
+POSTHOOK: type: ALTERTABLE_TOUCH
+POSTHOOK: Input: tc@tstsrcpart
+POSTHOOK: Output: tc@tstsrcpart@ds=2008-04-08/hr=12
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Touch
+      partition spec:
+        ds 2008-04-08
+        hr 12
+      table name: tc.tstsrcpart
+
+PREHOOK: query: ALTER TABLE tc.tstsrcpart TOUCH PARTITION (ds='2008-04-08', hr='12')
+PREHOOK: type: ALTERTABLE_TOUCH
+PREHOOK: Input: tc@tstsrcpart
+PREHOOK: Output: tc@tstsrcpart@ds=2008-04-08/hr=12
+POSTHOOK: query: ALTER TABLE tc.tstsrcpart TOUCH PARTITION (ds='2008-04-08', hr='12')
+POSTHOOK: type: ALTERTABLE_TOUCH
+POSTHOOK: Input: tc@tstsrcpart
+POSTHOOK: Input: tc@tstsrcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: tc@tstsrcpart@ds=2008-04-08/hr=12
+PREHOOK: query: drop table tc.tstsrc
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: tc@tstsrc
+PREHOOK: Output: database:tc
+PREHOOK: Output: tc@tstsrc
+POSTHOOK: query: drop table tc.tstsrc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: tc@tstsrc
+POSTHOOK: Output: database:tc
+POSTHOOK: Output: tc@tstsrc
+PREHOOK: query: drop table tc.tstsrcpart
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: tc@tstsrcpart
+PREHOOK: Output: database:tc
+PREHOOK: Output: tc@tstsrcpart
+POSTHOOK: query: drop table tc.tstsrcpart
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: tc@tstsrcpart
+POSTHOOK: Output: database:tc
+POSTHOOK: Output: tc@tstsrcpart
+PREHOOK: query: drop database tc
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:tc
+PREHOOK: Output: database:tc
+POSTHOOK: query: drop database tc
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:tc
+POSTHOOK: Output: database:tc

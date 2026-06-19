@@ -1,0 +1,222 @@
+PREHOOK: query: create table exim_employee_n12 (emp_id int comment 'employee id', emp_name string, emp_dob string comment 'employee date of birth', emp_sex string comment 'M/F') 
+ comment 'employee table' 
+ partitioned by (emp_country string comment '2-char code', emp_state string comment '2-char code')
+ clustered by (emp_sex) sorted by (emp_id ASC) into 10 buckets
+ row format serde "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe" with serdeproperties ('serialization.format'='1')
+ stored as rcfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@exim_employee_n12
+POSTHOOK: query: create table exim_employee_n12 (emp_id int comment 'employee id', emp_name string, emp_dob string comment 'employee date of birth', emp_sex string comment 'M/F') 
+ comment 'employee table' 
+ partitioned by (emp_country string comment '2-char code', emp_state string comment '2-char code')
+ clustered by (emp_sex) sorted by (emp_id ASC) into 10 buckets
+ row format serde "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe" with serdeproperties ('serialization.format'='1')
+ stored as rcfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@exim_employee_n12
+PREHOOK: query: alter table exim_employee_n12 add columns (emp_dept int)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@exim_employee_n12
+PREHOOK: Output: default@exim_employee_n12
+POSTHOOK: query: alter table exim_employee_n12 add columns (emp_dept int)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@exim_employee_n12
+POSTHOOK: Output: default@exim_employee_n12
+PREHOOK: query: alter table exim_employee_n12 clustered by (emp_sex, emp_dept) sorted by (emp_id desc) into 5 buckets
+PREHOOK: type: ALTERTABLE_CLUSTER_SORT
+PREHOOK: Input: default@exim_employee_n12
+PREHOOK: Output: default@exim_employee_n12
+POSTHOOK: query: alter table exim_employee_n12 clustered by (emp_sex, emp_dept) sorted by (emp_id desc) into 5 buckets
+POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
+POSTHOOK: Input: default@exim_employee_n12
+POSTHOOK: Output: default@exim_employee_n12
+PREHOOK: query: alter table exim_employee_n12 add partition (emp_country='in', emp_state='tn')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@exim_employee_n12
+POSTHOOK: query: alter table exim_employee_n12 add partition (emp_country='in', emp_state='tn')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@exim_employee_n12
+POSTHOOK: Output: default@exim_employee_n12@emp_country=in/emp_state=tn
+PREHOOK: query: alter table exim_employee_n12 set fileformat 
+	inputformat  "org.apache.hadoop.hive.ql.io.RCFileInputFormat"
+	outputformat "org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat"
+        serde        "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe"
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@exim_employee_n12
+PREHOOK: Output: default@exim_employee_n12
+POSTHOOK: query: alter table exim_employee_n12 set fileformat 
+	inputformat  "org.apache.hadoop.hive.ql.io.RCFileInputFormat"
+	outputformat "org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat"
+        serde        "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe"
+POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: Input: default@exim_employee_n12
+POSTHOOK: Output: default@exim_employee_n12
+PREHOOK: query: alter table exim_employee_n12 set serde "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe" with serdeproperties ('serialization.format'='2')
+PREHOOK: type: ALTERTABLE_SERIALIZER
+PREHOOK: Input: default@exim_employee_n12
+PREHOOK: Output: default@exim_employee_n12
+POSTHOOK: query: alter table exim_employee_n12 set serde "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe" with serdeproperties ('serialization.format'='2')
+POSTHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: Input: default@exim_employee_n12
+POSTHOOK: Output: default@exim_employee_n12
+PREHOOK: query: alter table exim_employee_n12 add partition (emp_country='in', emp_state='ka')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@exim_employee_n12
+POSTHOOK: query: alter table exim_employee_n12 add partition (emp_country='in', emp_state='ka')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@exim_employee_n12
+POSTHOOK: Output: default@exim_employee_n12@emp_country=in/emp_state=ka
+#### A masked pattern was here ####
+PREHOOK: query: export table exim_employee_n12 to 'ql/test/data/exports/exim_employee'
+PREHOOK: type: EXPORT
+PREHOOK: Input: default@exim_employee_n12@emp_country=in/emp_state=ka
+PREHOOK: Input: default@exim_employee_n12@emp_country=in/emp_state=tn
+#### A masked pattern was here ####
+POSTHOOK: query: export table exim_employee_n12 to 'ql/test/data/exports/exim_employee'
+POSTHOOK: type: EXPORT
+POSTHOOK: Input: default@exim_employee_n12@emp_country=in/emp_state=ka
+POSTHOOK: Input: default@exim_employee_n12@emp_country=in/emp_state=tn
+#### A masked pattern was here ####
+PREHOOK: query: drop table exim_employee_n12
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@exim_employee_n12
+PREHOOK: Output: database:default
+PREHOOK: Output: default@exim_employee_n12
+POSTHOOK: query: drop table exim_employee_n12
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@exim_employee_n12
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@exim_employee_n12
+PREHOOK: query: create database importer
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:importer
+POSTHOOK: query: create database importer
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:importer
+PREHOOK: query: use importer
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:importer
+POSTHOOK: query: use importer
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:importer
+PREHOOK: query: import from 'ql/test/data/exports/exim_employee'
+PREHOOK: type: IMPORT
+#### A masked pattern was here ####
+PREHOOK: Output: database:importer
+POSTHOOK: query: import from 'ql/test/data/exports/exim_employee'
+POSTHOOK: type: IMPORT
+#### A masked pattern was here ####
+POSTHOOK: Output: database:importer
+POSTHOOK: Output: importer@exim_employee_n12
+POSTHOOK: Output: importer@exim_employee_n12@emp_country=in/emp_state=ka
+POSTHOOK: Output: importer@exim_employee_n12@emp_country=in/emp_state=tn
+PREHOOK: query: describe extended exim_employee_n12
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: importer@exim_employee_n12
+POSTHOOK: query: describe extended exim_employee_n12
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: importer@exim_employee_n12
+emp_id              	int                 	employee id         
+emp_name            	string              	                    
+emp_dob             	string              	employee date of birth
+emp_sex             	string              	M/F                 
+emp_dept            	int                 	                    
+emp_country         	string              	2-char code         
+emp_state           	string              	2-char code         
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+emp_country         	string              	2-char code         
+emp_state           	string              	2-char code         
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: describe extended exim_employee_n12 partition (emp_country='in', emp_state='tn')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: importer@exim_employee_n12
+POSTHOOK: query: describe extended exim_employee_n12 partition (emp_country='in', emp_state='tn')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: importer@exim_employee_n12
+emp_id              	int                 	employee id         
+emp_name            	string              	                    
+emp_dob             	string              	employee date of birth
+emp_sex             	string              	M/F                 
+emp_dept            	int                 	                    
+emp_country         	string              	2-char code         
+emp_state           	string              	2-char code         
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+emp_country         	string              	2-char code         
+emp_state           	string              	2-char code         
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: describe extended exim_employee_n12 partition (emp_country='in', emp_state='ka')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: importer@exim_employee_n12
+POSTHOOK: query: describe extended exim_employee_n12 partition (emp_country='in', emp_state='ka')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: importer@exim_employee_n12
+emp_id              	int                 	employee id         
+emp_name            	string              	                    
+emp_dob             	string              	employee date of birth
+emp_sex             	string              	M/F                 
+emp_dept            	int                 	                    
+emp_country         	string              	2-char code         
+emp_state           	string              	2-char code         
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+emp_country         	string              	2-char code         
+emp_state           	string              	2-char code         
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: show table extended like exim_employee_n12
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like exim_employee_n12
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:exim_employee_n12
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+columns:struct columns { i32 emp_id, string emp_name, string emp_dob, string emp_sex, i32 emp_dept}
+partitioned:true
+partitionColumns:struct partition_columns { string emp_country, string emp_state}
+totalNumberFiles:0
+totalFileSize:0
+maxFileSize:0
+minFileSize:0
+#### A masked pattern was here ####
+
+#### A masked pattern was here ####
+PREHOOK: query: select * from exim_employee_n12
+PREHOOK: type: QUERY
+PREHOOK: Input: importer@exim_employee_n12
+PREHOOK: Input: importer@exim_employee_n12@emp_country=in/emp_state=ka
+PREHOOK: Input: importer@exim_employee_n12@emp_country=in/emp_state=tn
+#### A masked pattern was here ####
+POSTHOOK: query: select * from exim_employee_n12
+POSTHOOK: type: QUERY
+POSTHOOK: Input: importer@exim_employee_n12
+POSTHOOK: Input: importer@exim_employee_n12@emp_country=in/emp_state=ka
+POSTHOOK: Input: importer@exim_employee_n12@emp_country=in/emp_state=tn
+#### A masked pattern was here ####
+PREHOOK: query: drop table exim_employee_n12
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: importer@exim_employee_n12
+PREHOOK: Output: database:importer
+PREHOOK: Output: importer@exim_employee_n12
+POSTHOOK: query: drop table exim_employee_n12
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: importer@exim_employee_n12
+POSTHOOK: Output: database:importer
+POSTHOOK: Output: importer@exim_employee_n12
+PREHOOK: query: drop database importer
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:importer
+PREHOOK: Output: database:importer
+POSTHOOK: query: drop database importer
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:importer
+POSTHOOK: Output: database:importer

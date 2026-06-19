@@ -1,0 +1,65 @@
+PREHOOK: query: create temporary table supply_temp (id int, part string, quantity int) partitioned by (day int)
+stored as orc
+location 'hdfs://### HDFS PATH ###'
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: hdfs://### HDFS PATH ###
+PREHOOK: Output: database:default
+PREHOOK: Output: default@supply_temp
+POSTHOOK: query: create temporary table supply_temp (id int, part string, quantity int) partitioned by (day int)
+stored as orc
+location 'hdfs://### HDFS PATH ###'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: hdfs://### HDFS PATH ###
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@supply_temp
+PREHOOK: query: explain alter table supply_temp add partition (day=20110102) location
+'hdfs://### HDFS PATH ###'
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: hdfs://### HDFS PATH ###
+PREHOOK: Output: default@supply_temp
+POSTHOOK: query: explain alter table supply_temp add partition (day=20110102) location
+'hdfs://### HDFS PATH ###'
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: hdfs://### HDFS PATH ###
+POSTHOOK: Output: default@supply_temp
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Add Partition
+      db name: default
+      partitions:
+          Partition
+            location: hdfs://### HDFS PATH ###
+            partition spec: {day=20110102}
+      table name: supply_temp
+
+PREHOOK: query: alter table supply_temp add partition (day=20110103) location
+'hdfs://### HDFS PATH ###'
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: hdfs://### HDFS PATH ###
+PREHOOK: Output: default@supply_temp
+POSTHOOK: query: alter table supply_temp add partition (day=20110103) location
+'hdfs://### HDFS PATH ###'
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: hdfs://### HDFS PATH ###
+POSTHOOK: Output: default@supply_temp
+POSTHOOK: Output: default@supply_temp@day=20110103
+PREHOOK: query: show partitions supply_temp
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@supply_temp
+POSTHOOK: query: show partitions supply_temp
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@supply_temp
+day=20110103
+PREHOOK: query: drop table supply_temp
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@supply_temp
+PREHOOK: Output: database:default
+PREHOOK: Output: default@supply_temp
+POSTHOOK: query: drop table supply_temp
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@supply_temp
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@supply_temp

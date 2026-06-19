@@ -1,0 +1,57 @@
+PREHOOK: query: CREATE TABLE exchange_part_test1 (f1 string) PARTITIONED BY (ds STRING, hr STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@exchange_part_test1
+POSTHOOK: query: CREATE TABLE exchange_part_test1 (f1 string) PARTITIONED BY (ds STRING, hr STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@exchange_part_test1
+PREHOOK: query: CREATE TABLE exchange_part_test2 (f1 string) PARTITIONED BY (ds STRING, hr STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@exchange_part_test2
+POSTHOOK: query: CREATE TABLE exchange_part_test2 (f1 string) PARTITIONED BY (ds STRING, hr STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@exchange_part_test2
+PREHOOK: query: SHOW PARTITIONS exchange_part_test1
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@exchange_part_test1
+POSTHOOK: query: SHOW PARTITIONS exchange_part_test1
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@exchange_part_test1
+PREHOOK: query: SHOW PARTITIONS exchange_part_test2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@exchange_part_test2
+POSTHOOK: query: SHOW PARTITIONS exchange_part_test2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@exchange_part_test2
+PREHOOK: query: ALTER TABLE exchange_part_test2 ADD PARTITION (ds='2013-04-05', hr='h1')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@exchange_part_test2
+POSTHOOK: query: ALTER TABLE exchange_part_test2 ADD PARTITION (ds='2013-04-05', hr='h1')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@exchange_part_test2
+POSTHOOK: Output: default@exchange_part_test2@ds=2013-04-05/hr=h1
+PREHOOK: query: ALTER TABLE exchange_part_test2 ADD PARTITION (ds='2013-04-05', hr='h2')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@exchange_part_test2
+POSTHOOK: query: ALTER TABLE exchange_part_test2 ADD PARTITION (ds='2013-04-05', hr='h2')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@exchange_part_test2
+POSTHOOK: Output: default@exchange_part_test2@ds=2013-04-05/hr=h2
+PREHOOK: query: SHOW PARTITIONS exchange_part_test1
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@exchange_part_test1
+POSTHOOK: query: SHOW PARTITIONS exchange_part_test1
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@exchange_part_test1
+PREHOOK: query: SHOW PARTITIONS exchange_part_test2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@exchange_part_test2
+POSTHOOK: query: SHOW PARTITIONS exchange_part_test2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@exchange_part_test2
+ds=2013-04-05/hr=h1
+ds=2013-04-05/hr=h2
+FAILED: SemanticException [Error 10234]: Partition values specified are not continuous. A subpartition value is specified without specifying the parent partition's value {hr=h1}

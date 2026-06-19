@@ -1,0 +1,25 @@
+PREHOOK: query: drop database if exists x314n cascade
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: drop database if exists x314n cascade
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: create database x314n
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:x314n
+POSTHOOK: query: create database x314n
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:x314n
+PREHOOK: query: use x314n
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:x314n
+POSTHOOK: query: use x314n
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:x314n
+PREHOOK: query: CREATE TABLE pageviews (userid VARCHAR(64), link STRING, source STRING) PARTITIONED BY (datestamp STRING, i int) CLUSTERED BY (userid) INTO 256 BUCKETS STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:x314n
+PREHOOK: Output: x314n@pageviews
+POSTHOOK: query: CREATE TABLE pageviews (userid VARCHAR(64), link STRING, source STRING) PARTITIONED BY (datestamp STRING, i int) CLUSTERED BY (userid) INTO 256 BUCKETS STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:x314n
+POSTHOOK: Output: x314n@pageviews
+FAILED: SemanticException 3:65 'datestamp' in insert schema specification is not found among regular columns of x314n.pageviews nor dynamic partition columns.. Error encountered near token 'link'

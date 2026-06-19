@@ -1,0 +1,108 @@
+PREHOOK: query: create table test_acid( i int, ts timestamp)
+                      clustered by (i) into 2 buckets
+                      stored as orc
+                      tblproperties ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_acid
+POSTHOOK: query: create table test_acid( i int, ts timestamp)
+                      clustered by (i) into 2 buckets
+                      stored as orc
+                      tblproperties ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_acid
+PREHOOK: query: insert into table test_acid values (1, '2014-09-14 12:34:30')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_acid
+POSTHOOK: query: insert into table test_acid values (1, '2014-09-14 12:34:30')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_acid
+POSTHOOK: Lineage: test_acid.i SCRIPT []
+POSTHOOK: Lineage: test_acid.ts SCRIPT []
+PREHOOK: query: delete from test_acid where ts = '2014-15-16 17:18:19.20'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_acid
+PREHOOK: Output: default@test_acid
+POSTHOOK: query: delete from test_acid where ts = '2014-15-16 17:18:19.20'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_acid
+POSTHOOK: Output: default@test_acid
+PREHOOK: query: select i,ts from test_acid where ts = '2014-15-16 17:18:19.20'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_acid
+#### A masked pattern was here ####
+POSTHOOK: query: select i,ts from test_acid where ts = '2014-15-16 17:18:19.20'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_acid
+#### A masked pattern was here ####
+PREHOOK: query: select i,ts from test_acid where ts <= '2014-09-14 12:34:30'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_acid
+#### A masked pattern was here ####
+POSTHOOK: query: select i,ts from test_acid where ts <= '2014-09-14 12:34:30'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_acid
+#### A masked pattern was here ####
+1	2014-09-14 12:34:30
+PREHOOK: query: drop table test_acid
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_acid
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_acid
+POSTHOOK: query: drop table test_acid
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_acid
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_acid
+PREHOOK: query: create table test_acid( i int, ts timestamp)
+                      clustered by (i) into 2 buckets
+                      stored as orc
+                      tblproperties ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_acid
+POSTHOOK: query: create table test_acid( i int, ts timestamp)
+                      clustered by (i) into 2 buckets
+                      stored as orc
+                      tblproperties ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_acid
+PREHOOK: query: insert into table test_acid values (1, '2014-09-14 12:34:30')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_acid
+POSTHOOK: query: insert into table test_acid values (1, '2014-09-14 12:34:30')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_acid
+POSTHOOK: Lineage: test_acid.i SCRIPT []
+POSTHOOK: Lineage: test_acid.ts SCRIPT []
+PREHOOK: query: delete from test_acid where ts = '2014-15-16 17:18:19.20'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_acid
+PREHOOK: Output: default@test_acid
+POSTHOOK: query: delete from test_acid where ts = '2014-15-16 17:18:19.20'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_acid
+POSTHOOK: Output: default@test_acid
+PREHOOK: query: select i,ts from test_acid where ts = '2014-15-16 17:18:19.20'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_acid
+#### A masked pattern was here ####
+POSTHOOK: query: select i,ts from test_acid where ts = '2014-15-16 17:18:19.20'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_acid
+#### A masked pattern was here ####
+PREHOOK: query: select i,ts from test_acid where ts <= '2014-09-14 12:34:30'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_acid
+#### A masked pattern was here ####
+POSTHOOK: query: select i,ts from test_acid where ts <= '2014-09-14 12:34:30'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_acid
+#### A masked pattern was here ####
+1	2014-09-14 12:34:30

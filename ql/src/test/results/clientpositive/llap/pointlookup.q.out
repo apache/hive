@@ -1,0 +1,571 @@
+PREHOOK: query: explain
+SELECT key
+FROM src
+WHERE
+   ((key = '0'  AND value = 'val_0') OR
+    (key = '1'  AND value = 'val_1') OR
+    (key = '2'  AND value = 'val_2') OR
+    (key = '3'  AND value = 'val_3') OR
+    (key = '4'  AND value = 'val_4') OR
+    (key = '5'  AND value = 'val_5') OR
+    (key = '6'  AND value = 'val_6') OR
+    (key = '7'  AND value = 'val_7') OR
+    (key = '8'  AND value = 'val_8') OR
+    (key = '9'  AND value = 'val_9') OR
+    (key = '10' AND value = 'val_10'))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+SELECT key
+FROM src
+WHERE
+   ((key = '0'  AND value = 'val_0') OR
+    (key = '1'  AND value = 'val_1') OR
+    (key = '2'  AND value = 'val_2') OR
+    (key = '3'  AND value = 'val_3') OR
+    (key = '4'  AND value = 'val_4') OR
+    (key = '5'  AND value = 'val_5') OR
+    (key = '6'  AND value = 'val_6') OR
+    (key = '7'  AND value = 'val_7') OR
+    (key = '8'  AND value = 'val_8') OR
+    (key = '9'  AND value = 'val_9') OR
+    (key = '10' AND value = 'val_10'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          filterExpr: (((key = '0') and (value = 'val_0')) or ((key = '1') and (value = 'val_1')) or ((key = '2') and (value = 'val_2')) or ((key = '3') and (value = 'val_3')) or ((key = '4') and (value = 'val_4')) or ((key = '5') and (value = 'val_5')) or ((key = '6') and (value = 'val_6')) or ((key = '7') and (value = 'val_7')) or ((key = '8') and (value = 'val_8')) or ((key = '9') and (value = 'val_9')) or ((key = '10') and (value = 'val_10'))) (type: boolean)
+          Filter Operator
+            predicate: (((key = '0') and (value = 'val_0')) or ((key = '1') and (value = 'val_1')) or ((key = '2') and (value = 'val_2')) or ((key = '3') and (value = 'val_3')) or ((key = '4') and (value = 'val_4')) or ((key = '5') and (value = 'val_5')) or ((key = '6') and (value = 'val_6')) or ((key = '7') and (value = 'val_7')) or ((key = '8') and (value = 'val_8')) or ((key = '9') and (value = 'val_9')) or ((key = '10') and (value = 'val_10'))) (type: boolean)
+            Select Operator
+              expressions: key (type: string)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: create table orOutput as
+SELECT key
+FROM src
+WHERE
+   ((key = '0'  AND value = 'val_0') OR
+    (key = '1'  AND value = 'val_1') OR
+    (key = '2'  AND value = 'val_2') OR
+    (key = '3'  AND value = 'val_3') OR
+    (key = '4'  AND value = 'val_4') OR
+    (key = '5'  AND value = 'val_5') OR
+    (key = '6'  AND value = 'val_6') OR
+    (key = '7'  AND value = 'val_7') OR
+    (key = '8'  AND value = 'val_8') OR
+    (key = '9'  AND value = 'val_9') OR
+    (key = '10' AND value = 'val_10'))
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orOutput
+POSTHOOK: query: create table orOutput as
+SELECT key
+FROM src
+WHERE
+   ((key = '0'  AND value = 'val_0') OR
+    (key = '1'  AND value = 'val_1') OR
+    (key = '2'  AND value = 'val_2') OR
+    (key = '3'  AND value = 'val_3') OR
+    (key = '4'  AND value = 'val_4') OR
+    (key = '5'  AND value = 'val_5') OR
+    (key = '6'  AND value = 'val_6') OR
+    (key = '7'  AND value = 'val_7') OR
+    (key = '8'  AND value = 'val_8') OR
+    (key = '9'  AND value = 'val_9') OR
+    (key = '10' AND value = 'val_10'))
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orOutput
+POSTHOOK: Lineage: oroutput.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: explain
+SELECT key
+FROM src
+WHERE
+   ((key = '0'  AND value = 'val_0') OR
+    (key = '1'  AND value = 'val_1') OR
+    (key = '2'  AND value = 'val_2') OR
+    (key = '3'  AND value = 'val_3') OR
+    (key = '4'  AND value = 'val_4') OR
+    (key = '5'  AND value = 'val_5') OR
+    (key = '6'  AND value = 'val_6') OR
+    (key = '7'  AND value = 'val_7') OR
+    (key = '8'  AND value = 'val_8') OR
+    (key = '9'  AND value = 'val_9') OR
+    (key = '10' AND value = 'val_10'))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+SELECT key
+FROM src
+WHERE
+   ((key = '0'  AND value = 'val_0') OR
+    (key = '1'  AND value = 'val_1') OR
+    (key = '2'  AND value = 'val_2') OR
+    (key = '3'  AND value = 'val_3') OR
+    (key = '4'  AND value = 'val_4') OR
+    (key = '5'  AND value = 'val_5') OR
+    (key = '6'  AND value = 'val_6') OR
+    (key = '7'  AND value = 'val_7') OR
+    (key = '8'  AND value = 'val_8') OR
+    (key = '9'  AND value = 'val_9') OR
+    (key = '10' AND value = 'val_10'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          filterExpr: (struct(key,value)) IN (const struct('0','val_0'), const struct('1','val_1'), const struct('2','val_2'), const struct('3','val_3'), const struct('4','val_4'), const struct('5','val_5'), const struct('6','val_6'), const struct('7','val_7'), const struct('8','val_8'), const struct('9','val_9'), const struct('10','val_10')) (type: boolean)
+          Filter Operator
+            predicate: (struct(key,value)) IN (const struct('0','val_0'), const struct('1','val_1'), const struct('2','val_2'), const struct('3','val_3'), const struct('4','val_4'), const struct('5','val_5'), const struct('6','val_6'), const struct('7','val_7'), const struct('8','val_8'), const struct('9','val_9'), const struct('10','val_10')) (type: boolean)
+            Select Operator
+              expressions: key (type: string)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: create table inOutput as
+SELECT key
+FROM src
+WHERE
+   ((key = '0'  AND value = 'val_0') OR
+    (key = '1'  AND value = 'val_1') OR
+    (key = '2'  AND value = 'val_2') OR
+    (key = '3'  AND value = 'val_3') OR
+    (key = '4'  AND value = 'val_4') OR
+    (key = '5'  AND value = 'val_5') OR
+    (key = '6'  AND value = 'val_6') OR
+    (key = '7'  AND value = 'val_7') OR
+    (key = '8'  AND value = 'val_8') OR
+    (key = '9'  AND value = 'val_9') OR
+    (key = '10' AND value = 'val_10'))
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@inOutput
+POSTHOOK: query: create table inOutput as
+SELECT key
+FROM src
+WHERE
+   ((key = '0'  AND value = 'val_0') OR
+    (key = '1'  AND value = 'val_1') OR
+    (key = '2'  AND value = 'val_2') OR
+    (key = '3'  AND value = 'val_3') OR
+    (key = '4'  AND value = 'val_4') OR
+    (key = '5'  AND value = 'val_5') OR
+    (key = '6'  AND value = 'val_6') OR
+    (key = '7'  AND value = 'val_7') OR
+    (key = '8'  AND value = 'val_8') OR
+    (key = '9'  AND value = 'val_9') OR
+    (key = '10' AND value = 'val_10'))
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@inOutput
+POSTHOOK: Lineage: inoutput.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: explain
+SELECT key
+FROM src
+WHERE
+   ((key = '0'  AND value = 'val_0') OR
+    (key = '1'  AND value = 'val_1') OR
+    (key = '2'  AND value = 'val_2') OR
+    (key = '3'  AND value = 'val_3') OR
+    (key = '4'  AND value = 'val_4') OR
+    (key = '5'  AND value = 'val_5') OR
+    (key = '6'  AND value = 'val_6') OR
+    (key = '7'  AND value = 'val_7') OR
+    (key = '8'  AND value = 'val_8') OR
+    (key = '9'  AND value = 'val_9') OR
+    (key = '10' AND value = 'val_10'))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+SELECT key
+FROM src
+WHERE
+   ((key = '0'  AND value = 'val_0') OR
+    (key = '1'  AND value = 'val_1') OR
+    (key = '2'  AND value = 'val_2') OR
+    (key = '3'  AND value = 'val_3') OR
+    (key = '4'  AND value = 'val_4') OR
+    (key = '5'  AND value = 'val_5') OR
+    (key = '6'  AND value = 'val_6') OR
+    (key = '7'  AND value = 'val_7') OR
+    (key = '8'  AND value = 'val_8') OR
+    (key = '9'  AND value = 'val_9') OR
+    (key = '10' AND value = 'val_10'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          filterExpr: (struct(key,value)) IN (const struct('0','val_0'), const struct('1','val_1'), const struct('2','val_2'), const struct('3','val_3'), const struct('4','val_4'), const struct('5','val_5'), const struct('6','val_6'), const struct('7','val_7'), const struct('8','val_8'), const struct('9','val_9'), const struct('10','val_10')) (type: boolean)
+          Filter Operator
+            predicate: (struct(key,value)) IN (const struct('0','val_0'), const struct('1','val_1'), const struct('2','val_2'), const struct('3','val_3'), const struct('4','val_4'), const struct('5','val_5'), const struct('6','val_6'), const struct('7','val_7'), const struct('8','val_8'), const struct('9','val_9'), const struct('10','val_10')) (type: boolean)
+            Select Operator
+              expressions: key (type: string)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: create table inOutputOpt as
+SELECT key
+FROM src
+WHERE
+   ((key = '0'  AND value = 'val_0') OR
+    (key = '1'  AND value = 'val_1') OR
+    (key = '2'  AND value = 'val_2') OR
+    (key = '3'  AND value = 'val_3') OR
+    (key = '4'  AND value = 'val_4') OR
+    (key = '5'  AND value = 'val_5') OR
+    (key = '6'  AND value = 'val_6') OR
+    (key = '7'  AND value = 'val_7') OR
+    (key = '8'  AND value = 'val_8') OR
+    (key = '9'  AND value = 'val_9') OR
+    (key = '10' AND value = 'val_10'))
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@inOutputOpt
+POSTHOOK: query: create table inOutputOpt as
+SELECT key
+FROM src
+WHERE
+   ((key = '0'  AND value = 'val_0') OR
+    (key = '1'  AND value = 'val_1') OR
+    (key = '2'  AND value = 'val_2') OR
+    (key = '3'  AND value = 'val_3') OR
+    (key = '4'  AND value = 'val_4') OR
+    (key = '5'  AND value = 'val_5') OR
+    (key = '6'  AND value = 'val_6') OR
+    (key = '7'  AND value = 'val_7') OR
+    (key = '8'  AND value = 'val_8') OR
+    (key = '9'  AND value = 'val_9') OR
+    (key = '10' AND value = 'val_10'))
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@inOutputOpt
+POSTHOOK: Lineage: inoutputopt.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: select count(*) from orOutput
+PREHOOK: type: QUERY
+PREHOOK: Input: default@oroutput
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from orOutput
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@oroutput
+#### A masked pattern was here ####
+11
+PREHOOK: query: select count(*) from inOutput
+PREHOOK: type: QUERY
+PREHOOK: Input: default@inoutput
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from inOutput
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inoutput
+#### A masked pattern was here ####
+11
+PREHOOK: query: select count(*) from inOutputOpt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@inoutputopt
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from inOutputOpt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inoutputopt
+#### A masked pattern was here ####
+11
+PREHOOK: query: select orOutput.key, inOutput.key
+from orOutput full outer join inOutput on (orOutput.key = inOutput.key)
+where orOutput.key is null
+or inOutput.key is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@inoutput
+PREHOOK: Input: default@oroutput
+#### A masked pattern was here ####
+POSTHOOK: query: select orOutput.key, inOutput.key
+from orOutput full outer join inOutput on (orOutput.key = inOutput.key)
+where orOutput.key is null
+or inOutput.key is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inoutput
+POSTHOOK: Input: default@oroutput
+#### A masked pattern was here ####
+PREHOOK: query: select orOutput.key, inOutputOpt.key
+from orOutput full outer join inOutputOpt on (orOutput.key = inOutputOpt.key)
+where orOutput.key is null
+or inOutputOpt.key is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@inoutputopt
+PREHOOK: Input: default@oroutput
+#### A masked pattern was here ####
+POSTHOOK: query: select orOutput.key, inOutputOpt.key
+from orOutput full outer join inOutputOpt on (orOutput.key = inOutputOpt.key)
+where orOutput.key is null
+or inOutputOpt.key is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inoutputopt
+POSTHOOK: Input: default@oroutput
+#### A masked pattern was here ####
+PREHOOK: query: drop table orOutput
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@oroutput
+PREHOOK: Output: database:default
+PREHOOK: Output: default@oroutput
+POSTHOOK: query: drop table orOutput
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@oroutput
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@oroutput
+PREHOOK: query: drop table inOutput
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@inoutput
+PREHOOK: Output: database:default
+PREHOOK: Output: default@inoutput
+POSTHOOK: query: drop table inOutput
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@inoutput
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@inoutput
+PREHOOK: query: drop table inOutputOpt
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@inoutputopt
+PREHOOK: Output: database:default
+PREHOOK: Output: default@inoutputopt
+POSTHOOK: query: drop table inOutputOpt
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@inoutputopt
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@inoutputopt
+PREHOOK: query: CREATE EXTERNAL TABLE hive26230_orc(kob varchar(2), enhanced_type_code int) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive26230_orc
+POSTHOOK: query: CREATE EXTERNAL TABLE hive26230_orc(kob varchar(2), enhanced_type_code int) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive26230_orc
+PREHOOK: query: INSERT INTO hive26230_orc VALUES('BB',18),('BC',18),('AB',18)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hive26230_orc
+POSTHOOK: query: INSERT INTO hive26230_orc VALUES('BB',18),('BC',18),('AB',18)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hive26230_orc
+POSTHOOK: Lineage: hive26230_orc.enhanced_type_code SCRIPT []
+POSTHOOK: Lineage: hive26230_orc.kob SCRIPT []
+PREHOOK: query: SELECT CASE WHEN ((kob='BB' AND enhanced_type_code=18) OR (kob='BC' AND enhanced_type_code=18)) THEN 1 ELSE 0 END AS logic_check
+FROM hive26230_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive26230_orc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CASE WHEN ((kob='BB' AND enhanced_type_code=18) OR (kob='BC' AND enhanced_type_code=18)) THEN 1 ELSE 0 END AS logic_check
+FROM hive26230_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive26230_orc
+#### A masked pattern was here ####
+1
+1
+0
+PREHOOK: query: DROP TABLE hive26230_orc
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hive26230_orc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive26230_orc
+POSTHOOK: query: DROP TABLE hive26230_orc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hive26230_orc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive26230_orc
+PREHOOK: query: CREATE EXTERNAL TABLE hive26230_char_orc(kob char(2), enhanced_type_code int) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive26230_char_orc
+POSTHOOK: query: CREATE EXTERNAL TABLE hive26230_char_orc(kob char(2), enhanced_type_code int) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive26230_char_orc
+PREHOOK: query: INSERT INTO hive26230_char_orc VALUES('B',18),('BC',18),('AB',18)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hive26230_char_orc
+POSTHOOK: query: INSERT INTO hive26230_char_orc VALUES('B',18),('BC',18),('AB',18)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hive26230_char_orc
+POSTHOOK: Lineage: hive26230_char_orc.enhanced_type_code SCRIPT []
+POSTHOOK: Lineage: hive26230_char_orc.kob SCRIPT []
+PREHOOK: query: SELECT CASE WHEN ((kob='B' AND enhanced_type_code=18) OR (kob='BC' AND enhanced_type_code=18)) THEN 1 ELSE 0 END AS logic_check
+FROM hive26230_char_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive26230_char_orc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CASE WHEN ((kob='B' AND enhanced_type_code=18) OR (kob='BC' AND enhanced_type_code=18)) THEN 1 ELSE 0 END AS logic_check
+FROM hive26230_char_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive26230_char_orc
+#### A masked pattern was here ####
+1
+1
+0
+PREHOOK: query: DROP TABLE hive26230_char_orc
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hive26230_char_orc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive26230_char_orc
+POSTHOOK: query: DROP TABLE hive26230_char_orc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hive26230_char_orc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive26230_char_orc
+PREHOOK: query: CREATE EXTERNAL TABLE hive26230_parq(kob varchar(2), enhanced_type_code int) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive26230_parq
+POSTHOOK: query: CREATE EXTERNAL TABLE hive26230_parq(kob varchar(2), enhanced_type_code int) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive26230_parq
+PREHOOK: query: INSERT INTO hive26230_parq VALUES('BB',18),('BC',18),('AB',18)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hive26230_parq
+POSTHOOK: query: INSERT INTO hive26230_parq VALUES('BB',18),('BC',18),('AB',18)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hive26230_parq
+POSTHOOK: Lineage: hive26230_parq.enhanced_type_code SCRIPT []
+POSTHOOK: Lineage: hive26230_parq.kob SCRIPT []
+PREHOOK: query: SELECT CASE WHEN ((kob='BB' AND enhanced_type_code=18) OR (kob='BC' AND enhanced_type_code=18)) THEN 1 ELSE 0 END AS logic_check
+FROM hive26230_parq
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive26230_parq
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CASE WHEN ((kob='BB' AND enhanced_type_code=18) OR (kob='BC' AND enhanced_type_code=18)) THEN 1 ELSE 0 END AS logic_check
+FROM hive26230_parq
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive26230_parq
+#### A masked pattern was here ####
+1
+1
+0
+PREHOOK: query: DROP TABLE hive26230_parq
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hive26230_parq
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive26230_parq
+POSTHOOK: query: DROP TABLE hive26230_parq
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hive26230_parq
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive26230_parq
+PREHOOK: query: CREATE EXTERNAL TABLE hive26230_char_parq(kob char(2), enhanced_type_code int) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive26230_char_parq
+POSTHOOK: query: CREATE EXTERNAL TABLE hive26230_char_parq(kob char(2), enhanced_type_code int) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive26230_char_parq
+PREHOOK: query: INSERT INTO hive26230_char_parq VALUES('B',18),('BC',18),('AB',18)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hive26230_char_parq
+POSTHOOK: query: INSERT INTO hive26230_char_parq VALUES('B',18),('BC',18),('AB',18)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hive26230_char_parq
+POSTHOOK: Lineage: hive26230_char_parq.enhanced_type_code SCRIPT []
+POSTHOOK: Lineage: hive26230_char_parq.kob SCRIPT []
+PREHOOK: query: SELECT CASE WHEN ((kob='B' AND enhanced_type_code=18) OR (kob='BC' AND enhanced_type_code=18)) THEN 1 ELSE 0 END AS logic_check
+FROM hive26230_char_parq
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive26230_char_parq
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CASE WHEN ((kob='B' AND enhanced_type_code=18) OR (kob='BC' AND enhanced_type_code=18)) THEN 1 ELSE 0 END AS logic_check
+FROM hive26230_char_parq
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive26230_char_parq
+#### A masked pattern was here ####
+1
+1
+0
+PREHOOK: query: DROP TABLE hive26230_char_parq
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hive26230_char_parq
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive26230_char_parq
+POSTHOOK: query: DROP TABLE hive26230_char_parq
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hive26230_char_parq
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive26230_char_parq
+PREHOOK: query: CREATE EXTERNAL TABLE hive26230_int_parq(kob int, enhanced_type_code int) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive26230_int_parq
+POSTHOOK: query: CREATE EXTERNAL TABLE hive26230_int_parq(kob int, enhanced_type_code int) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive26230_int_parq
+PREHOOK: query: INSERT INTO hive26230_int_parq VALUES(2,18),(23,18),(12,18)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hive26230_int_parq
+POSTHOOK: query: INSERT INTO hive26230_int_parq VALUES(2,18),(23,18),(12,18)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hive26230_int_parq
+POSTHOOK: Lineage: hive26230_int_parq.enhanced_type_code SCRIPT []
+POSTHOOK: Lineage: hive26230_int_parq.kob SCRIPT []
+PREHOOK: query: SELECT CASE WHEN ((kob=2 AND enhanced_type_code=18) OR (kob=23  AND enhanced_type_code=18)) THEN 1 ELSE 0 END AS logic_check FROM hive26230_int_parq
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive26230_int_parq
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT CASE WHEN ((kob=2 AND enhanced_type_code=18) OR (kob=23  AND enhanced_type_code=18)) THEN 1 ELSE 0 END AS logic_check FROM hive26230_int_parq
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive26230_int_parq
+#### A masked pattern was here ####
+1
+1
+0
+PREHOOK: query: DROP TABLE hive26230_int_parq
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hive26230_int_parq
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive26230_int_parq
+POSTHOOK: query: DROP TABLE hive26230_int_parq
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hive26230_int_parq
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive26230_int_parq

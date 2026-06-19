@@ -1,0 +1,925 @@
+PREHOOK: query: create table test_parquet_1 (id decimal) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_1
+POSTHOOK: query: create table test_parquet_1 (id decimal) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_1
+PREHOOK: query: insert into test_parquet_1 values (238), (238.12), (-0.123)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_parquet_1
+POSTHOOK: query: insert into test_parquet_1 values (238), (238.12), (-0.123)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_parquet_1
+POSTHOOK: Lineage: test_parquet_1.id SCRIPT []
+PREHOOK: query: alter table test_parquet_1 change id id string
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@test_parquet_1
+PREHOOK: Output: default@test_parquet_1
+POSTHOOK: query: alter table test_parquet_1 change id id string
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@test_parquet_1
+POSTHOOK: Output: default@test_parquet_1
+PREHOOK: query: select * from test_parquet_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_parquet_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_1
+#### A masked pattern was here ####
+238
+238
+0
+PREHOOK: query: create table test_parquet_2 (id decimal(10,2)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_2
+POSTHOOK: query: create table test_parquet_2 (id decimal(10,2)) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_2
+PREHOOK: query: insert into test_parquet_2 values (238), (238.12), (-0.123)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_parquet_2
+POSTHOOK: query: insert into test_parquet_2 values (238), (238.12), (-0.123)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_parquet_2
+POSTHOOK: Lineage: test_parquet_2.id SCRIPT []
+PREHOOK: query: alter table test_parquet_2 change id id string
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@test_parquet_2
+PREHOOK: Output: default@test_parquet_2
+POSTHOOK: query: alter table test_parquet_2 change id id string
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@test_parquet_2
+POSTHOOK: Output: default@test_parquet_2
+PREHOOK: query: select * from test_parquet_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_parquet_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_2
+#### A masked pattern was here ####
+238
+238.12
+-0.12
+PREHOOK: query: create table test_parquet_3 (id decimal(4,2)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_3
+POSTHOOK: query: create table test_parquet_3 (id decimal(4,2)) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_3
+PREHOOK: query: insert into test_parquet_3 values (238), (238.12), (-0.123)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_parquet_3
+POSTHOOK: query: insert into test_parquet_3 values (238), (238.12), (-0.123)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_parquet_3
+POSTHOOK: Lineage: test_parquet_3.id SCRIPT []
+PREHOOK: query: alter table test_parquet_3 change id id string
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@test_parquet_3
+PREHOOK: Output: default@test_parquet_3
+POSTHOOK: query: alter table test_parquet_3 change id id string
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@test_parquet_3
+POSTHOOK: Output: default@test_parquet_3
+PREHOOK: query: select * from test_parquet_3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_3
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_parquet_3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_3
+#### A masked pattern was here ####
+NULL
+NULL
+-0.12
+PREHOOK: query: create table test_parquet_4 (id decimal(11,5)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_4
+POSTHOOK: query: create table test_parquet_4 (id decimal(11,5)) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_4
+PREHOOK: query: insert into test_parquet_4 values (238), (238.12), (-0.123456789)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_parquet_4
+POSTHOOK: query: insert into test_parquet_4 values (238), (238.12), (-0.123456789)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_parquet_4
+POSTHOOK: Lineage: test_parquet_4.id SCRIPT []
+PREHOOK: query: alter table test_parquet_4 change id id string
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@test_parquet_4
+PREHOOK: Output: default@test_parquet_4
+POSTHOOK: query: alter table test_parquet_4 change id id string
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@test_parquet_4
+POSTHOOK: Output: default@test_parquet_4
+PREHOOK: query: select * from test_parquet_4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_4
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_parquet_4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_4
+#### A masked pattern was here ####
+238
+238.12
+-0.12346
+PREHOOK: query: create table test_parquet_5 (id decimal(10,2)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_5
+POSTHOOK: query: create table test_parquet_5 (id decimal(10,2)) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_5
+PREHOOK: query: insert into test_parquet_5 values (238), (238.12), (-0.123)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_parquet_5
+POSTHOOK: query: insert into test_parquet_5 values (238), (238.12), (-0.123)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_parquet_5
+POSTHOOK: Lineage: test_parquet_5.id SCRIPT []
+PREHOOK: query: alter table test_parquet_5 change id id string
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@test_parquet_5
+PREHOOK: Output: default@test_parquet_5
+POSTHOOK: query: alter table test_parquet_5 change id id string
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@test_parquet_5
+POSTHOOK: Output: default@test_parquet_5
+PREHOOK: query: select * from test_parquet_5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_5
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_parquet_5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_5
+#### A masked pattern was here ####
+238
+238.12
+-0.12
+PREHOOK: query: create table test_parquet_6 (id decimal(38,18)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_6
+POSTHOOK: query: create table test_parquet_6 (id decimal(38,18)) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_6
+PREHOOK: query: insert into test_parquet_6 values (-12345678901234567890.098765432109876543), (12345678901234567890.098765432109876543), (124567.678950), (0987678904789.567849028679576658)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_parquet_6
+POSTHOOK: query: insert into test_parquet_6 values (-12345678901234567890.098765432109876543), (12345678901234567890.098765432109876543), (124567.678950), (0987678904789.567849028679576658)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_parquet_6
+POSTHOOK: Lineage: test_parquet_6.id SCRIPT []
+PREHOOK: query: alter table test_parquet_6 change id id string
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@test_parquet_6
+PREHOOK: Output: default@test_parquet_6
+POSTHOOK: query: alter table test_parquet_6 change id id string
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@test_parquet_6
+POSTHOOK: Output: default@test_parquet_6
+PREHOOK: query: select * from test_parquet_6
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_6
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_parquet_6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_6
+#### A masked pattern was here ####
+-12345678901234567890.098765432109876543
+12345678901234567890.098765432109876543
+124567.67895
+987678904789.567849028679576658
+PREHOOK: query: drop table test_parquet_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_parquet_1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_1
+POSTHOOK: query: drop table test_parquet_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_parquet_1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_1
+PREHOOK: query: drop table test_parquet_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_parquet_2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_2
+POSTHOOK: query: drop table test_parquet_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_parquet_2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_2
+PREHOOK: query: drop table test_parquet_3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_parquet_3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_3
+POSTHOOK: query: drop table test_parquet_3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_parquet_3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_3
+PREHOOK: query: drop table test_parquet_4
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_parquet_4
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_4
+POSTHOOK: query: drop table test_parquet_4
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_parquet_4
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_4
+PREHOOK: query: drop table test_parquet_5
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_parquet_5
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_5
+POSTHOOK: query: drop table test_parquet_5
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_parquet_5
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_5
+PREHOOK: query: drop table test_parquet_6
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_parquet_6
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_6
+POSTHOOK: query: drop table test_parquet_6
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_parquet_6
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_6
+PREHOOK: query: create table test_parquet_1 (id decimal) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_1
+POSTHOOK: query: create table test_parquet_1 (id decimal) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_1
+PREHOOK: query: insert into test_parquet_1 values (238), (238.12), (-0.123)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_parquet_1
+POSTHOOK: query: insert into test_parquet_1 values (238), (238.12), (-0.123)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_parquet_1
+POSTHOOK: Lineage: test_parquet_1.id SCRIPT []
+PREHOOK: query: alter table test_parquet_1 change id id varchar(255)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@test_parquet_1
+PREHOOK: Output: default@test_parquet_1
+POSTHOOK: query: alter table test_parquet_1 change id id varchar(255)
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@test_parquet_1
+POSTHOOK: Output: default@test_parquet_1
+PREHOOK: query: select * from test_parquet_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_parquet_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_1
+#### A masked pattern was here ####
+238
+238
+0
+PREHOOK: query: create table test_parquet_2 (id decimal(10,2)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_2
+POSTHOOK: query: create table test_parquet_2 (id decimal(10,2)) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_2
+PREHOOK: query: insert into test_parquet_2 values (238), (238.12), (-0.123)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_parquet_2
+POSTHOOK: query: insert into test_parquet_2 values (238), (238.12), (-0.123)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_parquet_2
+POSTHOOK: Lineage: test_parquet_2.id SCRIPT []
+PREHOOK: query: alter table test_parquet_2 change id id varchar(255)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@test_parquet_2
+PREHOOK: Output: default@test_parquet_2
+POSTHOOK: query: alter table test_parquet_2 change id id varchar(255)
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@test_parquet_2
+POSTHOOK: Output: default@test_parquet_2
+PREHOOK: query: select * from test_parquet_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_parquet_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_2
+#### A masked pattern was here ####
+238
+238.12
+-0.12
+PREHOOK: query: create table test_parquet_3 (id decimal(4,2)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_3
+POSTHOOK: query: create table test_parquet_3 (id decimal(4,2)) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_3
+PREHOOK: query: insert into test_parquet_3 values (238), (238.12), (-0.123)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_parquet_3
+POSTHOOK: query: insert into test_parquet_3 values (238), (238.12), (-0.123)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_parquet_3
+POSTHOOK: Lineage: test_parquet_3.id SCRIPT []
+PREHOOK: query: alter table test_parquet_3 change id id varchar(255)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@test_parquet_3
+PREHOOK: Output: default@test_parquet_3
+POSTHOOK: query: alter table test_parquet_3 change id id varchar(255)
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@test_parquet_3
+POSTHOOK: Output: default@test_parquet_3
+PREHOOK: query: select * from test_parquet_3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_3
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_parquet_3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_3
+#### A masked pattern was here ####
+NULL
+NULL
+-0.12
+PREHOOK: query: create table test_parquet_4 (id decimal(11,5)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_4
+POSTHOOK: query: create table test_parquet_4 (id decimal(11,5)) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_4
+PREHOOK: query: insert into test_parquet_4 values (238), (238.12), (-0.123456789)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_parquet_4
+POSTHOOK: query: insert into test_parquet_4 values (238), (238.12), (-0.123456789)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_parquet_4
+POSTHOOK: Lineage: test_parquet_4.id SCRIPT []
+PREHOOK: query: alter table test_parquet_4 change id id varchar(255)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@test_parquet_4
+PREHOOK: Output: default@test_parquet_4
+POSTHOOK: query: alter table test_parquet_4 change id id varchar(255)
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@test_parquet_4
+POSTHOOK: Output: default@test_parquet_4
+PREHOOK: query: select * from test_parquet_4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_4
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_parquet_4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_4
+#### A masked pattern was here ####
+238
+238.12
+-0.12346
+PREHOOK: query: create table test_parquet_5 (id decimal(10,2)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_5
+POSTHOOK: query: create table test_parquet_5 (id decimal(10,2)) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_5
+PREHOOK: query: insert into test_parquet_5 values (238), (238.12), (-0.123)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_parquet_5
+POSTHOOK: query: insert into test_parquet_5 values (238), (238.12), (-0.123)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_parquet_5
+POSTHOOK: Lineage: test_parquet_5.id SCRIPT []
+PREHOOK: query: alter table test_parquet_5 change id id varchar(255)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@test_parquet_5
+PREHOOK: Output: default@test_parquet_5
+POSTHOOK: query: alter table test_parquet_5 change id id varchar(255)
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@test_parquet_5
+POSTHOOK: Output: default@test_parquet_5
+PREHOOK: query: select * from test_parquet_5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_5
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_parquet_5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_5
+#### A masked pattern was here ####
+238
+238.12
+-0.12
+PREHOOK: query: create table test_parquet_6 (id decimal(38,18)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_6
+POSTHOOK: query: create table test_parquet_6 (id decimal(38,18)) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_6
+PREHOOK: query: insert into test_parquet_6 values (-12345678901234567890.098765432109876543), (12345678901234567890.098765432109876543), (124567.678950), (0987678904789.567849028679576658)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_parquet_6
+POSTHOOK: query: insert into test_parquet_6 values (-12345678901234567890.098765432109876543), (12345678901234567890.098765432109876543), (124567.678950), (0987678904789.567849028679576658)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_parquet_6
+POSTHOOK: Lineage: test_parquet_6.id SCRIPT []
+PREHOOK: query: alter table test_parquet_6 change id id varchar(255)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@test_parquet_6
+PREHOOK: Output: default@test_parquet_6
+POSTHOOK: query: alter table test_parquet_6 change id id varchar(255)
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@test_parquet_6
+POSTHOOK: Output: default@test_parquet_6
+PREHOOK: query: select * from test_parquet_6
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_6
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_parquet_6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_6
+#### A masked pattern was here ####
+-12345678901234567890.098765432109876543
+12345678901234567890.098765432109876543
+124567.67895
+987678904789.567849028679576658
+PREHOOK: query: create table test_parquet_7 (id decimal(38,18)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_7
+POSTHOOK: query: create table test_parquet_7 (id decimal(38,18)) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_7
+PREHOOK: query: insert into test_parquet_7 values (-12345678901234567890.098765432109876543), (12345678901234567890.098765432109876543), (124567.678950), (0987678904789.567849028679576658)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_parquet_7
+POSTHOOK: query: insert into test_parquet_7 values (-12345678901234567890.098765432109876543), (12345678901234567890.098765432109876543), (124567.678950), (0987678904789.567849028679576658)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_parquet_7
+POSTHOOK: Lineage: test_parquet_7.id SCRIPT []
+PREHOOK: query: alter table test_parquet_7 change id id varchar(8)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@test_parquet_7
+PREHOOK: Output: default@test_parquet_7
+POSTHOOK: query: alter table test_parquet_7 change id id varchar(8)
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@test_parquet_7
+POSTHOOK: Output: default@test_parquet_7
+PREHOOK: query: select * from test_parquet_7
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_7
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_parquet_7
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_7
+#### A masked pattern was here ####
+-1234567
+12345678
+124567.6
+98767890
+PREHOOK: query: drop table test_parquet_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_parquet_1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_1
+POSTHOOK: query: drop table test_parquet_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_parquet_1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_1
+PREHOOK: query: drop table test_parquet_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_parquet_2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_2
+POSTHOOK: query: drop table test_parquet_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_parquet_2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_2
+PREHOOK: query: drop table test_parquet_3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_parquet_3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_3
+POSTHOOK: query: drop table test_parquet_3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_parquet_3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_3
+PREHOOK: query: drop table test_parquet_4
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_parquet_4
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_4
+POSTHOOK: query: drop table test_parquet_4
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_parquet_4
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_4
+PREHOOK: query: drop table test_parquet_5
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_parquet_5
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_5
+POSTHOOK: query: drop table test_parquet_5
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_parquet_5
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_5
+PREHOOK: query: drop table test_parquet_6
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_parquet_6
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_6
+POSTHOOK: query: drop table test_parquet_6
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_parquet_6
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_6
+PREHOOK: query: drop table test_parquet_7
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_parquet_7
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_7
+POSTHOOK: query: drop table test_parquet_7
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_parquet_7
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_7
+PREHOOK: query: create table test_parquet_1 (id decimal) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_1
+POSTHOOK: query: create table test_parquet_1 (id decimal) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_1
+PREHOOK: query: insert into test_parquet_1 values (238), (238.12), (-0.123)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_parquet_1
+POSTHOOK: query: insert into test_parquet_1 values (238), (238.12), (-0.123)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_parquet_1
+POSTHOOK: Lineage: test_parquet_1.id SCRIPT []
+PREHOOK: query: alter table test_parquet_1 change id id char(255)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@test_parquet_1
+PREHOOK: Output: default@test_parquet_1
+POSTHOOK: query: alter table test_parquet_1 change id id char(255)
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@test_parquet_1
+POSTHOOK: Output: default@test_parquet_1
+PREHOOK: query: select * from test_parquet_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_parquet_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_1
+#### A masked pattern was here ####
+238                                                                                                                                                                                                                                                            
+238                                                                                                                                                                                                                                                            
+0                                                                                                                                                                                                                                                              
+PREHOOK: query: create table test_parquet_2 (id decimal(10,2)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_2
+POSTHOOK: query: create table test_parquet_2 (id decimal(10,2)) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_2
+PREHOOK: query: insert into test_parquet_2 values (238), (238.12), (-0.123)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_parquet_2
+POSTHOOK: query: insert into test_parquet_2 values (238), (238.12), (-0.123)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_parquet_2
+POSTHOOK: Lineage: test_parquet_2.id SCRIPT []
+PREHOOK: query: alter table test_parquet_2 change id id char(255)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@test_parquet_2
+PREHOOK: Output: default@test_parquet_2
+POSTHOOK: query: alter table test_parquet_2 change id id char(255)
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@test_parquet_2
+POSTHOOK: Output: default@test_parquet_2
+PREHOOK: query: select * from test_parquet_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_parquet_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_2
+#### A masked pattern was here ####
+238                                                                                                                                                                                                                                                            
+238.12                                                                                                                                                                                                                                                         
+-0.12                                                                                                                                                                                                                                                          
+PREHOOK: query: create table test_parquet_3 (id decimal(4,2)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_3
+POSTHOOK: query: create table test_parquet_3 (id decimal(4,2)) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_3
+PREHOOK: query: insert into test_parquet_3 values (238), (238.12), (-0.123)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_parquet_3
+POSTHOOK: query: insert into test_parquet_3 values (238), (238.12), (-0.123)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_parquet_3
+POSTHOOK: Lineage: test_parquet_3.id SCRIPT []
+PREHOOK: query: alter table test_parquet_3 change id id char(255)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@test_parquet_3
+PREHOOK: Output: default@test_parquet_3
+POSTHOOK: query: alter table test_parquet_3 change id id char(255)
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@test_parquet_3
+POSTHOOK: Output: default@test_parquet_3
+PREHOOK: query: select * from test_parquet_3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_3
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_parquet_3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_3
+#### A masked pattern was here ####
+NULL
+NULL
+-0.12                                                                                                                                                                                                                                                          
+PREHOOK: query: create table test_parquet_4 (id decimal(11,5)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_4
+POSTHOOK: query: create table test_parquet_4 (id decimal(11,5)) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_4
+PREHOOK: query: insert into test_parquet_4 values (238), (238.12), (-0.123456789)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_parquet_4
+POSTHOOK: query: insert into test_parquet_4 values (238), (238.12), (-0.123456789)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_parquet_4
+POSTHOOK: Lineage: test_parquet_4.id SCRIPT []
+PREHOOK: query: alter table test_parquet_4 change id id char(255)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@test_parquet_4
+PREHOOK: Output: default@test_parquet_4
+POSTHOOK: query: alter table test_parquet_4 change id id char(255)
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@test_parquet_4
+POSTHOOK: Output: default@test_parquet_4
+PREHOOK: query: select * from test_parquet_4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_4
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_parquet_4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_4
+#### A masked pattern was here ####
+238                                                                                                                                                                                                                                                            
+238.12                                                                                                                                                                                                                                                         
+-0.12346                                                                                                                                                                                                                                                       
+PREHOOK: query: create table test_parquet_5 (id decimal(10,2)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_5
+POSTHOOK: query: create table test_parquet_5 (id decimal(10,2)) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_5
+PREHOOK: query: insert into test_parquet_5 values (238), (238.12), (-0.123)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_parquet_5
+POSTHOOK: query: insert into test_parquet_5 values (238), (238.12), (-0.123)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_parquet_5
+POSTHOOK: Lineage: test_parquet_5.id SCRIPT []
+PREHOOK: query: alter table test_parquet_5 change id id char(255)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@test_parquet_5
+PREHOOK: Output: default@test_parquet_5
+POSTHOOK: query: alter table test_parquet_5 change id id char(255)
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@test_parquet_5
+POSTHOOK: Output: default@test_parquet_5
+PREHOOK: query: select * from test_parquet_5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_5
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_parquet_5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_5
+#### A masked pattern was here ####
+238                                                                                                                                                                                                                                                            
+238.12                                                                                                                                                                                                                                                         
+-0.12                                                                                                                                                                                                                                                          
+PREHOOK: query: create table test_parquet_6 (id decimal(38,18)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_6
+POSTHOOK: query: create table test_parquet_6 (id decimal(38,18)) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_6
+PREHOOK: query: insert into test_parquet_6 values (-12345678901234567890.098765432109876543), (12345678901234567890.098765432109876543), (124567.678950), (0987678904789.567849028679576658)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_parquet_6
+POSTHOOK: query: insert into test_parquet_6 values (-12345678901234567890.098765432109876543), (12345678901234567890.098765432109876543), (124567.678950), (0987678904789.567849028679576658)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_parquet_6
+POSTHOOK: Lineage: test_parquet_6.id SCRIPT []
+PREHOOK: query: alter table test_parquet_6 change id id char(255)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@test_parquet_6
+PREHOOK: Output: default@test_parquet_6
+POSTHOOK: query: alter table test_parquet_6 change id id char(255)
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@test_parquet_6
+POSTHOOK: Output: default@test_parquet_6
+PREHOOK: query: select * from test_parquet_6
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_6
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_parquet_6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_6
+#### A masked pattern was here ####
+-12345678901234567890.098765432109876543                                                                                                                                                                                                                       
+12345678901234567890.098765432109876543                                                                                                                                                                                                                        
+124567.67895                                                                                                                                                                                                                                                   
+987678904789.567849028679576658                                                                                                                                                                                                                                
+PREHOOK: query: create table test_parquet_7 (id decimal(38,18)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_7
+POSTHOOK: query: create table test_parquet_7 (id decimal(38,18)) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_7
+PREHOOK: query: insert into test_parquet_7 values (-12345678901234567890.098765432109876543), (12345678901234567890.098765432109876543), (124567.678950), (0987678904789.567849028679576658)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_parquet_7
+POSTHOOK: query: insert into test_parquet_7 values (-12345678901234567890.098765432109876543), (12345678901234567890.098765432109876543), (124567.678950), (0987678904789.567849028679576658)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_parquet_7
+POSTHOOK: Lineage: test_parquet_7.id SCRIPT []
+PREHOOK: query: alter table test_parquet_7 change id id char(8)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@test_parquet_7
+PREHOOK: Output: default@test_parquet_7
+POSTHOOK: query: alter table test_parquet_7 change id id char(8)
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@test_parquet_7
+POSTHOOK: Output: default@test_parquet_7
+PREHOOK: query: select * from test_parquet_7
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_7
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_parquet_7
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_7
+#### A masked pattern was here ####
+-1234567
+12345678
+124567.6
+98767890
+PREHOOK: query: drop table test_parquet_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_parquet_1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_1
+POSTHOOK: query: drop table test_parquet_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_parquet_1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_1
+PREHOOK: query: drop table test_parquet_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_parquet_2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_2
+POSTHOOK: query: drop table test_parquet_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_parquet_2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_2
+PREHOOK: query: drop table test_parquet_3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_parquet_3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_3
+POSTHOOK: query: drop table test_parquet_3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_parquet_3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_3
+PREHOOK: query: drop table test_parquet_4
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_parquet_4
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_4
+POSTHOOK: query: drop table test_parquet_4
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_parquet_4
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_4
+PREHOOK: query: drop table test_parquet_5
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_parquet_5
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_5
+POSTHOOK: query: drop table test_parquet_5
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_parquet_5
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_5
+PREHOOK: query: drop table test_parquet_6
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_parquet_6
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_6
+POSTHOOK: query: drop table test_parquet_6
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_parquet_6
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_6
+PREHOOK: query: drop table test_parquet_7
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_parquet_7
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_7
+POSTHOOK: query: drop table test_parquet_7
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_parquet_7
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_7

@@ -1,0 +1,29 @@
+Ln:1 CREATE PROCEDURE P
+Ln:7 DECLARE an1 number = 1.3
+Ln:8 DECLARE an2 number = 2.5
+Ln:9 PRINT
+an2=2.5
+Ln:11 DECLARE sn1 number = 1.3
+Ln:12 DECLARE sn2 number = 0.1
+Ln:13 PRINT
+sn2=0.1
+Ln:15 DECLARE mn1 number = 4.2
+Ln:16 DECLARE mn2 number = 8.82
+Ln:17 PRINT
+mn2=8.82
+Ln:19 DECLARE dn1 number = 4.2
+Ln:20 DECLARE dn2 number = 1.75
+Ln:21 PRINT
+dn2=1.75
+Ln:23 EXEC PROCEDURE P
+Ln:23 SET PARAM n = 42
+Ln:3 DECLARE v int = 43
+Ln:4 PRINT
+v=43
+Ln:24 EXEC PROCEDURE P
+Ln:24 SET PARAM n = 12
+Ln:3 DECLARE v int = 13
+Ln:4 PRINT
+v=13
+Ln:25 EXEC PROCEDURE P
+cannot convert 'not a number' with type STRING to DECIMAL

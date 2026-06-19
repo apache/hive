@@ -1,0 +1,16 @@
+PREHOOK: query: set role ADMIN
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role ADMIN
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: create temporary macro mymacro1(x double) x * x
+PREHOOK: type: CREATEMACRO
+PREHOOK: Output: database:default
+POSTHOOK: query: create temporary macro mymacro1(x double) x * x
+POSTHOOK: type: CREATEMACRO
+POSTHOOK: Output: database:default
+PREHOOK: query: drop temporary macro mymacro1
+PREHOOK: type: DROPMACRO
+PREHOOK: Output: database:default
+POSTHOOK: query: drop temporary macro mymacro1
+POSTHOOK: type: DROPMACRO
+POSTHOOK: Output: database:default

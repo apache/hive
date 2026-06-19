@@ -1,0 +1,183 @@
+PREHOOK: query: CREATE TABLE pokes (foo INT, bar STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pokes
+POSTHOOK: query: CREATE TABLE pokes (foo INT, bar STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pokes
+PREHOOK: query: create table pokes2(foo INT, bar STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pokes2
+POSTHOOK: query: create table pokes2(foo INT, bar STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pokes2
+PREHOOK: query: create table jssarma_nilzma_bad as select a.val, a.filename, a.offset from (select hash(foo) as val, INPUT__FILE__NAME as filename, BLOCK__OFFSET__INSIDE__FILE as  offset from pokes) a join pokes2 b on (a.val = b.foo)
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@pokes
+PREHOOK: Input: default@pokes2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@jssarma_nilzma_bad
+POSTHOOK: query: create table jssarma_nilzma_bad as select a.val, a.filename, a.offset from (select hash(foo) as val, INPUT__FILE__NAME as filename, BLOCK__OFFSET__INSIDE__FILE as  offset from pokes) a join pokes2 b on (a.val = b.foo)
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@pokes
+POSTHOOK: Input: default@pokes2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@jssarma_nilzma_bad
+POSTHOOK: Lineage: jssarma_nilzma_bad.filename SIMPLE [(pokes)pokes.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: jssarma_nilzma_bad.offset SIMPLE [(pokes)pokes.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: jssarma_nilzma_bad.val EXPRESSION [(pokes)pokes.FieldSchema(name:foo, type:int, comment:null), ]
+PREHOOK: query: drop table jssarma_nilzma_bad
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@jssarma_nilzma_bad
+PREHOOK: Output: database:default
+PREHOOK: Output: default@jssarma_nilzma_bad
+POSTHOOK: query: drop table jssarma_nilzma_bad
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@jssarma_nilzma_bad
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@jssarma_nilzma_bad
+PREHOOK: query: drop table pokes
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@pokes
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pokes
+POSTHOOK: query: drop table pokes
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@pokes
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pokes
+PREHOOK: query: drop table pokes2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@pokes2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pokes2
+POSTHOOK: query: drop table pokes2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@pokes2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pokes2
+PREHOOK: query: CREATE TABLE pokes (foo INT, bar STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pokes
+POSTHOOK: query: CREATE TABLE pokes (foo INT, bar STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pokes
+PREHOOK: query: create table pokes2(foo INT, bar STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pokes2
+POSTHOOK: query: create table pokes2(foo INT, bar STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pokes2
+PREHOOK: query: create table jssarma_nilzma_bad as select a.val, a.filename, a.offset from (select hash(foo) as val, INPUT__FILE__NAME as filename, BLOCK__OFFSET__INSIDE__FILE as  offset from pokes) a join pokes2 b on (a.val = b.foo)
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@pokes
+PREHOOK: Input: default@pokes2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@jssarma_nilzma_bad
+POSTHOOK: query: create table jssarma_nilzma_bad as select a.val, a.filename, a.offset from (select hash(foo) as val, INPUT__FILE__NAME as filename, BLOCK__OFFSET__INSIDE__FILE as  offset from pokes) a join pokes2 b on (a.val = b.foo)
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@pokes
+POSTHOOK: Input: default@pokes2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@jssarma_nilzma_bad
+POSTHOOK: Lineage: jssarma_nilzma_bad.filename SIMPLE [(pokes)pokes.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: jssarma_nilzma_bad.offset SIMPLE [(pokes)pokes.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: jssarma_nilzma_bad.val EXPRESSION [(pokes)pokes.FieldSchema(name:foo, type:int, comment:null), ]
+PREHOOK: query: drop table jssarma_nilzma_bad
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@jssarma_nilzma_bad
+PREHOOK: Output: database:default
+PREHOOK: Output: default@jssarma_nilzma_bad
+POSTHOOK: query: drop table jssarma_nilzma_bad
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@jssarma_nilzma_bad
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@jssarma_nilzma_bad
+PREHOOK: query: drop table pokes
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@pokes
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pokes
+POSTHOOK: query: drop table pokes
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@pokes
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pokes
+PREHOOK: query: drop table pokes2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@pokes2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pokes2
+POSTHOOK: query: drop table pokes2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@pokes2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pokes2
+PREHOOK: query: CREATE TABLE pokes (foo INT, bar STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pokes
+POSTHOOK: query: CREATE TABLE pokes (foo INT, bar STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pokes
+PREHOOK: query: create table pokes2(foo INT, bar STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pokes2
+POSTHOOK: query: create table pokes2(foo INT, bar STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pokes2
+PREHOOK: query: create table jssarma_nilzma_bad as select a.val, a.filename, a.offset from (select hash(foo) as val, INPUT__FILE__NAME as filename, BLOCK__OFFSET__INSIDE__FILE as  offset from pokes) a join pokes2 b on (a.val = b.foo)
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@pokes
+PREHOOK: Input: default@pokes2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@jssarma_nilzma_bad
+POSTHOOK: query: create table jssarma_nilzma_bad as select a.val, a.filename, a.offset from (select hash(foo) as val, INPUT__FILE__NAME as filename, BLOCK__OFFSET__INSIDE__FILE as  offset from pokes) a join pokes2 b on (a.val = b.foo)
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@pokes
+POSTHOOK: Input: default@pokes2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@jssarma_nilzma_bad
+POSTHOOK: Lineage: jssarma_nilzma_bad.filename SIMPLE [(pokes)pokes.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: jssarma_nilzma_bad.offset SIMPLE [(pokes)pokes.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: jssarma_nilzma_bad.val EXPRESSION [(pokes)pokes.FieldSchema(name:foo, type:int, comment:null), ]
+PREHOOK: query: drop table jssarma_nilzma_bad
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@jssarma_nilzma_bad
+PREHOOK: Output: database:default
+PREHOOK: Output: default@jssarma_nilzma_bad
+POSTHOOK: query: drop table jssarma_nilzma_bad
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@jssarma_nilzma_bad
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@jssarma_nilzma_bad
+PREHOOK: query: drop table pokes
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@pokes
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pokes
+POSTHOOK: query: drop table pokes
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@pokes
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pokes
+PREHOOK: query: drop table pokes2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@pokes2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pokes2
+POSTHOOK: query: drop table pokes2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@pokes2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pokes2

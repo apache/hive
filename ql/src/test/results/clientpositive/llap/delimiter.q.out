@@ -1,0 +1,56 @@
+PREHOOK: query: create table impressions (imp string, msg string)
+row format delimited
+fields terminated by '\t'
+lines terminated by '\n'
+stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@impressions
+POSTHOOK: query: create table impressions (imp string, msg string)
+row format delimited
+fields terminated by '\t'
+lines terminated by '\n'
+stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@impressions
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in7.txt' INTO TABLE impressions
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@impressions
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in7.txt' INTO TABLE impressions
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@impressions
+PREHOOK: query: select * from impressions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impressions
+#### A masked pattern was here ####
+POSTHOOK: query: select * from impressions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impressions
+#### A masked pattern was here ####
+35	40
+48	32
+100100	40
+PREHOOK: query: select imp,msg from impressions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impressions
+#### A masked pattern was here ####
+POSTHOOK: query: select imp,msg from impressions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impressions
+#### A masked pattern was here ####
+35	40
+48	32
+100100	40
+PREHOOK: query: drop table impressions
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@impressions
+PREHOOK: Output: database:default
+PREHOOK: Output: default@impressions
+POSTHOOK: query: drop table impressions
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@impressions
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@impressions

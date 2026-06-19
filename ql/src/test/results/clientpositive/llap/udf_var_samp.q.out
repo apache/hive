@@ -1,0 +1,86 @@
+PREHOOK: query: DESCRIBE FUNCTION var_samp
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION var_samp
+POSTHOOK: type: DESCFUNCTION
+var_samp(x) - Returns the sample variance of a set of numbers.
+If applied to an empty set: NULL is returned.
+If applied to a set with a single element: NULL is returned.
+Otherwise it computes: (S2-S1*S1/N)/(N-1)
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED var_samp
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED var_samp
+POSTHOOK: type: DESCFUNCTION
+var_samp(x) - Returns the sample variance of a set of numbers.
+If applied to an empty set: NULL is returned.
+If applied to a set with a single element: NULL is returned.
+Otherwise it computes: (S2-S1*S1/N)/(N-1)
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDAFVarianceSample
+Function type:BUILTIN
+PREHOOK: query: DESCRIBE FUNCTION var_samp
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION var_samp
+POSTHOOK: type: DESCFUNCTION
+var_samp(x) - Returns the sample variance of a set of numbers.
+If applied to an empty set: NULL is returned.
+If applied to a set with a single element: NULL is returned.
+Otherwise it computes: (S2-S1*S1/N)/(N-1)
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED var_samp
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED var_samp
+POSTHOOK: type: DESCFUNCTION
+var_samp(x) - Returns the sample variance of a set of numbers.
+If applied to an empty set: NULL is returned.
+If applied to a set with a single element: NULL is returned.
+Otherwise it computes: (S2-S1*S1/N)/(N-1)
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDAFVarianceSample
+Function type:BUILTIN
+PREHOOK: query: drop table if exists t_n27
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists t_n27
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table t_n27 (a int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_n27
+POSTHOOK: query: create table t_n27 (a int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_n27
+PREHOOK: query: insert into t_n27 values (1),(-1),(0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_n27
+POSTHOOK: query: insert into t_n27 values (1),(-1),(0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_n27
+POSTHOOK: Lineage: t_n27.a SCRIPT []
+PREHOOK: query: select var_samp(a) from t_n27
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n27
+#### A masked pattern was here ####
+POSTHOOK: query: select var_samp(a) from t_n27
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n27
+#### A masked pattern was here ####
+1.0
+PREHOOK: query: select var_samp(a) from t_n27 where a=0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n27
+#### A masked pattern was here ####
+POSTHOOK: query: select var_samp(a) from t_n27 where a=0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n27
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select round(var_samp(a),5) from t_n27 where a>=0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n27
+#### A masked pattern was here ####
+POSTHOOK: query: select round(var_samp(a),5) from t_n27 where a>=0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n27
+#### A masked pattern was here ####
+0.5

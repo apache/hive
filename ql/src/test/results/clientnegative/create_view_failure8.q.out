@@ -1,0 +1,5 @@
+PREHOOK: query: DROP VIEW xxx17
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW xxx17
+POSTHOOK: type: DROPVIEW
+FAILED: SemanticException [Error 10093]: Rightmost columns in view output do not match PARTITIONED ON clause

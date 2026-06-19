@@ -1,0 +1,45 @@
+PREHOOK: query: create table src_autho_test as select * from src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_autho_test
+POSTHOOK: query: create table src_autho_test as select * from src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_autho_test
+POSTHOOK: Lineage: src_autho_test.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_autho_test.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create view v1 as select * from src_autho_test
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src_autho_test
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v1
+POSTHOOK: query: create view v1 as select * from src_autho_test
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src_autho_test
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v1
+POSTHOOK: Lineage: v1.key SIMPLE [(src_autho_test)src_autho_test.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v1.value SIMPLE [(src_autho_test)src_autho_test.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: create view v2 as select * from v1
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src_autho_test
+PREHOOK: Input: default@v1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v2
+POSTHOOK: query: create view v2 as select * from v1
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src_autho_test
+POSTHOOK: Input: default@v1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v2
+POSTHOOK: Lineage: v2.key SIMPLE [(src_autho_test)src_autho_test.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v2.value SIMPLE [(src_autho_test)src_autho_test.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: grant select on table v2 to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@v2
+POSTHOOK: query: grant select on table v2 to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@v2
+Authorization failed:No privilege 'Select' found for inputs { database:default, table:src_autho_test, columnName:key}. Use SHOW GRANT to get more details.

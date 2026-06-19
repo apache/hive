@@ -1,0 +1,96 @@
+PREHOOK: query: CREATE TABLE table_test_output_format(key INT, value STRING) STORED AS
+  INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
+  OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_test_output_format
+POSTHOOK: query: CREATE TABLE table_test_output_format(key INT, value STRING) STORED AS
+  INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
+  OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_test_output_format
+PREHOOK: query: FROM src
+INSERT OVERWRITE TABLE table_test_output_format SELECT src.key, src.value LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@table_test_output_format
+POSTHOOK: query: FROM src
+INSERT OVERWRITE TABLE table_test_output_format SELECT src.key, src.value LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@table_test_output_format
+POSTHOOK: Lineage: table_test_output_format.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table_test_output_format.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: describe table_test_output_format
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table_test_output_format
+POSTHOOK: query: describe table_test_output_format
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table_test_output_format
+key                 	int                 	                    
+value               	string              	                    
+PREHOOK: query: CREATE TABLE table_test_output_format_sequencefile(key INT, value STRING) STORED AS
+  INPUTFORMAT 'org.apache.hadoop.mapred.SequenceFileInputFormat'
+  OUTPUTFORMAT 'org.apache.hadoop.mapred.SequenceFileOutputFormat'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_test_output_format_sequencefile
+POSTHOOK: query: CREATE TABLE table_test_output_format_sequencefile(key INT, value STRING) STORED AS
+  INPUTFORMAT 'org.apache.hadoop.mapred.SequenceFileInputFormat'
+  OUTPUTFORMAT 'org.apache.hadoop.mapred.SequenceFileOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_test_output_format_sequencefile
+PREHOOK: query: FROM src
+INSERT OVERWRITE TABLE table_test_output_format_sequencefile SELECT src.key, src.value LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@table_test_output_format_sequencefile
+POSTHOOK: query: FROM src
+INSERT OVERWRITE TABLE table_test_output_format_sequencefile SELECT src.key, src.value LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@table_test_output_format_sequencefile
+POSTHOOK: Lineage: table_test_output_format_sequencefile.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table_test_output_format_sequencefile.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: describe table_test_output_format_sequencefile
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table_test_output_format_sequencefile
+POSTHOOK: query: describe table_test_output_format_sequencefile
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table_test_output_format_sequencefile
+key                 	int                 	                    
+value               	string              	                    
+PREHOOK: query: CREATE TABLE table_test_output_format_hivesequencefile(key INT, value STRING) STORED AS
+  INPUTFORMAT 'org.apache.hadoop.mapred.SequenceFileInputFormat'
+  OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_test_output_format_hivesequencefile
+POSTHOOK: query: CREATE TABLE table_test_output_format_hivesequencefile(key INT, value STRING) STORED AS
+  INPUTFORMAT 'org.apache.hadoop.mapred.SequenceFileInputFormat'
+  OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_test_output_format_hivesequencefile
+PREHOOK: query: FROM src
+INSERT OVERWRITE TABLE table_test_output_format_hivesequencefile SELECT src.key, src.value LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@table_test_output_format_hivesequencefile
+POSTHOOK: query: FROM src
+INSERT OVERWRITE TABLE table_test_output_format_hivesequencefile SELECT src.key, src.value LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@table_test_output_format_hivesequencefile
+POSTHOOK: Lineage: table_test_output_format_hivesequencefile.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table_test_output_format_hivesequencefile.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: describe table_test_output_format_hivesequencefile
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table_test_output_format_hivesequencefile
+POSTHOOK: query: describe table_test_output_format_hivesequencefile
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table_test_output_format_hivesequencefile
+key                 	int                 	                    
+value               	string              	                    

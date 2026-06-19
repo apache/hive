@@ -1,0 +1,135 @@
+PREHOOK: query: create table exim_department_n9 ( dep_id int comment "department id") 	
+	stored as textfile	
+	tblproperties("creator"="krishna")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@exim_department_n9
+POSTHOOK: query: create table exim_department_n9 ( dep_id int comment "department id") 	
+	stored as textfile	
+	tblproperties("creator"="krishna")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@exim_department_n9
+PREHOOK: query: load data local inpath "../../data/files/test.dat" into table exim_department_n9
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@exim_department_n9
+POSTHOOK: query: load data local inpath "../../data/files/test.dat" into table exim_department_n9
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@exim_department_n9
+#### A masked pattern was here ####
+PREHOOK: query: export table exim_department_n9 to 'ql/test/data/exports/exim_department'
+PREHOOK: type: EXPORT
+PREHOOK: Input: default@exim_department_n9
+#### A masked pattern was here ####
+POSTHOOK: query: export table exim_department_n9 to 'ql/test/data/exports/exim_department'
+POSTHOOK: type: EXPORT
+POSTHOOK: Input: default@exim_department_n9
+#### A masked pattern was here ####
+PREHOOK: query: drop table exim_department_n9
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@exim_department_n9
+PREHOOK: Output: database:default
+PREHOOK: Output: default@exim_department_n9
+POSTHOOK: query: drop table exim_department_n9
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@exim_department_n9
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@exim_department_n9
+PREHOOK: query: create database importer
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:importer
+POSTHOOK: query: create database importer
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:importer
+PREHOOK: query: use importer
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:importer
+POSTHOOK: query: use importer
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:importer
+PREHOOK: query: create table exim_department_n9 ( dep_id int comment "department id") 	
+	partitioned by (emp_org string)
+	stored as textfile	
+	tblproperties("creator"="krishna")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:importer
+PREHOOK: Output: importer@exim_department_n9
+POSTHOOK: query: create table exim_department_n9 ( dep_id int comment "department id") 	
+	partitioned by (emp_org string)
+	stored as textfile	
+	tblproperties("creator"="krishna")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:importer
+POSTHOOK: Output: importer@exim_department_n9
+PREHOOK: query: load data local inpath "../../data/files/test.dat" into table exim_department_n9 partition (emp_org="hr")
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: importer@exim_department_n9
+POSTHOOK: query: load data local inpath "../../data/files/test.dat" into table exim_department_n9 partition (emp_org="hr")
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: importer@exim_department_n9
+POSTHOOK: Output: importer@exim_department_n9@emp_org=hr
+PREHOOK: query: import table exim_imported_dept from 'ql/test/data/exports/exim_department'
+PREHOOK: type: IMPORT
+#### A masked pattern was here ####
+PREHOOK: Output: database:importer
+POSTHOOK: query: import table exim_imported_dept from 'ql/test/data/exports/exim_department'
+POSTHOOK: type: IMPORT
+#### A masked pattern was here ####
+POSTHOOK: Output: database:importer
+POSTHOOK: Output: importer@exim_imported_dept
+PREHOOK: query: describe extended exim_imported_dept
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: importer@exim_imported_dept
+POSTHOOK: query: describe extended exim_imported_dept
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: importer@exim_imported_dept
+dep_id              	int                 	department id       
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: select * from exim_imported_dept
+PREHOOK: type: QUERY
+PREHOOK: Input: importer@exim_imported_dept
+#### A masked pattern was here ####
+POSTHOOK: query: select * from exim_imported_dept
+POSTHOOK: type: QUERY
+POSTHOOK: Input: importer@exim_imported_dept
+#### A masked pattern was here ####
+1
+2
+3
+4
+5
+6
+PREHOOK: query: drop table exim_imported_dept
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: importer@exim_imported_dept
+PREHOOK: Output: database:importer
+PREHOOK: Output: importer@exim_imported_dept
+POSTHOOK: query: drop table exim_imported_dept
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: importer@exim_imported_dept
+POSTHOOK: Output: database:importer
+POSTHOOK: Output: importer@exim_imported_dept
+PREHOOK: query: drop table exim_department_n9
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: importer@exim_department_n9
+PREHOOK: Output: database:importer
+PREHOOK: Output: importer@exim_department_n9
+POSTHOOK: query: drop table exim_department_n9
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: importer@exim_department_n9
+POSTHOOK: Output: database:importer
+POSTHOOK: Output: importer@exim_department_n9
+#### A masked pattern was here ####
+PREHOOK: query: drop database importer
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:importer
+PREHOOK: Output: database:importer
+POSTHOOK: query: drop database importer
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:importer
+POSTHOOK: Output: database:importer

@@ -1,0 +1,22 @@
+PREHOOK: query: create table dv_basetable (a int, b varchar(256), c decimal(10,2))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dv_basetable
+POSTHOOK: query: create table dv_basetable (a int, b varchar(256), c decimal(10,2))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dv_basetable
+PREHOOK: query: create view dv_view as select a, b, c from dv_basetable
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@dv_basetable
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dv_view
+POSTHOOK: query: create view dv_view as select a, b, c from dv_basetable
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@dv_basetable
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dv_view
+POSTHOOK: Lineage: dv_view.a SIMPLE [(dv_basetable)dv_basetable.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: dv_view.b SIMPLE [(dv_basetable)dv_basetable.FieldSchema(name:b, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: dv_view.c SIMPLE [(dv_basetable)dv_basetable.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
+FAILED: SemanticException [Error 10402]: You cannot update or delete records in a view

@@ -1,0 +1,12 @@
+PREHOOK: query: DESCRIBE FUNCTION isnotnull
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION isnotnull
+POSTHOOK: type: DESCFUNCTION
+isnotnull a - Returns true if a is not NULL and false otherwise
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED isnotnull
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED isnotnull
+POSTHOOK: type: DESCFUNCTION
+isnotnull a - Returns true if a is not NULL and false otherwise
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull
+Function type:BUILTIN

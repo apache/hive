@@ -1,0 +1,7 @@
+DECLARE cnt INT;
+EXECUTE 'SELECT COUNT(*) FROM src' INTO cnt;
+PRINT cnt;
+
+DECLARE sql STRING = 'SELECT COUNT(*) FROM src';
+EXECUTE sql INTO cnt;
+PRINT cnt;

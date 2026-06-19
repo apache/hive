@@ -1,0 +1,77 @@
+PREHOOK: query: DROP TABLE IF EXISTS part_table PURGE
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS part_table PURGE
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE part_table (key INT, value STRING) partitioned by (p STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@part_table
+POSTHOOK: query: CREATE TABLE part_table (key INT, value STRING) partitioned by (p STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@part_table
+PREHOOK: query: INSERT INTO part_table PARTITION(p)(p,key,value) values('2014-09-23', 1, 'foo'),('2014-09-24', 2, 'bar')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@part_table
+POSTHOOK: query: INSERT INTO part_table PARTITION(p)(p,key,value) values('2014-09-23', 1, 'foo'),('2014-09-24', 2, 'bar')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@part_table
+POSTHOOK: Output: default@part_table@p=2014-09-23
+POSTHOOK: Output: default@part_table@p=2014-09-24
+POSTHOOK: Lineage: part_table PARTITION(p=2014-09-23).key SCRIPT []
+POSTHOOK: Lineage: part_table PARTITION(p=2014-09-23).value SCRIPT []
+POSTHOOK: Lineage: part_table PARTITION(p=2014-09-24).key SCRIPT []
+POSTHOOK: Lineage: part_table PARTITION(p=2014-09-24).value SCRIPT []
+PREHOOK: query: SELECT * FROM part_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_table
+PREHOOK: Input: default@part_table@p=2014-09-23
+PREHOOK: Input: default@part_table@p=2014-09-24
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM part_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_table
+POSTHOOK: Input: default@part_table@p=2014-09-23
+POSTHOOK: Input: default@part_table@p=2014-09-24
+#### A masked pattern was here ####
+1	foo	2014-09-23
+2	bar	2014-09-24
+PREHOOK: query: ALTER TABLE part_table DROP PARTITION (p='2014-09-23')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@part_table
+PREHOOK: Output: default@part_table@p=2014-09-23
+POSTHOOK: query: ALTER TABLE part_table DROP PARTITION (p='2014-09-23')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@part_table
+POSTHOOK: Output: default@part_table@p=2014-09-23
+PREHOOK: query: SELECT * FROM part_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_table
+PREHOOK: Input: default@part_table@p=2014-09-24
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM part_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_table
+POSTHOOK: Input: default@part_table@p=2014-09-24
+#### A masked pattern was here ####
+2	bar	2014-09-24
+PREHOOK: query: ALTER TABLE part_table DROP PARTITION (p='2014-09-24') PURGE
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@part_table
+PREHOOK: Output: default@part_table@p=2014-09-24
+POSTHOOK: query: ALTER TABLE part_table DROP PARTITION (p='2014-09-24') PURGE
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@part_table
+POSTHOOK: Output: default@part_table@p=2014-09-24
+PREHOOK: query: SELECT * FROM part_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM part_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_table
+#### A masked pattern was here ####

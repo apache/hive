@@ -1,0 +1,91 @@
+PREHOOK: query: DROP TABLE avro_charvarchar_staging
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE avro_charvarchar_staging
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE avro_charvarchar
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE avro_charvarchar
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE avro_charvarchar_staging (
+  cchar char(5),
+  cvarchar varchar(10),
+  m1 map<string, char(2)>,
+  l1 array<string>,
+  st1 struct<c1:int, c2:varchar(4)>
+) ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+COLLECTION ITEMS TERMINATED BY ','
+MAP KEYS TERMINATED BY ':'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@avro_charvarchar_staging
+POSTHOOK: query: CREATE TABLE avro_charvarchar_staging (
+  cchar char(5),
+  cvarchar varchar(10),
+  m1 map<string, char(2)>,
+  l1 array<string>,
+  st1 struct<c1:int, c2:varchar(4)>
+) ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+COLLECTION ITEMS TERMINATED BY ','
+MAP KEYS TERMINATED BY ':'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@avro_charvarchar_staging
+PREHOOK: query: CREATE TABLE avro_charvarchar (
+  cchar char(5),
+  cvarchar varchar(10),
+  m1 map<string, char(2)>,
+  l1 array<string>,
+  st1 struct<c1:int, c2:varchar(4)>
+) STORED AS AVRO
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@avro_charvarchar
+POSTHOOK: query: CREATE TABLE avro_charvarchar (
+  cchar char(5),
+  cvarchar varchar(10),
+  m1 map<string, char(2)>,
+  l1 array<string>,
+  st1 struct<c1:int, c2:varchar(4)>
+) STORED AS AVRO
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@avro_charvarchar
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/avro_charvarchar.txt' OVERWRITE INTO TABLE avro_charvarchar_staging
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@avro_charvarchar_staging
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/avro_charvarchar.txt' OVERWRITE INTO TABLE avro_charvarchar_staging
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@avro_charvarchar_staging
+PREHOOK: query: INSERT OVERWRITE TABLE avro_charvarchar SELECT * FROM avro_charvarchar_staging
+PREHOOK: type: QUERY
+PREHOOK: Input: default@avro_charvarchar_staging
+PREHOOK: Output: default@avro_charvarchar
+POSTHOOK: query: INSERT OVERWRITE TABLE avro_charvarchar SELECT * FROM avro_charvarchar_staging
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@avro_charvarchar_staging
+POSTHOOK: Output: default@avro_charvarchar
+POSTHOOK: Lineage: avro_charvarchar.cchar SIMPLE [(avro_charvarchar_staging)avro_charvarchar_staging.FieldSchema(name:cchar, type:char(5), comment:null), ]
+POSTHOOK: Lineage: avro_charvarchar.cvarchar SIMPLE [(avro_charvarchar_staging)avro_charvarchar_staging.FieldSchema(name:cvarchar, type:varchar(10), comment:null), ]
+POSTHOOK: Lineage: avro_charvarchar.l1 SIMPLE [(avro_charvarchar_staging)avro_charvarchar_staging.FieldSchema(name:l1, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: avro_charvarchar.m1 SIMPLE [(avro_charvarchar_staging)avro_charvarchar_staging.FieldSchema(name:m1, type:map<string,char(2)>, comment:null), ]
+POSTHOOK: Lineage: avro_charvarchar.st1 SIMPLE [(avro_charvarchar_staging)avro_charvarchar_staging.FieldSchema(name:st1, type:struct<c1:int,c2:varchar(4)>, comment:null), ]
+PREHOOK: query: SELECT * FROM avro_charvarchar
+PREHOOK: type: QUERY
+PREHOOK: Input: default@avro_charvarchar
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM avro_charvarchar
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@avro_charvarchar
+#### A masked pattern was here ####
+a    	a  	{"k1":"v1"}	["101","x200"]	{"c1":10,"c2":"abcd"}
+ab   	ab 	{"k2":"v1"}	["102","y200"]	{"c1":10,"c2":"abc"}
+abc  	abc	{"k3":"v1"}	["103","200"]	{"c1":10,"c2":"a   "}
+abcde	abcdefghij	{"k9":"v1"}	["109","200"]	{"c1":10,"c2":"   a"}

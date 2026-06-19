@@ -1,0 +1,52 @@
+PREHOOK: query: CREATE TABLE test_table_n3 (key STRING, value STRING)
+PARTITIONED BY (part STRING)
+STORED AS RCFILE
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table_n3
+POSTHOOK: query: CREATE TABLE test_table_n3 (key STRING, value STRING)
+PARTITIONED BY (part STRING)
+STORED AS RCFILE
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table_n3
+PREHOOK: query: ALTER TABLE test_table_n3 ADD PARTITION (part = '1')
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+PREHOOK: Output: default@test_table_n3
+POSTHOOK: query: ALTER TABLE test_table_n3 ADD PARTITION (part = '1')
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+POSTHOOK: Output: default@test_table_n3
+POSTHOOK: Output: default@test_table_n3@part=1
+PREHOOK: query: INSERT OVERWRITE TABLE test_table_n3 PARTITION (part = '1')
+SELECT * FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_table_n3@part=1
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table_n3 PARTITION (part = '1')
+SELECT * FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_table_n3@part=1
+POSTHOOK: Lineage: test_table_n3 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table_n3 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+Found 1 items
+#### A masked pattern was here ####
+PREHOOK: query: DROP TABLE test_table_n3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_table_n3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table_n3
+POSTHOOK: query: DROP TABLE test_table_n3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_table_n3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table_n3
+#### A masked pattern was here ####

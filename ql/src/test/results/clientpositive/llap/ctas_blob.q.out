@@ -1,0 +1,339 @@
+PREHOOK: query: create external table t1 (key int, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create external table t1 (key int, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: insert into t1 values (1,'ABCD'),(2, 'BCDE')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: insert into t1 values (1,'ABCD'),(2, 'BCDE')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.key SCRIPT []
+POSTHOOK: Lineage: t1.value SCRIPT []
+PREHOOK: query: insert into t1 values (3,'FGHI'),(4, 'JKLM')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: insert into t1 values (3,'FGHI'),(4, 'JKLM')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.key SCRIPT []
+POSTHOOK: Lineage: t1.value SCRIPT []
+PREHOOK: query: insert into t1 values (5,'NOPQ'),(6, 'RSTUV')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: insert into t1 values (5,'NOPQ'),(6, 'RSTUV')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.key SCRIPT []
+POSTHOOK: Lineage: t1.value SCRIPT []
+PREHOOK: query: create external table t1_ctas as select * from t1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1_ctas
+POSTHOOK: query: create external table t1_ctas as select * from t1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1_ctas
+POSTHOOK: Lineage: t1_ctas.key SIMPLE [(t1)t1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: t1_ctas.value SIMPLE [(t1)t1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from t1_ctas order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_ctas
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t1_ctas order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_ctas
+#### A masked pattern was here ####
+1	ABCD
+2	BCDE
+3	FGHI
+4	JKLM
+5	NOPQ
+6	RSTUV
+PREHOOK: query: create external table t1_ctas_part partitioned by (key) as select * from t1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1_ctas_part
+PREHOOK: Output: default@t1_ctas_part
+POSTHOOK: query: create external table t1_ctas_part partitioned by (key) as select * from t1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1_ctas_part
+POSTHOOK: Output: default@t1_ctas_part
+POSTHOOK: Output: default@t1_ctas_part@key=1
+POSTHOOK: Output: default@t1_ctas_part@key=2
+POSTHOOK: Output: default@t1_ctas_part@key=3
+POSTHOOK: Output: default@t1_ctas_part@key=4
+POSTHOOK: Output: default@t1_ctas_part@key=5
+POSTHOOK: Output: default@t1_ctas_part@key=6
+POSTHOOK: Lineage: t1_ctas_part.value SIMPLE [(t1)t1.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: t1_ctas_part PARTITION(key=1).value SIMPLE [(t1)t1.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: t1_ctas_part PARTITION(key=2).value SIMPLE [(t1)t1.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: t1_ctas_part PARTITION(key=3).value SIMPLE [(t1)t1.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: t1_ctas_part PARTITION(key=4).value SIMPLE [(t1)t1.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: t1_ctas_part PARTITION(key=5).value SIMPLE [(t1)t1.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: t1_ctas_part PARTITION(key=6).value SIMPLE [(t1)t1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from t1_ctas_part order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_ctas_part
+PREHOOK: Input: default@t1_ctas_part@key=1
+PREHOOK: Input: default@t1_ctas_part@key=2
+PREHOOK: Input: default@t1_ctas_part@key=3
+PREHOOK: Input: default@t1_ctas_part@key=4
+PREHOOK: Input: default@t1_ctas_part@key=5
+PREHOOK: Input: default@t1_ctas_part@key=6
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t1_ctas_part order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_ctas_part
+POSTHOOK: Input: default@t1_ctas_part@key=1
+POSTHOOK: Input: default@t1_ctas_part@key=2
+POSTHOOK: Input: default@t1_ctas_part@key=3
+POSTHOOK: Input: default@t1_ctas_part@key=4
+POSTHOOK: Input: default@t1_ctas_part@key=5
+POSTHOOK: Input: default@t1_ctas_part@key=6
+#### A masked pattern was here ####
+ABCD	1
+BCDE	2
+FGHI	3
+JKLM	4
+NOPQ	5
+RSTUV	6
+PREHOOK: query: create external table t2 (key int, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2
+POSTHOOK: query: create external table t2 (key int, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2
+PREHOOK: query: create external table t2_ctas as select * from t2
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@t2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2_ctas
+POSTHOOK: query: create external table t2_ctas as select * from t2
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@t2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2_ctas
+POSTHOOK: Lineage: t2_ctas.key SIMPLE [(t2)t2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: t2_ctas.value SIMPLE [(t2)t2.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from t2_ctas order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_ctas
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t2_ctas order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_ctas
+#### A masked pattern was here ####
+PREHOOK: query: create table t3 (key int, value string)  stored as orc tblproperties ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t3
+POSTHOOK: query: create table t3 (key int, value string)  stored as orc tblproperties ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t3
+PREHOOK: query: insert into t3 values (1,'ABC'),(2, 'BCD')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t3
+POSTHOOK: query: insert into t3 values (1,'ABC'),(2, 'BCD')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t3
+POSTHOOK: Lineage: t3.key SCRIPT []
+POSTHOOK: Lineage: t3.value SCRIPT []
+PREHOOK: query: insert into t3 values (3,'ABC'),(4, 'BCD')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t3
+POSTHOOK: query: insert into t3 values (3,'ABC'),(4, 'BCD')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t3
+POSTHOOK: Lineage: t3.key SCRIPT []
+POSTHOOK: Lineage: t3.value SCRIPT []
+PREHOOK: query: insert into t3 values (5,'ABC'),(6, 'BCD')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t3
+POSTHOOK: query: insert into t3 values (5,'ABC'),(6, 'BCD')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t3
+POSTHOOK: Lineage: t3.key SCRIPT []
+POSTHOOK: Lineage: t3.value SCRIPT []
+PREHOOK: query: create table t3_ctas stored as orc tblproperties ('transactional'='true') as select * from t3
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@t3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t3_ctas
+POSTHOOK: query: create table t3_ctas stored as orc tblproperties ('transactional'='true') as select * from t3
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@t3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t3_ctas
+POSTHOOK: Lineage: t3_ctas.key SIMPLE [(t3)t3.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: t3_ctas.value SIMPLE [(t3)t3.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from t3_ctas order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3_ctas
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t3_ctas order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3_ctas
+#### A masked pattern was here ####
+1	ABC
+2	BCD
+3	ABC
+4	BCD
+5	ABC
+6	BCD
+PREHOOK: query: create external table texternal as select * from t3
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@t3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@texternal
+POSTHOOK: query: create external table texternal as select * from t3
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@t3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@texternal
+POSTHOOK: Lineage: texternal.key SIMPLE [(t3)t3.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: texternal.value SIMPLE [(t3)t3.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from texternal order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@texternal
+#### A masked pattern was here ####
+POSTHOOK: query: select * from texternal order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@texternal
+#### A masked pattern was here ####
+1	ABC
+2	BCD
+3	ABC
+4	BCD
+5	ABC
+6	BCD
+PREHOOK: query: create table tmanaged stored as orc tblproperties ('transactional'='true') as select * from t1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmanaged
+POSTHOOK: query: create table tmanaged stored as orc tblproperties ('transactional'='true') as select * from t1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmanaged
+POSTHOOK: Lineage: tmanaged.key SIMPLE [(t1)t1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tmanaged.value SIMPLE [(t1)t1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from tmanaged order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmanaged
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tmanaged order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmanaged
+#### A masked pattern was here ####
+1	ABCD
+2	BCDE
+3	FGHI
+4	JKLM
+5	NOPQ
+6	RSTUV
+PREHOOK: query: drop table t1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: drop table t1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: drop table t2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2
+POSTHOOK: query: drop table t2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2
+PREHOOK: query: drop table t3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t3
+POSTHOOK: query: drop table t3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t3
+PREHOOK: query: drop table t1_ctas
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t1_ctas
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1_ctas
+POSTHOOK: query: drop table t1_ctas
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t1_ctas
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1_ctas
+PREHOOK: query: drop table t2_ctas
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t2_ctas
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2_ctas
+POSTHOOK: query: drop table t2_ctas
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t2_ctas
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2_ctas
+PREHOOK: query: drop table t3_ctas
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t3_ctas
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t3_ctas
+POSTHOOK: query: drop table t3_ctas
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t3_ctas
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t3_ctas
+PREHOOK: query: drop table texternal
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@texternal
+PREHOOK: Output: database:default
+PREHOOK: Output: default@texternal
+POSTHOOK: query: drop table texternal
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@texternal
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@texternal
+PREHOOK: query: drop table tmanaged
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tmanaged
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmanaged
+POSTHOOK: query: drop table tmanaged
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tmanaged
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmanaged

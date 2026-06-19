@@ -1,0 +1,155 @@
+PREHOOK: query: create database authorization_9
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:authorization_9
+POSTHOOK: query: create database authorization_9
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:authorization_9
+PREHOOK: query: use authorization_9
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:authorization_9
+POSTHOOK: query: use authorization_9
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:authorization_9
+PREHOOK: query: create table dummy_n1 (key string, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: authorization_9@dummy_n1
+PREHOOK: Output: database:authorization_9
+POSTHOOK: query: create table dummy_n1 (key string, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: authorization_9@dummy_n1
+POSTHOOK: Output: database:authorization_9
+PREHOOK: query: grant select to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: query: grant select to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+PREHOOK: query: grant select on database authorization_9 to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: query: grant select on database authorization_9 to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+PREHOOK: query: grant select on table dummy_n1 to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: authorization_9@dummy_n1
+POSTHOOK: query: grant select on table dummy_n1 to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: authorization_9@dummy_n1
+PREHOOK: query: grant select (key, value) on table dummy_n1 to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: authorization_9@dummy_n1
+POSTHOOK: query: grant select (key, value) on table dummy_n1 to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: authorization_9@dummy_n1
+PREHOOK: query: show grant user hive_test_user on database authorization_9
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on database authorization_9
+POSTHOOK: type: SHOW_GRANT
+authorization_9				hive_test_user	USER	SELECT	false	-1	hive_test_user
+PREHOOK: query: show grant user hive_test_user on table dummy_n1
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on table dummy_n1
+POSTHOOK: type: SHOW_GRANT
+authorization_9	dummy_n1			hive_test_user	USER	SELECT	false	-1	hive_test_user
+PREHOOK: query: show grant user hive_test_user on all
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on all
+POSTHOOK: type: SHOW_GRANT
+				hive_test_user	USER	SELECT	false	-1	hive_test_user
+authorization_9				hive_test_user	USER	SELECT	false	-1	hive_test_user
+default				hive_test_user	USER	DROP	false	-1	hive_test_user
+authorization_9	dummy_n1			hive_test_user	USER	SELECT	false	-1	hive_test_user
+authorization_9	dummy_n1		[key]	hive_test_user	USER	SELECT	false	-1	hive_test_user
+authorization_9	dummy_n1		[value]	hive_test_user	USER	SELECT	false	-1	hive_test_user
+PREHOOK: query: grant select to user hive_test_user2
+PREHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: query: grant select to user hive_test_user2
+POSTHOOK: type: GRANT_PRIVILEGE
+PREHOOK: query: grant select on database authorization_9 to user hive_test_user2
+PREHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: query: grant select on database authorization_9 to user hive_test_user2
+POSTHOOK: type: GRANT_PRIVILEGE
+PREHOOK: query: grant select on table dummy_n1 to user hive_test_user2
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: authorization_9@dummy_n1
+POSTHOOK: query: grant select on table dummy_n1 to user hive_test_user2
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: authorization_9@dummy_n1
+PREHOOK: query: grant select (key, value) on table dummy_n1 to user hive_test_user2
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: authorization_9@dummy_n1
+POSTHOOK: query: grant select (key, value) on table dummy_n1 to user hive_test_user2
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: authorization_9@dummy_n1
+PREHOOK: query: show grant on all
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant on all
+POSTHOOK: type: SHOW_GRANT
+				admin	ROLE	ALL	true	-1	admin
+				hive_test_user	USER	SELECT	false	-1	hive_test_user
+				hive_test_user2	USER	SELECT	false	-1	hive_test_user
+authorization_9				hive_test_user	USER	SELECT	false	-1	hive_test_user
+authorization_9				hive_test_user2	USER	SELECT	false	-1	hive_test_user
+default				hive_test_user	USER	DROP	false	-1	hive_test_user
+authorization_9	dummy_n1			hive_test_user	USER	SELECT	false	-1	hive_test_user
+authorization_9	dummy_n1			hive_test_user2	USER	SELECT	false	-1	hive_test_user
+authorization_9	dummy_n1		[key]	hive_test_user	USER	SELECT	false	-1	hive_test_user
+authorization_9	dummy_n1		[key]	hive_test_user2	USER	SELECT	false	-1	hive_test_user
+authorization_9	dummy_n1		[value]	hive_test_user	USER	SELECT	false	-1	hive_test_user
+authorization_9	dummy_n1		[value]	hive_test_user2	USER	SELECT	false	-1	hive_test_user
+PREHOOK: query: show grant user hive_test_user on all
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on all
+POSTHOOK: type: SHOW_GRANT
+				hive_test_user	USER	SELECT	false	-1	hive_test_user
+authorization_9				hive_test_user	USER	SELECT	false	-1	hive_test_user
+default				hive_test_user	USER	DROP	false	-1	hive_test_user
+authorization_9	dummy_n1			hive_test_user	USER	SELECT	false	-1	hive_test_user
+authorization_9	dummy_n1		[key]	hive_test_user	USER	SELECT	false	-1	hive_test_user
+authorization_9	dummy_n1		[value]	hive_test_user	USER	SELECT	false	-1	hive_test_user
+PREHOOK: query: show grant user hive_test_user2 on all
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user2 on all
+POSTHOOK: type: SHOW_GRANT
+				hive_test_user2	USER	SELECT	false	-1	hive_test_user
+authorization_9				hive_test_user2	USER	SELECT	false	-1	hive_test_user
+authorization_9	dummy_n1			hive_test_user2	USER	SELECT	false	-1	hive_test_user
+authorization_9	dummy_n1		[key]	hive_test_user2	USER	SELECT	false	-1	hive_test_user
+authorization_9	dummy_n1		[value]	hive_test_user2	USER	SELECT	false	-1	hive_test_user
+PREHOOK: query: revoke select from user hive_test_user
+PREHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: query: revoke select from user hive_test_user
+POSTHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: query: revoke select on database authorization_9 from user hive_test_user
+PREHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: query: revoke select on database authorization_9 from user hive_test_user
+POSTHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: query: revoke select on table dummy_n1 from user hive_test_user
+PREHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: Output: authorization_9@dummy_n1
+POSTHOOK: query: revoke select on table dummy_n1 from user hive_test_user
+POSTHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: Output: authorization_9@dummy_n1
+PREHOOK: query: revoke select (key, value) on table dummy_n1 from user hive_test_user
+PREHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: Output: authorization_9@dummy_n1
+POSTHOOK: query: revoke select (key, value) on table dummy_n1 from user hive_test_user
+POSTHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: Output: authorization_9@dummy_n1
+PREHOOK: query: revoke select from user hive_test_user2
+PREHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: query: revoke select from user hive_test_user2
+POSTHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: query: revoke select on database authorization_9 from user hive_test_user2
+PREHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: query: revoke select on database authorization_9 from user hive_test_user2
+POSTHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: query: revoke select on table dummy_n1 from user hive_test_user2
+PREHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: Output: authorization_9@dummy_n1
+POSTHOOK: query: revoke select on table dummy_n1 from user hive_test_user2
+POSTHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: Output: authorization_9@dummy_n1
+PREHOOK: query: revoke select (key, value) on table dummy_n1 from user hive_test_user2
+PREHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: Output: authorization_9@dummy_n1
+POSTHOOK: query: revoke select (key, value) on table dummy_n1 from user hive_test_user2
+POSTHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: Output: authorization_9@dummy_n1

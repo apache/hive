@@ -1,0 +1,39 @@
+PREHOOK: query: create table mp (a string) partitioned by (b string, c string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mp
+POSTHOOK: query: create table mp (a string) partitioned by (b string, c string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mp
+PREHOOK: query: alter table mp add partition (b='1', c='1')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@mp
+POSTHOOK: query: alter table mp add partition (b='1', c='1')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@mp
+POSTHOOK: Output: default@mp@b=1/c=1
+PREHOOK: query: alter table mp add partition (b='1', c='2')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@mp
+POSTHOOK: query: alter table mp add partition (b='1', c='2')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@mp
+POSTHOOK: Output: default@mp@b=1/c=2
+PREHOOK: query: alter table mp add partition (b='2', c='2')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@mp
+POSTHOOK: query: alter table mp add partition (b='2', c='2')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@mp
+POSTHOOK: Output: default@mp@b=2/c=2
+PREHOOK: query: show partitions mp
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@mp
+POSTHOOK: query: show partitions mp
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@mp
+b=1/c=1
+b=1/c=2
+b=2/c=2
+FAILED: SemanticException [Error 10006]: Partition not found (b = '3')

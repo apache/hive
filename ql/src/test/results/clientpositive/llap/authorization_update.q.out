@@ -1,0 +1,60 @@
+PREHOOK: query: CREATE TABLE t_auth_up(i int, j int) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_auth_up
+POSTHOOK: query: CREATE TABLE t_auth_up(i int, j int) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_auth_up
+PREHOOK: query: CREATE TABLE t_select_n0(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_select_n0
+POSTHOOK: query: CREATE TABLE t_select_n0(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_select_n0
+PREHOOK: query: GRANT ALL ON TABLE t_select_n0 TO ROLE public
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@t_select_n0
+POSTHOOK: query: GRANT ALL ON TABLE t_select_n0 TO ROLE public
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@t_select_n0
+PREHOOK: query: GRANT UPDATE ON t_auth_up TO USER userWIns
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@t_auth_up
+POSTHOOK: query: GRANT UPDATE ON t_auth_up TO USER userWIns
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@t_auth_up
+PREHOOK: query: GRANT SELECT ON t_auth_up TO USER userWIns
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@t_auth_up
+POSTHOOK: query: GRANT SELECT ON t_auth_up TO USER userWIns
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@t_auth_up
+PREHOOK: query: set role admin
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role admin
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: SHOW GRANT ON TABLE t_auth_up
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT ON TABLE t_auth_up
+POSTHOOK: type: SHOW_GRANT
+default	t_auth_up			user1	USER	DELETE	true	-1	user1
+default	t_auth_up			user1	USER	INSERT	true	-1	user1
+default	t_auth_up			user1	USER	SELECT	true	-1	user1
+default	t_auth_up			user1	USER	UPDATE	true	-1	user1
+default	t_auth_up			userWIns	USER	SELECT	false	-1	user1
+default	t_auth_up			userWIns	USER	UPDATE	false	-1	user1
+PREHOOK: query: update t_auth_up set j = 0 where i > 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_auth_up
+PREHOOK: Output: default@t_auth_up
+PREHOOK: Output: default@t_auth_up
+POSTHOOK: query: update t_auth_up set j = 0 where i > 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_auth_up
+POSTHOOK: Output: default@t_auth_up
+POSTHOOK: Output: default@t_auth_up
+POSTHOOK: Lineage: t_auth_up.i SIMPLE [(t_auth_up)t_auth_up.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: t_auth_up.j SIMPLE []

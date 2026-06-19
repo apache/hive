@@ -1,0 +1,6 @@
+PREHOOK: query: DROP TABLE IF EXISTS UnknownTable
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS UnknownTable
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default

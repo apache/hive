@@ -1,0 +1,86 @@
+PREHOOK: query: select x from (select * from (select value as x from src order by x limit 5)a union all select * from (select cast(NULL as string) as x from src limit 5)b )a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select x from (select * from (select value as x from src order by x limit 5)a union all select * from (select cast(NULL as string) as x from src limit 5)b )a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL
+NULL
+NULL
+NULL
+NULL
+val_0
+val_0
+val_0
+val_10
+val_100
+PREHOOK: query: select x from (select * from (select value as x from src order by x limit 5)a union all select * from (select cast(NULL as string) as x from src limit 5)b )a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select x from (select * from (select value as x from src order by x limit 5)a union all select * from (select cast(NULL as string) as x from src limit 5)b )a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL
+NULL
+NULL
+NULL
+NULL
+val_0
+val_0
+val_0
+val_10
+val_100
+PREHOOK: query: select * from (select * from (select cast(null as string) as N from src1 group by key)a UNION ALL select * from (select cast(null as string) as N from src1 group by key)b ) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select * from (select cast(null as string) as N from src1 group by key)a UNION ALL select * from (select cast(null as string) as N from src1 group by key)b ) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+PREHOOK: query: select null as c1 UNION ALL select 1 as c1
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select null as c1 UNION ALL select 1 as c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1
+NULL

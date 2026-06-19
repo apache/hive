@@ -1,0 +1,67 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+option java_package = "org.apache.hadoop.hive.ql.anon.proto";
+option java_outer_classname = "TestMessages";
+
+message Msg1 {
+  required int64 txnId = 1;
+  required string value1 = 2;
+  required string value2 = 3;
+  required string value3 = 4;
+}
+
+message Msg2 {
+  required int32 userId = 1;
+  required string value1 = 2;
+  required string value2 = 3;
+  required string value3 = 4;
+}
+
+message Msg3 {
+  required int32 userId = 1;
+  required string firstName = 2;
+  required string lastName = 3;
+  required string address = 4;
+  required string city = 5;
+  required string country = 6;
+  required string email = 7;
+  required string telephone = 8;
+  required string birthDate = 9;
+  required string value = 10;
+  repeated string ip = 11;
+  required BankDetails bankDetails = 12;
+}
+
+message BankDetails {
+  required string bankName = 1;
+  required string cardNum = 2;
+  required string pinCode = 3;
+}
+
+message Address {
+  required string country = 1;
+  required string street = 2;
+}
+
+// Conformance fixture for repeated-MESSAGE descent (a list of sub-messages),
+// the one nested-grammar construct Msg3 cannot exercise.
+message Msg4 {
+  required int32 userId = 1;
+  repeated Address addressBook = 2;
+}

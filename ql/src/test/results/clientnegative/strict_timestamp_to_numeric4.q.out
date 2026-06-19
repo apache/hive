@@ -1,0 +1,9 @@
+PREHOOK: query: create table t(a timestamp)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: create table t(a timestamp)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+FAILED: SemanticException [Error 10014]: Line 2:22 Wrong arguments '1000': Casting DATE/TIMESTAMP to NUMERIC is prohibited (hive.strict.timestamp.conversion)

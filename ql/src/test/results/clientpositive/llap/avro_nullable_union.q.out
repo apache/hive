@@ -1,0 +1,153 @@
+PREHOOK: query: DROP TABLE IF EXISTS union_nullable_test_text
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS union_nullable_test_text
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE union_nullable_test_text (id int, value uniontype<int,double>) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' COLLECTION ITEMS TERMINATED BY ':' STORED AS textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union_nullable_test_text
+POSTHOOK: query: CREATE TABLE union_nullable_test_text (id int, value uniontype<int,double>) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' COLLECTION ITEMS TERMINATED BY ':' STORED AS textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union_nullable_test_text
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/union_nullable.txt' INTO TABLE union_nullable_test_text
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@union_nullable_test_text
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/union_nullable.txt' INTO TABLE union_nullable_test_text
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@union_nullable_test_text
+PREHOOK: query: DROP TABLE IF EXISTS union_nullable_test_avro
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS union_nullable_test_avro
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE union_nullable_test_avro STORED AS avro tblproperties('avro.schema.literal'='{"name":"nullable", "type":"record", "fields":[{"name":"id", "type":"int"}, {"name":"value", "type":["null", "int", "double"]}]}')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union_nullable_test_avro
+POSTHOOK: query: CREATE TABLE union_nullable_test_avro STORED AS avro tblproperties('avro.schema.literal'='{"name":"nullable", "type":"record", "fields":[{"name":"id", "type":"int"}, {"name":"value", "type":["null", "int", "double"]}]}')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union_nullable_test_avro
+PREHOOK: query: INSERT OVERWRITE TABLE union_nullable_test_avro SELECT * FROM union_nullable_test_text
+PREHOOK: type: QUERY
+PREHOOK: Input: default@union_nullable_test_text
+PREHOOK: Output: default@union_nullable_test_avro
+POSTHOOK: query: INSERT OVERWRITE TABLE union_nullable_test_avro SELECT * FROM union_nullable_test_text
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@union_nullable_test_text
+POSTHOOK: Output: default@union_nullable_test_avro
+POSTHOOK: Lineage: union_nullable_test_avro.id SIMPLE [(union_nullable_test_text)union_nullable_test_text.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: union_nullable_test_avro.value SIMPLE [(union_nullable_test_text)union_nullable_test_text.FieldSchema(name:value, type:uniontype<int,double>, comment:null), ]
+PREHOOK: query: SELECT * FROM union_nullable_test_avro
+PREHOOK: type: QUERY
+PREHOOK: Input: default@union_nullable_test_avro
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM union_nullable_test_avro
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@union_nullable_test_avro
+#### A masked pattern was here ####
+1	{0:1}
+2	{1:2.3}
+3	NULL
+PREHOOK: query: DROP TABLE union_nullable_test_avro
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@union_nullable_test_avro
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union_nullable_test_avro
+POSTHOOK: query: DROP TABLE union_nullable_test_avro
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@union_nullable_test_avro
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union_nullable_test_avro
+PREHOOK: query: DROP TABLE union_nullable_test_text
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@union_nullable_test_text
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union_nullable_test_text
+POSTHOOK: query: DROP TABLE union_nullable_test_text
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@union_nullable_test_text
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union_nullable_test_text
+PREHOOK: query: DROP TABLE IF EXISTS union_non_nullable_test_text
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS union_non_nullable_test_text
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE union_non_nullable_test_text (id int, value uniontype<int,double>) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' COLLECTION ITEMS TERMINATED BY ':' STORED AS textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union_non_nullable_test_text
+POSTHOOK: query: CREATE TABLE union_non_nullable_test_text (id int, value uniontype<int,double>) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' COLLECTION ITEMS TERMINATED BY ':' STORED AS textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union_non_nullable_test_text
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/union_non_nullable.txt' INTO TABLE union_non_nullable_test_text
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@union_non_nullable_test_text
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/union_non_nullable.txt' INTO TABLE union_non_nullable_test_text
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@union_non_nullable_test_text
+PREHOOK: query: DROP TABLE IF EXISTS union_non_nullable_test_avro
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS union_non_nullable_test_avro
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE union_non_nullable_test_avro STORED AS avro tblproperties('avro.schema.literal'='{"name":"nullable", "type":"record", "fields":[{"name":"id", "type":"int"}, {"name":"value", "type":["int", "double"]}]}')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union_non_nullable_test_avro
+POSTHOOK: query: CREATE TABLE union_non_nullable_test_avro STORED AS avro tblproperties('avro.schema.literal'='{"name":"nullable", "type":"record", "fields":[{"name":"id", "type":"int"}, {"name":"value", "type":["int", "double"]}]}')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union_non_nullable_test_avro
+PREHOOK: query: INSERT OVERWRITE TABLE union_non_nullable_test_avro SELECT * FROM union_non_nullable_test_text
+PREHOOK: type: QUERY
+PREHOOK: Input: default@union_non_nullable_test_text
+PREHOOK: Output: default@union_non_nullable_test_avro
+POSTHOOK: query: INSERT OVERWRITE TABLE union_non_nullable_test_avro SELECT * FROM union_non_nullable_test_text
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@union_non_nullable_test_text
+POSTHOOK: Output: default@union_non_nullable_test_avro
+POSTHOOK: Lineage: union_non_nullable_test_avro.id SIMPLE [(union_non_nullable_test_text)union_non_nullable_test_text.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: union_non_nullable_test_avro.value SIMPLE [(union_non_nullable_test_text)union_non_nullable_test_text.FieldSchema(name:value, type:uniontype<int,double>, comment:null), ]
+PREHOOK: query: SELECT * FROM union_non_nullable_test_avro
+PREHOOK: type: QUERY
+PREHOOK: Input: default@union_non_nullable_test_avro
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM union_non_nullable_test_avro
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@union_non_nullable_test_avro
+#### A masked pattern was here ####
+1	{0:1}
+2	{1:2.3}
+PREHOOK: query: DROP TABLE union_non_nullable_test_text
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@union_non_nullable_test_text
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union_non_nullable_test_text
+POSTHOOK: query: DROP TABLE union_non_nullable_test_text
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@union_non_nullable_test_text
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union_non_nullable_test_text
+PREHOOK: query: DROP TABLE union_non_nullable_test_avro
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@union_non_nullable_test_avro
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union_non_nullable_test_avro
+POSTHOOK: query: DROP TABLE union_non_nullable_test_avro
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@union_non_nullable_test_avro
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union_non_nullable_test_avro

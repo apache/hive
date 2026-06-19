@@ -1,0 +1,61 @@
+PREHOOK: query: set role ADMIN
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role ADMIN
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: show current roles
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: show current roles
+POSTHOOK: type: SHOW_ROLES
+admin
+PREHOOK: query: create role r1
+PREHOOK: type: CREATEROLE
+POSTHOOK: query: create role r1
+POSTHOOK: type: CREATEROLE
+PREHOOK: query: grant role r1 to user hive_admin_user
+PREHOOK: type: GRANT_ROLE
+POSTHOOK: query: grant role r1 to user hive_admin_user
+POSTHOOK: type: GRANT_ROLE
+PREHOOK: query: set role r1
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role r1
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: show current roles
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: show current roles
+POSTHOOK: type: SHOW_ROLES
+r1
+PREHOOK: query: set role PUBLIC
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role PUBLIC
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: show current roles
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: show current roles
+POSTHOOK: type: SHOW_ROLES
+public
+PREHOOK: query: set role NONE
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role NONE
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: show current roles
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: show current roles
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: set role ALL
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role ALL
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: show current roles
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: show current roles
+POSTHOOK: type: SHOW_ROLES
+public
+r1
+PREHOOK: query: set role ADMIN
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role ADMIN
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: drop role r1
+PREHOOK: type: DROPROLE
+POSTHOOK: query: drop role r1
+POSTHOOK: type: DROPROLE

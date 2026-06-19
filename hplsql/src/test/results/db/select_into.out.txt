@@ -1,0 +1,44 @@
+Ln:1 DECLARE v_bint BIGINT
+Ln:2 DECLARE v_int INT
+Ln:3 DECLARE v_sint SMALLINT
+Ln:4 DECLARE v_tint TINYINT
+Ln:5 DECLARE v_dec DECIMAL
+Ln:6 DECLARE v_dec0 DECIMAL
+Ln:7 DECLARE v_str STRING
+Ln:9 SELECT
+Ln:9 SELECT CAST(1 AS BIGINT), CAST(1 AS INT), CAST(1 AS SMALLINT), CAST(1 AS TINYINT), CAST(1.1 AS DECIMAL(18,2)), CAST(1.1 AS DECIMAL(18,0))  
+FROM src LIMIT 1
+Ln:9 SELECT completed successfully
+Ln:9 SELECT INTO statement executed
+Ln:9 COLUMN: _c0, bigint
+Ln:9 SET v_bint = 1
+Ln:9 COLUMN: _c1, int
+Ln:9 SET v_int = 1
+Ln:9 COLUMN: _c2, smallint
+Ln:9 SET v_sint = 1
+Ln:9 COLUMN: _c3, tinyint
+Ln:9 SET v_tint = 1
+Ln:9 COLUMN: _c4, decimal
+Ln:9 SET v_dec = 1.1
+Ln:9 COLUMN: _c5, decimal
+Ln:9 SET v_dec0 = 1
+Ln:25 PRINT
+BIGINT: 1
+Ln:26 PRINT
+INT: 1
+Ln:27 PRINT
+SMALLINT: 1
+Ln:28 PRINT
+TINYINT: 1
+Ln:29 PRINT
+DECIMAL: 1.1
+Ln:30 PRINT
+DECIMAL0: 1
+Ln:32 SELECT
+Ln:32 select 'a' from src LIMIT 1
+Ln:32 SELECT completed successfully
+Ln:32 SELECT INTO statement executed
+Ln:32 COLUMN: _c0, string
+Ln:32 SET v_str = a
+Ln:33 PRINT
+string: a

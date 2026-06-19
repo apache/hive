@@ -1,0 +1,960 @@
+PREHOOK: query: CREATE TABLE dest1_n137(key STRING, val1 INT, val2 INT) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1_n137
+POSTHOOK: query: CREATE TABLE dest1_n137(key STRING, val1 INT, val2 INT) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest1_n137
+PREHOOK: query: CREATE TABLE dest2_n36(key STRING, val1 INT, val2 INT) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest2_n36
+POSTHOOK: query: CREATE TABLE dest2_n36(key STRING, val1 INT, val2 INT) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest2_n36
+PREHOOK: query: EXPLAIN
+FROM src
+INSERT OVERWRITE TABLE dest1_n137 partition(ds='111')
+  SELECT src.value, count(src.key), count(distinct src.key) GROUP BY src.value
+INSERT OVERWRITE TABLE dest2_n36  partition(ds='111')
+  SELECT substr(src.value, 5), count(src.key), count(distinct src.key) GROUP BY substr(src.value, 5)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n137@ds=111
+PREHOOK: Output: default@dest2_n36@ds=111
+POSTHOOK: query: EXPLAIN
+FROM src
+INSERT OVERWRITE TABLE dest1_n137 partition(ds='111')
+  SELECT src.value, count(src.key), count(distinct src.key) GROUP BY src.value
+INSERT OVERWRITE TABLE dest2_n36  partition(ds='111')
+  SELECT substr(src.value, 5), count(src.key), count(distinct src.key) GROUP BY substr(src.value, 5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n137@ds=111
+POSTHOOK: Output: default@dest2_n36@ds=111
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-3
+  Stage-5 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+        Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
+        Reducer 6 <- Map 1 (SIMPLE_EDGE)
+        Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
+        Reducer 8 <- Reducer 7 (SIMPLE_EDGE)
+        Reducer 9 <- Reducer 8 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: key, value
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: value (type: string), key (type: string)
+                      null sort order: zz
+                      sort order: ++
+                      Map-reduce partition columns: value (type: string)
+                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: key, value
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: substr(value, 5) (type: string), key (type: string)
+                      null sort order: zz
+                      sort order: ++
+                      Map-reduce partition columns: substr(value, 5) (type: string)
+                      Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(KEY._col1:0._col0), count(DISTINCT KEY._col1:0._col0)
+                keys: KEY._col0 (type: string)
+                mode: partial1
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 500 Data size: 53500 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 500 Data size: 53500 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col1 (type: bigint), _col2 (type: bigint)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0), count(VALUE._col1)
+                keys: KEY._col0 (type: string)
+                mode: final
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 307 Data size: 32849 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: string), UDFToInteger(_col1) (type: int), UDFToInteger(_col2) (type: int)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 307 Data size: 30393 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 307 Data size: 30393 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.dest1_n137
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: int), _col2 (type: int)
+                    outputColumnNames: key, val1, val2
+                    Statistics: Num rows: 307 Data size: 30393 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: '111' (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: rand() (type: double)
+                      Statistics: Num rows: 307 Data size: 30393 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: length(key) (type: int), COALESCE(length(key),0) (type: int), key (type: string), val1 (type: int), val2 (type: int)
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(1), count(VALUE._col3), compute_bit_vector_hll(VALUE._col3), min(VALUE._col4), max(VALUE._col4), count(VALUE._col4), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col5), count(VALUE._col5), compute_bit_vector_hll(VALUE._col5)
+                keys: '111' (type: string)
+                mode: partial1
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                Statistics: Num rows: 307 Data size: 198629 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: '111' (type: string)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: '111' (type: string)
+                  Statistics: Num rows: 307 Data size: 198629 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col1 (type: int), _col2 (type: struct<count:bigint,sum:double,input:int>), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: int), _col7 (type: int), _col8 (type: bigint), _col9 (type: binary), _col10 (type: int), _col11 (type: int), _col12 (type: bigint), _col13 (type: binary)
+        Reducer 5 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                keys: '111' (type: string)
+                mode: final
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                Statistics: Num rows: 1 Data size: 579 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col1,0)) (type: bigint), COALESCE(_col2,0) (type: double), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'LONG' (type: string), UDFToLong(_col6) (type: bigint), UDFToLong(_col7) (type: bigint), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'LONG' (type: string), UDFToLong(_col10) (type: bigint), UDFToLong(_col11) (type: bigint), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), '111' (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
+                  Statistics: Num rows: 1 Data size: 881 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 881 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 6 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(KEY._col1:0._col0), count(DISTINCT KEY._col1:0._col0)
+                keys: KEY._col0 (type: string)
+                mode: partial1
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 500 Data size: 51000 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 500 Data size: 51000 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col1 (type: bigint), _col2 (type: bigint)
+        Reducer 7 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0), count(VALUE._col1)
+                keys: KEY._col0 (type: string)
+                mode: final
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 307 Data size: 31314 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: string), UDFToInteger(_col1) (type: int), UDFToInteger(_col2) (type: int)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 307 Data size: 28858 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 307 Data size: 28858 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.dest2_n36
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: int), _col2 (type: int)
+                    outputColumnNames: key, val1, val2
+                    Statistics: Num rows: 307 Data size: 28858 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: '111' (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: rand() (type: double)
+                      Statistics: Num rows: 307 Data size: 28858 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: length(key) (type: int), COALESCE(length(key),0) (type: int), key (type: string), val1 (type: int), val2 (type: int)
+        Reducer 8 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(1), count(VALUE._col3), compute_bit_vector_hll(VALUE._col3), min(VALUE._col4), max(VALUE._col4), count(VALUE._col4), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col5), count(VALUE._col5), compute_bit_vector_hll(VALUE._col5)
+                keys: '111' (type: string)
+                mode: partial1
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                Statistics: Num rows: 307 Data size: 198629 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: '111' (type: string)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: '111' (type: string)
+                  Statistics: Num rows: 307 Data size: 198629 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col1 (type: int), _col2 (type: struct<count:bigint,sum:double,input:int>), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: int), _col7 (type: int), _col8 (type: bigint), _col9 (type: binary), _col10 (type: int), _col11 (type: int), _col12 (type: bigint), _col13 (type: binary)
+        Reducer 9 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                keys: '111' (type: string)
+                mode: final
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                Statistics: Num rows: 1 Data size: 579 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col1,0)) (type: bigint), COALESCE(_col2,0) (type: double), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'LONG' (type: string), UDFToLong(_col6) (type: bigint), UDFToLong(_col7) (type: bigint), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'LONG' (type: string), UDFToLong(_col10) (type: bigint), UDFToLong(_col11) (type: bigint), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), '111' (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
+                  Statistics: Num rows: 1 Data size: 881 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 881 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-3
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 111
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest1_n137
+
+  Stage: Stage-4
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, val1, val2
+          Column Types: string, int, int
+          Table: default.dest1_n137
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          partition:
+            ds 111
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest2_n36
+
+  Stage: Stage-5
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, val1, val2
+          Column Types: string, int, int
+          Table: default.dest2_n36
+
+PREHOOK: query: FROM src
+INSERT OVERWRITE TABLE dest1_n137 partition(ds='111')
+  SELECT src.value, count(src.key), count(distinct src.key) GROUP BY src.value
+INSERT OVERWRITE TABLE dest2_n36  partition(ds='111')
+  SELECT substr(src.value, 5), count(src.key), count(distinct src.key) GROUP BY substr(src.value, 5)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n137@ds=111
+PREHOOK: Output: default@dest2_n36@ds=111
+POSTHOOK: query: FROM src
+INSERT OVERWRITE TABLE dest1_n137 partition(ds='111')
+  SELECT src.value, count(src.key), count(distinct src.key) GROUP BY src.value
+INSERT OVERWRITE TABLE dest2_n36  partition(ds='111')
+  SELECT substr(src.value, 5), count(src.key), count(distinct src.key) GROUP BY substr(src.value, 5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n137@ds=111
+POSTHOOK: Output: default@dest2_n36@ds=111
+POSTHOOK: Lineage: dest1_n137 PARTITION(ds=111).key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n137 PARTITION(ds=111).val1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n137 PARTITION(ds=111).val2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n36 PARTITION(ds=111).key EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n36 PARTITION(ds=111).val1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest2_n36 PARTITION(ds=111).val2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: SELECT * from dest1_n137
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1_n137
+PREHOOK: Input: default@dest1_n137@ds=111
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * from dest1_n137
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1_n137
+POSTHOOK: Input: default@dest1_n137@ds=111
+#### A masked pattern was here ####
+val_0	3	1	111
+val_10	1	1	111
+val_100	2	1	111
+val_103	2	1	111
+val_104	2	1	111
+val_105	1	1	111
+val_11	1	1	111
+val_111	1	1	111
+val_113	2	1	111
+val_114	1	1	111
+val_116	1	1	111
+val_118	2	1	111
+val_119	3	1	111
+val_12	2	1	111
+val_120	2	1	111
+val_125	2	1	111
+val_126	1	1	111
+val_128	3	1	111
+val_129	2	1	111
+val_131	1	1	111
+val_133	1	1	111
+val_134	2	1	111
+val_136	1	1	111
+val_137	2	1	111
+val_138	4	1	111
+val_143	1	1	111
+val_145	1	1	111
+val_146	2	1	111
+val_149	2	1	111
+val_15	2	1	111
+val_150	1	1	111
+val_152	2	1	111
+val_153	1	1	111
+val_155	1	1	111
+val_156	1	1	111
+val_157	1	1	111
+val_158	1	1	111
+val_160	1	1	111
+val_162	1	1	111
+val_163	1	1	111
+val_164	2	1	111
+val_165	2	1	111
+val_166	1	1	111
+val_167	3	1	111
+val_168	1	1	111
+val_169	4	1	111
+val_17	1	1	111
+val_170	1	1	111
+val_172	2	1	111
+val_174	2	1	111
+val_175	2	1	111
+val_176	2	1	111
+val_177	1	1	111
+val_178	1	1	111
+val_179	2	1	111
+val_18	2	1	111
+val_180	1	1	111
+val_181	1	1	111
+val_183	1	1	111
+val_186	1	1	111
+val_187	3	1	111
+val_189	1	1	111
+val_19	1	1	111
+val_190	1	1	111
+val_191	2	1	111
+val_192	1	1	111
+val_193	3	1	111
+val_194	1	1	111
+val_195	2	1	111
+val_196	1	1	111
+val_197	2	1	111
+val_199	3	1	111
+val_2	1	1	111
+val_20	1	1	111
+val_200	2	1	111
+val_201	1	1	111
+val_202	1	1	111
+val_203	2	1	111
+val_205	2	1	111
+val_207	2	1	111
+val_208	3	1	111
+val_209	2	1	111
+val_213	2	1	111
+val_214	1	1	111
+val_216	2	1	111
+val_217	2	1	111
+val_218	1	1	111
+val_219	2	1	111
+val_221	2	1	111
+val_222	1	1	111
+val_223	2	1	111
+val_224	2	1	111
+val_226	1	1	111
+val_228	1	1	111
+val_229	2	1	111
+val_230	5	1	111
+val_233	2	1	111
+val_235	1	1	111
+val_237	2	1	111
+val_238	2	1	111
+val_239	2	1	111
+val_24	2	1	111
+val_241	1	1	111
+val_242	2	1	111
+val_244	1	1	111
+val_247	1	1	111
+val_248	1	1	111
+val_249	1	1	111
+val_252	1	1	111
+val_255	2	1	111
+val_256	2	1	111
+val_257	1	1	111
+val_258	1	1	111
+val_26	2	1	111
+val_260	1	1	111
+val_262	1	1	111
+val_263	1	1	111
+val_265	2	1	111
+val_266	1	1	111
+val_27	1	1	111
+val_272	2	1	111
+val_273	3	1	111
+val_274	1	1	111
+val_275	1	1	111
+val_277	4	1	111
+val_278	2	1	111
+val_28	1	1	111
+val_280	2	1	111
+val_281	2	1	111
+val_282	2	1	111
+val_283	1	1	111
+val_284	1	1	111
+val_285	1	1	111
+val_286	1	1	111
+val_287	1	1	111
+val_288	2	1	111
+val_289	1	1	111
+val_291	1	1	111
+val_292	1	1	111
+val_296	1	1	111
+val_298	3	1	111
+val_30	1	1	111
+val_302	1	1	111
+val_305	1	1	111
+val_306	1	1	111
+val_307	2	1	111
+val_308	1	1	111
+val_309	2	1	111
+val_310	1	1	111
+val_311	3	1	111
+val_315	1	1	111
+val_316	3	1	111
+val_317	2	1	111
+val_318	3	1	111
+val_321	2	1	111
+val_322	2	1	111
+val_323	1	1	111
+val_325	2	1	111
+val_327	3	1	111
+val_33	1	1	111
+val_331	2	1	111
+val_332	1	1	111
+val_333	2	1	111
+val_335	1	1	111
+val_336	1	1	111
+val_338	1	1	111
+val_339	1	1	111
+val_34	1	1	111
+val_341	1	1	111
+val_342	2	1	111
+val_344	2	1	111
+val_345	1	1	111
+val_348	5	1	111
+val_35	3	1	111
+val_351	1	1	111
+val_353	2	1	111
+val_356	1	1	111
+val_360	1	1	111
+val_362	1	1	111
+val_364	1	1	111
+val_365	1	1	111
+val_366	1	1	111
+val_367	2	1	111
+val_368	1	1	111
+val_369	3	1	111
+val_37	2	1	111
+val_373	1	1	111
+val_374	1	1	111
+val_375	1	1	111
+val_377	1	1	111
+val_378	1	1	111
+val_379	1	1	111
+val_382	2	1	111
+val_384	3	1	111
+val_386	1	1	111
+val_389	1	1	111
+val_392	1	1	111
+val_393	1	1	111
+val_394	1	1	111
+val_395	2	1	111
+val_396	3	1	111
+val_397	2	1	111
+val_399	2	1	111
+val_4	1	1	111
+val_400	1	1	111
+val_401	5	1	111
+val_402	1	1	111
+val_403	3	1	111
+val_404	2	1	111
+val_406	4	1	111
+val_407	1	1	111
+val_409	3	1	111
+val_41	1	1	111
+val_411	1	1	111
+val_413	2	1	111
+val_414	2	1	111
+val_417	3	1	111
+val_418	1	1	111
+val_419	1	1	111
+val_42	2	1	111
+val_421	1	1	111
+val_424	2	1	111
+val_427	1	1	111
+val_429	2	1	111
+val_43	1	1	111
+val_430	3	1	111
+val_431	3	1	111
+val_432	1	1	111
+val_435	1	1	111
+val_436	1	1	111
+val_437	1	1	111
+val_438	3	1	111
+val_439	2	1	111
+val_44	1	1	111
+val_443	1	1	111
+val_444	1	1	111
+val_446	1	1	111
+val_448	1	1	111
+val_449	1	1	111
+val_452	1	1	111
+val_453	1	1	111
+val_454	3	1	111
+val_455	1	1	111
+val_457	1	1	111
+val_458	2	1	111
+val_459	2	1	111
+val_460	1	1	111
+val_462	2	1	111
+val_463	2	1	111
+val_466	3	1	111
+val_467	1	1	111
+val_468	4	1	111
+val_469	5	1	111
+val_47	1	1	111
+val_470	1	1	111
+val_472	1	1	111
+val_475	1	1	111
+val_477	1	1	111
+val_478	2	1	111
+val_479	1	1	111
+val_480	3	1	111
+val_481	1	1	111
+val_482	1	1	111
+val_483	1	1	111
+val_484	1	1	111
+val_485	1	1	111
+val_487	1	1	111
+val_489	4	1	111
+val_490	1	1	111
+val_491	1	1	111
+val_492	2	1	111
+val_493	1	1	111
+val_494	1	1	111
+val_495	1	1	111
+val_496	1	1	111
+val_497	1	1	111
+val_498	3	1	111
+val_5	3	1	111
+val_51	2	1	111
+val_53	1	1	111
+val_54	1	1	111
+val_57	1	1	111
+val_58	2	1	111
+val_64	1	1	111
+val_65	1	1	111
+val_66	1	1	111
+val_67	2	1	111
+val_69	1	1	111
+val_70	3	1	111
+val_72	2	1	111
+val_74	1	1	111
+val_76	2	1	111
+val_77	1	1	111
+val_78	1	1	111
+val_8	1	1	111
+val_80	1	1	111
+val_82	1	1	111
+val_83	2	1	111
+val_84	2	1	111
+val_85	1	1	111
+val_86	1	1	111
+val_87	1	1	111
+val_9	1	1	111
+val_90	3	1	111
+val_92	1	1	111
+val_95	2	1	111
+val_96	1	1	111
+val_97	2	1	111
+val_98	2	1	111
+PREHOOK: query: SELECT * from dest2_n36
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest2_n36
+PREHOOK: Input: default@dest2_n36@ds=111
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * from dest2_n36
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest2_n36
+POSTHOOK: Input: default@dest2_n36@ds=111
+#### A masked pattern was here ####
+0	3	1	111
+10	1	1	111
+100	2	1	111
+103	2	1	111
+104	2	1	111
+105	1	1	111
+11	1	1	111
+111	1	1	111
+113	2	1	111
+114	1	1	111
+116	1	1	111
+118	2	1	111
+119	3	1	111
+12	2	1	111
+120	2	1	111
+125	2	1	111
+126	1	1	111
+128	3	1	111
+129	2	1	111
+131	1	1	111
+133	1	1	111
+134	2	1	111
+136	1	1	111
+137	2	1	111
+138	4	1	111
+143	1	1	111
+145	1	1	111
+146	2	1	111
+149	2	1	111
+15	2	1	111
+150	1	1	111
+152	2	1	111
+153	1	1	111
+155	1	1	111
+156	1	1	111
+157	1	1	111
+158	1	1	111
+160	1	1	111
+162	1	1	111
+163	1	1	111
+164	2	1	111
+165	2	1	111
+166	1	1	111
+167	3	1	111
+168	1	1	111
+169	4	1	111
+17	1	1	111
+170	1	1	111
+172	2	1	111
+174	2	1	111
+175	2	1	111
+176	2	1	111
+177	1	1	111
+178	1	1	111
+179	2	1	111
+18	2	1	111
+180	1	1	111
+181	1	1	111
+183	1	1	111
+186	1	1	111
+187	3	1	111
+189	1	1	111
+19	1	1	111
+190	1	1	111
+191	2	1	111
+192	1	1	111
+193	3	1	111
+194	1	1	111
+195	2	1	111
+196	1	1	111
+197	2	1	111
+199	3	1	111
+2	1	1	111
+20	1	1	111
+200	2	1	111
+201	1	1	111
+202	1	1	111
+203	2	1	111
+205	2	1	111
+207	2	1	111
+208	3	1	111
+209	2	1	111
+213	2	1	111
+214	1	1	111
+216	2	1	111
+217	2	1	111
+218	1	1	111
+219	2	1	111
+221	2	1	111
+222	1	1	111
+223	2	1	111
+224	2	1	111
+226	1	1	111
+228	1	1	111
+229	2	1	111
+230	5	1	111
+233	2	1	111
+235	1	1	111
+237	2	1	111
+238	2	1	111
+239	2	1	111
+24	2	1	111
+241	1	1	111
+242	2	1	111
+244	1	1	111
+247	1	1	111
+248	1	1	111
+249	1	1	111
+252	1	1	111
+255	2	1	111
+256	2	1	111
+257	1	1	111
+258	1	1	111
+26	2	1	111
+260	1	1	111
+262	1	1	111
+263	1	1	111
+265	2	1	111
+266	1	1	111
+27	1	1	111
+272	2	1	111
+273	3	1	111
+274	1	1	111
+275	1	1	111
+277	4	1	111
+278	2	1	111
+28	1	1	111
+280	2	1	111
+281	2	1	111
+282	2	1	111
+283	1	1	111
+284	1	1	111
+285	1	1	111
+286	1	1	111
+287	1	1	111
+288	2	1	111
+289	1	1	111
+291	1	1	111
+292	1	1	111
+296	1	1	111
+298	3	1	111
+30	1	1	111
+302	1	1	111
+305	1	1	111
+306	1	1	111
+307	2	1	111
+308	1	1	111
+309	2	1	111
+310	1	1	111
+311	3	1	111
+315	1	1	111
+316	3	1	111
+317	2	1	111
+318	3	1	111
+321	2	1	111
+322	2	1	111
+323	1	1	111
+325	2	1	111
+327	3	1	111
+33	1	1	111
+331	2	1	111
+332	1	1	111
+333	2	1	111
+335	1	1	111
+336	1	1	111
+338	1	1	111
+339	1	1	111
+34	1	1	111
+341	1	1	111
+342	2	1	111
+344	2	1	111
+345	1	1	111
+348	5	1	111
+35	3	1	111
+351	1	1	111
+353	2	1	111
+356	1	1	111
+360	1	1	111
+362	1	1	111
+364	1	1	111
+365	1	1	111
+366	1	1	111
+367	2	1	111
+368	1	1	111
+369	3	1	111
+37	2	1	111
+373	1	1	111
+374	1	1	111
+375	1	1	111
+377	1	1	111
+378	1	1	111
+379	1	1	111
+382	2	1	111
+384	3	1	111
+386	1	1	111
+389	1	1	111
+392	1	1	111
+393	1	1	111
+394	1	1	111
+395	2	1	111
+396	3	1	111
+397	2	1	111
+399	2	1	111
+4	1	1	111
+400	1	1	111
+401	5	1	111
+402	1	1	111
+403	3	1	111
+404	2	1	111
+406	4	1	111
+407	1	1	111
+409	3	1	111
+41	1	1	111
+411	1	1	111
+413	2	1	111
+414	2	1	111
+417	3	1	111
+418	1	1	111
+419	1	1	111
+42	2	1	111
+421	1	1	111
+424	2	1	111
+427	1	1	111
+429	2	1	111
+43	1	1	111
+430	3	1	111
+431	3	1	111
+432	1	1	111
+435	1	1	111
+436	1	1	111
+437	1	1	111
+438	3	1	111
+439	2	1	111
+44	1	1	111
+443	1	1	111
+444	1	1	111
+446	1	1	111
+448	1	1	111
+449	1	1	111
+452	1	1	111
+453	1	1	111
+454	3	1	111
+455	1	1	111
+457	1	1	111
+458	2	1	111
+459	2	1	111
+460	1	1	111
+462	2	1	111
+463	2	1	111
+466	3	1	111
+467	1	1	111
+468	4	1	111
+469	5	1	111
+47	1	1	111
+470	1	1	111
+472	1	1	111
+475	1	1	111
+477	1	1	111
+478	2	1	111
+479	1	1	111
+480	3	1	111
+481	1	1	111
+482	1	1	111
+483	1	1	111
+484	1	1	111
+485	1	1	111
+487	1	1	111
+489	4	1	111
+490	1	1	111
+491	1	1	111
+492	2	1	111
+493	1	1	111
+494	1	1	111
+495	1	1	111
+496	1	1	111
+497	1	1	111
+498	3	1	111
+5	3	1	111
+51	2	1	111
+53	1	1	111
+54	1	1	111
+57	1	1	111
+58	2	1	111
+64	1	1	111
+65	1	1	111
+66	1	1	111
+67	2	1	111
+69	1	1	111
+70	3	1	111
+72	2	1	111
+74	1	1	111
+76	2	1	111
+77	1	1	111
+78	1	1	111
+8	1	1	111
+80	1	1	111
+82	1	1	111
+83	2	1	111
+84	2	1	111
+85	1	1	111
+86	1	1	111
+87	1	1	111
+9	1	1	111
+90	3	1	111
+92	1	1	111
+95	2	1	111
+96	1	1	111
+97	2	1	111
+98	2	1	111

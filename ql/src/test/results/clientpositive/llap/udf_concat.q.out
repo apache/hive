@@ -1,0 +1,62 @@
+PREHOOK: query: DESCRIBE FUNCTION concat
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION concat
+POSTHOOK: type: DESCFUNCTION
+concat(str1, str2, ... strN) - returns the concatenation of str1, str2, ... strN or concat(bin1, bin2, ... binN) - returns the concatenation of bytes in binary data  bin1, bin2, ... binN
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED concat
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED concat
+POSTHOOK: type: DESCFUNCTION
+concat(str1, str2, ... strN) - returns the concatenation of str1, str2, ... strN or concat(bin1, bin2, ... binN) - returns the concatenation of bytes in binary data  bin1, bin2, ... binN
+Returns NULL if any argument is NULL.
+Example:
+  > SELECT concat('abc', 'def') FROM src LIMIT 1;
+  'abcdef'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFConcat
+Function type:BUILTIN
+PREHOOK: query: SELECT
+  concat('a', 'b'),
+  concat('a', 'b', 'c'),
+  concat('a', null, 'c'),
+  concat(null),
+  concat('a'),
+  concat(null, 1, 2),
+  concat(1, 2, 3, 'a'),
+  concat(1, 2),
+  concat(1),
+  concat('1234', 'abc', 'extra argument')
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  concat('a', 'b'),
+  concat('a', 'b', 'c'),
+  concat('a', null, 'c'),
+  concat(null),
+  concat('a'),
+  concat(null, 1, 2),
+  concat(1, 2, 3, 'a'),
+  concat(1, 2),
+  concat(1),
+  concat('1234', 'abc', 'extra argument')
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+ab	abc	NULL	NULL	a	NULL	123a	12	1	1234abcextra argument
+PREHOOK: query: SELECT
+  concat(cast('ab' as binary), cast('cd' as binary)),
+  concat('ab', cast('cd' as binary))
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  concat(cast('ab' as binary), cast('cd' as binary)),
+  concat('ab', cast('cd' as binary))
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+abcd	abcd

@@ -1,0 +1,149 @@
+PREHOOK: query: create table x_date_dim (d_date_sk bigint, d_year int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@x_date_dim
+POSTHOOK: query: create table x_date_dim (d_date_sk bigint, d_year int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@x_date_dim
+PREHOOK: query: create table x_inventory (inv_quantity_on_hand int) partitioned by (inv_date_sk bigint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@x_inventory
+POSTHOOK: query: create table x_inventory (inv_quantity_on_hand int) partitioned by (inv_date_sk bigint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@x_inventory
+PREHOOK: query: create table x_web_returns (wr_item_sk bigint, wr_refunded_customer_sk bigint) partitioned by (wr_returned_date_sk bigint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@x_web_returns
+POSTHOOK: query: create table x_web_returns (wr_item_sk bigint, wr_refunded_customer_sk bigint) partitioned by (wr_returned_date_sk bigint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@x_web_returns
+PREHOOK: query: insert into table x_date_dim values (1, 1999), (2, 2000), (3, 2001)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@x_date_dim
+POSTHOOK: query: insert into table x_date_dim values (1, 1999), (2, 2000), (3, 2001)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@x_date_dim
+POSTHOOK: Lineage: x_date_dim.d_date_sk SCRIPT []
+POSTHOOK: Lineage: x_date_dim.d_year SCRIPT []
+PREHOOK: query: insert into table x_inventory (inv_quantity_on_hand, inv_date_sk) values (1, 1999), (2, 2000), (3, 2001)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@x_inventory
+POSTHOOK: query: insert into table x_inventory (inv_quantity_on_hand, inv_date_sk) values (1, 1999), (2, 2000), (3, 2001)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@x_inventory
+POSTHOOK: Output: default@x_inventory@inv_date_sk=1999
+POSTHOOK: Output: default@x_inventory@inv_date_sk=2000
+POSTHOOK: Output: default@x_inventory@inv_date_sk=2001
+POSTHOOK: Lineage: x_inventory PARTITION(inv_date_sk=1999).inv_quantity_on_hand SCRIPT []
+POSTHOOK: Lineage: x_inventory PARTITION(inv_date_sk=2000).inv_quantity_on_hand SCRIPT []
+POSTHOOK: Lineage: x_inventory PARTITION(inv_date_sk=2001).inv_quantity_on_hand SCRIPT []
+PREHOOK: query: insert into table x_web_returns (wr_item_sk, wr_refunded_customer_sk, wr_returned_date_sk) values (1, 1, 1999), (2, 2, 2000), (3, 3, 2001)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@x_web_returns
+POSTHOOK: query: insert into table x_web_returns (wr_item_sk, wr_refunded_customer_sk, wr_returned_date_sk) values (1, 1, 1999), (2, 2, 2000), (3, 3, 2001)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@x_web_returns
+POSTHOOK: Output: default@x_web_returns@wr_returned_date_sk=1999
+POSTHOOK: Output: default@x_web_returns@wr_returned_date_sk=2000
+POSTHOOK: Output: default@x_web_returns@wr_returned_date_sk=2001
+POSTHOOK: Lineage: x_web_returns PARTITION(wr_returned_date_sk=1999).wr_item_sk SCRIPT []
+POSTHOOK: Lineage: x_web_returns PARTITION(wr_returned_date_sk=1999).wr_refunded_customer_sk SCRIPT []
+POSTHOOK: Lineage: x_web_returns PARTITION(wr_returned_date_sk=2000).wr_item_sk SCRIPT []
+POSTHOOK: Lineage: x_web_returns PARTITION(wr_returned_date_sk=2000).wr_refunded_customer_sk SCRIPT []
+POSTHOOK: Lineage: x_web_returns PARTITION(wr_returned_date_sk=2001).wr_item_sk SCRIPT []
+POSTHOOK: Lineage: x_web_returns PARTITION(wr_returned_date_sk=2001).wr_refunded_customer_sk SCRIPT []
+PREHOOK: query: alter table x_date_dim update statistics set('numRows'='35', 'rawDataSize'='81449')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@x_date_dim
+PREHOOK: Output: default@x_date_dim
+POSTHOOK: query: alter table x_date_dim update statistics set('numRows'='35', 'rawDataSize'='81449')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@x_date_dim
+POSTHOOK: Output: default@x_date_dim
+PREHOOK: query: alter table x_inventory partition (inv_date_sk = 2000) update statistics set('numRows'='12345', 'rawDataSize'='1234567')
+PREHOOK: type: ALTERTABLE_UPDATEPARTSTATS
+PREHOOK: Input: default@x_inventory
+PREHOOK: Output: default@x_inventory@inv_date_sk=2000
+POSTHOOK: query: alter table x_inventory partition (inv_date_sk = 2000) update statistics set('numRows'='12345', 'rawDataSize'='1234567')
+POSTHOOK: type: ALTERTABLE_UPDATEPARTSTATS
+POSTHOOK: Input: default@x_inventory
+POSTHOOK: Input: default@x_inventory@inv_date_sk=2000
+POSTHOOK: Output: default@x_inventory@inv_date_sk=2000
+PREHOOK: query: alter table x_web_returns partition (wr_returned_date_sk = 2000) update statistics set('numRows'='123456', 'rawDataSize'='12345678')
+PREHOOK: type: ALTERTABLE_UPDATEPARTSTATS
+PREHOOK: Input: default@x_web_returns
+PREHOOK: Output: default@x_web_returns@wr_returned_date_sk=2000
+POSTHOOK: query: alter table x_web_returns partition (wr_returned_date_sk = 2000) update statistics set('numRows'='123456', 'rawDataSize'='12345678')
+POSTHOOK: type: ALTERTABLE_UPDATEPARTSTATS
+POSTHOOK: Input: default@x_web_returns
+POSTHOOK: Input: default@x_web_returns@wr_returned_date_sk=2000
+POSTHOOK: Output: default@x_web_returns@wr_returned_date_sk=2000
+PREHOOK: query: alter table x_date_dim update statistics for column d_date_sk set('numDVs'='35','numNulls'='0')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@x_date_dim
+PREHOOK: Output: default@x_date_dim
+POSTHOOK: query: alter table x_date_dim update statistics for column d_date_sk set('numDVs'='35','numNulls'='0')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@x_date_dim
+POSTHOOK: Output: default@x_date_dim
+PREHOOK: query: alter table x_inventory partition (inv_date_sk = 2000) update statistics for column inv_quantity_on_hand set('numDVs'='350','numNulls'='0')
+PREHOOK: type: ALTERTABLE_UPDATEPARTSTATS
+PREHOOK: Input: default@x_inventory
+PREHOOK: Output: default@x_inventory@inv_date_sk=2000
+POSTHOOK: query: alter table x_inventory partition (inv_date_sk = 2000) update statistics for column inv_quantity_on_hand set('numDVs'='350','numNulls'='0')
+POSTHOOK: type: ALTERTABLE_UPDATEPARTSTATS
+POSTHOOK: Input: default@x_inventory
+POSTHOOK: Output: default@x_inventory@inv_date_sk=2000
+PREHOOK: query: alter table x_web_returns partition (wr_returned_date_sk = 2000) update statistics for column wr_item_sk set('numDVs'='3500','numNulls'='0')
+PREHOOK: type: ALTERTABLE_UPDATEPARTSTATS
+PREHOOK: Input: default@x_web_returns
+PREHOOK: Output: default@x_web_returns@wr_returned_date_sk=2000
+POSTHOOK: query: alter table x_web_returns partition (wr_returned_date_sk = 2000) update statistics for column wr_item_sk set('numDVs'='3500','numNulls'='0')
+POSTHOOK: type: ALTERTABLE_UPDATEPARTSTATS
+POSTHOOK: Input: default@x_web_returns
+POSTHOOK: Output: default@x_web_returns@wr_returned_date_sk=2000
+PREHOOK: query: with
+a1 as (select distinct inv_date_sk, inv_quantity_on_hand from x_inventory, x_date_dim where inv_date_sk = d_date_sk and d_year = 2000),
+a2 as (select * from x_web_returns, a1 where inv_date_sk = wr_returned_date_sk),
+a3 as (select wr_item_sk, max(wr_refunded_customer_sk) col1 from a2 group by wr_item_sk),
+a4 as (select wr_item_sk, min(wr_refunded_customer_sk) col1 from a2 group by wr_item_sk)
+select * from a3 join a4 on a3.wr_item_sk = a4.wr_item_sk and a3.col1 < 2 * a4.col1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@x_date_dim
+PREHOOK: Input: default@x_inventory
+PREHOOK: Input: default@x_inventory@inv_date_sk=1999
+PREHOOK: Input: default@x_inventory@inv_date_sk=2000
+PREHOOK: Input: default@x_inventory@inv_date_sk=2001
+PREHOOK: Input: default@x_web_returns
+PREHOOK: Input: default@x_web_returns@wr_returned_date_sk=1999
+PREHOOK: Input: default@x_web_returns@wr_returned_date_sk=2000
+PREHOOK: Input: default@x_web_returns@wr_returned_date_sk=2001
+#### A masked pattern was here ####
+POSTHOOK: query: with
+a1 as (select distinct inv_date_sk, inv_quantity_on_hand from x_inventory, x_date_dim where inv_date_sk = d_date_sk and d_year = 2000),
+a2 as (select * from x_web_returns, a1 where inv_date_sk = wr_returned_date_sk),
+a3 as (select wr_item_sk, max(wr_refunded_customer_sk) col1 from a2 group by wr_item_sk),
+a4 as (select wr_item_sk, min(wr_refunded_customer_sk) col1 from a2 group by wr_item_sk)
+select * from a3 join a4 on a3.wr_item_sk = a4.wr_item_sk and a3.col1 < 2 * a4.col1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@x_date_dim
+POSTHOOK: Input: default@x_inventory
+POSTHOOK: Input: default@x_inventory@inv_date_sk=1999
+POSTHOOK: Input: default@x_inventory@inv_date_sk=2000
+POSTHOOK: Input: default@x_inventory@inv_date_sk=2001
+POSTHOOK: Input: default@x_web_returns
+POSTHOOK: Input: default@x_web_returns@wr_returned_date_sk=1999
+POSTHOOK: Input: default@x_web_returns@wr_returned_date_sk=2000
+POSTHOOK: Input: default@x_web_returns@wr_returned_date_sk=2001
+#### A masked pattern was here ####

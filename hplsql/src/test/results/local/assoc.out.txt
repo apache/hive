@@ -1,0 +1,4 @@
+Ln:1 DECLARE a int = 0
+Ln:2 DECLARE b int = 0
+Ln:3 DECLARE c int = -1
+-1

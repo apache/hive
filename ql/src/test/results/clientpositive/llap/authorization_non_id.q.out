@@ -1,0 +1,78 @@
+PREHOOK: query: set role ADMIN
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role ADMIN
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: drop table if exists src_autho_test_n12
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists src_autho_test_n12
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table src_autho_test_n12 (id int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_autho_test_n12
+POSTHOOK: query: create table src_autho_test_n12 (id int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_autho_test_n12
+PREHOOK: query: create role src_role2
+PREHOOK: type: CREATEROLE
+POSTHOOK: query: create role src_role2
+POSTHOOK: type: CREATEROLE
+PREHOOK: query: grant role src_role2 to user bar
+PREHOOK: type: GRANT_ROLE
+POSTHOOK: query: grant role src_role2 to user bar
+POSTHOOK: type: GRANT_ROLE
+PREHOOK: query: grant role src_role2 to user `foo-1`
+PREHOOK: type: GRANT_ROLE
+POSTHOOK: query: grant role src_role2 to user `foo-1`
+POSTHOOK: type: GRANT_ROLE
+PREHOOK: query: show role grant user bar
+PREHOOK: type: SHOW_ROLE_GRANT
+POSTHOOK: query: show role grant user bar
+POSTHOOK: type: SHOW_ROLE_GRANT
+public	false	-1	
+src_role2	false	-1	hive_admin_user
+PREHOOK: query: show role grant user `foo-1`
+PREHOOK: type: SHOW_ROLE_GRANT
+POSTHOOK: query: show role grant user `foo-1`
+POSTHOOK: type: SHOW_ROLE_GRANT
+public	false	-1	
+src_role2	false	-1	hive_admin_user
+PREHOOK: query: grant select on table src_autho_test_n12 to user bar
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@src_autho_test_n12
+POSTHOOK: query: grant select on table src_autho_test_n12 to user bar
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@src_autho_test_n12
+PREHOOK: query: grant select on table src_autho_test_n12 to user `foo-1`
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@src_autho_test_n12
+POSTHOOK: query: grant select on table src_autho_test_n12 to user `foo-1`
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@src_autho_test_n12
+PREHOOK: query: show grant user bar on all
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user bar on all
+POSTHOOK: type: SHOW_GRANT
+default	src_autho_test_n12			bar	USER	SELECT	false	-1	hive_admin_user
+PREHOOK: query: show grant user `foo-1` on all
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user `foo-1` on all
+POSTHOOK: type: SHOW_GRANT
+default	src_autho_test_n12			foo-1	USER	SELECT	false	-1	hive_admin_user
+PREHOOK: query: drop table src_autho_test_n12
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src_autho_test_n12
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_autho_test_n12
+POSTHOOK: query: drop table src_autho_test_n12
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src_autho_test_n12
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_autho_test_n12
+PREHOOK: query: drop role src_role2
+PREHOOK: type: DROPROLE
+POSTHOOK: query: drop role src_role2
+POSTHOOK: type: DROPROLE

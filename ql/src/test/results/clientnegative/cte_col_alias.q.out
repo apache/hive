@@ -1,0 +1,9 @@
+PREHOOK: query: create table t1(int_col int, bigint_col bigint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1(int_col int, bigint_col bigint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+FAILED: SemanticException [Error 10425]: WITH-clause query cte1 returns 2 columns, but 3 labels were specified. The number of column labels must be smaller or equal to the number of expressions returned by the query.

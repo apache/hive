@@ -1,0 +1,54 @@
+PREHOOK: query: drop table if exists hlp1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists hlp1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists btl
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists btl
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table hlp1(c string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hlp1
+POSTHOOK: query: create table hlp1(c string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hlp1
+PREHOOK: query: load data local inpath '../../data/files/smbdata.txt' into table hlp1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@hlp1
+POSTHOOK: query: load data local inpath '../../data/files/smbdata.txt' into table hlp1
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@hlp1
+PREHOOK: query: create table btl(c string) clustered by (c) sorted by (c) into 5 buckets
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@btl
+POSTHOOK: query: create table btl(c string) clustered by (c) sorted by (c) into 5 buckets
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@btl
+PREHOOK: query: insert overwrite table btl select * from hlp1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hlp1
+PREHOOK: Output: default@btl
+POSTHOOK: query: insert overwrite table btl select * from hlp1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hlp1
+POSTHOOK: Output: default@btl
+POSTHOOK: Lineage: btl.c SIMPLE [(hlp1)hlp1.FieldSchema(name:c, type:string, comment:null), ]
+PREHOOK: query: select 1 from btl join btl t1 on btl.c=t1.c limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@btl
+#### A masked pattern was here ####
+POSTHOOK: query: select 1 from btl join btl t1 on btl.c=t1.c limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@btl
+#### A masked pattern was here ####
+1

@@ -1,0 +1,113 @@
+PREHOOK: query: DESCRIBE FUNCTION trim
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION trim
+POSTHOOK: type: DESCFUNCTION
+trim([LEADING | TRAILING | BOTH] [chars] FROM str) | trim(str[, chars]) - Removes the leading/trailing or both pad characters from str
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED trim
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED trim
+POSTHOOK: type: DESCFUNCTION
+trim([LEADING | TRAILING | BOTH] [chars] FROM str) | trim(str[, chars]) - Removes the leading/trailing or both pad characters from str
+Example:
+  > SELECT trim('   facebook  ') FROM src LIMIT 1;
+  'facebook'
+  > SELECT trim(BOTH 'xy' FROM 'xyyxFacebookxy');
+  'Facebook'
+  > SELECT trim(' ' FROM ' Facebook  ');
+  'Facebook'
+  > SELECT trim(LEADING ' ' FROM ' Facebook  ');
+  'Facebook  '
+  > SELECT trim('xyfacebookyyx', 'xy');
+  'facebook'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFTrim
+Function type:BUILTIN
+PREHOOK: query: SELECT trim(null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT trim(null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT '"' || trim(null, null) || '"'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT '"' || trim(null, null) || '"'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT trim(null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT trim(null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT '"' || trim(null, null) || '"'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT '"' || trim(null, null) || '"'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT '"' || trim('   tech   ') || '"'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT '"' || trim('   tech   ') || '"'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+"tech"
+PREHOOK: query: SELECT '"' || TRIM(' '  FROM  '   tech   ') || '"'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT '"' || TRIM(' '  FROM  '   tech   ') || '"'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+"tech"
+PREHOOK: query: SELECT '"' || TRIM(LEADING '0' FROM '000123') || '"'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT '"' || TRIM(LEADING '0' FROM '000123') || '"'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+"123"
+PREHOOK: query: SELECT '"' || TRIM(TRAILING '1' FROM 'Tech1') || '"'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT '"' || TRIM(TRAILING '1' FROM 'Tech1') || '"'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+"Tech"
+PREHOOK: query: SELECT '"' || TRIM(BOTH '1' FROM '123Tech111') || '"'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT '"' || TRIM(BOTH '1' FROM '123Tech111') || '"'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+"23Tech"
+PREHOOK: query: SELECT '"' || trim('xyfacebookyyx', 'xy') || '"'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT '"' || trim('xyfacebookyyx', 'xy') || '"'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+"facebook"

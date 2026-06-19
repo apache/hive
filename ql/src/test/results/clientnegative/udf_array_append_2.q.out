@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10016]: Line 1:30 Argument type mismatch '3': int type element is expected at function ARRAY_APPEND(array<int>,int), but array<int> is found

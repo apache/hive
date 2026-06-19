@@ -1,0 +1,125 @@
+PREHOOK: query: CREATE TABLE T1_n45(key STRING, val STRING) PARTITIONED BY (ds string)
+CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T1_n45
+POSTHOOK: query: CREATE TABLE T1_n45(key STRING, val STRING) PARTITIONED BY (ds string)
+CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T1_n45
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bucket_files/000000_0' INTO TABLE T1_n45  PARTITION (ds='1')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@t1_n45
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bucket_files/000000_0' INTO TABLE T1_n45  PARTITION (ds='1')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@t1_n45
+POSTHOOK: Output: default@t1_n45@ds=1
+PREHOOK: query: INSERT OVERWRITE TABLE T1_n45 PARTITION (ds='1') select key, val from T1_n45 where ds = '1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n45
+PREHOOK: Input: default@t1_n45@ds=1
+PREHOOK: Output: default@t1_n45@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE T1_n45 PARTITION (ds='1') select key, val from T1_n45 where ds = '1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n45
+POSTHOOK: Input: default@t1_n45@ds=1
+POSTHOOK: Output: default@t1_n45@ds=1
+POSTHOOK: Lineage: t1_n45 PARTITION(ds=1).key SIMPLE [(t1_n45)t1_n45.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t1_n45 PARTITION(ds=1).val SIMPLE [(t1_n45)t1_n45.FieldSchema(name:val, type:string, comment:null), ]
+PREHOOK: query: EXPLAIN
+select count(distinct key) from T1_n45
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n45
+PREHOOK: Input: default@t1_n45@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+select count(distinct key) from T1_n45
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n45
+POSTHOOK: Input: default@t1_n45@ds=1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1_n45
+                  Statistics: Num rows: 6 Data size: 1104 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: key
+                    Statistics: Num rows: 6 Data size: 1104 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      keys: key (type: string)
+                      mode: final
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: count(_col0)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(distinct key) from T1_n45
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n45
+PREHOOK: Input: default@t1_n45@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct key) from T1_n45
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n45
+POSTHOOK: Input: default@t1_n45@ds=1
+#### A masked pattern was here ####
+5
+PREHOOK: query: DROP TABLE T1_n45
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t1_n45
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1_n45
+POSTHOOK: query: DROP TABLE T1_n45
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t1_n45
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1_n45

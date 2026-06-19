@@ -1,0 +1,13 @@
+PREHOOK: query: DESCRIBE FUNCTION stddev
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION stddev
+POSTHOOK: type: DESCFUNCTION
+stddev(x) - Returns the standard deviation of a set of numbers
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED stddev
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED stddev
+POSTHOOK: type: DESCFUNCTION
+stddev(x) - Returns the standard deviation of a set of numbers
+Synonyms: std, stddev_pop
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStd
+Function type:BUILTIN

@@ -1,0 +1,42 @@
+PREHOOK: query: create table intable (b boolean, d double, f float, i int, l bigint, s string, t tinyint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@intable
+POSTHOOK: query: create table intable (b boolean, d double, f float, i int, l bigint, s string, t tinyint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@intable
+PREHOOK: query: insert overwrite table intable select 0, 29098519.0, 1410.0, 996, 40408519555, "test_string", 12 from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@intable
+POSTHOOK: query: insert overwrite table intable select 0, 29098519.0, 1410.0, 996, 40408519555, "test_string", 12 from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@intable
+POSTHOOK: Lineage: intable.b EXPRESSION []
+POSTHOOK: Lineage: intable.d EXPRESSION []
+POSTHOOK: Lineage: intable.f EXPRESSION []
+POSTHOOK: Lineage: intable.i SIMPLE []
+POSTHOOK: Lineage: intable.l SIMPLE []
+POSTHOOK: Lineage: intable.s SIMPLE []
+POSTHOOK: Lineage: intable.t EXPRESSION []
+PREHOOK: query: select * from intable where d in (29098519.0) and f in (1410.0) and i in (996) and l in (40408519555) and s in ('test_string') and t in (12)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intable
+#### A masked pattern was here ####
+POSTHOOK: query: select * from intable where d in (29098519.0) and f in (1410.0) and i in (996) and l in (40408519555) and s in ('test_string') and t in (12)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intable
+#### A masked pattern was here ####
+false	2.9098519E7	1410.0	996	40408519555	test_string	12
+PREHOOK: query: drop table intable
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@intable
+PREHOOK: Output: database:default
+PREHOOK: Output: default@intable
+POSTHOOK: query: drop table intable
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@intable
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@intable

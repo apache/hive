@@ -1,0 +1,108 @@
+PREHOOK: query: EXPLAIN
+SELECT f.key
+FROM cbo_t1 f
+WHERE (f.key = '1' OR f.key='2')
+AND f.key IN ('1', '2')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT f.key
+FROM cbo_t1 f
+WHERE (f.key = '1' OR f.key='2')
+AND f.key IN ('1', '2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: f
+          filterExpr: (key) IN ('1', '2') (type: boolean)
+          Filter Operator
+            predicate: (key) IN ('1', '2') (type: boolean)
+            Select Operator
+              expressions: key (type: string)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: EXPLAIN
+SELECT f.key
+FROM cbo_t1 f
+WHERE (f.key = '1' OR f.key = '2')
+AND f.key IN ('1', '2', '3')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT f.key
+FROM cbo_t1 f
+WHERE (f.key = '1' OR f.key = '2')
+AND f.key IN ('1', '2', '3')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: f
+          filterExpr: (key) IN ('1', '2') (type: boolean)
+          Filter Operator
+            predicate: (key) IN ('1', '2') (type: boolean)
+            Select Operator
+              expressions: key (type: string)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: EXPLAIN
+SELECT f.key
+FROM cbo_t1 f
+WHERE (f.key = '1' OR f.key='2' OR f.key='3')
+AND f.key IN ('1', '2')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t1
+PREHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT f.key
+FROM cbo_t1 f
+WHERE (f.key = '1' OR f.key='2' OR f.key='3')
+AND f.key IN ('1', '2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t1
+POSTHOOK: Input: default@cbo_t1@dt=2014
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: f
+          filterExpr: (key) IN ('1', '2') (type: boolean)
+          Filter Operator
+            predicate: (key) IN ('1', '2') (type: boolean)
+            Select Operator
+              expressions: key (type: string)
+              outputColumnNames: _col0
+              ListSink
+

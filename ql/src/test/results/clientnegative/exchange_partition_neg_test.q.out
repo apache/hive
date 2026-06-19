@@ -1,0 +1,49 @@
+PREHOOK: query: CREATE TABLE exchange_part_test1 (f1 string) PARTITIONED BY (ds STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@exchange_part_test1
+POSTHOOK: query: CREATE TABLE exchange_part_test1 (f1 string) PARTITIONED BY (ds STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@exchange_part_test1
+PREHOOK: query: CREATE TABLE exchange_part_test2 (f1 string, f2 string) PARTITIONED BY (ds STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@exchange_part_test2
+POSTHOOK: query: CREATE TABLE exchange_part_test2 (f1 string, f2 string) PARTITIONED BY (ds STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@exchange_part_test2
+PREHOOK: query: SHOW PARTITIONS exchange_part_test1
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@exchange_part_test1
+POSTHOOK: query: SHOW PARTITIONS exchange_part_test1
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@exchange_part_test1
+PREHOOK: query: SHOW PARTITIONS exchange_part_test2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@exchange_part_test2
+POSTHOOK: query: SHOW PARTITIONS exchange_part_test2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@exchange_part_test2
+PREHOOK: query: ALTER TABLE exchange_part_test1 ADD PARTITION (ds='2013-04-05')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@exchange_part_test1
+POSTHOOK: query: ALTER TABLE exchange_part_test1 ADD PARTITION (ds='2013-04-05')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@exchange_part_test1
+POSTHOOK: Output: default@exchange_part_test1@ds=2013-04-05
+PREHOOK: query: SHOW PARTITIONS exchange_part_test1
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@exchange_part_test1
+POSTHOOK: query: SHOW PARTITIONS exchange_part_test1
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@exchange_part_test1
+ds=2013-04-05
+PREHOOK: query: SHOW PARTITIONS exchange_part_test2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@exchange_part_test2
+POSTHOOK: query: SHOW PARTITIONS exchange_part_test2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@exchange_part_test2
+FAILED: SemanticException [Error 10235]: Tables have incompatible schemas and their partitions  cannot be exchanged.

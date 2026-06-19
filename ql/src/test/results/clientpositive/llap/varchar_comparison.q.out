@@ -1,0 +1,95 @@
+PREHOOK: query: select
+  cast('abc' as varchar(10)) =  cast('abc' as varchar(10)),
+  cast('abc' as varchar(10)) <= cast('abc' as varchar(10)),
+  cast('abc' as varchar(10)) >= cast('abc' as varchar(10)),
+  cast('abc' as varchar(10)) <  cast('abd' as varchar(10)),
+  cast('abc' as varchar(10)) >  cast('abb' as varchar(10)),
+  cast('abc' as varchar(10)) <> cast('abb' as varchar(10))
+from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  cast('abc' as varchar(10)) =  cast('abc' as varchar(10)),
+  cast('abc' as varchar(10)) <= cast('abc' as varchar(10)),
+  cast('abc' as varchar(10)) >= cast('abc' as varchar(10)),
+  cast('abc' as varchar(10)) <  cast('abd' as varchar(10)),
+  cast('abc' as varchar(10)) >  cast('abb' as varchar(10)),
+  cast('abc' as varchar(10)) <> cast('abb' as varchar(10))
+from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+true	true	true	true	true	true
+PREHOOK: query: select
+  cast('abc' as varchar(10)) =  cast('abc' as varchar(3)),
+  cast('abc' as varchar(10)) <= cast('abc' as varchar(3)),
+  cast('abc' as varchar(10)) >= cast('abc' as varchar(3)),
+  cast('abc' as varchar(10)) <  cast('abd' as varchar(3)),
+  cast('abc' as varchar(10)) >  cast('abb' as varchar(3)),
+  cast('abc' as varchar(10)) <> cast('abb' as varchar(3))
+from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  cast('abc' as varchar(10)) =  cast('abc' as varchar(3)),
+  cast('abc' as varchar(10)) <= cast('abc' as varchar(3)),
+  cast('abc' as varchar(10)) >= cast('abc' as varchar(3)),
+  cast('abc' as varchar(10)) <  cast('abd' as varchar(3)),
+  cast('abc' as varchar(10)) >  cast('abb' as varchar(3)),
+  cast('abc' as varchar(10)) <> cast('abb' as varchar(3))
+from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+true	true	true	true	true	true
+PREHOOK: query: select
+  cast('abc' as varchar(10)) =  'abc',
+  cast('abc' as varchar(10)) <= 'abc',
+  cast('abc' as varchar(10)) >= 'abc',
+  cast('abc' as varchar(10)) <  'abd',
+  cast('abc' as varchar(10)) >  'abb',
+  cast('abc' as varchar(10)) <> 'abb'
+from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  cast('abc' as varchar(10)) =  'abc',
+  cast('abc' as varchar(10)) <= 'abc',
+  cast('abc' as varchar(10)) >= 'abc',
+  cast('abc' as varchar(10)) <  'abd',
+  cast('abc' as varchar(10)) >  'abb',
+  cast('abc' as varchar(10)) <> 'abb'
+from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+true	true	true	true	true	true
+PREHOOK: query: select
+  cast(' abc' as varchar(10)) <> cast('abc' as varchar(10))
+from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  cast(' abc' as varchar(10)) <> cast('abc' as varchar(10))
+from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+true
+PREHOOK: query: select
+  cast('abc ' as varchar(10)) <> cast('abc' as varchar(10))
+from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  cast('abc ' as varchar(10)) <> cast('abc' as varchar(10))
+from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+true

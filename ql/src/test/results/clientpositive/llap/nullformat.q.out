@@ -1,0 +1,184 @@
+PREHOOK: query: DROP TABLE IF EXISTS base_tab
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS base_tab
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE base_tab(a STRING, b STRING, c STRING, d STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@base_tab
+POSTHOOK: query: CREATE TABLE base_tab(a STRING, b STRING, c STRING, d STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@base_tab
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/null.txt' INTO TABLE base_tab
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@base_tab
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/null.txt' INTO TABLE base_tab
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@base_tab
+PREHOOK: query: DESCRIBE EXTENDED base_tab
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@base_tab
+POSTHOOK: query: DESCRIBE EXTENDED base_tab
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@base_tab
+a                   	string              	                    
+b                   	string              	                    
+c                   	string              	                    
+d                   	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: DROP TABLE IF EXISTS null_tab1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS null_tab1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: EXPLAIN CREATE TABLE null_tab1(a STRING, b STRING) ROW FORMAT DELIMITED NULL DEFINED AS 'fooNull'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@null_tab1
+POSTHOOK: query: EXPLAIN CREATE TABLE null_tab1(a STRING, b STRING) ROW FORMAT DELIMITED NULL DEFINED AS 'fooNull'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@null_tab1
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Create Table
+      columns: a string, b string
+      name: default.null_tab1
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+PREHOOK: query: CREATE TABLE null_tab1(a STRING, b STRING) ROW FORMAT DELIMITED NULL DEFINED AS 'fooNull'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@null_tab1
+POSTHOOK: query: CREATE TABLE null_tab1(a STRING, b STRING) ROW FORMAT DELIMITED NULL DEFINED AS 'fooNull'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@null_tab1
+PREHOOK: query: DESCRIBE EXTENDED null_tab1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@null_tab1
+POSTHOOK: query: DESCRIBE EXTENDED null_tab1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@null_tab1
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: SHOW CREATE TABLE null_tab1
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@null_tab1
+POSTHOOK: query: SHOW CREATE TABLE null_tab1
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@null_tab1
+CREATE TABLE `null_tab1`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+WITH SERDEPROPERTIES ( 
+  'serialization.null.format'='fooNull') 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: INSERT OVERWRITE TABLE null_tab1 SELECT a,b FROM base_tab
+PREHOOK: type: QUERY
+PREHOOK: Input: default@base_tab
+PREHOOK: Output: default@null_tab1
+POSTHOOK: query: INSERT OVERWRITE TABLE null_tab1 SELECT a,b FROM base_tab
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@base_tab
+POSTHOOK: Output: default@null_tab1
+POSTHOOK: Lineage: null_tab1.a SIMPLE [(base_tab)base_tab.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: null_tab1.b SIMPLE [(base_tab)base_tab.FieldSchema(name:b, type:string, comment:null), ]
+1.01
+1.01
+1.01
+1.01
+1.01
+fooNull1
+fooNullfooNull
+1.0fooNull
+1.01
+1.01
+PREHOOK: query: SELECT * FROM null_tab1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@null_tab1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM null_tab1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@null_tab1
+#### A masked pattern was here ####
+1.0	1
+1.0	1
+1.0	1
+1.0	1
+1.0	1
+NULL	1
+NULL	NULL
+1.0	NULL
+1.0	1
+1.0	1
+PREHOOK: query: ALTER TABLE null_tab1 SET SERDEPROPERTIES ( 'serialization.null.format'='foo')
+PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
+PREHOOK: Input: default@null_tab1
+PREHOOK: Output: default@null_tab1
+POSTHOOK: query: ALTER TABLE null_tab1 SET SERDEPROPERTIES ( 'serialization.null.format'='foo')
+POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: Input: default@null_tab1
+POSTHOOK: Output: default@null_tab1
+PREHOOK: query: SELECT * FROM null_tab1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@null_tab1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM null_tab1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@null_tab1
+#### A masked pattern was here ####
+1.0	1
+1.0	1
+1.0	1
+1.0	1
+1.0	1
+fooNull	1
+fooNull	fooNull
+1.0	fooNull
+1.0	1
+1.0	1
+PREHOOK: query: DROP TABLE null_tab1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@null_tab1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@null_tab1
+POSTHOOK: query: DROP TABLE null_tab1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@null_tab1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@null_tab1
+PREHOOK: query: DROP TABLE base_tab
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@base_tab
+PREHOOK: Output: database:default
+PREHOOK: Output: default@base_tab
+POSTHOOK: query: DROP TABLE base_tab
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@base_tab
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@base_tab

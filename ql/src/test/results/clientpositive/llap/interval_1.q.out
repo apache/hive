@@ -1,0 +1,112 @@
+PREHOOK: query: select
+  interval '10-11' year to month,
+  interval '10' year,
+  interval '11' month
+from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  interval '10-11' year to month,
+  interval '10' year,
+  interval '11' month
+from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+10-11	10-0	0-11
+PREHOOK: query: select
+  interval_year_month('10-11'),
+  interval_year_month(cast('10-11' as string)),
+  interval_year_month(cast('10-11' as varchar(10))),
+  interval_year_month(cast('10-11' as char(10))),
+  interval_year_month('10-11') = interval '10-11' year to month
+from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  interval_year_month('10-11'),
+  interval_year_month(cast('10-11' as string)),
+  interval_year_month(cast('10-11' as varchar(10))),
+  interval_year_month(cast('10-11' as char(10))),
+  interval_year_month('10-11') = interval '10-11' year to month
+from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+10-11	10-11	10-11	10-11	true
+PREHOOK: query: select
+  interval '49' month
+from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  interval '49' month
+from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+4-1
+PREHOOK: query: select
+  interval '10 9:8:7.987654321' day to second,
+  interval '10' day,
+  interval '11' hour,
+  interval '12' minute,
+  interval '13' second,
+  interval '13.123456789' second
+from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  interval '10 9:8:7.987654321' day to second,
+  interval '10' day,
+  interval '11' hour,
+  interval '12' minute,
+  interval '13' second,
+  interval '13.123456789' second
+from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+10 09:08:07.987654321	10 00:00:00.000000000	0 11:00:00.000000000	0 00:12:00.000000000	0 00:00:13.000000000	0 00:00:13.123456789
+PREHOOK: query: select
+  interval_day_time('2 1:2:3'),
+  interval_day_time(cast('2 1:2:3' as string)),
+  interval_day_time(cast('2 1:2:3' as varchar(10))),
+  interval_day_time(cast('2 1:2:3' as char(10))),
+  interval_day_time('2 1:2:3') = interval '2 1:2:3' day to second
+from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  interval_day_time('2 1:2:3'),
+  interval_day_time(cast('2 1:2:3' as string)),
+  interval_day_time(cast('2 1:2:3' as varchar(10))),
+  interval_day_time(cast('2 1:2:3' as char(10))),
+  interval_day_time('2 1:2:3') = interval '2 1:2:3' day to second
+from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+2 01:02:03.000000000	2 01:02:03.000000000	2 01:02:03.000000000	2 01:02:03.000000000	true
+PREHOOK: query: select
+  interval '49' hour,
+  interval '1470' minute,
+  interval '90061.111111111' second
+from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  interval '49' hour,
+  interval '1470' minute,
+  interval '90061.111111111' second
+from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+2 01:00:00.000000000	1 00:30:00.000000000	1 01:01:01.111111111

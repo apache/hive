@@ -1,0 +1,18 @@
+PREHOOK: query: DROP VIEW xxx12
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW xxx12
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: CREATE TABLE xxx12(key int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@xxx12
+POSTHOOK: query: CREATE TABLE xxx12(key int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@xxx12
+PREHOOK: query: CREATE VIEW xxx12 AS SELECT key FROM src
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@xxx12
+FAILED: Execution Error, return code 10073 from org.apache.hadoop.hive.ql.ddl.DDLTask. Table already exists: default.xxx12

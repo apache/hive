@@ -1,0 +1,1 @@
+Invalid configuration. If fallbackStrategy is set to ALWAYS then hive.query.reexecution.strategies should contain 'recompile_without_cbo'

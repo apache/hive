@@ -1,0 +1,5 @@
+--! qt:dataset:src
+EXPLAIN
+SELECT x.* FROM SRC x LIMIT 20;
+
+SELECT x.* FROM SRC x LIMIT 20;

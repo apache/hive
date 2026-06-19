@@ -1,0 +1,470 @@
+PREHOOK: query: CREATE TABLE shcol_test(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@shcol_test
+POSTHOOK: query: CREATE TABLE shcol_test(KEY STRING, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@shcol_test
+PREHOOK: query: EXPLAIN
+SHOW COLUMNS from shcol_test
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: default@shcol_test
+POSTHOOK: query: EXPLAIN
+SHOW COLUMNS from shcol_test
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: default@shcol_test
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Columns
+      table name: shcol_test
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SHOW COLUMNS from shcol_test
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: default@shcol_test
+POSTHOOK: query: SHOW COLUMNS from shcol_test
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: default@shcol_test
+key                 
+value               
+ds                  
+PREHOOK: query: CREATE DATABASE test_db
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test_db
+POSTHOOK: query: CREATE DATABASE test_db
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test_db
+PREHOOK: query: USE test_db
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:test_db
+POSTHOOK: query: USE test_db
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:test_db
+PREHOOK: query: CREATE TABLE foo_n7(col1 INT, col2 INT, col3 INT, cola INT, colb INT, colc INT, a INT, b INT, c INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test_db
+PREHOOK: Output: test_db@foo_n7
+POSTHOOK: query: CREATE TABLE foo_n7(col1 INT, col2 INT, col3 INT, cola INT, colb INT, colc INT, a INT, b INT, c INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test_db
+POSTHOOK: Output: test_db@foo_n7
+PREHOOK: query: USE test_db
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:test_db
+POSTHOOK: query: USE test_db
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:test_db
+PREHOOK: query: EXPLAIN SHOW COLUMNS from foo_n7
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo_n7
+POSTHOOK: query: EXPLAIN SHOW COLUMNS from foo_n7
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo_n7
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Columns
+      table name: foo_n7
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SHOW COLUMNS from foo_n7
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo_n7
+POSTHOOK: query: SHOW COLUMNS from foo_n7
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo_n7
+col1                
+col2                
+col3                
+cola                
+colb                
+colc                
+a                   
+b                   
+c                   
+PREHOOK: query: EXPLAIN SHOW COLUMNS in foo_n7
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo_n7
+POSTHOOK: query: EXPLAIN SHOW COLUMNS in foo_n7
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo_n7
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Columns
+      table name: foo_n7
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SHOW COLUMNS in foo_n7
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo_n7
+POSTHOOK: query: SHOW COLUMNS in foo_n7
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo_n7
+col1                
+col2                
+col3                
+cola                
+colb                
+colc                
+a                   
+b                   
+c                   
+PREHOOK: query: SHOW COLUMNS in foo_n7 'col*'
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo_n7
+POSTHOOK: query: SHOW COLUMNS in foo_n7 'col*'
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo_n7
+col1                
+col2                
+col3                
+cola                
+colb                
+colc                
+PREHOOK: query: SHOW COLUMNS in foo_n7 "col*"
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo_n7
+POSTHOOK: query: SHOW COLUMNS in foo_n7 "col*"
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo_n7
+col1                
+col2                
+col3                
+cola                
+colb                
+colc                
+PREHOOK: query: SHOW COLUMNS from foo_n7 'col*'
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo_n7
+POSTHOOK: query: SHOW COLUMNS from foo_n7 'col*'
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo_n7
+col1                
+col2                
+col3                
+cola                
+colb                
+colc                
+PREHOOK: query: SHOW COLUMNS from foo_n7 "col*"
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo_n7
+POSTHOOK: query: SHOW COLUMNS from foo_n7 "col*"
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo_n7
+col1                
+col2                
+col3                
+cola                
+colb                
+colc                
+PREHOOK: query: EXPLAIN SHOW COLUMNS from foo_n7 "col1|cola"
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo_n7
+POSTHOOK: query: EXPLAIN SHOW COLUMNS from foo_n7 "col1|cola"
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo_n7
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Columns
+      pattern: col1|cola
+      table name: foo_n7
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SHOW COLUMNS from foo_n7 "col1|cola"
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo_n7
+POSTHOOK: query: SHOW COLUMNS from foo_n7 "col1|cola"
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo_n7
+col1                
+cola                
+PREHOOK: query: CREATE DATABASE `database`
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:database
+POSTHOOK: query: CREATE DATABASE `database`
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:database
+PREHOOK: query: USE `database`
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:database
+POSTHOOK: query: USE `database`
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:database
+PREHOOK: query: CREATE TABLE foo_n7(col1 INT, col2 INT, col3 INT, cola INT, colb INT, colc INT, a INT, b INT, c INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:database
+PREHOOK: Output: database@foo_n7
+POSTHOOK: query: CREATE TABLE foo_n7(col1 INT, col2 INT, col3 INT, cola INT, colb INT, colc INT, a INT, b INT, c INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:database
+POSTHOOK: Output: database@foo_n7
+PREHOOK: query: SHOW COLUMNS from foo_n7
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: database@foo_n7
+POSTHOOK: query: SHOW COLUMNS from foo_n7
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: database@foo_n7
+col1                
+col2                
+col3                
+cola                
+colb                
+colc                
+a                   
+b                   
+c                   
+PREHOOK: query: SHOW COLUMNS in foo_n7 "col*"
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: database@foo_n7
+POSTHOOK: query: SHOW COLUMNS in foo_n7 "col*"
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: database@foo_n7
+col1                
+col2                
+col3                
+cola                
+colb                
+colc                
+PREHOOK: query: SHOW COLUMNS in foo_n7 "nomatch*"
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: database@foo_n7
+POSTHOOK: query: SHOW COLUMNS in foo_n7 "nomatch*"
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: database@foo_n7
+PREHOOK: query: SHOW COLUMNS in foo_n7 "col+"
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: database@foo_n7
+POSTHOOK: query: SHOW COLUMNS in foo_n7 "col+"
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: database@foo_n7
+PREHOOK: query: SHOW COLUMNS in foo_n7 "nomatch"
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: database@foo_n7
+POSTHOOK: query: SHOW COLUMNS in foo_n7 "nomatch"
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: database@foo_n7
+PREHOOK: query: use default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: use default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: EXPLAIN SHOW COLUMNS from test_db.foo_n7
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo_n7
+POSTHOOK: query: EXPLAIN SHOW COLUMNS from test_db.foo_n7
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo_n7
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Columns
+      table name: test_db.foo_n7
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SHOW COLUMNS from test_db.foo_n7
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo_n7
+POSTHOOK: query: SHOW COLUMNS from test_db.foo_n7
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo_n7
+col1                
+col2                
+col3                
+cola                
+colb                
+colc                
+a                   
+b                   
+c                   
+PREHOOK: query: SHOW COLUMNS from foo_n7 from test_db
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo_n7
+POSTHOOK: query: SHOW COLUMNS from foo_n7 from test_db
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo_n7
+col1                
+col2                
+col3                
+cola                
+colb                
+colc                
+a                   
+b                   
+c                   
+PREHOOK: query: SHOW COLUMNS from foo_n7 from test_db "col*"
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo_n7
+POSTHOOK: query: SHOW COLUMNS from foo_n7 from test_db "col*"
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo_n7
+col1                
+col2                
+col3                
+cola                
+colb                
+colc                
+PREHOOK: query: EXPLAIN SHOW COLUMNS from foo_n7 from test_db like 'col*'
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo_n7
+POSTHOOK: query: EXPLAIN SHOW COLUMNS from foo_n7 from test_db like 'col*'
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo_n7
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Columns
+      pattern: col*
+      table name: test_db.foo_n7
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SHOW COLUMNS from foo_n7 from test_db like 'col*'
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo_n7
+POSTHOOK: query: SHOW COLUMNS from foo_n7 from test_db like 'col*'
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo_n7
+col1                
+col2                
+col3                
+cola                
+colb                
+colc                
+PREHOOK: query: SHOW SORTED COLUMNS from test_db.foo_n7
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo_n7
+POSTHOOK: query: SHOW SORTED COLUMNS from test_db.foo_n7
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo_n7
+a                   
+b                   
+c                   
+col1                
+col2                
+col3                
+cola                
+colb                
+colc                
+PREHOOK: query: SHOW SORTED COLUMNS FROM foo_n7 in `database`
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: database@foo_n7
+POSTHOOK: query: SHOW SORTED COLUMNS FROM foo_n7 in `database`
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: database@foo_n7
+a                   
+b                   
+c                   
+col1                
+col2                
+col3                
+cola                
+colb                
+colc                
+PREHOOK: query: SHOW SORTED COLUMNS in foo_n7 from test_db "col+"
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo_n7
+POSTHOOK: query: SHOW SORTED COLUMNS in foo_n7 from test_db "col+"
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo_n7
+PREHOOK: query: SHOW SORTED COLUMNS in foo_n7 from test_db "c"
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo_n7
+POSTHOOK: query: SHOW SORTED COLUMNS in foo_n7 from test_db "c"
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo_n7
+c                   
+PREHOOK: query: SHOW SORTED COLUMNS from foo_n7 from test_db "c*"
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo_n7
+POSTHOOK: query: SHOW SORTED COLUMNS from foo_n7 from test_db "c*"
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo_n7
+c                   
+col1                
+col2                
+col3                
+cola                
+colb                
+colc                
+PREHOOK: query: SHOW SORTED COLUMNS from foo_n7 from test_db like 'c*'
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo_n7
+POSTHOOK: query: SHOW SORTED COLUMNS from foo_n7 from test_db like 'c*'
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo_n7
+c                   
+col1                
+col2                
+col3                
+cola                
+colb                
+colc                
+PREHOOK: query: create table tbl_test (fld string COMMENT '期末日期', fld1 string COMMENT '班次名称', fld2  string COMMENT '排班人数')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_test
+POSTHOOK: query: create table tbl_test (fld string COMMENT '期末日期', fld1 string COMMENT '班次名称', fld2  string COMMENT '排班人数')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_test
+PREHOOK: query: show columns from tbl_test
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: default@tbl_test
+POSTHOOK: query: show columns from tbl_test
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: default@tbl_test
+fld                 
+fld1                
+fld2                

@@ -1,0 +1,132 @@
+PREHOOK: query: CREATE TEMPORARY FUNCTION test_max AS 'org.apache.hadoop.hive.ql.udf.UDAFTestMax'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: test_max
+POSTHOOK: query: CREATE TEMPORARY FUNCTION test_max AS 'org.apache.hadoop.hive.ql.udf.UDAFTestMax'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: test_max
+PREHOOK: query: create table dest_grouped_old1 as select 1+1, 2+2 as zz, src.key, test_max(length(src.value)), count(src.value), sin(count(src.value)), count(sin(src.value)), current_timestamp(), CAST(SUM(IF(value > 10, value, 1)) AS INT), if(src.key > 1,
+1,
+0)
+ from src group by src.key
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest_grouped_old1
+POSTHOOK: query: create table dest_grouped_old1 as select 1+1, 2+2 as zz, src.key, test_max(length(src.value)), count(src.value), sin(count(src.value)), count(sin(src.value)), current_timestamp(), CAST(SUM(IF(value > 10, value, 1)) AS INT), if(src.key > 1,
+1,
+0)
+ from src group by src.key
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest_grouped_old1
+POSTHOOK: Lineage: dest_grouped_old1._c0 SIMPLE []
+POSTHOOK: Lineage: dest_grouped_old1._c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_grouped_old1._c4 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_grouped_old1._c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_grouped_old1._c6 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_grouped_old1._c7 SIMPLE []
+POSTHOOK: Lineage: dest_grouped_old1._c8 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_grouped_old1._c9 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_grouped_old1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_grouped_old1.zz SIMPLE []
+PREHOOK: query: describe dest_grouped_old1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@dest_grouped_old1
+POSTHOOK: query: describe dest_grouped_old1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@dest_grouped_old1
+_c0                 	int                 	                    
+zz                  	int                 	                    
+key                 	string              	                    
+_c3                 	int                 	                    
+_c4                 	bigint              	                    
+_c5                 	double              	                    
+_c6                 	bigint              	                    
+_c7                 	timestamp           	                    
+_c8                 	int                 	                    
+_c9                 	int                 	                    
+PREHOOK: query: create table dest_grouped_old2 as select distinct src.key from src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest_grouped_old2
+POSTHOOK: query: create table dest_grouped_old2 as select distinct src.key from src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest_grouped_old2
+POSTHOOK: Lineage: dest_grouped_old2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: describe dest_grouped_old2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@dest_grouped_old2
+POSTHOOK: query: describe dest_grouped_old2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@dest_grouped_old2
+key                 	string              	                    
+PREHOOK: query: create table dest_grouped_new1 as select 1+1, 2+2 as zz, ((src.key % 2)+2)/2, test_max(length(src.value)), count(src.value), sin(count(src.value)), count(sin(src.value)), current_timestamp(), CAST(SUM(IF(value > 10, value, 1)) AS INT), if(src.key > 10,
+	(src.key +5) % 2,
+0)
+from src group by src.key
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest_grouped_new1
+POSTHOOK: query: create table dest_grouped_new1 as select 1+1, 2+2 as zz, ((src.key % 2)+2)/2, test_max(length(src.value)), count(src.value), sin(count(src.value)), count(sin(src.value)), current_timestamp(), CAST(SUM(IF(value > 10, value, 1)) AS INT), if(src.key > 10,
+	(src.key +5) % 2,
+0)
+from src group by src.key
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest_grouped_new1
+POSTHOOK: Lineage: dest_grouped_new1.column_0 SIMPLE []
+POSTHOOK: Lineage: dest_grouped_new1.column_2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_grouped_new1.count_sin_src_value_6 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_grouped_new1.count_src_value_4 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_grouped_new1.current_timestamp_7 SIMPLE []
+POSTHOOK: Lineage: dest_grouped_new1.if_src_key_10_src_ke_9 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_grouped_new1.sin_count_src_value_5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_grouped_new1.sum_if_value_10_valu_8 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_grouped_new1.test_max_length_src__3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_grouped_new1.zz SIMPLE []
+PREHOOK: query: describe dest_grouped_new1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@dest_grouped_new1
+POSTHOOK: query: describe dest_grouped_new1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@dest_grouped_new1
+column_0            	int                 	                    
+zz                  	int                 	                    
+column_2            	double              	                    
+test_max_length_src__3	int                 	                    
+count_src_value_4   	bigint              	                    
+sin_count_src_value_5	double              	                    
+count_sin_src_value_6	bigint              	                    
+current_timestamp_7 	timestamp           	                    
+sum_if_value_10_valu_8	int                 	                    
+if_src_key_10_src_ke_9	double              	                    
+PREHOOK: query: create table dest_grouped_new2 as select distinct src.key from src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest_grouped_new2
+POSTHOOK: query: create table dest_grouped_new2 as select distinct src.key from src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest_grouped_new2
+POSTHOOK: Lineage: dest_grouped_new2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: describe dest_grouped_new2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@dest_grouped_new2
+POSTHOOK: query: describe dest_grouped_new2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@dest_grouped_new2
+key                 	string              	                    
+PREHOOK: query: DROP TEMPORARY FUNCTION test_max
+PREHOOK: type: DROPFUNCTION
+PREHOOK: Output: test_max
+POSTHOOK: query: DROP TEMPORARY FUNCTION test_max
+POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Output: test_max

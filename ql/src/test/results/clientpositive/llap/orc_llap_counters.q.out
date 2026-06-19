@@ -1,0 +1,1798 @@
+PREHOOK: query: CREATE TABLE staging_n6(t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp,
+           `dec` decimal(4,2),
+           bin binary)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+TBLPROPERTIES ("hive.serialization.decode.binary.as.base64"="false")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@staging_n6
+POSTHOOK: query: CREATE TABLE staging_n6(t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp,
+           `dec` decimal(4,2),
+           bin binary)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+TBLPROPERTIES ("hive.serialization.decode.binary.as.base64"="false")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@staging_n6
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE staging_n6
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@staging_n6
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE staging_n6
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@staging_n6
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' INTO TABLE staging_n6
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@staging_n6
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' INTO TABLE staging_n6
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@staging_n6
+PREHOOK: query: CREATE TABLE orc_ppd_staging_n0(t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           c char(50),
+           v varchar(50),
+           da date,
+           `dec` decimal(4,2),
+           bin binary)
+STORED AS ORC tblproperties("orc.row.index.stride" = "1000", "orc.bloom.filter.columns"="*")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_ppd_staging_n0
+POSTHOOK: query: CREATE TABLE orc_ppd_staging_n0(t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           c char(50),
+           v varchar(50),
+           da date,
+           `dec` decimal(4,2),
+           bin binary)
+STORED AS ORC tblproperties("orc.row.index.stride" = "1000", "orc.bloom.filter.columns"="*")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_ppd_staging_n0
+PREHOOK: query: insert overwrite table orc_ppd_staging_n0 select t, si, i, b, f, d, bo, s, cast(s as char(50)) as c,
+cast(s as varchar(50)) as v, cast(ts as date) as da, `dec`, bin from staging_n6 order by t, si, i, b, f, d, bo, s, c, v, da, `dec`, bin
+PREHOOK: type: QUERY
+PREHOOK: Input: default@staging_n6
+PREHOOK: Output: default@orc_ppd_staging_n0
+POSTHOOK: query: insert overwrite table orc_ppd_staging_n0 select t, si, i, b, f, d, bo, s, cast(s as char(50)) as c,
+cast(s as varchar(50)) as v, cast(ts as date) as da, `dec`, bin from staging_n6 order by t, si, i, b, f, d, bo, s, c, v, da, `dec`, bin
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@staging_n6
+POSTHOOK: Output: default@orc_ppd_staging_n0
+POSTHOOK: Lineage: orc_ppd_staging_n0.b SIMPLE [(staging_n6)staging_n6.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_staging_n0.bin SIMPLE [(staging_n6)staging_n6.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_staging_n0.bo SIMPLE [(staging_n6)staging_n6.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_staging_n0.c EXPRESSION [(staging_n6)staging_n6.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_staging_n0.d SIMPLE [(staging_n6)staging_n6.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_staging_n0.da EXPRESSION [(staging_n6)staging_n6.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_staging_n0.dec SIMPLE [(staging_n6)staging_n6.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
+POSTHOOK: Lineage: orc_ppd_staging_n0.f SIMPLE [(staging_n6)staging_n6.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_staging_n0.i SIMPLE [(staging_n6)staging_n6.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_staging_n0.s SIMPLE [(staging_n6)staging_n6.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_staging_n0.si SIMPLE [(staging_n6)staging_n6.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_staging_n0.t SIMPLE [(staging_n6)staging_n6.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_staging_n0.v EXPRESSION [(staging_n6)staging_n6.FieldSchema(name:s, type:string, comment:null), ]
+PREHOOK: query: insert into orc_ppd_staging_n0 select -10,-321,-65680,-4294967430,-97.94,-13.07,true,"aaa","aaa","aaa","1990-03-11",-71.54,"aaa" from staging_n6 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@staging_n6
+PREHOOK: Output: default@orc_ppd_staging_n0
+POSTHOOK: query: insert into orc_ppd_staging_n0 select -10,-321,-65680,-4294967430,-97.94,-13.07,true,"aaa","aaa","aaa","1990-03-11",-71.54,"aaa" from staging_n6 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@staging_n6
+POSTHOOK: Output: default@orc_ppd_staging_n0
+POSTHOOK: Lineage: orc_ppd_staging_n0.b SIMPLE []
+POSTHOOK: Lineage: orc_ppd_staging_n0.bin EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.bo SIMPLE []
+POSTHOOK: Lineage: orc_ppd_staging_n0.c EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.d EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.da EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.dec SIMPLE []
+POSTHOOK: Lineage: orc_ppd_staging_n0.f EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.i SIMPLE []
+POSTHOOK: Lineage: orc_ppd_staging_n0.s SIMPLE []
+POSTHOOK: Lineage: orc_ppd_staging_n0.si EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.t EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.v EXPRESSION []
+PREHOOK: query: insert into orc_ppd_staging_n0 select 127,331,65690,4294967440,107.94,23.07,true,"zzz","zzz","zzz","2023-03-11",71.54,"zzz" from staging_n6 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@staging_n6
+PREHOOK: Output: default@orc_ppd_staging_n0
+POSTHOOK: query: insert into orc_ppd_staging_n0 select 127,331,65690,4294967440,107.94,23.07,true,"zzz","zzz","zzz","2023-03-11",71.54,"zzz" from staging_n6 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@staging_n6
+POSTHOOK: Output: default@orc_ppd_staging_n0
+POSTHOOK: Lineage: orc_ppd_staging_n0.b SIMPLE []
+POSTHOOK: Lineage: orc_ppd_staging_n0.bin EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.bo SIMPLE []
+POSTHOOK: Lineage: orc_ppd_staging_n0.c EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.d EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.da EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.dec SIMPLE []
+POSTHOOK: Lineage: orc_ppd_staging_n0.f EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.i SIMPLE []
+POSTHOOK: Lineage: orc_ppd_staging_n0.s SIMPLE []
+POSTHOOK: Lineage: orc_ppd_staging_n0.si EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.t EXPRESSION []
+POSTHOOK: Lineage: orc_ppd_staging_n0.v EXPRESSION []
+PREHOOK: query: CREATE TABLE orc_ppd_n1(t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           c char(50),
+           v varchar(50),
+           da date,
+           `dec` decimal(4,2),
+           bin binary)
+STORED AS ORC tblproperties("orc.row.index.stride" = "1000", "orc.bloom.filter.columns"="*")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_ppd_n1
+POSTHOOK: query: CREATE TABLE orc_ppd_n1(t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           c char(50),
+           v varchar(50),
+           da date,
+           `dec` decimal(4,2),
+           bin binary)
+STORED AS ORC tblproperties("orc.row.index.stride" = "1000", "orc.bloom.filter.columns"="*")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_ppd_n1
+PREHOOK: query: insert overwrite table orc_ppd_n1 select t, si, i, b, f, d, bo, s, cast(s as char(50)) as c,
+cast(s as varchar(50)) as v, da, `dec`, bin from orc_ppd_staging_n0 order by t, si, i, b, f, d, bo, s, c, v, da, `dec`, bin
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_staging_n0
+PREHOOK: Output: default@orc_ppd_n1
+POSTHOOK: query: insert overwrite table orc_ppd_n1 select t, si, i, b, f, d, bo, s, cast(s as char(50)) as c,
+cast(s as varchar(50)) as v, da, `dec`, bin from orc_ppd_staging_n0 order by t, si, i, b, f, d, bo, s, c, v, da, `dec`, bin
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_ppd_staging_n0
+POSTHOOK: Output: default@orc_ppd_n1
+POSTHOOK: Lineage: orc_ppd_n1.b SIMPLE [(orc_ppd_staging_n0)orc_ppd_staging_n0.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n1.bin SIMPLE [(orc_ppd_staging_n0)orc_ppd_staging_n0.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n1.bo SIMPLE [(orc_ppd_staging_n0)orc_ppd_staging_n0.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n1.c EXPRESSION [(orc_ppd_staging_n0)orc_ppd_staging_n0.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n1.d SIMPLE [(orc_ppd_staging_n0)orc_ppd_staging_n0.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n1.da SIMPLE [(orc_ppd_staging_n0)orc_ppd_staging_n0.FieldSchema(name:da, type:date, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n1.dec SIMPLE [(orc_ppd_staging_n0)orc_ppd_staging_n0.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n1.f SIMPLE [(orc_ppd_staging_n0)orc_ppd_staging_n0.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n1.i SIMPLE [(orc_ppd_staging_n0)orc_ppd_staging_n0.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n1.s SIMPLE [(orc_ppd_staging_n0)orc_ppd_staging_n0.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n1.si SIMPLE [(orc_ppd_staging_n0)orc_ppd_staging_n0.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n1.t SIMPLE [(orc_ppd_staging_n0)orc_ppd_staging_n0.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_ppd_n1.v EXPRESSION [(orc_ppd_staging_n0)orc_ppd_staging_n0.FieldSchema(name:s, type:string, comment:null), ]
+PREHOOK: query: describe formatted orc_ppd_n1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_ppd_n1
+POSTHOOK: query: describe formatted orc_ppd_n1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_ppd_n1
+# col_name            	data_type           	comment             
+t                   	tinyint             	                    
+si                  	smallint            	                    
+i                   	int                 	                    
+b                   	bigint              	                    
+f                   	float               	                    
+d                   	double              	                    
+bo                  	boolean             	                    
+s                   	string              	                    
+c                   	char(50)            	                    
+v                   	varchar(50)         	                    
+da                  	date                	                    
+dec                 	decimal(4,2)        	                    
+bin                 	binary              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"bin\":\"true\",\"bo\":\"true\",\"c\":\"true\",\"d\":\"true\",\"da\":\"true\",\"dec\":\"true\",\"f\":\"true\",\"i\":\"true\",\"s\":\"true\",\"si\":\"true\",\"t\":\"true\",\"v\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	2100                
+	orc.bloom.filter.columns	*                   
+	orc.row.index.stride	1000                
+	rawDataSize         	1139514             
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select count(*) from orc_ppd_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 16679
+   HDFS_BYTES_WRITTEN: 104
+   HDFS_READ_OPS: 5
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 2100
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 2100
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FS_9: 1
+   RECORDS_OUT_OPERATOR_GBY_8: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_7: 2100
+   RECORDS_OUT_OPERATOR_SEL_6: 2100
+   RECORDS_OUT_OPERATOR_TS_0: 2100
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   ALLOCATED_BYTES: 262144
+   ALLOCATED_USED_BYTES: 26
+   CACHE_MISS_BYTES: 24
+   METADATA_CACHE_MISS: 2
+   NUM_DECODED_BATCHES: 1
+   NUM_VECTOR_BATCHES: 3
+   ROWS_EMITTED: 2100
+   SELECTED_ROWGROUPS: 3
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+2100
+PREHOOK: query: select count(*) from orc_ppd_n1 where t > 127
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 101
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 0
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 0
+   RAW_INPUT_SPLITS_Map_1: 0
+0
+PREHOOK: query: select count(*) from orc_ppd_n1 where t = 55
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 1471
+   HDFS_BYTES_WRITTEN: 101
+   HDFS_READ_OPS: 3
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 1000
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 8
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 8
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 8
+   RECORDS_OUT_OPERATOR_SEL_9: 8
+   RECORDS_OUT_OPERATOR_TS_0: 1000
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   ALLOCATED_BYTES: 1048576
+   ALLOCATED_USED_BYTES: 3979
+   CACHE_HIT_BYTES: 24
+   CACHE_MISS_BYTES: 1471
+   METADATA_CACHE_HIT: 2
+   NUM_DECODED_BATCHES: 1
+   NUM_VECTOR_BATCHES: 1
+   ROWS_EMITTED: 1000
+   SELECTED_ROWGROUPS: 1
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+8
+PREHOOK: query: select count(*) from orc_ppd_n1 where t <=> 50
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 102
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 1000
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 22
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 22
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 22
+   RECORDS_OUT_OPERATOR_SEL_9: 22
+   RECORDS_OUT_OPERATOR_TS_0: 1000
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 1495
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   NUM_DECODED_BATCHES: 1
+   NUM_VECTOR_BATCHES: 1
+   ROWS_EMITTED: 1000
+   SELECTED_ROWGROUPS: 1
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+22
+PREHOOK: query: select count(*) from orc_ppd_n1 where t <=> 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 102
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 1000
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 16
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 16
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 16
+   RECORDS_OUT_OPERATOR_SEL_9: 16
+   RECORDS_OUT_OPERATOR_TS_0: 1000
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 1495
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   NUM_DECODED_BATCHES: 1
+   NUM_VECTOR_BATCHES: 1
+   ROWS_EMITTED: 1000
+   SELECTED_ROWGROUPS: 1
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+16
+PREHOOK: query: select count(*) from orc_ppd_n1 where t = "54"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 102
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 2000
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 18
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 18
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 18
+   RECORDS_OUT_OPERATOR_SEL_9: 18
+   RECORDS_OUT_OPERATOR_TS_0: 2000
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 1495
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   NUM_DECODED_BATCHES: 2
+   NUM_VECTOR_BATCHES: 2
+   ROWS_EMITTED: 2000
+   SELECTED_ROWGROUPS: 2
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+18
+PREHOOK: query: select count(*) from orc_ppd_n1 where t = -10.0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 101
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 1000
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 1
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 1
+   RECORDS_OUT_OPERATOR_SEL_9: 1
+   RECORDS_OUT_OPERATOR_TS_0: 1000
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 1495
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   NUM_DECODED_BATCHES: 1
+   NUM_VECTOR_BATCHES: 1
+   ROWS_EMITTED: 1000
+   SELECTED_ROWGROUPS: 1
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+1
+PREHOOK: query: select count(*) from orc_ppd_n1 where t = cast(53 as float)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 102
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 1000
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 32
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 32
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 32
+   RECORDS_OUT_OPERATOR_SEL_9: 32
+   RECORDS_OUT_OPERATOR_TS_0: 1000
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 1495
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   NUM_DECODED_BATCHES: 1
+   NUM_VECTOR_BATCHES: 1
+   ROWS_EMITTED: 1000
+   SELECTED_ROWGROUPS: 1
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+32
+PREHOOK: query: select count(*) from orc_ppd_n1 where t = cast(53 as double)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 102
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 1000
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 32
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 32
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 32
+   RECORDS_OUT_OPERATOR_SEL_9: 32
+   RECORDS_OUT_OPERATOR_TS_0: 1000
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 1495
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   NUM_DECODED_BATCHES: 1
+   NUM_VECTOR_BATCHES: 1
+   ROWS_EMITTED: 1000
+   SELECTED_ROWGROUPS: 1
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+32
+PREHOOK: query: select count(*) from orc_ppd_n1 where t < 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 104
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 2000
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 1697
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 1697
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 1697
+   RECORDS_OUT_OPERATOR_SEL_9: 1697
+   RECORDS_OUT_OPERATOR_TS_0: 2000
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 1495
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   NUM_DECODED_BATCHES: 2
+   NUM_VECTOR_BATCHES: 2
+   ROWS_EMITTED: 2000
+   SELECTED_ROWGROUPS: 2
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+1697
+PREHOOK: query: select count(*) from orc_ppd_n1 where t < 100 and t > 98
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 102
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 1000
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 12
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 12
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 12
+   RECORDS_OUT_OPERATOR_SEL_9: 12
+   RECORDS_OUT_OPERATOR_TS_0: 1000
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 1495
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   NUM_DECODED_BATCHES: 1
+   NUM_VECTOR_BATCHES: 1
+   ROWS_EMITTED: 1000
+   SELECTED_ROWGROUPS: 1
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+12
+PREHOOK: query: select count(*) from orc_ppd_n1 where t <= 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 104
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 2000
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 1713
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 1713
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 1713
+   RECORDS_OUT_OPERATOR_SEL_9: 1713
+   RECORDS_OUT_OPERATOR_TS_0: 2000
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 1495
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   NUM_DECODED_BATCHES: 2
+   NUM_VECTOR_BATCHES: 2
+   ROWS_EMITTED: 2000
+   SELECTED_ROWGROUPS: 2
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+1713
+PREHOOK: query: select count(*) from orc_ppd_n1 where t is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 101
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 100
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 6
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 6
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 6
+   RECORDS_OUT_OPERATOR_SEL_9: 6
+   RECORDS_OUT_OPERATOR_TS_0: 100
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 1495
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   NUM_DECODED_BATCHES: 1
+   NUM_VECTOR_BATCHES: 1
+   ROWS_EMITTED: 100
+   SELECTED_ROWGROUPS: 1
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+6
+PREHOOK: query: select count(*) from orc_ppd_n1 where t in (5, 120)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 102
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 1100
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 50
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 50
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 50
+   RECORDS_OUT_OPERATOR_SEL_9: 50
+   RECORDS_OUT_OPERATOR_TS_0: 1100
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 1495
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   NUM_DECODED_BATCHES: 2
+   NUM_VECTOR_BATCHES: 2
+   ROWS_EMITTED: 1100
+   SELECTED_ROWGROUPS: 2
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+50
+PREHOOK: query: select count(*) from orc_ppd_n1 where t between 60 and 80
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 103
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 1000
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 318
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 318
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 318
+   RECORDS_OUT_OPERATOR_SEL_9: 318
+   RECORDS_OUT_OPERATOR_TS_0: 1000
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 1495
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   NUM_DECODED_BATCHES: 1
+   NUM_VECTOR_BATCHES: 1
+   ROWS_EMITTED: 1000
+   SELECTED_ROWGROUPS: 1
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+318
+PREHOOK: query: select count(*) from orc_ppd_n1 where t = -100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 101
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 0
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 0
+   RAW_INPUT_SPLITS_Map_1: 0
+0
+PREHOOK: query: select count(*) from orc_ppd_n1 where t <=> -100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 101
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 0
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 0
+   RAW_INPUT_SPLITS_Map_1: 0
+0
+PREHOOK: query: select count(*) from orc_ppd_n1 where t = 125
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 101
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 0
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 0
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 0
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 0
+   RECORDS_OUT_OPERATOR_SEL_9: 0
+   RECORDS_OUT_OPERATOR_TS_0: 0
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 1247
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   SELECTED_ROWGROUPS: 0
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+0
+PREHOOK: query: select count(*) from orc_ppd_n1 where t IN (-100, 125, 200)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 101
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 0
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 0
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 0
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 0
+   RECORDS_OUT_OPERATOR_SEL_9: 0
+   RECORDS_OUT_OPERATOR_TS_0: 0
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 1247
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   SELECTED_ROWGROUPS: 0
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+0
+PREHOOK: query: select count(*) from orc_ppd_n1 where s > "zzz"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 101
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 0
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 0
+   RAW_INPUT_SPLITS_Map_1: 0
+0
+PREHOOK: query: select count(*) from orc_ppd_n1 where s = "zach young"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 6850
+   HDFS_BYTES_WRITTEN: 101
+   HDFS_READ_OPS: 3
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 1000
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 2
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 2
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 2
+   RECORDS_OUT_OPERATOR_SEL_9: 2
+   RECORDS_OUT_OPERATOR_TS_0: 1000
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   ALLOCATED_BYTES: 1310720
+   ALLOCATED_USED_BYTES: 15060
+   CACHE_HIT_BYTES: 24
+   CACHE_MISS_BYTES: 6850
+   METADATA_CACHE_HIT: 2
+   NUM_DECODED_BATCHES: 1
+   NUM_VECTOR_BATCHES: 1
+   ROWS_EMITTED: 1000
+   SELECTED_ROWGROUPS: 1
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+2
+PREHOOK: query: select count(*) from orc_ppd_n1 where s <=> "zach zipper"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 101
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 1000
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 6
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 6
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 6
+   RECORDS_OUT_OPERATOR_SEL_9: 6
+   RECORDS_OUT_OPERATOR_TS_0: 1000
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 6874
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   NUM_DECODED_BATCHES: 1
+   NUM_VECTOR_BATCHES: 1
+   ROWS_EMITTED: 1000
+   SELECTED_ROWGROUPS: 1
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+6
+PREHOOK: query: select count(*) from orc_ppd_n1 where s <=> ""
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 101
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 1000
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 6
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 6
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 6
+   RECORDS_OUT_OPERATOR_SEL_9: 6
+   RECORDS_OUT_OPERATOR_TS_0: 1000
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 6874
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   NUM_DECODED_BATCHES: 1
+   NUM_VECTOR_BATCHES: 1
+   ROWS_EMITTED: 1000
+   SELECTED_ROWGROUPS: 1
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+6
+PREHOOK: query: select count(*) from orc_ppd_n1 where s is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 101
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 0
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 0
+   RAW_INPUT_SPLITS_Map_1: 0
+0
+PREHOOK: query: select count(*) from orc_ppd_n1 where s is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 104
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 2100
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 2100
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 2100
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 2100
+   RECORDS_OUT_OPERATOR_SEL_9: 2100
+   RECORDS_OUT_OPERATOR_TS_0: 2100
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 6874
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   NUM_DECODED_BATCHES: 3
+   NUM_VECTOR_BATCHES: 3
+   ROWS_EMITTED: 2100
+   SELECTED_ROWGROUPS: 3
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+2100
+PREHOOK: query: select count(*) from orc_ppd_n1 where s = cast("zach young" as char(50))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 101
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 0
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 0
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 0
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 0
+   RECORDS_OUT_OPERATOR_SEL_9: 0
+   RECORDS_OUT_OPERATOR_TS_0: 0
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 2667
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   SELECTED_ROWGROUPS: 0
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+0
+PREHOOK: query: select count(*) from orc_ppd_n1 where s = cast("zach young" as char(10))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 101
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 1000
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 2
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 2
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 2
+   RECORDS_OUT_OPERATOR_SEL_9: 2
+   RECORDS_OUT_OPERATOR_TS_0: 1000
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 6874
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   NUM_DECODED_BATCHES: 1
+   NUM_VECTOR_BATCHES: 1
+   ROWS_EMITTED: 1000
+   SELECTED_ROWGROUPS: 1
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+2
+PREHOOK: query: select count(*) from orc_ppd_n1 where s = cast("zach young" as varchar(10))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 101
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 1000
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 2
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 2
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 2
+   RECORDS_OUT_OPERATOR_SEL_9: 2
+   RECORDS_OUT_OPERATOR_TS_0: 1000
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 6874
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   NUM_DECODED_BATCHES: 1
+   NUM_VECTOR_BATCHES: 1
+   ROWS_EMITTED: 1000
+   SELECTED_ROWGROUPS: 1
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+2
+PREHOOK: query: select count(*) from orc_ppd_n1 where s = cast("zach young" as varchar(50))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 101
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 1000
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 2
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 2
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 2
+   RECORDS_OUT_OPERATOR_SEL_9: 2
+   RECORDS_OUT_OPERATOR_TS_0: 1000
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 6874
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   NUM_DECODED_BATCHES: 1
+   NUM_VECTOR_BATCHES: 1
+   ROWS_EMITTED: 1000
+   SELECTED_ROWGROUPS: 1
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+2
+PREHOOK: query: select count(*) from orc_ppd_n1 where s < "b"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 102
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 2000
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 81
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 81
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 81
+   RECORDS_OUT_OPERATOR_SEL_9: 81
+   RECORDS_OUT_OPERATOR_TS_0: 2000
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 6874
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   NUM_DECODED_BATCHES: 2
+   NUM_VECTOR_BATCHES: 2
+   ROWS_EMITTED: 2000
+   SELECTED_ROWGROUPS: 2
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+81
+PREHOOK: query: select count(*) from orc_ppd_n1 where s > "alice" and s < "bob"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 102
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 2000
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 74
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 74
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 74
+   RECORDS_OUT_OPERATOR_SEL_9: 74
+   RECORDS_OUT_OPERATOR_TS_0: 2000
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 6874
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   NUM_DECODED_BATCHES: 2
+   NUM_VECTOR_BATCHES: 2
+   ROWS_EMITTED: 2000
+   SELECTED_ROWGROUPS: 2
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+74
+PREHOOK: query: select count(*) from orc_ppd_n1 where s in ("alice allen", "")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 102
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 2000
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 12
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 12
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 12
+   RECORDS_OUT_OPERATOR_SEL_9: 12
+   RECORDS_OUT_OPERATOR_TS_0: 2000
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 6874
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   NUM_DECODED_BATCHES: 2
+   NUM_VECTOR_BATCHES: 2
+   ROWS_EMITTED: 2000
+   SELECTED_ROWGROUPS: 2
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+12
+PREHOOK: query: select count(*) from orc_ppd_n1 where s between "" and "alice allen"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 102
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 2000
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 13
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 13
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 13
+   RECORDS_OUT_OPERATOR_SEL_9: 13
+   RECORDS_OUT_OPERATOR_TS_0: 2000
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 6874
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   NUM_DECODED_BATCHES: 2
+   NUM_VECTOR_BATCHES: 2
+   ROWS_EMITTED: 2000
+   SELECTED_ROWGROUPS: 2
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+13
+PREHOOK: query: select count(*) from orc_ppd_n1 where s between "zz" and "zzz"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 101
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 100
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 1
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 1
+   RECORDS_OUT_OPERATOR_SEL_9: 1
+   RECORDS_OUT_OPERATOR_TS_0: 100
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 6874
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   NUM_DECODED_BATCHES: 1
+   NUM_VECTOR_BATCHES: 1
+   ROWS_EMITTED: 100
+   SELECTED_ROWGROUPS: 1
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+1
+PREHOOK: query: select count(*) from orc_ppd_n1 where s between "zach zipper" and "zzz"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 101
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 1100
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 7
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 7
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 7
+   RECORDS_OUT_OPERATOR_SEL_9: 7
+   RECORDS_OUT_OPERATOR_TS_0: 1100
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 6874
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   NUM_DECODED_BATCHES: 2
+   NUM_VECTOR_BATCHES: 2
+   ROWS_EMITTED: 1100
+   SELECTED_ROWGROUPS: 2
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+7
+PREHOOK: query: select count(*) from orc_ppd_n1 where s = "hello world"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 101
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 0
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 0
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 0
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 0
+   RECORDS_OUT_OPERATOR_SEL_9: 0
+   RECORDS_OUT_OPERATOR_TS_0: 0
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 2667
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   SELECTED_ROWGROUPS: 0
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+0
+PREHOOK: query: select count(*) from orc_ppd_n1 where s <=> "apache hive"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 101
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 0
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 0
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 0
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 0
+   RECORDS_OUT_OPERATOR_SEL_9: 0
+   RECORDS_OUT_OPERATOR_TS_0: 0
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 2667
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   SELECTED_ROWGROUPS: 0
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+0
+PREHOOK: query: select count(*) from orc_ppd_n1 where s IN ("a", "z")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 101
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 0
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 0
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 0
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 0
+   RECORDS_OUT_OPERATOR_SEL_9: 0
+   RECORDS_OUT_OPERATOR_TS_0: 0
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 2667
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   SELECTED_ROWGROUPS: 0
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+0
+PREHOOK: query: select count(*) from orc_ppd_n1 where s = "sarah ovid"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 101
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 100
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 2
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 2
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 2
+   RECORDS_OUT_OPERATOR_SEL_9: 2
+   RECORDS_OUT_OPERATOR_TS_0: 100
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 6874
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   NUM_DECODED_BATCHES: 1
+   NUM_VECTOR_BATCHES: 1
+   ROWS_EMITTED: 100
+   SELECTED_ROWGROUPS: 1
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+2
+PREHOOK: query: select count(*) from orc_ppd_n1 where s = "wendy king"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 101
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 1100
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 6
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 6
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 6
+   RECORDS_OUT_OPERATOR_SEL_9: 6
+   RECORDS_OUT_OPERATOR_TS_0: 1100
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 6874
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   NUM_DECODED_BATCHES: 2
+   NUM_VECTOR_BATCHES: 2
+   ROWS_EMITTED: 1100
+   SELECTED_ROWGROUPS: 2
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+6
+PREHOOK: query: select count(*) from orc_ppd_n1 where s = "wendy king" and t < 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 101
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 1000
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 2
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 2
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 2
+   RECORDS_OUT_OPERATOR_SEL_9: 2
+   RECORDS_OUT_OPERATOR_TS_0: 1000
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 8345
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   NUM_DECODED_BATCHES: 1
+   NUM_VECTOR_BATCHES: 1
+   ROWS_EMITTED: 1000
+   SELECTED_ROWGROUPS: 1
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+2
+PREHOOK: query: select count(*) from orc_ppd_n1 where s = "wendy king" and t > 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_ppd_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+Stage-1 FILE SYSTEM COUNTERS:
+   HDFS_BYTES_READ: 0
+   HDFS_BYTES_WRITTEN: 101
+   HDFS_READ_OPS: 2
+   HDFS_LARGE_READ_OPS: 0
+   HDFS_WRITE_OPS: 2
+Stage-1 HIVE COUNTERS:
+   CREATED_FILES: 1
+   DESERIALIZE_ERRORS: 0
+   RECORDS_IN_Map_1: 100
+   RECORDS_OUT_0: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 2
+   RECORDS_OUT_INTERMEDIATE_Reducer_2: 0
+   RECORDS_OUT_OPERATOR_FIL_8: 2
+   RECORDS_OUT_OPERATOR_FS_12: 1
+   RECORDS_OUT_OPERATOR_GBY_11: 1
+   RECORDS_OUT_OPERATOR_MAP_0: 0
+   RECORDS_OUT_OPERATOR_RS_10: 2
+   RECORDS_OUT_OPERATOR_SEL_9: 2
+   RECORDS_OUT_OPERATOR_TS_0: 100
+   TOTAL_TABLE_ROWS_WRITTEN: 0
+Stage-1 LLAP IO COUNTERS:
+   CACHE_HIT_BYTES: 8345
+   CACHE_MISS_BYTES: 0
+   METADATA_CACHE_HIT: 2
+   NUM_DECODED_BATCHES: 1
+   NUM_VECTOR_BATCHES: 1
+   ROWS_EMITTED: 100
+   SELECTED_ROWGROUPS: 1
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
+2

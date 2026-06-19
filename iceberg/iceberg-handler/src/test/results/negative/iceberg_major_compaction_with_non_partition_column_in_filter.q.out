@@ -1,0 +1,33 @@
+PREHOOK: query: create table iceberg_orc_compaction (a int, b int, c string) partitioned by (d int) stored by iceberg stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@iceberg_orc_compaction
+POSTHOOK: query: create table iceberg_orc_compaction (a int, b int, c string) partitioned by (d int) stored by iceberg stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@iceberg_orc_compaction
+PREHOOK: query: insert into iceberg_orc_compaction values  (1, 11, "text1", 111),(2,22,"text2",222)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@iceberg_orc_compaction
+POSTHOOK: query: insert into iceberg_orc_compaction values  (1, 11, "text1", 111),(2,22,"text2",222)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@iceberg_orc_compaction
+PREHOOK: query: insert into iceberg_orc_compaction values  (3, 33, "text3", 333),(4,44,"text4",444)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@iceberg_orc_compaction
+POSTHOOK: query: insert into iceberg_orc_compaction values  (3, 33, "text3", 333),(4,44,"text4",444)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@iceberg_orc_compaction
+PREHOOK: query: insert into iceberg_orc_compaction values  (5, 55, "text5", 555),(6,66,"text6",666)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@iceberg_orc_compaction
+POSTHOOK: query: insert into iceberg_orc_compaction values  (5, 55, "text5", 555),(6,66,"text6",666)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@iceberg_orc_compaction
+FAILED: SemanticException [Error 10443]: Filter expression can contain only partition columns.

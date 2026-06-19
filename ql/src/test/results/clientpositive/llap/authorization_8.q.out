@@ -1,0 +1,50 @@
+PREHOOK: query: GRANT ALL TO USER hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: query: GRANT ALL TO USER hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+PREHOOK: query: CREATE TABLE tbl_j5jbymsx8e (key INT, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_j5jbymsx8e
+POSTHOOK: query: CREATE TABLE tbl_j5jbymsx8e (key INT, value STRING) PARTITIONED BY (ds STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_j5jbymsx8e
+PREHOOK: query: CREATE VIEW view_j5jbymsx8e_1 as SELECT * FROM tbl_j5jbymsx8e
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@tbl_j5jbymsx8e
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view_j5jbymsx8e_1
+POSTHOOK: query: CREATE VIEW view_j5jbymsx8e_1 as SELECT * FROM tbl_j5jbymsx8e
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@tbl_j5jbymsx8e
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@view_j5jbymsx8e_1
+POSTHOOK: Lineage: view_j5jbymsx8e_1.ds SIMPLE [(tbl_j5jbymsx8e)tbl_j5jbymsx8e.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: view_j5jbymsx8e_1.key SIMPLE [(tbl_j5jbymsx8e)tbl_j5jbymsx8e.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: view_j5jbymsx8e_1.value SIMPLE [(tbl_j5jbymsx8e)tbl_j5jbymsx8e.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: DESCRIBE view_j5jbymsx8e_1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@view_j5jbymsx8e_1
+POSTHOOK: query: DESCRIBE view_j5jbymsx8e_1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@view_j5jbymsx8e_1
+key                 	int                 	                    
+value               	string              	                    
+ds                  	string              	                    
+PREHOOK: query: ALTER VIEW view_j5jbymsx8e_1 RENAME TO view_j5jbymsx8e_2
+PREHOOK: type: ALTERVIEW_RENAME
+PREHOOK: Input: default@view_j5jbymsx8e_1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@view_j5jbymsx8e_1
+PREHOOK: Output: default@view_j5jbymsx8e_2
+POSTHOOK: query: ALTER VIEW view_j5jbymsx8e_1 RENAME TO view_j5jbymsx8e_2
+POSTHOOK: type: ALTERVIEW_RENAME
+POSTHOOK: Input: default@view_j5jbymsx8e_1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@view_j5jbymsx8e_1
+POSTHOOK: Output: default@view_j5jbymsx8e_2
+PREHOOK: query: REVOKE ALL FROM USER hive_test_user
+PREHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: query: REVOKE ALL FROM USER hive_test_user
+POSTHOOK: type: REVOKE_PRIVILEGE

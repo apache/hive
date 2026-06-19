@@ -1,0 +1,201 @@
+PREHOOK: query: CREATE TABLE dest1_n131(c1 DOUBLE, c2 DOUBLE, c3 DOUBLE, c4 DOUBLE, c5 DOUBLE, c6 DOUBLE, c7 DOUBLE, c8 DOUBLE, c9 DOUBLE) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1_n131
+POSTHOOK: query: CREATE TABLE dest1_n131(c1 DOUBLE, c2 DOUBLE, c3 DOUBLE, c4 DOUBLE, c5 DOUBLE, c6 DOUBLE, c7 DOUBLE, c8 DOUBLE, c9 DOUBLE) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest1_n131
+PREHOOK: query: EXPLAIN
+FROM src
+INSERT OVERWRITE TABLE dest1_n131 SELECT
+  sum(substr(src.value,5)),
+  avg(substr(src.value,5)),
+  avg(DISTINCT substr(src.value,5)),
+  max(substr(src.value,5)),
+  min(substr(src.value,5)),
+  std(substr(src.value,5)),
+  stddev_samp(substr(src.value,5)),
+  variance(substr(src.value,5)),
+  var_samp(substr(src.value,5))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n131
+POSTHOOK: query: EXPLAIN
+FROM src
+INSERT OVERWRITE TABLE dest1_n131 SELECT
+  sum(substr(src.value,5)),
+  avg(substr(src.value,5)),
+  avg(DISTINCT substr(src.value,5)),
+  max(substr(src.value,5)),
+  min(substr(src.value,5)),
+  std(substr(src.value,5)),
+  stddev_samp(substr(src.value,5)),
+  variance(substr(src.value,5)),
+  var_samp(substr(src.value,5))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n131
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: value (type: string)
+                    outputColumnNames: value
+                    Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: sum(substr(value, 5)), avg(substr(value, 5)), avg(DISTINCT substr(value, 5)), max(substr(value, 5)), min(substr(value, 5)), std(substr(value, 5)), stddev_samp(substr(value, 5)), variance(substr(value, 5)), var_samp(substr(value, 5))
+                      keys: substr(value, 5) (type: string)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                      Statistics: Num rows: 307 Data size: 397258 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 307 Data size: 397258 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: double), _col2 (type: struct<count:bigint,sum:double,input:string>), _col4 (type: string), _col5 (type: string), _col6 (type: struct<count:bigint,sum:double,variance:double>), _col7 (type: struct<count:bigint,sum:double,variance:double>), _col8 (type: struct<count:bigint,sum:double,variance:double>), _col9 (type: struct<count:bigint,sum:double,variance:double>)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0), avg(VALUE._col1), avg(DISTINCT KEY._col0:0._col0), max(VALUE._col3), min(VALUE._col4), std(VALUE._col5), stddev_samp(VALUE._col6), variance(VALUE._col7), var_samp(VALUE._col8)
+                mode: partials
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 1208 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 1208 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: double), _col1 (type: struct<count:bigint,sum:double,input:string>), _col2 (type: struct<count:bigint,sum:double,input:string>), _col3 (type: string), _col4 (type: string), _col5 (type: struct<count:bigint,sum:double,variance:double>), _col6 (type: struct<count:bigint,sum:double,variance:double>), _col7 (type: struct<count:bigint,sum:double,variance:double>), _col8 (type: struct<count:bigint,sum:double,variance:double>)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0), avg(VALUE._col1), avg(VALUE._col2), max(VALUE._col3), min(VALUE._col4), std(VALUE._col5), stddev_samp(VALUE._col6), variance(VALUE._col7), var_samp(VALUE._col8)
+                mode: final
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 424 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: double), _col1 (type: double), _col2 (type: double), UDFToDouble(_col3) (type: double), UDFToDouble(_col4) (type: double), _col5 (type: double), _col6 (type: double), _col7 (type: double), _col8 (type: double)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                  Statistics: Num rows: 1 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.dest1_n131
+                  Select Operator
+                    expressions: _col0 (type: double), _col1 (type: double), _col2 (type: double), _col3 (type: double), _col4 (type: double), _col5 (type: double), _col6 (type: double), _col7 (type: double), _col8 (type: double)
+                    outputColumnNames: c1, c2, c3, c4, c5, c6, c7, c8, c9
+                    Statistics: Num rows: 1 Data size: 72 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: min(c1), max(c1), count(1), count(c1), compute_bit_vector_hll(c1), min(c2), max(c2), count(c2), compute_bit_vector_hll(c2), min(c3), max(c3), count(c3), compute_bit_vector_hll(c3), min(c4), max(c4), count(c4), compute_bit_vector_hll(c4), min(c5), max(c5), count(c5), compute_bit_vector_hll(c5), min(c6), max(c6), count(c6), compute_bit_vector_hll(c6), min(c7), max(c7), count(c7), compute_bit_vector_hll(c7), min(c8), max(c8), count(c8), compute_bit_vector_hll(c8), min(c9), max(c9), count(c9), compute_bit_vector_hll(c9)
+                      mode: complete
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35, _col36
+                      Statistics: Num rows: 1 Data size: 1520 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: 'DOUBLE' (type: string), _col0 (type: double), _col1 (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'DOUBLE' (type: string), _col5 (type: double), _col6 (type: double), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary), 'DOUBLE' (type: string), _col9 (type: double), _col10 (type: double), (_col2 - _col11) (type: bigint), COALESCE(ndv_compute_bit_vector(_col12),0) (type: bigint), _col12 (type: binary), 'DOUBLE' (type: string), _col13 (type: double), _col14 (type: double), (_col2 - _col15) (type: bigint), COALESCE(ndv_compute_bit_vector(_col16),0) (type: bigint), _col16 (type: binary), 'DOUBLE' (type: string), _col17 (type: double), _col18 (type: double), (_col2 - _col19) (type: bigint), COALESCE(ndv_compute_bit_vector(_col20),0) (type: bigint), _col20 (type: binary), 'DOUBLE' (type: string), _col21 (type: double), _col22 (type: double), (_col2 - _col23) (type: bigint), COALESCE(ndv_compute_bit_vector(_col24),0) (type: bigint), _col24 (type: binary), 'DOUBLE' (type: string), _col25 (type: double), _col26 (type: double), (_col2 - _col27) (type: bigint), COALESCE(ndv_compute_bit_vector(_col28),0) (type: bigint), _col28 (type: binary), 'DOUBLE' (type: string), _col29 (type: double), _col30 (type: double), (_col2 - _col31) (type: bigint), COALESCE(ndv_compute_bit_vector(_col32),0) (type: bigint), _col32 (type: binary), 'DOUBLE' (type: string), _col33 (type: double), _col34 (type: double), (_col2 - _col35) (type: bigint), COALESCE(ndv_compute_bit_vector(_col36),0) (type: bigint), _col36 (type: binary)
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35, _col36, _col37, _col38, _col39, _col40, _col41, _col42, _col43, _col44, _col45, _col46, _col47, _col48, _col49, _col50, _col51, _col52, _col53
+                        Statistics: Num rows: 1 Data size: 2394 Basic stats: COMPLETE Column stats: COMPLETE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 1 Data size: 2394 Basic stats: COMPLETE Column stats: COMPLETE
+                          table:
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest1_n131
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: c1, c2, c3, c4, c5, c6, c7, c8, c9
+          Column Types: double, double, double, double, double, double, double, double, double
+          Table: default.dest1_n131
+
+PREHOOK: query: FROM src
+INSERT OVERWRITE TABLE dest1_n131 SELECT
+  sum(substr(src.value,5)),
+  avg(substr(src.value,5)),
+  avg(DISTINCT substr(src.value,5)),
+  max(substr(src.value,5)),
+  min(substr(src.value,5)),
+  std(substr(src.value,5)),
+  stddev_samp(substr(src.value,5)),
+  variance(substr(src.value,5)),
+  var_samp(substr(src.value,5))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n131
+POSTHOOK: query: FROM src
+INSERT OVERWRITE TABLE dest1_n131 SELECT
+  sum(substr(src.value,5)),
+  avg(substr(src.value,5)),
+  avg(DISTINCT substr(src.value,5)),
+  max(substr(src.value,5)),
+  min(substr(src.value,5)),
+  std(substr(src.value,5)),
+  stddev_samp(substr(src.value,5)),
+  variance(substr(src.value,5)),
+  var_samp(substr(src.value,5))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n131
+POSTHOOK: Lineage: dest1_n131.c1 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n131.c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n131.c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n131.c4 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n131.c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n131.c6 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n131.c7 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n131.c8 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n131.c9 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT ROUND(c1, 1), ROUND(c2, 3), ROUND(c3, 5), ROUND(c4, 1), ROUND(c5, 1), ROUND(c6, 5),
+ROUND(c7,5), ROUND(c8, 5), ROUND(c9, 5) FROM dest1_n131
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1_n131
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT ROUND(c1, 1), ROUND(c2, 3), ROUND(c3, 5), ROUND(c4, 1), ROUND(c5, 1), ROUND(c6, 5),
+ROUND(c7,5), ROUND(c8, 5), ROUND(c9, 5) FROM dest1_n131
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1_n131
+#### A masked pattern was here ####
+130091.0	260.182	256.10356	98.0	0.0	142.92681	143.06995	20428.07288	20469.0109

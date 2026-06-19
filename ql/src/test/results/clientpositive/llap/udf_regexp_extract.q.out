@@ -1,0 +1,15 @@
+PREHOOK: query: DESCRIBE FUNCTION regexp_extract
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION regexp_extract
+POSTHOOK: type: DESCFUNCTION
+regexp_extract(str, regexp[, idx]) - extracts a group that matches regexp
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED regexp_extract
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED regexp_extract
+POSTHOOK: type: DESCFUNCTION
+regexp_extract(str, regexp[, idx]) - extracts a group that matches regexp
+Example:
+  > SELECT regexp_extract('100-200', '(\d+)-(\d+)', 1) FROM src LIMIT 1;
+  '100'
+Function class:org.apache.hadoop.hive.ql.udf.UDFRegExpExtract
+Function type:BUILTIN

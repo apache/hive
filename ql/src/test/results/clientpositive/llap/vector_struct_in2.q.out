@@ -1,0 +1,62 @@
+PREHOOK: query: create table test (a string) partitioned by (y string, m string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test
+POSTHOOK: query: create table test (a string) partitioned by (y string, m string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test
+PREHOOK: query: insert into test values ('aa', 2022, 9)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test
+POSTHOOK: query: insert into test values ('aa', 2022, 9)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test
+POSTHOOK: Output: default@test@y=2022/m=9
+POSTHOOK: Lineage: test PARTITION(y=2022,m=9).a SCRIPT []
+PREHOOK: query: select * from test where (y=year(date_sub('2022-09-11',4)) and m=month(date_sub('2022-09-11',4))) or (y=year(date_sub('2022-09-11',10)) and m=month(date_sub('2022-09-11',10)) )
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+PREHOOK: Input: default@test@y=2022/m=9
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test where (y=year(date_sub('2022-09-11',4)) and m=month(date_sub('2022-09-11',4))) or (y=year(date_sub('2022-09-11',10)) and m=month(date_sub('2022-09-11',10)) )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+POSTHOOK: Input: default@test@y=2022/m=9
+#### A masked pattern was here ####
+aa	2022	9
+PREHOOK: query: select * from test where (struct(cast(y as int)) IN (struct(2022)))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+PREHOOK: Input: default@test@y=2022/m=9
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test where (struct(cast(y as int)) IN (struct(2022)))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+POSTHOOK: Input: default@test@y=2022/m=9
+#### A masked pattern was here ####
+aa	2022	9
+PREHOOK: query: select * from test where (struct(2022) IN (struct(2022)))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+PREHOOK: Input: default@test@y=2022/m=9
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test where (struct(2022) IN (struct(2022)))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+POSTHOOK: Input: default@test@y=2022/m=9
+#### A masked pattern was here ####
+aa	2022	9
+PREHOOK: query: select * from test where (2022 IN (2022))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+PREHOOK: Input: default@test@y=2022/m=9
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test where (2022 IN (2022))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+POSTHOOK: Input: default@test@y=2022/m=9
+#### A masked pattern was here ####
+aa	2022	9

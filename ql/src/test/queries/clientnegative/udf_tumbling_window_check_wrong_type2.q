@@ -1,0 +1,1 @@
+SELECT TUMBLING_WINDOW(CAST('2020-03-01 06:03:00' as timestamp), ARRAY(interval '5' MINUTES));

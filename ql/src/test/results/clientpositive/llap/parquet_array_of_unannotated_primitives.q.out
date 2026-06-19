@@ -1,0 +1,41 @@
+PREHOOK: query: CREATE TABLE parquet_array_of_unannotated_ints (
+    list_of_ints ARRAY<INT>
+) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_array_of_unannotated_ints
+POSTHOOK: query: CREATE TABLE parquet_array_of_unannotated_ints (
+    list_of_ints ARRAY<INT>
+) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_array_of_unannotated_ints
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/UnannotatedListOfPrimitives.parquet'
+OVERWRITE INTO TABLE parquet_array_of_unannotated_ints
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_array_of_unannotated_ints
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/UnannotatedListOfPrimitives.parquet'
+OVERWRITE INTO TABLE parquet_array_of_unannotated_ints
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_array_of_unannotated_ints
+PREHOOK: query: SELECT * FROM parquet_array_of_unannotated_ints
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_array_of_unannotated_ints
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_array_of_unannotated_ints
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_array_of_unannotated_ints
+#### A masked pattern was here ####
+[34,35,36]
+PREHOOK: query: DROP TABLE parquet_array_of_unannotated_ints
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@parquet_array_of_unannotated_ints
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_array_of_unannotated_ints
+POSTHOOK: query: DROP TABLE parquet_array_of_unannotated_ints
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@parquet_array_of_unannotated_ints
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_array_of_unannotated_ints

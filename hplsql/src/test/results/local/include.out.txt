@@ -1,0 +1,8 @@
+Ln:1 INCLUDE src/test/queries/local/include_file.sql
+INCLUDE CONTENT src/test/queries/local/include_file.sql (non-empty)
+Ln:1 PRINT
+file included successfully
+Ln:2 INCLUDE src/test/queries/local/include_file.sql
+INCLUDE CONTENT src/test/queries/local/include_file.sql (non-empty)
+Ln:1 PRINT
+file included successfully

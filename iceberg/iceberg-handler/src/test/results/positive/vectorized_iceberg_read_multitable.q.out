@@ -1,0 +1,156 @@
+PREHOOK: query: create external table lineitem(l_discount decimal(15,2), l_orderkey int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@lineitem
+POSTHOOK: query: create external table lineitem(l_discount decimal(15,2), l_orderkey int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@lineitem
+PREHOOK: query: insert into lineitem values (100.2, 10)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@lineitem
+POSTHOOK: query: insert into lineitem values (100.2, 10)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@lineitem
+POSTHOOK: Lineage: lineitem.l_discount SCRIPT []
+POSTHOOK: Lineage: lineitem.l_orderkey SCRIPT []
+PREHOOK: query: create external table customer_ice(c_custkey int) STORED BY ICEBERG stored as orc
+TBLPROPERTIES ('iceberg.decimal64.vectorization'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@customer_ice
+POSTHOOK: query: create external table customer_ice(c_custkey int) STORED BY ICEBERG stored as orc
+TBLPROPERTIES ('iceberg.decimal64.vectorization'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@customer_ice
+PREHOOK: query: insert into customer_ice values (10)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@customer_ice
+POSTHOOK: query: insert into customer_ice values (10)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@customer_ice
+PREHOOK: query: create external table orders(o_orderkey int, o_custkey int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orders
+POSTHOOK: query: create external table orders(o_orderkey int, o_custkey int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orders
+PREHOOK: query: insert into orders values (10, 10)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@orders
+POSTHOOK: query: insert into orders values (10, 10)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@orders
+POSTHOOK: Lineage: orders.o_custkey SCRIPT []
+POSTHOOK: Lineage: orders.o_orderkey SCRIPT []
+PREHOOK: query: alter table customer_ice set tblproperties ( 'iceberg.orc.files.only' = 'false')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@customer_ice
+PREHOOK: Output: default@customer_ice
+POSTHOOK: query: alter table customer_ice set tblproperties ( 'iceberg.orc.files.only' = 'false')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@customer_ice
+POSTHOOK: Output: default@customer_ice
+PREHOOK: query: select sum(1 - l_discount) as revenue
+FROM customer_ice, orders, lineitem
+WHERE c_custkey = o_custkey and l_orderkey = o_orderkey limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_ice
+PREHOOK: Input: default@lineitem
+PREHOOK: Input: default@orders
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select sum(1 - l_discount) as revenue
+FROM customer_ice, orders, lineitem
+WHERE c_custkey = o_custkey and l_orderkey = o_orderkey limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_ice
+POSTHOOK: Input: default@lineitem
+POSTHOOK: Input: default@orders
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+-99.20
+PREHOOK: query: create external table lineitem_ice(l_discount decimal(15,2), l_orderkey int) STORED BY ICEBERG stored as orc
+TBLPROPERTIES ('iceberg.decimal64.vectorization'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@lineitem_ice
+POSTHOOK: query: create external table lineitem_ice(l_discount decimal(15,2), l_orderkey int) STORED BY ICEBERG stored as orc
+TBLPROPERTIES ('iceberg.decimal64.vectorization'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@lineitem_ice
+PREHOOK: query: insert into lineitem_ice values (100.2, 10)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@lineitem_ice
+POSTHOOK: query: insert into lineitem_ice values (100.2, 10)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@lineitem_ice
+PREHOOK: query: select sum(1 - l_discount) as revenue
+FROM customer_ice, orders, lineitem_ice
+WHERE c_custkey = o_custkey and l_orderkey = o_orderkey limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_ice
+PREHOOK: Input: default@lineitem_ice
+PREHOOK: Input: default@orders
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select sum(1 - l_discount) as revenue
+FROM customer_ice, orders, lineitem_ice
+WHERE c_custkey = o_custkey and l_orderkey = o_orderkey limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_ice
+POSTHOOK: Input: default@lineitem_ice
+POSTHOOK: Input: default@orders
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+-99.20
+PREHOOK: query: alter table customer_ice set tblproperties ( 'iceberg.orc.files.only' = 'true')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@customer_ice
+PREHOOK: Output: default@customer_ice
+POSTHOOK: query: alter table customer_ice set tblproperties ( 'iceberg.orc.files.only' = 'true')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@customer_ice
+POSTHOOK: Output: default@customer_ice
+PREHOOK: query: select sum(1 - l_discount) as revenue
+FROM customer_ice, orders, lineitem
+WHERE c_custkey = o_custkey and l_orderkey = o_orderkey limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_ice
+PREHOOK: Input: default@lineitem
+PREHOOK: Input: default@orders
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select sum(1 - l_discount) as revenue
+FROM customer_ice, orders, lineitem
+WHERE c_custkey = o_custkey and l_orderkey = o_orderkey limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_ice
+POSTHOOK: Input: default@lineitem
+POSTHOOK: Input: default@orders
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+-99.20
+PREHOOK: query: select sum(1 - l_discount) as revenue
+FROM customer_ice, orders, lineitem_ice
+WHERE c_custkey = o_custkey and l_orderkey = o_orderkey limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer_ice
+PREHOOK: Input: default@lineitem_ice
+PREHOOK: Input: default@orders
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select sum(1 - l_discount) as revenue
+FROM customer_ice, orders, lineitem_ice
+WHERE c_custkey = o_custkey and l_orderkey = o_orderkey limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer_ice
+POSTHOOK: Input: default@lineitem_ice
+POSTHOOK: Input: default@orders
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+-99.20

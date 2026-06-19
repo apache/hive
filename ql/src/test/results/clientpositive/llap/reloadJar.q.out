@@ -1,0 +1,53 @@
+PREHOOK: query: CREATE TEMPORARY FUNCTION example_iden AS 'IdentityStringUDF'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: example_iden
+POSTHOOK: query: CREATE TEMPORARY FUNCTION example_iden AS 'IdentityStringUDF'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: example_iden
+PREHOOK: query: EXPLAIN
+SELECT example_iden(key)
+FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT example_iden(key)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        TableScan
+          alias: src
+          Limit
+            Number of rows: 1
+            Select Operator
+              expressions: example_iden(key) (type: string)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: SELECT example_iden(key)
+FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT example_iden(key)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+238
+PREHOOK: query: DROP TEMPORARY FUNCTION example_iden
+PREHOOK: type: DROPFUNCTION
+PREHOOK: Output: example_iden
+POSTHOOK: query: DROP TEMPORARY FUNCTION example_iden
+POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Output: example_iden
+#### A masked pattern was here ####

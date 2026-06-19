@@ -1,0 +1,12 @@
+Ln:1 CMP
+Ln:1 Query 1: SELECT COUNT(1) AS row_count FROM src
+Ln:1 Query 2: SELECT COUNT(1) AS row_count FROM src
+row_count	500	500
+Ln:2 CMP
+Ln:2 Query 1: SELECT COUNT(1) AS row_count FROM src where 1 = 1
+Ln:2 Query 2: SELECT COUNT(1) AS row_count FROM src
+row_count	500	500
+Ln:3 CMP
+Ln:3 Query 1: SELECT COUNT(1) AS row_count FROM (select 'A' from src) t
+Ln:3 Query 2: SELECT COUNT(1) AS row_count FROM src where 2 = 2
+row_count	500	500

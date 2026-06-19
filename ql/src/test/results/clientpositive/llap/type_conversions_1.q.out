@@ -1,0 +1,52 @@
+PREHOOK: query: select
+  cast(null as tinyint),
+  cast(null as smallint),
+  cast(null as int),
+  cast(null as bigint),
+  cast(null as float),
+  cast(null as double),
+  cast(null as decimal),
+  cast(null as date),
+  cast(null as timestamp),
+  cast(null as string),
+  cast(null as varchar(10)),
+  cast(null as boolean),
+  cast(null as binary)
+from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  cast(null as tinyint),
+  cast(null as smallint),
+  cast(null as int),
+  cast(null as bigint),
+  cast(null as float),
+  cast(null as double),
+  cast(null as decimal),
+  cast(null as date),
+  cast(null as timestamp),
+  cast(null as string),
+  cast(null as varchar(10)),
+  cast(null as boolean),
+  cast(null as binary)
+from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: select
+  cast('abcd' as date),
+  cast('abcd' as timestamp)
+from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  cast('abcd' as date),
+  cast('abcd' as timestamp)
+from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL	NULL

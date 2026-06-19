@@ -1,0 +1,54 @@
+PREHOOK: query: CREATE TABLE test (
+    col1 STRING,
+    col2 STRING
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test
+POSTHOOK: query: CREATE TABLE test (
+    col1 STRING,
+    col2 STRING
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test
+PREHOOK: query: EXPLAIN CBO
+SELECT col1
+FROM test
+SORT BY col1, col2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT col1
+FROM test
+SORT BY col1, col2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(col1=[$0])
+  HiveSortExchange(distribution=[any], collation=[[0, 1]])
+    HiveProject(col1=[$0], col2=[$1])
+      HiveTableScan(table=[[default, test]], table:alias=[test])
+
+PREHOOK: query: EXPLAIN CBO
+SELECT col1
+FROM test
+ORDER BY col1, col2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT col1
+FROM test
+ORDER BY col1, col2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(col1=[$0])
+  HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC])
+    HiveProject(col1=[$0], col2=[$1])
+      HiveTableScan(table=[[default, test]], table:alias=[test])
+

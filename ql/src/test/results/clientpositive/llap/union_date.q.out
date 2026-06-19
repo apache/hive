@@ -1,0 +1,146 @@
+PREHOOK: query: drop table union_date_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table union_date_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table union_date_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table union_date_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table union_date_1 (
+  ORIGIN_CITY_NAME string,
+  DEST_CITY_NAME string,
+  FL_DATE date,
+  ARR_DELAY float,
+  FL_NUM int
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union_date_1
+POSTHOOK: query: create table union_date_1 (
+  ORIGIN_CITY_NAME string,
+  DEST_CITY_NAME string,
+  FL_DATE date,
+  ARR_DELAY float,
+  FL_NUM int
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union_date_1
+PREHOOK: query: create table union_date_2 (
+  ORIGIN_CITY_NAME string,
+  DEST_CITY_NAME string,
+  FL_DATE date,
+  ARR_DELAY float,
+  FL_NUM int
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union_date_2
+POSTHOOK: query: create table union_date_2 (
+  ORIGIN_CITY_NAME string,
+  DEST_CITY_NAME string,
+  FL_DATE date,
+  ARR_DELAY float,
+  FL_NUM int
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union_date_2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_join.txt' OVERWRITE INTO TABLE union_date_1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@union_date_1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_join.txt' OVERWRITE INTO TABLE union_date_1
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@union_date_1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_join.txt' OVERWRITE INTO TABLE union_date_2
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@union_date_2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_join.txt' OVERWRITE INTO TABLE union_date_2
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@union_date_2
+PREHOOK: query: select * from (
+  select fl_num, fl_date from union_date_1
+  union all
+  select fl_num, fl_date from union_date_2
+) union_result
+PREHOOK: type: QUERY
+PREHOOK: Input: default@union_date_1
+PREHOOK: Input: default@union_date_2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (
+  select fl_num, fl_date from union_date_1
+  union all
+  select fl_num, fl_date from union_date_2
+) union_result
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@union_date_1
+POSTHOOK: Input: default@union_date_2
+#### A masked pattern was here ####
+1064	2000-11-20
+1064	2000-11-20
+1064	2000-11-28
+1064	2000-11-28
+1064	2010-10-20
+1064	2010-10-20
+1064	2010-10-28
+1064	2010-10-28
+1142	2000-11-21
+1142	2000-11-21
+1142	2000-11-28
+1142	2000-11-28
+1142	2010-10-21
+1142	2010-10-21
+1142	2010-10-29
+1142	2010-10-29
+1531	2000-11-25
+1531	2000-11-25
+1531	2010-10-25
+1531	2010-10-25
+1599	2000-11-22
+1599	2000-11-22
+1599	2010-10-22
+1599	2010-10-22
+1610	2000-11-26
+1610	2000-11-26
+1610	2010-10-26
+1610	2010-10-26
+3198	2000-11-27
+3198	2000-11-27
+3198	2010-10-27
+3198	2010-10-27
+361	2000-11-23
+361	2000-11-23
+361	2010-10-23
+361	2010-10-23
+897	2000-11-24
+897	2000-11-24
+897	2010-10-24
+897	2010-10-24
+PREHOOK: query: drop table union_date_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@union_date_1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union_date_1
+POSTHOOK: query: drop table union_date_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@union_date_1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union_date_1
+PREHOOK: query: drop table union_date_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@union_date_2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@union_date_2
+POSTHOOK: query: drop table union_date_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@union_date_2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@union_date_2

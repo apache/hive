@@ -1,0 +1,130 @@
+PREHOOK: query: drop table tstsrcpart_n3
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table tstsrcpart_n3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table tstsrcpart_n3 like srcpart
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tstsrcpart_n3
+POSTHOOK: query: create table tstsrcpart_n3 like srcpart
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tstsrcpart_n3
+PREHOOK: query: from srcpart
+insert overwrite table tstsrcpart_n3 partition (ds='2008-04-08',hr='11')
+select key, value where ds='2008-04-08' and hr='11'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: default@tstsrcpart_n3@ds=2008-04-08/hr=11
+POSTHOOK: query: from srcpart
+insert overwrite table tstsrcpart_n3 partition (ds='2008-04-08',hr='11')
+select key, value where ds='2008-04-08' and hr='11'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@tstsrcpart_n3@ds=2008-04-08/hr=11
+POSTHOOK: Lineage: tstsrcpart_n3 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart_n3 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: from srcpart
+insert overwrite table tstsrcpart_n3 partition (ds, hr) select key, value, ds, hr where ds <= '2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@tstsrcpart_n3
+POSTHOOK: query: from srcpart
+insert overwrite table tstsrcpart_n3 partition (ds, hr) select key, value, ds, hr where ds <= '2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@tstsrcpart_n3
+POSTHOOK: Output: default@tstsrcpart_n3@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@tstsrcpart_n3@ds=2008-04-08/hr=12
+POSTHOOK: Lineage: tstsrcpart_n3 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart_n3 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart_n3 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart_n3 PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: from srcpart
+insert overwrite table tstsrcpart_n3 partition (ds ='2008-04-08', hr) select key, value, hr where ds = '2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@tstsrcpart_n3@ds=2008-04-08
+POSTHOOK: query: from srcpart
+insert overwrite table tstsrcpart_n3 partition (ds ='2008-04-08', hr) select key, value, hr where ds = '2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@tstsrcpart_n3@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@tstsrcpart_n3@ds=2008-04-08/hr=12
+POSTHOOK: Lineage: tstsrcpart_n3 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart_n3 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart_n3 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart_n3 PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SHOW LOCKS
+PREHOOK: type: SHOWLOCKS
+POSTHOOK: query: SHOW LOCKS
+POSTHOOK: type: SHOWLOCKS
+PREHOOK: query: SHOW LOCKS tstsrcpart_n3
+PREHOOK: type: SHOWLOCKS
+POSTHOOK: query: SHOW LOCKS tstsrcpart_n3
+POSTHOOK: type: SHOWLOCKS
+PREHOOK: query: drop table tstsrcpart_n3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tstsrcpart_n3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tstsrcpart_n3
+POSTHOOK: query: drop table tstsrcpart_n3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tstsrcpart_n3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tstsrcpart_n3
+PREHOOK: query: drop table tst1_n3
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table tst1_n3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table tst1_n3 (key string, value string) partitioned by (a string, b string, c string, d string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tst1_n3
+POSTHOOK: query: create table tst1_n3 (key string, value string) partitioned by (a string, b string, c string, d string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tst1_n3
+PREHOOK: query: from srcpart
+insert overwrite table tst1_n3 partition (a='1', b='2', c, d) select key, value, ds, hr where ds = '2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@tst1_n3@a=1/b=2
+POSTHOOK: query: from srcpart
+insert overwrite table tst1_n3 partition (a='1', b='2', c, d) select key, value, ds, hr where ds = '2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@tst1_n3@a=1/b=2/c=2008-04-08/d=11
+POSTHOOK: Output: default@tst1_n3@a=1/b=2/c=2008-04-08/d=12
+POSTHOOK: Lineage: tst1_n3 PARTITION(a=1,b=2,c=2008-04-08,d=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tst1_n3 PARTITION(a=1,b=2,c=2008-04-08,d=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tst1_n3 PARTITION(a=1,b=2,c=2008-04-08,d=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tst1_n3 PARTITION(a=1,b=2,c=2008-04-08,d=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: drop table tst1_n3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tst1_n3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tst1_n3
+POSTHOOK: query: drop table tst1_n3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tst1_n3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tst1_n3

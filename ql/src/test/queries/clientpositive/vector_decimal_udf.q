@@ -1,0 +1,351 @@
+set hive.mapred.mode=nonstrict;
+set hive.explain.user=false;
+SET hive.vectorized.execution.enabled=true;
+set hive.fetch.task.conversion=minimal;
+
+-- SORT_QUERY_RESULTS
+
+DROP TABLE IF EXISTS DECIMAL_UDF_txt;
+DROP TABLE IF EXISTS DECIMAL_UDF_n0;
+
+CREATE TABLE DECIMAL_UDF_txt (key decimal(20,10), value int)
+ROW FORMAT DELIMITED
+   FIELDS TERMINATED BY ' '
+STORED AS TEXTFILE;
+
+LOAD DATA LOCAL INPATH '../../data/files/kv7.txt' INTO TABLE DECIMAL_UDF_txt;
+
+CREATE TABLE DECIMAL_UDF_n0 (key decimal(20,10), value int)
+STORED AS ORC;
+
+INSERT OVERWRITE TABLE DECIMAL_UDF_n0 SELECT * FROM DECIMAL_UDF_txt;
+
+-- Add a single NULL row that will come from ORC as isRepeated.
+insert into DECIMAL_UDF_n0 values (NULL, NULL);
+
+
+-- addition
+EXPLAIN VECTORIZATION DETAIL
+SELECT key + key FROM DECIMAL_UDF_n0;
+SELECT key + key FROM DECIMAL_UDF_n0;
+
+EXPLAIN VECTORIZATION DETAIL
+SELECT key + value FROM DECIMAL_UDF_n0;
+SELECT key + value FROM DECIMAL_UDF_n0;
+
+EXPLAIN VECTORIZATION DETAIL
+SELECT key + (value/2) FROM DECIMAL_UDF_n0;
+SELECT key + (value/2) FROM DECIMAL_UDF_n0;
+
+EXPLAIN VECTORIZATION DETAIL
+SELECT key + '1.0' FROM DECIMAL_UDF_n0;
+SELECT key + '1.0' FROM DECIMAL_UDF_n0;
+
+-- substraction
+EXPLAIN VECTORIZATION DETAIL
+SELECT key - key FROM DECIMAL_UDF_n0;
+SELECT key - key FROM DECIMAL_UDF_n0;
+
+EXPLAIN VECTORIZATION DETAIL
+SELECT key - value FROM DECIMAL_UDF_n0;
+SELECT key - value FROM DECIMAL_UDF_n0;
+
+EXPLAIN VECTORIZATION DETAIL
+SELECT key - (value/2) FROM DECIMAL_UDF_n0;
+SELECT key - (value/2) FROM DECIMAL_UDF_n0;
+
+EXPLAIN VECTORIZATION DETAIL
+SELECT key - '1.0' FROM DECIMAL_UDF_n0;
+SELECT key - '1.0' FROM DECIMAL_UDF_n0;
+
+-- multiplication
+EXPLAIN VECTORIZATION DETAIL
+SELECT key * key FROM DECIMAL_UDF_n0;
+SELECT key * key FROM DECIMAL_UDF_n0;
+
+EXPLAIN VECTORIZATION DETAIL
+SELECT key, value FROM DECIMAL_UDF_n0 where key * value > 0;
+SELECT key, value FROM DECIMAL_UDF_n0 where key * value > 0;
+
+EXPLAIN VECTORIZATION DETAIL
+SELECT key * value FROM DECIMAL_UDF_n0;
+SELECT key * value FROM DECIMAL_UDF_n0;
+
+EXPLAIN VECTORIZATION DETAIL
+SELECT key * (value/2) FROM DECIMAL_UDF_n0;
+SELECT key * (value/2) FROM DECIMAL_UDF_n0;
+
+EXPLAIN VECTORIZATION DETAIL
+SELECT key * '2.0' FROM DECIMAL_UDF_n0;
+SELECT key * '2.0' FROM DECIMAL_UDF_n0;
+
+-- division
+EXPLAIN VECTORIZATION DETAIL
+SELECT key / 0 FROM DECIMAL_UDF_n0;
+SELECT key / 0 FROM DECIMAL_UDF_n0;
+
+-- Output not stable.
+-- EXPLAIN VECTORIZATION DETAIL
+-- SELECT key / NULL FROM DECIMAL_UDF_n0;
+-- SELECT key / NULL FROM DECIMAL_UDF_n0;
+
+EXPLAIN VECTORIZATION DETAIL
+SELECT key / key FROM DECIMAL_UDF_n0 WHERE key is not null and key <> 0;
+SELECT key / key FROM DECIMAL_UDF_n0 WHERE key is not null and key <> 0;
+
+EXPLAIN VECTORIZATION DETAIL
+SELECT key / value FROM DECIMAL_UDF_n0 WHERE value is not null and value <> 0;
+SELECT key / value FROM DECIMAL_UDF_n0 WHERE value is not null and value <> 0;
+
+EXPLAIN VECTORIZATION DETAIL
+SELECT key / (value/2) FROM DECIMAL_UDF_n0  WHERE value is not null and value <> 0;
+SELECT key / (value/2) FROM DECIMAL_UDF_n0  WHERE value is not null and value <> 0;
+
+EXPLAIN VECTORIZATION DETAIL
+SELECT 1 + (key / '2.0') FROM DECIMAL_UDF_n0;
+SELECT 1 + (key / '2.0') FROM DECIMAL_UDF_n0;
+
+-- abs
+EXPLAIN VECTORIZATION DETAIL
+SELECT abs(key) FROM DECIMAL_UDF_n0;
+SELECT abs(key) FROM DECIMAL_UDF_n0;
+
+-- avg
+EXPLAIN VECTORIZATION DETAIL
+SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF_n0 GROUP BY value ORDER BY value;
+SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF_n0 GROUP BY value ORDER BY value;
+
+-- negative
+EXPLAIN VECTORIZATION DETAIL
+SELECT -key FROM DECIMAL_UDF_n0;
+SELECT -key FROM DECIMAL_UDF_n0;
+
+-- positive
+EXPLAIN VECTORIZATION DETAIL
+SELECT +key FROM DECIMAL_UDF_n0;
+SELECT +key FROM DECIMAL_UDF_n0;
+
+-- ceiling
+EXPlAIN SELECT CEIL(key) FROM DECIMAL_UDF_n0;
+SELECT CEIL(key) FROM DECIMAL_UDF_n0;
+
+-- floor
+EXPLAIN VECTORIZATION DETAIL
+SELECT FLOOR(key) FROM DECIMAL_UDF_n0;
+SELECT FLOOR(key) FROM DECIMAL_UDF_n0;
+
+-- round
+EXPLAIN VECTORIZATION DETAIL
+SELECT ROUND(key, 2) FROM DECIMAL_UDF_n0;
+SELECT ROUND(key, 2) FROM DECIMAL_UDF_n0;
+
+-- power
+EXPLAIN VECTORIZATION DETAIL
+SELECT POWER(key, 2) FROM DECIMAL_UDF_n0;
+SELECT POWER(key, 2) FROM DECIMAL_UDF_n0;
+
+-- modulo
+EXPLAIN VECTORIZATION DETAIL
+SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF_n0;
+SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF_n0;
+
+-- stddev, var
+EXPLAIN VECTORIZATION DETAIL
+SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF_n0 GROUP BY value;
+SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF_n0 GROUP BY value;
+
+-- stddev_samp, var_samp
+EXPLAIN VECTORIZATION DETAIL
+SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF_n0 GROUP BY value;
+SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF_n0 GROUP BY value;
+
+-- histogram
+EXPLAIN VECTORIZATION DETAIL
+SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF_n0;
+SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF_n0;
+
+-- min
+EXPLAIN VECTORIZATION DETAIL
+SELECT MIN(key) FROM DECIMAL_UDF_n0;
+SELECT MIN(key) FROM DECIMAL_UDF_n0;
+
+-- max
+EXPLAIN VECTORIZATION DETAIL
+SELECT MAX(key) FROM DECIMAL_UDF_n0;
+SELECT MAX(key) FROM DECIMAL_UDF_n0;
+
+-- count
+EXPLAIN VECTORIZATION DETAIL
+SELECT COUNT(key) FROM DECIMAL_UDF_n0;
+SELECT COUNT(key) FROM DECIMAL_UDF_n0;
+
+-- DECIMAL_64
+
+CREATE TABLE DECIMAL_UDF_txt_small (key decimal(15,3), value int)
+ROW FORMAT DELIMITED
+   FIELDS TERMINATED BY ' '
+STORED AS TEXTFILE;
+
+LOAD DATA LOCAL INPATH '../../data/files/kv7.txt' INTO TABLE DECIMAL_UDF_txt_small;
+
+-- Add a single NULL row.
+insert into DECIMAL_UDF_txt_small values (NULL, NULL);
+
+-- addition
+EXPLAIN VECTORIZATION DETAIL
+SELECT key + key FROM DECIMAL_UDF_txt_small;
+SELECT key + key FROM DECIMAL_UDF_txt_small;
+
+EXPLAIN VECTORIZATION DETAIL
+SELECT key + value FROM DECIMAL_UDF_txt_small;
+SELECT key + value FROM DECIMAL_UDF_txt_small;
+
+EXPLAIN VECTORIZATION DETAIL
+SELECT key + (value/2) FROM DECIMAL_UDF_txt_small;
+SELECT key + (value/2) FROM DECIMAL_UDF_txt_small;
+
+EXPLAIN VECTORIZATION DETAIL
+SELECT key + '1.0' FROM DECIMAL_UDF_txt_small;
+SELECT key + '1.0' FROM DECIMAL_UDF_txt_small;
+
+-- substraction
+EXPLAIN VECTORIZATION DETAIL
+SELECT key - key FROM DECIMAL_UDF_txt_small;
+SELECT key - key FROM DECIMAL_UDF_txt_small;
+
+EXPLAIN VECTORIZATION DETAIL
+SELECT key - value FROM DECIMAL_UDF_txt_small;
+SELECT key - value FROM DECIMAL_UDF_txt_small;
+
+EXPLAIN VECTORIZATION DETAIL
+SELECT key - (value/2) FROM DECIMAL_UDF_txt_small;
+SELECT key - (value/2) FROM DECIMAL_UDF_txt_small;
+
+EXPLAIN VECTORIZATION DETAIL
+SELECT key - '1.0' FROM DECIMAL_UDF_txt_small;
+SELECT key - '1.0' FROM DECIMAL_UDF_txt_small;
+
+-- multiplication
+EXPLAIN VECTORIZATION DETAIL
+SELECT key * key FROM DECIMAL_UDF_txt_small;
+SELECT key * key FROM DECIMAL_UDF_txt_small;
+
+EXPLAIN VECTORIZATION DETAIL
+SELECT key, value FROM DECIMAL_UDF_txt_small where key * value > 0;
+SELECT key, value FROM DECIMAL_UDF_txt_small where key * value > 0;
+
+EXPLAIN VECTORIZATION DETAIL
+SELECT key * value FROM DECIMAL_UDF_txt_small;
+SELECT key * value FROM DECIMAL_UDF_txt_small;
+
+EXPLAIN VECTORIZATION DETAIL
+SELECT key * (value/2) FROM DECIMAL_UDF_txt_small;
+SELECT key * (value/2) FROM DECIMAL_UDF_txt_small;
+
+EXPLAIN VECTORIZATION DETAIL
+SELECT key * '2.0' FROM DECIMAL_UDF_txt_small;
+SELECT key * '2.0' FROM DECIMAL_UDF_txt_small;
+
+-- division
+EXPLAIN VECTORIZATION DETAIL
+SELECT key / 0 FROM DECIMAL_UDF_txt_small;
+SELECT key / 0 FROM DECIMAL_UDF_txt_small;
+
+-- Output not stable.
+-- EXPLAIN VECTORIZATION DETAIL
+-- SELECT key / NULL FROM DECIMAL_UDF_txt_small;
+-- SELECT key / NULL FROM DECIMAL_UDF_txt_small;
+
+EXPLAIN VECTORIZATION DETAIL
+SELECT key / key FROM DECIMAL_UDF_txt_small WHERE key is not null and key <> 0;
+SELECT key / key FROM DECIMAL_UDF_txt_small WHERE key is not null and key <> 0;
+
+EXPLAIN VECTORIZATION DETAIL
+SELECT key / value FROM DECIMAL_UDF_txt_small WHERE value is not null and value <> 0;
+SELECT key / value FROM DECIMAL_UDF_txt_small WHERE value is not null and value <> 0;
+
+EXPLAIN VECTORIZATION DETAIL
+SELECT key / (value/2) FROM DECIMAL_UDF_txt_small  WHERE value is not null and value <> 0;
+SELECT key / (value/2) FROM DECIMAL_UDF_txt_small  WHERE value is not null and value <> 0;
+
+EXPLAIN VECTORIZATION DETAIL
+SELECT 1 + (key / '2.0') FROM DECIMAL_UDF_txt_small;
+SELECT 1 + (key / '2.0') FROM DECIMAL_UDF_txt_small;
+
+-- abs
+EXPLAIN VECTORIZATION DETAIL
+SELECT abs(key) FROM DECIMAL_UDF_txt_small;
+SELECT abs(key) FROM DECIMAL_UDF_txt_small;
+
+-- avg
+EXPLAIN VECTORIZATION DETAIL
+SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF_txt_small GROUP BY value ORDER BY value;
+SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF_txt_small GROUP BY value ORDER BY value;
+
+-- negative
+EXPLAIN VECTORIZATION DETAIL
+SELECT -key FROM DECIMAL_UDF_txt_small;
+SELECT -key FROM DECIMAL_UDF_txt_small;
+
+-- positive
+EXPLAIN VECTORIZATION DETAIL
+SELECT +key FROM DECIMAL_UDF_txt_small;
+SELECT +key FROM DECIMAL_UDF_txt_small;
+
+-- ceiling
+EXPlAIN SELECT CEIL(key) FROM DECIMAL_UDF_txt_small;
+SELECT CEIL(key) FROM DECIMAL_UDF_txt_small;
+
+-- floor
+EXPLAIN VECTORIZATION DETAIL
+SELECT FLOOR(key) FROM DECIMAL_UDF_txt_small;
+SELECT FLOOR(key) FROM DECIMAL_UDF_txt_small;
+
+-- round
+EXPLAIN VECTORIZATION DETAIL
+SELECT ROUND(key, 2) FROM DECIMAL_UDF_txt_small;
+SELECT ROUND(key, 2) FROM DECIMAL_UDF_txt_small;
+
+-- power
+EXPLAIN VECTORIZATION DETAIL
+SELECT POWER(key, 2) FROM DECIMAL_UDF_txt_small;
+SELECT POWER(key, 2) FROM DECIMAL_UDF_txt_small;
+
+-- modulo
+EXPLAIN VECTORIZATION DETAIL
+SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF_txt_small;
+SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF_txt_small;
+
+-- stddev, var
+EXPLAIN VECTORIZATION DETAIL
+SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF_txt_small GROUP BY value;
+SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF_txt_small GROUP BY value;
+
+-- stddev_samp, var_samp
+EXPLAIN VECTORIZATION DETAIL
+SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF_txt_small GROUP BY value;
+SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF_txt_small GROUP BY value;
+
+-- histogram
+EXPLAIN VECTORIZATION DETAIL
+SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF_txt_small;
+SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF_txt_small;
+
+-- min
+EXPLAIN VECTORIZATION DETAIL
+SELECT MIN(key) FROM DECIMAL_UDF_txt_small;
+SELECT MIN(key) FROM DECIMAL_UDF_txt_small;
+
+-- max
+EXPLAIN VECTORIZATION DETAIL
+SELECT MAX(key) FROM DECIMAL_UDF_txt_small;
+SELECT MAX(key) FROM DECIMAL_UDF_txt_small;
+
+-- count
+EXPLAIN VECTORIZATION DETAIL
+SELECT COUNT(key) FROM DECIMAL_UDF_txt_small;
+SELECT COUNT(key) FROM DECIMAL_UDF_txt_small;
+
+DROP TABLE IF EXISTS DECIMAL_UDF_txt;
+DROP TABLE IF EXISTS DECIMAL_UDF_n0;
+

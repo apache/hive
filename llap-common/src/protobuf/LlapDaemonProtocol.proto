@@ -1,0 +1,301 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+option java_package = "org.apache.hadoop.hive.llap.daemon.rpc";
+option java_outer_classname = "LlapDaemonProtocolProtos";
+option java_generic_services = true;
+option java_generate_equals_and_hash = true;
+
+// TODO Change this as the interface evolves. Currently using Tez constructs.
+
+message UserPayloadProto {
+  optional bytes user_payload = 1;
+  optional int32 version = 2;
+}
+
+message EntityDescriptorProto {
+  optional string class_name = 1;
+  optional UserPayloadProto user_payload = 2;
+  optional bytes history_text = 3;
+}
+
+message IOSpecProto {
+  optional string connected_vertex_name = 1;
+  optional EntityDescriptorProto io_descriptor = 2;
+  optional int32 physical_edge_count = 3;
+}
+
+message GroupInputSpecProto {
+  optional string group_name = 1;
+  repeated string group_vertices = 2;
+  optional EntityDescriptorProto merged_input_descriptor = 3;
+}
+
+// The part of SubmitWork that can be signed 
+message SignableVertexSpec
+{
+  optional string user = 1;
+  optional int64 signatureKeyId = 2;
+
+  optional QueryIdentifierProto query_identifier = 3;
+  optional string hive_query_id = 4;
+  // Display names cannot be modified by the client for now. If needed, they should be sent to HS2 who will put them here.
+  optional string dag_name = 5;
+  optional string vertex_name = 6;
+  optional int32 vertex_index = 7;
+
+  // The core vertex stuff 
+  optional string token_identifier = 8;
+  optional EntityDescriptorProto processor_descriptor = 9;
+  repeated IOSpecProto input_specs = 10;
+  repeated IOSpecProto output_specs = 11;
+  repeated GroupInputSpecProto grouped_input_specs = 12;
+
+  optional int32 vertex_parallelism = 13; // An internal field required for Tez.
+  optional bool is_external_submission = 14 [default = false];
+}
+
+// Union
+message VertexOrBinary {
+  optional SignableVertexSpec vertex = 1;
+  optional bytes vertexBinary = 2; // SignableVertexSpec
+}
+
+message FragmentRuntimeInfo {
+  optional int32 num_self_and_upstream_tasks = 1;
+  optional int32 num_self_and_upstream_completed_tasks = 2;
+  optional int32 within_dag_priority = 3;
+  optional int64 dag_start_time = 4;
+  optional int64 first_attempt_start_time = 5;
+  optional int64 current_attempt_start_time = 6;
+}
+
+enum SourceStateProto {
+  S_SUCCEEDED = 1;
+  S_RUNNING = 2;
+}
+
+message QueryIdentifierProto {
+  optional string application_id_string = 1;
+  optional int32 dag_index= 2;
+  optional int32 app_attempt_number = 3;
+}
+
+/**
+ * Tez API implementation derives an enum value from instanceof on the event, then uses that enum
+ * in a giant switch statement to re-implement virtual functions. In addition the event classes
+ * are final and serialization is a mix of writables and protobuf. As a result, it is impossible
+ * three times over to add anything there. So, we'd do our own "inspired" serialization.
+ * Eventually we'll move away from events for API.
+ */
+message NotTezEvent {
+  required bytes input_event_proto_bytes = 1;
+  required string vertex_name = 2;
+  required string dest_input_name = 3;
+  optional int32 key_id = 4;
+}
+
+message SubmitWorkRequestProto {
+  optional VertexOrBinary work_spec = 1;
+  optional bytes work_spec_signature = 2;
+
+  optional int32 fragment_number = 3;
+  optional int32 attempt_number = 4;
+
+  optional string container_id_string = 5;
+  optional string am_host = 6;
+  optional int32 am_port = 7;
+
+  // Credentials are not signed - the client can add e.g. his own HDFS tokens.
+  optional bytes credentials_binary = 8;
+
+  // Not supported/honored for external clients right now.
+  optional FragmentRuntimeInfo fragment_runtime_info = 9;
+
+  // Serialized (and signed) NotTezEvent; used only for external clients for now.
+  optional bytes initial_event_bytes = 10;
+  optional bytes initial_event_signature = 11;
+
+  optional bool is_guaranteed = 12 [default = false];
+  optional string jwt = 13;
+  optional bool is_external_client_request = 14 [default = false];
+}
+
+message RegisterDagRequestProto {
+  optional string user = 1;
+  required QueryIdentifierProto query_identifier = 2;
+  optional bytes credentials_binary = 3;
+}
+
+message RegisterDagResponseProto {
+}
+
+enum SubmissionStateProto {
+  ACCEPTED = 1;
+  REJECTED = 2;
+  EVICTED_OTHER = 3;
+}
+
+message SubmitWorkResponseProto {
+  optional SubmissionStateProto submission_state = 1;
+  optional string unique_node_id = 2;
+}
+
+message SourceStateUpdatedRequestProto {
+  optional QueryIdentifierProto query_identifier = 1;
+  optional string src_name = 2;
+  optional SourceStateProto state = 3;
+}
+
+message SourceStateUpdatedResponseProto {
+}
+
+message QueryCompleteRequestProto {
+  optional QueryIdentifierProto query_identifier = 1;
+  optional int64 delete_delay = 2 [default = 0];
+}
+
+message QueryCompleteResponseProto {
+}
+
+message TerminateFragmentRequestProto {
+  optional QueryIdentifierProto query_identifier = 1;
+  optional string fragment_identifier_string = 2;
+}
+
+message TerminateFragmentResponseProto {
+}
+
+message UpdateFragmentRequestProto {
+  optional QueryIdentifierProto query_identifier = 1;
+  optional string fragment_identifier_string = 2;
+  optional bool is_guaranteed = 3;
+}
+
+message UpdateFragmentResponseProto {
+  optional bool result = 1;
+  optional bool is_guaranteed = 2;
+}
+
+message GetTokenRequestProto {
+  optional string app_id = 1;
+}
+
+message GetTokenResponseProto {
+  optional bytes token = 1;
+}
+
+// The message sent by external client to claim the output from the output socket.
+message LlapOutputSocketInitMessage {
+  required string fragment_id = 1;
+  optional bytes token = 2;
+}
+
+message PurgeCacheRequestProto {
+}
+
+message PurgeCacheResponseProto {
+  optional int64 purged_memory_bytes = 1;
+}
+
+message MapEntry {
+  optional string key = 1;
+  optional int64 value = 2;
+}
+
+message GetDaemonMetricsRequestProto {
+}
+
+message GetDaemonMetricsResponseProto {
+  repeated MapEntry metrics = 1;
+}
+
+message SetCapacityRequestProto {
+  optional int32 executorNum = 1;
+  optional int32 queueSize = 2;
+}
+
+message SetCapacityResponseProto {
+}
+
+// Used for proactive eviction request. Must contain a DB name, and optionally table information and catalog name.
+message EvictEntityRequestProto {
+  required string db_name = 1;
+  repeated TableProto table = 2;
+  optional string catalog_name = 3 [default = "hive"];
+}
+
+// Used in EvictEntityRequestProto, can be used for non-partitioned and partitioned tables too.
+// For the latter part_key contains only the keys, part_val has the values for all partitions on all keys:
+// e.g.: for partitions pk0=p00/pk1=p01/pk2=p02 and pk0=p10/pk1=p11/pk2=p12
+// part_key: [pk0, pk1, pk2], part_val: [p00, p01, p02, p10, p11, p12]
+message TableProto {
+  required string table_name = 1;
+  repeated string part_key = 2;
+  repeated string part_val = 3;
+}
+
+message EvictEntityResponseProto {
+  required int64 evicted_bytes = 1;
+}
+
+message GetCacheContentRequestProto {
+}
+
+message GetCacheContentResponseProto {
+  optional CacheEntryList result = 1;
+}
+
+message CacheEntryList {
+  repeated CacheEntry entries = 1;
+}
+
+message CacheEntry {
+  optional bytes file_key = 1;
+  optional string file_path = 2;
+  optional CacheTag cache_tag = 3;
+  repeated CacheEntryRange ranges = 4;
+}
+
+message CacheTag {
+  optional string table_name = 1;
+  repeated string partition_desc = 2;
+}
+
+message CacheEntryRange {
+  optional int64 start = 1;
+  optional int64 end = 2;
+}
+
+service LlapDaemonProtocol {
+  rpc registerDag(RegisterDagRequestProto) returns (RegisterDagResponseProto);
+  rpc submitWork(SubmitWorkRequestProto) returns (SubmitWorkResponseProto);
+  rpc sourceStateUpdated(SourceStateUpdatedRequestProto) returns (SourceStateUpdatedResponseProto);
+  rpc queryComplete(QueryCompleteRequestProto) returns (QueryCompleteResponseProto);
+  rpc terminateFragment(TerminateFragmentRequestProto) returns (TerminateFragmentResponseProto);
+  rpc updateFragment(UpdateFragmentRequestProto) returns (UpdateFragmentResponseProto);
+}
+
+service LlapManagementProtocol {
+  rpc getDelegationToken (GetTokenRequestProto) returns (GetTokenResponseProto);
+  rpc purgeCache (PurgeCacheRequestProto) returns (PurgeCacheResponseProto);
+  rpc getDaemonMetrics (GetDaemonMetricsRequestProto) returns (GetDaemonMetricsResponseProto);
+  rpc setCapacity (SetCapacityRequestProto) returns (SetCapacityResponseProto);
+  rpc evictEntity (EvictEntityRequestProto) returns (EvictEntityResponseProto);
+  rpc getCacheContent(GetCacheContentRequestProto) returns (GetCacheContentResponseProto);
+}

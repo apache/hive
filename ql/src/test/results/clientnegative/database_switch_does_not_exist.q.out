@@ -1,0 +1,6 @@
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+FAILED: SemanticException [Error 10072]: Database does not exist: does_not_exist

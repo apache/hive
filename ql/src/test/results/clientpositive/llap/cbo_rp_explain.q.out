@@ -1,0 +1,61 @@
+PREHOOK: query: CREATE TABLE author (id INT, fname STRING, lname STRING, birth DATE)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@author
+POSTHOOK: query: CREATE TABLE author (id INT, fname STRING, lname STRING, birth DATE)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@author
+PREHOOK: query: CREATE TABLE book (id INT, title STRING, author INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@book
+POSTHOOK: query: CREATE TABLE book (id INT, title STRING, author INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@book
+PREHOOK: query: EXPLAIN CBO
+SELECT lname, MAX(birth) FROM author GROUP BY lname
+PREHOOK: type: QUERY
+PREHOOK: Input: default@author
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT lname, MAX(birth) FROM author GROUP BY lname
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@author
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{0}], agg#0=[max($1)])
+  HiveProject(lname=[$2], birth=[$3])
+    HiveTableScan(table=[[default, author]], qbid:alias=[author])
+
+PREHOOK: query: EXPLAIN CBO
+SELECT author.lname, book.title
+FROM author 
+INNER JOIN book ON author.id=book.author
+WHERE author.fname = 'Victor'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@author
+PREHOOK: Input: default@book
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT author.lname, book.title
+FROM author 
+INNER JOIN book ON author.id=book.author
+WHERE author.fname = 'Victor'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@author
+POSTHOOK: Input: default@book
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(lname=[$2], title=[$3])
+  HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveSortExchange(distribution=[hash[0]], collation=[[0]])
+      HiveProject(id=[$0], fname=[CAST(_UTF-16LE'Victor':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], lname=[$2])
+        HiveFilter(condition=[AND(=($1, _UTF-16LE'Victor'), IS NOT NULL($0))])
+          HiveTableScan(table=[[default, author]], qbid:alias=[author])
+    HiveSortExchange(distribution=[hash[1]], collation=[[1]])
+      HiveProject(title=[$1], author=[$2])
+        HiveFilter(condition=[IS NOT NULL($2)])
+          HiveTableScan(table=[[default, book]], qbid:alias=[book])
+

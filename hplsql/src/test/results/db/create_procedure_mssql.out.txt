@@ -1,0 +1,45 @@
+Ln:1 USE
+Ln:1 SQL statement: USE `default`
+Ln:7 CREATE PROCEDURE [spTest1]
+Ln:25 CREATE PROCEDURE spTest2
+Ln:42 CREATE PROCEDURE spTest3
+Ln:47 EXEC PROCEDURE [spTest1]
+Ln:47 SET PARAM @lim2 = 3
+Ln:14 DECLARE @cnt int
+Ln:15 SET @cnt = 0
+Ln:16 SELECT
+Ln:16 SELECT COUNT(*) from `default`.`src` LIMIT 3
+Ln:16 SELECT completed successfully
+Ln:16 SELECT INTO statement executed
+Ln:16 COLUMN: _c0, bigint
+Ln:16 SET @cnt = 500
+Ln:17 IF
+Ln:17 ELSE executed
+Ln:21 SELECT
+Ln:21 SELECT 'Correct' FROM default.`src` LIMIT 1
+Ln:21 SELECT completed successfully
+Ln:21 Standalone SELECT executed: 1 columns in the result set
+Correct
+Ln:49 EXEC PROCEDURE spTest2
+Ln:49 SET PARAM @lim = 3
+Ln:31 DECLARE @cnt int
+Ln:32 SET @cnt = 0
+Ln:33 SELECT
+Ln:33 SELECT COUNT(*) from src LIMIT 3
+Ln:33 SELECT completed successfully
+Ln:33 SELECT INTO statement executed
+Ln:33 COLUMN: _c0, bigint
+Ln:33 SET @cnt = 500
+Ln:34 IF
+Ln:34 ELSE executed
+Ln:38 SELECT
+Ln:38 SELECT 'Correct' FROM src LIMIT 1
+Ln:38 SELECT completed successfully
+Ln:38 Standalone SELECT executed: 1 columns in the result set
+Correct
+Ln:51 EXEC PROCEDURE spTest3
+Ln:44 SELECT
+Ln:44 SELECT 'Correct' FROM src LIMIT 1
+Ln:44 SELECT completed successfully
+Ln:44 Standalone SELECT executed: 1 columns in the result set
+Correct

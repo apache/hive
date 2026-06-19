@@ -1,0 +1,490 @@
+PREHOOK: query: create temporary table random_types_table (
+cboolean boolean,
+cint int,
+cbigint bigint,
+cfloat float,
+cdouble double,
+cdecimal64 decimal(7,2),
+cdecimal128 decimal(38,18),
+cdate date,
+ctimestamp timestamp,
+cstring string,
+cvarchar varchar(3),
+cchar char(3)
+) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@random_types_table
+POSTHOOK: query: create temporary table random_types_table (
+cboolean boolean,
+cint int,
+cbigint bigint,
+cfloat float,
+cdouble double,
+cdecimal64 decimal(7,2),
+cdecimal128 decimal(38,18),
+cdate date,
+ctimestamp timestamp,
+cstring string,
+cvarchar varchar(3),
+cchar char(3)
+) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@random_types_table
+PREHOOK: query: select 'expect 1', approx_distinct(1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 1', approx_distinct(1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+expect 1	1
+PREHOOK: query: select 'expect 1', approx_distinct(1.0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 1', approx_distinct(1.0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+expect 1	1
+PREHOOK: query: select 'expect 1', approx_distinct(false)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 1', approx_distinct(false)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+expect 1	1
+PREHOOK: query: select 'expect 1', approx_distinct('X')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 1', approx_distinct('X')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+expect 1	1
+PREHOOK: query: select 'expect 1', approx_distinct(current_date)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 1', approx_distinct(current_date)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+expect 1	1
+PREHOOK: query: select 'expect 1', approx_distinct(current_timestamp)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 1', approx_distinct(current_timestamp)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+expect 1	1
+PREHOOK: query: select 'expect 1', approx_distinct(1.0BD)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 1', approx_distinct(1.0BD)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+expect 1	1
+PREHOOK: query: select 'expect 1', approx_distinct(INTERVAL '1' DAY)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 1', approx_distinct(INTERVAL '1' DAY)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+expect 1	1
+PREHOOK: query: select 'expect 0', approx_distinct(cboolean) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 0', approx_distinct(cboolean) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 0	0
+PREHOOK: query: select 'expect 0', approx_distinct(cint) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 0', approx_distinct(cint) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 0	0
+PREHOOK: query: select 'expect 0', approx_distinct(cbigint) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 0', approx_distinct(cbigint) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 0	0
+PREHOOK: query: select 'expect 0', approx_distinct(cfloat) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 0', approx_distinct(cfloat) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 0	0
+PREHOOK: query: select 'expect 0', approx_distinct(cdouble) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 0', approx_distinct(cdouble) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 0	0
+PREHOOK: query: select 'expect 0', approx_distinct(cdecimal64) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 0', approx_distinct(cdecimal64) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 0	0
+PREHOOK: query: select 'expect 0', approx_distinct(cdecimal128) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 0', approx_distinct(cdecimal128) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 0	0
+PREHOOK: query: select 'expect 0', approx_distinct(cdate) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 0', approx_distinct(cdate) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 0	0
+PREHOOK: query: select 'expect 0', approx_distinct(ctimestamp) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 0', approx_distinct(ctimestamp) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 0	0
+PREHOOK: query: select 'expect 0', approx_distinct(cstring) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 0', approx_distinct(cstring) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 0	0
+PREHOOK: query: select 'expect 0', approx_distinct(cvarchar) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 0', approx_distinct(cvarchar) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 0	0
+PREHOOK: query: select 'expect 0', approx_distinct(cchar) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 0', approx_distinct(cchar) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 0	0
+PREHOOK: query: insert into random_types_table values (true, 1, 1, 1.0, 1.0, 1.0BD, 1.0BD, '2000-01-01', '2000-01-01 00:00:01', 'A', 'B', 'C')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@random_types_table
+POSTHOOK: query: insert into random_types_table values (true, 1, 1, 1.0, 1.0, 1.0BD, 1.0BD, '2000-01-01', '2000-01-01 00:00:01', 'A', 'B', 'C')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@random_types_table
+POSTHOOK: Lineage: random_types_table.cbigint SCRIPT []
+POSTHOOK: Lineage: random_types_table.cboolean SCRIPT []
+POSTHOOK: Lineage: random_types_table.cchar SCRIPT []
+POSTHOOK: Lineage: random_types_table.cdate SCRIPT []
+POSTHOOK: Lineage: random_types_table.cdecimal128 SCRIPT []
+POSTHOOK: Lineage: random_types_table.cdecimal64 SCRIPT []
+POSTHOOK: Lineage: random_types_table.cdouble SCRIPT []
+POSTHOOK: Lineage: random_types_table.cfloat SCRIPT []
+POSTHOOK: Lineage: random_types_table.cint SCRIPT []
+POSTHOOK: Lineage: random_types_table.cstring SCRIPT []
+POSTHOOK: Lineage: random_types_table.ctimestamp SCRIPT []
+POSTHOOK: Lineage: random_types_table.cvarchar SCRIPT []
+PREHOOK: query: insert into random_types_table values (true, 1, 1, 1.0, 1.0, 1.0BD, 1.0BD, '2000-01-01', '2000-01-01 00:00:01', 'A', 'B', 'C')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@random_types_table
+POSTHOOK: query: insert into random_types_table values (true, 1, 1, 1.0, 1.0, 1.0BD, 1.0BD, '2000-01-01', '2000-01-01 00:00:01', 'A', 'B', 'C')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@random_types_table
+POSTHOOK: Lineage: random_types_table.cbigint SCRIPT []
+POSTHOOK: Lineage: random_types_table.cboolean SCRIPT []
+POSTHOOK: Lineage: random_types_table.cchar SCRIPT []
+POSTHOOK: Lineage: random_types_table.cdate SCRIPT []
+POSTHOOK: Lineage: random_types_table.cdecimal128 SCRIPT []
+POSTHOOK: Lineage: random_types_table.cdecimal64 SCRIPT []
+POSTHOOK: Lineage: random_types_table.cdouble SCRIPT []
+POSTHOOK: Lineage: random_types_table.cfloat SCRIPT []
+POSTHOOK: Lineage: random_types_table.cint SCRIPT []
+POSTHOOK: Lineage: random_types_table.cstring SCRIPT []
+POSTHOOK: Lineage: random_types_table.ctimestamp SCRIPT []
+POSTHOOK: Lineage: random_types_table.cvarchar SCRIPT []
+PREHOOK: query: select 'expect 1', approx_distinct(cboolean) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 1', approx_distinct(cboolean) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 1	1
+PREHOOK: query: select 'expect 1', approx_distinct(cint) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 1', approx_distinct(cint) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 1	1
+PREHOOK: query: select 'expect 1', approx_distinct(cbigint) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 1', approx_distinct(cbigint) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 1	1
+PREHOOK: query: select 'expect 1', approx_distinct(cfloat) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 1', approx_distinct(cfloat) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 1	1
+PREHOOK: query: select 'expect 1', approx_distinct(cdouble) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 1', approx_distinct(cdouble) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 1	1
+PREHOOK: query: select 'expect 1', approx_distinct(cdecimal64) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 1', approx_distinct(cdecimal64) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 1	1
+PREHOOK: query: select 'expect 1', approx_distinct(cdecimal128) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 1', approx_distinct(cdecimal128) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 1	1
+PREHOOK: query: select 'expect 1', approx_distinct(cdate) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 1', approx_distinct(cdate) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 1	1
+PREHOOK: query: select 'expect 1', approx_distinct(ctimestamp) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 1', approx_distinct(ctimestamp) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 1	1
+PREHOOK: query: select 'expect 1', approx_distinct(cstring) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 1', approx_distinct(cstring) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 1	1
+PREHOOK: query: select 'expect 1', approx_distinct(cvarchar) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 1', approx_distinct(cvarchar) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 1	1
+PREHOOK: query: select 'expect 1', approx_distinct(cchar) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 1', approx_distinct(cchar) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 1	1
+PREHOOK: query: insert into random_types_table values (false, 2, 2, 2.0, 2.0, 2.0BD, 2.0BD, '1999-12-31', '1999-12-31 00:00:01', 'X', 'Y', 'Z')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@random_types_table
+POSTHOOK: query: insert into random_types_table values (false, 2, 2, 2.0, 2.0, 2.0BD, 2.0BD, '1999-12-31', '1999-12-31 00:00:01', 'X', 'Y', 'Z')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@random_types_table
+POSTHOOK: Lineage: random_types_table.cbigint SCRIPT []
+POSTHOOK: Lineage: random_types_table.cboolean SCRIPT []
+POSTHOOK: Lineage: random_types_table.cchar SCRIPT []
+POSTHOOK: Lineage: random_types_table.cdate SCRIPT []
+POSTHOOK: Lineage: random_types_table.cdecimal128 SCRIPT []
+POSTHOOK: Lineage: random_types_table.cdecimal64 SCRIPT []
+POSTHOOK: Lineage: random_types_table.cdouble SCRIPT []
+POSTHOOK: Lineage: random_types_table.cfloat SCRIPT []
+POSTHOOK: Lineage: random_types_table.cint SCRIPT []
+POSTHOOK: Lineage: random_types_table.cstring SCRIPT []
+POSTHOOK: Lineage: random_types_table.ctimestamp SCRIPT []
+POSTHOOK: Lineage: random_types_table.cvarchar SCRIPT []
+PREHOOK: query: select 'expect 2', approx_distinct(cboolean) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 2', approx_distinct(cboolean) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 2	2
+PREHOOK: query: select 'expect 2', approx_distinct(cint) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 2', approx_distinct(cint) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 2	2
+PREHOOK: query: select 'expect 2', approx_distinct(cbigint) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 2', approx_distinct(cbigint) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 2	2
+PREHOOK: query: select 'expect 2', approx_distinct(cfloat) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 2', approx_distinct(cfloat) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 2	2
+PREHOOK: query: select 'expect 2', approx_distinct(cdouble) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 2', approx_distinct(cdouble) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 2	2
+PREHOOK: query: select 'expect 2', approx_distinct(cdecimal64) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 2', approx_distinct(cdecimal64) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 2	2
+PREHOOK: query: select 'expect 2', approx_distinct(cdecimal128) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 2', approx_distinct(cdecimal128) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 2	2
+PREHOOK: query: select 'expect 2', approx_distinct(cdate) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 2', approx_distinct(cdate) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 2	2
+PREHOOK: query: select 'expect 2', approx_distinct(ctimestamp) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 2', approx_distinct(ctimestamp) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 2	2
+PREHOOK: query: select 'expect 2', approx_distinct(cstring) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 2', approx_distinct(cstring) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 2	2
+PREHOOK: query: select 'expect 2', approx_distinct(cvarchar) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 2', approx_distinct(cvarchar) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 2	2
+PREHOOK: query: select 'expect 2', approx_distinct(cchar) from random_types_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'expect 2', approx_distinct(cchar) from random_types_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@random_types_table
+#### A masked pattern was here ####
+expect 2	2

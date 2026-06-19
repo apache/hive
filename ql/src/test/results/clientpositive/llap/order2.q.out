@@ -1,0 +1,15 @@
+PREHOOK: query: SELECT subq.key, subq.value FROM 
+(SELECT x.* FROM SRC x ORDER BY key limit 10) subq
+where subq.key < 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT subq.key, subq.value FROM 
+(SELECT x.* FROM SRC x ORDER BY key limit 10) subq
+where subq.key < 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0

@@ -1,0 +1,15 @@
+PREHOOK: query: DESCRIBE FUNCTION log2
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION log2
+POSTHOOK: type: DESCFUNCTION
+log2(x) - Returns the logarithm of x with base 2
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED log2
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED log2
+POSTHOOK: type: DESCFUNCTION
+log2(x) - Returns the logarithm of x with base 2
+Example:
+  > SELECT log2(2) FROM src LIMIT 1;
+  1
+Function class:org.apache.hadoop.hive.ql.udf.UDFLog2
+Function type:BUILTIN

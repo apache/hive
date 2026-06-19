@@ -1,0 +1,186 @@
+PREHOOK: query: drop table if exists HIVE_20262
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists HIVE_20262
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table HIVE_20262 (a array<int>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@HIVE_20262
+POSTHOOK: query: create table HIVE_20262 (a array<int>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@HIVE_20262
+PREHOOK: query: insert into HIVE_20262 select array(1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hive_20262
+POSTHOOK: query: insert into HIVE_20262 select array(1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hive_20262
+POSTHOOK: Lineage: hive_20262.a EXPRESSION []
+PREHOOK: query: insert into HIVE_20262 select array(2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hive_20262
+POSTHOOK: query: insert into HIVE_20262 select array(2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hive_20262
+POSTHOOK: Lineage: hive_20262.a EXPRESSION []
+PREHOOK: query: explain select explode(array(1,2,3,4,5)) as col
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain select explode(array(1,2,3,4,5)) as col
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: array(1,2,3,4,5) (type: array<int>)
+            outputColumnNames: _col0
+            UDTF Operator
+              function name: explode
+              Select Operator
+                expressions: col (type: int)
+                outputColumnNames: _col0
+                ListSink
+
+PREHOOK: query: explain select explode(a) from HIVE_20262
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_20262
+#### A masked pattern was here ####
+POSTHOOK: query: explain select explode(a) from HIVE_20262
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_20262
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: hive_20262
+          Select Operator
+            expressions: a (type: array<int>)
+            outputColumnNames: _col0
+            UDTF Operator
+              function name: explode
+              Select Operator
+                expressions: col (type: int)
+                outputColumnNames: _col0
+                ListSink
+
+PREHOOK: query: explain select 1, r from HIVE_20262
+      lateral view explode(a) t as r
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_20262
+#### A masked pattern was here ####
+POSTHOOK: query: explain select 1, r from HIVE_20262
+      lateral view explode(a) t as r
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_20262
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: hive_20262
+          Lateral View Forward
+            Select Operator
+              Lateral View Join Operator
+                outputColumnNames: _col5
+                Select Operator
+                  expressions: 1 (type: int), _col5 (type: int)
+                  outputColumnNames: _col0, _col1
+                  ListSink
+            Select Operator
+              expressions: a (type: array<int>)
+              outputColumnNames: _col0
+              UDTF Operator
+                function name: explode
+                Lateral View Join Operator
+                  outputColumnNames: _col5
+                  Select Operator
+                    expressions: 1 (type: int), _col5 (type: int)
+                    outputColumnNames: _col0, _col1
+                    ListSink
+
+PREHOOK: query: explain select explode(array(1,2,3,4,5)) as col
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain select explode(array(1,2,3,4,5)) as col
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: array(1,2,3,4,5) (type: array<int>)
+            outputColumnNames: _col0
+            UDTF Operator
+              function name: explode
+              Select Operator
+                expressions: col (type: int)
+                outputColumnNames: _col0
+                ListSink
+
+PREHOOK: query: explain select explode(a) from HIVE_20262
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_20262
+#### A masked pattern was here ####
+POSTHOOK: query: explain select explode(a) from HIVE_20262
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_20262
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: hive_20262
+          Select Operator
+            expressions: a (type: array<int>)
+            outputColumnNames: _col0
+            UDTF Operator
+              function name: explode
+              Select Operator
+                expressions: col (type: int)
+                outputColumnNames: _col0
+                ListSink
+

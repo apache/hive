@@ -1,0 +1,61 @@
+PREHOOK: query: DROP TABLE IF EXISTS avro_type_evolution
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS avro_type_evolution
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE avro_type_evolution (val bigint) STORED AS AVRO
+TBLPROPERTIES (
+    'avro.schema.literal'='{
+  "type" : "record",
+  "name" : "type_evolution",
+  "namespace" : "default",
+  "fields" : [ {
+    "name" : "val",
+    "type" : [ "long", "null" ]
+  } ]
+}')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@avro_type_evolution
+POSTHOOK: query: CREATE TABLE avro_type_evolution (val bigint) STORED AS AVRO
+TBLPROPERTIES (
+    'avro.schema.literal'='{
+  "type" : "record",
+  "name" : "type_evolution",
+  "namespace" : "default",
+  "fields" : [ {
+    "name" : "val",
+    "type" : [ "long", "null" ]
+  } ]
+}')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@avro_type_evolution
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/type_evolution.avro' OVERWRITE INTO TABLE avro_type_evolution
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@avro_type_evolution
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/type_evolution.avro' OVERWRITE INTO TABLE avro_type_evolution
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@avro_type_evolution
+PREHOOK: query: SELECT * FROM avro_type_evolution
+PREHOOK: type: QUERY
+PREHOOK: Input: default@avro_type_evolution
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM avro_type_evolution
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@avro_type_evolution
+#### A masked pattern was here ####
+1
+PREHOOK: query: DROP TABLE avro_type_evolution
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@avro_type_evolution
+PREHOOK: Output: database:default
+PREHOOK: Output: default@avro_type_evolution
+POSTHOOK: query: DROP TABLE avro_type_evolution
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@avro_type_evolution
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@avro_type_evolution

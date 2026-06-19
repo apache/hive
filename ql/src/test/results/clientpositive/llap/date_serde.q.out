@@ -1,0 +1,559 @@
+PREHOOK: query: drop table if exists date_serde_regex
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists date_serde_regex
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table date_serde_lb
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table date_serde_lb
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table date_serde_ls
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table date_serde_ls
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table date_serde_c
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table date_serde_c
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table date_serde_lbc
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table date_serde_lbc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table date_serde_orc
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table date_serde_orc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table date_serde_regex (
+  ORIGIN_CITY_NAME string,
+  DEST_CITY_NAME string,
+  FL_DATE date,
+  ARR_DELAY float,
+  FL_NUM int
+)
+row format serde 'org.apache.hadoop.hive.serde2.RegexSerDe'
+with serdeproperties (
+  "input.regex" = "([^]*)([^]*)([^]*)([^]*)([0-9]*)"
+)
+stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@date_serde_regex
+POSTHOOK: query: create table date_serde_regex (
+  ORIGIN_CITY_NAME string,
+  DEST_CITY_NAME string,
+  FL_DATE date,
+  ARR_DELAY float,
+  FL_NUM int
+)
+row format serde 'org.apache.hadoop.hive.serde2.RegexSerDe'
+with serdeproperties (
+  "input.regex" = "([^]*)([^]*)([^]*)([^]*)([0-9]*)"
+)
+stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@date_serde_regex
+PREHOOK: query: load data local inpath '../../data/files/flights_tiny.txt.1' overwrite into table date_serde_regex
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@date_serde_regex
+POSTHOOK: query: load data local inpath '../../data/files/flights_tiny.txt.1' overwrite into table date_serde_regex
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@date_serde_regex
+PREHOOK: query: select * from date_serde_regex
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_serde_regex
+#### A masked pattern was here ####
+POSTHOOK: query: select * from date_serde_regex
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_serde_regex
+#### A masked pattern was here ####
+Baltimore	New York	2010-10-20	-30.0	1064
+Baltimore	New York	2010-10-20	23.0	1142
+Baltimore	New York	2010-10-20	6.0	1599
+Chicago	New York	2010-10-20	42.0	361
+Chicago	New York	2010-10-20	24.0	897
+Chicago	New York	2010-10-20	15.0	1531
+Chicago	New York	2010-10-20	-6.0	1610
+Chicago	New York	2010-10-20	-2.0	3198
+Baltimore	New York	2010-10-21	17.0	1064
+Baltimore	New York	2010-10-21	105.0	1142
+Baltimore	New York	2010-10-21	28.0	1599
+Chicago	New York	2010-10-21	142.0	361
+Chicago	New York	2010-10-21	77.0	897
+Chicago	New York	2010-10-21	53.0	1531
+Chicago	New York	2010-10-21	-5.0	1610
+Chicago	New York	2010-10-21	51.0	3198
+Baltimore	New York	2010-10-22	-12.0	1064
+Baltimore	New York	2010-10-22	54.0	1142
+Baltimore	New York	2010-10-22	18.0	1599
+Chicago	New York	2010-10-22	2.0	361
+Chicago	New York	2010-10-22	24.0	897
+Chicago	New York	2010-10-22	16.0	1531
+Chicago	New York	2010-10-22	-6.0	1610
+Chicago	New York	2010-10-22	-11.0	3198
+Baltimore	New York	2010-10-23	18.0	272
+Baltimore	New York	2010-10-23	-10.0	1805
+Baltimore	New York	2010-10-23	6.0	3171
+Chicago	New York	2010-10-23	3.0	384
+Chicago	New York	2010-10-23	32.0	426
+Chicago	New York	2010-10-23	1.0	650
+Chicago	New York	2010-10-23	11.0	3085
+Baltimore	New York	2010-10-24	12.0	1599
+Baltimore	New York	2010-10-24	20.0	2571
+Chicago	New York	2010-10-24	10.0	361
+Chicago	New York	2010-10-24	113.0	897
+Chicago	New York	2010-10-24	-5.0	1531
+Chicago	New York	2010-10-24	-17.0	1610
+Chicago	New York	2010-10-24	-3.0	3198
+Baltimore	New York	2010-10-25	-25.0	1064
+Baltimore	New York	2010-10-25	92.0	1142
+Baltimore	New York	2010-10-25	106.0	1599
+Chicago	New York	2010-10-25	31.0	361
+Chicago	New York	2010-10-25	-1.0	897
+Chicago	New York	2010-10-25	43.0	1531
+Chicago	New York	2010-10-25	6.0	1610
+Chicago	New York	2010-10-25	-16.0	3198
+Baltimore	New York	2010-10-26	-22.0	1064
+Baltimore	New York	2010-10-26	123.0	1142
+Baltimore	New York	2010-10-26	90.0	1599
+Chicago	New York	2010-10-26	12.0	361
+Chicago	New York	2010-10-26	0.0	897
+Chicago	New York	2010-10-26	29.0	1531
+Chicago	New York	2010-10-26	-17.0	1610
+Chicago	New York	2010-10-26	6.0	3198
+Baltimore	New York	2010-10-27	-18.0	1064
+Baltimore	New York	2010-10-27	49.0	1142
+Baltimore	New York	2010-10-27	92.0	1599
+Chicago	New York	2010-10-27	148.0	361
+Chicago	New York	2010-10-27	-11.0	897
+Chicago	New York	2010-10-27	70.0	1531
+Chicago	New York	2010-10-27	8.0	1610
+Chicago	New York	2010-10-27	21.0	3198
+Baltimore	New York	2010-10-28	-4.0	1064
+Baltimore	New York	2010-10-28	-14.0	1142
+Baltimore	New York	2010-10-28	-14.0	1599
+Chicago	New York	2010-10-28	2.0	361
+Chicago	New York	2010-10-28	2.0	897
+Chicago	New York	2010-10-28	-11.0	1531
+Chicago	New York	2010-10-28	3.0	1610
+Chicago	New York	2010-10-28	-18.0	3198
+Baltimore	New York	2010-10-29	-24.0	1064
+Baltimore	New York	2010-10-29	21.0	1142
+Baltimore	New York	2010-10-29	-2.0	1599
+Chicago	New York	2010-10-29	-12.0	361
+Chicago	New York	2010-10-29	-11.0	897
+Chicago	New York	2010-10-29	15.0	1531
+Chicago	New York	2010-10-29	-18.0	1610
+Chicago	New York	2010-10-29	-4.0	3198
+Baltimore	New York	2010-10-30	14.0	272
+Baltimore	New York	2010-10-30	-1.0	1805
+Baltimore	New York	2010-10-30	5.0	3171
+Chicago	New York	2010-10-30	-6.0	384
+Chicago	New York	2010-10-30	-10.0	426
+Chicago	New York	2010-10-30	-5.0	650
+Chicago	New York	2010-10-30	-5.0	3085
+Baltimore	New York	2010-10-31	-1.0	1599
+Baltimore	New York	2010-10-31	-14.0	2571
+Chicago	New York	2010-10-31	-25.0	361
+Chicago	New York	2010-10-31	-18.0	897
+Chicago	New York	2010-10-31	-4.0	1531
+Chicago	New York	2010-10-31	-22.0	1610
+Chicago	New York	2010-10-31	-15.0	3198
+Cleveland	New York	2010-10-30	-23.0	2018
+Cleveland	New York	2010-10-30	-12.0	2932
+Cleveland	New York	2010-10-29	-4.0	2630
+Cleveland	New York	2010-10-29	-19.0	2646
+Cleveland	New York	2010-10-29	-12.0	3014
+Cleveland	New York	2010-10-28	3.0	2630
+Cleveland	New York	2010-10-28	-6.0	2646
+Cleveland	New York	2010-10-28	1.0	3014
+Cleveland	New York	2010-10-27	16.0	2630
+Cleveland	New York	2010-10-27	27.0	3014
+Cleveland	New York	2010-10-26	4.0	2630
+Cleveland	New York	2010-10-26	-27.0	2646
+Cleveland	New York	2010-10-26	-11.0	2662
+Cleveland	New York	2010-10-26	13.0	3014
+Cleveland	New York	2010-10-25	-4.0	2630
+Cleveland	New York	2010-10-25	81.0	2646
+Cleveland	New York	2010-10-25	42.0	3014
+Cleveland	New York	2010-10-24	5.0	2254
+Cleveland	New York	2010-10-24	-11.0	2630
+Cleveland	New York	2010-10-24	-20.0	2646
+Cleveland	New York	2010-10-24	-9.0	3014
+Cleveland	New York	2010-10-23	-21.0	2932
+Cleveland	New York	2010-10-22	1.0	2630
+Cleveland	New York	2010-10-22	-25.0	2646
+Cleveland	New York	2010-10-22	-3.0	3014
+Cleveland	New York	2010-10-21	3.0	2630
+Cleveland	New York	2010-10-21	29.0	2646
+Cleveland	New York	2010-10-21	72.0	3014
+Cleveland	New York	2010-10-20	-8.0	2630
+Cleveland	New York	2010-10-20	-15.0	3014
+Washington	New York	2010-10-23	-25.0	5832
+Washington	New York	2010-10-23	-21.0	5904
+Washington	New York	2010-10-23	-18.0	5917
+Washington	New York	2010-10-30	-27.0	5904
+Washington	New York	2010-10-30	-16.0	5917
+Washington	New York	2010-10-20	-2.0	7291
+Washington	New York	2010-10-21	22.0	7291
+Washington	New York	2010-10-23	-16.0	7274
+Washington	New York	2010-10-24	-26.0	7282
+Washington	New York	2010-10-25	9.0	7291
+Washington	New York	2010-10-26	4.0	7291
+Washington	New York	2010-10-27	26.0	7291
+Washington	New York	2010-10-28	45.0	7291
+Washington	New York	2010-10-29	1.0	7291
+Washington	New York	2010-10-31	-18.0	7282
+PREHOOK: query: select fl_date, count(*) from date_serde_regex group by fl_date
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_serde_regex
+#### A masked pattern was here ####
+POSTHOOK: query: select fl_date, count(*) from date_serde_regex group by fl_date
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_serde_regex
+#### A masked pattern was here ####
+2010-10-20	11
+2010-10-21	12
+2010-10-29	12
+2010-10-22	11
+2010-10-23	12
+2010-10-24	12
+2010-10-25	12
+2010-10-26	13
+2010-10-27	11
+2010-10-28	12
+2010-10-30	11
+2010-10-31	8
+PREHOOK: query: create table date_serde_lb (
+  c1 date,
+  c2 int
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@date_serde_lb
+POSTHOOK: query: create table date_serde_lb (
+  c1 date,
+  c2 int
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@date_serde_lb
+PREHOOK: query: alter table date_serde_lb set serde 'org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe'
+PREHOOK: type: ALTERTABLE_SERIALIZER
+PREHOOK: Input: default@date_serde_lb
+PREHOOK: Output: default@date_serde_lb
+POSTHOOK: query: alter table date_serde_lb set serde 'org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe'
+POSTHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: Input: default@date_serde_lb
+POSTHOOK: Output: default@date_serde_lb
+PREHOOK: query: insert overwrite table date_serde_lb 
+  select fl_date, fl_num from date_serde_regex limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_serde_regex
+PREHOOK: Output: default@date_serde_lb
+POSTHOOK: query: insert overwrite table date_serde_lb 
+  select fl_date, fl_num from date_serde_regex limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_serde_regex
+POSTHOOK: Output: default@date_serde_lb
+POSTHOOK: Lineage: date_serde_lb.c1 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_date, type:date, comment:), ]
+POSTHOOK: Lineage: date_serde_lb.c2 SIMPLE [(date_serde_regex)date_serde_regex.FieldSchema(name:fl_num, type:int, comment:), ]
+PREHOOK: query: select * from date_serde_lb
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_serde_lb
+#### A masked pattern was here ####
+POSTHOOK: query: select * from date_serde_lb
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_serde_lb
+#### A masked pattern was here ####
+2010-10-20	1064
+PREHOOK: query: select c1, sum(c2) from date_serde_lb group by c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_serde_lb
+#### A masked pattern was here ####
+POSTHOOK: query: select c1, sum(c2) from date_serde_lb group by c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_serde_lb
+#### A masked pattern was here ####
+2010-10-20	1064
+PREHOOK: query: create table date_serde_ls (
+  c1 date,
+  c2 int
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@date_serde_ls
+POSTHOOK: query: create table date_serde_ls (
+  c1 date,
+  c2 int
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@date_serde_ls
+PREHOOK: query: alter table date_serde_ls set serde 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+PREHOOK: type: ALTERTABLE_SERIALIZER
+PREHOOK: Input: default@date_serde_ls
+PREHOOK: Output: default@date_serde_ls
+POSTHOOK: query: alter table date_serde_ls set serde 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+POSTHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: Input: default@date_serde_ls
+POSTHOOK: Output: default@date_serde_ls
+PREHOOK: query: insert overwrite table date_serde_ls 
+  select c1, c2 from date_serde_lb limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_serde_lb
+PREHOOK: Output: default@date_serde_ls
+POSTHOOK: query: insert overwrite table date_serde_ls 
+  select c1, c2 from date_serde_lb limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_serde_lb
+POSTHOOK: Output: default@date_serde_ls
+POSTHOOK: Lineage: date_serde_ls.c1 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_ls.c2 SIMPLE [(date_serde_lb)date_serde_lb.FieldSchema(name:c2, type:int, comment:null), ]
+PREHOOK: query: select * from date_serde_ls
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_serde_ls
+#### A masked pattern was here ####
+POSTHOOK: query: select * from date_serde_ls
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_serde_ls
+#### A masked pattern was here ####
+2010-10-20	1064
+PREHOOK: query: select c1, sum(c2) from date_serde_ls group by c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_serde_ls
+#### A masked pattern was here ####
+POSTHOOK: query: select c1, sum(c2) from date_serde_ls group by c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_serde_ls
+#### A masked pattern was here ####
+2010-10-20	1064
+PREHOOK: query: create table date_serde_c (
+  c1 date,
+  c2 int
+) stored as rcfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@date_serde_c
+POSTHOOK: query: create table date_serde_c (
+  c1 date,
+  c2 int
+) stored as rcfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@date_serde_c
+PREHOOK: query: alter table date_serde_c set serde 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+PREHOOK: type: ALTERTABLE_SERIALIZER
+PREHOOK: Input: default@date_serde_c
+PREHOOK: Output: default@date_serde_c
+POSTHOOK: query: alter table date_serde_c set serde 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+POSTHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: Input: default@date_serde_c
+POSTHOOK: Output: default@date_serde_c
+PREHOOK: query: insert overwrite table date_serde_c 
+  select c1, c2 from date_serde_ls limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_serde_ls
+PREHOOK: Output: default@date_serde_c
+POSTHOOK: query: insert overwrite table date_serde_c 
+  select c1, c2 from date_serde_ls limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_serde_ls
+POSTHOOK: Output: default@date_serde_c
+POSTHOOK: Lineage: date_serde_c.c1 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_c.c2 SIMPLE [(date_serde_ls)date_serde_ls.FieldSchema(name:c2, type:int, comment:null), ]
+PREHOOK: query: select * from date_serde_c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_serde_c
+#### A masked pattern was here ####
+POSTHOOK: query: select * from date_serde_c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_serde_c
+#### A masked pattern was here ####
+2010-10-20	1064
+PREHOOK: query: select c1, sum(c2) from date_serde_c group by c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_serde_c
+#### A masked pattern was here ####
+POSTHOOK: query: select c1, sum(c2) from date_serde_c group by c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_serde_c
+#### A masked pattern was here ####
+2010-10-20	1064
+PREHOOK: query: create table date_serde_lbc (
+  c1 date,
+  c2 int
+) stored as rcfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@date_serde_lbc
+POSTHOOK: query: create table date_serde_lbc (
+  c1 date,
+  c2 int
+) stored as rcfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@date_serde_lbc
+PREHOOK: query: alter table date_serde_lbc set serde 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe'
+PREHOOK: type: ALTERTABLE_SERIALIZER
+PREHOOK: Input: default@date_serde_lbc
+PREHOOK: Output: default@date_serde_lbc
+POSTHOOK: query: alter table date_serde_lbc set serde 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe'
+POSTHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: Input: default@date_serde_lbc
+POSTHOOK: Output: default@date_serde_lbc
+PREHOOK: query: insert overwrite table date_serde_lbc 
+  select c1, c2 from date_serde_c limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_serde_c
+PREHOOK: Output: default@date_serde_lbc
+POSTHOOK: query: insert overwrite table date_serde_lbc 
+  select c1, c2 from date_serde_c limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_serde_c
+POSTHOOK: Output: default@date_serde_lbc
+POSTHOOK: Lineage: date_serde_lbc.c1 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_lbc.c2 SIMPLE [(date_serde_c)date_serde_c.FieldSchema(name:c2, type:int, comment:null), ]
+PREHOOK: query: select * from date_serde_lbc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_serde_lbc
+#### A masked pattern was here ####
+POSTHOOK: query: select * from date_serde_lbc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_serde_lbc
+#### A masked pattern was here ####
+2010-10-20	1064
+PREHOOK: query: select c1, sum(c2) from date_serde_lbc group by c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_serde_lbc
+#### A masked pattern was here ####
+POSTHOOK: query: select c1, sum(c2) from date_serde_lbc group by c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_serde_lbc
+#### A masked pattern was here ####
+2010-10-20	1064
+PREHOOK: query: create table date_serde_orc (
+  c1 date,
+  c2 int
+) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@date_serde_orc
+POSTHOOK: query: create table date_serde_orc (
+  c1 date,
+  c2 int
+) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@date_serde_orc
+PREHOOK: query: alter table date_serde_orc set serde 'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+PREHOOK: type: ALTERTABLE_SERIALIZER
+PREHOOK: Input: default@date_serde_orc
+PREHOOK: Output: default@date_serde_orc
+POSTHOOK: query: alter table date_serde_orc set serde 'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+POSTHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: Input: default@date_serde_orc
+POSTHOOK: Output: default@date_serde_orc
+PREHOOK: query: insert overwrite table date_serde_orc 
+  select c1, c2 from date_serde_lbc limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_serde_lbc
+PREHOOK: Output: default@date_serde_orc
+POSTHOOK: query: insert overwrite table date_serde_orc 
+  select c1, c2 from date_serde_lbc limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_serde_lbc
+POSTHOOK: Output: default@date_serde_orc
+POSTHOOK: Lineage: date_serde_orc.c1 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c1, type:date, comment:null), ]
+POSTHOOK: Lineage: date_serde_orc.c2 SIMPLE [(date_serde_lbc)date_serde_lbc.FieldSchema(name:c2, type:int, comment:null), ]
+PREHOOK: query: select * from date_serde_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_serde_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select * from date_serde_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_serde_orc
+#### A masked pattern was here ####
+2010-10-20	1064
+PREHOOK: query: select c1, sum(c2) from date_serde_orc group by c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_serde_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select c1, sum(c2) from date_serde_orc group by c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_serde_orc
+#### A masked pattern was here ####
+2010-10-20	1064
+PREHOOK: query: drop table date_serde_regex
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@date_serde_regex
+PREHOOK: Output: database:default
+PREHOOK: Output: default@date_serde_regex
+POSTHOOK: query: drop table date_serde_regex
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@date_serde_regex
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@date_serde_regex
+PREHOOK: query: drop table date_serde_lb
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@date_serde_lb
+PREHOOK: Output: database:default
+PREHOOK: Output: default@date_serde_lb
+POSTHOOK: query: drop table date_serde_lb
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@date_serde_lb
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@date_serde_lb
+PREHOOK: query: drop table date_serde_ls
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@date_serde_ls
+PREHOOK: Output: database:default
+PREHOOK: Output: default@date_serde_ls
+POSTHOOK: query: drop table date_serde_ls
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@date_serde_ls
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@date_serde_ls
+PREHOOK: query: drop table date_serde_c
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@date_serde_c
+PREHOOK: Output: database:default
+PREHOOK: Output: default@date_serde_c
+POSTHOOK: query: drop table date_serde_c
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@date_serde_c
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@date_serde_c
+PREHOOK: query: drop table date_serde_lbc
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@date_serde_lbc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@date_serde_lbc
+POSTHOOK: query: drop table date_serde_lbc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@date_serde_lbc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@date_serde_lbc
+PREHOOK: query: drop table date_serde_orc
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@date_serde_orc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@date_serde_orc
+POSTHOOK: query: drop table date_serde_orc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@date_serde_orc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@date_serde_orc

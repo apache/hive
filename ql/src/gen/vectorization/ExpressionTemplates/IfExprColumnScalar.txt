@@ -1,0 +1,155 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
+
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+
+/**
+ * Compute IF(expr1, expr2, expr3) for 3 input column expressions.
+ * The first is always a boolean (LongColumnVector).
+ * The second is a column or non-constant expression result.
+ * The third is a constant value.
+ */
+public class <ClassName> extends VectorExpression {
+
+  private static final long serialVersionUID = 1L;
+
+  protected final <OperandType3> arg3Scalar;
+
+  public <ClassName>(int arg1Column, int arg2Column, <OperandType3> arg3Scalar,
+      int outputColumnNum) {
+    super(arg1Column, arg2Column, outputColumnNum);
+    this.arg3Scalar = arg3Scalar;
+  }
+
+  public <ClassName>() {
+    super();
+
+    // Dummy final assignments.
+    arg3Scalar = 0;
+  }
+
+  @Override
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
+
+    // return immediately if batch is empty
+    final int n = batch.size;
+    if (n == 0) {
+      return;
+    }
+
+    if (childExpressions != null) {
+      super.evaluateChildren(batch);
+    }
+
+    LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[inputColumnNum[0]];
+    <Arg2ColumnVectorType> arg2ColVector = (<Arg2ColumnVectorType>) batch.cols[inputColumnNum[1]];
+    <OutputColumnVectorType> outputColVector = (<OutputColumnVectorType>) batch.cols[outputColumnNum];
+    int[] sel = batch.selected;
+    boolean[] outputIsNull = outputColVector.isNull;
+
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
+
+    long[] vector1 = arg1ColVector.vector;
+    <OperandType2>[] vector2 = arg2ColVector.vector;
+    <ReturnType>[] outputVector = outputColVector.vector;
+
+    if (arg1ColVector.isRepeating) {
+      if ((arg1ColVector.noNulls || !arg1ColVector.isNull[0]) && vector1[0] == 1) {
+        arg2ColVector.copySelected(batch.selectedInUse, sel, n, outputColVector);
+      } else {
+        outputColVector.fill(arg3Scalar);
+      }
+      return;
+    }
+
+    // Extend any repeating values and noNulls indicator in the inputs to
+    // reduce the number of code paths needed below.
+    arg2ColVector.flatten(batch.selectedInUse, sel, n);
+
+    /*
+     * Do careful maintenance of NULLs.
+     */
+    outputColVector.noNulls = false;
+
+    if (arg1ColVector.noNulls) {
+      if (batch.selectedInUse) {
+        for(int j = 0; j != n; j++) {
+          int i = sel[j];
+          outputVector[i] = (vector1[i] == 1 ? vector2[i] : arg3Scalar);
+          outputIsNull[i] = (vector1[i] == 1 ? arg2ColVector.isNull[i] : false);
+        }
+      } else {
+        for(int i = 0; i != n; i++) {
+          outputVector[i] = (vector1[i] == 1 ? vector2[i] : arg3Scalar);
+          outputIsNull[i] = (vector1[i] == 1 ? arg2ColVector.isNull[i] : false);
+        }
+      }
+    } else /* there are NULLs in the inputColVector */ {
+
+      if (batch.selectedInUse) {
+        for(int j = 0; j != n; j++) {
+          int i = sel[j];
+          outputVector[i] = (!arg1ColVector.isNull[i] && vector1[i] == 1 ?
+              vector2[i] : arg3Scalar);
+          outputIsNull[i] = (!arg1ColVector.isNull[i] && vector1[i] == 1 ?
+              arg2ColVector.isNull[i] : false);
+        }
+      } else {
+        for(int i = 0; i != n; i++) {
+          outputVector[i] = (!arg1ColVector.isNull[i] && vector1[i] == 1 ?
+              vector2[i] : arg3Scalar);
+          outputIsNull[i] = (!arg1ColVector.isNull[i] && vector1[i] == 1 ?
+              arg2ColVector.isNull[i] : false);
+        }
+      }
+    }
+
+    // restore repeating and no nulls indicators
+    arg2ColVector.unFlatten();
+  }
+
+  @Override
+  public String vectorExpressionParameters() {
+    return getColumnParamString(0, inputColumnNum[0]) + ", " + getColumnParamString(1, inputColumnNum[1]) +
+        ", val "+ arg3Scalar;
+  }
+
+  @Override
+  public VectorExpressionDescriptor.Descriptor getDescriptor() {
+    return (new VectorExpressionDescriptor.Builder())
+        .setMode(
+            VectorExpressionDescriptor.Mode.PROJECTION)
+        .setNumArguments(3)
+        .setArgumentTypes(
+            VectorExpressionDescriptor.ArgumentType.getType("long"),
+            VectorExpressionDescriptor.ArgumentType.getType("<VectorExprArgType2>"),
+            VectorExpressionDescriptor.ArgumentType.getType("<VectorExprArgType3>"))
+        .setInputExpressionTypes(
+            VectorExpressionDescriptor.InputExpressionType.COLUMN,
+            VectorExpressionDescriptor.InputExpressionType.COLUMN,
+            VectorExpressionDescriptor.InputExpressionType.SCALAR).build();
+  }
+}

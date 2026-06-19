@@ -1,0 +1,106 @@
+Ln:1 DECLARE cnt INT = 0
+Ln:2 PRINT
+Correct
+Ln:3 DECLARE HANDLER
+Ln:5 WHILE - ENTERED
+Ln:6 FETCH
+Ln:6 Cursor not found: cur
+Ln:3 CONTINUE HANDLER
+Ln:4 PRINT
+Correct - Exception raised
+Ln:7 PRINT
+0
+Ln:8 PRINT
+Correct - exception handled
+Ln:9 SET cnt = 1
+Ln:6 FETCH
+Ln:6 Cursor not found: cur
+Ln:3 CONTINUE HANDLER
+Ln:4 PRINT
+Correct - Exception raised
+Ln:7 PRINT
+1
+Ln:8 PRINT
+Correct - exception handled
+Ln:9 SET cnt = 2
+Ln:6 FETCH
+Ln:6 Cursor not found: cur
+Ln:3 CONTINUE HANDLER
+Ln:4 PRINT
+Correct - Exception raised
+Ln:7 PRINT
+2
+Ln:8 PRINT
+Correct - exception handled
+Ln:9 SET cnt = 3
+Ln:6 FETCH
+Ln:6 Cursor not found: cur
+Ln:3 CONTINUE HANDLER
+Ln:4 PRINT
+Correct - Exception raised
+Ln:7 PRINT
+3
+Ln:8 PRINT
+Correct - exception handled
+Ln:9 SET cnt = 4
+Ln:6 FETCH
+Ln:6 Cursor not found: cur
+Ln:3 CONTINUE HANDLER
+Ln:4 PRINT
+Correct - Exception raised
+Ln:7 PRINT
+4
+Ln:8 PRINT
+Correct - exception handled
+Ln:9 SET cnt = 5
+Ln:6 FETCH
+Ln:6 Cursor not found: cur
+Ln:3 CONTINUE HANDLER
+Ln:4 PRINT
+Correct - Exception raised
+Ln:7 PRINT
+5
+Ln:8 PRINT
+Correct - exception handled
+Ln:9 SET cnt = 6
+Ln:6 FETCH
+Ln:6 Cursor not found: cur
+Ln:3 CONTINUE HANDLER
+Ln:4 PRINT
+Correct - Exception raised
+Ln:7 PRINT
+6
+Ln:8 PRINT
+Correct - exception handled
+Ln:9 SET cnt = 7
+Ln:6 FETCH
+Ln:6 Cursor not found: cur
+Ln:3 CONTINUE HANDLER
+Ln:4 PRINT
+Correct - Exception raised
+Ln:7 PRINT
+7
+Ln:8 PRINT
+Correct - exception handled
+Ln:9 SET cnt = 8
+Ln:6 FETCH
+Ln:6 Cursor not found: cur
+Ln:3 CONTINUE HANDLER
+Ln:4 PRINT
+Correct - Exception raised
+Ln:7 PRINT
+8
+Ln:8 PRINT
+Correct - exception handled
+Ln:9 SET cnt = 9
+Ln:6 FETCH
+Ln:6 Cursor not found: cur
+Ln:3 CONTINUE HANDLER
+Ln:4 PRINT
+Correct - Exception raised
+Ln:7 PRINT
+9
+Ln:8 PRINT
+Correct - exception handled
+Ln:9 SET cnt = 10
+Ln:5 WHILE - LEFT

@@ -1,0 +1,512 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import com.google.common.collect.Sets;
+import org.apache.calcite.adapter.druid.DruidQuery;
+import org.apache.calcite.adapter.jdbc.JdbcConvention;
+import org.apache.calcite.adapter.jdbc.JdbcRel;
+import org.apache.calcite.adapter.jdbc.JdbcRules;
+import org.apache.calcite.plan.RelOptUtil;
+import org.apache.calcite.plan.hep.HepRelVertex;
+import org.apache.calcite.plan.volcano.RelSubset;
+import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.SingleRel;
+import org.apache.calcite.rel.core.Aggregate;
+import org.apache.calcite.rel.core.AggregateCall;
+import org.apache.calcite.rel.core.Exchange;
+import org.apache.calcite.rel.core.Filter;
+import org.apache.calcite.rel.core.Join;
+import org.apache.calcite.rel.core.Project;
+import org.apache.calcite.rel.core.SetOp;
+import org.apache.calcite.rel.core.Sort;
+import org.apache.calcite.rel.core.Spool;
+import org.apache.calcite.rel.core.TableSpool;
+import org.apache.calcite.rel.core.Window.RexWinAggCall;
+import org.apache.calcite.rel.rules.MultiJoin;
+import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeFactory;
+import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexOver;
+import org.apache.calcite.sql.SqlAggFunction;
+import org.apache.calcite.tools.RelBuilder;
+import org.apache.calcite.util.Pair;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttleImpl;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveValues;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelColumnsAlignment;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableList;
+
+public class PlanModifierForASTConv {
+
+  private static final Logger LOG = LoggerFactory.getLogger(PlanModifierForASTConv.class);
+
+
+  public static RelNode convertOpTree(RelNode rel, List<FieldSchema> resultSchema, boolean alignColumns)
+      throws CalciteSemanticException {
+    if (rel instanceof HiveValues) {
+      List<String> fieldNames = resultSchema.stream().map(FieldSchema::getName).collect(Collectors.toList());
+      return ((HiveValues) rel).copy(fieldNames);
+    }
+
+    RelNode newTopNode = rel;
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Original plan for PlanModifier\n " + RelOptUtil.toString(newTopNode));
+    }
+
+    if (!(newTopNode instanceof Project) && !(newTopNode instanceof Sort) && !(newTopNode instanceof Exchange)) {
+      newTopNode = introduceDerivedTable(newTopNode);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Plan after top-level introduceDerivedTable\n "
+            + RelOptUtil.toString(newTopNode));
+      }
+    }
+
+    convertOpTree(newTopNode, (RelNode) null);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Plan after nested convertOpTree\n " + RelOptUtil.toString(newTopNode));
+    }
+
+    newTopNode = newTopNode.accept(new SelfJoinHandler());
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Plan after self-join disambiguation\n " + RelOptUtil.toString(newTopNode));
+    }
+
+    if (alignColumns) {
+      HiveRelColumnsAlignment propagator = new HiveRelColumnsAlignment(
+          HiveRelFactories.HIVE_BUILDER.create(newTopNode.getCluster(), null));
+      newTopNode = propagator.align(newTopNode);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Plan after propagating order\n " + RelOptUtil.toString(newTopNode));
+      }
+    }
+
+    Pair<RelNode, RelNode> topSelparentPair = HiveCalciteUtil.getTopLevelSelect(newTopNode);
+    PlanModifierUtil.fixTopOBSchema(newTopNode, topSelparentPair, resultSchema, true);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Plan after fixTopOBSchema\n " + RelOptUtil.toString(newTopNode));
+    }
+
+    topSelparentPair = HiveCalciteUtil.getTopLevelSelect(newTopNode);
+    newTopNode = renameTopLevelSelectInResultSchema(newTopNode, topSelparentPair, resultSchema);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Final plan after modifier\n " + RelOptUtil.toString(newTopNode));
+    }
+    return newTopNode;
+  }
+
+  private static void convertOpTree(RelNode rel, RelNode parent) {
+
+    if (rel instanceof HepRelVertex) {
+      throw new RuntimeException("Found HepRelVertex");
+    } else if (rel instanceof Join) {
+      if (!validJoinParent(rel, parent)) {
+        introduceDerivedTable(rel, parent);
+      }
+    } else if (rel instanceof MultiJoin) {
+      throw new RuntimeException("Found MultiJoin");
+    } else if (rel instanceof RelSubset) {
+      throw new RuntimeException("Found RelSubset");
+    } else if (rel instanceof SetOp) {
+      // TODO: Handle more than 2 inputs for setop
+      if (!validSetopParent(rel, parent))
+        introduceDerivedTable(rel, parent);
+
+      SetOp setop = (SetOp) rel;
+      for (RelNode inputRel : setop.getInputs()) {
+        if (!validSetopChild(inputRel)) {
+          introduceDerivedTable(inputRel, setop);
+        }
+      }
+    } else if (rel instanceof HiveTableFunctionScan) {
+      if (!validTableFunctionScanChild((HiveTableFunctionScan)rel)) {
+        introduceDerivedTable(rel.getInput(0), rel);
+      }
+    } else if (rel instanceof SingleRel) {
+      if (rel instanceof HiveJdbcConverter) {
+        introduceDerivedTable(rel, parent);
+      } else if (rel instanceof Filter) {
+        if (!validFilterParent(rel, parent)) {
+          introduceDerivedTable(rel, parent);
+        }
+      } else if (rel instanceof HiveSortLimit) {
+        if (!validSortParent(rel, parent)) {
+          introduceDerivedTable(rel, parent);
+        }
+        if (!validSortChild((HiveSortLimit) rel)) {
+          introduceDerivedTable(((HiveSortLimit) rel).getInput(), rel);
+        }
+      } else if (rel instanceof HiveSortExchange) {
+        if (!validExchangeChild((HiveSortExchange) rel)) {
+          introduceDerivedTable(((HiveSortExchange) rel).getInput(), rel);
+        }
+      } else if (rel instanceof HiveAggregate) {
+        RelNode newParent = parent;
+        if (!validGBParent(rel, parent)) {
+          newParent = introduceDerivedTable(rel, parent);
+        }
+        // check if groupby is empty and there is no other cols in aggr
+        // this should only happen when newParent is constant.
+        if (isEmptyGrpAggr(rel)) {
+          replaceEmptyGroupAggr(rel, newParent);
+          // Since the aggregate gets replaced, we need to change rel
+          // to be the new aggregate so that when convertOpTree gets
+          // called recursively, it will have the correct parent.
+          rel = newParent.getInputs().get(0);
+        }
+      } else if (rel instanceof Spool) {
+        Spool spool = (Spool) rel;
+        RelBuilder b = HiveRelFactories.HIVE_BUILDER.create(spool.getCluster(),null);
+        b.push(spool.getInput());
+        b.project(b.fields(), spool.getTable().getRowType().getFieldNames(), true);
+        spool.replaceInput(0, b.build());
+      }
+    }
+
+    List<RelNode> childNodes = rel.getInputs();
+    if (childNodes != null) {
+      for (RelNode r : childNodes) {
+        convertOpTree(r, rel);
+      }
+    }
+  }
+
+  /**
+   * A handler that detects self-joins in the plan and rewrites them to resolve ambiguous aliases.
+   * The handler traverses the plan and collects aliases of tables it encounters for each join branch.
+   * When the same alias occurs in both branches of a join, it introduces a derive table (Project)
+   * over the left branch to break the ambiguity.
+   */
+  private static class SelfJoinHandler extends HiveRelShuttleImpl {
+    private final Set<String> aliases = new HashSet<>();
+
+    @Override
+    public RelNode visit(HiveJoin join) {
+      SelfJoinHandler lf = new SelfJoinHandler();
+      RelNode newL = join.getLeft().accept(lf);
+      SelfJoinHandler rf = new SelfJoinHandler();
+      RelNode newR = join.getRight().accept(rf);
+      if (Sets.intersection(lf.aliases, rf.aliases).isEmpty()) {
+        // No self-join detected, return the join as is
+        aliases.addAll(lf.aliases);
+        aliases.addAll(rf.aliases);
+      } else {
+        // Self-join detected, introduce a derived table for the left side
+        aliases.addAll(rf.aliases);
+        newL = introduceDerivedTable(newL);
+      }
+      if (newL == join.getLeft() && newR == join.getRight()) {
+        return join;
+      } else {
+        return join.copy(join.getTraitSet(), Arrays.asList(newL, newR));
+      }
+    }
+
+    @Override
+    public RelNode visit(HiveProject project) {
+      RelNode rel = super.visit(project);
+      // Project denotes a derived table, so aliases can be cleared
+      aliases.clear();
+      return rel;
+    }
+
+    @Override
+    public RelNode visit(HiveTableScan scan) {
+      aliases.add(scan.getTableAlias().toLowerCase());
+      return scan;
+    }
+
+    @Override
+    public RelNode visit(HiveJdbcConverter conv) {
+      aliases.add(conv.getTableScan().getHiveTableScan().getTableAlias().toLowerCase());
+      return conv;
+    }
+
+    @Override
+    public RelNode visit(final RelNode rel) {
+      if (rel instanceof DruidQuery dq) {
+        aliases.add(((HiveTableScan) dq.getTableScan()).getTableAlias().toLowerCase());
+        return dq;
+      }
+      if (rel instanceof TableSpool spool) {
+        aliases.add(spool.getTable().getQualifiedName().getLast().toLowerCase());
+        return spool;
+      }
+      return super.visit(rel);
+    }
+  }
+
+  public static RelNode renameTopLevelSelectInResultSchema(final RelNode rootRel,
+      Pair<RelNode, RelNode> topSelparentPair, List<FieldSchema> resultSchema)
+      throws CalciteSemanticException {
+    RelNode parentOforiginalProjRel = topSelparentPair.getKey();
+    HiveProject originalProjRel = (HiveProject) topSelparentPair.getValue();
+
+    // Assumption: top portion of tree could only be
+    // (limit)?(OB)?(Project)....
+    List<RexNode> rootChildExps = originalProjRel.getProjects();
+    if (resultSchema.size() != rootChildExps.size()) {
+      // Safeguard against potential issues in CBO RowResolver construction. Disable CBO for now.
+      LOG.error(PlanModifierUtil.generateInvalidSchemaMessage(originalProjRel, resultSchema, 0));
+      throw new CalciteSemanticException("Result Schema didn't match Optimized Op Tree Schema");
+    }
+
+    List<String> newSelAliases = new ArrayList<String>();
+    String colAlias;
+    for (int i = 0; i < rootChildExps.size(); i++) {
+      colAlias = resultSchema.get(i).getName();
+      colAlias = getNewColAlias(newSelAliases, colAlias);
+      newSelAliases.add(colAlias);
+    }
+
+    HiveProject replacementProjectRel = HiveProject.create(originalProjRel.getInput(),
+        originalProjRel.getProjects(), newSelAliases);
+
+    if (rootRel == originalProjRel) {
+      return replacementProjectRel;
+    } else {
+      parentOforiginalProjRel.replaceInput(0, replacementProjectRel);
+      return rootRel;
+    }
+  }
+
+  private static String getNewColAlias(List<String> newSelAliases, String colAlias) {
+    int index = 1;
+    String newColAlias = colAlias;
+    while (newSelAliases.contains(newColAlias)) {
+      //This means that the derived colAlias collides with existing ones.
+      newColAlias = colAlias + "_" + (index++);
+    }
+    return newColAlias;
+  }
+
+  private static RelNode introduceDerivedTable(final RelNode rel) {
+    List<RexNode> projectList = HiveCalciteUtil.getProjsFromBelowAsInputRef(rel);
+
+    RelNode select = HiveProject.create(rel.getCluster(), rel, projectList,
+        rel.getRowType(), Collections.emptyList());
+    
+    if (rel instanceof JdbcRel) {
+      select = JdbcRules.JdbcProjectRule.create((JdbcConvention) rel.getConvention()).convert(select);
+    }
+
+    return select;
+  }
+
+  private static RelNode introduceDerivedTable(final RelNode rel, RelNode parent) {
+    int i = 0;
+    int pos = -1;
+    List<RelNode> childList = parent.getInputs();
+
+    for (RelNode child : childList) {
+      if (child == rel) {
+        pos = i;
+        break;
+      }
+      i++;
+    }
+
+    if (pos == -1) {
+      throw new RuntimeException("Couldn't find child node in parent's inputs");
+    }
+
+    RelNode select = introduceDerivedTable(rel);
+
+    parent.replaceInput(pos, select);
+
+    return select;
+  }
+
+  private static boolean validJoinParent(RelNode joinNode, RelNode parent) {
+    boolean validParent = true;
+
+    if (parent instanceof Join) {
+      // In Hive AST, right child of join cannot be another join,
+      // thus we need to introduce a project on top of it.
+      // But we only need the additional project if the left child
+      // is another join too; if it is not, ASTConverter will swap
+      // the join inputs, leaving the join operator on the left.
+      // we also do it if parent is HiveSemiJoin or HiveAntiJoin since
+      // ASTConverter won't swap inputs then.
+      // This will help triggering multijoin recognition methods that
+      // are embedded in SemanticAnalyzer.
+      if (((Join) parent).getRight() == joinNode &&
+            (((Join) parent).getLeft() instanceof Join || parent instanceof HiveSemiJoin
+                  || parent instanceof HiveAntiJoin) ) {
+        validParent = false;
+      }
+    } else if (parent instanceof SetOp) {
+      validParent = false;
+    }
+
+    return validParent;
+  }
+
+  private static boolean validFilterParent(RelNode filterNode, RelNode parent) {
+    boolean validParent = true;
+
+    // TODO: Verify GB having is not a separate filter (if so we shouldn't
+    // introduce derived table)
+    if (parent instanceof Filter || parent instanceof Join || parent instanceof SetOp ||
+       (parent instanceof Aggregate && filterNode.getInputs().get(0) instanceof Aggregate)) {
+      validParent = false;
+    }
+
+    return validParent;
+  }
+
+  private static boolean validGBParent(RelNode gbNode, RelNode parent) {
+    boolean validParent = true;
+
+    // TOODO: Verify GB having is not a seperate filter (if so we shouldn't
+    // introduce derived table)
+    if (parent instanceof Join || parent instanceof SetOp
+        || parent instanceof Aggregate
+        || (parent instanceof Filter && ((Aggregate) gbNode).getGroupSet().isEmpty())) {
+      validParent = false;
+    }
+
+    if (parent instanceof Project) {
+      for (RexNode child : ((Project) parent).getProjects()) {
+        if (child instanceof RexOver || child instanceof RexWinAggCall) {
+          // Hive can't handle select rank() over(order by sum(c1)/sum(c2)) from t1 group by c3
+          // but can handle    select rank() over (order by c4) from
+          // (select sum(c1)/sum(c2)  as c4 from t1 group by c3) t2;
+          // so introduce a project on top of this gby.
+          return false;
+        }
+      }
+    }
+
+    return validParent;
+  }
+
+  private static boolean validSortParent(RelNode sortNode, RelNode parent) {
+    boolean validParent = true;
+
+    if (parent != null && !(parent instanceof Project) &&
+        !(HiveCalciteUtil.pureLimitRelNode(parent) && HiveCalciteUtil.pureOrderRelNode(sortNode))) {
+      validParent = false;
+    }
+
+    return validParent;
+  }
+
+  private static boolean validSortChild(HiveSortLimit sortNode) {
+    boolean validChild = true;
+    RelNode child = sortNode.getInput();
+
+    if (!(child instanceof Project) &&
+        !(HiveCalciteUtil.pureLimitRelNode(sortNode) && HiveCalciteUtil.pureOrderRelNode(child))) {
+      validChild = false;
+    }
+
+    return validChild;
+  }
+
+  private static boolean validExchangeChild(HiveSortExchange sortNode) {
+    return sortNode.getInput() instanceof Project;
+  }
+
+  private static boolean validTableFunctionScanChild(HiveTableFunctionScan htfsNode) {
+    return htfsNode.getInputs().size() == 1 &&
+        (htfsNode.getInput(0) instanceof Project || htfsNode.getInput(0) instanceof HiveTableScan);
+  }
+
+  private static boolean validSetopParent(RelNode setop, RelNode parent) {
+    boolean validChild = true;
+
+    if (parent != null && !(parent instanceof Project)) {
+      validChild = false;
+    }
+
+    return validChild;
+  }
+
+  private static boolean validSetopChild(RelNode setopChild) {
+    boolean validChild = true;
+
+    if (!(setopChild instanceof Project)) {
+      validChild = false;
+    }
+
+    return validChild;
+  }
+
+  private static boolean isEmptyGrpAggr(RelNode gbNode) {
+    // Verify if both groupset and aggrfunction are empty)
+    Aggregate aggrnode = (Aggregate) gbNode;
+    if (aggrnode.getGroupSet().isEmpty() && aggrnode.getAggCallList().isEmpty()) {
+      return true;
+    }
+    return false;
+  }
+
+  private static void replaceEmptyGroupAggr(final RelNode rel, RelNode parent) {
+    // If this function is called, the parent should only include constant
+    List<RexNode> exps = parent instanceof Project ?
+        ((Project) parent).getProjects() : Collections.emptyList();
+    for (RexNode rexNode : exps) {
+      if (!rexNode.accept(new HiveCalciteUtil.ConstantFinder())) {
+        throw new RuntimeException("We expect " + parent.toString()
+            + " to contain only constants. However, " + rexNode.toString() + " is "
+            + rexNode.getKind());
+      }
+    }
+    HiveAggregate oldAggRel = (HiveAggregate) rel;
+    RelDataTypeFactory typeFactory = oldAggRel.getCluster().getTypeFactory();
+    RelDataType longType = TypeConverter.convert(TypeInfoFactory.longTypeInfo, typeFactory);
+    RelDataType intType = TypeConverter.convert(TypeInfoFactory.intTypeInfo, typeFactory);
+    // Create the dummy aggregation.
+    SqlAggFunction countFn = SqlFunctionConverter.getCalciteAggFn("count", ImmutableList.of(intType), longType);
+    // TODO: Using 0 might be wrong; might need to walk down to find the
+    // proper index of a dummy.
+    List<Integer> argList = ImmutableList.of(0);
+    AggregateCall dummyCall = new AggregateCall(countFn, false, argList, longType, null);
+    Aggregate newAggRel = oldAggRel.copy(oldAggRel.getTraitSet(), oldAggRel.getInput(),
+        oldAggRel.indicator, oldAggRel.getGroupSet(), oldAggRel.getGroupSets(),
+        ImmutableList.of(dummyCall));
+    RelNode select = introduceDerivedTable(newAggRel);
+    parent.replaceInput(0, select);
+  }
+}

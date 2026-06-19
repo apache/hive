@@ -1,0 +1,152 @@
+PREHOOK: query: create table src_autho_test as select * from src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_autho_test
+POSTHOOK: query: create table src_autho_test as select * from src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_autho_test
+POSTHOOK: Lineage: src_autho_test.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_autho_test.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create view v1 as select * from src_autho_test
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src_autho_test
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v1
+POSTHOOK: query: create view v1 as select * from src_autho_test
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src_autho_test
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v1
+POSTHOOK: Lineage: v1.key SIMPLE [(src_autho_test)src_autho_test.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v1.value SIMPLE [(src_autho_test)src_autho_test.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: create view v2 as select * from v1
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src_autho_test
+PREHOOK: Input: default@v1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v2
+POSTHOOK: query: create view v2 as select * from v1
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src_autho_test
+POSTHOOK: Input: default@v1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v2
+POSTHOOK: Lineage: v2.key SIMPLE [(src_autho_test)src_autho_test.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v2.value SIMPLE [(src_autho_test)src_autho_test.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: create view v3 as with t as (select * from v1) select * from t
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src_autho_test
+PREHOOK: Input: default@v1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v3
+POSTHOOK: query: create view v3 as with t as (select * from v1) select * from t
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src_autho_test
+POSTHOOK: Input: default@v1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v3
+POSTHOOK: Lineage: v3.key SIMPLE [(src_autho_test)src_autho_test.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v3.value SIMPLE [(src_autho_test)src_autho_test.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: grant select on table v2 to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@v2
+POSTHOOK: query: grant select on table v2 to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@v2
+PREHOOK: query: grant select on table v3 to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@v3
+POSTHOOK: query: grant select on table v3 to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@v3
+PREHOOK: query: explain authorization select * from v2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_autho_test
+PREHOOK: Input: default@v1
+PREHOOK: Input: default@v2
+#### A masked pattern was here ####
+POSTHOOK: query: explain authorization select * from v2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_autho_test
+POSTHOOK: Input: default@v1
+POSTHOOK: Input: default@v2
+#### A masked pattern was here ####
+INPUTS: 
+  default@v2
+  default@v1
+  default@src_autho_test
+OUTPUTS: 
+#### A masked pattern was here ####
+CURRENT_USER: 
+  hive_test_user
+OPERATION: 
+  QUERY
+PREHOOK: query: explain authorization select * from v3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_autho_test
+PREHOOK: Input: default@v1
+PREHOOK: Input: default@v3
+#### A masked pattern was here ####
+POSTHOOK: query: explain authorization select * from v3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_autho_test
+POSTHOOK: Input: default@v1
+POSTHOOK: Input: default@v3
+#### A masked pattern was here ####
+INPUTS: 
+  default@v3
+  default@v1
+  default@src_autho_test
+OUTPUTS: 
+#### A masked pattern was here ####
+CURRENT_USER: 
+  hive_test_user
+OPERATION: 
+  QUERY
+PREHOOK: query: select * from v2 order by key LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_autho_test
+PREHOOK: Input: default@v1
+PREHOOK: Input: default@v2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from v2 order by key LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_autho_test
+POSTHOOK: Input: default@v1
+POSTHOOK: Input: default@v2
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+10	val_10
+100	val_100
+100	val_100
+103	val_103
+103	val_103
+104	val_104
+104	val_104
+PREHOOK: query: select * from v3 order by key LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_autho_test
+PREHOOK: Input: default@v1
+PREHOOK: Input: default@v3
+#### A masked pattern was here ####
+POSTHOOK: query: select * from v3 order by key LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_autho_test
+POSTHOOK: Input: default@v1
+POSTHOOK: Input: default@v3
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+10	val_10
+100	val_100
+100	val_100
+103	val_103
+103	val_103
+104	val_104
+104	val_104

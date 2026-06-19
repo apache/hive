@@ -1,0 +1,740 @@
+PREHOOK: query: drop table if exists vector_and_or
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists vector_and_or
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table vector_and_or (dt1 date, dt2 date) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vector_and_or
+POSTHOOK: query: create table vector_and_or (dt1 date, dt2 date) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vector_and_or
+PREHOOK: query: insert into table vector_and_or
+  select null, null from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@vector_and_or
+POSTHOOK: query: insert into table vector_and_or
+  select null, null from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@vector_and_or
+POSTHOOK: Lineage: vector_and_or.dt1 EXPRESSION []
+POSTHOOK: Lineage: vector_and_or.dt2 EXPRESSION []
+PREHOOK: query: insert into table vector_and_or
+  select date '1999-12-31', date '2000-01-01' from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@vector_and_or
+POSTHOOK: query: insert into table vector_and_or
+  select date '1999-12-31', date '2000-01-01' from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@vector_and_or
+POSTHOOK: Lineage: vector_and_or.dt1 SIMPLE []
+POSTHOOK: Lineage: vector_and_or.dt2 SIMPLE []
+PREHOOK: query: insert into table vector_and_or
+  select date '2001-01-01', date '2001-06-01' from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@vector_and_or
+POSTHOOK: query: insert into table vector_and_or
+  select date '2001-01-01', date '2001-06-01' from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@vector_and_or
+POSTHOOK: Lineage: vector_and_or.dt1 SIMPLE []
+POSTHOOK: Lineage: vector_and_or.dt2 SIMPLE []
+PREHOOK: query: select '*** OR ***'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select '*** OR ***'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+*** OR ***
+PREHOOK: query: explain vectorization detail select null or dt1 is not null from vector_and_or
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail select null or dt1 is not null from vector_and_or
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: vector_and_or
+                  Statistics: Num rows: 3 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:dt1:date, 1:dt2:date, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
+                  Select Operator
+                    expressions: (null or dt1 is not null) (type: boolean)
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: ScalarNullOrCol(col 5:boolean, val 0:boolean)(children: IsNotNull(col 0:date) -> 5:boolean) -> 6:boolean
+                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0]
+                    dataColumns: dt1:date, dt2:date
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, bigint]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select '*** vectorized null or dt1 is not null ***'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select '*** vectorized null or dt1 is not null ***'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+*** vectorized null or dt1 is not null ***
+PREHOOK: query: select null or dt1 is not null from vector_and_or
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+POSTHOOK: query: select null or dt1 is not null from vector_and_or
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+true
+true
+NULL
+PREHOOK: query: select '*** non-vectorized null or dt1 is not null ***'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select '*** non-vectorized null or dt1 is not null ***'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+*** non-vectorized null or dt1 is not null ***
+PREHOOK: query: select null or dt1 is not null from vector_and_or
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+POSTHOOK: query: select null or dt1 is not null from vector_and_or
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+true
+true
+NULL
+PREHOOK: query: explain vectorization detail select false or dt1 is not null from vector_and_or
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail select false or dt1 is not null from vector_and_or
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: vector_and_or
+                  Statistics: Num rows: 3 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:dt1:date, 1:dt2:date, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
+                  Select Operator
+                    expressions: dt1 is not null (type: boolean)
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [4]
+                        selectExpressions: IsNotNull(col 0:date) -> 4:boolean
+                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0]
+                    dataColumns: dt1:date, dt2:date
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select '*** vectorized false or dt1 is not null ***'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select '*** vectorized false or dt1 is not null ***'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+*** vectorized false or dt1 is not null ***
+PREHOOK: query: select false or dt1 is not null from vector_and_or
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+POSTHOOK: query: select false or dt1 is not null from vector_and_or
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+true
+true
+false
+PREHOOK: query: select '*** non-vectorized false or dt1 is not null ***'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select '*** non-vectorized false or dt1 is not null ***'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+*** non-vectorized false or dt1 is not null ***
+PREHOOK: query: select false or dt1 is not null from vector_and_or
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+POSTHOOK: query: select false or dt1 is not null from vector_and_or
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+true
+true
+false
+PREHOOK: query: explain vectorization detail select dt1 = dt1 from vector_and_or
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail select dt1 = dt1 from vector_and_or
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: vector_and_or
+                  Statistics: Num rows: 3 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:dt1:date, 1:dt2:date, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
+                  Select Operator
+                    expressions: (null or dt1 is not null) (type: boolean)
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: ScalarNullOrCol(col 5:boolean, val 0:boolean)(children: IsNotNull(col 0:date) -> 5:boolean) -> 6:boolean
+                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0]
+                    dataColumns: dt1:date, dt2:date
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, bigint]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select '*** vectorized dt1=dt1 ***'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select '*** vectorized dt1=dt1 ***'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+*** vectorized dt1=dt1 ***
+PREHOOK: query: select dt1 = dt1 from vector_and_or
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+POSTHOOK: query: select dt1 = dt1 from vector_and_or
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+true
+true
+NULL
+PREHOOK: query: select '*** non-vectorized dt1=dt1 ***'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select '*** non-vectorized dt1=dt1 ***'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+*** non-vectorized dt1=dt1 ***
+PREHOOK: query: select dt1 = dt1 from vector_and_or
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+POSTHOOK: query: select dt1 = dt1 from vector_and_or
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+true
+true
+NULL
+PREHOOK: query: select '*** AND ***'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select '*** AND ***'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+*** AND ***
+PREHOOK: query: explain vectorization detail select null and dt1 is null from vector_and_or
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail select null and dt1 is null from vector_and_or
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: vector_and_or
+                  Statistics: Num rows: 3 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:dt1:date, 1:dt2:date, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
+                  Select Operator
+                    expressions: (null and dt1 is null) (type: boolean)
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: ScalarNullAndCol(col 5:boolean, val 0:boolean)(children: IsNull(col 0:date) -> 5:boolean) -> 6:boolean
+                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0]
+                    dataColumns: dt1:date, dt2:date
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, bigint]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select '*** vectorized null and dt1 is null ***'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select '*** vectorized null and dt1 is null ***'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+*** vectorized null and dt1 is null ***
+PREHOOK: query: select null and dt1 is null from vector_and_or
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+POSTHOOK: query: select null and dt1 is null from vector_and_or
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+false
+false
+NULL
+PREHOOK: query: select '*** non-vectorized null and dt1 is null ***'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select '*** non-vectorized null and dt1 is null ***'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+*** non-vectorized null and dt1 is null ***
+PREHOOK: query: select null and dt1 is null from vector_and_or
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+POSTHOOK: query: select null and dt1 is null from vector_and_or
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+false
+false
+NULL
+PREHOOK: query: explain vectorization detail select true and dt1 is null from vector_and_or
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail select true and dt1 is null from vector_and_or
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: vector_and_or
+                  Statistics: Num rows: 3 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:dt1:date, 1:dt2:date, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
+                  Select Operator
+                    expressions: dt1 is null (type: boolean)
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [4]
+                        selectExpressions: IsNull(col 0:date) -> 4:boolean
+                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0]
+                    dataColumns: dt1:date, dt2:date
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select '*** vectorized true and dt1 is null ***'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select '*** vectorized true and dt1 is null ***'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+*** vectorized true and dt1 is null ***
+PREHOOK: query: select true and dt1 is null from vector_and_or
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+POSTHOOK: query: select true and dt1 is null from vector_and_or
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+false
+false
+true
+PREHOOK: query: select '*** non-vectorized true and dt1 is null ***'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select '*** non-vectorized true and dt1 is null ***'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+*** non-vectorized true and dt1 is null ***
+PREHOOK: query: select true and dt1 is null from vector_and_or
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+POSTHOOK: query: select true and dt1 is null from vector_and_or
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+false
+false
+true
+PREHOOK: query: explain vectorization detail select dt1 != dt1 from vector_and_or
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail select dt1 != dt1 from vector_and_or
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: vector_and_or
+                  Statistics: Num rows: 3 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:dt1:date, 1:dt2:date, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
+                  Select Operator
+                    expressions: (null and dt1 is null) (type: boolean)
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: ScalarNullAndCol(col 5:boolean, val 0:boolean)(children: IsNull(col 0:date) -> 5:boolean) -> 6:boolean
+                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0]
+                    dataColumns: dt1:date, dt2:date
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, bigint]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select '*** vectorized dt1!=dt1 ***'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select '*** vectorized dt1!=dt1 ***'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+*** vectorized dt1!=dt1 ***
+PREHOOK: query: select dt1 != dt1 from vector_and_or
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+POSTHOOK: query: select dt1 != dt1 from vector_and_or
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+false
+false
+NULL
+PREHOOK: query: select '*** non-vectorized dt1!=dt1 ***'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select '*** non-vectorized dt1!=dt1 ***'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+*** non-vectorized dt1!=dt1 ***
+PREHOOK: query: select dt1 != dt1 from vector_and_or
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+POSTHOOK: query: select dt1 != dt1 from vector_and_or
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_and_or
+#### A masked pattern was here ####
+false
+false
+NULL

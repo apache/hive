@@ -1,0 +1,10 @@
+PREHOOK: query: DESCRIBE FUNCTION `index`
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION `index`
+POSTHOOK: type: DESCFUNCTION
+Function '`index`' does not exist.
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED `index`
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED `index`
+POSTHOOK: type: DESCFUNCTION
+Function '`index`' does not exist.

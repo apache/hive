@@ -1,0 +1,424 @@
+PREHOOK: query: DROP TABLE IF EXISTS repairtable_n7_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS repairtable_n7_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS repairtable_n7_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS repairtable_n7_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS repairtable_n7_3
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS repairtable_n7_3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS repairtable_n7_4
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS repairtable_n7_4
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS repairtable_n7_5
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS repairtable_n7_5
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS repairtable_n7_6
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS repairtable_n7_6
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS repairtable_n7_7
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS repairtable_n7_7
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS repairtable_n7_8
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS repairtable_n7_8
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repairtable_n7_1
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repairtable_n7_1
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repairtable_n7_2
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repairtable_n7_2
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repairtable_n7_3
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repairtable_n7_3
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repairtable_n7_4
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repairtable_n7_4
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repairtable_n7_5
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repairtable_n7_5
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repairtable_n7_6
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repairtable_n7_6
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repairtable_n7_7
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repairtable_n7_7
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repairtable_n7_8
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repairtable_n7_8
+PREHOOK: query: MSCK REPAIR TABLE repairtable_n7_1
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_n7_1
+POSTHOOK: query: MSCK REPAIR TABLE repairtable_n7_1
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_n7_1
+PREHOOK: query: MSCK REPAIR TABLE repairtable_n7_2
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_n7_2
+POSTHOOK: query: MSCK REPAIR TABLE repairtable_n7_2
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_n7_2
+PREHOOK: query: MSCK REPAIR TABLE repairtable_n7_3
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_n7_3
+POSTHOOK: query: MSCK REPAIR TABLE repairtable_n7_3
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_n7_3
+PREHOOK: query: MSCK REPAIR TABLE repairtable_n7_4
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_n7_4
+POSTHOOK: query: MSCK REPAIR TABLE repairtable_n7_4
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_n7_4
+PREHOOK: query: MSCK REPAIR TABLE repairtable_n7_5
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_n7_5
+POSTHOOK: query: MSCK REPAIR TABLE repairtable_n7_5
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_n7_5
+PREHOOK: query: MSCK REPAIR TABLE repairtable_n7_6
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_n7_6
+POSTHOOK: query: MSCK REPAIR TABLE repairtable_n7_6
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_n7_6
+PREHOOK: query: MSCK REPAIR TABLE repairtable_n7_7
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_n7_7
+POSTHOOK: query: MSCK REPAIR TABLE repairtable_n7_7
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_n7_7
+PREHOOK: query: MSCK REPAIR TABLE repairtable_n7_8
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_n7_8
+POSTHOOK: query: MSCK REPAIR TABLE repairtable_n7_8
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_n7_8
+PREHOOK: query: show partitions repairtable_n7_1
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_n7_1
+POSTHOOK: query: show partitions repairtable_n7_1
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_n7_1
+PREHOOK: query: show partitions repairtable_n7_2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_n7_2
+POSTHOOK: query: show partitions repairtable_n7_2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_n7_2
+PREHOOK: query: show partitions repairtable_n7_3
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_n7_3
+POSTHOOK: query: show partitions repairtable_n7_3
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_n7_3
+PREHOOK: query: show partitions repairtable_n7_4
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_n7_4
+POSTHOOK: query: show partitions repairtable_n7_4
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_n7_4
+PREHOOK: query: show partitions repairtable_n7_5
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_n7_5
+POSTHOOK: query: show partitions repairtable_n7_5
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_n7_5
+PREHOOK: query: show partitions repairtable_n7_6
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_n7_6
+POSTHOOK: query: show partitions repairtable_n7_6
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_n7_6
+PREHOOK: query: show partitions repairtable_n7_7
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_n7_7
+POSTHOOK: query: show partitions repairtable_n7_7
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_n7_7
+PREHOOK: query: show partitions repairtable_n7_8
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_n7_8
+POSTHOOK: query: show partitions repairtable_n7_8
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_n7_8
+PREHOOK: query: MSCK REPAIR TABLE repairtable_n7_1
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_n7_1
+POSTHOOK: query: MSCK REPAIR TABLE repairtable_n7_1
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_n7_1
+Partitions not in metastore:	repairtable_n7_1:p1=1
+#### A masked pattern was here ####
+PREHOOK: query: MSCK REPAIR TABLE repairtable_n7_2
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_n7_2
+POSTHOOK: query: MSCK REPAIR TABLE repairtable_n7_2
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_n7_2
+Partitions not in metastore:	repairtable_n7_2:p1=1
+#### A masked pattern was here ####
+PREHOOK: query: MSCK REPAIR TABLE repairtable_n7_3
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_n7_3
+POSTHOOK: query: MSCK REPAIR TABLE repairtable_n7_3
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_n7_3
+Partitions not in metastore:	repairtable_n7_3:p1=10
+#### A masked pattern was here ####
+PREHOOK: query: MSCK REPAIR TABLE repairtable_n7_4
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_n7_4
+POSTHOOK: query: MSCK REPAIR TABLE repairtable_n7_4
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_n7_4
+Partitions not in metastore:	repairtable_n7_4:p1=-100
+#### A masked pattern was here ####
+PREHOOK: query: MSCK REPAIR TABLE repairtable_n7_5
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_n7_5
+POSTHOOK: query: MSCK REPAIR TABLE repairtable_n7_5
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_n7_5
+Partitions not in metastore:	repairtable_n7_5:p1=10.01
+#### A masked pattern was here ####
+PREHOOK: query: MSCK REPAIR TABLE repairtable_n7_6
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_n7_6
+POSTHOOK: query: MSCK REPAIR TABLE repairtable_n7_6
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_n7_6
+Partitions not in metastore:	repairtable_n7_6:p1=-100.001
+#### A masked pattern was here ####
+PREHOOK: query: MSCK REPAIR TABLE repairtable_n7_7
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_n7_7
+POSTHOOK: query: MSCK REPAIR TABLE repairtable_n7_7
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_n7_7
+Partitions not in metastore:	repairtable_n7_7:p1=1.001
+#### A masked pattern was here ####
+PREHOOK: query: MSCK REPAIR TABLE repairtable_n7_8
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_n7_8
+POSTHOOK: query: MSCK REPAIR TABLE repairtable_n7_8
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_n7_8
+Partitions not in metastore:	repairtable_n7_8:p1=01
+#### A masked pattern was here ####
+PREHOOK: query: show partitions repairtable_n7_1
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_n7_1
+POSTHOOK: query: show partitions repairtable_n7_1
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_n7_1
+p1=1
+PREHOOK: query: show partitions repairtable_n7_2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_n7_2
+POSTHOOK: query: show partitions repairtable_n7_2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_n7_2
+p1=1
+PREHOOK: query: show partitions repairtable_n7_3
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_n7_3
+POSTHOOK: query: show partitions repairtable_n7_3
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_n7_3
+p1=10
+PREHOOK: query: show partitions repairtable_n7_4
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_n7_4
+POSTHOOK: query: show partitions repairtable_n7_4
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_n7_4
+p1=-100
+PREHOOK: query: show partitions repairtable_n7_5
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_n7_5
+POSTHOOK: query: show partitions repairtable_n7_5
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_n7_5
+p1=10.01
+PREHOOK: query: show partitions repairtable_n7_6
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_n7_6
+POSTHOOK: query: show partitions repairtable_n7_6
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_n7_6
+p1=-100.001
+PREHOOK: query: show partitions repairtable_n7_7
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_n7_7
+POSTHOOK: query: show partitions repairtable_n7_7
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_n7_7
+p1=1.001
+PREHOOK: query: show partitions repairtable_n7_8
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_n7_8
+POSTHOOK: query: show partitions repairtable_n7_8
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_n7_8
+p1=01
+PREHOOK: query: DROP TABLE repairtable_n7_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@repairtable_n7_1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repairtable_n7_1
+POSTHOOK: query: DROP TABLE repairtable_n7_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@repairtable_n7_1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repairtable_n7_1
+PREHOOK: query: DROP TABLE repairtable_n7_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@repairtable_n7_2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repairtable_n7_2
+POSTHOOK: query: DROP TABLE repairtable_n7_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@repairtable_n7_2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repairtable_n7_2
+PREHOOK: query: DROP TABLE repairtable_n7_3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@repairtable_n7_3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repairtable_n7_3
+POSTHOOK: query: DROP TABLE repairtable_n7_3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@repairtable_n7_3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repairtable_n7_3
+PREHOOK: query: DROP TABLE repairtable_n7_4
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@repairtable_n7_4
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repairtable_n7_4
+POSTHOOK: query: DROP TABLE repairtable_n7_4
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@repairtable_n7_4
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repairtable_n7_4
+PREHOOK: query: DROP TABLE repairtable_n7_5
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@repairtable_n7_5
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repairtable_n7_5
+POSTHOOK: query: DROP TABLE repairtable_n7_5
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@repairtable_n7_5
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repairtable_n7_5
+PREHOOK: query: DROP TABLE repairtable_n7_6
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@repairtable_n7_6
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repairtable_n7_6
+POSTHOOK: query: DROP TABLE repairtable_n7_6
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@repairtable_n7_6
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repairtable_n7_6
+PREHOOK: query: DROP TABLE repairtable_n7_7
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@repairtable_n7_7
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repairtable_n7_7
+POSTHOOK: query: DROP TABLE repairtable_n7_7
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@repairtable_n7_7
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repairtable_n7_7
+PREHOOK: query: DROP TABLE repairtable_n7_8
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@repairtable_n7_8
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repairtable_n7_8
+POSTHOOK: query: DROP TABLE repairtable_n7_8
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@repairtable_n7_8
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repairtable_n7_8

@@ -1,0 +1,79 @@
+PREHOOK: query: create table T1_n153(key string, val string) clustered by (val) into 2 buckets stored as ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T1_n153
+POSTHOOK: query: create table T1_n153(key string, val string) clustered by (val) into 2 buckets stored as ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T1_n153
+PREHOOK: query: create table T2_n153(key string, val string) clustered by (val) into 2 buckets stored as ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T2_n153
+POSTHOOK: query: create table T2_n153(key string, val string) clustered by (val) into 2 buckets stored as ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T2_n153
+PREHOOK: query: alter table T1_n153 compact 'major'
+PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@t1_n153
+PREHOOK: Output: default@t1_n153
+POSTHOOK: query: alter table T1_n153 compact 'major'
+POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@t1_n153
+POSTHOOK: Output: default@t1_n153
+PREHOOK: query: alter table T2_n153 compact 'minor'
+PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@t2_n153
+PREHOOK: Output: default@t2_n153
+POSTHOOK: query: alter table T2_n153 compact 'minor'
+POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@t2_n153
+POSTHOOK: Output: default@t2_n153
+PREHOOK: query: explain alter table T1_n153 compact 'MAJOR' pool 'test'
+PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@t1_n153
+PREHOOK: Output: default@t1_n153
+POSTHOOK: query: explain alter table T1_n153 compact 'MAJOR' pool 'test'
+POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@t1_n153
+POSTHOOK: Output: default@t1_n153
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Compact
+      compaction type: major
+      table name: default.T1_n153
+      numberOfBuckets: 0
+      pool: test
+      table name: default.T1_n153
+
+PREHOOK: query: show compactions
+PREHOOK: type: SHOW COMPACTIONS
+POSTHOOK: query: show compactions
+POSTHOOK: type: SHOW COMPACTIONS
+CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
+1	default	t1_n153	 --- 	MAJOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- 	#Masked#	manual	default	0	0	0	 --- 
+2	default	t2_n153	 --- 	MINOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- 	#Masked#	manual	default	0	0	0	 --- 
+PREHOOK: query: drop table T1_n153
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t1_n153
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1_n153
+POSTHOOK: query: drop table T1_n153
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t1_n153
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1_n153
+PREHOOK: query: drop table T2_n153
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t2_n153
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2_n153
+POSTHOOK: query: drop table T2_n153
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t2_n153
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2_n153

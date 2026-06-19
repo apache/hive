@@ -1,0 +1,511 @@
+PREHOOK: query: drop table location
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table location
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table location (state string, country string, votes bigint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@location
+POSTHOOK: query: create table location (state string, country string, votes bigint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@location
+PREHOOK: query: load data local inpath "../../data/files/location.txt" overwrite into table location
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@location
+POSTHOOK: query: load data local inpath "../../data/files/location.txt" overwrite into table location
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@location
+PREHOOK: query: analyze table location compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@location
+PREHOOK: Output: default@location
+POSTHOOK: query: analyze table location compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@location
+POSTHOOK: Output: default@location
+PREHOOK: query: analyze table location compute statistics for columns state, country
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@location
+PREHOOK: Output: default@location
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table location compute statistics for columns state, country
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@location
+POSTHOOK: Output: default@location
+#### A masked pattern was here ####
+PREHOOK: query: explain select state, country from location group by state, country
+PREHOOK: type: QUERY
+PREHOOK: Input: default@location
+#### A masked pattern was here ####
+POSTHOOK: query: explain select state, country from location group by state, country
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@location
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: location
+                  Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: state (type: string), country (type: string)
+                    outputColumnNames: state, country
+                    Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      keys: state (type: string), country (type: string)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                        Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 10 Data size: 100 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select state, country from location group by state, country with cube
+PREHOOK: type: QUERY
+PREHOOK: Input: default@location
+#### A masked pattern was here ####
+POSTHOOK: query: explain select state, country from location group by state, country with cube
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@location
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: location
+                  Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: state (type: string), country (type: string)
+                    outputColumnNames: state, country
+                    Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      keys: state (type: string), country (type: string), 0L (type: bigint)
+                      grouping sets: 0, 1, 2, 3
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 80 Data size: 800 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                        null sort order: zzz
+                        sort order: +++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                        Statistics: Num rows: 80 Data size: 800 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: bigint)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 40 Data size: 400 Basic stats: COMPLETE Column stats: NONE
+                pruneGroupingSetId: true
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 40 Data size: 400 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select state, country from location group by state, country
+PREHOOK: type: QUERY
+PREHOOK: Input: default@location
+#### A masked pattern was here ####
+POSTHOOK: query: explain select state, country from location group by state, country
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@location
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: location
+                  Statistics: Num rows: 20 Data size: 3460 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: state (type: string), country (type: string)
+                    outputColumnNames: state, country
+                    Statistics: Num rows: 20 Data size: 3460 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: state (type: string), country (type: string)
+                      minReductionHashAggr: 0.9
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 10 Data size: 1730 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                        Statistics: Num rows: 10 Data size: 1730 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 2 Data size: 346 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 2 Data size: 346 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select state, votes from location group by state, votes
+PREHOOK: type: QUERY
+PREHOOK: Input: default@location
+#### A masked pattern was here ####
+POSTHOOK: query: explain select state, votes from location group by state, votes
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@location
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: location
+                  Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: PARTIAL
+                  Select Operator
+                    expressions: state (type: string), votes (type: bigint)
+                    outputColumnNames: state, votes
+                    Statistics: Num rows: 20 Data size: 1880 Basic stats: COMPLETE Column stats: PARTIAL
+                    Group By Operator
+                      keys: state (type: string), votes (type: bigint)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 10 Data size: 940 Basic stats: COMPLETE Column stats: PARTIAL
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: bigint)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
+                        Statistics: Num rows: 10 Data size: 940 Basic stats: COMPLETE Column stats: PARTIAL
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string), KEY._col1 (type: bigint)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 10 Data size: 940 Basic stats: COMPLETE Column stats: PARTIAL
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 10 Data size: 940 Basic stats: COMPLETE Column stats: PARTIAL
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select state, country from location group by state, country with cube
+PREHOOK: type: QUERY
+PREHOOK: Input: default@location
+#### A masked pattern was here ####
+POSTHOOK: query: explain select state, country from location group by state, country with cube
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@location
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: location
+                  Statistics: Num rows: 20 Data size: 3460 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: state (type: string), country (type: string)
+                    outputColumnNames: state, country
+                    Statistics: Num rows: 20 Data size: 3460 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: state (type: string), country (type: string), 0L (type: bigint)
+                      grouping sets: 0, 1, 2, 3
+                      minReductionHashAggr: 0.9
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 40 Data size: 7240 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                        null sort order: zzz
+                        sort order: +++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                        Statistics: Num rows: 40 Data size: 7240 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: bigint)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 8 Data size: 1448 Basic stats: COMPLETE Column stats: COMPLETE
+                pruneGroupingSetId: true
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 8 Data size: 1448 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select state, country from location group by state, country
+PREHOOK: type: QUERY
+PREHOOK: Input: default@location
+#### A masked pattern was here ####
+POSTHOOK: query: explain select state, country from location group by state, country
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@location
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: location
+                  Statistics: Num rows: 20 Data size: 3460 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: state (type: string), country (type: string)
+                    outputColumnNames: state, country
+                    Statistics: Num rows: 20 Data size: 3460 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: state (type: string), country (type: string)
+                      minReductionHashAggr: 0.9
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 20 Data size: 3460 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                        Statistics: Num rows: 20 Data size: 3460 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 2 Data size: 346 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 2 Data size: 346 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select state, country from location group by state, country with cube
+PREHOOK: type: QUERY
+PREHOOK: Input: default@location
+#### A masked pattern was here ####
+POSTHOOK: query: explain select state, country from location group by state, country with cube
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@location
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: location
+                  Statistics: Num rows: 20 Data size: 3460 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: state (type: string), country (type: string)
+                    outputColumnNames: state, country
+                    Statistics: Num rows: 20 Data size: 3460 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: state (type: string), country (type: string), 0L (type: bigint)
+                      grouping sets: 0, 1, 2, 3
+                      minReductionHashAggr: 0.9
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 80 Data size: 14480 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                        null sort order: zzz
+                        sort order: +++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                        Statistics: Num rows: 80 Data size: 14480 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: bigint)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 8 Data size: 1448 Basic stats: COMPLETE Column stats: COMPLETE
+                pruneGroupingSetId: true
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 8 Data size: 1448 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: drop table location
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@location
+PREHOOK: Output: database:default
+PREHOOK: Output: default@location
+POSTHOOK: query: drop table location
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@location
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@location

@@ -1,0 +1,84 @@
+PREHOOK: query: CREATE TABLE t (k STRING, v STRING) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: CREATE TABLE t (k STRING, v STRING) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: INSERT INTO t VALUES
+  ('A','1'),('A','2'),('A','3'),
+  ('B','2'),('B','3'),
+  ('C','3'),
+  ('D','1'),('D','3')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t
+POSTHOOK: query: INSERT INTO t VALUES
+  ('A','1'),('A','2'),('A','3'),
+  ('B','2'),('B','3'),
+  ('C','3'),
+  ('D','1'),('D','3')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.k SCRIPT []
+POSTHOOK: Lineage: t.v SCRIPT []
+PREHOOK: query: WITH
+  probe AS (
+    SELECT k, v, (CAST(v AS INT) > 0) AS p_bool
+    FROM t WHERE CAST(v AS INT) >= 3
+  ),
+  small_side AS (
+    SELECT k, v, (CAST(v AS INT) > 9999) AS s_bool
+    FROM t
+  ),
+  classified AS (
+    SELECT p.k, p.v, CAST((s.s_bool OR p.p_bool) AS INT) AS observed_value
+    FROM probe p
+    LEFT JOIN small_side s
+      ON  p.k = s.k
+      AND CAST(p.v AS INT) - 1 = CAST(s.v AS INT)
+  ),
+  diagnosed AS (
+    SELECT k, v, MAX(observed_value) AS observed_value
+    FROM classified
+    GROUP BY k, v
+  )
+SELECT k, v,
+       observed_value AS observed_value_returned_by_select,
+       1              AS required_value_per_sql_semantics
+FROM diagnosed
+WHERE observed_value = 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: WITH
+  probe AS (
+    SELECT k, v, (CAST(v AS INT) > 0) AS p_bool
+    FROM t WHERE CAST(v AS INT) >= 3
+  ),
+  small_side AS (
+    SELECT k, v, (CAST(v AS INT) > 9999) AS s_bool
+    FROM t
+  ),
+  classified AS (
+    SELECT p.k, p.v, CAST((s.s_bool OR p.p_bool) AS INT) AS observed_value
+    FROM probe p
+    LEFT JOIN small_side s
+      ON  p.k = s.k
+      AND CAST(p.v AS INT) - 1 = CAST(s.v AS INT)
+  ),
+  diagnosed AS (
+    SELECT k, v, MAX(observed_value) AS observed_value
+    FROM classified
+    GROUP BY k, v
+  )
+SELECT k, v,
+       observed_value AS observed_value_returned_by_select,
+       1              AS required_value_per_sql_semantics
+FROM diagnosed
+WHERE observed_value = 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####

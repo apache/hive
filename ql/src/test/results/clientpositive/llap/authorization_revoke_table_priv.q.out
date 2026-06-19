@@ -1,0 +1,181 @@
+PREHOOK: query: CREATE TABLE table_priv_rev(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_priv_rev
+POSTHOOK: query: CREATE TABLE table_priv_rev(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_priv_rev
+PREHOOK: query: GRANT INSERT ON table_priv_rev TO USER user2
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@table_priv_rev
+POSTHOOK: query: GRANT INSERT ON table_priv_rev TO USER user2
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@table_priv_rev
+PREHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
+POSTHOOK: type: SHOW_GRANT
+default	table_priv_rev			user2	USER	INSERT	false	-1	user1
+PREHOOK: query: SHOW GRANT USER user2 ON ALL
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT USER user2 ON ALL
+POSTHOOK: type: SHOW_GRANT
+default	table_priv_rev			user2	USER	INSERT	false	-1	user1
+PREHOOK: query: REVOKE INSERT ON TABLE table_priv_rev FROM USER user2
+PREHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: Output: default@table_priv_rev
+POSTHOOK: query: REVOKE INSERT ON TABLE table_priv_rev FROM USER user2
+POSTHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: Output: default@table_priv_rev
+PREHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
+POSTHOOK: type: SHOW_GRANT
+PREHOOK: query: GRANT INSERT ON table_priv_rev TO USER user2
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@table_priv_rev
+POSTHOOK: query: GRANT INSERT ON table_priv_rev TO USER user2
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@table_priv_rev
+PREHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
+POSTHOOK: type: SHOW_GRANT
+default	table_priv_rev			user2	USER	INSERT	false	-1	user1
+PREHOOK: query: SHOW GRANT USER user2 ON ALL
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT USER user2 ON ALL
+POSTHOOK: type: SHOW_GRANT
+default	table_priv_rev			user2	USER	INSERT	false	-1	user1
+PREHOOK: query: GRANT SELECT ON table_priv_rev TO USER user2 WITH GRANT OPTION
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@table_priv_rev
+POSTHOOK: query: GRANT SELECT ON table_priv_rev TO USER user2 WITH GRANT OPTION
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@table_priv_rev
+PREHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
+POSTHOOK: type: SHOW_GRANT
+default	table_priv_rev			user2	USER	INSERT	false	-1	user1
+default	table_priv_rev			user2	USER	SELECT	true	-1	user1
+PREHOOK: query: GRANT UPDATE ON table_priv_rev TO USER user2
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@table_priv_rev
+POSTHOOK: query: GRANT UPDATE ON table_priv_rev TO USER user2
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@table_priv_rev
+PREHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
+POSTHOOK: type: SHOW_GRANT
+default	table_priv_rev			user2	USER	INSERT	false	-1	user1
+default	table_priv_rev			user2	USER	SELECT	true	-1	user1
+default	table_priv_rev			user2	USER	UPDATE	false	-1	user1
+PREHOOK: query: GRANT DELETE ON table_priv_rev TO USER user2
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@table_priv_rev
+POSTHOOK: query: GRANT DELETE ON table_priv_rev TO USER user2
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@table_priv_rev
+PREHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
+POSTHOOK: type: SHOW_GRANT
+default	table_priv_rev			user2	USER	DELETE	false	-1	user1
+default	table_priv_rev			user2	USER	INSERT	false	-1	user1
+default	table_priv_rev			user2	USER	SELECT	true	-1	user1
+default	table_priv_rev			user2	USER	UPDATE	false	-1	user1
+PREHOOK: query: REVOKE UPDATE ON TABLE table_priv_rev FROM USER user2
+PREHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: Output: default@table_priv_rev
+POSTHOOK: query: REVOKE UPDATE ON TABLE table_priv_rev FROM USER user2
+POSTHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: Output: default@table_priv_rev
+PREHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
+POSTHOOK: type: SHOW_GRANT
+default	table_priv_rev			user2	USER	DELETE	false	-1	user1
+default	table_priv_rev			user2	USER	INSERT	false	-1	user1
+default	table_priv_rev			user2	USER	SELECT	true	-1	user1
+PREHOOK: query: SHOW GRANT USER user2 ON ALL
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT USER user2 ON ALL
+POSTHOOK: type: SHOW_GRANT
+default	table_priv_rev			user2	USER	DELETE	false	-1	user1
+default	table_priv_rev			user2	USER	INSERT	false	-1	user1
+default	table_priv_rev			user2	USER	SELECT	true	-1	user1
+PREHOOK: query: REVOKE DELETE ON TABLE table_priv_rev FROM USER user2
+PREHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: Output: default@table_priv_rev
+POSTHOOK: query: REVOKE DELETE ON TABLE table_priv_rev FROM USER user2
+POSTHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: Output: default@table_priv_rev
+PREHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
+POSTHOOK: type: SHOW_GRANT
+default	table_priv_rev			user2	USER	INSERT	false	-1	user1
+default	table_priv_rev			user2	USER	SELECT	true	-1	user1
+PREHOOK: query: REVOKE INSERT ON TABLE table_priv_rev FROM USER user2
+PREHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: Output: default@table_priv_rev
+POSTHOOK: query: REVOKE INSERT ON TABLE table_priv_rev FROM USER user2
+POSTHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: Output: default@table_priv_rev
+PREHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
+POSTHOOK: type: SHOW_GRANT
+default	table_priv_rev			user2	USER	SELECT	true	-1	user1
+PREHOOK: query: REVOKE GRANT OPTION FOR SELECT ON TABLE table_priv_rev FROM USER user2
+PREHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: Output: default@table_priv_rev
+POSTHOOK: query: REVOKE GRANT OPTION FOR SELECT ON TABLE table_priv_rev FROM USER user2
+POSTHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: Output: default@table_priv_rev
+PREHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
+POSTHOOK: type: SHOW_GRANT
+default	table_priv_rev			user2	USER	SELECT	false	-1	user1
+PREHOOK: query: REVOKE SELECT ON TABLE table_priv_rev FROM USER user2
+PREHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: Output: default@table_priv_rev
+POSTHOOK: query: REVOKE SELECT ON TABLE table_priv_rev FROM USER user2
+POSTHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: Output: default@table_priv_rev
+PREHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
+POSTHOOK: type: SHOW_GRANT
+PREHOOK: query: SHOW GRANT USER user2 ON ALL
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT USER user2 ON ALL
+POSTHOOK: type: SHOW_GRANT
+PREHOOK: query: GRANT ALL ON table_priv_rev TO USER user2
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@table_priv_rev
+POSTHOOK: query: GRANT ALL ON table_priv_rev TO USER user2
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@table_priv_rev
+PREHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
+POSTHOOK: type: SHOW_GRANT
+default	table_priv_rev			user2	USER	DELETE	false	-1	user1
+default	table_priv_rev			user2	USER	INSERT	false	-1	user1
+default	table_priv_rev			user2	USER	SELECT	false	-1	user1
+default	table_priv_rev			user2	USER	UPDATE	false	-1	user1
+PREHOOK: query: REVOKE ALL ON TABLE table_priv_rev FROM USER user2
+PREHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: Output: default@table_priv_rev
+POSTHOOK: query: REVOKE ALL ON TABLE table_priv_rev FROM USER user2
+POSTHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: Output: default@table_priv_rev
+PREHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv_rev
+POSTHOOK: type: SHOW_GRANT

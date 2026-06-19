@@ -1,0 +1,100 @@
+PREHOOK: query: DROP TABLE IF EXISTS dec_comp
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS dec_comp
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE dec_comp(arr ARRAY<decimal(5,2)>, m MAP<String, decimal(5,2)>, s STRUCT<i:int, d:decimal(5,2)>)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' COLLECTION ITEMS TERMINATED BY ','  MAP KEYS TERMINATED by ':'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dec_comp
+POSTHOOK: query: CREATE TABLE dec_comp(arr ARRAY<decimal(5,2)>, m MAP<String, decimal(5,2)>, s STRUCT<i:int, d:decimal(5,2)>)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' COLLECTION ITEMS TERMINATED BY ','  MAP KEYS TERMINATED by ':'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dec_comp
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dec_comp.txt' INTO TABLE dec_comp
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@dec_comp
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/dec_comp.txt' INTO TABLE dec_comp
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@dec_comp
+PREHOOK: query: SELECT * FROM dec_comp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dec_comp
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM dec_comp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dec_comp
+#### A masked pattern was here ####
+[3.14,6.28,7.3]	{"k1":92.77,"k2":29.39}	{"i":5,"d":9.03}
+[12.4,1.33,0.34]	{"k2":2.79,"k4":29.09}	{"i":11,"d":0.03}
+PREHOOK: query: DROP TABLE IF EXISTS parq_dec_comp
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS parq_dec_comp
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE parq_dec_comp(arr ARRAY<decimal(5,2)>, m MAP<String, decimal(5,2)>, s STRUCT<i:int, d:decimal(5,2)>)
+STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parq_dec_comp
+POSTHOOK: query: CREATE TABLE parq_dec_comp(arr ARRAY<decimal(5,2)>, m MAP<String, decimal(5,2)>, s STRUCT<i:int, d:decimal(5,2)>)
+STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parq_dec_comp
+PREHOOK: query: DESC parq_dec_comp
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@parq_dec_comp
+POSTHOOK: query: DESC parq_dec_comp
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@parq_dec_comp
+arr                 	array<decimal(5,2)> 	                    
+m                   	map<string,decimal(5,2)>	                    
+s                   	struct<i:int,d:decimal(5,2)>	                    
+PREHOOK: query: INSERT OVERWRITE TABLE parq_dec_comp SELECT * FROM dec_comp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dec_comp
+PREHOOK: Output: default@parq_dec_comp
+POSTHOOK: query: INSERT OVERWRITE TABLE parq_dec_comp SELECT * FROM dec_comp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dec_comp
+POSTHOOK: Output: default@parq_dec_comp
+POSTHOOK: Lineage: parq_dec_comp.arr SIMPLE [(dec_comp)dec_comp.FieldSchema(name:arr, type:array<decimal(5,2)>, comment:null), ]
+POSTHOOK: Lineage: parq_dec_comp.m SIMPLE [(dec_comp)dec_comp.FieldSchema(name:m, type:map<string,decimal(5,2)>, comment:null), ]
+POSTHOOK: Lineage: parq_dec_comp.s SIMPLE [(dec_comp)dec_comp.FieldSchema(name:s, type:struct<i:int,d:decimal(5,2)>, comment:null), ]
+PREHOOK: query: SELECT * FROM parq_dec_comp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parq_dec_comp
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parq_dec_comp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parq_dec_comp
+#### A masked pattern was here ####
+[3.14,6.28,7.3]	{"k1":92.77,"k2":29.39}	{"i":5,"d":9.03}
+[12.4,1.33,0.34]	{"k2":2.79,"k4":29.09}	{"i":11,"d":0.03}
+PREHOOK: query: DROP TABLE dec_comp
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@dec_comp
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dec_comp
+POSTHOOK: query: DROP TABLE dec_comp
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@dec_comp
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dec_comp
+PREHOOK: query: DROP TABLE parq_dec_comp
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@parq_dec_comp
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parq_dec_comp
+POSTHOOK: query: DROP TABLE parq_dec_comp
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@parq_dec_comp
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parq_dec_comp

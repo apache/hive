@@ -1,0 +1,608 @@
+PREHOOK: query: CREATE TABLE srcbucket_big(key1 int, key2 string, value string, id int)
+PARTITIONED BY SPEC(bucket(4, key1), bucket(8, key2)) STORED BY ICEBERG
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@srcbucket_big
+POSTHOOK: query: CREATE TABLE srcbucket_big(key1 int, key2 string, value string, id int)
+PARTITIONED BY SPEC(bucket(4, key1), bucket(8, key2)) STORED BY ICEBERG
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@srcbucket_big
+PREHOOK: query: INSERT INTO srcbucket_big VALUES
+(101, '1001', 'val_101', 1),
+(null, '1002', 'val_102', 2),
+(103, null, 'val_103', 3),
+(104, '1004', null, 4),
+(105, '1005', 'val_105', 5),
+(101, '1001', 'val_101', 6),
+(null, '1002', 'val_102', 7),
+(103, null, 'val_103', 8),
+(104, '1004', null, 9),
+(105, '1005', 'val_105', 10),
+(101, '1001', 'val_101', 11),
+(null, '1002', 'val_102', 12),
+(103, null, 'val_103', 13),
+(104, '1004', null, 14),
+(105, '1005', 'val_105', 15),
+(101, '1001', 'val_101', 16),
+(null, '1002', 'val_102', 17),
+(103, null, 'val_103', 18),
+(104, '1004', null, 19),
+(105, '1005', 'val_105', 20),
+(null, null, null, 21)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@srcbucket_big
+POSTHOOK: query: INSERT INTO srcbucket_big VALUES
+(101, '1001', 'val_101', 1),
+(null, '1002', 'val_102', 2),
+(103, null, 'val_103', 3),
+(104, '1004', null, 4),
+(105, '1005', 'val_105', 5),
+(101, '1001', 'val_101', 6),
+(null, '1002', 'val_102', 7),
+(103, null, 'val_103', 8),
+(104, '1004', null, 9),
+(105, '1005', 'val_105', 10),
+(101, '1001', 'val_101', 11),
+(null, '1002', 'val_102', 12),
+(103, null, 'val_103', 13),
+(104, '1004', null, 14),
+(105, '1005', 'val_105', 15),
+(101, '1001', 'val_101', 16),
+(null, '1002', 'val_102', 17),
+(103, null, 'val_103', 18),
+(104, '1004', null, 19),
+(105, '1005', 'val_105', 20),
+(null, null, null, 21)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@srcbucket_big
+PREHOOK: query: CREATE TABLE src_small(key1 int, key2 string, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_small
+POSTHOOK: query: CREATE TABLE src_small(key1 int, key2 string, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_small
+PREHOOK: query: INSERT INTO src_small VALUES
+(101, '1001', 'val_101'),
+(null, '1002', 'val_102'),
+(103, null, 'val_103'),
+(104, '1004', null),
+(105, '1005', 'val_105'),
+(null, null, null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@src_small
+POSTHOOK: query: INSERT INTO src_small VALUES
+(101, '1001', 'val_101'),
+(null, '1002', 'val_102'),
+(103, null, 'val_103'),
+(104, '1004', null),
+(105, '1005', 'val_105'),
+(null, null, null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@src_small
+POSTHOOK: Lineage: src_small.key1 SCRIPT []
+POSTHOOK: Lineage: src_small.key2 SCRIPT []
+POSTHOOK: Lineage: src_small.value SCRIPT []
+PREHOOK: query: SELECT * FROM srcbucket_big ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket_big
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM srcbucket_big ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket_big
+#### A masked pattern was here ####
+101	1001	val_101	1
+NULL	1002	val_102	2
+103	NULL	val_103	3
+104	1004	NULL	4
+105	1005	val_105	5
+101	1001	val_101	6
+NULL	1002	val_102	7
+103	NULL	val_103	8
+104	1004	NULL	9
+105	1005	val_105	10
+101	1001	val_101	11
+NULL	1002	val_102	12
+103	NULL	val_103	13
+104	1004	NULL	14
+105	1005	val_105	15
+101	1001	val_101	16
+NULL	1002	val_102	17
+103	NULL	val_103	18
+104	1004	NULL	19
+105	1005	val_105	20
+NULL	NULL	NULL	21
+PREHOOK: query: EXPLAIN
+SELECT a.key1, a.id
+FROM srcbucket_big a
+JOIN src_small b ON a.key1 = b.key1
+ORDER BY a.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_small
+PREHOOK: Input: default@srcbucket_big
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT a.key1, a.id
+FROM srcbucket_big a
+JOIN src_small b ON a.key1 = b.key1
+ORDER BY a.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_small
+POSTHOOK: Input: default@srcbucket_big
+#### A masked pattern was here ####
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Map 1 <- Map 3 (CUSTOM_EDGE)
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized, llap
+      File Output Operator [FS_37]
+        Select Operator [SEL_36] (rows=16 width=8)
+          Output:["_col0","_col1"]
+        <-Map 1 [SIMPLE_EDGE] vectorized, llap
+          SHUFFLE [RS_35]
+            Map Join Operator [MAPJOIN_34] (rows=16 width=8)
+              BucketMapJoin:true,Conds:SEL_33._col0=RS_31._col0(Inner),Output:["_col0","_col1"]
+            <-Map 3 [CUSTOM_EDGE] vectorized, llap
+              MULTICAST [RS_31]
+                PartitionCols:_col0
+                Select Operator [SEL_30] (rows=4 width=4)
+                  Output:["_col0"]
+                  Filter Operator [FIL_29] (rows=4 width=4)
+                    predicate:key1 is not null
+                    TableScan [TS_3] (rows=6 width=3)
+                      default@src_small,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key1"]
+            <-Select Operator [SEL_33] (rows=16 width=8)
+                Output:["_col0","_col1"]
+                Filter Operator [FIL_32] (rows=16 width=8)
+                  predicate:key1 is not null
+                  TableScan [TS_0] (rows=16 width=8)
+                    default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:4,Grouping Partition Columns:["key1"],Output:["key1","id"]
+
+PREHOOK: query: SELECT a.key1, a.id
+FROM srcbucket_big a
+JOIN src_small b ON a.key1 = b.key1
+ORDER BY a.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_small
+PREHOOK: Input: default@srcbucket_big
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT a.key1, a.id
+FROM srcbucket_big a
+JOIN src_small b ON a.key1 = b.key1
+ORDER BY a.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_small
+POSTHOOK: Input: default@srcbucket_big
+#### A masked pattern was here ####
+101	1
+103	3
+104	4
+105	5
+101	6
+103	8
+104	9
+105	10
+101	11
+103	13
+104	14
+105	15
+101	16
+103	18
+104	19
+105	20
+PREHOOK: query: EXPLAIN
+SELECT a.key2, a.id
+FROM srcbucket_big a
+JOIN src_small b ON a.key2 = b.key2
+ORDER BY a.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_small
+PREHOOK: Input: default@srcbucket_big
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT a.key2, a.id
+FROM srcbucket_big a
+JOIN src_small b ON a.key2 = b.key2
+ORDER BY a.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_small
+POSTHOOK: Input: default@srcbucket_big
+#### A masked pattern was here ####
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Map 1 <- Map 3 (CUSTOM_EDGE)
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized, llap
+      File Output Operator [FS_37]
+        Select Operator [SEL_36] (rows=16 width=92)
+          Output:["_col0","_col1"]
+        <-Map 1 [SIMPLE_EDGE] vectorized, llap
+          SHUFFLE [RS_35]
+            Map Join Operator [MAPJOIN_34] (rows=16 width=92)
+              BucketMapJoin:true,Conds:SEL_33._col0=RS_31._col0(Inner),Output:["_col0","_col1"]
+            <-Map 3 [CUSTOM_EDGE] vectorized, llap
+              MULTICAST [RS_31]
+                PartitionCols:_col0
+                Select Operator [SEL_30] (rows=4 width=87)
+                  Output:["_col0"]
+                  Filter Operator [FIL_29] (rows=4 width=87)
+                    predicate:key2 is not null
+                    TableScan [TS_3] (rows=6 width=72)
+                      default@src_small,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key2"]
+            <-Select Operator [SEL_33] (rows=16 width=92)
+                Output:["_col0","_col1"]
+                Filter Operator [FIL_32] (rows=16 width=92)
+                  predicate:key2 is not null
+                  TableScan [TS_0] (rows=16 width=92)
+                    default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:8,Grouping Partition Columns:["key2"],Output:["key2","id"]
+
+PREHOOK: query: SELECT a.key2, a.id
+FROM srcbucket_big a
+JOIN src_small b ON a.key2 = b.key2
+ORDER BY a.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_small
+PREHOOK: Input: default@srcbucket_big
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT a.key2, a.id
+FROM srcbucket_big a
+JOIN src_small b ON a.key2 = b.key2
+ORDER BY a.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_small
+POSTHOOK: Input: default@srcbucket_big
+#### A masked pattern was here ####
+1001	1
+1002	2
+1004	4
+1005	5
+1001	6
+1002	7
+1004	9
+1005	10
+1001	11
+1002	12
+1004	14
+1005	15
+1001	16
+1002	17
+1004	19
+1005	20
+PREHOOK: query: EXPLAIN
+SELECT a.value, a.id
+FROM srcbucket_big a
+JOIN src_small b ON a.value = b.value
+ORDER BY a.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_small
+PREHOOK: Input: default@srcbucket_big
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT a.value, a.id
+FROM srcbucket_big a
+JOIN src_small b ON a.value = b.value
+ORDER BY a.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_small
+POSTHOOK: Input: default@srcbucket_big
+#### A masked pattern was here ####
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Map 1 <- Map 3 (BROADCAST_EDGE)
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized, llap
+      File Output Operator [FS_37]
+        Select Operator [SEL_36] (rows=16 width=77)
+          Output:["_col0","_col1"]
+        <-Map 1 [SIMPLE_EDGE] vectorized, llap
+          SHUFFLE [RS_35]
+            Map Join Operator [MAPJOIN_34] (rows=16 width=77)
+              Conds:SEL_33._col0=RS_31._col0(Inner),Output:["_col0","_col1"]
+            <-Map 3 [BROADCAST_EDGE] vectorized, llap
+              BROADCAST [RS_31]
+                PartitionCols:_col0
+                Select Operator [SEL_30] (rows=4 width=89)
+                  Output:["_col0"]
+                  Filter Operator [FIL_29] (rows=4 width=89)
+                    predicate:value is not null
+                    TableScan [TS_3] (rows=6 width=74)
+                      default@src_small,b,Tbl:COMPLETE,Col:COMPLETE,Output:["value"]
+            <-Select Operator [SEL_33] (rows=16 width=77)
+                Output:["_col0","_col1"]
+                Filter Operator [FIL_32] (rows=16 width=77)
+                  predicate:value is not null
+                  TableScan [TS_0] (rows=21 width=77)
+                    default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Output:["value","id"]
+
+PREHOOK: query: SELECT a.value, a.id
+FROM srcbucket_big a
+JOIN src_small b ON a.value = b.value
+ORDER BY a.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_small
+PREHOOK: Input: default@srcbucket_big
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT a.value, a.id
+FROM srcbucket_big a
+JOIN src_small b ON a.value = b.value
+ORDER BY a.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_small
+POSTHOOK: Input: default@srcbucket_big
+#### A masked pattern was here ####
+val_101	1
+val_102	2
+val_103	3
+val_105	5
+val_101	6
+val_102	7
+val_103	8
+val_105	10
+val_101	11
+val_102	12
+val_103	13
+val_105	15
+val_101	16
+val_102	17
+val_103	18
+val_105	20
+PREHOOK: query: EXPLAIN
+SELECT a.key1, a.key2, a.id
+FROM srcbucket_big a
+JOIN src_small b ON a.key1 = b.key1 AND a.key2 = b.key2
+ORDER BY a.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_small
+PREHOOK: Input: default@srcbucket_big
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT a.key1, a.key2, a.id
+FROM srcbucket_big a
+JOIN src_small b ON a.key1 = b.key1 AND a.key2 = b.key2
+ORDER BY a.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_small
+POSTHOOK: Input: default@srcbucket_big
+#### A masked pattern was here ####
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Map 1 <- Map 3 (CUSTOM_EDGE)
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized, llap
+      File Output Operator [FS_57]
+        Select Operator [SEL_56] (rows=12 width=96)
+          Output:["_col0","_col1","_col2"]
+        <-Map 1 [SIMPLE_EDGE] vectorized, llap
+          SHUFFLE [RS_55]
+            Map Join Operator [MAPJOIN_54] (rows=12 width=96)
+              BucketMapJoin:true,Conds:SEL_53._col0, _col1=RS_51._col0, _col1(Inner),Output:["_col0","_col1","_col2"]
+            <-Map 3 [CUSTOM_EDGE] vectorized, llap
+              MULTICAST [RS_51]
+                PartitionCols:_col0, _col1
+                Select Operator [SEL_50] (rows=3 width=91)
+                  Output:["_col0","_col1"]
+                  Filter Operator [FIL_49] (rows=3 width=91)
+                    predicate:(key1 is not null and key2 is not null)
+                    TableScan [TS_3] (rows=6 width=75)
+                      default@src_small,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key1","key2"]
+            <-Select Operator [SEL_53] (rows=12 width=96)
+                Output:["_col0","_col1","_col2"]
+                Filter Operator [FIL_52] (rows=12 width=96)
+                  predicate:(key1 is not null and key2 is not null)
+                  TableScan [TS_0] (rows=12 width=96)
+                    default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:32,Grouping Partition Columns:["key1","key2"],Output:["key1","key2","id"]
+
+PREHOOK: query: SELECT a.key1, a.key2, a.id
+FROM srcbucket_big a
+JOIN src_small b ON a.key1 = b.key1 AND a.key2 = b.key2
+ORDER BY a.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_small
+PREHOOK: Input: default@srcbucket_big
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT a.key1, a.key2, a.id
+FROM srcbucket_big a
+JOIN src_small b ON a.key1 = b.key1 AND a.key2 = b.key2
+ORDER BY a.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_small
+POSTHOOK: Input: default@srcbucket_big
+#### A masked pattern was here ####
+101	1001	1
+104	1004	4
+105	1005	5
+101	1001	6
+104	1004	9
+105	1005	10
+101	1001	11
+104	1004	14
+105	1005	15
+101	1001	16
+104	1004	19
+105	1005	20
+PREHOOK: query: EXPLAIN
+SELECT a.key1, a.value, a.id
+FROM srcbucket_big a
+JOIN src_small b ON a.key1 = b.key1 AND a.value = b.value
+ORDER BY a.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_small
+PREHOOK: Input: default@srcbucket_big
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT a.key1, a.value, a.id
+FROM srcbucket_big a
+JOIN src_small b ON a.key1 = b.key1 AND a.value = b.value
+ORDER BY a.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_small
+POSTHOOK: Input: default@srcbucket_big
+#### A masked pattern was here ####
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Map 1 <- Map 3 (CUSTOM_EDGE)
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized, llap
+      File Output Operator [FS_57]
+        Select Operator [SEL_56] (rows=9 width=78)
+          Output:["_col0","_col1","_col2"]
+        <-Map 1 [SIMPLE_EDGE] vectorized, llap
+          SHUFFLE [RS_55]
+            Map Join Operator [MAPJOIN_54] (rows=9 width=78)
+              BucketMapJoin:true,Conds:SEL_53._col0, _col1=RS_51._col0, _col1(Inner),Output:["_col0","_col1","_col2"]
+            <-Map 3 [CUSTOM_EDGE] vectorized, llap
+              MULTICAST [RS_51]
+                PartitionCols:_col0
+                Select Operator [SEL_50] (rows=3 width=93)
+                  Output:["_col0","_col1"]
+                  Filter Operator [FIL_49] (rows=3 width=93)
+                    predicate:(key1 is not null and value is not null)
+                    TableScan [TS_3] (rows=6 width=77)
+                      default@src_small,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key1","value"]
+            <-Select Operator [SEL_53] (rows=12 width=83)
+                Output:["_col0","_col1","_col2"]
+                Filter Operator [FIL_52] (rows=12 width=83)
+                  predicate:(value is not null and key1 is not null)
+                  TableScan [TS_0] (rows=16 width=81)
+                    default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:4,Grouping Partition Columns:["key1"],Output:["key1","value","id"]
+
+PREHOOK: query: SELECT a.key1, a.value, a.id
+FROM srcbucket_big a
+JOIN src_small b ON a.key1 = b.key1 AND a.value = b.value
+ORDER BY a.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_small
+PREHOOK: Input: default@srcbucket_big
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT a.key1, a.value, a.id
+FROM srcbucket_big a
+JOIN src_small b ON a.key1 = b.key1 AND a.value = b.value
+ORDER BY a.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_small
+POSTHOOK: Input: default@srcbucket_big
+#### A masked pattern was here ####
+101	val_101	1
+103	val_103	3
+105	val_105	5
+101	val_101	6
+103	val_103	8
+105	val_105	10
+101	val_101	11
+103	val_103	13
+105	val_105	15
+101	val_101	16
+103	val_103	18
+105	val_105	20
+PREHOOK: query: EXPLAIN
+SELECT a.key1, a.key2, a.value, a.id
+FROM srcbucket_big a
+JOIN src_small b ON a.key1 = b.key1 AND a.key2 = b.key2 AND a.value = b.value
+ORDER BY a.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_small
+PREHOOK: Input: default@srcbucket_big
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT a.key1, a.key2, a.value, a.id
+FROM srcbucket_big a
+JOIN src_small b ON a.key1 = b.key1 AND a.key2 = b.key2 AND a.value = b.value
+ORDER BY a.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_small
+POSTHOOK: Input: default@srcbucket_big
+#### A masked pattern was here ####
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Map 1 <- Map 3 (CUSTOM_EDGE)
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized, llap
+      File Output Operator [FS_67]
+        Select Operator [SEL_66] (rows=5 width=150)
+          Output:["_col0","_col1","_col2","_col3"]
+        <-Map 1 [SIMPLE_EDGE] vectorized, llap
+          SHUFFLE [RS_65]
+            Map Join Operator [MAPJOIN_64] (rows=5 width=150)
+              BucketMapJoin:true,Conds:SEL_63._col0, _col1, _col2=RS_61._col0, _col1, _col2(Inner),Output:["_col0","_col1","_col2","_col3"]
+            <-Map 3 [CUSTOM_EDGE] vectorized, llap
+              MULTICAST [RS_61]
+                PartitionCols:_col0, _col1
+                Select Operator [SEL_60] (rows=2 width=180)
+                  Output:["_col0","_col1","_col2"]
+                  Filter Operator [FIL_59] (rows=2 width=180)
+                    predicate:(key1 is not null and key2 is not null and value is not null)
+                    TableScan [TS_3] (rows=6 width=150)
+                      default@src_small,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key1","key2","value"]
+            <-Select Operator [SEL_63] (rows=8 width=164)
+                Output:["_col0","_col1","_col2","_col3"]
+                Filter Operator [FIL_62] (rows=8 width=164)
+                  predicate:(value is not null and key1 is not null and key2 is not null)
+                  TableScan [TS_0] (rows=12 width=164)
+                    default@srcbucket_big,a,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:32,Grouping Partition Columns:["key1","key2"],Output:["key1","key2","value","id"]
+
+PREHOOK: query: SELECT a.key1, a.key2, a.value, a.id
+FROM srcbucket_big a
+JOIN src_small b ON a.key1 = b.key1 AND a.key2 = b.key2 AND a.value = b.value
+ORDER BY a.id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_small
+PREHOOK: Input: default@srcbucket_big
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT a.key1, a.key2, a.value, a.id
+FROM srcbucket_big a
+JOIN src_small b ON a.key1 = b.key1 AND a.key2 = b.key2 AND a.value = b.value
+ORDER BY a.id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_small
+POSTHOOK: Input: default@srcbucket_big
+#### A masked pattern was here ####
+101	1001	val_101	1
+105	1005	val_105	5
+101	1001	val_101	6
+105	1005	val_105	10
+101	1001	val_101	11
+105	1005	val_105	15
+101	1001	val_101	16
+105	1005	val_105	20

@@ -1,0 +1,57 @@
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: CREATE TABLE max_parts(key STRING) PARTITIONED BY (value STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@max_parts
+POSTHOOK: query: CREATE TABLE max_parts(key STRING) PARTITIONED BY (value STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@max_parts
+PREHOOK: query: INSERT OVERWRITE TABLE max_parts PARTITION(value)
+SELECT key, value
+FROM src
+LIMIT 50
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@max_parts
+Status: Failed
+Vertex failed, vertexName=Reducer 3, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing vector batch (tag=0) (vectorizedVertexNum 2)
+#### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing vector batch (tag=0) (vectorizedVertexNum 2)
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing vector batch (tag=0) (vectorizedVertexNum 2)
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveFatalException: [Error 20004]: Fatal error occurred when node tried to create too many dynamic partitions. The maximum number of dynamic partitions is controlled by hive.exec.max.dynamic.partitions and hive.exec.max.dynamic.partitions.pernode. Maximum was set to 10 partitions per node, number of dynamic partitions on this node: 11
+#### A masked pattern was here ####
+], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing vector batch (tag=0) (vectorizedVertexNum 2)
+#### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing vector batch (tag=0) (vectorizedVertexNum 2)
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing vector batch (tag=0) (vectorizedVertexNum 2)
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveFatalException: [Error 20004]: Fatal error occurred when node tried to create too many dynamic partitions. The maximum number of dynamic partitions is controlled by hive.exec.max.dynamic.partitions and hive.exec.max.dynamic.partitions.pernode. Maximum was set to 10 partitions per node, number of dynamic partitions on this node: 11
+#### A masked pattern was here ####
+]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 3] killed/failed due to:OWN_TASK_FAILURE]
+DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.TezTask. Vertex failed, vertexName=Reducer 3, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing vector batch (tag=0) (vectorizedVertexNum 2)
+#### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing vector batch (tag=0) (vectorizedVertexNum 2)
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing vector batch (tag=0) (vectorizedVertexNum 2)
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveFatalException: [Error 20004]: Fatal error occurred when node tried to create too many dynamic partitions. The maximum number of dynamic partitions is controlled by hive.exec.max.dynamic.partitions and hive.exec.max.dynamic.partitions.pernode. Maximum was set to 10 partitions per node, number of dynamic partitions on this node: 11
+#### A masked pattern was here ####
+], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing vector batch (tag=0) (vectorizedVertexNum 2)
+#### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing vector batch (tag=0) (vectorizedVertexNum 2)
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing vector batch (tag=0) (vectorizedVertexNum 2)
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveFatalException: [Error 20004]: Fatal error occurred when node tried to create too many dynamic partitions. The maximum number of dynamic partitions is controlled by hive.exec.max.dynamic.partitions and hive.exec.max.dynamic.partitions.pernode. Maximum was set to 10 partitions per node, number of dynamic partitions on this node: 11
+#### A masked pattern was here ####
+]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 3] killed/failed due to:OWN_TASK_FAILURE]DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0

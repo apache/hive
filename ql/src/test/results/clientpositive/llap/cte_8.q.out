@@ -1,0 +1,159 @@
+PREHOOK: query: create table t1(int_col int, bigint_col bigint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1(int_col int, bigint_col bigint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: insert into t1 values(1, 2), (3, 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: insert into t1 values(1, 2), (3, 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.bigint_col SCRIPT []
+POSTHOOK: Lineage: t1.int_col SCRIPT []
+_col0	_col1
+PREHOOK: query: explain cbo
+with cte1(a, b) as (select int_col x, bigint_col y from t1)
+select a, b from cte1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+with cte1(a, b) as (select int_col x, bigint_col y from t1)
+select a, b from cte1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+Explain
+CBO PLAN:
+HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, t1]], table:alias=[t1])
+
+PREHOOK: query: with cte1(a, b) as (select int_col x, bigint_col y from t1)
+select a, b from cte1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: with cte1(a, b) as (select int_col x, bigint_col y from t1)
+select a, b from cte1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+a	b
+1	2
+3	4
+PREHOOK: query: with cte1(a) as (select int_col x, bigint_col y from t1)
+select a, y from cte1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: with cte1(a) as (select int_col x, bigint_col y from t1)
+select a, y from cte1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+a	y
+1	2
+3	4
+PREHOOK: query: with cte1 as (select int_col x, bigint_col y from t1)
+select x, y from cte1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: with cte1 as (select int_col x, bigint_col y from t1)
+select x, y from cte1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+x	y
+1	2
+3	4
+PREHOOK: query: with cte1 as (select int_col, bigint_col from t1)
+select * from cte1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: with cte1 as (select int_col, bigint_col from t1)
+select * from cte1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+cte1.int_col	cte1.bigint_col
+1	2
+3	4
+PREHOOK: query: with cte(c1, c2) as (select int_col, bigint_col y from t1)
+select * from cte limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: with cte(c1, c2) as (select int_col, bigint_col y from t1)
+select * from cte limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+cte.c1	cte.c2
+1	2
+PREHOOK: query: with cte1(c1, c2) as (select int_col x, sum(bigint_col) y from t1 group by int_col)
+select * from cte1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: with cte1(c1, c2) as (select int_col x, sum(bigint_col) y from t1 group by int_col)
+select * from cte1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+cte1.c1	cte1.c2
+3	4
+1	2
+PREHOOK: query: with cte1(c1, c2) as (
+    select int_col x, bigint_col y from t1 where int_col = 1
+    union all
+    select int_col x, bigint_col y from t1 where int_col = 2
+)
+select * from cte1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: with cte1(c1, c2) as (
+    select int_col x, bigint_col y from t1 where int_col = 1
+    union all
+    select int_col x, bigint_col y from t1 where int_col = 2
+)
+select * from cte1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+cte1.c1	cte1.c2
+1	2
+PREHOOK: query: with cte1(a) as (select int_col x, bigint_col a from t1)
+select * from cte1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: with cte1(a) as (select int_col x, bigint_col a from t1)
+select * from cte1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+cte1.a	cte1._col1
+1	2
+3	4
+PREHOOK: query: with cte1(a) as (select int_col x, bigint_col a from t1)
+select cte1.* from cte1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: with cte1(a) as (select int_col x, bigint_col a from t1)
+select cte1.* from cte1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+cte1.a	cte1._col1
+1	2
+3	4

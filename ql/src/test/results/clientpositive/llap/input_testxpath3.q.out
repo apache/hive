@@ -1,0 +1,48 @@
+PREHOOK: query: EXPLAIN
+FROM src_thrift
+SELECT src_thrift.mstringstring['key_9'], src_thrift.lintstring.myint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+FROM src_thrift
+SELECT src_thrift.mstringstring['key_9'], src_thrift.lintstring.myint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src_thrift
+          Select Operator
+            expressions: mstringstring['key_9'] (type: string), lintstring.myint (type: array<int>)
+            outputColumnNames: _col0, _col1
+            ListSink
+
+PREHOOK: query: FROM src_thrift
+SELECT src_thrift.mstringstring['key_9'], src_thrift.lintstring.myint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+#### A masked pattern was here ####
+POSTHOOK: query: FROM src_thrift
+SELECT src_thrift.mstringstring['key_9'], src_thrift.lintstring.myint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+#### A masked pattern was here ####
+NULL	[0]
+NULL	[1]
+NULL	[4]
+NULL	[9]
+NULL	[16]
+NULL	[25]
+NULL	[36]
+NULL	[49]
+NULL	[64]
+value_9	[81]
+NULL	NULL

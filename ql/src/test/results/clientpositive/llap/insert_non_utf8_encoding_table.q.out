@@ -1,0 +1,93 @@
+PREHOOK: query: drop table if exists table_with_utf8_encoding
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists table_with_utf8_encoding
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table table_with_utf8_encoding (name STRING) 
+ ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+ WITH SERDEPROPERTIES ('serialization.encoding'='utf-8')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_with_utf8_encoding
+POSTHOOK: query: create table table_with_utf8_encoding (name STRING) 
+ ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+ WITH SERDEPROPERTIES ('serialization.encoding'='utf-8')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_with_utf8_encoding
+PREHOOK: query: load data local inpath '../../data/files/encoding-utf8.txt' overwrite into table table_with_utf8_encoding
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@table_with_utf8_encoding
+POSTHOOK: query: load data local inpath '../../data/files/encoding-utf8.txt' overwrite into table table_with_utf8_encoding
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@table_with_utf8_encoding
+PREHOOK: query: select * from table_with_utf8_encoding
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_with_utf8_encoding
+#### A masked pattern was here ####
+POSTHOOK: query: select * from table_with_utf8_encoding
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_with_utf8_encoding
+#### A masked pattern was here ####
+Tao,Li
+Wisgood
+Benguo,Me
+Xianqiang,Shen
+Wensheng,Wang
+Haijun,Qiao
+Shilong,Zhang
+Xiaoqing,You
+Aiqing,Song
+Zhenhua,Han
+Weiqi,Peng
+Hua,Li
+PREHOOK: query: drop table if exists table_with_non_utf8_encoding
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists table_with_non_utf8_encoding
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table table_with_non_utf8_encoding (name STRING) 
+ ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+ WITH SERDEPROPERTIES ('serialization.encoding'='ISO8859_1')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_with_non_utf8_encoding
+POSTHOOK: query: create table table_with_non_utf8_encoding (name STRING) 
+ ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+ WITH SERDEPROPERTIES ('serialization.encoding'='ISO8859_1')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_with_non_utf8_encoding
+PREHOOK: query: insert overwrite table table_with_non_utf8_encoding  select name  from table_with_utf8_encoding
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_with_utf8_encoding
+PREHOOK: Output: default@table_with_non_utf8_encoding
+POSTHOOK: query: insert overwrite table table_with_non_utf8_encoding  select name  from table_with_utf8_encoding
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_with_utf8_encoding
+POSTHOOK: Output: default@table_with_non_utf8_encoding
+POSTHOOK: Lineage: table_with_non_utf8_encoding.name SIMPLE [(table_with_utf8_encoding)table_with_utf8_encoding.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: select * from table_with_non_utf8_encoding
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_with_non_utf8_encoding
+#### A masked pattern was here ####
+POSTHOOK: query: select * from table_with_non_utf8_encoding
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_with_non_utf8_encoding
+#### A masked pattern was here ####
+Tao,Li
+Wisgood
+Benguo,Me
+Xianqiang,Shen
+Wensheng,Wang
+Haijun,Qiao
+Shilong,Zhang
+Xiaoqing,You
+Aiqing,Song
+Zhenhua,Han
+Weiqi,Peng
+Hua,Li

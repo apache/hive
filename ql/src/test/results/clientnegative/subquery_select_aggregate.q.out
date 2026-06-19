@@ -1,0 +1,1 @@
+FAILED: CalciteSubquerySemanticException [Error 10249]: Unsupported SubQuery Expression Invalid subquery. Subquery in UDAF is not allowed.

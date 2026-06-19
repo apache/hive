@@ -1,0 +1,206 @@
+PREHOOK: query: create table test_table_n1 (id int, query string, name string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table_n1
+POSTHOOK: query: create table test_table_n1 (id int, query string, name string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table_n1
+PREHOOK: query: describe extended test_table_n1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table_n1
+POSTHOOK: query: describe extended test_table_n1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table_n1
+id                  	int                 	                    
+query               	string              	                    
+name                	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: alter table test_table_n1 set serde 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+PREHOOK: type: ALTERTABLE_SERIALIZER
+PREHOOK: Input: default@test_table_n1
+PREHOOK: Output: default@test_table_n1
+POSTHOOK: query: alter table test_table_n1 set serde 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+POSTHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: Input: default@test_table_n1
+POSTHOOK: Output: default@test_table_n1
+PREHOOK: query: describe extended test_table_n1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table_n1
+POSTHOOK: query: describe extended test_table_n1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table_n1
+id                  	int                 	                    
+query               	string              	                    
+name                	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: alter table test_table_n1 set serdeproperties ('field.delim' = ',')
+PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
+PREHOOK: Input: default@test_table_n1
+PREHOOK: Output: default@test_table_n1
+POSTHOOK: query: alter table test_table_n1 set serdeproperties ('field.delim' = ',')
+POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: Input: default@test_table_n1
+POSTHOOK: Output: default@test_table_n1
+PREHOOK: query: describe extended test_table_n1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table_n1
+POSTHOOK: query: describe extended test_table_n1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table_n1
+id                  	int                 	                    
+query               	string              	                    
+name                	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: drop table test_table_n1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_table_n1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table_n1
+POSTHOOK: query: drop table test_table_n1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_table_n1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table_n1
+PREHOOK: query: create table test_table_n1 (id int, query string, name string) partitioned by (dt string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table_n1
+POSTHOOK: query: create table test_table_n1 (id int, query string, name string) partitioned by (dt string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table_n1
+PREHOOK: query: alter table test_table_n1 add partition (dt = '2011')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@test_table_n1
+POSTHOOK: query: alter table test_table_n1 add partition (dt = '2011')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@test_table_n1
+POSTHOOK: Output: default@test_table_n1@dt=2011
+PREHOOK: query: describe extended test_table_n1 partition (dt='2011')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table_n1
+POSTHOOK: query: describe extended test_table_n1 partition (dt='2011')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table_n1
+id                  	int                 	                    
+query               	string              	                    
+name                	string              	                    
+dt                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+dt                  	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: alter table test_table_n1 set serde 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+PREHOOK: type: ALTERTABLE_SERIALIZER
+PREHOOK: Input: default@test_table_n1
+PREHOOK: Output: default@test_table_n1
+POSTHOOK: query: alter table test_table_n1 set serde 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+POSTHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: Input: default@test_table_n1
+POSTHOOK: Output: default@test_table_n1
+PREHOOK: query: describe extended test_table_n1 partition (dt='2011')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table_n1
+POSTHOOK: query: describe extended test_table_n1 partition (dt='2011')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table_n1
+id                  	int                 	                    
+query               	string              	                    
+name                	string              	                    
+dt                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+dt                  	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: alter table test_table_n1 set serdeproperties ('field.delim' = ',')
+PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
+PREHOOK: Input: default@test_table_n1
+PREHOOK: Output: default@test_table_n1
+POSTHOOK: query: alter table test_table_n1 set serdeproperties ('field.delim' = ',')
+POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: Input: default@test_table_n1
+POSTHOOK: Output: default@test_table_n1
+PREHOOK: query: describe extended test_table_n1 partition (dt='2011')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table_n1
+POSTHOOK: query: describe extended test_table_n1 partition (dt='2011')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table_n1
+id                  	int                 	                    
+query               	string              	                    
+name                	string              	                    
+dt                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+dt                  	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: alter table test_table_n1 partition(dt='2011') set serde 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+PREHOOK: type: ALTERPARTITION_SERIALIZER
+PREHOOK: Input: default@test_table_n1
+PREHOOK: Output: default@test_table_n1@dt=2011
+POSTHOOK: query: alter table test_table_n1 partition(dt='2011') set serde 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+POSTHOOK: type: ALTERPARTITION_SERIALIZER
+POSTHOOK: Input: default@test_table_n1
+POSTHOOK: Input: default@test_table_n1@dt=2011
+POSTHOOK: Output: default@test_table_n1@dt=2011
+PREHOOK: query: describe extended test_table_n1 partition (dt='2011')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table_n1
+POSTHOOK: query: describe extended test_table_n1 partition (dt='2011')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table_n1
+id                  	int                 	                    
+query               	string              	                    
+name                	string              	                    
+dt                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+dt                  	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: alter table test_table_n1 partition(dt='2011') set serdeproperties ('field.delim' = ',')
+PREHOOK: type: ALTERPARTITION_SERDEPROPERTIES
+PREHOOK: Input: default@test_table_n1
+PREHOOK: Output: default@test_table_n1@dt=2011
+POSTHOOK: query: alter table test_table_n1 partition(dt='2011') set serdeproperties ('field.delim' = ',')
+POSTHOOK: type: ALTERPARTITION_SERDEPROPERTIES
+POSTHOOK: Input: default@test_table_n1
+POSTHOOK: Input: default@test_table_n1@dt=2011
+POSTHOOK: Output: default@test_table_n1@dt=2011
+PREHOOK: query: describe extended test_table_n1 partition (dt='2011')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table_n1
+POSTHOOK: query: describe extended test_table_n1 partition (dt='2011')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table_n1
+id                  	int                 	                    
+query               	string              	                    
+name                	string              	                    
+dt                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+dt                  	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: drop table test_table_n1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_table_n1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table_n1
+POSTHOOK: query: drop table test_table_n1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_table_n1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table_n1

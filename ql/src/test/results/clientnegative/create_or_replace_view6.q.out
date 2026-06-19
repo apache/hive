@@ -1,0 +1,17 @@
+PREHOOK: query: drop view v
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: drop view v
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: create view v partitioned on (ds, hr) as select * from srcpart
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@srcpart
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v
+POSTHOOK: query: create view v partitioned on (ds, hr) as select * from srcpart
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v
+POSTHOOK: Lineage: v.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+FAILED: ParseException line 2:52 cannot recognize input near 'blah' '<EOF>' '<EOF>' in create view statement

@@ -1,0 +1,71 @@
+PREHOOK: query: CREATE TABLE parquet_thrift_array_of_primitives (
+    list_of_ints ARRAY<INT>
+) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_thrift_array_of_primitives
+POSTHOOK: query: CREATE TABLE parquet_thrift_array_of_primitives (
+    list_of_ints ARRAY<INT>
+) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_thrift_array_of_primitives
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/ThriftPrimitiveInList.parquet'
+OVERWRITE INTO TABLE parquet_thrift_array_of_primitives
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_thrift_array_of_primitives
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/ThriftPrimitiveInList.parquet'
+OVERWRITE INTO TABLE parquet_thrift_array_of_primitives
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_thrift_array_of_primitives
+PREHOOK: query: SELECT * FROM parquet_thrift_array_of_primitives
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_thrift_array_of_primitives
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_thrift_array_of_primitives
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_thrift_array_of_primitives
+#### A masked pattern was here ####
+[34,35,36]
+PREHOOK: query: CREATE TEMPORARY TABLE temp_parquet_thrift_array_of_primitives as SELECT * FROM parquet_thrift_array_of_primitives
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@parquet_thrift_array_of_primitives
+PREHOOK: Output: database:default
+PREHOOK: Output: default@temp_parquet_thrift_array_of_primitives
+POSTHOOK: query: CREATE TEMPORARY TABLE temp_parquet_thrift_array_of_primitives as SELECT * FROM parquet_thrift_array_of_primitives
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@parquet_thrift_array_of_primitives
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@temp_parquet_thrift_array_of_primitives
+POSTHOOK: Lineage: temp_parquet_thrift_array_of_primitives.list_of_ints SIMPLE [(parquet_thrift_array_of_primitives)parquet_thrift_array_of_primitives.FieldSchema(name:list_of_ints, type:array<int>, comment:null), ]
+PREHOOK: query: SELECT * FROM temp_parquet_thrift_array_of_primitives
+PREHOOK: type: QUERY
+PREHOOK: Input: default@temp_parquet_thrift_array_of_primitives
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM temp_parquet_thrift_array_of_primitives
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@temp_parquet_thrift_array_of_primitives
+#### A masked pattern was here ####
+[34,35,36]
+PREHOOK: query: DROP TABLE temp_parquet_thrift_array_of_primitives
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@temp_parquet_thrift_array_of_primitives
+PREHOOK: Output: database:default
+PREHOOK: Output: default@temp_parquet_thrift_array_of_primitives
+POSTHOOK: query: DROP TABLE temp_parquet_thrift_array_of_primitives
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@temp_parquet_thrift_array_of_primitives
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@temp_parquet_thrift_array_of_primitives
+PREHOOK: query: DROP TABLE parquet_thrift_array_of_primitives
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@parquet_thrift_array_of_primitives
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_thrift_array_of_primitives
+POSTHOOK: query: DROP TABLE parquet_thrift_array_of_primitives
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@parquet_thrift_array_of_primitives
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_thrift_array_of_primitives

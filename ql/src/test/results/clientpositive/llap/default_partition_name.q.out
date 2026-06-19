@@ -1,0 +1,22 @@
+PREHOOK: query: create table default_partition_name (key int, value string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@default_partition_name
+POSTHOOK: query: create table default_partition_name (key int, value string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@default_partition_name
+PREHOOK: query: alter table default_partition_name add partition(ds='__HIVE_DEFAULT_PARTITION__')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@default_partition_name
+POSTHOOK: query: alter table default_partition_name add partition(ds='__HIVE_DEFAULT_PARTITION__')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@default_partition_name
+POSTHOOK: Output: default@default_partition_name@ds=__HIVE_DEFAULT_PARTITION__
+PREHOOK: query: show partitions default_partition_name
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@default_partition_name
+POSTHOOK: query: show partitions default_partition_name
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@default_partition_name
+ds=__HIVE_DEFAULT_PARTITION__

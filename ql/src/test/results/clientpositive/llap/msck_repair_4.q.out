@@ -1,0 +1,52 @@
+PREHOOK: query: DROP TABLE IF EXISTS repairtable_n4
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS repairtable_n4
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE EXTERNAL TABLE repairtable_n4(key INT, value STRING) PARTITIONED BY (Year INT, Month INT, Day INT) stored as ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repairtable_n4
+POSTHOOK: query: CREATE EXTERNAL TABLE repairtable_n4(key INT, value STRING) PARTITIONED BY (Year INT, Month INT, Day INT) stored as ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repairtable_n4
+PREHOOK: query: MSCK REPAIR TABLE repairtable_n4
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_n4
+POSTHOOK: query: MSCK REPAIR TABLE repairtable_n4
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_n4
+PREHOOK: query: show partitions repairtable_n4
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_n4
+POSTHOOK: query: show partitions repairtable_n4
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_n4
+PREHOOK: query: MSCK REPAIR TABLE repairtable_n4
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_n4
+POSTHOOK: query: MSCK REPAIR TABLE repairtable_n4
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_n4
+Partitions not in metastore:	repairtable_n4:year=2020/month=3/day=1	repairtable_n4:year=2020/month=3/day=2
+#### A masked pattern was here ####
+PREHOOK: query: show partitions repairtable_n4
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_n4
+POSTHOOK: query: show partitions repairtable_n4
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_n4
+year=2020/month=3/day=1
+year=2020/month=3/day=2
+PREHOOK: query: DROP TABLE default.repairtable_n4
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@repairtable_n4
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repairtable_n4
+POSTHOOK: query: DROP TABLE default.repairtable_n4
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@repairtable_n4
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repairtable_n4

@@ -1,0 +1,219 @@
+PREHOOK: query: DROP TABLE IF EXISTS parquet_columnar_access_stage
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS parquet_columnar_access_stage
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS parquet_columnar_access
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS parquet_columnar_access
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS parquet_columnar_renamed
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS parquet_columnar_renamed
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE parquet_columnar_access_stage (
+    s string,
+    i int,
+    f float
+  ) ROW FORMAT DELIMITED
+  FIELDS TERMINATED BY '|'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_columnar_access_stage
+POSTHOOK: query: CREATE TABLE parquet_columnar_access_stage (
+    s string,
+    i int,
+    f float
+  ) ROW FORMAT DELIMITED
+  FIELDS TERMINATED BY '|'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_columnar_access_stage
+PREHOOK: query: CREATE TABLE parquet_columnar_access (
+    s string,
+    x int,
+    y int,
+    f float,
+    address struct<intVals:int,strVals:string>
+  ) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_columnar_access
+POSTHOOK: query: CREATE TABLE parquet_columnar_access (
+    s string,
+    x int,
+    y int,
+    f float,
+    address struct<intVals:int,strVals:string>
+  ) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_columnar_access
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_columnar.txt' OVERWRITE INTO TABLE parquet_columnar_access_stage
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_columnar_access_stage
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_columnar.txt' OVERWRITE INTO TABLE parquet_columnar_access_stage
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_columnar_access_stage
+PREHOOK: query: INSERT OVERWRITE TABLE parquet_columnar_access SELECT s, i, (i + 1), f, named_struct('intVals',
+i,'strVals',s) FROM parquet_columnar_access_stage
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_columnar_access_stage
+PREHOOK: Output: default@parquet_columnar_access
+POSTHOOK: query: INSERT OVERWRITE TABLE parquet_columnar_access SELECT s, i, (i + 1), f, named_struct('intVals',
+i,'strVals',s) FROM parquet_columnar_access_stage
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_columnar_access_stage
+POSTHOOK: Output: default@parquet_columnar_access
+POSTHOOK: Lineage: parquet_columnar_access.address EXPRESSION [(parquet_columnar_access_stage)parquet_columnar_access_stage.FieldSchema(name:i, type:int, comment:null), (parquet_columnar_access_stage)parquet_columnar_access_stage.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: parquet_columnar_access.f SIMPLE [(parquet_columnar_access_stage)parquet_columnar_access_stage.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: parquet_columnar_access.s SIMPLE [(parquet_columnar_access_stage)parquet_columnar_access_stage.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: parquet_columnar_access.x SIMPLE [(parquet_columnar_access_stage)parquet_columnar_access_stage.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_columnar_access.y EXPRESSION [(parquet_columnar_access_stage)parquet_columnar_access_stage.FieldSchema(name:i, type:int, comment:null), ]
+PREHOOK: query: SELECT * FROM parquet_columnar_access
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_columnar_access
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_columnar_access
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_columnar_access
+#### A masked pattern was here ####
+1abc00	1	2	1.0	{"intVals":1,"strVals":"1abc00"}
+1def01	2	3	1.1	{"intVals":2,"strVals":"1def01"}
+1ghi02	3	4	1.2	{"intVals":3,"strVals":"1ghi02"}
+1jkl03	1	2	1.3	{"intVals":1,"strVals":"1jkl03"}
+1mno04	2	3	1.4	{"intVals":2,"strVals":"1mno04"}
+1pqr05	3	4	1.0	{"intVals":3,"strVals":"1pqr05"}
+1stu06	1	2	1.1	{"intVals":1,"strVals":"1stu06"}
+1vwx07	2	3	1.2	{"intVals":2,"strVals":"1vwx07"}
+1yza08	3	4	1.3	{"intVals":3,"strVals":"1yza08"}
+1bcd09	1	2	1.4	{"intVals":1,"strVals":"1bcd09"}
+1efg10	2	3	1.0	{"intVals":2,"strVals":"1efg10"}
+1hij11	3	4	1.1	{"intVals":3,"strVals":"1hij11"}
+1klm12	1	2	1.2	{"intVals":1,"strVals":"1klm12"}
+1nop13	2	3	1.3	{"intVals":2,"strVals":"1nop13"}
+1qrs14	3	4	1.4	{"intVals":3,"strVals":"1qrs14"}
+1tuv15	1	2	1.0	{"intVals":1,"strVals":"1tuv15"}
+1wxy16	2	3	1.1	{"intVals":2,"strVals":"1wxy16"}
+1zab17	3	4	1.2	{"intVals":3,"strVals":"1zab17"}
+1cde18	1	2	1.3	{"intVals":1,"strVals":"1cde18"}
+1fgh19	2	3	1.4	{"intVals":2,"strVals":"1fgh19"}
+1ijk20	3	4	1.0	{"intVals":3,"strVals":"1ijk20"}
+PREHOOK: query: ALTER TABLE parquet_columnar_access REPLACE COLUMNS (s1 string, x1 int, y1 int, f1 float)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@parquet_columnar_access
+PREHOOK: Output: default@parquet_columnar_access
+POSTHOOK: query: ALTER TABLE parquet_columnar_access REPLACE COLUMNS (s1 string, x1 int, y1 int, f1 float)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@parquet_columnar_access
+POSTHOOK: Output: default@parquet_columnar_access
+PREHOOK: query: SELECT * FROM parquet_columnar_access
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_columnar_access
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_columnar_access
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_columnar_access
+#### A masked pattern was here ####
+1abc00	1	2	1.0
+1def01	2	3	1.1
+1ghi02	3	4	1.2
+1jkl03	1	2	1.3
+1mno04	2	3	1.4
+1pqr05	3	4	1.0
+1stu06	1	2	1.1
+1vwx07	2	3	1.2
+1yza08	3	4	1.3
+1bcd09	1	2	1.4
+1efg10	2	3	1.0
+1hij11	3	4	1.1
+1klm12	1	2	1.2
+1nop13	2	3	1.3
+1qrs14	3	4	1.4
+1tuv15	1	2	1.0
+1wxy16	2	3	1.1
+1zab17	3	4	1.2
+1cde18	1	2	1.3
+1fgh19	2	3	1.4
+1ijk20	3	4	1.0
+PREHOOK: query: ALTER TABLE parquet_columnar_access REPLACE COLUMNS (s1 string, x1 bigint, y1 int, f1 double)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@parquet_columnar_access
+PREHOOK: Output: default@parquet_columnar_access
+POSTHOOK: query: ALTER TABLE parquet_columnar_access REPLACE COLUMNS (s1 string, x1 bigint, y1 int, f1 double)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@parquet_columnar_access
+POSTHOOK: Output: default@parquet_columnar_access
+PREHOOK: query: SELECT * FROM parquet_columnar_access
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_columnar_access
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_columnar_access
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_columnar_access
+#### A masked pattern was here ####
+1abc00	1	2	1.0
+1def01	2	3	1.100000023841858
+1ghi02	3	4	1.2000000476837158
+1jkl03	1	2	1.2999999523162842
+1mno04	2	3	1.399999976158142
+1pqr05	3	4	1.0
+1stu06	1	2	1.100000023841858
+1vwx07	2	3	1.2000000476837158
+1yza08	3	4	1.2999999523162842
+1bcd09	1	2	1.399999976158142
+1efg10	2	3	1.0
+1hij11	3	4	1.100000023841858
+1klm12	1	2	1.2000000476837158
+1nop13	2	3	1.2999999523162842
+1qrs14	3	4	1.399999976158142
+1tuv15	1	2	1.0
+1wxy16	2	3	1.100000023841858
+1zab17	3	4	1.2000000476837158
+1cde18	1	2	1.2999999523162842
+1fgh19	2	3	1.399999976158142
+1ijk20	3	4	1.0
+PREHOOK: query: ALTER TABLE parquet_columnar_access REPLACE COLUMNS (s1 string, x1 float, y1 float, f1 double)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@parquet_columnar_access
+PREHOOK: Output: default@parquet_columnar_access
+POSTHOOK: query: ALTER TABLE parquet_columnar_access REPLACE COLUMNS (s1 string, x1 float, y1 float, f1 double)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@parquet_columnar_access
+POSTHOOK: Output: default@parquet_columnar_access
+PREHOOK: query: SELECT * FROM parquet_columnar_access
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_columnar_access
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_columnar_access
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_columnar_access
+#### A masked pattern was here ####
+1abc00	1.0	2.0	1.0
+1def01	2.0	3.0	1.100000023841858
+1ghi02	3.0	4.0	1.2000000476837158
+1jkl03	1.0	2.0	1.2999999523162842
+1mno04	2.0	3.0	1.399999976158142
+1pqr05	3.0	4.0	1.0
+1stu06	1.0	2.0	1.100000023841858
+1vwx07	2.0	3.0	1.2000000476837158
+1yza08	3.0	4.0	1.2999999523162842
+1bcd09	1.0	2.0	1.399999976158142
+1efg10	2.0	3.0	1.0
+1hij11	3.0	4.0	1.100000023841858
+1klm12	1.0	2.0	1.2000000476837158
+1nop13	2.0	3.0	1.2999999523162842
+1qrs14	3.0	4.0	1.399999976158142
+1tuv15	1.0	2.0	1.0
+1wxy16	2.0	3.0	1.100000023841858
+1zab17	3.0	4.0	1.2000000476837158
+1cde18	1.0	2.0	1.2999999523162842
+1fgh19	2.0	3.0	1.399999976158142
+1ijk20	3.0	4.0	1.0

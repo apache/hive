@@ -1,0 +1,25 @@
+PREHOOK: query: create table t1 as select cast(key as int) key, value from src where key <= 10
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1 as select cast(key as int) key, value from src where key <= 10
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table t5 as select cast(key as int) key1, value value1 from src where key <= 100
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t5
+POSTHOOK: query: create table t5 as select cast(key as int) key1, value value1 from src where key <= 100
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t5
+POSTHOOK: Lineage: t5.key1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t5.value1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+FAILED: SemanticException [Error 10004]: Line 4:81 Invalid table alias or column reference 'key1': (possible column names are: key, value)

@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS src;
+DROP TABLE IF EXISTS src_thrift;

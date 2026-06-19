@@ -1,0 +1,1 @@
+FAILED: HiveAccessControlException Permission denied: Principal [name=hive_test_user, type=USER] does not have following privileges for operation CREATEDATACONNECTOR [[ADMIN PRIVILEGE] on Object [type=DATACONNECTOR, name=mysql_auth]]

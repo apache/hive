@@ -1,0 +1,63 @@
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+  @Test
+  public void <TestName>() throws HiveException {
+
+    Random rand = new Random(SEED);
+
+    <OutputColumnVectorType> outputColumnVector =
+      VectorizedRowGroupGenUtil.generate<OutputColumnVectorType>(<InitOuputColHasNulls>,
+      <InitOuputColIsRepeating>, BATCH_SIZE, rand);
+
+    <InputColumnVectorType> inputColumnVector =
+      VectorizedRowGroupGenUtil.generate<InputColumnVectorType>(<ColumnHasNulls>,
+      <ColumnIsRepeating>, BATCH_SIZE, rand);
+
+    VectorizedRowBatch rowBatch = new VectorizedRowBatch(2, BATCH_SIZE);
+    rowBatch.cols[0] = inputColumnVector;
+    rowBatch.cols[1] = outputColumnVector;
+
+    <ScalarType> scalarValue = 0;
+    do {
+      scalarValue = rand.next<CamelCaseScalarType>();
+    } while(scalarValue == 0);
+
+    <VectorExpClassName> vectorExpression =
+      new <VectorExpClassName>(<ConstructorParams>, 1);
+
+    vectorExpression.evaluate(rowBatch);
+
+    assertEquals(
+      "Output column vector is repeating state does not match operand column",
+      inputColumnVector.isRepeating, outputColumnVector.isRepeating);
+
+    /*
+     We no longer set noNulls to the input ColumnVector's value since that doesn't work
+     for scratch column reuse.
+    assertEquals(
+      "Output column vector no nulls state does not match operand column",
+      inputColumnVector.noNulls, outputColumnVector.noNulls);
+     */
+
+    if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
+        //null vectors are safe to check, as they are always initialized to match the data vector
+        assertEquals("Output vector doesn't match input vector's is null state for index",
+          inputColumnVector.isNull[i], outputColumnVector.isNull[i]);
+      }
+    }
+  }

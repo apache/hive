@@ -1,0 +1,170 @@
+PREHOOK: query: DROP TABLE IF EXISTS transactions
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS transactions
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS merge_source
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS merge_source
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE transactions (id int, value string, last_update_user string) PARTITIONED BY (tran_date string) CLUSTERED BY (id) into 5 buckets  STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@transactions
+POSTHOOK: query: CREATE TABLE transactions (id int, value string, last_update_user string) PARTITIONED BY (tran_date string) CLUSTERED BY (id) into 5 buckets  STORED AS ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@transactions
+PREHOOK: query: CREATE TABLE merge_source (id int, value string, tran_date string) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@merge_source
+POSTHOOK: query: CREATE TABLE merge_source (id int, value string, tran_date string) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@merge_source
+PREHOOK: query: INSERT INTO transactions PARTITION (tran_date) VALUES
+(1, 'value_01', 'creation', '20170410'),
+(2, 'value_02', 'creation', '20170410'),
+(3, 'value_03', 'creation', '20170410'),
+(4, 'value_04', 'creation', '20170410'),
+(5, 'value_05', 'creation', '20170413'),
+(6, 'value_06', 'creation', '20170413'),
+(7, 'value_07', 'creation', '20170413'),
+(8, 'value_08', 'creation', '20170413'),
+(9, 'value_09', 'creation', '20170413'),
+(10, 'value_10','creation', '20170413')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@transactions
+POSTHOOK: query: INSERT INTO transactions PARTITION (tran_date) VALUES
+(1, 'value_01', 'creation', '20170410'),
+(2, 'value_02', 'creation', '20170410'),
+(3, 'value_03', 'creation', '20170410'),
+(4, 'value_04', 'creation', '20170410'),
+(5, 'value_05', 'creation', '20170413'),
+(6, 'value_06', 'creation', '20170413'),
+(7, 'value_07', 'creation', '20170413'),
+(8, 'value_08', 'creation', '20170413'),
+(9, 'value_09', 'creation', '20170413'),
+(10, 'value_10','creation', '20170413')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@transactions
+POSTHOOK: Output: default@transactions@tran_date=20170410
+POSTHOOK: Output: default@transactions@tran_date=20170413
+POSTHOOK: Lineage: transactions PARTITION(tran_date=20170410).id SCRIPT []
+POSTHOOK: Lineage: transactions PARTITION(tran_date=20170410).last_update_user SCRIPT []
+POSTHOOK: Lineage: transactions PARTITION(tran_date=20170410).value SCRIPT []
+POSTHOOK: Lineage: transactions PARTITION(tran_date=20170413).id SCRIPT []
+POSTHOOK: Lineage: transactions PARTITION(tran_date=20170413).last_update_user SCRIPT []
+POSTHOOK: Lineage: transactions PARTITION(tran_date=20170413).value SCRIPT []
+PREHOOK: query: INSERT INTO merge_source VALUES
+(1, 'value_01', '20170410'),
+(4, NULL, '20170410'),
+(7, 'value_77777', '20170413'),
+(8, NULL, '20170413'),
+(8, 'value_08', '20170415'),
+(11, 'value_11', '20170415')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@merge_source
+POSTHOOK: query: INSERT INTO merge_source VALUES
+(1, 'value_01', '20170410'),
+(4, NULL, '20170410'),
+(7, 'value_77777', '20170413'),
+(8, NULL, '20170413'),
+(8, 'value_08', '20170415'),
+(11, 'value_11', '20170415')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@merge_source
+POSTHOOK: Lineage: merge_source.id SCRIPT []
+POSTHOOK: Lineage: merge_source.tran_date SCRIPT []
+POSTHOOK: Lineage: merge_source.value SCRIPT []
+PREHOOK: query: MERGE INTO transactions AS T
+USING merge_source AS S
+ON T.ID = S.ID and T.tran_date = S.tran_date
+WHEN MATCHED AND (T.value != S.value AND S.value IS NOT NULL) THEN UPDATE SET value = S.value, last_update_user = 'merge_update'
+WHEN MATCHED AND S.value IS NULL THEN DELETE
+WHEN NOT MATCHED THEN INSERT VALUES (S.ID, S.value, 'merge_insert', S.tran_date)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@merge_source
+PREHOOK: Input: default@transactions
+PREHOOK: Input: default@transactions@tran_date=20170410
+PREHOOK: Input: default@transactions@tran_date=20170413
+PREHOOK: Output: default@merge_tmp_table
+PREHOOK: Output: default@transactions
+PREHOOK: Output: default@transactions@tran_date=20170410
+PREHOOK: Output: default@transactions@tran_date=20170413
+POSTHOOK: query: MERGE INTO transactions AS T
+USING merge_source AS S
+ON T.ID = S.ID and T.tran_date = S.tran_date
+WHEN MATCHED AND (T.value != S.value AND S.value IS NOT NULL) THEN UPDATE SET value = S.value, last_update_user = 'merge_update'
+WHEN MATCHED AND S.value IS NULL THEN DELETE
+WHEN NOT MATCHED THEN INSERT VALUES (S.ID, S.value, 'merge_insert', S.tran_date)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@merge_source
+POSTHOOK: Input: default@transactions
+POSTHOOK: Input: default@transactions@tran_date=20170410
+POSTHOOK: Input: default@transactions@tran_date=20170413
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Output: default@transactions
+POSTHOOK: Output: default@transactions@tran_date=20170410
+POSTHOOK: Output: default@transactions@tran_date=20170413
+POSTHOOK: Output: default@transactions@tran_date=20170413
+POSTHOOK: Output: default@transactions@tran_date=20170415
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(transactions)transactions.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), (transactions)transactions.FieldSchema(name:tran_date, type:string, comment:null), ]
+POSTHOOK: Lineage: transactions PARTITION(tran_date=20170413).id SIMPLE [(merge_source)s.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: transactions PARTITION(tran_date=20170413).last_update_user SIMPLE []
+POSTHOOK: Lineage: transactions PARTITION(tran_date=20170413).value SIMPLE [(merge_source)s.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: transactions PARTITION(tran_date=20170415).id SIMPLE [(merge_source)s.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: transactions PARTITION(tran_date=20170415).last_update_user SIMPLE []
+POSTHOOK: Lineage: transactions PARTITION(tran_date=20170415).value SIMPLE [(merge_source)s.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM transactions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@transactions
+PREHOOK: Input: default@transactions@tran_date=20170410
+PREHOOK: Input: default@transactions@tran_date=20170413
+PREHOOK: Input: default@transactions@tran_date=20170415
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM transactions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@transactions
+POSTHOOK: Input: default@transactions@tran_date=20170410
+POSTHOOK: Input: default@transactions@tran_date=20170413
+POSTHOOK: Input: default@transactions@tran_date=20170415
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	value_01	creation	20170410
+10	value_10	creation	20170413
+11	value_11	merge_insert	20170415
+2	value_02	creation	20170410
+3	value_03	creation	20170410
+5	value_05	creation	20170413
+6	value_06	creation	20170413
+7	value_77777	merge_update	20170413
+8	value_08	merge_insert	20170415
+9	value_09	creation	20170413
+PREHOOK: query: DROP TABLE IF EXISTS transactions
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@transactions
+PREHOOK: Output: database:default
+PREHOOK: Output: default@transactions
+POSTHOOK: query: DROP TABLE IF EXISTS transactions
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@transactions
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@transactions
+PREHOOK: query: DROP TABLE IF EXISTS merge_source
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@merge_source
+PREHOOK: Output: database:default
+PREHOOK: Output: default@merge_source
+POSTHOOK: query: DROP TABLE IF EXISTS merge_source
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@merge_source
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@merge_source

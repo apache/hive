@@ -1,0 +1,240 @@
+PREHOOK: query: CREATE FUNCTION qtest_get_java_boolean AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaBoolean'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Input: database:default
+PREHOOK: Output: default.qtest_get_java_boolean
+POSTHOOK: query: CREATE FUNCTION qtest_get_java_boolean AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaBoolean'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Input: database:default
+POSTHOOK: Output: default.qtest_get_java_boolean
+PREHOOK: query: select qtest_get_java_boolean('true'), qtest_get_java_boolean('false') from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select qtest_get_java_boolean('true'), qtest_get_java_boolean('false') from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+true	false
+PREHOOK: query: describe function extended qtest_get_java_boolean
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: describe function extended qtest_get_java_boolean
+POSTHOOK: type: DESCFUNCTION
+qtest_get_java_boolean(str) - GenericUDF to return native Java's boolean type
+Synonyms: default.qtest_get_java_boolean
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaBoolean
+Function type:PERSISTENT
+PREHOOK: query: create database mydb
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:mydb
+POSTHOOK: query: create database mydb
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:mydb
+PREHOOK: query: explain create function mydb.func1 as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Input: database:mydb
+PREHOOK: Output: mydb.func1
+POSTHOOK: query: explain create function mydb.func1 as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Input: database:mydb
+POSTHOOK: Output: mydb.func1
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Create Function
+      class: org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper
+      name: mydb.func1
+
+PREHOOK: query: create function mydb.func1 as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Input: database:mydb
+PREHOOK: Output: mydb.func1
+POSTHOOK: query: create function mydb.func1 as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Input: database:mydb
+POSTHOOK: Output: mydb.func1
+PREHOOK: query: show functions like mydb.func1
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: show functions like mydb.func1
+POSTHOOK: type: SHOWFUNCTIONS
+mydb.func1
+PREHOOK: query: describe function extended mydb.func1
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: describe function extended mydb.func1
+POSTHOOK: type: DESCFUNCTION
+mydb.func1(str) - Returns str with all characters changed to uppercase
+Synonyms: upper, ucase
+Example:
+  > SELECT mydb.func1('Facebook') FROM src LIMIT 1;
+  'FACEBOOK'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper
+Function type:PERSISTENT
+PREHOOK: query: select mydb.func1('abc') from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select mydb.func1('abc') from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+ABC
+PREHOOK: query: explain drop function mydb.func1
+PREHOOK: type: DROPFUNCTION
+PREHOOK: Input: database:mydb
+PREHOOK: Output: mydb.func1
+POSTHOOK: query: explain drop function mydb.func1
+POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Input: database:mydb
+POSTHOOK: Output: mydb.func1
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Drop Function
+      name: mydb.func1
+
+PREHOOK: query: drop function mydb.func1
+PREHOOK: type: DROPFUNCTION
+PREHOOK: Input: database:mydb
+PREHOOK: Output: mydb.func1
+POSTHOOK: query: drop function mydb.func1
+POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Input: database:mydb
+POSTHOOK: Output: mydb.func1
+PREHOOK: query: show functions like mydb.func1
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: show functions like mydb.func1
+POSTHOOK: type: SHOWFUNCTIONS
+PREHOOK: query: explain create temporary function temp_func1 as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: temp_func1
+POSTHOOK: query: explain create temporary function temp_func1 as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: temp_func1
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Create Function
+      class: org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper
+      name: temp_func1
+      temporary: true
+
+PREHOOK: query: create temporary function temp_func1 as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: temp_func1
+POSTHOOK: query: create temporary function temp_func1 as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: temp_func1
+PREHOOK: query: explain drop temporary function temp_func1
+PREHOOK: type: DROPFUNCTION
+PREHOOK: Output: temp_func1
+POSTHOOK: query: explain drop temporary function temp_func1
+POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Output: temp_func1
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Drop Function
+      name: temp_func1
+      temporary: true
+
+PREHOOK: query: drop temporary function temp_func1
+PREHOOK: type: DROPFUNCTION
+PREHOOK: Output: temp_func1
+POSTHOOK: query: drop temporary function temp_func1
+POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Output: temp_func1
+PREHOOK: query: explain reload functions
+PREHOOK: type: RELOADFUNCTION
+POSTHOOK: query: explain reload functions
+POSTHOOK: type: RELOADFUNCTION
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Reload Functions
+
+PREHOOK: query: explain reload function
+PREHOOK: type: RELOADFUNCTION
+POSTHOOK: query: explain reload function
+POSTHOOK: type: RELOADFUNCTION
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Reload Functions
+
+PREHOOK: query: reload function
+PREHOOK: type: RELOADFUNCTION
+POSTHOOK: query: reload function
+POSTHOOK: type: RELOADFUNCTION
+PREHOOK: query: create function mydb.qtest_get_java_boolean as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Input: database:mydb
+PREHOOK: Output: mydb.qtest_get_java_boolean
+POSTHOOK: query: create function mydb.qtest_get_java_boolean as 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Input: database:mydb
+POSTHOOK: Output: mydb.qtest_get_java_boolean
+PREHOOK: query: use default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: use default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: select qtest_get_java_boolean('abc'), default.qtest_get_java_boolean('abc'), mydb.qtest_get_java_boolean('abc') from default.src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select qtest_get_java_boolean('abc'), default.qtest_get_java_boolean('abc'), mydb.qtest_get_java_boolean('abc') from default.src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL	NULL	ABC
+PREHOOK: query: use mydb
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:mydb
+POSTHOOK: query: use mydb
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:mydb
+PREHOOK: query: select qtest_get_java_boolean('abc'), default.qtest_get_java_boolean('abc'), mydb.qtest_get_java_boolean('abc') from default.src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select qtest_get_java_boolean('abc'), default.qtest_get_java_boolean('abc'), mydb.qtest_get_java_boolean('abc') from default.src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+ABC	NULL	ABC
+PREHOOK: query: drop function default.qtest_get_java_boolean
+PREHOOK: type: DROPFUNCTION
+PREHOOK: Input: database:default
+PREHOOK: Output: default.qtest_get_java_boolean
+POSTHOOK: query: drop function default.qtest_get_java_boolean
+POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Input: database:default
+POSTHOOK: Output: default.qtest_get_java_boolean
+PREHOOK: query: drop function mydb.qtest_get_java_boolean
+PREHOOK: type: DROPFUNCTION
+PREHOOK: Input: database:mydb
+PREHOOK: Output: mydb.qtest_get_java_boolean
+POSTHOOK: query: drop function mydb.qtest_get_java_boolean
+POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Input: database:mydb
+POSTHOOK: Output: mydb.qtest_get_java_boolean
+PREHOOK: query: drop database mydb cascade
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:mydb
+PREHOOK: Output: database:mydb
+POSTHOOK: query: drop database mydb cascade
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:mydb
+POSTHOOK: Output: database:mydb

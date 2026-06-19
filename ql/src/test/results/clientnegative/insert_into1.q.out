@@ -1,0 +1,20 @@
+PREHOOK: query: DROP TABLE insert_into1_neg
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE insert_into1_neg
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE insert_into1_neg (key int, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@insert_into1_neg
+POSTHOOK: query: CREATE TABLE insert_into1_neg (key int, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@insert_into1_neg
+PREHOOK: query: LOCK TABLE insert_into1_neg SHARED
+PREHOOK: type: LOCKTABLE
+POSTHOOK: query: LOCK TABLE insert_into1_neg SHARED
+POSTHOOK: type: LOCKTABLE
+Unable to acquire IMPLICIT, EXCLUSIVE lock default@insert_into1_neg after 5 attempts.
+FAILED: Error in acquiring locks: Locks on the underlying objects cannot be acquired, retry after some time.

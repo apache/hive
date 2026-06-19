@@ -1,0 +1,9 @@
+PREHOOK: query: create table dest1_din2(key int, value string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1_din2
+POSTHOOK: query: create table dest1_din2(key int, value string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest1_din2
+FAILED: SemanticException [Error 10087]: The same output cannot be present multiple times:  dest1_din2@ds=1

@@ -1,0 +1,9 @@
+PREHOOK: query: create table nzhang_part4 (key string) partitioned by (ds string, hr string, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@nzhang_part4
+POSTHOOK: query: create table nzhang_part4 (key string) partitioned by (ds string, hr string, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@nzhang_part4
+FAILED: SemanticException [Error 10094]: Line 3:46 Dynamic partition cannot be the parent of a static partition 'hr'

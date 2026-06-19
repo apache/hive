@@ -1,0 +1,62 @@
+PREHOOK: query: create table t1 (a bigint, b int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1 (a bigint, b int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: insert into t1(a, b) values
+(1, 1),
+(1, 2),
+(2, 2),
+(3, 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: insert into t1(a, b) values
+(1, 1),
+(1, 2),
+(2, 2),
+(3, 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.a SCRIPT []
+POSTHOOK: Lineage: t1.b SCRIPT []
+PREHOOK: query: explain cbo
+select distinct b + 2 as alias_b, b
+from t1
+order by b + 2, b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select distinct b + 2 as alias_b, b
+from t1
+order by b + 2, b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(alias_b=[$0], b=[$1])
+  HiveSortLimit(sort0=[$2], sort1=[$1], dir0=[ASC], dir1=[ASC])
+    HiveProject(alias_b=[$0], b=[$1], (+ (tok_table_or_col b) 2)1=[+($1, 2)])
+      HiveAggregate(group=[{0, 1}])
+        HiveProject($f0=[+($1, 2)], $f1=[$1])
+          HiveTableScan(table=[[default, t1]], table:alias=[t1])
+
+PREHOOK: query: select distinct b + 2 as alias_b, b
+from t1
+order by b + 2, b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: select distinct b + 2 as alias_b, b
+from t1
+order by b + 2, b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+3	1
+4	2

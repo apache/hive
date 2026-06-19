@@ -1,0 +1,42 @@
+Ln:2 DECLARE v1 default.src%ROWTYPE
+Ln:3 DECLARE v2 src%ROWTYPE
+Ln:4 DECLARE v3 src%ROWTYPE
+Ln:5 DECLARE CURSOR c1
+Ln:7 SELECT
+Ln:7 SELECT 'A' AS key, 'B' AS value FROM src LIMIT 1
+Ln:7 SELECT completed successfully
+Ln:7 SELECT INTO statement executed
+Ln:7 COLUMN: key, string
+Ln:7 SET KEY = A
+Ln:7 COLUMN: value, string
+Ln:7 SET VALUE = B
+Ln:8 PRINT
+AB
+Ln:10 OPEN
+Ln:10 c1: SELECT 'A' AS key, 'B' AS value FROM src LIMIT 1
+Ln:11 FETCH
+Ln:11 COLUMN: key, string
+Ln:11 SET KEY = A
+Ln:11 COLUMN: value, string
+Ln:11 SET VALUE = B
+Ln:12 PRINT
+AB
+Ln:13 CLOSE
+Ln:15 FOR CURSOR - ENTERED
+Ln:15 SELECT 'A' AS key, 'B' AS value FROM src LIMIT 1
+Ln:15 SELECT completed successfully
+Ln:15 COLUMN: key, string
+Ln:15 SET key = A
+Ln:15 COLUMN: value, string
+Ln:15 SET value = B
+Ln:17 PRINT
+AB
+Ln:15 FOR CURSOR - LEFT
+Ln:20 EXECUTE
+Ln:20 SQL statement: SELECT 'A' AS key, 'B' AS value FROM src LIMIT 1
+Ln:20 COLUMN: key, string
+Ln:20 SET KEY = A
+Ln:20 COLUMN: value, string
+Ln:20 SET VALUE = B
+Ln:21 PRINT
+AB

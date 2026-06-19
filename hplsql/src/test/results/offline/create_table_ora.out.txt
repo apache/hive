@@ -1,0 +1,49 @@
+Ln:1 CREATE TABLE
+Ln:1 CREATE TABLE ora_t1 (
+  n1   DECIMAL(3,0),
+  v1   STRING
+)
+Ln:6 CREATE TABLE
+Ln:6 CREATE TABLE `USER`.`EMP` 
+   (    `EMPNO` DECIMAL(4,0), 
+        `ENAME` STRING, 
+        `JOB` STRING, 
+        `MGR` DECIMAL(4,0), 
+        `HIREDATE` DATE, 
+        `SAL` DECIMAL(7,2), 
+        `COMM` DECIMAL(7,2), 
+        `DEPTNO` DECIMAL(2,0)
+   )
+Ln:21 CREATE TABLE
+Ln:21 CREATE TABLE language (
+  id              DECIMAL(7),
+  cd              CHAR(2),
+  description     STRING
+)
+Ln:26 CREATE TABLE
+Ln:26 CREATE TABLE author (
+  id              DECIMAL(7),
+  first_name      STRING,
+  last_name       STRING,
+  date_of_birth   DATE,
+  year_of_birth   DECIMAL(7),
+  distinguished   DECIMAL(1)
+)
+Ln:34 CREATE TABLE
+Ln:34 CREATE TABLE book (
+  id              DECIMAL(7),
+  author_id       DECIMAL(7),
+  title           STRING,
+  published_in    DECIMAL(7),
+  language_id     DECIMAL(7)
+)
+Ln:43 CREATE TABLE
+Ln:43 CREATE TABLE book_store (
+  name            STRING
+)
+Ln:46 CREATE TABLE
+Ln:46 CREATE TABLE book_to_book_store (
+  name            STRING,
+  book_id         INTEGER,
+  stock           INTEGER
+)

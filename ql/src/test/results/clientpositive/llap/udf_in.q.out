@@ -1,0 +1,79 @@
+PREHOOK: query: SELECT 1 IN (1, 2, 3),
+       4 IN (1, 2, 3),
+       array(1,2,3) IN (array(1,2,3)),
+       "bee" IN("aee", "bee", "cee", 1),
+       "dee" IN("aee", "bee", "cee"),
+       (1 = 1) IN(true, false),
+       true IN (true, false) = true,
+       1 IN (1, 2, 3) OR false IN(false),
+       NULL IN (1, 2, 3),
+       4 IN (1, 2, 3, NULL),
+       (1+3) IN (5, 6, (1+2) + 1) FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT 1 IN (1, 2, 3),
+       4 IN (1, 2, 3),
+       array(1,2,3) IN (array(1,2,3)),
+       "bee" IN("aee", "bee", "cee", 1),
+       "dee" IN("aee", "bee", "cee"),
+       (1 = 1) IN(true, false),
+       true IN (true, false) = true,
+       1 IN (1, 2, 3) OR false IN(false),
+       NULL IN (1, 2, 3),
+       4 IN (1, 2, 3, NULL),
+       (1+3) IN (5, 6, (1+2) + 1) FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+true	false	true	true	false	true	true	true	NULL	NULL	true
+PREHOOK: query: SELECT key FROM src WHERE key IN ("238", 86)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key FROM src WHERE key IN ("238", 86)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+238
+86
+238
+PREHOOK: query: CREATE EXTERNAL TABLE hive26230_parq_in(kob varchar(2), code int) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive26230_parq_in
+POSTHOOK: query: CREATE EXTERNAL TABLE hive26230_parq_in(kob varchar(2), code int) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive26230_parq_in
+PREHOOK: query: INSERT INTO hive26230_parq_in VALUES('BB',18),('BC',18),('AB',18)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hive26230_parq_in
+POSTHOOK: query: INSERT INTO hive26230_parq_in VALUES('BB',18),('BC',18),('AB',18)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hive26230_parq_in
+POSTHOOK: Lineage: hive26230_parq_in.code SCRIPT []
+POSTHOOK: Lineage: hive26230_parq_in.kob SCRIPT []
+PREHOOK: query: SELECT (kob, code) IN ((cast('BB' as varchar(2)), 18), (cast('BC' as varchar(2)), 18)) FROM hive26230_parq_in
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive26230_parq_in
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT (kob, code) IN ((cast('BB' as varchar(2)), 18), (cast('BC' as varchar(2)), 18)) FROM hive26230_parq_in
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive26230_parq_in
+#### A masked pattern was here ####
+true
+true
+false
+PREHOOK: query: DROP TABLE hive26230_parq_in
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hive26230_parq_in
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive26230_parq_in
+POSTHOOK: query: DROP TABLE hive26230_parq_in
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hive26230_parq_in
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive26230_parq_in

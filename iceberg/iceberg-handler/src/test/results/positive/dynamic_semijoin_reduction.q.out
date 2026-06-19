@@ -1,0 +1,218 @@
+PREHOOK: query: create table srcpart_date_n7 (key string, value string) partitioned by (ds string ) stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@srcpart_date_n7
+POSTHOOK: query: create table srcpart_date_n7 (key string, value string) partitioned by (ds string ) stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@srcpart_date_n7
+PREHOOK: query: CREATE TABLE srcpart_small_n3(key1 STRING, value1 STRING) partitioned by (ds string) stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@srcpart_small_n3
+POSTHOOK: query: CREATE TABLE srcpart_small_n3(key1 STRING, value1 STRING) partitioned by (ds string) stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@srcpart_small_n3
+PREHOOK: query: insert overwrite table srcpart_date_n7   select key, value, ds from srcpart where ds = "2008-04-08"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@srcpart_date_n7
+POSTHOOK: query: insert overwrite table srcpart_date_n7   select key, value, ds from srcpart where ds = "2008-04-08"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@srcpart_date_n7
+PREHOOK: query: insert overwrite table srcpart_date_n7  select key, value, ds from srcpart where ds = "2008-04-09"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Output: default@srcpart_date_n7
+POSTHOOK: query: insert overwrite table srcpart_date_n7  select key, value, ds from srcpart where ds = "2008-04-09"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@srcpart_date_n7
+PREHOOK: query: insert overwrite table srcpart_small_n3  select key, value, ds from srcpart where ds = "2008-04-09" limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Output: default@srcpart_small_n3
+POSTHOOK: query: insert overwrite table srcpart_small_n3  select key, value, ds from srcpart where ds = "2008-04-09" limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@srcpart_small_n3
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_date_n7
+PREHOOK: Input: default@srcpart_small_n3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_date_n7
+POSTHOOK: Input: default@srcpart_small_n3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Reducer 5 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+        Reducer 5 <- Map 4 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart_date_n7
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (key is not null and key BETWEEN DynamicValue(RS_7_srcpart_small_n3_key1_min) AND DynamicValue(RS_7_srcpart_small_n3_key1_max) and in_bloom_filter(key, DynamicValue(RS_7_srcpart_small_n3_key1_bloom_filter))) (type: boolean)
+                    Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart_small_n3
+                  filterExpr: key1 is not null (type: boolean)
+                  Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key1 is not null (type: boolean)
+                    Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key1 (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: _col0 (type: string)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=20)
+                          minReductionHashAggr: 0.95
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2
+                          Statistics: Num rows: 1 Data size: 512 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            null sort order: 
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 512 Basic stats: COMPLETE Column stats: COMPLETE
+                            value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
+            Execution mode: vectorized
+        Reducer 2 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                Statistics: Num rows: 126 Data size: 1008 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: count()
+                  minReductionHashAggr: 0.99
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    null sort order: 
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 5 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, 1, expectedEntries=20)
+                mode: final
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 512 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 512 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_date_n7
+PREHOOK: Input: default@srcpart_small_n3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from srcpart_date_n7 join srcpart_small_n3 on (srcpart_date_n7.key = srcpart_small_n3.key1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_date_n7
+POSTHOOK: Input: default@srcpart_small_n3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+176
+PREHOOK: query: drop table srcpart_date_n7
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@srcpart_date_n7
+PREHOOK: Output: database:default
+PREHOOK: Output: default@srcpart_date_n7
+POSTHOOK: query: drop table srcpart_date_n7
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@srcpart_date_n7
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@srcpart_date_n7
+PREHOOK: query: drop table srcpart_small_n3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@srcpart_small_n3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@srcpart_small_n3
+POSTHOOK: query: drop table srcpart_small_n3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@srcpart_small_n3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@srcpart_small_n3

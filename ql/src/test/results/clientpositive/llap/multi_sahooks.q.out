@@ -1,0 +1,142 @@
+PREHOOK: query: drop table tbl_sahook
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table tbl_sahook
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+DummySemanticAnalyzerHook1 Pre: Count 0
+DummySemanticAnalyzerHook1 Post: Hive rocks!! Count: 0
+PREHOOK: query: create table tbl_sahook (c string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_sahook
+POSTHOOK: query: create table tbl_sahook (c string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_sahook
+PREHOOK: query: desc extended tbl_sahook
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_sahook
+POSTHOOK: query: desc extended tbl_sahook
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_sahook
+c                   	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: drop table tbl_sahook
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tbl_sahook
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_sahook
+POSTHOOK: query: drop table tbl_sahook
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tbl_sahook
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_sahook
+PREHOOK: query: drop table tbl_sahooks
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table tbl_sahooks
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+DummySemanticAnalyzerHook1 Pre: Count 0
+DummySemanticAnalyzerHook1 Post: Hive rocks!! Count: 0
+PREHOOK: query: create table tbl_sahooks (c string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_sahooks
+POSTHOOK: query: create table tbl_sahooks (c string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_sahooks
+PREHOOK: query: desc extended tbl_sahooks
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_sahooks
+POSTHOOK: query: desc extended tbl_sahooks
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_sahooks
+c                   	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: drop table tbl_sahooks
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tbl_sahooks
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_sahooks
+POSTHOOK: query: drop table tbl_sahooks
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tbl_sahooks
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_sahooks
+PREHOOK: query: drop table tbl_sahooks
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table tbl_sahooks
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+DummySemanticAnalyzerHook1 Pre: Count 0
+DummySemanticAnalyzerHook1 Post: Hive rocks!! Count: 0
+PREHOOK: query: create table tbl_sahooks (c string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_sahooks
+POSTHOOK: query: create table tbl_sahooks (c string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_sahooks
+PREHOOK: query: desc extended tbl_sahooks
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_sahooks
+POSTHOOK: query: desc extended tbl_sahooks
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_sahooks
+c                   	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: drop table tbl_sahooks
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tbl_sahooks
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_sahooks
+POSTHOOK: query: drop table tbl_sahooks
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tbl_sahooks
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_sahooks
+PREHOOK: query: drop table tbl_sahooks
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table tbl_sahooks
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+DummySemanticAnalyzerHook1 Pre: Count 0
+DummySemanticAnalyzerHook1 Pre: Count 1
+DummySemanticAnalyzerHook1 Post: Hive rocks!! Count: 0
+DummySemanticAnalyzerHook1 Post: Hive rocks!! Count: 1
+PREHOOK: query: create table tbl_sahooks (c string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_sahooks
+POSTHOOK: query: create table tbl_sahooks (c string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_sahooks
+PREHOOK: query: desc extended tbl_sahooks
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_sahooks
+POSTHOOK: query: desc extended tbl_sahooks
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_sahooks
+c                   	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: drop table tbl_sahooks
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tbl_sahooks
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_sahooks
+POSTHOOK: query: drop table tbl_sahooks
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tbl_sahooks
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_sahooks

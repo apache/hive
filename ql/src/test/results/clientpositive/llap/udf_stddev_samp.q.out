@@ -1,0 +1,86 @@
+PREHOOK: query: DESCRIBE FUNCTION stddev_samp
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION stddev_samp
+POSTHOOK: type: DESCFUNCTION
+stddev_samp(x) - Returns the sample standard deviation of a set of numbers.
+If applied to an empty set: NULL is returned.
+If applied to a set with a single element: NULL is returned.
+Otherwise it computes: sqrt(var_samp(x))
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED stddev_samp
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED stddev_samp
+POSTHOOK: type: DESCFUNCTION
+stddev_samp(x) - Returns the sample standard deviation of a set of numbers.
+If applied to an empty set: NULL is returned.
+If applied to a set with a single element: NULL is returned.
+Otherwise it computes: sqrt(var_samp(x))
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStdSample
+Function type:BUILTIN
+PREHOOK: query: DESCRIBE FUNCTION stddev_samp
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION stddev_samp
+POSTHOOK: type: DESCFUNCTION
+stddev_samp(x) - Returns the sample standard deviation of a set of numbers.
+If applied to an empty set: NULL is returned.
+If applied to a set with a single element: NULL is returned.
+Otherwise it computes: sqrt(var_samp(x))
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED stddev_samp
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED stddev_samp
+POSTHOOK: type: DESCFUNCTION
+stddev_samp(x) - Returns the sample standard deviation of a set of numbers.
+If applied to an empty set: NULL is returned.
+If applied to a set with a single element: NULL is returned.
+Otherwise it computes: sqrt(var_samp(x))
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStdSample
+Function type:BUILTIN
+PREHOOK: query: drop table if exists t_n23
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists t_n23
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table t_n23 (a int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_n23
+POSTHOOK: query: create table t_n23 (a int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_n23
+PREHOOK: query: insert into t_n23 values (1),(-1),(0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_n23
+POSTHOOK: query: insert into t_n23 values (1),(-1),(0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_n23
+POSTHOOK: Lineage: t_n23.a SCRIPT []
+PREHOOK: query: select stddev_samp(a) from t_n23
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n23
+#### A masked pattern was here ####
+POSTHOOK: query: select stddev_samp(a) from t_n23
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n23
+#### A masked pattern was here ####
+1.0
+PREHOOK: query: select stddev_samp(a) from t_n23 where a=0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n23
+#### A masked pattern was here ####
+POSTHOOK: query: select stddev_samp(a) from t_n23 where a=0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n23
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select round(stddev_samp(a),5) from t_n23 where a>=0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n23
+#### A masked pattern was here ####
+POSTHOOK: query: select round(stddev_samp(a),5) from t_n23 where a>=0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n23
+#### A masked pattern was here ####
+0.70711

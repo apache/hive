@@ -1,0 +1,12 @@
+--! qt:dataset:src
+-- SORT_QUERY_RESULTS
+
+EXPLAIN
+SELECT x.* FROM SRC x SORT BY key;
+
+SELECT x.* FROM SRC x SORT BY key;
+
+EXPLAIN
+SELECT x.* FROM SRC x SORT BY 1;
+
+SELECT x.* FROM SRC x SORT BY 1;

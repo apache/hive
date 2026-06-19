@@ -1,0 +1,554 @@
+PREHOOK: query: create external table ice_parquet(
+  strcol string,
+  intcol integer
+) partitioned by (pcol int)
+stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_parquet
+POSTHOOK: query: create external table ice_parquet(
+  strcol string,
+  intcol integer
+) partitioned by (pcol int)
+stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_parquet
+PREHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parquet__temp_table_for_load_data__
+PREHOOK: Output: default@ice_parquet
+POSTHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parquet__temp_table_for_load_data__
+POSTHOOK: Output: default@ice_parquet
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+Reducer 3 <- Map 1 (SIMPLE_EDGE)
+
+Stage-3
+  Stats Work{}
+    Stage-0
+      Move Operator
+        table:{"name:":"default.ice_parquet"}
+        Stage-2
+          Dependency Collection{}
+            Stage-1
+              Reducer 2 vectorized
+              File Output Operator [FS_18]
+                table:{"name:":"default.ice_parquet"}
+                Select Operator [SEL_17]
+                  Output:["_col0","_col1","_col2","_col2"]
+                <-Map 1 [SIMPLE_EDGE] vectorized
+                  SHUFFLE [RS_13]
+                    PartitionCols:_col2
+                    Select Operator [SEL_12] (rows=77 width=187)
+                      Output:["_col0","_col1","_col2"]
+                      TableScan [TS_0] (rows=77 width=187)
+                        default@ice_parquet__temp_table_for_load_data__,ice_parquet__temp_table_for_load_data__,Tbl:COMPLETE,Col:NONE,Output:["strcol","intcol","pcol"]
+              Reducer 3 vectorized
+              File Output Operator [FS_21]
+                Select Operator [SEL_20] (rows=38 width=187)
+                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18"]
+                  Group By Operator [GBY_19] (rows=38 width=187)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13"],aggregations:["max(VALUE._col0)","avg(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","min(VALUE._col5)","max(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"],keys:KEY._col0
+                  <-Map 1 [SIMPLE_EDGE] vectorized
+                    SHUFFLE [RS_16]
+                      PartitionCols:_col0
+                      Group By Operator [GBY_15] (rows=77 width=187)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13"],aggregations:["max(length(strcol))","avg(COALESCE(length(strcol),0))","count(1)","count(strcol)","compute_bit_vector_hll(strcol)","min(intcol)","max(intcol)","count(intcol)","compute_bit_vector_hll(intcol)","min(pcol)","max(pcol)","count(pcol)","compute_bit_vector_hll(pcol)"],keys:pcol
+                        Select Operator [SEL_14] (rows=77 width=187)
+                          Output:["strcol","intcol","pcol"]
+                           Please refer to the previous Select Operator [SEL_12]
+
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE `ice_parquet`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parquet__temp_table_for_load_data__
+PREHOOK: Output: default@ice_parquet
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE `ice_parquet`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parquet__temp_table_for_load_data__
+POSTHOOK: Output: default@ice_parquet
+PREHOOK: query: explain analyze LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parquet__temp_table_for_load_data__
+PREHOOK: Output: default@ice_parquet
+POSTHOOK: query: explain analyze LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parquet__temp_table_for_load_data__
+POSTHOOK: Output: default@ice_parquet
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE)
+Reducer 3 <- Map 1 (SIMPLE_EDGE)
+
+Stage-3
+  Stats Work{}
+    Stage-0
+      Move Operator
+        table:{"name:":"default.ice_parquet"}
+        Stage-2
+          Dependency Collection{}
+            Stage-1
+              Reducer 2 vectorized
+              File Output Operator [FS_18]
+                table:{"name:":"default.ice_parquet"}
+                Select Operator [SEL_17]
+                  Output:["_col0","_col1","_col2","_col2"]
+                <-Map 1 [SIMPLE_EDGE] vectorized
+                  SHUFFLE [RS_13]
+                    PartitionCols:_col2
+                    Select Operator [SEL_12] (rows=77/6 width=187)
+                      Output:["_col0","_col1","_col2"]
+                      TableScan [TS_0] (rows=77/6 width=187)
+                        default@ice_parquet__temp_table_for_load_data__,ice_parquet__temp_table_for_load_data__,Tbl:COMPLETE,Col:NONE,Output:["strcol","intcol","pcol"]
+              Reducer 3 vectorized
+              File Output Operator [FS_21]
+                Select Operator [SEL_20] (rows=38/3 width=187)
+                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18"]
+                  Group By Operator [GBY_19] (rows=38/3 width=187)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13"],aggregations:["max(VALUE._col0)","avg(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","min(VALUE._col5)","max(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)"],keys:KEY._col0
+                  <-Map 1 [SIMPLE_EDGE] vectorized
+                    SHUFFLE [RS_16]
+                      PartitionCols:_col0
+                      Group By Operator [GBY_15] (rows=77/3 width=187)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13"],aggregations:["max(length(strcol))","avg(COALESCE(length(strcol),0))","count(1)","count(strcol)","compute_bit_vector_hll(strcol)","min(intcol)","max(intcol)","count(intcol)","compute_bit_vector_hll(intcol)","min(pcol)","max(pcol)","count(pcol)","compute_bit_vector_hll(pcol)"],keys:pcol
+                        Select Operator [SEL_14] (rows=77/6 width=187)
+                          Output:["strcol","intcol","pcol"]
+                           Please refer to the previous Select Operator [SEL_12]
+
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parquet__temp_table_for_load_data__
+PREHOOK: Output: default@ice_parquet
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_partition' OVERWRITE INTO TABLE ice_parquet
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parquet__temp_table_for_load_data__
+POSTHOOK: Output: default@ice_parquet
+PREHOOK: query: select * from ice_parquet order by intcol
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parquet
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_parquet order by intcol
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parquet
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+a	1	100
+b	2	100
+c	3	200
+d	4	200
+e	5	300
+f	6	300
+PREHOOK: query: CREATE TABLE ice_avro (
+  number int,
+  first_name string)
+stored by iceberg
+STORED AS AVRO
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_avro
+POSTHOOK: query: CREATE TABLE ice_avro (
+  number int,
+  first_name string)
+stored by iceberg
+STORED AS AVRO
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_avro
+PREHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro
+PREHOOK: type: LOAD
+POSTHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro
+POSTHOOK: type: LOAD
+Stage-0
+  Move Operator
+    table:{"name:":"default.ice_avro"}
+
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE `ice_avro`
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE `ice_avro`
+POSTHOOK: type: LOAD
+PREHOOK: query: explain analyze LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro
+PREHOOK: type: LOAD
+POSTHOOK: query: explain analyze LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro
+POSTHOOK: type: LOAD
+Stage-0
+  Move Operator
+    table:{"name:":"default.ice_avro"}
+
+PREHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_avro__temp_table_for_load_data__
+PREHOOK: Output: default@ice_avro
+POSTHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_avro__temp_table_for_load_data__
+POSTHOOK: Output: default@ice_avro
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+
+Stage-3
+  Stats Work{}
+    Stage-0
+      Move Operator
+        table:{"name:":"default.ice_avro"}
+        Stage-2
+          Dependency Collection{}
+            Stage-1
+              Reducer 2
+              File Output Operator [FS_9]
+                Select Operator [SEL_8] (rows=1 width=588)
+                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11"]
+                  Group By Operator [GBY_7] (rows=1 width=588)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)"]
+                  <-Map 1 [CUSTOM_SIMPLE_EDGE]
+                    File Output Operator [FS_2]
+                      table:{"name:":"default.ice_avro"}
+                      Select Operator [SEL_1] (rows=17 width=188)
+                        Output:["_col0","_col1"]
+                        TableScan [TS_0] (rows=17 width=188)
+                          default@ice_avro__temp_table_for_load_data__,ice_avro__temp_table_for_load_data__,Tbl:COMPLETE,Col:NONE,Output:["number","first_name"]
+                    PARTITION_ONLY_SHUFFLE [RS_6]
+                      Group By Operator [GBY_5] (rows=1 width=588)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"],aggregations:["min(number)","max(number)","count(1)","count(number)","compute_bit_vector_hll(number)","max(length(first_name))","avg(COALESCE(length(first_name),0))","count(first_name)","compute_bit_vector_hll(first_name)"]
+                        Select Operator [SEL_4] (rows=17 width=188)
+                          Output:["number","first_name"]
+                           Please refer to the previous Select Operator [SEL_1]
+
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' OVERWRITE INTO TABLE ice_avro
+POSTHOOK: type: LOAD
+PREHOOK: query: select * from ice_avro order by number
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_avro
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_avro order by number
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_avro
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	William
+2	Patrick
+3	Jon
+4	Tom
+5	Peter
+6	Colin
+7	Sylvester
+8	Paul
+9	Christopher
+10	David
+11	Matt
+PREHOOK: query: CREATE TABLE ice_orc (
+  p_partkey int,
+  p_name string,
+  p_mfgr string,
+  p_brand string,
+  p_type string,
+  p_size int,
+  p_container string,
+  p_retailprice double,
+  p_comment string
+)
+stored by iceberg
+STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: CREATE TABLE ice_orc (
+  p_partkey int,
+  p_name string,
+  p_mfgr string,
+  p_brand string,
+  p_type string,
+  p_size int,
+  p_container string,
+  p_retailprice double,
+  p_comment string
+)
+stored by iceberg
+STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/part.orc' OVERWRITE INTO TABLE ice_orc
+PREHOOK: type: LOAD
+POSTHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/part.orc' OVERWRITE INTO TABLE ice_orc
+POSTHOOK: type: LOAD
+Stage-0
+  Move Operator
+    table:{"name:":"default.ice_orc"}
+
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part.orc' OVERWRITE INTO TABLE `ice_orc`
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part.orc' OVERWRITE INTO TABLE `ice_orc`
+POSTHOOK: type: LOAD
+PREHOOK: query: explain analyze LOAD DATA LOCAL INPATH '../../data/files/part.orc' OVERWRITE INTO TABLE ice_orc
+PREHOOK: type: LOAD
+POSTHOOK: query: explain analyze LOAD DATA LOCAL INPATH '../../data/files/part.orc' OVERWRITE INTO TABLE ice_orc
+POSTHOOK: type: LOAD
+Stage-0
+  Move Operator
+    table:{"name:":"default.ice_orc"}
+
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part.orc' OVERWRITE INTO TABLE ice_orc
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part.orc' OVERWRITE INTO TABLE ice_orc
+POSTHOOK: type: LOAD
+PREHOOK: query: select * from ice_orc order by p_partkey
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_orc order by p_partkey
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
+17273	almond antique forest lavender goldenrod	Manufacturer#3	Brand#35	PROMO ANODIZED TIN	14	JUMBO CASE	1190.27	along the
+17927	almond aquamarine yellow dodger mint	Manufacturer#4	Brand#41	ECONOMY BRUSHED COPPER	7	SM PKG	1844.92	ites. eve
+33357	almond azure aquamarine papaya violet	Manufacturer#4	Brand#41	STANDARD ANODIZED TIN	12	WRAP CASE	1290.35	reful
+40982	almond antique misty red olive	Manufacturer#3	Brand#32	ECONOMY PLATED COPPER	1	LG PKG	1922.98	c foxes can s
+42669	almond antique medium spring khaki	Manufacturer#5	Brand#51	STANDARD BURNISHED TIN	6	MED CAN	1611.66	sits haggl
+45261	almond aquamarine floral ivory bisque	Manufacturer#4	Brand#42	SMALL PLATED STEEL	27	WRAP CASE	1206.26	careful
+48427	almond antique violet mint lemon	Manufacturer#4	Brand#42	PROMO POLISHED STEEL	39	SM CASE	1375.42	hely ironic i
+49671	almond antique gainsboro frosted violet	Manufacturer#4	Brand#41	SMALL BRUSHED BRASS	10	SM BOX	1620.67	ccounts run quick
+65667	almond aquamarine pink moccasin thistle	Manufacturer#1	Brand#12	LARGE BURNISHED STEEL	42	JUMBO CASE	1632.66	e across the expr
+78486	almond azure blanched chiffon midnight	Manufacturer#5	Brand#52	LARGE BRUSHED BRASS	23	MED BAG	1464.48	hely blith
+85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
+86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
+90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
+105685	almond antique violet chocolate turquoise	Manufacturer#2	Brand#22	MEDIUM ANODIZED COPPER	14	MED CAN	1690.68	ly pending requ
+110592	almond antique salmon chartreuse burlywood	Manufacturer#1	Brand#15	PROMO BURNISHED NICKEL	6	JUMBO PKG	1602.59	 to the furiously
+112398	almond antique metallic orange dim	Manufacturer#3	Brand#32	MEDIUM BURNISHED BRASS	19	JUMBO JAR	1410.39	ole car
+121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
+121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
+132666	almond aquamarine rose maroon antique	Manufacturer#2	Brand#24	SMALL POLISHED NICKEL	25	MED BOX	1698.66	even 
+144293	almond antique olive coral navajo	Manufacturer#3	Brand#34	STANDARD POLISHED STEEL	45	JUMBO CAN	1337.29	ag furiously about 
+146985	almond aquamarine midnight light salmon	Manufacturer#2	Brand#23	MEDIUM BURNISHED COPPER	2	SM CASE	2031.98	s cajole caref
+155733	almond antique sky peru orange	Manufacturer#5	Brand#53	SMALL PLATED BRASS	2	WRAP DRUM	1788.73	furiously. bra
+191709	almond antique violet turquoise frosted	Manufacturer#2	Brand#22	ECONOMY POLISHED STEEL	40	MED BOX	1800.7	 haggle
+192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
+195606	almond aquamarine sandy cyan gainsboro	Manufacturer#2	Brand#25	STANDARD PLATED TIN	18	SM PKG	1701.6	ic de
+PREHOOK: query: select count(*) from ice_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from ice_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+26
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part.orc' INTO TABLE ice_orc
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part.orc' INTO TABLE ice_orc
+POSTHOOK: type: LOAD
+PREHOOK: query: select * from ice_orc order by p_partkey
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_orc order by p_partkey
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
+15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
+17273	almond antique forest lavender goldenrod	Manufacturer#3	Brand#35	PROMO ANODIZED TIN	14	JUMBO CASE	1190.27	along the
+17273	almond antique forest lavender goldenrod	Manufacturer#3	Brand#35	PROMO ANODIZED TIN	14	JUMBO CASE	1190.27	along the
+17927	almond aquamarine yellow dodger mint	Manufacturer#4	Brand#41	ECONOMY BRUSHED COPPER	7	SM PKG	1844.92	ites. eve
+17927	almond aquamarine yellow dodger mint	Manufacturer#4	Brand#41	ECONOMY BRUSHED COPPER	7	SM PKG	1844.92	ites. eve
+33357	almond azure aquamarine papaya violet	Manufacturer#4	Brand#41	STANDARD ANODIZED TIN	12	WRAP CASE	1290.35	reful
+33357	almond azure aquamarine papaya violet	Manufacturer#4	Brand#41	STANDARD ANODIZED TIN	12	WRAP CASE	1290.35	reful
+40982	almond antique misty red olive	Manufacturer#3	Brand#32	ECONOMY PLATED COPPER	1	LG PKG	1922.98	c foxes can s
+40982	almond antique misty red olive	Manufacturer#3	Brand#32	ECONOMY PLATED COPPER	1	LG PKG	1922.98	c foxes can s
+42669	almond antique medium spring khaki	Manufacturer#5	Brand#51	STANDARD BURNISHED TIN	6	MED CAN	1611.66	sits haggl
+42669	almond antique medium spring khaki	Manufacturer#5	Brand#51	STANDARD BURNISHED TIN	6	MED CAN	1611.66	sits haggl
+45261	almond aquamarine floral ivory bisque	Manufacturer#4	Brand#42	SMALL PLATED STEEL	27	WRAP CASE	1206.26	careful
+45261	almond aquamarine floral ivory bisque	Manufacturer#4	Brand#42	SMALL PLATED STEEL	27	WRAP CASE	1206.26	careful
+48427	almond antique violet mint lemon	Manufacturer#4	Brand#42	PROMO POLISHED STEEL	39	SM CASE	1375.42	hely ironic i
+48427	almond antique violet mint lemon	Manufacturer#4	Brand#42	PROMO POLISHED STEEL	39	SM CASE	1375.42	hely ironic i
+49671	almond antique gainsboro frosted violet	Manufacturer#4	Brand#41	SMALL BRUSHED BRASS	10	SM BOX	1620.67	ccounts run quick
+49671	almond antique gainsboro frosted violet	Manufacturer#4	Brand#41	SMALL BRUSHED BRASS	10	SM BOX	1620.67	ccounts run quick
+65667	almond aquamarine pink moccasin thistle	Manufacturer#1	Brand#12	LARGE BURNISHED STEEL	42	JUMBO CASE	1632.66	e across the expr
+65667	almond aquamarine pink moccasin thistle	Manufacturer#1	Brand#12	LARGE BURNISHED STEEL	42	JUMBO CASE	1632.66	e across the expr
+78486	almond azure blanched chiffon midnight	Manufacturer#5	Brand#52	LARGE BRUSHED BRASS	23	MED BAG	1464.48	hely blith
+78486	almond azure blanched chiffon midnight	Manufacturer#5	Brand#52	LARGE BRUSHED BRASS	23	MED BAG	1464.48	hely blith
+85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
+85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
+86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
+86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
+90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
+90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
+105685	almond antique violet chocolate turquoise	Manufacturer#2	Brand#22	MEDIUM ANODIZED COPPER	14	MED CAN	1690.68	ly pending requ
+105685	almond antique violet chocolate turquoise	Manufacturer#2	Brand#22	MEDIUM ANODIZED COPPER	14	MED CAN	1690.68	ly pending requ
+110592	almond antique salmon chartreuse burlywood	Manufacturer#1	Brand#15	PROMO BURNISHED NICKEL	6	JUMBO PKG	1602.59	 to the furiously
+110592	almond antique salmon chartreuse burlywood	Manufacturer#1	Brand#15	PROMO BURNISHED NICKEL	6	JUMBO PKG	1602.59	 to the furiously
+112398	almond antique metallic orange dim	Manufacturer#3	Brand#32	MEDIUM BURNISHED BRASS	19	JUMBO JAR	1410.39	ole car
+112398	almond antique metallic orange dim	Manufacturer#3	Brand#32	MEDIUM BURNISHED BRASS	19	JUMBO JAR	1410.39	ole car
+121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
+121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
+121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
+121152	almond antique burnished rose metallic	Manufacturer#1	Brand#14	PROMO PLATED TIN	2	JUMBO BOX	1173.15	e pinto beans h
+132666	almond aquamarine rose maroon antique	Manufacturer#2	Brand#24	SMALL POLISHED NICKEL	25	MED BOX	1698.66	even 
+132666	almond aquamarine rose maroon antique	Manufacturer#2	Brand#24	SMALL POLISHED NICKEL	25	MED BOX	1698.66	even 
+144293	almond antique olive coral navajo	Manufacturer#3	Brand#34	STANDARD POLISHED STEEL	45	JUMBO CAN	1337.29	ag furiously about 
+144293	almond antique olive coral navajo	Manufacturer#3	Brand#34	STANDARD POLISHED STEEL	45	JUMBO CAN	1337.29	ag furiously about 
+146985	almond aquamarine midnight light salmon	Manufacturer#2	Brand#23	MEDIUM BURNISHED COPPER	2	SM CASE	2031.98	s cajole caref
+146985	almond aquamarine midnight light salmon	Manufacturer#2	Brand#23	MEDIUM BURNISHED COPPER	2	SM CASE	2031.98	s cajole caref
+155733	almond antique sky peru orange	Manufacturer#5	Brand#53	SMALL PLATED BRASS	2	WRAP DRUM	1788.73	furiously. bra
+155733	almond antique sky peru orange	Manufacturer#5	Brand#53	SMALL PLATED BRASS	2	WRAP DRUM	1788.73	furiously. bra
+191709	almond antique violet turquoise frosted	Manufacturer#2	Brand#22	ECONOMY POLISHED STEEL	40	MED BOX	1800.7	 haggle
+191709	almond antique violet turquoise frosted	Manufacturer#2	Brand#22	ECONOMY POLISHED STEEL	40	MED BOX	1800.7	 haggle
+192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
+192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
+195606	almond aquamarine sandy cyan gainsboro	Manufacturer#2	Brand#25	STANDARD PLATED TIN	18	SM PKG	1701.6	ic de
+195606	almond aquamarine sandy cyan gainsboro	Manufacturer#2	Brand#25	STANDARD PLATED TIN	18	SM PKG	1701.6	ic de
+PREHOOK: query: select count(*) from ice_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from ice_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+52
+PREHOOK: query: create external table ice_parquet_partitioned (
+  strcol string,
+  intcol integer
+) partitioned by (pcol int)
+stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_parquet_partitioned
+POSTHOOK: query: create external table ice_parquet_partitioned (
+  strcol string,
+  intcol integer
+) partitioned by (pcol int)
+stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_parquet_partitioned
+PREHOOK: query: insert into ice_parquet_partitioned values ('AA', 10, 100), ('BB', 20, 200), ('CC', 30, 300)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_parquet_partitioned
+POSTHOOK: query: insert into ice_parquet_partitioned values ('AA', 10, 100), ('BB', 20, 200), ('CC', 30, 300)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_parquet_partitioned
+PREHOOK: query: select * from ice_parquet_partitioned order by intcol
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parquet_partitioned
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_parquet_partitioned order by intcol
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parquet_partitioned
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+AA	10	100
+BB	20	200
+CC	30	300
+PREHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/parquet_partition/pcol=100' INTO TABLE ice_parquet_partitioned
+PARTITION (pcol='300')
+PREHOOK: type: LOAD
+POSTHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/parquet_partition/pcol=100' INTO TABLE ice_parquet_partitioned
+PARTITION (pcol='300')
+POSTHOOK: type: LOAD
+Stage-0
+  Move Operator
+    table:{"name:":"default.ice_parquet_partitioned"}
+
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_partition/pcol=100' INTO TABLE
+ice_parquet_partitioned PARTITION (pcol='100')
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_partition/pcol=100' INTO TABLE
+ice_parquet_partitioned PARTITION (pcol='100')
+POSTHOOK: type: LOAD
+PREHOOK: query: select * from ice_parquet_partitioned order by intcol
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parquet_partitioned
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_parquet_partitioned order by intcol
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parquet_partitioned
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+a	1	100
+b	2	100
+AA	10	100
+BB	20	200
+CC	30	300
+PREHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/parquet_partition/pcol=200' OVERWRITE INTO TABLE
+        ice_parquet_partitioned PARTITION (pcol='200')
+PREHOOK: type: LOAD
+POSTHOOK: query: explain LOAD DATA LOCAL INPATH '../../data/files/parquet_partition/pcol=200' OVERWRITE INTO TABLE
+        ice_parquet_partitioned PARTITION (pcol='200')
+POSTHOOK: type: LOAD
+Stage-0
+  Move Operator
+    table:{"name:":"default.ice_parquet_partitioned"}
+
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_partition/pcol=200' OVERWRITE INTO TABLE
+ice_parquet_partitioned PARTITION (pcol='200')
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_partition/pcol=200' OVERWRITE INTO TABLE
+ice_parquet_partitioned PARTITION (pcol='200')
+POSTHOOK: type: LOAD
+PREHOOK: query: select * from ice_parquet_partitioned order by intcol
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parquet_partitioned
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_parquet_partitioned order by intcol
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parquet_partitioned
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+a	1	100
+b	2	100
+c	3	200
+d	4	200
+AA	10	100
+CC	30	300
+PREHOOK: query: create external table ice_parquet_multi_partitioned (
+    strcol string,
+    intcol integer
+) partitioned by (pcol1 string, pcol2 string)
+stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_parquet_multi_partitioned
+POSTHOOK: query: create external table ice_parquet_multi_partitioned (
+    strcol string,
+    intcol integer
+) partitioned by (pcol1 string, pcol2 string)
+stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_parquet_multi_partitioned
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_multi_partition/pcol1=x/pcol2=y' INTO TABLE
+ice_parquet_multi_partitioned PARTITION (pcol1='x', pcol2='y')
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_multi_partition/pcol1=x/pcol2=y' INTO TABLE
+ice_parquet_multi_partitioned PARTITION (pcol1='x', pcol2='y')
+POSTHOOK: type: LOAD
+PREHOOK: query: select * from ice_parquet_multi_partitioned order by pcol1, pcol2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parquet_multi_partitioned
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_parquet_multi_partitioned order by pcol1, pcol2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parquet_multi_partitioned
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+a	1	x	y
+b	2	x	y
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_multi_partition/pcol1=x/pcol2=z' OVERWRITE INTO TABLE
+ice_parquet_multi_partitioned PARTITION (pcol1='x', pcol2='z')
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_multi_partition/pcol1=x/pcol2=z' OVERWRITE INTO TABLE
+ice_parquet_multi_partitioned PARTITION (pcol1='x', pcol2='z')
+POSTHOOK: type: LOAD
+PREHOOK: query: select * from ice_parquet_multi_partitioned order by pcol1, pcol2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parquet_multi_partitioned
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_parquet_multi_partitioned order by pcol1, pcol2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parquet_multi_partitioned
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+a	1	x	y
+b	2	x	y
+A	10	x	z
+B	20	x	z

@@ -1,0 +1,5 @@
+1	Acura	4
+2	Toyota	3
+3	Tesla	5
+4	Honda	5
+11	Mazda	2

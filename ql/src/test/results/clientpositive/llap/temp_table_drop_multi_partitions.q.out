@@ -1,0 +1,65 @@
+PREHOOK: query: create temporary table mp_n0_temp (a string) partitioned by (b string, c string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mp_n0_temp
+POSTHOOK: query: create temporary table mp_n0_temp (a string) partitioned by (b string, c string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mp_n0_temp
+PREHOOK: query: alter table mp_n0_temp add partition (b='1', c='1')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@mp_n0_temp
+POSTHOOK: query: alter table mp_n0_temp add partition (b='1', c='1')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@mp_n0_temp
+POSTHOOK: Output: default@mp_n0_temp@b=1/c=1
+PREHOOK: query: alter table mp_n0_temp add partition (b='1', c='2')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@mp_n0_temp
+POSTHOOK: query: alter table mp_n0_temp add partition (b='1', c='2')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@mp_n0_temp
+POSTHOOK: Output: default@mp_n0_temp@b=1/c=2
+PREHOOK: query: alter table mp_n0_temp add partition (b='2', c='2')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@mp_n0_temp
+POSTHOOK: query: alter table mp_n0_temp add partition (b='2', c='2')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@mp_n0_temp
+POSTHOOK: Output: default@mp_n0_temp@b=2/c=2
+PREHOOK: query: show partitions mp_n0_temp
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@mp_n0_temp
+POSTHOOK: query: show partitions mp_n0_temp
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@mp_n0_temp
+b=1/c=1
+b=1/c=2
+b=2/c=2
+PREHOOK: query: alter table mp_n0_temp drop partition (b='1')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@mp_n0_temp
+PREHOOK: Output: default@mp_n0_temp@b=1/c=1
+PREHOOK: Output: default@mp_n0_temp@b=1/c=2
+POSTHOOK: query: alter table mp_n0_temp drop partition (b='1')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@mp_n0_temp
+POSTHOOK: Output: default@mp_n0_temp@b=1/c=1
+POSTHOOK: Output: default@mp_n0_temp@b=1/c=2
+PREHOOK: query: show partitions mp_n0_temp
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@mp_n0_temp
+POSTHOOK: query: show partitions mp_n0_temp
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@mp_n0_temp
+b=2/c=2
+PREHOOK: query: drop table mp_n0_temp
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@mp_n0_temp
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mp_n0_temp
+POSTHOOK: query: drop table mp_n0_temp
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@mp_n0_temp
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mp_n0_temp

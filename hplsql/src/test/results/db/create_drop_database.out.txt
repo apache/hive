@@ -1,0 +1,8 @@
+Ln:1 CREATE DATABASE
+Ln:1 create database test20160303
+Ln:2 CREATE DATABASE
+Ln:2 create database if not exists test1 comment 'abc' location '/users'
+Ln:4 DROP
+Ln:4 DROP DATABASE IF EXISTS test20160303
+Ln:5 DROP
+Ln:5 DROP DATABASE test1

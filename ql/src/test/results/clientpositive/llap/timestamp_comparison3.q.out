@@ -1,0 +1,226 @@
+PREHOOK: query: create database timestamp_test_n123
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:timestamp_test_n123
+POSTHOOK: query: create database timestamp_test_n123
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:timestamp_test_n123
+PREHOOK: query: create table timestamp_test_n123.onecolumntable (ts timestamp)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:timestamp_test_n123
+PREHOOK: Output: timestamp_test_n123@onecolumntable
+POSTHOOK: query: create table timestamp_test_n123.onecolumntable (ts timestamp)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:timestamp_test_n123
+POSTHOOK: Output: timestamp_test_n123@onecolumntable
+PREHOOK: query: insert into timestamp_test_n123.onecolumntable values
+('2015-01-01 00:00:00'),
+('2015-01-02 00:00:00'),
+('2015-01-03 00:00:00'),
+('2015-01-04 00:00:00'),
+('2015-01-05 00:00:00')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: timestamp_test_n123@onecolumntable
+POSTHOOK: query: insert into timestamp_test_n123.onecolumntable values
+('2015-01-01 00:00:00'),
+('2015-01-02 00:00:00'),
+('2015-01-03 00:00:00'),
+('2015-01-04 00:00:00'),
+('2015-01-05 00:00:00')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: timestamp_test_n123@onecolumntable
+POSTHOOK: Lineage: onecolumntable.ts SCRIPT []
+PREHOOK: query: describe formatted timestamp_test_n123.onecolumntable ts
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: timestamp_test_n123@onecolumntable
+POSTHOOK: query: describe formatted timestamp_test_n123.onecolumntable ts
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: timestamp_test_n123@onecolumntable
+col_name            	ts                  
+data_type           	timestamp           
+min                 	2015-01-01 00:00:00 
+max                 	2015-01-05 00:00:00 
+num_nulls           	0                   
+distinct_count      	5                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"ts\":\"true\"}}
+PREHOOK: query: explain
+select ts from timestamp_test_n123.onecolumntable
+where ts >= cast('2015-01-02 00:00:00' as timestamp)
+  and ts <= cast('2015-01-04 00:00:00' as timestamp)
+PREHOOK: type: QUERY
+PREHOOK: Input: timestamp_test_n123@onecolumntable
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select ts from timestamp_test_n123.onecolumntable
+where ts >= cast('2015-01-02 00:00:00' as timestamp)
+  and ts <= cast('2015-01-04 00:00:00' as timestamp)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: timestamp_test_n123@onecolumntable
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: onecolumntable
+                  filterExpr: ts BETWEEN TIMESTAMP'2015-01-02 00:00:00' AND TIMESTAMP'2015-01-04 00:00:00' (type: boolean)
+                  Statistics: Num rows: 5 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ts BETWEEN TIMESTAMP'2015-01-02 00:00:00' AND TIMESTAMP'2015-01-04 00:00:00' (type: boolean)
+                    Statistics: Num rows: 3 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: ts (type: timestamp)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 3 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 3 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+select ts from timestamp_test_n123.onecolumntable
+where ts >= cast('2015-01-02 00:00:00' as timestamp)
+  and ts <= cast('2015-01-03 00:00:00' as timestamp)
+PREHOOK: type: QUERY
+PREHOOK: Input: timestamp_test_n123@onecolumntable
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select ts from timestamp_test_n123.onecolumntable
+where ts >= cast('2015-01-02 00:00:00' as timestamp)
+  and ts <= cast('2015-01-03 00:00:00' as timestamp)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: timestamp_test_n123@onecolumntable
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: onecolumntable
+                  filterExpr: ts BETWEEN TIMESTAMP'2015-01-02 00:00:00' AND TIMESTAMP'2015-01-03 00:00:00' (type: boolean)
+                  Statistics: Num rows: 5 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ts BETWEEN TIMESTAMP'2015-01-02 00:00:00' AND TIMESTAMP'2015-01-03 00:00:00' (type: boolean)
+                    Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: ts (type: timestamp)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+select ts from timestamp_test_n123.onecolumntable
+where ts >= cast('2015-01-01 00:00:00' as timestamp)
+  and ts <= cast('2015-01-08 00:00:00' as timestamp)
+PREHOOK: type: QUERY
+PREHOOK: Input: timestamp_test_n123@onecolumntable
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select ts from timestamp_test_n123.onecolumntable
+where ts >= cast('2015-01-01 00:00:00' as timestamp)
+  and ts <= cast('2015-01-08 00:00:00' as timestamp)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: timestamp_test_n123@onecolumntable
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: onecolumntable
+                  filterExpr: ts BETWEEN TIMESTAMP'2015-01-01 00:00:00' AND TIMESTAMP'2015-01-08 00:00:00' (type: boolean)
+                  Statistics: Num rows: 5 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ts BETWEEN TIMESTAMP'2015-01-01 00:00:00' AND TIMESTAMP'2015-01-08 00:00:00' (type: boolean)
+                    Statistics: Num rows: 5 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: ts (type: timestamp)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 5 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 5 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: drop table timestamp_test_n123.onecolumntable
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: timestamp_test_n123@onecolumntable
+PREHOOK: Output: database:timestamp_test_n123
+PREHOOK: Output: timestamp_test_n123@onecolumntable
+POSTHOOK: query: drop table timestamp_test_n123.onecolumntable
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: timestamp_test_n123@onecolumntable
+POSTHOOK: Output: database:timestamp_test_n123
+POSTHOOK: Output: timestamp_test_n123@onecolumntable
+PREHOOK: query: drop database timestamp_test_n123
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:timestamp_test_n123
+PREHOOK: Output: database:timestamp_test_n123
+POSTHOOK: query: drop database timestamp_test_n123
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:timestamp_test_n123
+POSTHOOK: Output: database:timestamp_test_n123

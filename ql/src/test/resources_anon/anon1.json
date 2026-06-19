@@ -1,0 +1,13 @@
+{
+  "messageId": 1,
+  "messageClass": "org.apache.hadoop.hive.ql.anon.format.Msg2",
+  "fields": [
+    {
+      "fieldClass": "java.String",
+      "fieldNames": [
+        "dob",
+        "city"
+      ]
+    }
+  ]
+}

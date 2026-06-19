@@ -1,0 +1,32 @@
+Ln:1 IF
+Ln:1 IF TRUE executed
+Ln:2 PRINT
+Correct
+Ln:7 IF
+Ln:7 IF TRUE executed
+Ln:8 PRINT
+Correct
+Ln:13 IF
+Ln:13 IF TRUE executed
+Ln:14 PRINT
+Correct
+Ln:19 IF
+Ln:19 ELSE executed
+Ln:22 PRINT
+Correct
+Ln:25 IF
+Ln:25 IF TRUE executed
+Ln:26 PRINT
+Correct
+Ln:31 IF
+Ln:31 IF TRUE executed
+Ln:32 PRINT
+Correct
+Ln:37 IF
+Ln:37 IF TRUE executed
+Ln:38 PRINT
+Correct
+Ln:43 IF
+Ln:43 ELSE executed
+Ln:46 PRINT
+Correct

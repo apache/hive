@@ -1,0 +1,3 @@
+PREHOOK: query: create role public
+PREHOOK: type: CREATEROLE
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. org.apache.hadoop.hive.ql.metadata.HiveException: MetaException(message:public role implicitly exists. It can't be created.)

@@ -1,0 +1,92 @@
+PREHOOK: query: drop table if exists alter_varchar2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists alter_varchar2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table alter_varchar2 (
+  c1 varchar(255)
+) partitioned by (hr int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter_varchar2
+POSTHOOK: query: create table alter_varchar2 (
+  c1 varchar(255)
+) partitioned by (hr int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter_varchar2
+PREHOOK: query: insert overwrite table alter_varchar2 partition (hr=1)
+  select value from src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@alter_varchar2@hr=1
+POSTHOOK: query: insert overwrite table alter_varchar2 partition (hr=1)
+  select value from src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@alter_varchar2@hr=1
+POSTHOOK: Lineage: alter_varchar2 PARTITION(hr=1).c1 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select c1, length(c1) from alter_varchar2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_varchar2
+PREHOOK: Input: default@alter_varchar2@hr=1
+#### A masked pattern was here ####
+POSTHOOK: query: select c1, length(c1) from alter_varchar2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_varchar2
+POSTHOOK: Input: default@alter_varchar2@hr=1
+#### A masked pattern was here ####
+val_238	7
+PREHOOK: query: alter table alter_varchar2 change column c1 c1 varchar(10)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@alter_varchar2
+PREHOOK: Output: default@alter_varchar2
+POSTHOOK: query: alter table alter_varchar2 change column c1 c1 varchar(10)
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@alter_varchar2
+POSTHOOK: Output: default@alter_varchar2
+PREHOOK: query: select hr, c1, length(c1) from alter_varchar2 where hr = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_varchar2
+PREHOOK: Input: default@alter_varchar2@hr=1
+#### A masked pattern was here ####
+POSTHOOK: query: select hr, c1, length(c1) from alter_varchar2 where hr = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_varchar2
+POSTHOOK: Input: default@alter_varchar2@hr=1
+#### A masked pattern was here ####
+1	val_238	7
+PREHOOK: query: insert overwrite table alter_varchar2 partition (hr=2)
+  select key from src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@alter_varchar2@hr=2
+POSTHOOK: query: insert overwrite table alter_varchar2 partition (hr=2)
+  select key from src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@alter_varchar2@hr=2
+POSTHOOK: Lineage: alter_varchar2 PARTITION(hr=2).c1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: select hr, c1, length(c1) from alter_varchar2 where hr = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_varchar2
+PREHOOK: Input: default@alter_varchar2@hr=1
+#### A masked pattern was here ####
+POSTHOOK: query: select hr, c1, length(c1) from alter_varchar2 where hr = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_varchar2
+POSTHOOK: Input: default@alter_varchar2@hr=1
+#### A masked pattern was here ####
+1	val_238	7
+PREHOOK: query: select hr, c1, length(c1) from alter_varchar2 where hr = 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_varchar2
+PREHOOK: Input: default@alter_varchar2@hr=2
+#### A masked pattern was here ####
+POSTHOOK: query: select hr, c1, length(c1) from alter_varchar2 where hr = 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_varchar2
+POSTHOOK: Input: default@alter_varchar2@hr=2
+#### A masked pattern was here ####
+2	238	3

@@ -1,0 +1,24 @@
+PREHOOK: query: DESCRIBE FUNCTION sum
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION sum
+POSTHOOK: type: DESCFUNCTION
+sum(x) - Returns the sum of a set of numbers
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED sum
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED sum
+POSTHOOK: type: DESCFUNCTION
+sum(x) - Returns the sum of a set of numbers
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSum
+Function type:BUILTIN
+PREHOOK: query: DESCRIBE FUNCTION sum
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION sum
+POSTHOOK: type: DESCFUNCTION
+sum(x) - Returns the sum of a set of numbers
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED sum
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED sum
+POSTHOOK: type: DESCFUNCTION
+sum(x) - Returns the sum of a set of numbers
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSum
+Function type:BUILTIN

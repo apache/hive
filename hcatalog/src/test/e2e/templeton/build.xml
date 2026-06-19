@@ -1,0 +1,235 @@
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+
+<project name="TestHarnessTempletonTests" default="test">
+
+    <!-- Separate property name for udfs' build.xml -->
+
+    <property name="test.src" value="${basedir}/tests"/>
+    <property name="driver.src" value="${basedir}/drivers"/>
+    <property name="conf.src" value="${basedir}/conf"/>
+    <property name="resource.src" value="${basedir}/resource"/>
+    <property name="harness.dir" value="${basedir}/../harness"/>
+    <property name="harness.tar" value="${harness.dir}/harness.tar"/>
+    <property name="inpdir.local" value="${basedir}/inpdir/"/>
+    <property name="tar.name" value="${basedir}/hcattests.tar"/>
+    <property name="tar.dir" value="${basedir}/tar"/>
+    <property name="test.location" value="${basedir}/testdist"/>
+
+    <!-- Check that the necessary properties are setup -->
+    <target name="property-check">
+        <fail message="Please set the property harness.webhdfs.url to the namenode base url of the cluster"
+              unless="harness.webhdfs.url"/>
+        <fail message="Please set the property harness.templeton.url to the templeton server base url of the cluster"
+              unless="harness.templeton.url"/>
+        <fail message="Please set the property inpdir.hdfs to the test input directory on hdfs"
+              unless="inpdir.hdfs"/>
+    </target>
+
+    <!-- Get the tarball for the harness -->
+    <target name="build-harness">
+        <ant dir="${harness.dir}" inheritAll="false"/>
+    </target>
+
+    <!-- Build an archive to use in the tests -->
+    <target name="tar" description="Create tar file with hcat modules">
+        <mkdir dir="${tar.dir}"/>
+        <mkdir dir="${tar.dir}/tests"/>
+        <mkdir dir="${tar.dir}/conf"/>
+        <mkdir dir="${tar.dir}/resource"/>
+        <copy todir="${tar.dir}/tests">
+            <fileset dir="${test.src}">
+            </fileset>
+        </copy>
+        <copy todir="${tar.dir}">
+            <fileset dir="${driver.src}"/>
+        </copy>
+        <copy todir="${tar.dir}/conf">
+            <fileset dir="${conf.src}"/>
+        </copy>
+        <copy todir="${tar.dir}/resource">
+            <fileset dir="${resource.src}"/>
+        </copy>
+        <tar destfile="${tar.name}" basedir="${tar.dir}"/>
+    </target>
+
+    <!-- Prep the test area -->
+    <target name="init-test" depends="build-harness, tar">
+        <mkdir dir="${test.location}"/>
+
+        <untar src="${tar.name}" dest="${test.location}"/>
+        <untar src="${harness.tar}" dest="${test.location}"/>
+
+        <chmod perm="ugo+x" type="file">
+            <fileset file="${test.location}/test_harness.pl"/>
+        </chmod>
+    </target>
+
+    <target name="test" depends="property-check, init-test">
+        <!-- fork (parallelization) factors for e2e tests execution.
+             Defaults are 1, which means *no* parellelization: 
+             if group=3, then 3 .conf files will be processed in parallel
+             if conf.file=2 there will be 2 thread per .conf file, each thread 
+             executing a single group (identified by 'name' element) -->
+        <property name="fork.factor.group" value="3"/>
+        <property name="fork.factor.conf.file" value="3"/>
+        <property name="e2e.debug" value="false"/>
+        <property name="tests.to.run" value=""/>
+
+        <exec executable="perl" dir="${test.location}" failonerror="true">
+            <env key="HARNESS_ROOT" value="."/>
+            <env key="DRIVER_ROOT" value="${basedir}/drivers"/>
+            <env key="TH_WORKING_DIR" value="${test.location}"/>
+            <env key="TH_INPDIR_LOCAL" value="${inpdir.local}"/>
+            <env key="TH_INPDIR_HDFS" value="${inpdir.hdfs}"/>
+            <env key="DB_CONNECTION_STRING" value="${db.connection.string}"/>
+            <env key="DB_USER_NAME" value="${db.user.name}"/>
+            <env key="DB_PASSWORD" value="${db.password}"/>
+            <env key="TH_OUT" value="."/>
+            <env key="TH_ROOT" value="."/>
+            <env key="FORK_FACTOR_GROUP" value="${fork.factor.group}"/>
+            <env key="FORK_FACTOR_FILE" value="${fork.factor.conf.file}"/>
+            <env key="E2E_DEBUG" value="${e2e.debug}"/>
+            <env key="WEBHDFS_URL" value="${harness.webhdfs.url}"/>
+            <env key="TEMPLETON_URL" value="${harness.templeton.url}"/>
+            <env key="USER_NAME" value="${test.user.name}"/>
+            <env key="HARNESS_CONF" value="${basedir}/conf/default.conf"/>
+            <env key="SECURE_MODE" value="${secure.mode}"/>
+            <env key="USER_REALM" value="${user.realm}"/>
+            <env key="HADOOP_VERSION" value="${hadoopversion}"/>
+            <arg value="./test_harness.pl"/>
+            <arg line="${tests.to.run}"/>
+            <arg value="${basedir}/tests/serverstatus.conf"/>
+            <arg value="${basedir}/tests/jobsubmission_streaming.conf"/>
+            <arg value="${basedir}/tests/ddl.conf"/>
+            <arg value="${basedir}/tests/jobsubmission.conf"/>
+            <arg value="${basedir}/tests/jobsubmission2.conf"/>
+        </exec>
+    </target>
+
+    <target name="test-multi-users" depends="property-check, init-test">
+        <!-- fork (parallelization) factors for e2e tests execution.
+             Defaults are 1, which means *no* parellelization: -->
+        <property name="fork.factor.group" value="1"/>
+        <property name="fork.factor.conf.file" value="1"/>
+        <property name="e2e.debug" value="false"/>
+        <property name="tests.to.run" value=""/>
+        <exec executable="perl" dir="${test.location}" failonerror="true">
+            <env key="HARNESS_ROOT" value="."/>
+            <env key="DRIVER_ROOT" value="${basedir}/drivers"/>
+            <env key="TH_WORKING_DIR" value="${test.location}"/>
+            <env key="TH_INPDIR_LOCAL" value="${inpdir.local}"/>
+            <env key="TH_INPDIR_HDFS" value="${inpdir.hdfs}"/>
+            <env key="TH_OUT" value="."/>
+            <env key="TH_ROOT" value="."/>
+            <env key="FORK_FACTOR_GROUP" value="${fork.factor.group}"/>
+            <env key="FORK_FACTOR_FILE" value="${fork.factor.conf.file}"/>
+            <env key="E2E_DEBUG" value="${e2e.debug}"/>
+            <env key="WEBHDFS_URL" value="${harness.webhdfs.url}"/>
+            <env key="TEMPLETON_URL" value="${harness.templeton.url}"/>
+            <env key="USER_NAME" value="${test.user.name}"/>
+            <env key="GROUP_NAME" value="${test.group.name}"/>
+            <env key="GROUP_USER_NAME" value="${test.group.user.name}"/>
+            <env key="OTHER_USER_NAME" value="${test.other.user.name}"/>
+            <env key="HARNESS_CONF" value="${basedir}/conf/default.conf"/>
+            <env key="SECURE_MODE" value="${secure.mode}"/>
+            <env key="USER_REALM" value="${user.realm}"/>
+            <env key="KEYTAB_DIR" value="${keytab.dir}"/>
+            <arg value="./test_harness.pl"/>
+            <arg line="${tests.to.run}"/>
+            <arg value="${basedir}/tests/hcatperms.conf"/>
+            <arg value="${basedir}/tests/jobstatus.conf"/>
+        </exec>
+    </target>
+    <target name="test-doas" depends="property-check, init-test" description="See README.txt for instructions">
+        <!-- fork (parallelization) factors for e2e tests execution.
+             Defaults are 1, which means *no* parellelization: 
+             if group=3, then 3 .conf files will be processed in parallel
+             if conf.file=2 there will be 2 thread per .conf file, each thread 
+             executing a single group (identified by 'name' element) -->
+        <property name="fork.factor.group" value="1"/>
+        <property name="fork.factor.conf.file" value="1"/>
+        <property name="e2e.debug" value="false"/>
+        <property name="tests.to.run" value=""/>
+        <property name="doas.user.tmp" value="${doas.user}" />
+        <condition property="doas.user" value="${test.user.name}">
+            <!--default doas.user (if not set) to test.user.name-->
+            <isset property="doas.user.tmp"/>
+        </condition>
+
+        <exec executable="perl" dir="${test.location}" failonerror="true">
+            <env key="HARNESS_ROOT" value="."/>
+            <env key="TH_WORKING_DIR" value="${test.location}"/>
+            <env key="TH_INPDIR_LOCAL" value="${inpdir.local}"/>
+            <env key="TH_INPDIR_HDFS" value="${inpdir.hdfs}"/>
+            <env key="TH_OUT" value="."/>
+            <env key="TH_ROOT" value="."/>
+            <env key="FORK_FACTOR_GROUP" value="${fork.factor.group}"/>
+            <env key="FORK_FACTOR_FILE" value="${fork.factor.conf.file}"/>
+            <env key="E2E_DEBUG" value="${e2e.debug}"/>
+            <env key="WEBHDFS_URL" value="${harness.webhdfs.url}"/>
+            <env key="TEMPLETON_URL" value="${harness.templeton.url}"/>
+            <env key="USER_NAME" value="${test.user.name}"/>
+            <env key="DOAS_USER" value="${doas.user}"/>
+            <env key="HARNESS_CONF" value="${basedir}/conf/default.conf"/>
+            <env key="USER_REALM" value="${user.realm}"/>
+            <env key="SECURE_MODE" value="${secure.mode}"/>
+            <env key="USER_REALM" value="${user.realm}"/>
+            <arg value="./test_harness.pl"/>
+            <arg line="${tests.to.run}"/>
+            <arg value="${basedir}/tests/doas.conf"/>
+        </exec>
+    </target>
+
+    <target name="test-updateConfig" depends="property-check, init-test">
+        <!-- fork (parallelization) factors for e2e tests execution.
+             Defaults are 1, which means *no* parellelization: -->
+        <property name="fork.factor.group" value="1"/>
+        <property name="fork.factor.conf.file" value="1"/>
+        <property name="e2e.debug" value="false"/>
+        <property name="tests.to.run" value=""/>
+        <exec executable="perl" dir="${test.location}" failonerror="true">
+            <env key="HARNESS_ROOT" value="."/>
+            <env key="TH_WORKING_DIR" value="${test.location}"/>
+            <env key="TH_INPDIR_LOCAL" value="${inpdir.local}"/>
+            <env key="TH_INPDIR_HDFS" value="${inpdir.hdfs}"/>
+            <env key="TH_OUT" value="."/>
+            <env key="TH_ROOT" value="."/>
+            <env key="FORK_FACTOR_GROUP" value="${fork.factor.group}"/>
+            <env key="FORK_FACTOR_FILE" value="${fork.factor.conf.file}"/>
+            <env key="E2E_DEBUG" value="${e2e.debug}"/>
+            <env key="WEBHDFS_URL" value="${harness.webhdfs.url}"/>
+            <env key="TEMPLETON_URL" value="${harness.templeton.url}"/>
+            <env key="USER_NAME" value="${test.user.name}"/>
+            <env key="DOAS_USER" value="${doas.user}"/>
+            <env key="HARNESS_CONF" value="${basedir}/conf/default.conf"/>
+            <env key="SECURE_MODE" value="${secure.mode}"/>
+            <arg value="./test_harness.pl"/>
+            <arg line="${tests.to.run}"/>
+            <arg value="${basedir}/tests/modifyConfiguration.conf"/>
+        </exec>
+    </target>
+
+    <target name="clean">
+        <delete dir="${test.location}"/>
+        <delete file="${tar.name}"/>
+        <delete dir="${tar.dir}"/>
+    </target>
+
+</project>

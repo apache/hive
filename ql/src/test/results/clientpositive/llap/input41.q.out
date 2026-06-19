@@ -1,0 +1,39 @@
+PREHOOK: query: create table dest_sp (cnt int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest_sp
+POSTHOOK: query: create table dest_sp (cnt int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest_sp
+PREHOOK: query: insert overwrite table dest_sp
+select * from 
+  (select count(1) as cnt from src 
+    union all
+   select count(1) as cnt from srcpart where ds = '2009-08-09'
+  )x
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@srcpart
+PREHOOK: Output: default@dest_sp
+POSTHOOK: query: insert overwrite table dest_sp
+select * from 
+  (select count(1) as cnt from src 
+    union all
+   select count(1) as cnt from srcpart where ds = '2009-08-09'
+  )x
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Output: default@dest_sp
+POSTHOOK: Lineage: dest_sp.cnt EXPRESSION [(src)src.null, (srcpart)srcpart.null, ]
+PREHOOK: query: select * from dest_sp x order by x.cnt limit 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest_sp
+#### A masked pattern was here ####
+POSTHOOK: query: select * from dest_sp x order by x.cnt limit 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest_sp
+#### A masked pattern was here ####
+0
+500

@@ -1,0 +1,23 @@
+--! qt:dataset:src
+set hive.mapred.mode=nonstrict;
+CREATE TABLE dest1_n77(key INT, value STRING) STORED AS TEXTFILE;
+CREATE TABLE dest2_n16(key INT, value STRING) STORED AS TEXTFILE;
+CREATE TABLE dest3_n1(key INT) PARTITIONED BY(ds STRING, hr STRING) STORED AS TEXTFILE;
+
+EXPLAIN
+FROM src
+INSERT OVERWRITE TABLE dest1_n77 SELECT src.* WHERE src.key < 100
+INSERT OVERWRITE TABLE dest2_n16 SELECT src.key, src.value WHERE src.key >= 100 and src.key < 200
+INSERT OVERWRITE TABLE dest3_n1 PARTITION(ds='2008-04-08', hr='12') SELECT src.key WHERE src.key >= 200 and src.key < 300
+INSERT OVERWRITE DIRECTORY 'target/warehouse/dest4.out' SELECT src.value WHERE src.key >= 300;
+
+FROM src
+INSERT OVERWRITE TABLE dest1_n77 SELECT src.* WHERE src.key < 100
+INSERT OVERWRITE TABLE dest2_n16 SELECT src.key, src.value WHERE src.key >= 100 and src.key < 200
+INSERT OVERWRITE TABLE dest3_n1 PARTITION(ds='2008-04-08', hr='12') SELECT src.key WHERE src.key >= 200 and src.key < 300
+INSERT OVERWRITE DIRECTORY 'target/warehouse/dest4.out' SELECT src.value WHERE src.key >= 300;
+
+SELECT dest1_n77.* FROM dest1_n77;
+SELECT dest2_n16.* FROM dest2_n16;
+SELECT dest3_n1.* FROM dest3_n1;
+dfs -cat ${system:test.warehouse.dir}/dest4.out/*;

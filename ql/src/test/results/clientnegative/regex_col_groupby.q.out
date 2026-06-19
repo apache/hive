@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10004]: Line 3:44 Invalid table alias or column reference '`..`': (possible column names are: key, value, ds, hr)

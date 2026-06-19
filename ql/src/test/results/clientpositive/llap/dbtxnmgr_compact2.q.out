@@ -1,0 +1,69 @@
+PREHOOK: query: create table T1_n105(key string, val string) partitioned by (ds string) clustered by (val) into 2 buckets stored as ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T1_n105
+POSTHOOK: query: create table T1_n105(key string, val string) partitioned by (ds string) clustered by (val) into 2 buckets stored as ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T1_n105
+PREHOOK: query: alter table T1_n105 add partition (ds = 'today')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@t1_n105
+POSTHOOK: query: alter table T1_n105 add partition (ds = 'today')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@t1_n105
+POSTHOOK: Output: default@t1_n105@ds=today
+PREHOOK: query: alter table T1_n105 add partition (ds = 'yesterday')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@t1_n105
+POSTHOOK: query: alter table T1_n105 add partition (ds = 'yesterday')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@t1_n105
+POSTHOOK: Output: default@t1_n105@ds=yesterday
+PREHOOK: query: alter table T1_n105 partition (ds = 'today') compact 'major'
+PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@t1_n105
+PREHOOK: Output: default@t1_n105@ds=today
+POSTHOOK: query: alter table T1_n105 partition (ds = 'today') compact 'major'
+POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@t1_n105
+POSTHOOK: Output: default@t1_n105@ds=today
+PREHOOK: query: explain alter table T1_n105 partition (ds = 'yesterday') compact 'minor'
+PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@t1_n105
+PREHOOK: Output: default@t1_n105@ds=yesterday
+POSTHOOK: query: explain alter table T1_n105 partition (ds = 'yesterday') compact 'minor'
+POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@t1_n105
+POSTHOOK: Output: default@t1_n105@ds=yesterday
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Compact
+      compaction type: minor
+      table name: default.T1_n105
+      numberOfBuckets: 0
+      partition spec:
+        ds yesterday
+      table name: default.T1_n105
+
+PREHOOK: query: alter table T1_n105 partition (ds = 'yesterday') compact 'minor'
+PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@t1_n105
+PREHOOK: Output: default@t1_n105@ds=yesterday
+POSTHOOK: query: alter table T1_n105 partition (ds = 'yesterday') compact 'minor'
+POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@t1_n105
+POSTHOOK: Output: default@t1_n105@ds=yesterday
+PREHOOK: query: drop table T1_n105
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t1_n105
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1_n105
+POSTHOOK: query: drop table T1_n105
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t1_n105
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1_n105

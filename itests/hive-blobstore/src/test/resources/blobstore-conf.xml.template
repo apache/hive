@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!--
+# Copy this file to blobstore-conf.xml
+# update the properties + credentials according to the blobstore being tested
+
+# The following is an example template file for s3a
+-->
+<configuration>
+  <property>
+    <name>fs.s3a.access.key</name>
+    <value></value>
+  </property>
+  <property>
+    <name>fs.s3a.secret.key</name>
+    <value></value>
+  </property>
+  <property>
+    <name>test.blobstore.path</name>
+    <value></value>
+  </property>
+</configuration>

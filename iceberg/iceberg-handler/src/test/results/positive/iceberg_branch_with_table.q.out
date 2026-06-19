@@ -1,0 +1,141 @@
+PREHOOK: query: CREATE EXTERNAL TABLE default.hive_branch_bug
+( foo BIGINT )
+STORED BY ICEBERG
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive_branch_bug
+POSTHOOK: query: CREATE EXTERNAL TABLE default.hive_branch_bug
+( foo BIGINT )
+STORED BY ICEBERG
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive_branch_bug
+PREHOOK: query: ALTER TABLE default.hive_branch_bug CREATE BRANCH empty
+PREHOOK: type: ALTERTABLE_CREATEBRANCH
+PREHOOK: Input: default@hive_branch_bug
+POSTHOOK: query: ALTER TABLE default.hive_branch_bug CREATE BRANCH empty
+POSTHOOK: type: ALTERTABLE_CREATEBRANCH
+POSTHOOK: Input: default@hive_branch_bug
+PREHOOK: query: INSERT INTO default.hive_branch_bug (foo) VALUES (1), (2), (3), (4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hive_branch_bug
+POSTHOOK: query: INSERT INTO default.hive_branch_bug (foo) VALUES (1), (2), (3), (4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hive_branch_bug
+PREHOOK: query: SELECT COUNT(*)
+FROM default.hive_branch_bug
+UNION ALL
+SELECT COUNT(*)
+FROM default.hive_branch_bug.branch_empty
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_branch_bug
+PREHOOK: Input: default@hive_branch_bug@branch_empty
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT COUNT(*)
+FROM default.hive_branch_bug
+UNION ALL
+SELECT COUNT(*)
+FROM default.hive_branch_bug.branch_empty
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_branch_bug
+POSTHOOK: Input: default@hive_branch_bug@branch_empty
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+4
+0
+PREHOOK: query: SELECT COUNT(*)
+FROM default.hive_branch_bug.branch_empty
+UNION ALL
+SELECT COUNT(*)
+FROM default.hive_branch_bug
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_branch_bug
+PREHOOK: Input: default@hive_branch_bug@branch_empty
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT COUNT(*)
+FROM default.hive_branch_bug.branch_empty
+UNION ALL
+SELECT COUNT(*)
+FROM default.hive_branch_bug
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_branch_bug
+POSTHOOK: Input: default@hive_branch_bug@branch_empty
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
+4
+Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[23][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+PREHOOK: query: SELECT
+(SELECT COUNT(*) FROM default.hive_branch_bug),
+(SELECT COUNT(*) FROM default.hive_branch_bug.branch_empty)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@hive_branch_bug
+PREHOOK: Input: default@hive_branch_bug@branch_empty
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT
+(SELECT COUNT(*) FROM default.hive_branch_bug),
+(SELECT COUNT(*) FROM default.hive_branch_bug.branch_empty)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@hive_branch_bug
+POSTHOOK: Input: default@hive_branch_bug@branch_empty
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+4	0
+PREHOOK: query: SELECT COUNT(*)
+FROM default.hive_branch_bug
+WHERE foo > 0
+UNION ALL
+SELECT COUNT(*)
+FROM default.hive_branch_bug.branch_empty
+WHERE foo > 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_branch_bug
+PREHOOK: Input: default@hive_branch_bug@branch_empty
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT COUNT(*)
+FROM default.hive_branch_bug
+WHERE foo > 0
+UNION ALL
+SELECT COUNT(*)
+FROM default.hive_branch_bug.branch_empty
+WHERE foo > 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_branch_bug
+POSTHOOK: Input: default@hive_branch_bug@branch_empty
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+4
+0
+PREHOOK: query: SELECT *
+FROM (
+SELECT COUNT(*) c
+FROM default.hive_branch_bug
+) a
+UNION ALL
+SELECT *
+FROM (
+SELECT COUNT(*) c
+FROM default.hive_branch_bug.branch_empty
+) b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_branch_bug
+PREHOOK: Input: default@hive_branch_bug@branch_empty
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT *
+FROM (
+SELECT COUNT(*) c
+FROM default.hive_branch_bug
+) a
+UNION ALL
+SELECT *
+FROM (
+SELECT COUNT(*) c
+FROM default.hive_branch_bug.branch_empty
+) b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_branch_bug
+POSTHOOK: Input: default@hive_branch_bug@branch_empty
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+4
+0

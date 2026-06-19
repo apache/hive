@@ -1,0 +1,168 @@
+PREHOOK: query: CREATE TABLE TEST3a(A INT, B DOUBLE) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@TEST3a
+POSTHOOK: query: CREATE TABLE TEST3a(A INT, B DOUBLE) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@TEST3a
+PREHOOK: query: DESCRIBE TEST3a
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test3a
+POSTHOOK: query: DESCRIBE TEST3a
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test3a
+a                   	int                 	                    
+b                   	double              	                    
+PREHOOK: query: CREATE TABLE TEST3b(A ARRAY<INT>, B DOUBLE, C MAP<DOUBLE, INT>) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@TEST3b
+POSTHOOK: query: CREATE TABLE TEST3b(A ARRAY<INT>, B DOUBLE, C MAP<DOUBLE, INT>) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@TEST3b
+PREHOOK: query: DESCRIBE TEST3b
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test3b
+POSTHOOK: query: DESCRIBE TEST3b
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test3b
+a                   	array<int>          	                    
+b                   	double              	                    
+c                   	map<double,int>     	                    
+PREHOOK: query: SHOW TABLES LIKE "TEST3%"
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
+POSTHOOK: query: SHOW TABLES LIKE "TEST3%"
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
+test3a
+test3b
+PREHOOK: query: EXPLAIN
+ALTER TABLE TEST3b ADD COLUMNS (X DOUBLE)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@test3b
+PREHOOK: Output: default@test3b
+POSTHOOK: query: EXPLAIN
+ALTER TABLE TEST3b ADD COLUMNS (X DOUBLE)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@test3b
+POSTHOOK: Output: default@test3b
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Add Columns
+      table name: default.TEST3b
+      new columns: x double
+
+PREHOOK: query: ALTER TABLE TEST3b ADD COLUMNS (X DOUBLE)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@test3b
+PREHOOK: Output: default@test3b
+POSTHOOK: query: ALTER TABLE TEST3b ADD COLUMNS (X DOUBLE)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@test3b
+POSTHOOK: Output: default@test3b
+PREHOOK: query: DESCRIBE TEST3b
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test3b
+POSTHOOK: query: DESCRIBE TEST3b
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test3b
+a                   	array<int>          	                    
+b                   	double              	                    
+c                   	map<double,int>     	                    
+x                   	double              	                    
+PREHOOK: query: EXPLAIN
+ALTER TABLE TEST3b RENAME TO TEST3c
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: default@test3b
+PREHOOK: Output: database:default
+PREHOOK: Output: default@TEST3c
+PREHOOK: Output: default@test3b
+POSTHOOK: query: EXPLAIN
+ALTER TABLE TEST3b RENAME TO TEST3c
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: default@test3b
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@TEST3c
+POSTHOOK: Output: default@test3b
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Rename Table
+      table name: default.TEST3b
+      new table name: default.TEST3c
+
+PREHOOK: query: ALTER TABLE TEST3b RENAME TO TEST3c
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: default@test3b
+PREHOOK: Output: database:default
+PREHOOK: Output: default@TEST3c
+PREHOOK: Output: default@test3b
+POSTHOOK: query: ALTER TABLE TEST3b RENAME TO TEST3c
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: default@test3b
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@TEST3c
+POSTHOOK: Output: default@test3b
+PREHOOK: query: DESCRIBE TEST3c
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test3c
+POSTHOOK: query: DESCRIBE TEST3c
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test3c
+a                   	array<int>          	                    
+b                   	double              	                    
+c                   	map<double,int>     	                    
+x                   	double              	                    
+PREHOOK: query: SHOW TABLES LIKE "TEST3%"
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
+POSTHOOK: query: SHOW TABLES LIKE "TEST3%"
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
+test3a
+test3c
+PREHOOK: query: EXPLAIN
+ALTER TABLE TEST3c REPLACE COLUMNS (R1 INT, R2 DOUBLE)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@test3c
+PREHOOK: Output: default@test3c
+POSTHOOK: query: EXPLAIN
+ALTER TABLE TEST3c REPLACE COLUMNS (R1 INT, R2 DOUBLE)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@test3c
+POSTHOOK: Output: default@test3c
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Replace Columns
+      table name: default.TEST3c
+      new columns: r1 int, r2 double
+
+PREHOOK: query: ALTER TABLE TEST3c REPLACE COLUMNS (R1 INT, R2 DOUBLE)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@test3c
+PREHOOK: Output: default@test3c
+POSTHOOK: query: ALTER TABLE TEST3c REPLACE COLUMNS (R1 INT, R2 DOUBLE)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@test3c
+POSTHOOK: Output: default@test3c
+PREHOOK: query: DESCRIBE EXTENDED TEST3c
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test3c
+POSTHOOK: query: DESCRIBE EXTENDED TEST3c
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test3c
+r1                  	int                 	                    
+r2                  	double              	                    
+	 	 
+#### A masked pattern was here ####

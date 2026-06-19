@@ -1,0 +1,16 @@
+PREHOOK: query: create table create_table_creator_priv_test(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@create_table_creator_priv_test
+POSTHOOK: query: create table create_table_creator_priv_test(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@create_table_creator_priv_test
+PREHOOK: query: show grant user user1 on table create_table_creator_priv_test
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user user1 on table create_table_creator_priv_test
+POSTHOOK: type: SHOW_GRANT
+default	create_table_creator_priv_test			user1	USER	DELETE	true	-1	user1
+default	create_table_creator_priv_test			user1	USER	INSERT	true	-1	user1
+default	create_table_creator_priv_test			user1	USER	SELECT	true	-1	user1
+default	create_table_creator_priv_test			user1	USER	UPDATE	true	-1	user1

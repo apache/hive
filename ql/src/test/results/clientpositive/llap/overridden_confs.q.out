@@ -1,0 +1,7 @@
+PREHOOK: query: select count(*) from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+Key: hive.exec.post.hooks, Value: org.apache.hadoop.hive.ql.hooks.VerifyOverriddenConfigsHook
+Key: some.hive.config.doesnt.exit, Value: abc
+500

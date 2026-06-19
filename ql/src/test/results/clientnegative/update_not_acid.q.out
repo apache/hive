@@ -1,0 +1,9 @@
+PREHOOK: query: create table foo(a int, b varchar(128)) clustered by (a) into 1 buckets stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@foo
+POSTHOOK: query: create table foo(a int, b varchar(128)) clustered by (a) into 1 buckets stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@foo
+FAILED: SemanticException [Error 10294]: Attempt to do update or delete using transaction manager that does not support these operations.

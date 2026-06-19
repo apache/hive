@@ -1,0 +1,1 @@
+CREATE FUNCTION compute_stats AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDAFComputeStats';

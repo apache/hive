@@ -1,0 +1,29 @@
+PREHOOK: query: drop view v
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: drop view v
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: create view v partitioned on (ds, hr) as select * from srcpart
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@srcpart
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v
+POSTHOOK: query: create view v partitioned on (ds, hr) as select * from srcpart
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v
+POSTHOOK: Lineage: v.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: alter view v add partition (ds='1',hr='2')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@v
+PREHOOK: Output: default@v
+POSTHOOK: query: alter view v add partition (ds='1',hr='2')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@v
+POSTHOOK: Output: default@v
+POSTHOOK: Output: default@v@ds=1/hr=2
+FAILED: SemanticException [Error 10217]: Cannot replace a view with CREATE VIEW or REPLACE VIEW or ALTER VIEW AS SELECT if the view has partitions
+ The following view has partition, it could not be replaced: default.v

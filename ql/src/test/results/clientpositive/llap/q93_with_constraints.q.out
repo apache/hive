@@ -1,0 +1,403 @@
+PREHOOK: query: drop table if exists store_sales
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists store_sales
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create external table store_sales
+(
+    ss_sold_date_sk           int,
+    ss_sold_time_sk           int,
+    ss_item_sk                int,
+    ss_customer_sk            int,
+    ss_cdemo_sk               int,
+    ss_hdemo_sk               int,
+    ss_addr_sk                int,
+    ss_store_sk               int,
+    ss_promo_sk               int,
+    ss_ticket_number          int,
+    ss_quantity               int,
+    ss_wholesale_cost         decimal(7,2),
+    ss_list_price             decimal(7,2),
+    ss_sales_price            decimal(7,2),
+    ss_ext_discount_amt       decimal(7,2),
+    ss_ext_sales_price        decimal(7,2),
+    ss_ext_wholesale_cost     decimal(7,2),
+    ss_ext_list_price         decimal(7,2),
+    ss_ext_tax                decimal(7,2),
+    ss_coupon_amt             decimal(7,2),
+    ss_net_paid               decimal(7,2),
+    ss_net_paid_inc_tax       decimal(7,2),
+    ss_net_profit             decimal(7,2)
+)
+row format delimited fields terminated by '\t'
+STORED AS ORC tblproperties ("orc.compress"="ZLIB")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@store_sales
+POSTHOOK: query: create external table store_sales
+(
+    ss_sold_date_sk           int,
+    ss_sold_time_sk           int,
+    ss_item_sk                int,
+    ss_customer_sk            int,
+    ss_cdemo_sk               int,
+    ss_hdemo_sk               int,
+    ss_addr_sk                int,
+    ss_store_sk               int,
+    ss_promo_sk               int,
+    ss_ticket_number          int,
+    ss_quantity               int,
+    ss_wholesale_cost         decimal(7,2),
+    ss_list_price             decimal(7,2),
+    ss_sales_price            decimal(7,2),
+    ss_ext_discount_amt       decimal(7,2),
+    ss_ext_sales_price        decimal(7,2),
+    ss_ext_wholesale_cost     decimal(7,2),
+    ss_ext_list_price         decimal(7,2),
+    ss_ext_tax                decimal(7,2),
+    ss_coupon_amt             decimal(7,2),
+    ss_net_paid               decimal(7,2),
+    ss_net_paid_inc_tax       decimal(7,2),
+    ss_net_profit             decimal(7,2)
+)
+row format delimited fields terminated by '\t'
+STORED AS ORC tblproperties ("orc.compress"="ZLIB")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@store_sales
+PREHOOK: query: alter table store_sales update statistics set ('numRows'='575995635')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: default@store_sales
+POSTHOOK: query: alter table store_sales update statistics set ('numRows'='575995635')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: default@store_sales
+PREHOOK: query: drop table if exists store_returns
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists store_returns
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create external table store_returns
+(
+    sr_returned_date_sk      int,
+    sr_return_time_sk        int,
+    sr_item_sk               int,
+    sr_customer_sk           int,
+    sr_cdemo_sk              int,
+    sr_hdemo_sk              int,
+    sr_addr_sk               int,
+    sr_store_sk              int,
+    sr_reason_sk             int,
+    sr_ticket_number         int,
+    sr_return_quantity       int,
+    sr_return_amt            decimal(7,2),
+    sr_return_tax            decimal(7,2),
+    sr_return_amt_inc_tax    decimal(7,2),
+    sr_fee                   decimal(7,2),
+    sr_return_ship_cost      decimal(7,2),
+    sr_refunded_cash         decimal(7,2),
+    sr_reversed_charge       decimal(7,2),
+    sr_store_credit          decimal(7,2),
+    sr_net_loss              decimal(7,2)
+)
+row format delimited fields terminated by '\t'
+STORED AS ORC tblproperties ("orc.compress"="ZLIB")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@store_returns
+POSTHOOK: query: create external table store_returns
+(
+    sr_returned_date_sk      int,
+    sr_return_time_sk        int,
+    sr_item_sk               int,
+    sr_customer_sk           int,
+    sr_cdemo_sk              int,
+    sr_hdemo_sk              int,
+    sr_addr_sk               int,
+    sr_store_sk              int,
+    sr_reason_sk             int,
+    sr_ticket_number         int,
+    sr_return_quantity       int,
+    sr_return_amt            decimal(7,2),
+    sr_return_tax            decimal(7,2),
+    sr_return_amt_inc_tax    decimal(7,2),
+    sr_fee                   decimal(7,2),
+    sr_return_ship_cost      decimal(7,2),
+    sr_refunded_cash         decimal(7,2),
+    sr_reversed_charge       decimal(7,2),
+    sr_store_credit          decimal(7,2),
+    sr_net_loss              decimal(7,2)
+)
+row format delimited fields terminated by '\t'
+STORED AS ORC tblproperties ("orc.compress"="ZLIB")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@store_returns
+PREHOOK: query: alter table store_returns update statistics set ('numRows'='57591150')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@store_returns
+PREHOOK: Output: default@store_returns
+POSTHOOK: query: alter table store_returns update statistics set ('numRows'='57591150')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@store_returns
+POSTHOOK: Output: default@store_returns
+PREHOOK: query: drop table if exists reason
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists reason
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create external table reason
+(
+    r_reason_sk         int,
+    r_reason_id         string,
+    r_reason_desc       string
+)
+row format delimited fields terminated by '\t'
+STORED AS ORC tblproperties ("orc.compress"="ZLIB")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@reason
+POSTHOOK: query: create external table reason
+(
+    r_reason_sk         int,
+    r_reason_id         string,
+    r_reason_desc       string
+)
+row format delimited fields terminated by '\t'
+STORED AS ORC tblproperties ("orc.compress"="ZLIB")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@reason
+PREHOOK: query: alter table reason update statistics set ('numRows'='72')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@reason
+PREHOOK: Output: default@reason
+POSTHOOK: query: alter table reason update statistics set ('numRows'='72')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@reason
+POSTHOOK: Output: default@reason
+PREHOOK: query: alter table store_returns add constraint tpcds_pk_sr primary key (sr_item_sk, sr_ticket_number) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@store_returns
+PREHOOK: Output: default@store_returns
+POSTHOOK: query: alter table store_returns add constraint tpcds_pk_sr primary key (sr_item_sk, sr_ticket_number) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@store_returns
+POSTHOOK: Output: default@store_returns
+PREHOOK: query: explain
+select  ss_customer_sk
+            ,sum(act_sales) sumsales
+      from (select ss_item_sk
+                  ,ss_ticket_number
+                  ,ss_customer_sk
+                  ,case when sr_return_quantity is not null then (ss_quantity-sr_return_quantity)*ss_sales_price
+                                                            else (ss_quantity*ss_sales_price) end act_sales
+            from store_sales left outer join store_returns on (sr_item_sk = ss_item_sk
+                                                               and sr_ticket_number = ss_ticket_number)
+                ,reason
+            where sr_reason_sk = r_reason_sk
+              and r_reason_desc = 'Did not like the warranty') t
+      group by ss_customer_sk
+      order by sumsales, ss_customer_sk
+limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@reason
+PREHOOK: Input: default@store_returns
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select  ss_customer_sk
+            ,sum(act_sales) sumsales
+      from (select ss_item_sk
+                  ,ss_ticket_number
+                  ,ss_customer_sk
+                  ,case when sr_return_quantity is not null then (ss_quantity-sr_return_quantity)*ss_sales_price
+                                                            else (ss_quantity*ss_sales_price) end act_sales
+            from store_sales left outer join store_returns on (sr_item_sk = ss_item_sk
+                                                               and sr_ticket_number = ss_ticket_number)
+                ,reason
+            where sr_reason_sk = r_reason_sk
+              and r_reason_desc = 'Did not like the warranty') t
+      group by ss_customer_sk
+      order by sumsales, ss_customer_sk
+limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@reason
+POSTHOOK: Input: default@store_returns
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 6 (SIMPLE_EDGE)
+        Reducer 3 <- Map 7 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+        Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: store_returns
+                  filterExpr: sr_reason_sk is not null (type: boolean)
+                  Statistics: Num rows: 57591150 Data size: 875385504 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: sr_reason_sk is not null (type: boolean)
+                    Statistics: Num rows: 54711593 Data size: 831616236 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: sr_item_sk (type: int), sr_reason_sk (type: int), sr_ticket_number (type: int), sr_return_quantity (type: int)
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 54711593 Data size: 831616236 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: int)
+                        Statistics: Num rows: 54711593 Data size: 831616236 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int), _col2 (type: int), _col3 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: reason
+                  filterExpr: (r_reason_sk is not null and (r_reason_desc = 'Did not like the warranty')) (type: boolean)
+                  Statistics: Num rows: 72 Data size: 13160 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (r_reason_sk is not null and (r_reason_desc = 'Did not like the warranty')) (type: boolean)
+                    Statistics: Num rows: 5 Data size: 913 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: r_reason_sk (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 5 Data size: 913 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 5 Data size: 913 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales
+                  filterExpr: (ss_item_sk is not null and ss_ticket_number is not null) (type: boolean)
+                  Statistics: Num rows: 575995635 Data size: 70041069312 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (ss_item_sk is not null and ss_ticket_number is not null) (type: boolean)
+                    Statistics: Num rows: 518396071 Data size: 63036962320 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: ss_item_sk (type: int), ss_customer_sk (type: int), ss_ticket_number (type: int), ss_quantity (type: int), ss_sales_price (type: decimal(7,2))
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      Statistics: Num rows: 518396071 Data size: 63036962320 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int), _col2 (type: int)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: int), _col2 (type: int)
+                        Statistics: Num rows: 518396071 Data size: 63036962320 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: int), _col3 (type: int), _col4 (type: decimal(7,2))
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col1 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0, _col2, _col3
+                Statistics: Num rows: 60182753 Data size: 914777879 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int), _col2 (type: int)
+                  null sort order: zz
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: int), _col2 (type: int)
+                  Statistics: Num rows: 60182753 Data size: 914777879 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col3 (type: int)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: int), _col2 (type: int)
+                  1 _col0 (type: int), _col2 (type: int)
+                outputColumnNames: _col3, _col6, _col8, _col9
+                Statistics: Num rows: 570235690 Data size: 69340660054 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col6 (type: int), if(_col3 is not null, (CAST( (_col8 - _col3) AS decimal(10,0)) * _col9), (CAST( _col8 AS decimal(10,0)) * _col9)) (type: decimal(18,2))
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 570235690 Data size: 69340660054 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: sum(_col1)
+                    keys: _col0 (type: int)
+                    minReductionHashAggr: 0.99
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 570235690 Data size: 69340660054 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 570235690 Data size: 69340660054 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col1 (type: decimal(28,2))
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 285117845 Data size: 34670330027 Basic stats: COMPLETE Column stats: NONE
+                Top N Key Operator
+                  sort order: ++
+                  keys: _col1 (type: decimal(28,2)), _col0 (type: int)
+                  null sort order: zz
+                  Statistics: Num rows: 285117845 Data size: 34670330027 Basic stats: COMPLETE Column stats: NONE
+                  top n: 100
+                  Reduce Output Operator
+                    key expressions: _col1 (type: decimal(28,2)), _col0 (type: int)
+                    null sort order: zz
+                    sort order: ++
+                    Statistics: Num rows: 285117845 Data size: 34670330027 Basic stats: COMPLETE Column stats: NONE
+        Reducer 5 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey1 (type: int), KEY.reducesinkkey0 (type: decimal(28,2))
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 285117845 Data size: 34670330027 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 100
+                  Statistics: Num rows: 100 Data size: 12100 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 100 Data size: 12100 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 100
+      Processor Tree:
+        ListSink
+

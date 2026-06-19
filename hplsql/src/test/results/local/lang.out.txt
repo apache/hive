@@ -1,0 +1,24 @@
+1
+1
+0
+-1
+1.0
+1.0
+-1.0
+Ln:19 DECLARE abc int
+Ln:20 DECLARE abc_abc int
+Ln:21 DECLARE "abc" int
+Ln:22 DECLARE [abc] int
+Ln:23 DECLARE `abc` int
+Ln:24 DECLARE :new_abc int
+Ln:25 DECLARE @abc int
+Ln:26 DECLARE _abc int
+Ln:27 DECLARE #abc int
+Ln:28 DECLARE ##abc int
+Ln:29 DECLARE $abc int
+Ln:30 DECLARE abc_9 int
+2
+2
+0
+-2
+0

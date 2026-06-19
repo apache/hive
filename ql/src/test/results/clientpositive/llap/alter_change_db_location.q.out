@@ -1,0 +1,40 @@
+#### A masked pattern was here ####
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:newDB
+#### A masked pattern was here ####
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:newDB
+#### A masked pattern was here ####
+PREHOOK: query: describe database extended newDB
+PREHOOK: type: DESCDATABASE
+PREHOOK: Input: database:newdb
+POSTHOOK: query: describe database extended newDB
+POSTHOOK: type: DESCDATABASE
+POSTHOOK: Input: database:newdb
+#### A masked pattern was here ####
+PREHOOK: query: use newDB
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:newdb
+POSTHOOK: query: use newDB
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:newdb
+PREHOOK: query: create table tab_n13 (name string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:newdb
+PREHOOK: Output: newDB@tab_n13
+POSTHOOK: query: create table tab_n13 (name string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:newdb
+POSTHOOK: Output: newDB@tab_n13
+PREHOOK: query: alter table tab_n13 rename to newName
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: newdb@tab_n13
+PREHOOK: Output: database:newdb
+PREHOOK: Output: newDB@newName
+PREHOOK: Output: newdb@tab_n13
+POSTHOOK: query: alter table tab_n13 rename to newName
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: newdb@tab_n13
+POSTHOOK: Output: database:newdb
+POSTHOOK: Output: newDB@newName
+POSTHOOK: Output: newdb@tab_n13

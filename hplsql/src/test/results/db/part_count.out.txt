@@ -1,0 +1,15 @@
+Ln:1 IF
+Ln:1 Query: SHOW PARTITIONS partition_date_1
+Ln:1 IF TRUE executed
+Ln:2 PRINT
+success
+Ln:7 IF
+Ln:7 Query: SHOW PARTITIONS partition_date_1 PARTITION (region='1')
+Ln:7 IF TRUE executed
+Ln:8 PRINT
+success
+Ln:13 IF
+Ln:13 Query: SHOW PARTITIONS partition_date_1a
+Ln:13 IF TRUE executed
+Ln:14 PRINT
+success

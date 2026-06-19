@@ -1,0 +1,555 @@
+PREHOOK: query: drop table if exists ppd_char_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists ppd_char_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table ppd_char_test (id int, a char(10), b char(10), c varchar(10), d varchar(10)) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ppd_char_test
+POSTHOOK: query: create table ppd_char_test (id int, a char(10), b char(10), c varchar(10), d varchar(10)) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ppd_char_test
+PREHOOK: query: insert into ppd_char_test values(1, 'apple', 'orange', 'lemon', 'apple'),
+(2, 'almond', 'cherry',  'banana', 'apple'),
+(3, 'banana', 'orange', 'banana  ', 'pear'),
+(4, 'cherry', 'orange', 'banana', 'lemon'),
+(5, 'lemon', 'orange', 'banana', 'apple'),
+(6, 'orange', 'orange', 'banana', 'apple'),
+(7, 'pear', 'orange', 'banana', 'apple'),
+(8, 'pear', 'orange', 'lemon', 'apple  '),
+(9, 'pear', 'orange', 'banana', 'pear'),
+(10, 'pear', 'cherry', 'banana', 'apple'),
+(11, 'pineapple', 'cherry', 'lemon', 'apple'),
+(12, 'pineapple', 'cherry', '  lemon  ', 'apple'),
+(13, 'pineapple', 'cherry', 'lemon    ', 'apple'),
+(14, 'pineapple', 'cherry', '   lemon   ', 'apple')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ppd_char_test
+POSTHOOK: query: insert into ppd_char_test values(1, 'apple', 'orange', 'lemon', 'apple'),
+(2, 'almond', 'cherry',  'banana', 'apple'),
+(3, 'banana', 'orange', 'banana  ', 'pear'),
+(4, 'cherry', 'orange', 'banana', 'lemon'),
+(5, 'lemon', 'orange', 'banana', 'apple'),
+(6, 'orange', 'orange', 'banana', 'apple'),
+(7, 'pear', 'orange', 'banana', 'apple'),
+(8, 'pear', 'orange', 'lemon', 'apple  '),
+(9, 'pear', 'orange', 'banana', 'pear'),
+(10, 'pear', 'cherry', 'banana', 'apple'),
+(11, 'pineapple', 'cherry', 'lemon', 'apple'),
+(12, 'pineapple', 'cherry', '  lemon  ', 'apple'),
+(13, 'pineapple', 'cherry', 'lemon    ', 'apple'),
+(14, 'pineapple', 'cherry', '   lemon   ', 'apple')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ppd_char_test
+POSTHOOK: Lineage: ppd_char_test.a SCRIPT []
+POSTHOOK: Lineage: ppd_char_test.b SCRIPT []
+POSTHOOK: Lineage: ppd_char_test.c SCRIPT []
+POSTHOOK: Lineage: ppd_char_test.d SCRIPT []
+POSTHOOK: Lineage: ppd_char_test.id SCRIPT []
+PREHOOK: query: select * from ppd_char_test where ((a='pear' or a<='cherry') and (b='orange')) and (c='banana' or d<'cherry') order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ppd_char_test where ((a='pear' or a<='cherry') and (b='orange')) and (c='banana' or d<'cherry') order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+1	apple     	orange    	lemon	apple
+4	cherry    	orange    	banana	lemon
+7	pear      	orange    	banana	apple
+8	pear      	orange    	lemon	apple  
+9	pear      	orange    	banana	pear
+PREHOOK: query: select * from ppd_char_test where ((a='pear' or a<='cherry') and (b='orange')) and c='banana  ' order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ppd_char_test where ((a='pear' or a<='cherry') and (b='orange')) and c='banana  ' order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+3	banana    	orange    	banana  	pear
+PREHOOK: query: select id, a from ppd_char_test where a='apple'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, a from ppd_char_test where a='apple'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+1	apple     
+PREHOOK: query: select id, a from ppd_char_test where a!='apple'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, a from ppd_char_test where a!='apple'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+2	almond    
+3	banana    
+4	cherry    
+5	lemon     
+6	orange    
+7	pear      
+8	pear      
+9	pear      
+10	pear      
+11	pineapple 
+12	pineapple 
+13	pineapple 
+14	pineapple 
+PREHOOK: query: select id, a from ppd_char_test where a<'cherry'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, a from ppd_char_test where a<'cherry'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+1	apple     
+2	almond    
+3	banana    
+PREHOOK: query: select id, a from ppd_char_test where a<='cherry'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, a from ppd_char_test where a<='cherry'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+1	apple     
+2	almond    
+3	banana    
+4	cherry    
+PREHOOK: query: select id, a from ppd_char_test where a>'cherry'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, a from ppd_char_test where a>'cherry'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+5	lemon     
+6	orange    
+7	pear      
+8	pear      
+9	pear      
+10	pear      
+11	pineapple 
+12	pineapple 
+13	pineapple 
+14	pineapple 
+PREHOOK: query: select id, a from ppd_char_test where a>='cherry'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, a from ppd_char_test where a>='cherry'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+4	cherry    
+5	lemon     
+6	orange    
+7	pear      
+8	pear      
+9	pear      
+10	pear      
+11	pineapple 
+12	pineapple 
+13	pineapple 
+14	pineapple 
+PREHOOK: query: select id, c from ppd_char_test where a='pineapple' and c='lemon'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, c from ppd_char_test where a='pineapple' and c='lemon'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+11	lemon
+PREHOOK: query: select id, c from ppd_char_test where a='pineapple' and c!='lemon'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, c from ppd_char_test where a='pineapple' and c!='lemon'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+12	  lemon  
+13	lemon    
+14	   lemon  
+PREHOOK: query: select id, c from ppd_char_test where a='pineapple' and c!='  lemon  '
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, c from ppd_char_test where a='pineapple' and c!='  lemon  '
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+11	lemon
+13	lemon    
+14	   lemon  
+PREHOOK: query: select id, c from ppd_char_test where a='pineapple' and c='  lemon'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, c from ppd_char_test where a='pineapple' and c='  lemon'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+PREHOOK: query: select id, c from ppd_char_test where a='pineapple' and c='lemon  '
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, c from ppd_char_test where a='pineapple' and c='lemon  '
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+PREHOOK: query: select id, c from ppd_char_test where a='pineapple' and c='lemon   '
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, c from ppd_char_test where a='pineapple' and c='lemon   '
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+PREHOOK: query: select id, c from ppd_char_test where a='pineapple' and c='lemon    '
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, c from ppd_char_test where a='pineapple' and c='lemon    '
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+13	lemon    
+PREHOOK: query: select id, c from ppd_char_test where a='pineapple' and c='   lemon  '
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, c from ppd_char_test where a='pineapple' and c='   lemon  '
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+14	   lemon  
+PREHOOK: query: select id, c from ppd_char_test where a='pineapple' and c<'lemon'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, c from ppd_char_test where a='pineapple' and c<'lemon'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+12	  lemon  
+14	   lemon  
+PREHOOK: query: select id, c from ppd_char_test where a='pineapple' and c<='lemon'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, c from ppd_char_test where a='pineapple' and c<='lemon'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+11	lemon
+12	  lemon  
+14	   lemon  
+PREHOOK: query: select id, c from ppd_char_test where a='pineapple' and c>'lemon'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, c from ppd_char_test where a='pineapple' and c>'lemon'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+13	lemon    
+PREHOOK: query: select id, c from ppd_char_test where a='pineapple' and c>='lemon'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, c from ppd_char_test where a='pineapple' and c>='lemon'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+11	lemon
+13	lemon    
+PREHOOK: query: select id, c from ppd_char_test where a='pineapple' and c<='lemon    '
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, c from ppd_char_test where a='pineapple' and c<='lemon    '
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+11	lemon
+12	  lemon  
+13	lemon    
+14	   lemon  
+PREHOOK: query: select id, c from ppd_char_test where a='pineapple' and c>'lemon '
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, c from ppd_char_test where a='pineapple' and c>'lemon '
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+13	lemon    
+PREHOOK: query: select * from ppd_char_test where ((a='pear' or a<='cherry') and (b='orange')) and (c='banana' or d<'cherry') order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ppd_char_test where ((a='pear' or a<='cherry') and (b='orange')) and (c='banana' or d<'cherry') order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+1	apple     	orange    	lemon	apple
+4	cherry    	orange    	banana	lemon
+7	pear      	orange    	banana	apple
+8	pear      	orange    	lemon	apple  
+9	pear      	orange    	banana	pear
+PREHOOK: query: select * from ppd_char_test where ((a='pear' or a<='cherry') and (b='orange')) and c='banana  ' order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ppd_char_test where ((a='pear' or a<='cherry') and (b='orange')) and c='banana  ' order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+3	banana    	orange    	banana  	pear
+PREHOOK: query: select id, a from ppd_char_test where a='apple'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, a from ppd_char_test where a='apple'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+1	apple     
+PREHOOK: query: select id, a from ppd_char_test where a!='apple'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, a from ppd_char_test where a!='apple'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+2	almond    
+3	banana    
+4	cherry    
+5	lemon     
+6	orange    
+7	pear      
+8	pear      
+9	pear      
+10	pear      
+11	pineapple 
+12	pineapple 
+13	pineapple 
+14	pineapple 
+PREHOOK: query: select id, a from ppd_char_test where a<'cherry'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, a from ppd_char_test where a<'cherry'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+1	apple     
+2	almond    
+3	banana    
+PREHOOK: query: select id, a from ppd_char_test where a<='cherry'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, a from ppd_char_test where a<='cherry'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+1	apple     
+2	almond    
+3	banana    
+4	cherry    
+PREHOOK: query: select id, a from ppd_char_test where a>'cherry'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, a from ppd_char_test where a>'cherry'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+5	lemon     
+6	orange    
+7	pear      
+8	pear      
+9	pear      
+10	pear      
+11	pineapple 
+12	pineapple 
+13	pineapple 
+14	pineapple 
+PREHOOK: query: select id, a from ppd_char_test where a>='cherry'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, a from ppd_char_test where a>='cherry'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+4	cherry    
+5	lemon     
+6	orange    
+7	pear      
+8	pear      
+9	pear      
+10	pear      
+11	pineapple 
+12	pineapple 
+13	pineapple 
+14	pineapple 
+PREHOOK: query: select id, c from ppd_char_test where a='pineapple' and c='lemon'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, c from ppd_char_test where a='pineapple' and c='lemon'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+11	lemon
+PREHOOK: query: select id, c from ppd_char_test where a='pineapple' and c!='lemon'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, c from ppd_char_test where a='pineapple' and c!='lemon'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+12	  lemon  
+13	lemon    
+14	   lemon  
+PREHOOK: query: select id, c from ppd_char_test where a='pineapple' and c!='  lemon  '
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, c from ppd_char_test where a='pineapple' and c!='  lemon  '
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+11	lemon
+13	lemon    
+14	   lemon  
+PREHOOK: query: select id, c from ppd_char_test where a='pineapple' and c='  lemon'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, c from ppd_char_test where a='pineapple' and c='  lemon'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+PREHOOK: query: select id, c from ppd_char_test where a='pineapple' and c='lemon  '
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, c from ppd_char_test where a='pineapple' and c='lemon  '
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+PREHOOK: query: select id, c from ppd_char_test where a='pineapple' and c='lemon   '
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, c from ppd_char_test where a='pineapple' and c='lemon   '
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+PREHOOK: query: select id, c from ppd_char_test where a='pineapple' and c='lemon    '
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, c from ppd_char_test where a='pineapple' and c='lemon    '
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+13	lemon    
+PREHOOK: query: select id, c from ppd_char_test where a='pineapple' and c='   lemon  '
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, c from ppd_char_test where a='pineapple' and c='   lemon  '
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+14	   lemon  
+PREHOOK: query: select id, c from ppd_char_test where a='pineapple' and c<'lemon'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, c from ppd_char_test where a='pineapple' and c<'lemon'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+12	  lemon  
+14	   lemon  
+PREHOOK: query: select id, c from ppd_char_test where a='pineapple' and c<='lemon'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, c from ppd_char_test where a='pineapple' and c<='lemon'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+11	lemon
+12	  lemon  
+14	   lemon  
+PREHOOK: query: select id, c from ppd_char_test where a='pineapple' and c>'lemon'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, c from ppd_char_test where a='pineapple' and c>'lemon'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+13	lemon    
+PREHOOK: query: select id, c from ppd_char_test where a='pineapple' and c>='lemon'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, c from ppd_char_test where a='pineapple' and c>='lemon'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+11	lemon
+13	lemon    
+PREHOOK: query: select id, c from ppd_char_test where a='pineapple' and c<='lemon    '
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, c from ppd_char_test where a='pineapple' and c<='lemon    '
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+11	lemon
+12	  lemon  
+13	lemon    
+14	   lemon  
+PREHOOK: query: select id, c from ppd_char_test where a='pineapple' and c>'lemon '
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+POSTHOOK: query: select id, c from ppd_char_test where a='pineapple' and c>'lemon '
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_char_test
+#### A masked pattern was here ####
+13	lemon    
+PREHOOK: query: drop table ppd_char_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ppd_char_test
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ppd_char_test
+POSTHOOK: query: drop table ppd_char_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ppd_char_test
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ppd_char_test

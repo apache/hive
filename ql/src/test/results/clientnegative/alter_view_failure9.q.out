@@ -1,0 +1,21 @@
+PREHOOK: query: DROP VIEW xxx4
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW xxx4
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: CREATE VIEW xxx4 
+AS 
+SELECT * FROM src
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@xxx4
+POSTHOOK: query: CREATE VIEW xxx4 
+AS 
+SELECT * FROM src
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@xxx4
+POSTHOOK: Lineage: xxx4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: xxx4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+FAILED: SemanticException [Error 10131]: To alter a view you need to use the ALTER VIEW command.

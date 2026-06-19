@@ -1,0 +1,85 @@
+PREHOOK: query: CREATE TABLE test_parquet_struct_nulls (
+    id INT,
+    st_prim STRUCT<x:INT, y:INT>
+) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_struct_nulls
+POSTHOOK: query: CREATE TABLE test_parquet_struct_nulls (
+    id INT,
+    st_prim STRUCT<x:INT, y:INT>
+) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_struct_nulls
+PREHOOK: query: INSERT INTO test_parquet_struct_nulls VALUES
+    (1, named_struct('x', CAST(NULL AS INT), 'y', CAST(NULL AS INT))),
+    (2, if(1=0, named_struct('x', 1, 'y', 1), null)),
+    (3, named_struct('x', 3, 'y', CAST(NULL AS INT))),
+    (4, named_struct('x', 4, 'y', 4))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_parquet_struct_nulls
+POSTHOOK: query: INSERT INTO test_parquet_struct_nulls VALUES
+    (1, named_struct('x', CAST(NULL AS INT), 'y', CAST(NULL AS INT))),
+    (2, if(1=0, named_struct('x', 1, 'y', 1), null)),
+    (3, named_struct('x', 3, 'y', CAST(NULL AS INT))),
+    (4, named_struct('x', 4, 'y', 4))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_parquet_struct_nulls
+POSTHOOK: Lineage: test_parquet_struct_nulls.id SCRIPT []
+POSTHOOK: Lineage: test_parquet_struct_nulls.st_prim SCRIPT []
+PREHOOK: query: SELECT * FROM test_parquet_struct_nulls
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_struct_nulls
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM test_parquet_struct_nulls
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_struct_nulls
+#### A masked pattern was here ####
+1	{"x":null,"y":null}
+2	NULL
+3	{"x":3,"y":null}
+4	{"x":4,"y":4}
+PREHOOK: query: SELECT id FROM test_parquet_struct_nulls WHERE st_prim IS NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_struct_nulls
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id FROM test_parquet_struct_nulls WHERE st_prim IS NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_struct_nulls
+#### A masked pattern was here ####
+2
+PREHOOK: query: SELECT id FROM test_parquet_struct_nulls WHERE st_prim IS NOT NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_struct_nulls
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id FROM test_parquet_struct_nulls WHERE st_prim IS NOT NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_struct_nulls
+#### A masked pattern was here ####
+1
+3
+4
+PREHOOK: query: SELECT id FROM test_parquet_struct_nulls WHERE st_prim IS NOT NULL AND st_prim.x IS NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_struct_nulls
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id FROM test_parquet_struct_nulls WHERE st_prim IS NOT NULL AND st_prim.x IS NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_struct_nulls
+#### A masked pattern was here ####
+1
+PREHOOK: query: SELECT * FROM test_parquet_struct_nulls
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_struct_nulls
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM test_parquet_struct_nulls
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_struct_nulls
+#### A masked pattern was here ####
+1	{"x":null,"y":null}
+2	NULL
+3	{"x":3,"y":null}
+4	{"x":4,"y":4}

@@ -1,0 +1,23 @@
+PREHOOK: query: CREATE TABLE srcpart_archived LIKE srcpart
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@srcpart_archived
+POSTHOOK: query: CREATE TABLE srcpart_archived LIKE srcpart
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@srcpart_archived
+PREHOOK: query: INSERT OVERWRITE TABLE srcpart_archived PARTITION (ds='2008-04-08', hr='12')
+SELECT key, value FROM srcpart WHERE ds='2008-04-08' AND hr='12'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@srcpart_archived@ds=2008-04-08/hr=12
+POSTHOOK: query: INSERT OVERWRITE TABLE srcpart_archived PARTITION (ds='2008-04-08', hr='12')
+SELECT key, value FROM srcpart WHERE ds='2008-04-08' AND hr='12'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@srcpart_archived@ds=2008-04-08/hr=12
+POSTHOOK: Lineage: srcpart_archived PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_archived PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+FAILED: SemanticException [Error 10125]: Partition columns in partition specification are not the same as that defined in the table schema. The names and orders have to be exactly the same. Partition columns in the table schema are: (ds, hr), while the partitions specified in the query are: (hr).

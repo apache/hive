@@ -1,0 +1,9 @@
+PREHOOK: query: desc src
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src
+POSTHOOK: query: desc src
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src
+key                 	string              	default             
+value               	string              	default             
+Query returned non-zero code: 1, cause: 'SET hive.map.aggr.hash.min.reduction=false' FAILED because hive.map.aggr.hash.min.reduction expects FLOAT type value.

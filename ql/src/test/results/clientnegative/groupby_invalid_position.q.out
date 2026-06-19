@@ -1,0 +1,3 @@
+FAILED: SemanticException [Error 10220]: Invalid position alias in Group By
+ Position alias: 3 does not exist
+The Select List is indexed from 1 to 2

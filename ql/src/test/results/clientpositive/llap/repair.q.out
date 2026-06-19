@@ -1,0 +1,51 @@
+PREHOOK: query: DROP TABLE IF EXISTS repairtable_n4
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS repairtable_n4
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE repairtable_n4(col STRING) PARTITIONED BY (p1 STRING, p2 STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repairtable_n4
+POSTHOOK: query: CREATE TABLE repairtable_n4(col STRING) PARTITIONED BY (p1 STRING, p2 STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repairtable_n4
+PREHOOK: query: MSCK TABLE repairtable_n4
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_n4
+POSTHOOK: query: MSCK TABLE repairtable_n4
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_n4
+PREHOOK: query: MSCK TABLE default.repairtable_n4
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_n4
+POSTHOOK: query: MSCK TABLE default.repairtable_n4
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_n4
+Partitions not in metastore:	repairtable_n4:p1=a/p2=a	repairtable_n4:p1=b/p2=a
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable_n4
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_n4
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_n4
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_n4
+Partitions not in metastore:	repairtable_n4:p1=a/p2=a	repairtable_n4:p1=b/p2=a
+#### A masked pattern was here ####
+PREHOOK: query: MSCK TABLE repairtable_n4
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_n4
+POSTHOOK: query: MSCK TABLE repairtable_n4
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_n4
+PREHOOK: query: DROP TABLE default.repairtable_n4
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@repairtable_n4
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repairtable_n4
+POSTHOOK: query: DROP TABLE default.repairtable_n4
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@repairtable_n4
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repairtable_n4

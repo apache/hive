@@ -1,0 +1,135 @@
+PREHOOK: query: create table translated_table1 (i int) tblproperties('transactional'='false')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@translated_table1
+POSTHOOK: query: create table translated_table1 (i int) tblproperties('transactional'='false')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@translated_table1
+PREHOOK: query: desc formatted translated_table1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@translated_table1
+POSTHOOK: query: desc formatted translated_table1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@translated_table1
+# col_name            	data_type           	comment             
+i                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"i\":\"true\"}}
+	EXTERNAL            	TRUE                
+	TRANSLATED_TO_EXTERNAL	TRUE                
+	bucketing_version   	2                   
+	external.table.purge	TRUE                
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: create table translated_table2 (i int) tblproperties('transactional'='false', 'transactional_properties'='default')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@translated_table2
+POSTHOOK: query: create table translated_table2 (i int) tblproperties('transactional'='false', 'transactional_properties'='default')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@translated_table2
+PREHOOK: query: desc formatted translated_table2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@translated_table2
+POSTHOOK: query: desc formatted translated_table2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@translated_table2
+# col_name            	data_type           	comment             
+i                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"i\":\"true\"}}
+	EXTERNAL            	TRUE                
+	TRANSLATED_TO_EXTERNAL	TRUE                
+	bucketing_version   	2                   
+	external.table.purge	TRUE                
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: create table translated_table3 (i int) tblproperties('transactional'='false', 'transactional_properties'='insert_only')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@translated_table3
+POSTHOOK: query: create table translated_table3 (i int) tblproperties('transactional'='false', 'transactional_properties'='insert_only')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@translated_table3
+PREHOOK: query: desc formatted translated_table3
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@translated_table3
+POSTHOOK: query: desc formatted translated_table3
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@translated_table3
+# col_name            	data_type           	comment             
+i                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"i\":\"true\"}}
+	EXTERNAL            	TRUE                
+	TRANSLATED_TO_EXTERNAL	TRUE                
+	bucketing_version   	2                   
+	external.table.purge	TRUE                
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

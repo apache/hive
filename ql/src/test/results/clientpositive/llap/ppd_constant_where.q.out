@@ -1,0 +1,27 @@
+PREHOOK: query: EXPLAIN SELECT COUNT(*) FROM srcpart WHERE ds = '2008-04-08' and 'a' = 'a'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT COUNT(*) FROM srcpart WHERE ds = '2008-04-08' and 'a' = 'a'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT COUNT(*) FROM srcpart WHERE ds = '2008-04-08' and 'a' = 'a'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM srcpart WHERE ds = '2008-04-08' and 'a' = 'a'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+#### A masked pattern was here ####
+1000

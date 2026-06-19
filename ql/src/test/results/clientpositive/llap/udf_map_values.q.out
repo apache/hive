@@ -1,0 +1,36 @@
+PREHOOK: query: use default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: use default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: DESCRIBE FUNCTION map_values
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION map_values
+POSTHOOK: type: DESCFUNCTION
+map_values(map) - Returns an unordered array containing the values of the input map.
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED map_values
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED map_values
+POSTHOOK: type: DESCFUNCTION
+map_values(map) - Returns an unordered array containing the values of the input map.
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFMapValues
+Function type:BUILTIN
+PREHOOK: query: SELECT map_values(map(1, "a", 2, "b", 3, "c")) FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT map_values(map(1, "a", 2, "b", 3, "c")) FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+["a","b","c"]
+PREHOOK: query: SELECT map_values(map("a", 1, "b", 2, "c", 3)) FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT map_values(map("a", 1, "b", 2, "c", 3)) FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+[1,2,3]

@@ -1,0 +1,1309 @@
+PREHOOK: query: drop table if exists alter_table_src
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists alter_table_src
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists alter_table_cascade
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists alter_table_cascade
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table alter_table_src(c1 string, c2 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter_table_src
+POSTHOOK: query: create table alter_table_src(c1 string, c2 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter_table_src
+PREHOOK: query: load data local inpath '../../data/files/dec.txt' overwrite into table alter_table_src
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@alter_table_src
+POSTHOOK: query: load data local inpath '../../data/files/dec.txt' overwrite into table alter_table_src
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@alter_table_src
+PREHOOK: query: create table alter_table_cascade (c1 string) partitioned by (p1 string, p2 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter_table_cascade
+POSTHOOK: query: create table alter_table_cascade (c1 string) partitioned by (p1 string, p2 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter_table_cascade
+PREHOOK: query: insert overwrite table alter_table_cascade partition (p1, p2)
+  select c1, 'abc', '123' from alter_table_src
+  union all
+  select c1, cast(null as string), '123' from alter_table_src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_table_src
+PREHOOK: Output: default@alter_table_cascade
+POSTHOOK: query: insert overwrite table alter_table_cascade partition (p1, p2)
+  select c1, 'abc', '123' from alter_table_src
+  union all
+  select c1, cast(null as string), '123' from alter_table_src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_table_src
+POSTHOOK: Output: default@alter_table_cascade
+POSTHOOK: Output: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+POSTHOOK: Output: default@alter_table_cascade@p1=abc/p2=123
+POSTHOOK: Lineage: alter_table_cascade PARTITION(p1=__HIVE_DEFAULT_PARTITION__,p2=123).c1 EXPRESSION [(alter_table_src)alter_table_src.FieldSchema(name:c1, type:string, comment:null), ]
+POSTHOOK: Lineage: alter_table_cascade PARTITION(p1=abc,p2=123).c1 EXPRESSION [(alter_table_src)alter_table_src.FieldSchema(name:c1, type:string, comment:null), ]
+PREHOOK: query: show partitions alter_table_cascade
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@alter_table_cascade
+POSTHOOK: query: show partitions alter_table_cascade
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@alter_table_cascade
+p1=__HIVE_DEFAULT_PARTITION__/p2=123
+p1=abc/p2=123
+PREHOOK: query: describe alter_table_cascade
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_cascade
+POSTHOOK: query: describe alter_table_cascade
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_cascade
+c1                  	string              	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_cascade partition (p1='abc', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_cascade
+POSTHOOK: query: describe alter_table_cascade partition (p1='abc', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_cascade
+c1                  	string              	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_cascade partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_cascade
+POSTHOOK: query: describe alter_table_cascade partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_cascade
+c1                  	string              	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: select * from alter_table_cascade where p1='abc'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_table_cascade
+PREHOOK: Input: default@alter_table_cascade@p1=abc/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_table_cascade where p1='abc'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_table_cascade
+POSTHOOK: Input: default@alter_table_cascade@p1=abc/p2=123
+#### A masked pattern was here ####
+Beck	abc	123
+Beck	abc	123
+Beck	abc	123
+Cluck	abc	123
+Mary	abc	123
+Mary	abc	123
+Snow	abc	123
+Tom	abc	123
+Tom	abc	123
+Tom	abc	123
+PREHOOK: query: select * from alter_table_cascade where p1='__HIVE_DEFAULT_PARTITION__'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_table_cascade
+PREHOOK: Input: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_table_cascade where p1='__HIVE_DEFAULT_PARTITION__'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_table_cascade
+POSTHOOK: Input: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+Beck	__HIVE_DEFAULT_PARTITION__	123
+Beck	__HIVE_DEFAULT_PARTITION__	123
+Beck	__HIVE_DEFAULT_PARTITION__	123
+Cluck	__HIVE_DEFAULT_PARTITION__	123
+Mary	__HIVE_DEFAULT_PARTITION__	123
+Mary	__HIVE_DEFAULT_PARTITION__	123
+Snow	__HIVE_DEFAULT_PARTITION__	123
+Tom	__HIVE_DEFAULT_PARTITION__	123
+Tom	__HIVE_DEFAULT_PARTITION__	123
+Tom	__HIVE_DEFAULT_PARTITION__	123
+PREHOOK: query: alter table alter_table_cascade replace columns (c1 string, c2 string) cascade
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@alter_table_cascade
+PREHOOK: Output: default@alter_table_cascade
+PREHOOK: Output: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+PREHOOK: Output: default@alter_table_cascade@p1=abc/p2=123
+POSTHOOK: query: alter table alter_table_cascade replace columns (c1 string, c2 string) cascade
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@alter_table_cascade
+POSTHOOK: Output: default@alter_table_cascade
+POSTHOOK: Output: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+POSTHOOK: Output: default@alter_table_cascade@p1=abc/p2=123
+PREHOOK: query: load data local inpath '../../data/files/dec.txt' overwrite into table alter_table_cascade partition (p1='__HIVE_DEFAULT_PARTITION__',p2='123')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+POSTHOOK: query: load data local inpath '../../data/files/dec.txt' overwrite into table alter_table_cascade partition (p1='__HIVE_DEFAULT_PARTITION__',p2='123')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+PREHOOK: query: load data local inpath '../../data/files/dec.txt' overwrite into table alter_table_cascade partition (p1='xyz', p2='123')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@alter_table_cascade
+POSTHOOK: query: load data local inpath '../../data/files/dec.txt' overwrite into table alter_table_cascade partition (p1='xyz', p2='123')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@alter_table_cascade
+POSTHOOK: Output: default@alter_table_cascade@p1=xyz/p2=123
+PREHOOK: query: describe alter_table_cascade
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_cascade
+POSTHOOK: query: describe alter_table_cascade
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_cascade
+c1                  	string              	                    
+c2                  	string              	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_cascade partition (p1='xyz', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_cascade
+POSTHOOK: query: describe alter_table_cascade partition (p1='xyz', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_cascade
+c1                  	string              	                    
+c2                  	string              	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_cascade partition (p1='abc', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_cascade
+POSTHOOK: query: describe alter_table_cascade partition (p1='abc', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_cascade
+c1                  	string              	                    
+c2                  	string              	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_cascade partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_cascade
+POSTHOOK: query: describe alter_table_cascade partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_cascade
+c1                  	string              	                    
+c2                  	string              	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: select * from alter_table_cascade where p1='xyz'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_table_cascade
+PREHOOK: Input: default@alter_table_cascade@p1=xyz/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_table_cascade where p1='xyz'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_table_cascade
+POSTHOOK: Input: default@alter_table_cascade@p1=xyz/p2=123
+#### A masked pattern was here ####
+Beck	0.0	xyz	123
+Beck	77.341	xyz	123
+Beck	79.9	xyz	123
+Cluck	5.96	xyz	123
+Mary	33.33	xyz	123
+Mary	4.329	xyz	123
+Snow	55.71	xyz	123
+Tom	-12.25	xyz	123
+Tom	19.00	xyz	123
+Tom	234.79	xyz	123
+PREHOOK: query: select * from alter_table_cascade where p1='abc'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_table_cascade
+PREHOOK: Input: default@alter_table_cascade@p1=abc/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_table_cascade where p1='abc'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_table_cascade
+POSTHOOK: Input: default@alter_table_cascade@p1=abc/p2=123
+#### A masked pattern was here ####
+Beck	NULL	abc	123
+Beck	NULL	abc	123
+Beck	NULL	abc	123
+Cluck	NULL	abc	123
+Mary	NULL	abc	123
+Mary	NULL	abc	123
+Snow	NULL	abc	123
+Tom	NULL	abc	123
+Tom	NULL	abc	123
+Tom	NULL	abc	123
+PREHOOK: query: select * from alter_table_cascade where p1='__HIVE_DEFAULT_PARTITION__'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_table_cascade
+PREHOOK: Input: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_table_cascade where p1='__HIVE_DEFAULT_PARTITION__'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_table_cascade
+POSTHOOK: Input: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+Beck	0.0	__HIVE_DEFAULT_PARTITION__	123
+Beck	77.341	__HIVE_DEFAULT_PARTITION__	123
+Beck	79.9	__HIVE_DEFAULT_PARTITION__	123
+Cluck	5.96	__HIVE_DEFAULT_PARTITION__	123
+Mary	33.33	__HIVE_DEFAULT_PARTITION__	123
+Mary	4.329	__HIVE_DEFAULT_PARTITION__	123
+Snow	55.71	__HIVE_DEFAULT_PARTITION__	123
+Tom	-12.25	__HIVE_DEFAULT_PARTITION__	123
+Tom	19.00	__HIVE_DEFAULT_PARTITION__	123
+Tom	234.79	__HIVE_DEFAULT_PARTITION__	123
+PREHOOK: query: alter table alter_table_cascade change c2 c2 decimal(10,0) comment "change datatype" cascade
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@alter_table_cascade
+PREHOOK: Output: default@alter_table_cascade
+PREHOOK: Output: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+PREHOOK: Output: default@alter_table_cascade@p1=abc/p2=123
+PREHOOK: Output: default@alter_table_cascade@p1=xyz/p2=123
+POSTHOOK: query: alter table alter_table_cascade change c2 c2 decimal(10,0) comment "change datatype" cascade
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@alter_table_cascade
+POSTHOOK: Output: default@alter_table_cascade
+POSTHOOK: Output: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+POSTHOOK: Output: default@alter_table_cascade@p1=abc/p2=123
+POSTHOOK: Output: default@alter_table_cascade@p1=xyz/p2=123
+PREHOOK: query: describe alter_table_cascade
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_cascade
+POSTHOOK: query: describe alter_table_cascade
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_cascade
+c1                  	string              	                    
+c2                  	decimal(10,0)       	change datatype     
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_cascade partition (p1='xyz', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_cascade
+POSTHOOK: query: describe alter_table_cascade partition (p1='xyz', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_cascade
+c1                  	string              	                    
+c2                  	decimal(10,0)       	change datatype     
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_cascade partition (p1='abc', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_cascade
+POSTHOOK: query: describe alter_table_cascade partition (p1='abc', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_cascade
+c1                  	string              	                    
+c2                  	decimal(10,0)       	change datatype     
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_cascade partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_cascade
+POSTHOOK: query: describe alter_table_cascade partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_cascade
+c1                  	string              	                    
+c2                  	decimal(10,0)       	change datatype     
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: select * from alter_table_cascade where p1='xyz'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_table_cascade
+PREHOOK: Input: default@alter_table_cascade@p1=xyz/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_table_cascade where p1='xyz'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_table_cascade
+POSTHOOK: Input: default@alter_table_cascade@p1=xyz/p2=123
+#### A masked pattern was here ####
+Beck	0	xyz	123
+Beck	77	xyz	123
+Beck	80	xyz	123
+Cluck	6	xyz	123
+Mary	33	xyz	123
+Mary	4	xyz	123
+Snow	56	xyz	123
+Tom	-12	xyz	123
+Tom	19	xyz	123
+Tom	235	xyz	123
+PREHOOK: query: select * from alter_table_cascade where p1='abc'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_table_cascade
+PREHOOK: Input: default@alter_table_cascade@p1=abc/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_table_cascade where p1='abc'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_table_cascade
+POSTHOOK: Input: default@alter_table_cascade@p1=abc/p2=123
+#### A masked pattern was here ####
+Beck	NULL	abc	123
+Beck	NULL	abc	123
+Beck	NULL	abc	123
+Cluck	NULL	abc	123
+Mary	NULL	abc	123
+Mary	NULL	abc	123
+Snow	NULL	abc	123
+Tom	NULL	abc	123
+Tom	NULL	abc	123
+Tom	NULL	abc	123
+PREHOOK: query: select * from alter_table_cascade where p1='__HIVE_DEFAULT_PARTITION__'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_table_cascade
+PREHOOK: Input: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_table_cascade where p1='__HIVE_DEFAULT_PARTITION__'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_table_cascade
+POSTHOOK: Input: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+Beck	0	__HIVE_DEFAULT_PARTITION__	123
+Beck	77	__HIVE_DEFAULT_PARTITION__	123
+Beck	80	__HIVE_DEFAULT_PARTITION__	123
+Cluck	6	__HIVE_DEFAULT_PARTITION__	123
+Mary	33	__HIVE_DEFAULT_PARTITION__	123
+Mary	4	__HIVE_DEFAULT_PARTITION__	123
+Snow	56	__HIVE_DEFAULT_PARTITION__	123
+Tom	-12	__HIVE_DEFAULT_PARTITION__	123
+Tom	19	__HIVE_DEFAULT_PARTITION__	123
+Tom	235	__HIVE_DEFAULT_PARTITION__	123
+PREHOOK: query: alter table alter_table_cascade change c1 c2fromc1 string comment "change position after" after c2 cascade
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@alter_table_cascade
+PREHOOK: Output: default@alter_table_cascade
+PREHOOK: Output: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+PREHOOK: Output: default@alter_table_cascade@p1=abc/p2=123
+PREHOOK: Output: default@alter_table_cascade@p1=xyz/p2=123
+POSTHOOK: query: alter table alter_table_cascade change c1 c2fromc1 string comment "change position after" after c2 cascade
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@alter_table_cascade
+POSTHOOK: Output: default@alter_table_cascade
+POSTHOOK: Output: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+POSTHOOK: Output: default@alter_table_cascade@p1=abc/p2=123
+POSTHOOK: Output: default@alter_table_cascade@p1=xyz/p2=123
+PREHOOK: query: describe alter_table_cascade
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_cascade
+POSTHOOK: query: describe alter_table_cascade
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_cascade
+c2                  	decimal(10,0)       	change datatype     
+c2fromc1            	string              	change position after
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_cascade partition (p1='xyz', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_cascade
+POSTHOOK: query: describe alter_table_cascade partition (p1='xyz', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_cascade
+c2                  	decimal(10,0)       	change datatype     
+c2fromc1            	string              	change position after
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_cascade partition (p1='abc', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_cascade
+POSTHOOK: query: describe alter_table_cascade partition (p1='abc', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_cascade
+c2                  	decimal(10,0)       	change datatype     
+c2fromc1            	string              	change position after
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_cascade partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_cascade
+POSTHOOK: query: describe alter_table_cascade partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_cascade
+c2                  	decimal(10,0)       	change datatype     
+c2fromc1            	string              	change position after
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: alter table alter_table_cascade change c2fromc1 c1 string comment "change position first" first cascade
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@alter_table_cascade
+PREHOOK: Output: default@alter_table_cascade
+PREHOOK: Output: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+PREHOOK: Output: default@alter_table_cascade@p1=abc/p2=123
+PREHOOK: Output: default@alter_table_cascade@p1=xyz/p2=123
+POSTHOOK: query: alter table alter_table_cascade change c2fromc1 c1 string comment "change position first" first cascade
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@alter_table_cascade
+POSTHOOK: Output: default@alter_table_cascade
+POSTHOOK: Output: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+POSTHOOK: Output: default@alter_table_cascade@p1=abc/p2=123
+POSTHOOK: Output: default@alter_table_cascade@p1=xyz/p2=123
+PREHOOK: query: describe alter_table_cascade
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_cascade
+POSTHOOK: query: describe alter_table_cascade
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_cascade
+c1                  	string              	change position first
+c2                  	decimal(10,0)       	change datatype     
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_cascade partition (p1='xyz', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_cascade
+POSTHOOK: query: describe alter_table_cascade partition (p1='xyz', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_cascade
+c1                  	string              	change position first
+c2                  	decimal(10,0)       	change datatype     
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_cascade partition (p1='abc', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_cascade
+POSTHOOK: query: describe alter_table_cascade partition (p1='abc', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_cascade
+c1                  	string              	change position first
+c2                  	decimal(10,0)       	change datatype     
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_cascade partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_cascade
+POSTHOOK: query: describe alter_table_cascade partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_cascade
+c1                  	string              	change position first
+c2                  	decimal(10,0)       	change datatype     
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: alter table alter_table_cascade replace columns (c1 string) cascade
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@alter_table_cascade
+PREHOOK: Output: default@alter_table_cascade
+PREHOOK: Output: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+PREHOOK: Output: default@alter_table_cascade@p1=abc/p2=123
+PREHOOK: Output: default@alter_table_cascade@p1=xyz/p2=123
+POSTHOOK: query: alter table alter_table_cascade replace columns (c1 string) cascade
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@alter_table_cascade
+POSTHOOK: Output: default@alter_table_cascade
+POSTHOOK: Output: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+POSTHOOK: Output: default@alter_table_cascade@p1=abc/p2=123
+POSTHOOK: Output: default@alter_table_cascade@p1=xyz/p2=123
+PREHOOK: query: describe alter_table_cascade
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_cascade
+POSTHOOK: query: describe alter_table_cascade
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_cascade
+c1                  	string              	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_cascade partition (p1='xyz', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_cascade
+POSTHOOK: query: describe alter_table_cascade partition (p1='xyz', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_cascade
+c1                  	string              	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_cascade partition (p1='abc', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_cascade
+POSTHOOK: query: describe alter_table_cascade partition (p1='abc', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_cascade
+c1                  	string              	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_cascade partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_cascade
+POSTHOOK: query: describe alter_table_cascade partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_cascade
+c1                  	string              	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: select * from alter_table_cascade where p1='xyz'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_table_cascade
+PREHOOK: Input: default@alter_table_cascade@p1=xyz/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_table_cascade where p1='xyz'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_table_cascade
+POSTHOOK: Input: default@alter_table_cascade@p1=xyz/p2=123
+#### A masked pattern was here ####
+Beck	xyz	123
+Beck	xyz	123
+Beck	xyz	123
+Cluck	xyz	123
+Mary	xyz	123
+Mary	xyz	123
+Snow	xyz	123
+Tom	xyz	123
+Tom	xyz	123
+Tom	xyz	123
+PREHOOK: query: select * from alter_table_cascade where p1='abc'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_table_cascade
+PREHOOK: Input: default@alter_table_cascade@p1=abc/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_table_cascade where p1='abc'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_table_cascade
+POSTHOOK: Input: default@alter_table_cascade@p1=abc/p2=123
+#### A masked pattern was here ####
+Beck	abc	123
+Beck	abc	123
+Beck	abc	123
+Cluck	abc	123
+Mary	abc	123
+Mary	abc	123
+Snow	abc	123
+Tom	abc	123
+Tom	abc	123
+Tom	abc	123
+PREHOOK: query: select * from alter_table_cascade where p1='__HIVE_DEFAULT_PARTITION__'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_table_cascade
+PREHOOK: Input: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_table_cascade where p1='__HIVE_DEFAULT_PARTITION__'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_table_cascade
+POSTHOOK: Input: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+Beck	__HIVE_DEFAULT_PARTITION__	123
+Beck	__HIVE_DEFAULT_PARTITION__	123
+Beck	__HIVE_DEFAULT_PARTITION__	123
+Cluck	__HIVE_DEFAULT_PARTITION__	123
+Mary	__HIVE_DEFAULT_PARTITION__	123
+Mary	__HIVE_DEFAULT_PARTITION__	123
+Snow	__HIVE_DEFAULT_PARTITION__	123
+Tom	__HIVE_DEFAULT_PARTITION__	123
+Tom	__HIVE_DEFAULT_PARTITION__	123
+Tom	__HIVE_DEFAULT_PARTITION__	123
+PREHOOK: query: alter table alter_table_cascade add columns (c2 decimal(14,4)) cascade
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@alter_table_cascade
+PREHOOK: Output: default@alter_table_cascade
+PREHOOK: Output: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+PREHOOK: Output: default@alter_table_cascade@p1=abc/p2=123
+PREHOOK: Output: default@alter_table_cascade@p1=xyz/p2=123
+POSTHOOK: query: alter table alter_table_cascade add columns (c2 decimal(14,4)) cascade
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@alter_table_cascade
+POSTHOOK: Output: default@alter_table_cascade
+POSTHOOK: Output: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+POSTHOOK: Output: default@alter_table_cascade@p1=abc/p2=123
+POSTHOOK: Output: default@alter_table_cascade@p1=xyz/p2=123
+PREHOOK: query: describe alter_table_cascade
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_cascade
+POSTHOOK: query: describe alter_table_cascade
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_cascade
+c1                  	string              	                    
+c2                  	decimal(14,4)       	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_cascade partition (p1='xyz', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_cascade
+POSTHOOK: query: describe alter_table_cascade partition (p1='xyz', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_cascade
+c1                  	string              	                    
+c2                  	decimal(14,4)       	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_cascade partition (p1='abc', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_cascade
+POSTHOOK: query: describe alter_table_cascade partition (p1='abc', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_cascade
+c1                  	string              	                    
+c2                  	decimal(14,4)       	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_cascade partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_cascade
+POSTHOOK: query: describe alter_table_cascade partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_cascade
+c1                  	string              	                    
+c2                  	decimal(14,4)       	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: select * from alter_table_cascade where p1='xyz'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_table_cascade
+PREHOOK: Input: default@alter_table_cascade@p1=xyz/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_table_cascade where p1='xyz'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_table_cascade
+POSTHOOK: Input: default@alter_table_cascade@p1=xyz/p2=123
+#### A masked pattern was here ####
+Beck	0.0000	xyz	123
+Beck	77.3410	xyz	123
+Beck	79.9000	xyz	123
+Cluck	5.9600	xyz	123
+Mary	33.3300	xyz	123
+Mary	4.3290	xyz	123
+Snow	55.7100	xyz	123
+Tom	-12.2500	xyz	123
+Tom	19.0000	xyz	123
+Tom	234.7900	xyz	123
+PREHOOK: query: select * from alter_table_cascade where p1='abc'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_table_cascade
+PREHOOK: Input: default@alter_table_cascade@p1=abc/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_table_cascade where p1='abc'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_table_cascade
+POSTHOOK: Input: default@alter_table_cascade@p1=abc/p2=123
+#### A masked pattern was here ####
+Beck	NULL	abc	123
+Beck	NULL	abc	123
+Beck	NULL	abc	123
+Cluck	NULL	abc	123
+Mary	NULL	abc	123
+Mary	NULL	abc	123
+Snow	NULL	abc	123
+Tom	NULL	abc	123
+Tom	NULL	abc	123
+Tom	NULL	abc	123
+PREHOOK: query: select * from alter_table_cascade where p1='__HIVE_DEFAULT_PARTITION__'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_table_cascade
+PREHOOK: Input: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_table_cascade where p1='__HIVE_DEFAULT_PARTITION__'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_table_cascade
+POSTHOOK: Input: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+Beck	0.0000	__HIVE_DEFAULT_PARTITION__	123
+Beck	77.3410	__HIVE_DEFAULT_PARTITION__	123
+Beck	79.9000	__HIVE_DEFAULT_PARTITION__	123
+Cluck	5.9600	__HIVE_DEFAULT_PARTITION__	123
+Mary	33.3300	__HIVE_DEFAULT_PARTITION__	123
+Mary	4.3290	__HIVE_DEFAULT_PARTITION__	123
+Snow	55.7100	__HIVE_DEFAULT_PARTITION__	123
+Tom	-12.2500	__HIVE_DEFAULT_PARTITION__	123
+Tom	19.0000	__HIVE_DEFAULT_PARTITION__	123
+Tom	234.7900	__HIVE_DEFAULT_PARTITION__	123
+PREHOOK: query: drop table if exists alter_table_restrict
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists alter_table_restrict
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table alter_table_restrict (c1 string) partitioned by (p1 string, p2 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter_table_restrict
+POSTHOOK: query: create table alter_table_restrict (c1 string) partitioned by (p1 string, p2 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter_table_restrict
+PREHOOK: query: insert overwrite table alter_table_restrict partition (p1, p2)
+  select c1, 'abc', '123' from alter_table_src
+  union all
+  select c1, cast(null as string), '123' from alter_table_src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_table_src
+PREHOOK: Output: default@alter_table_restrict
+POSTHOOK: query: insert overwrite table alter_table_restrict partition (p1, p2)
+  select c1, 'abc', '123' from alter_table_src
+  union all
+  select c1, cast(null as string), '123' from alter_table_src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_table_src
+POSTHOOK: Output: default@alter_table_restrict
+POSTHOOK: Output: default@alter_table_restrict@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+POSTHOOK: Output: default@alter_table_restrict@p1=abc/p2=123
+POSTHOOK: Lineage: alter_table_restrict PARTITION(p1=__HIVE_DEFAULT_PARTITION__,p2=123).c1 EXPRESSION [(alter_table_src)alter_table_src.FieldSchema(name:c1, type:string, comment:null), ]
+POSTHOOK: Lineage: alter_table_restrict PARTITION(p1=abc,p2=123).c1 EXPRESSION [(alter_table_src)alter_table_src.FieldSchema(name:c1, type:string, comment:null), ]
+PREHOOK: query: show partitions alter_table_restrict
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@alter_table_restrict
+POSTHOOK: query: show partitions alter_table_restrict
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@alter_table_restrict
+p1=__HIVE_DEFAULT_PARTITION__/p2=123
+p1=abc/p2=123
+PREHOOK: query: describe alter_table_restrict
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_restrict
+POSTHOOK: query: describe alter_table_restrict
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_restrict
+c1                  	string              	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_restrict partition (p1='abc', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_restrict
+POSTHOOK: query: describe alter_table_restrict partition (p1='abc', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_restrict
+c1                  	string              	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_restrict partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_restrict
+POSTHOOK: query: describe alter_table_restrict partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_restrict
+c1                  	string              	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: select * from alter_table_restrict where p1='abc'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_table_restrict
+PREHOOK: Input: default@alter_table_restrict@p1=abc/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_table_restrict where p1='abc'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_table_restrict
+POSTHOOK: Input: default@alter_table_restrict@p1=abc/p2=123
+#### A masked pattern was here ####
+Beck	abc	123
+Beck	abc	123
+Beck	abc	123
+Cluck	abc	123
+Mary	abc	123
+Mary	abc	123
+Snow	abc	123
+Tom	abc	123
+Tom	abc	123
+Tom	abc	123
+PREHOOK: query: select * from alter_table_restrict where p1='__HIVE_DEFAULT_PARTITION__'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_table_restrict
+PREHOOK: Input: default@alter_table_restrict@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_table_restrict where p1='__HIVE_DEFAULT_PARTITION__'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_table_restrict
+POSTHOOK: Input: default@alter_table_restrict@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+Beck	__HIVE_DEFAULT_PARTITION__	123
+Beck	__HIVE_DEFAULT_PARTITION__	123
+Beck	__HIVE_DEFAULT_PARTITION__	123
+Cluck	__HIVE_DEFAULT_PARTITION__	123
+Mary	__HIVE_DEFAULT_PARTITION__	123
+Mary	__HIVE_DEFAULT_PARTITION__	123
+Snow	__HIVE_DEFAULT_PARTITION__	123
+Tom	__HIVE_DEFAULT_PARTITION__	123
+Tom	__HIVE_DEFAULT_PARTITION__	123
+Tom	__HIVE_DEFAULT_PARTITION__	123
+PREHOOK: query: alter table alter_table_restrict replace columns (c1 string, c2 string) restrict
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@alter_table_restrict
+PREHOOK: Output: default@alter_table_restrict
+POSTHOOK: query: alter table alter_table_restrict replace columns (c1 string, c2 string) restrict
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@alter_table_restrict
+POSTHOOK: Output: default@alter_table_restrict
+PREHOOK: query: load data local inpath '../../data/files/dec.txt' overwrite into table alter_table_restrict partition (p1='abc', p2='123')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@alter_table_restrict@p1=abc/p2=123
+POSTHOOK: query: load data local inpath '../../data/files/dec.txt' overwrite into table alter_table_restrict partition (p1='abc', p2='123')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@alter_table_restrict@p1=abc/p2=123
+PREHOOK: query: load data local inpath '../../data/files/dec.txt' overwrite into table alter_table_restrict partition (p1='__HIVE_DEFAULT_PARTITION__',p2='123')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@alter_table_restrict@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+POSTHOOK: query: load data local inpath '../../data/files/dec.txt' overwrite into table alter_table_restrict partition (p1='__HIVE_DEFAULT_PARTITION__',p2='123')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@alter_table_restrict@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+PREHOOK: query: load data local inpath '../../data/files/dec.txt' overwrite into table alter_table_restrict partition (p1='xyz', p2='123')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@alter_table_restrict
+POSTHOOK: query: load data local inpath '../../data/files/dec.txt' overwrite into table alter_table_restrict partition (p1='xyz', p2='123')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@alter_table_restrict
+POSTHOOK: Output: default@alter_table_restrict@p1=xyz/p2=123
+PREHOOK: query: describe alter_table_restrict
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_restrict
+POSTHOOK: query: describe alter_table_restrict
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_restrict
+c1                  	string              	                    
+c2                  	string              	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_restrict partition (p1='xyz', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_restrict
+POSTHOOK: query: describe alter_table_restrict partition (p1='xyz', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_restrict
+c1                  	string              	                    
+c2                  	string              	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_restrict partition (p1='abc', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_restrict
+POSTHOOK: query: describe alter_table_restrict partition (p1='abc', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_restrict
+c1                  	string              	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_restrict partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_restrict
+POSTHOOK: query: describe alter_table_restrict partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_restrict
+c1                  	string              	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: select * from alter_table_restrict where p1='xyz'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_table_restrict
+PREHOOK: Input: default@alter_table_restrict@p1=xyz/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_table_restrict where p1='xyz'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_table_restrict
+POSTHOOK: Input: default@alter_table_restrict@p1=xyz/p2=123
+#### A masked pattern was here ####
+Beck	0.0	xyz	123
+Beck	77.341	xyz	123
+Beck	79.9	xyz	123
+Cluck	5.96	xyz	123
+Mary	33.33	xyz	123
+Mary	4.329	xyz	123
+Snow	55.71	xyz	123
+Tom	-12.25	xyz	123
+Tom	19.00	xyz	123
+Tom	234.79	xyz	123
+PREHOOK: query: select * from alter_table_restrict where p1='abc'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_table_restrict
+PREHOOK: Input: default@alter_table_restrict@p1=abc/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_table_restrict where p1='abc'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_table_restrict
+POSTHOOK: Input: default@alter_table_restrict@p1=abc/p2=123
+#### A masked pattern was here ####
+Beck	NULL	abc	123
+Beck	NULL	abc	123
+Beck	NULL	abc	123
+Cluck	NULL	abc	123
+Mary	NULL	abc	123
+Mary	NULL	abc	123
+Snow	NULL	abc	123
+Tom	NULL	abc	123
+Tom	NULL	abc	123
+Tom	NULL	abc	123
+PREHOOK: query: select * from alter_table_restrict where p1='__HIVE_DEFAULT_PARTITION__'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter_table_restrict
+PREHOOK: Input: default@alter_table_restrict@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter_table_restrict where p1='__HIVE_DEFAULT_PARTITION__'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter_table_restrict
+POSTHOOK: Input: default@alter_table_restrict@p1=__HIVE_DEFAULT_PARTITION__/p2=123
+#### A masked pattern was here ####
+Beck	NULL	__HIVE_DEFAULT_PARTITION__	123
+Beck	NULL	__HIVE_DEFAULT_PARTITION__	123
+Beck	NULL	__HIVE_DEFAULT_PARTITION__	123
+Cluck	NULL	__HIVE_DEFAULT_PARTITION__	123
+Mary	NULL	__HIVE_DEFAULT_PARTITION__	123
+Mary	NULL	__HIVE_DEFAULT_PARTITION__	123
+Snow	NULL	__HIVE_DEFAULT_PARTITION__	123
+Tom	NULL	__HIVE_DEFAULT_PARTITION__	123
+Tom	NULL	__HIVE_DEFAULT_PARTITION__	123
+Tom	NULL	__HIVE_DEFAULT_PARTITION__	123
+PREHOOK: query: alter table alter_table_restrict change c2 c2 decimal(10,0) restrict
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@alter_table_restrict
+PREHOOK: Output: default@alter_table_restrict
+POSTHOOK: query: alter table alter_table_restrict change c2 c2 decimal(10,0) restrict
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@alter_table_restrict
+POSTHOOK: Output: default@alter_table_restrict
+PREHOOK: query: describe alter_table_restrict
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_restrict
+POSTHOOK: query: describe alter_table_restrict
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_restrict
+c1                  	string              	                    
+c2                  	decimal(10,0)       	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_restrict partition (p1='xyz', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_restrict
+POSTHOOK: query: describe alter_table_restrict partition (p1='xyz', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_restrict
+c1                  	string              	                    
+c2                  	string              	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_restrict partition (p1='abc', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_restrict
+POSTHOOK: query: describe alter_table_restrict partition (p1='abc', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_restrict
+c1                  	string              	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_restrict partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_restrict
+POSTHOOK: query: describe alter_table_restrict partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_restrict
+c1                  	string              	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: alter table alter_table_restrict replace columns (c1 string)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@alter_table_restrict
+PREHOOK: Output: default@alter_table_restrict
+POSTHOOK: query: alter table alter_table_restrict replace columns (c1 string)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@alter_table_restrict
+POSTHOOK: Output: default@alter_table_restrict
+PREHOOK: query: describe alter_table_restrict
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_restrict
+POSTHOOK: query: describe alter_table_restrict
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_restrict
+c1                  	string              	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_restrict partition (p1='xyz', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_restrict
+POSTHOOK: query: describe alter_table_restrict partition (p1='xyz', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_restrict
+c1                  	string              	                    
+c2                  	string              	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_restrict partition (p1='abc', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_restrict
+POSTHOOK: query: describe alter_table_restrict partition (p1='abc', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_restrict
+c1                  	string              	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_restrict partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_restrict
+POSTHOOK: query: describe alter_table_restrict partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_restrict
+c1                  	string              	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: alter table alter_table_restrict add columns (c2 decimal(14,4))
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@alter_table_restrict
+PREHOOK: Output: default@alter_table_restrict
+POSTHOOK: query: alter table alter_table_restrict add columns (c2 decimal(14,4))
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@alter_table_restrict
+POSTHOOK: Output: default@alter_table_restrict
+PREHOOK: query: describe alter_table_restrict
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_restrict
+POSTHOOK: query: describe alter_table_restrict
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_restrict
+c1                  	string              	                    
+c2                  	decimal(14,4)       	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_restrict partition (p1='xyz', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_restrict
+POSTHOOK: query: describe alter_table_restrict partition (p1='xyz', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_restrict
+c1                  	string              	                    
+c2                  	string              	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_restrict partition (p1='abc', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_restrict
+POSTHOOK: query: describe alter_table_restrict partition (p1='abc', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_restrict
+c1                  	string              	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    
+PREHOOK: query: describe alter_table_restrict partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_restrict
+POSTHOOK: query: describe alter_table_restrict partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_restrict
+c1                  	string              	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+p2                  	string              	                    

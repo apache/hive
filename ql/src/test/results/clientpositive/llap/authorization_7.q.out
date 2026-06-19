@@ -1,0 +1,68 @@
+PREHOOK: query: GRANT ALL TO USER hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: query: GRANT ALL TO USER hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+PREHOOK: query: CREATE TABLE src_authorization_7 (key int, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_authorization_7
+POSTHOOK: query: CREATE TABLE src_authorization_7 (key int, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_authorization_7
+PREHOOK: query: DESCRIBE src_authorization_7
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_authorization_7
+POSTHOOK: query: DESCRIBE src_authorization_7
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_authorization_7
+key                 	int                 	                    
+value               	string              	                    
+PREHOOK: query: DROP TABLE  src_authorization_7
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src_authorization_7
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_authorization_7
+POSTHOOK: query: DROP TABLE  src_authorization_7
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src_authorization_7
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_authorization_7
+PREHOOK: query: REVOKE ALL FROM USER hive_test_user
+PREHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: query: REVOKE ALL FROM USER hive_test_user
+POSTHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: query: GRANT ALL TO GROUP hive_test_group1
+PREHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: query: GRANT ALL TO GROUP hive_test_group1
+POSTHOOK: type: GRANT_PRIVILEGE
+PREHOOK: query: CREATE TABLE src_authorization_7 (key int, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_authorization_7
+POSTHOOK: query: CREATE TABLE src_authorization_7 (key int, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_authorization_7
+PREHOOK: query: DESCRIBE src_authorization_7
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_authorization_7
+POSTHOOK: query: DESCRIBE src_authorization_7
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_authorization_7
+key                 	int                 	                    
+value               	string              	                    
+PREHOOK: query: DROP TABLE  src_authorization_7
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src_authorization_7
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_authorization_7
+POSTHOOK: query: DROP TABLE  src_authorization_7
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src_authorization_7
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_authorization_7
+PREHOOK: query: REVOKE ALL FROM GROUP hive_test_group1
+PREHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: query: REVOKE ALL FROM GROUP hive_test_group1
+POSTHOOK: type: REVOKE_PRIVILEGE

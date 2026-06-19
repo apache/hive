@@ -1,0 +1,62 @@
+PREHOOK: query: CREATE TABLE parquet_map_of_arrays_of_ints (
+    examples MAP<STRING, ARRAY<INT>>
+) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_map_of_arrays_of_ints
+POSTHOOK: query: CREATE TABLE parquet_map_of_arrays_of_ints (
+    examples MAP<STRING, ARRAY<INT>>
+) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_map_of_arrays_of_ints
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/StringMapOfOptionalIntArray.parquet'
+OVERWRITE INTO TABLE parquet_map_of_arrays_of_ints
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_map_of_arrays_of_ints
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/StringMapOfOptionalIntArray.parquet'
+OVERWRITE INTO TABLE parquet_map_of_arrays_of_ints
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_map_of_arrays_of_ints
+PREHOOK: query: CREATE TABLE parquet_map_of_arrays_of_ints_copy STORED AS PARQUET AS SELECT * FROM parquet_map_of_arrays_of_ints
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@parquet_map_of_arrays_of_ints
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_map_of_arrays_of_ints_copy
+POSTHOOK: query: CREATE TABLE parquet_map_of_arrays_of_ints_copy STORED AS PARQUET AS SELECT * FROM parquet_map_of_arrays_of_ints
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@parquet_map_of_arrays_of_ints
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_map_of_arrays_of_ints_copy
+POSTHOOK: Lineage: parquet_map_of_arrays_of_ints_copy.examples SIMPLE [(parquet_map_of_arrays_of_ints)parquet_map_of_arrays_of_ints.FieldSchema(name:examples, type:map<string,array<int>>, comment:null), ]
+PREHOOK: query: SELECT * FROM parquet_map_of_arrays_of_ints_copy
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_map_of_arrays_of_ints_copy
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_map_of_arrays_of_ints_copy
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_map_of_arrays_of_ints_copy
+#### A masked pattern was here ####
+{"low":[34,35,null],"high":[340,360]}
+PREHOOK: query: DROP TABLE parquet_map_of_arrays_of_ints
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@parquet_map_of_arrays_of_ints
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_map_of_arrays_of_ints
+POSTHOOK: query: DROP TABLE parquet_map_of_arrays_of_ints
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@parquet_map_of_arrays_of_ints
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_map_of_arrays_of_ints
+PREHOOK: query: DROP TABLE parquet_map_of_arrays_of_ints_copy
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@parquet_map_of_arrays_of_ints_copy
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_map_of_arrays_of_ints_copy
+POSTHOOK: query: DROP TABLE parquet_map_of_arrays_of_ints_copy
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@parquet_map_of_arrays_of_ints_copy
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_map_of_arrays_of_ints_copy

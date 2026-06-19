@@ -1,0 +1,104 @@
+PREHOOK: query: create table test_user (`user` string, `group` string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_user
+POSTHOOK: query: create table test_user (`user` string, `group` string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_user
+PREHOOK: query: grant select on table test_user to user hive_test
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@test_user
+POSTHOOK: query: grant select on table test_user to user hive_test
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@test_user
+PREHOOK: query: explain select `user` from test_user
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_user
+#### A masked pattern was here ####
+POSTHOOK: query: explain select `user` from test_user
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_user
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: test_user
+          Select Operator
+            expressions: user (type: string)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: show grant user hive_test on table test_user
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test on table test_user
+POSTHOOK: type: SHOW_GRANT
+default	test_user			hive_test	USER	SELECT	false	-1	hive_test_user
+PREHOOK: query: drop table test_user
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_user
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_user
+POSTHOOK: query: drop table test_user
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_user
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_user
+PREHOOK: query: create table test_user (role string, `group` string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_user
+POSTHOOK: query: create table test_user (role string, `group` string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_user
+PREHOOK: query: grant select on table test_user to user hive_test
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@test_user
+POSTHOOK: query: grant select on table test_user to user hive_test
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@test_user
+PREHOOK: query: explain select role from test_user
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_user
+#### A masked pattern was here ####
+POSTHOOK: query: explain select role from test_user
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_user
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: test_user
+          Select Operator
+            expressions: role (type: string)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: show grant user hive_test on table test_user
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test on table test_user
+POSTHOOK: type: SHOW_GRANT
+default	test_user			hive_test	USER	SELECT	false	-1	hive_test_user
+PREHOOK: query: drop table test_user
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_user
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_user
+POSTHOOK: query: drop table test_user
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_user
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_user

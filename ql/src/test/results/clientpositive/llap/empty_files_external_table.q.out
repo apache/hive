@@ -1,0 +1,76 @@
+PREHOOK: query: create external table empty_external_table(age int, name string, id int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@empty_external_table
+POSTHOOK: query: create external table empty_external_table(age int, name string, id int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@empty_external_table
+PREHOOK: query: create external table t6 like empty_external_table
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t6
+POSTHOOK: query: create external table t6 like empty_external_table
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t6
+PREHOOK: query: create external table t5 like empty_external_table
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t5
+POSTHOOK: query: create external table t5 like empty_external_table
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t5
+PREHOOK: query: insert overwrite table empty_external_table select a.* from t5 a full outer join t6 b on a.id=b.id and a.name=b.name and a.age=b.age
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t5
+PREHOOK: Input: default@t6
+PREHOOK: Output: default@empty_external_table
+POSTHOOK: query: insert overwrite table empty_external_table select a.* from t5 a full outer join t6 b on a.id=b.id and a.name=b.name and a.age=b.age
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t5
+POSTHOOK: Input: default@t6
+POSTHOOK: Output: default@empty_external_table
+POSTHOOK: Lineage: empty_external_table.age SIMPLE [(t5)a.FieldSchema(name:age, type:int, comment:null), ]
+POSTHOOK: Lineage: empty_external_table.id SIMPLE [(t5)a.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: empty_external_table.name SIMPLE [(t5)a.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: select count(*) from empty_external_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@empty_external_table
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from empty_external_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@empty_external_table
+#### A masked pattern was here ####
+0
+PREHOOK: query: drop table t5
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t5
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t5
+POSTHOOK: query: drop table t5
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t5
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t5
+PREHOOK: query: drop table t6
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t6
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t6
+POSTHOOK: query: drop table t6
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t6
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t6
+PREHOOK: query: drop table empty_external_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@empty_external_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@empty_external_table
+POSTHOOK: query: drop table empty_external_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@empty_external_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@empty_external_table

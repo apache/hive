@@ -1,0 +1,30 @@
+PREHOOK: query: create role role1
+PREHOOK: type: CREATEROLE
+POSTHOOK: query: create role role1
+POSTHOOK: type: CREATEROLE
+PREHOOK: query: grant role1 to user user1 with admin option
+PREHOOK: type: GRANT_ROLE
+POSTHOOK: query: grant role1 to user user1 with admin option
+POSTHOOK: type: GRANT_ROLE
+PREHOOK: query: grant role1 to user user2 with admin option
+PREHOOK: type: GRANT_ROLE
+POSTHOOK: query: grant role1 to user user2 with admin option
+POSTHOOK: type: GRANT_ROLE
+PREHOOK: query: show role grant user user1
+PREHOOK: type: SHOW_ROLE_GRANT
+POSTHOOK: query: show role grant user user1
+POSTHOOK: type: SHOW_ROLE_GRANT
+public	false	-1	
+role1	true	-1	hive_test_user
+PREHOOK: query: show role grant user user2
+PREHOOK: type: SHOW_ROLE_GRANT
+POSTHOOK: query: show role grant user user2
+POSTHOOK: type: SHOW_ROLE_GRANT
+public	false	-1	
+role1	true	-1	hive_test_user
+PREHOOK: query: show principals role1
+PREHOOK: type: SHOW_ROLE_PRINCIPALS
+POSTHOOK: query: show principals role1
+POSTHOOK: type: SHOW_ROLE_PRINCIPALS
+user1	USER	true	hive_test_user	USER	-1
+user2	USER	true	hive_test_user	USER	-1

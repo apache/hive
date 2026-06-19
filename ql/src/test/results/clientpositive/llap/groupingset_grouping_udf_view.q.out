@@ -1,0 +1,118 @@
+PREHOOK: query: CREATE TABLE your_table(col1 int, col2 int, col3 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@your_table
+POSTHOOK: query: CREATE TABLE your_table(col1 int, col2 int, col3 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@your_table
+PREHOOK: query: create view your_view as SELECT
+    col1,
+    col2,
+    SUM(col3),
+    GROUPING(col1) AS is_col1_grouped
+FROM
+    your_table
+GROUP BY
+    col1, col2
+WITH CUBE
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@your_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@your_view
+POSTHOOK: query: create view your_view as SELECT
+    col1,
+    col2,
+    SUM(col3),
+    GROUPING(col1) AS is_col1_grouped
+FROM
+    your_table
+GROUP BY
+    col1, col2
+WITH CUBE
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@your_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@your_view
+POSTHOOK: Lineage: your_view._c2 EXPRESSION [(your_table)your_table.FieldSchema(name:col3, type:int, comment:null), ]
+POSTHOOK: Lineage: your_view.col1 SIMPLE [(your_table)your_table.FieldSchema(name:col1, type:int, comment:null), ]
+POSTHOOK: Lineage: your_view.col2 SIMPLE [(your_table)your_table.FieldSchema(name:col2, type:int, comment:null), ]
+POSTHOOK: Lineage: your_view.is_col1_grouped EXPRESSION []
+PREHOOK: query: show create table your_view
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@your_view
+POSTHOOK: query: show create table your_view
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@your_view
+CREATE VIEW `your_view` AS SELECT
+    `your_table`.`col1`,
+    `your_table`.`col2`,
+    SUM(`your_table`.`col3`),
+    GROUPING(`your_table`.`col1`) AS `is_col1_grouped`
+FROM
+    `default`.`your_table`
+GROUP BY
+    `your_table`.`col1`, `your_table`.`col2`
+WITH CUBE
+PREHOOK: query: describe formatted your_view
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@your_view
+POSTHOOK: query: describe formatted your_view
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@your_view
+# col_name            	data_type           	comment             
+col1                	int                 	                    
+col2                	int                 	                    
+_c2                 	bigint              	                    
+is_col1_grouped     	bigint              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+Original Query:     	SELECT              	 
+	                    	    col1,           
+	                    	    col2,           
+	                    	    SUM(col3),      
+	                    	    GROUPING(col1) AS is_col1_grouped
+	                    	FROM                
+	                    	    your_table      
+	                    	GROUP BY            
+	                    	    col1, col2      
+	                    	WITH CUBE           
+Expanded Query:     	SELECT              	 
+	                    	    `your_table`.`col1`,
+	                    	    `your_table`.`col2`,
+	                    	    SUM(`your_table`.`col3`),
+	                    	    GROUPING(`your_table`.`col1`) AS `is_col1_grouped`
+	                    	FROM                
+	                    	    `default`.`your_table`
+	                    	GROUP BY            
+	                    	    `your_table`.`col1`, `your_table`.`col2`
+	                    	WITH CUBE           
+PREHOOK: query: select * from your_view
+PREHOOK: type: QUERY
+PREHOOK: Input: default@your_table
+PREHOOK: Input: default@your_view
+#### A masked pattern was here ####
+POSTHOOK: query: select * from your_view
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@your_table
+POSTHOOK: Input: default@your_view
+#### A masked pattern was here ####
+NULL	NULL	NULL	1

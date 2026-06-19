@@ -1,0 +1,56 @@
+This file contains information for developers and testers.
+
+Running unit and checkin tests:
+By default only some of the tests in standalone-metastore are run.  This is 
+done to keep the runtime of the unit tests under 5 minutes.  These are referred
+to as the unit tests.  The remainder of the tests are referred to as checkin
+tests and are run by the CI process.  It is also advised that you run the
+checkin tests before loading a patch.
+
+To run just the checkin tests:
+'mvn test -Dtest.groups=org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest'
+
+To run all the tests:
+'mvn test -Dtest.groups=""'.  At the moment this takes around 25 minutes.
+
+When adding a test, if you want it to run as part of the unit tests annotate it
+with MetastoreUnitTest.  To make it part of the checkin tests annotate it with
+MetastoreCheckinTest.  We want to keep the unit test runs as quick as possible.
+If you write a test that takes more than 5 seconds to run the whole test class
+please put it in the checkin tests.  If it tests something that needs to be 
+tested in unit test runs break it into multiple classes so that a
+quick test can be done for the unit tests and more in depth testing as part
+of the checkin tests.
+
+--------------------------------------------------------------------------------
+There are checkin tests for testing installation and upgrade of the
+metastore on Derby, MySQL (actually MariaDB is used), Oracle, Postgres, and SQLServer.
+
+For each DB type we runs two tests, one that installs the latest version of the
+database and one that installs the latest version minus one and then upgrades
+the database.
+
+The tests (except Derby) rely on Docker so the latter needs to be installed and configured
+properly (e.g., memory more than 3.5GB).
+
+Run a single test:
+
+mvn test -Dtest.groups=MetastoreCheckinTest -Dtest=TestDerby
+
+Supported databases for testing:
+-Dtest=TestDerby
+-Dtest=TestMysql
+-Dtest=TestOracle
+-Dtest=TestPostgres
+-Dtest=TestMssql
+
+By adding -Dverbose.schematool the Schema Tool output becomes more detailed.
+
+If you wish to use one of these containers to run your own tests against a
+non-Derby version of the metastore, you can do that as well.  You must specify
+that only the install test be run (-Dtest=TestMysql#install) and tell it to leave the docker container
+running by adding -Dmetastore.itest.no.stop.container=true.  You will then need
+to stop and remove the container yourself once you have finished.  The container
+is recreated for each run of the test, so you cannot rerun the test until you
+have stopped and removed it.  You can construct the connection values to put in
+metastore-site.xml from the information in the DatabaseRule and its subclasses.

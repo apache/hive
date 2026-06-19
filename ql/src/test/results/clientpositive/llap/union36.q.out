@@ -1,0 +1,28 @@
+PREHOOK: query: select (x/sum(x) over())  as y from(select cast(1 as decimal(10,0))  as x from (select * from src limit 2)s1 union all select cast(1 as decimal(10,0)) x from (select * from src limit 2) s2 union all select cast('100000000' as decimal(10,0)) x from (select * from src limit 2) s3)u
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select (x/sum(x) over())  as y from(select cast(1 as decimal(10,0))  as x from (select * from src limit 2)s1 union all select cast(1 as decimal(10,0)) x from (select * from src limit 2) s2 union all select cast('100000000' as decimal(10,0)) x from (select * from src limit 2) s3)u
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0.000000004999999900000
+0.000000004999999900000
+0.000000004999999900000
+0.000000004999999900000
+0.499999990000000200000
+0.499999990000000200000
+PREHOOK: query: select (x/sum(x) over()) as y from(select cast(1 as decimal(10,0))  as x from (select * from src limit 2)s1 union all select cast(1 as decimal(10,0)) x from (select * from src limit 2) s2 union all select cast (null as decimal(10,0)) x from (select * from src limit 2) s3)u
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select (x/sum(x) over()) as y from(select cast(1 as decimal(10,0))  as x from (select * from src limit 2)s1 union all select cast(1 as decimal(10,0)) x from (select * from src limit 2) s2 union all select cast (null as decimal(10,0)) x from (select * from src limit 2) s3)u
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0.250000000000000000000
+0.250000000000000000000
+0.250000000000000000000
+0.250000000000000000000
+NULL
+NULL

@@ -1,0 +1,159 @@
+PREHOOK: query: EXPLAIN CBO
+SELECT *
+FROM src src1
+  JOIN src src2 ON (src1.key = src2.key)
+  JOIN src src3 ON (src1.key = src3.key)
+WHERE src1.key > 10 and src1.key < 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT *
+FROM src src1
+  JOIN src src2 ON (src1.key = src2.key)
+  JOIN src src3 ON (src1.key = src3.key)
+WHERE src1.key > 10 and src1.key < 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(src1.key=[$0], src1.value=[$1], src2.key=[$2], src2.value=[$3], src3.key=[$4], src3.value=[$5])
+  HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(key=[$0], value=[$1])
+        HiveFilter(condition=[AND(>(CAST($0):DOUBLE, 1E1), <(CAST($0):DOUBLE, 2E1), IS NOT NULL($0))])
+          HiveTableScan(table=[[default, src]], table:alias=[src1])
+      HiveProject(key=[$0], value=[$1])
+        HiveFilter(condition=[AND(>(CAST($0):DOUBLE, 1E1), <(CAST($0):DOUBLE, 2E1), IS NOT NULL($0))])
+          HiveTableScan(table=[[default, src]], table:alias=[src2])
+    HiveProject(key=[$0], value=[$1])
+      HiveFilter(condition=[AND(>(CAST($0):DOUBLE, 1E1), <(CAST($0):DOUBLE, 2E1), IS NOT NULL($0))])
+        HiveTableScan(table=[[default, src]], table:alias=[src3])
+
+PREHOOK: query: EXPLAIN CBO
+SELECT *
+FROM src src1
+  JOIN src src2 ON (src1.key = src2.key)
+  JOIN src src3 ON (src1.key = src3.key)
+WHERE src1.key > 10 and src1.key < 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT *
+FROM src src1
+  JOIN src src2 ON (src1.key = src2.key)
+  JOIN src src3 ON (src1.key = src3.key)
+WHERE src1.key > 10 and src1.key < 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+Excluded rules: HiveJoinPushTransitivePredicatesRule
+
+CBO PLAN:
+HiveProject(src1.key=[$4], src1.value=[$5], src2.key=[$2], src2.value=[$3], src3.key=[$0], src3.value=[$1])
+  HiveJoin(condition=[=($4, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(key=[$0], value=[$1])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveTableScan(table=[[default, src]], table:alias=[src3])
+    HiveJoin(condition=[=($2, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(key=[$0], value=[$1])
+        HiveFilter(condition=[IS NOT NULL($0)])
+          HiveTableScan(table=[[default, src]], table:alias=[src2])
+      HiveProject(key=[$0], value=[$1])
+        HiveFilter(condition=[AND(>(CAST($0):DOUBLE, 1E1), <(CAST($0):DOUBLE, 2E1), IS NOT NULL($0))])
+          HiveTableScan(table=[[default, src]], table:alias=[src1])
+
+PREHOOK: query: EXPLAIN CBO
+SELECT *
+FROM src src1
+  JOIN src src2 ON (src1.key = src2.key)
+  JOIN src src3 ON (src1.key = src3.key)
+WHERE src1.key > 10 and src1.key < 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT *
+FROM src src1
+  JOIN src src2 ON (src1.key = src2.key)
+  JOIN src src3 ON (src1.key = src3.key)
+WHERE src1.key > 10 and src1.key < 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+Excluded rules: HiveJoinPushTransitivePredicatesRule|HiveJoinAddNotNullRule
+
+CBO PLAN:
+HiveProject(src1.key=[$4], src1.value=[$5], src2.key=[$2], src2.value=[$3], src3.key=[$0], src3.value=[$1])
+  HiveJoin(condition=[=($4, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(key=[$0], value=[$1])
+      HiveTableScan(table=[[default, src]], table:alias=[src3])
+    HiveJoin(condition=[=($2, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(key=[$0], value=[$1])
+        HiveTableScan(table=[[default, src]], table:alias=[src2])
+      HiveProject(key=[$0], value=[$1])
+        HiveFilter(condition=[AND(>(CAST($0):DOUBLE, 1E1), <(CAST($0):DOUBLE, 2E1))])
+          HiveTableScan(table=[[default, src]], table:alias=[src1])
+
+PREHOOK: query: EXPLAIN CBO
+SELECT *
+FROM src src1
+  JOIN src src2 ON (src1.key = src2.key)
+  JOIN src src3 ON (src1.key = src3.key)
+WHERE src1.key > 10 and src1.key < 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT *
+FROM src src1
+  JOIN src src2 ON (src1.key = src2.key)
+  JOIN src src3 ON (src1.key = src3.key)
+WHERE src1.key > 10 and src1.key < 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+Excluded rules: HiveJoin.*Rule
+
+CBO PLAN:
+HiveProject(src1.key=[$4], src1.value=[$5], src2.key=[$2], src2.value=[$3], src3.key=[$0], src3.value=[$1])
+  HiveJoin(condition=[=($4, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(key=[$0], value=[$1])
+      HiveTableScan(table=[[default, src]], table:alias=[src3])
+    HiveJoin(condition=[=($2, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(key=[$0], value=[$1])
+        HiveTableScan(table=[[default, src]], table:alias=[src2])
+      HiveProject(key=[$0], value=[$1])
+        HiveFilter(condition=[AND(>(CAST($0):DOUBLE, 1E1), <(CAST($0):DOUBLE, 2E1))])
+          HiveTableScan(table=[[default, src]], table:alias=[src1])
+
+PREHOOK: query: EXPLAIN CBO
+SELECT *
+FROM src src1
+  JOIN src src2 ON (src1.key = src2.key)
+  JOIN src src3 ON (src1.key = src3.key)
+WHERE src1.key > 10 and src1.key < 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT *
+FROM src src1
+  JOIN src src2 ON (src1.key = src2.key)
+  JOIN src src3 ON (src1.key = src3.key)
+WHERE src1.key > 10 and src1.key < 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+Excluded rules: .*
+
+CBO PLAN:
+HiveProject(src1.key=[$0], src1.value=[$1], src2.key=[$6], src2.value=[$7], src3.key=[$12], src3.value=[$13])
+  HiveFilter(condition=[AND(>(CAST($0):DOUBLE, CAST(10):DOUBLE), <(CAST($0):DOUBLE, CAST(20):DOUBLE))])
+    HiveJoin(condition=[=($0, $12)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveJoin(condition=[=($0, $6)], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveTableScan(table=[[default, src]], table:alias=[src1])
+        HiveTableScan(table=[[default, src]], table:alias=[src2])
+      HiveTableScan(table=[[default, src]], table:alias=[src3])
+

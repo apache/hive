@@ -1,0 +1,17 @@
+PREHOOK: query: create database repl_db_test with DBPROPERTIES('EXTERNAL_TABLES_ONLY'='true')
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:repl_db_test
+POSTHOOK: query: create database repl_db_test with DBPROPERTIES('EXTERNAL_TABLES_ONLY'='true')
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:repl_db_test
+PREHOOK: query: use repl_db_test
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:repl_db_test
+POSTHOOK: query: use repl_db_test
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:repl_db_test
+PREHOOK: query: CREATE TRANSACTIONAL TABLE transactional_table_test(key string, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:repl_db_test
+PREHOOK: Output: repl_db_test@transactional_table_test
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. MetaException(message:Creation of ACID table is not allowed when the property 'EXTERNAL_TABLES_ONLY'='TRUE' is set on the database.)

@@ -1,0 +1,169 @@
+PREHOOK: query: drop table varchar_union1_vc1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table varchar_union1_vc1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table varchar_union1_vc2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table varchar_union1_vc2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table varchar_union1_str
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table varchar_union1_str
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table  varchar_union1_vc1 (
+  c1 int,
+  c2 varchar(10)
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_union1_vc1
+POSTHOOK: query: create table  varchar_union1_vc1 (
+  c1 int,
+  c2 varchar(10)
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@varchar_union1_vc1
+PREHOOK: query: create table  varchar_union1_vc2 (
+  c1 int,
+  c2 varchar(20)
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_union1_vc2
+POSTHOOK: query: create table  varchar_union1_vc2 (
+  c1 int,
+  c2 varchar(20)
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@varchar_union1_vc2
+PREHOOK: query: create table  varchar_union1_str (
+  c1 int,
+  c2 string
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_union1_str
+POSTHOOK: query: create table  varchar_union1_str (
+  c1 int,
+  c2 string
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@varchar_union1_str
+PREHOOK: query: load data local inpath '../../data/files/vc1.txt' into table varchar_union1_vc1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@varchar_union1_vc1
+POSTHOOK: query: load data local inpath '../../data/files/vc1.txt' into table varchar_union1_vc1
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@varchar_union1_vc1
+PREHOOK: query: load data local inpath '../../data/files/vc1.txt' into table varchar_union1_vc2
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@varchar_union1_vc2
+POSTHOOK: query: load data local inpath '../../data/files/vc1.txt' into table varchar_union1_vc2
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@varchar_union1_vc2
+PREHOOK: query: load data local inpath '../../data/files/vc1.txt' into table varchar_union1_str
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@varchar_union1_str
+POSTHOOK: query: load data local inpath '../../data/files/vc1.txt' into table varchar_union1_str
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@varchar_union1_str
+PREHOOK: query: select * from (
+  select * from varchar_union1_vc1
+  union all
+  select * from varchar_union1_vc1 limit 1
+) q1 sort by c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@varchar_union1_vc1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (
+  select * from varchar_union1_vc1
+  union all
+  select * from varchar_union1_vc1 limit 1
+) q1 sort by c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchar_union1_vc1
+#### A masked pattern was here ####
+1	abc
+PREHOOK: query: select * from (
+  select * from varchar_union1_vc1
+  union all
+  select * from varchar_union1_vc2 limit 1
+) q1 sort by c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@varchar_union1_vc1
+PREHOOK: Input: default@varchar_union1_vc2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (
+  select * from varchar_union1_vc1
+  union all
+  select * from varchar_union1_vc2 limit 1
+) q1 sort by c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchar_union1_vc1
+POSTHOOK: Input: default@varchar_union1_vc2
+#### A masked pattern was here ####
+1	abc
+PREHOOK: query: select * from (
+  select * from varchar_union1_vc1
+  union all
+  select * from varchar_union1_str limit 1
+) q1 sort by c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@varchar_union1_str
+PREHOOK: Input: default@varchar_union1_vc1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (
+  select * from varchar_union1_vc1
+  union all
+  select * from varchar_union1_str limit 1
+) q1 sort by c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchar_union1_str
+POSTHOOK: Input: default@varchar_union1_vc1
+#### A masked pattern was here ####
+1	abc
+PREHOOK: query: drop table varchar_union1_vc1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@varchar_union1_vc1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_union1_vc1
+POSTHOOK: query: drop table varchar_union1_vc1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@varchar_union1_vc1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@varchar_union1_vc1
+PREHOOK: query: drop table varchar_union1_vc2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@varchar_union1_vc2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_union1_vc2
+POSTHOOK: query: drop table varchar_union1_vc2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@varchar_union1_vc2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@varchar_union1_vc2
+PREHOOK: query: drop table varchar_union1_str
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@varchar_union1_str
+PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_union1_str
+POSTHOOK: query: drop table varchar_union1_str
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@varchar_union1_str
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@varchar_union1_str

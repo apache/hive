@@ -1,0 +1,57 @@
+PREHOOK: query: drop table if exists hcat_altertable_16
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists hcat_altertable_16
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table hcat_altertable_16(a int, b string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hcat_altertable_16
+POSTHOOK: query: create table hcat_altertable_16(a int, b string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hcat_altertable_16
+PREHOOK: query: show table extended like  hcat_altertable_16
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like  hcat_altertable_16
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:hcat_altertable_16
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { i32 a, string b}
+partitioned:false
+partitionColumns:
+totalNumberFiles:0
+totalFileSize:0
+maxFileSize:0
+minFileSize:0
+#### A masked pattern was here ####
+
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTABLE_LOCATION
+PREHOOK: Input: default@hcat_altertable_16
+PREHOOK: Output: default@hcat_altertable_16
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTABLE_LOCATION
+POSTHOOK: Input: default@hcat_altertable_16
+POSTHOOK: Output: default@hcat_altertable_16
+#### A masked pattern was here ####
+PREHOOK: query: show table extended like  hcat_altertable_16
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like  hcat_altertable_16
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:hcat_altertable_16
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { i32 a, string b}
+partitioned:false
+partitionColumns:
+totalNumberFiles:unknown
+totalFileSize:unknown
+maxFileSize:unknown
+minFileSize:unknown
+#### A masked pattern was here ####
+

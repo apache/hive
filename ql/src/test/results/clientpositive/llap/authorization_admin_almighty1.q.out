@@ -1,0 +1,54 @@
+PREHOOK: query: create table t1_n76(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1_n76
+POSTHOOK: query: create table t1_n76(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1_n76
+PREHOOK: query: show current roles
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: show current roles
+POSTHOOK: type: SHOW_ROLES
+public
+PREHOOK: query: set role ADMIN
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role ADMIN
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: show current roles
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: show current roles
+POSTHOOK: type: SHOW_ROLES
+admin
+PREHOOK: query: select * from t1_n76
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n76
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t1_n76
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n76
+#### A masked pattern was here ####
+PREHOOK: query: grant all on table t1_n76 to user user1
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@t1_n76
+POSTHOOK: query: grant all on table t1_n76 to user user1
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@t1_n76
+PREHOOK: query: show grant user user1 on table t1_n76
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user user1 on table t1_n76
+POSTHOOK: type: SHOW_GRANT
+default	t1_n76			user1	USER	DELETE	false	-1	hive_admin_user
+default	t1_n76			user1	USER	INSERT	false	-1	hive_admin_user
+default	t1_n76			user1	USER	SELECT	false	-1	hive_admin_user
+default	t1_n76			user1	USER	UPDATE	false	-1	hive_admin_user
+PREHOOK: query: drop table t1_n76
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t1_n76
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1_n76
+POSTHOOK: query: drop table t1_n76
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t1_n76
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1_n76

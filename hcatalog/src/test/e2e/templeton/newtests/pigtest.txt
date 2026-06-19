@@ -1,0 +1,66 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+checks for all of them -
+- lanucher  launched ok
+- job succeeded (and pig exit status 0)/failed (tests below succeed unless specified)
+
+
+#1
+pig -e 'fs -ls :INPDIR:/'
+- stdout after job finish has list of files including some known one (.*nums.txt.*)
+
+#2
+pig -e 'erroneous syntax'
+- job failed
+- stderr contains syntax error message
+
+#3
+pig -check "l = load 'x';"
+
+#4
+- add loadstore.pig to files to be copied
+pig -p INPDIR=:INPDIR: -p OUTDIR=:OUTDIR: loadstore.pig
+
+#5
+- add piggybank.jar to files to be copied
+pig -p INPDIR=:INPDIR: -p OUTDIR=:OUTDIR: jarregistered.pig
+
+#6
+#jar specified in cmdline option instead of explicit register in script
+- add piggybank.jar to files to be copied
+pig  -Dpig.additional.jars=piggybank.jar -p INPDIR=:INPDIR: -p OUTDIR=:OUTDIR:  jaradditionaljars.pig
+
+
+#7
+- add rowcountmacro.pig to files to be copied
+pig -p INPDIR=:INPDIR: -p OUTDIR=:OUTDIR: rowcount_withmacro.pig 
+
+
+#8
+# test error when input file is not present
+pig -p INPDIR=:INPDIR: -p OUTDIR=:OUTDIR: no_such_file.pig
+- non zero exit status
+
+#9
+#i haven't been able to get this test working, it complains of not being able to find PyException class
+# would reccomend taking daniel's help to get it working
+- add udfs.py to files to be copied
+pig  -p INPDIR=:INPDIR: -p OUTDIR=:OUTDIR: pythonudf.pig
+
+
+

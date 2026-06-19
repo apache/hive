@@ -1,0 +1,63 @@
+PREHOOK: query: CREATE EXTERNAL TABLE test(code string,name string)
+ROW FORMAT SERDE
+   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+ WITH SERDEPROPERTIES (
+   'field.delim'='\t')
+ STORED AS INPUTFORMAT
+   'org.apache.hadoop.mapred.TextInputFormat'
+ OUTPUTFORMAT
+   'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+#### A masked pattern was here ####
+ TBLPROPERTIES (
+   'skip.header.line.count'='1',
+   'textinputformat.record.delimiter'='|')
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test
+POSTHOOK: query: CREATE EXTERNAL TABLE test(code string,name string)
+ROW FORMAT SERDE
+   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+ WITH SERDEPROPERTIES (
+   'field.delim'='\t')
+ STORED AS INPUTFORMAT
+   'org.apache.hadoop.mapred.TextInputFormat'
+ OUTPUTFORMAT
+   'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+#### A masked pattern was here ####
+ TBLPROPERTIES (
+   'skip.header.line.count'='1',
+   'textinputformat.record.delimiter'='|')
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/header_footer_table_4/0003.txt' INTO TABLE test
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@test
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/header_footer_table_4/0003.txt' INTO TABLE test
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@test
+PREHOOK: query: SELECT COUNT(*) FROM test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+3
+PREHOOK: query: SELECT * FROM test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+A	AAAA
+B	BBBB
+CCCC
+C	DDDD

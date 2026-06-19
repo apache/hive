@@ -1,0 +1,49 @@
+PREHOOK: query: DROP TABLE IF EXISTS int_txt
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS int_txt
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE int_txt (`i` int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@int_txt
+POSTHOOK: query: CREATE TABLE int_txt (`i` int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@int_txt
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/decimal_10_0.txt' OVERWRITE INTO TABLE int_txt
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@int_txt
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/decimal_10_0.txt' OVERWRITE INTO TABLE int_txt
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@int_txt
+PREHOOK: query: select count(*)
+from
+  int_txt
+  where
+         (( 1.0 * i) / ( 1.0 * i)) > 1.2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@int_txt
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*)
+from
+  int_txt
+  where
+         (( 1.0 * i) / ( 1.0 * i)) > 1.2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@int_txt
+#### A masked pattern was here ####
+0
+PREHOOK: query: DROP TABLE IF EXISTS int_txt
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@int_txt
+PREHOOK: Output: database:default
+PREHOOK: Output: default@int_txt
+POSTHOOK: query: DROP TABLE IF EXISTS int_txt
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@int_txt
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@int_txt

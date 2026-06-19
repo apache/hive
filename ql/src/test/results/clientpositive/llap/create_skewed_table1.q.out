@@ -1,0 +1,166 @@
+PREHOOK: query: CREATE TABLE list_bucket_single (key STRING, value STRING) SKEWED BY (key) ON ('1','5','6')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@list_bucket_single
+POSTHOOK: query: CREATE TABLE list_bucket_single (key STRING, value STRING) SKEWED BY (key) ON ('1','5','6')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@list_bucket_single
+PREHOOK: query: CREATE TABLE list_bucket_single_2 (key STRING, value STRING) SKEWED BY (key) ON ((1),(5),(6))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@list_bucket_single_2
+POSTHOOK: query: CREATE TABLE list_bucket_single_2 (key STRING, value STRING) SKEWED BY (key) ON ((1),(5),(6))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@list_bucket_single_2
+PREHOOK: query: CREATE TABLE list_bucket_multiple (col1 STRING, col2 int, col3 STRING) SKEWED BY (col1, col2) ON (('s1',1), ('s3',3), ('s13',13), ('s78',78))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@list_bucket_multiple
+POSTHOOK: query: CREATE TABLE list_bucket_multiple (col1 STRING, col2 int, col3 STRING) SKEWED BY (col1, col2) ON (('s1',1), ('s3',3), ('s13',13), ('s78',78))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@list_bucket_multiple
+PREHOOK: query: describe formatted list_bucket_single_2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@list_bucket_single_2
+POSTHOOK: query: describe formatted list_bucket_single_2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@list_bucket_single_2
+# col_name            	data_type           	comment             
+key                 	string              	                    
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Skewed Columns:     	[key]               	 
+Skewed Values:      	[[1], [5], [6]]     	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted list_bucket_single
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@list_bucket_single
+POSTHOOK: query: describe formatted list_bucket_single
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@list_bucket_single
+# col_name            	data_type           	comment             
+key                 	string              	                    
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Skewed Columns:     	[key]               	 
+Skewed Values:      	[[1], [5], [6]]     	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted list_bucket_multiple
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@list_bucket_multiple
+POSTHOOK: query: describe formatted list_bucket_multiple
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@list_bucket_multiple
+# col_name            	data_type           	comment             
+col1                	string              	                    
+col2                	int                 	                    
+col3                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\",\"col3\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Skewed Columns:     	[col1, col2]        	 
+Skewed Values:      	[[s1, 1], [s13, 13], [s3, 3], [s78, 78]]	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table list_bucket_single
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@list_bucket_single
+PREHOOK: Output: database:default
+PREHOOK: Output: default@list_bucket_single
+POSTHOOK: query: drop table list_bucket_single
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@list_bucket_single
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@list_bucket_single
+PREHOOK: query: drop table list_bucket_multiple
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@list_bucket_multiple
+PREHOOK: Output: database:default
+PREHOOK: Output: default@list_bucket_multiple
+POSTHOOK: query: drop table list_bucket_multiple
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@list_bucket_multiple
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@list_bucket_multiple
+PREHOOK: query: drop table list_bucket_single_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@list_bucket_single_2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@list_bucket_single_2
+POSTHOOK: query: drop table list_bucket_single_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@list_bucket_single_2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@list_bucket_single_2

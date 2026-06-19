@@ -1,0 +1,5 @@
+Ln:1 CREATE TABLE
+Ln:1 CREATE TABLE IF NOT EXISTS `users` (
+  `id` int,
+  `name` STRING
+) COMMENT 'users table'

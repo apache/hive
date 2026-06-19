@@ -1,0 +1,1 @@
+FAILED: CalciteSubquerySemanticException [Error 10249]: Line 5:7 Unsupported SubQuery Expression 'key': SubQuery on left hand side is not supported.

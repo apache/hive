@@ -1,0 +1,1244 @@
+PREHOOK: query: create table orc_merge5_n4 (userid bigint, string1 string, subtype double, decimal1 decimal(38,0), ts timestamp) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_merge5_n4
+POSTHOOK: query: create table orc_merge5_n4 (userid bigint, string1 string, subtype double, decimal1 decimal(38,0), ts timestamp) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_merge5_n4
+PREHOOK: query: create table orc_merge5a_n1 (userid bigint, string1 string, subtype double, decimal1 decimal(38,0), ts timestamp) partitioned by (year string, hour int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_merge5a_n1
+POSTHOOK: query: create table orc_merge5a_n1 (userid bigint, string1 string, subtype double, decimal1 decimal(38,0), ts timestamp) partitioned by (year string, hour int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_merge5a_n1
+PREHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_merge5_n4
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@orc_merge5_n4
+POSTHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' into table orc_merge5_n4
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@orc_merge5_n4
+PREHOOK: query: explain insert overwrite table orc_merge5a_n1 partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5_n4
+PREHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: query: explain insert overwrite table orc_merge5a_n1 partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5_n4
+POSTHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: orc_merge5_n4
+                  filterExpr: (userid <= 13L) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (userid <= 13L) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: userid (type: bigint), string1 (type: string), subtype (type: double), decimal1 (type: decimal(38,0)), ts (type: timestamp)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                            name: default.orc_merge5a_n1
+                      Select Operator
+                        expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: double), _col3 (type: decimal(38,0)), _col4 (type: timestamp), '2000' (type: string), UDFToInteger('24') (type: int)
+                        outputColumnNames: userid, string1, subtype, decimal1, ts, year, hour
+                        Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: min(userid), max(userid), count(1), count(userid), compute_bit_vector_hll(userid), max(length(string1)), avg(COALESCE(length(string1),0)), count(string1), compute_bit_vector_hll(string1), min(subtype), max(subtype), count(subtype), compute_bit_vector_hll(subtype), min(decimal1), max(decimal1), count(decimal1), compute_bit_vector_hll(decimal1), min(ts), max(ts), count(ts), compute_bit_vector_hll(ts)
+                          keys: year (type: string), hour (type: int)
+                          minReductionHashAggr: 0.99
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22
+                          Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            key expressions: _col0 (type: string), _col1 (type: int)
+                            null sort order: zz
+                            sort order: ++
+                            Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                            Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col2 (type: bigint), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: binary), _col7 (type: int), _col8 (type: struct<count:bigint,sum:double,input:int>), _col9 (type: bigint), _col10 (type: binary), _col11 (type: double), _col12 (type: double), _col13 (type: bigint), _col14 (type: binary), _col15 (type: decimal(38,0)), _col16 (type: decimal(38,0)), _col17 (type: bigint), _col18 (type: binary), _col19 (type: timestamp), _col20 (type: timestamp), _col21 (type: bigint), _col22 (type: binary)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector_hll(VALUE._col16), min(VALUE._col17), max(VALUE._col18), count(VALUE._col19), compute_bit_vector_hll(VALUE._col20)
+                keys: KEY._col0 (type: string), KEY._col1 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22
+                Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 'LONG' (type: string), _col2 (type: bigint), _col3 (type: bigint), (_col4 - _col5) (type: bigint), COALESCE(ndv_compute_bit_vector(_col6),0) (type: bigint), _col6 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col7,0)) (type: bigint), COALESCE(_col8,0) (type: double), (_col4 - _col9) (type: bigint), COALESCE(ndv_compute_bit_vector(_col10),0) (type: bigint), _col10 (type: binary), 'DOUBLE' (type: string), _col11 (type: double), _col12 (type: double), (_col4 - _col13) (type: bigint), COALESCE(ndv_compute_bit_vector(_col14),0) (type: bigint), _col14 (type: binary), 'DECIMAL' (type: string), _col15 (type: decimal(38,0)), _col16 (type: decimal(38,0)), (_col4 - _col17) (type: bigint), COALESCE(ndv_compute_bit_vector(_col18),0) (type: bigint), _col18 (type: binary), 'TIMESTAMP' (type: string), _col19 (type: timestamp), _col20 (type: timestamp), (_col4 - _col21) (type: bigint), COALESCE(ndv_compute_bit_vector(_col22),0) (type: bigint), _col22 (type: binary), _col0 (type: string), _col1 (type: int)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31
+                  Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            hour 24
+            year 2000
+          replace: true
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.orc_merge5a_n1
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: userid, string1, subtype, decimal1, ts
+          Column Types: bigint, string, double, decimal(38,0), timestamp
+          Table: default.orc_merge5a_n1
+
+PREHOOK: query: insert overwrite table orc_merge5a_n1 partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5_n4
+PREHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: query: insert overwrite table orc_merge5a_n1 partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5_n4
+POSTHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2000,hour=24).decimal1 SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:decimal1, type:decimal(38,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2000,hour=24).string1 SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2000,hour=24).subtype SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2000,hour=24).ts SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2000,hour=24).userid SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:userid, type:bigint, comment:null), ]
+PREHOOK: query: insert overwrite table orc_merge5a_n1 partition (year="2001",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5_n4
+PREHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+POSTHOOK: query: insert overwrite table orc_merge5a_n1 partition (year="2001",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5_n4
+POSTHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2001,hour=24).decimal1 SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:decimal1, type:decimal(38,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2001,hour=24).string1 SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2001,hour=24).subtype SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2001,hour=24).ts SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2001,hour=24).userid SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:userid, type:bigint, comment:null), ]
+PREHOOK: query: analyze table orc_merge5a_n1 partition(year="2000",hour=24) compute statistics noscan
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: query: analyze table orc_merge5a_n1 partition(year="2000",hour=24) compute statistics noscan
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+PREHOOK: query: analyze table orc_merge5a_n1 partition(year="2001",hour=24) compute statistics noscan
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+POSTHOOK: query: analyze table orc_merge5a_n1 partition(year="2001",hour=24) compute statistics noscan
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+Found 1 items
+#### A masked pattern was here ####
+Found 1 items
+#### A masked pattern was here ####
+PREHOOK: query: show partitions orc_merge5a_n1
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: show partitions orc_merge5a_n1
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@orc_merge5a_n1
+year=2000/hour=24
+year=2001/hour=24
+PREHOOK: query: select * from orc_merge5a_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5a_n1
+PREHOOK: Input: default@orc_merge5a_n1@year=2000/hour=24
+PREHOOK: Input: default@orc_merge5a_n1@year=2001/hour=24
+#### A masked pattern was here ####
+POSTHOOK: query: select * from orc_merge5a_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: Input: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: Input: default@orc_merge5a_n1@year=2001/hour=24
+#### A masked pattern was here ####
+13	bar	80.0	2	1969-12-31 16:00:05	2000	24
+13	bar	80.0	2	1969-12-31 16:00:05	2001	24
+2	foo	0.8	1	1969-12-31 16:00:00	2000	24
+2	foo	0.8	1	1969-12-31 16:00:00	2001	24
+5	eat	0.8	6	1969-12-31 16:00:20	2000	24
+5	eat	0.8	6	1969-12-31 16:00:20	2001	24
+PREHOOK: query: explain insert overwrite table orc_merge5a_n1 partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5_n4
+PREHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: query: explain insert overwrite table orc_merge5a_n1 partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5_n4
+POSTHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-8 depends on stages: Stage-1 , consists of Stage-5, Stage-4, Stage-6
+  Stage-5
+  Stage-2 depends on stages: Stage-5, Stage-4, Stage-7
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-4
+  Stage-6
+  Stage-7 depends on stages: Stage-6
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: orc_merge5_n4
+                  filterExpr: (userid <= 13L) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (userid <= 13L) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: userid (type: bigint), string1 (type: string), subtype (type: double), decimal1 (type: decimal(38,0)), ts (type: timestamp)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                            name: default.orc_merge5a_n1
+                      Select Operator
+                        expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: double), _col3 (type: decimal(38,0)), _col4 (type: timestamp), '2000' (type: string), UDFToInteger('24') (type: int)
+                        outputColumnNames: userid, string1, subtype, decimal1, ts, year, hour
+                        Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: min(userid), max(userid), count(1), count(userid), compute_bit_vector_hll(userid), max(length(string1)), avg(COALESCE(length(string1),0)), count(string1), compute_bit_vector_hll(string1), min(subtype), max(subtype), count(subtype), compute_bit_vector_hll(subtype), min(decimal1), max(decimal1), count(decimal1), compute_bit_vector_hll(decimal1), min(ts), max(ts), count(ts), compute_bit_vector_hll(ts)
+                          keys: year (type: string), hour (type: int)
+                          minReductionHashAggr: 0.99
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22
+                          Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            key expressions: _col0 (type: string), _col1 (type: int)
+                            null sort order: zz
+                            sort order: ++
+                            Map-reduce partition columns: _col0 (type: string), _col1 (type: int)
+                            Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col2 (type: bigint), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: binary), _col7 (type: int), _col8 (type: struct<count:bigint,sum:double,input:int>), _col9 (type: bigint), _col10 (type: binary), _col11 (type: double), _col12 (type: double), _col13 (type: bigint), _col14 (type: binary), _col15 (type: decimal(38,0)), _col16 (type: decimal(38,0)), _col17 (type: bigint), _col18 (type: binary), _col19 (type: timestamp), _col20 (type: timestamp), _col21 (type: bigint), _col22 (type: binary)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector_hll(VALUE._col16), min(VALUE._col17), max(VALUE._col18), count(VALUE._col19), compute_bit_vector_hll(VALUE._col20)
+                keys: KEY._col0 (type: string), KEY._col1 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22
+                Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 'LONG' (type: string), _col2 (type: bigint), _col3 (type: bigint), (_col4 - _col5) (type: bigint), COALESCE(ndv_compute_bit_vector(_col6),0) (type: bigint), _col6 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col7,0)) (type: bigint), COALESCE(_col8,0) (type: double), (_col4 - _col9) (type: bigint), COALESCE(ndv_compute_bit_vector(_col10),0) (type: bigint), _col10 (type: binary), 'DOUBLE' (type: string), _col11 (type: double), _col12 (type: double), (_col4 - _col13) (type: bigint), COALESCE(ndv_compute_bit_vector(_col14),0) (type: bigint), _col14 (type: binary), 'DECIMAL' (type: string), _col15 (type: decimal(38,0)), _col16 (type: decimal(38,0)), (_col4 - _col17) (type: bigint), COALESCE(ndv_compute_bit_vector(_col18),0) (type: bigint), _col18 (type: binary), 'TIMESTAMP' (type: string), _col19 (type: timestamp), _col20 (type: timestamp), (_col4 - _col21) (type: bigint), COALESCE(ndv_compute_bit_vector(_col22),0) (type: bigint), _col22 (type: binary), _col0 (type: string), _col1 (type: int)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31
+                  Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-8
+    Conditional Operator
+
+  Stage: Stage-5
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            hour 24
+            year 2000
+          replace: true
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.orc_merge5a_n1
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: userid, string1, subtype, decimal1, ts
+          Column Types: bigint, string, double, decimal(38,0), timestamp
+          Table: default.orc_merge5a_n1
+
+  Stage: Stage-4
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        File Merge 
+          Merge File Operator
+            Map Operator Tree:
+                ORC File Merge Operator
+            merge level: stripe
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+
+  Stage: Stage-6
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        File Merge 
+          Merge File Operator
+            Map Operator Tree:
+                ORC File Merge Operator
+            merge level: stripe
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+
+  Stage: Stage-7
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+PREHOOK: query: insert overwrite table orc_merge5a_n1 partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5_n4
+PREHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: query: insert overwrite table orc_merge5a_n1 partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5_n4
+POSTHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2000,hour=24).decimal1 SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:decimal1, type:decimal(38,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2000,hour=24).string1 SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2000,hour=24).subtype SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2000,hour=24).ts SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2000,hour=24).userid SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:userid, type:bigint, comment:null), ]
+PREHOOK: query: insert overwrite table orc_merge5a_n1 partition (year="2001",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5_n4
+PREHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+POSTHOOK: query: insert overwrite table orc_merge5a_n1 partition (year="2001",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5_n4
+POSTHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2001,hour=24).decimal1 SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:decimal1, type:decimal(38,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2001,hour=24).string1 SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2001,hour=24).subtype SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2001,hour=24).ts SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2001,hour=24).userid SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:userid, type:bigint, comment:null), ]
+PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) userid
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) userid
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+col_name            	userid              
+data_type           	bigint              
+min                 	2                   
+max                 	13                  
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) decimal1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) decimal1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+col_name            	decimal1            
+data_type           	decimal(38,0)       
+min                 	1                   
+max                 	6                   
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) string1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) string1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+col_name            	string1             
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	3.0                 
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) ts
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) ts
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+col_name            	ts                  
+data_type           	timestamp           
+min                 	1969-12-31 16:00:00 
+max                 	1969-12-31 16:00:20 
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) userid
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) userid
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+col_name            	userid              
+data_type           	bigint              
+min                 	2                   
+max                 	13                  
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) decimal1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) decimal1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+col_name            	decimal1            
+data_type           	decimal(38,0)       
+min                 	1                   
+max                 	6                   
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) string1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) string1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+col_name            	string1             
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	3.0                 
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) ts
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) ts
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+col_name            	ts                  
+data_type           	timestamp           
+min                 	1969-12-31 16:00:00 
+max                 	1969-12-31 16:00:20 
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: analyze table orc_merge5a_n1 partition(year="2000",hour=24) compute statistics noscan
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: query: analyze table orc_merge5a_n1 partition(year="2000",hour=24) compute statistics noscan
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+PREHOOK: query: analyze table orc_merge5a_n1 partition(year="2001",hour=24) compute statistics noscan
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+POSTHOOK: query: analyze table orc_merge5a_n1 partition(year="2001",hour=24) compute statistics noscan
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+PREHOOK: query: analyze table orc_merge5a_n1 partition(year,hour) compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@orc_merge5a_n1
+PREHOOK: Input: default@orc_merge5a_n1@year=2000/hour=24
+PREHOOK: Input: default@orc_merge5a_n1@year=2001/hour=24
+PREHOOK: Output: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+PREHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table orc_merge5a_n1 partition(year,hour) compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: Input: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: Input: default@orc_merge5a_n1@year=2001/hour=24
+POSTHOOK: Output: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+#### A masked pattern was here ####
+Found 1 items
+#### A masked pattern was here ####
+Found 1 items
+#### A masked pattern was here ####
+PREHOOK: query: show partitions orc_merge5a_n1
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: show partitions orc_merge5a_n1
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@orc_merge5a_n1
+year=2000/hour=24
+year=2001/hour=24
+PREHOOK: query: select * from orc_merge5a_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5a_n1
+PREHOOK: Input: default@orc_merge5a_n1@year=2000/hour=24
+PREHOOK: Input: default@orc_merge5a_n1@year=2001/hour=24
+#### A masked pattern was here ####
+POSTHOOK: query: select * from orc_merge5a_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: Input: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: Input: default@orc_merge5a_n1@year=2001/hour=24
+#### A masked pattern was here ####
+13	bar	80.0	2	1969-12-31 16:00:05	2000	24
+13	bar	80.0	2	1969-12-31 16:00:05	2001	24
+2	foo	0.8	1	1969-12-31 16:00:00	2000	24
+2	foo	0.8	1	1969-12-31 16:00:00	2001	24
+5	eat	0.8	6	1969-12-31 16:00:20	2000	24
+5	eat	0.8	6	1969-12-31 16:00:20	2001	24
+PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) userid
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) userid
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+col_name            	userid              
+data_type           	bigint              
+min                 	2                   
+max                 	13                  
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) decimal1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) decimal1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+col_name            	decimal1            
+data_type           	decimal(38,0)       
+min                 	1                   
+max                 	6                   
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) string1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) string1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+col_name            	string1             
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	3.0                 
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) ts
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) ts
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+col_name            	ts                  
+data_type           	timestamp           
+min                 	1969-12-31 16:00:00 
+max                 	1969-12-31 16:00:20 
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) userid
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) userid
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+col_name            	userid              
+data_type           	bigint              
+min                 	2                   
+max                 	13                  
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) decimal1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) decimal1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+col_name            	decimal1            
+data_type           	decimal(38,0)       
+min                 	1                   
+max                 	6                   
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) string1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) string1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+col_name            	string1             
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	3.0                 
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) ts
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) ts
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+col_name            	ts                  
+data_type           	timestamp           
+min                 	1969-12-31 16:00:00 
+max                 	1969-12-31 16:00:20 
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: insert overwrite table orc_merge5a_n1 partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5_n4
+PREHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: query: insert overwrite table orc_merge5a_n1 partition (year="2000",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5_n4
+POSTHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2000,hour=24).decimal1 SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:decimal1, type:decimal(38,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2000,hour=24).string1 SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2000,hour=24).subtype SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2000,hour=24).ts SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2000,hour=24).userid SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:userid, type:bigint, comment:null), ]
+PREHOOK: query: insert overwrite table orc_merge5a_n1 partition (year="2001",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5_n4
+PREHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+POSTHOOK: query: insert overwrite table orc_merge5a_n1 partition (year="2001",hour=24) select userid,string1,subtype,decimal1,ts from orc_merge5_n4 where userid<=13
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5_n4
+POSTHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2001,hour=24).decimal1 SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:decimal1, type:decimal(38,0), comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2001,hour=24).string1 SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:string1, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2001,hour=24).subtype SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:subtype, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2001,hour=24).ts SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_merge5a_n1 PARTITION(year=2001,hour=24).userid SIMPLE [(orc_merge5_n4)orc_merge5_n4.FieldSchema(name:userid, type:bigint, comment:null), ]
+PREHOOK: query: analyze table orc_merge5a_n1 partition(year="2000",hour=24) compute statistics noscan
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: query: analyze table orc_merge5a_n1 partition(year="2000",hour=24) compute statistics noscan
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+PREHOOK: query: analyze table orc_merge5a_n1 partition(year="2001",hour=24) compute statistics noscan
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+POSTHOOK: query: analyze table orc_merge5a_n1 partition(year="2001",hour=24) compute statistics noscan
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+PREHOOK: query: analyze table orc_merge5a_n1 partition(year,hour) compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@orc_merge5a_n1
+PREHOOK: Input: default@orc_merge5a_n1@year=2000/hour=24
+PREHOOK: Input: default@orc_merge5a_n1@year=2001/hour=24
+PREHOOK: Output: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+PREHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table orc_merge5a_n1 partition(year,hour) compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: Input: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: Input: default@orc_merge5a_n1@year=2001/hour=24
+POSTHOOK: Output: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+#### A masked pattern was here ####
+Found 1 items
+#### A masked pattern was here ####
+Found 1 items
+#### A masked pattern was here ####
+PREHOOK: query: show partitions orc_merge5a_n1
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: show partitions orc_merge5a_n1
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@orc_merge5a_n1
+year=2000/hour=24
+year=2001/hour=24
+PREHOOK: query: select * from orc_merge5a_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5a_n1
+PREHOOK: Input: default@orc_merge5a_n1@year=2000/hour=24
+PREHOOK: Input: default@orc_merge5a_n1@year=2001/hour=24
+#### A masked pattern was here ####
+POSTHOOK: query: select * from orc_merge5a_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: Input: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: Input: default@orc_merge5a_n1@year=2001/hour=24
+#### A masked pattern was here ####
+13	bar	80.0	2	1969-12-31 16:00:05	2000	24
+13	bar	80.0	2	1969-12-31 16:00:05	2001	24
+2	foo	0.8	1	1969-12-31 16:00:00	2000	24
+2	foo	0.8	1	1969-12-31 16:00:00	2001	24
+5	eat	0.8	6	1969-12-31 16:00:20	2000	24
+5	eat	0.8	6	1969-12-31 16:00:20	2001	24
+PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) userid
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) userid
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+col_name            	userid              
+data_type           	bigint              
+min                 	2                   
+max                 	13                  
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) decimal1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) decimal1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+col_name            	decimal1            
+data_type           	decimal(38,0)       
+min                 	1                   
+max                 	6                   
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) string1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) string1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+col_name            	string1             
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	3.0                 
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) ts
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) ts
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+col_name            	ts                  
+data_type           	timestamp           
+min                 	1969-12-31 16:00:00 
+max                 	1969-12-31 16:00:20 
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) userid
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) userid
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+col_name            	userid              
+data_type           	bigint              
+min                 	2                   
+max                 	13                  
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) decimal1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) decimal1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+col_name            	decimal1            
+data_type           	decimal(38,0)       
+min                 	1                   
+max                 	6                   
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) string1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) string1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+col_name            	string1             
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	3.0                 
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) ts
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) ts
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+col_name            	ts                  
+data_type           	timestamp           
+min                 	1969-12-31 16:00:00 
+max                 	1969-12-31 16:00:20 
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: explain alter table orc_merge5a_n1 partition(year="2000",hour=24) concatenate
+PREHOOK: type: ALTER_PARTITION_MERGE
+PREHOOK: Input: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: query: explain alter table orc_merge5a_n1 partition(year="2000",hour=24) concatenate
+POSTHOOK: type: ALTER_PARTITION_MERGE
+POSTHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+  Stage-2 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-0
+    Concatenate
+      table name: default.orc_merge5a_n1
+      partition spec:
+        hour 24
+        year 2000
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          partition:
+            hour 24
+            year 2000
+          replace: true
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.orc_merge5a_n1
+
+  Stage: Stage-2
+    Stats Work
+      Basic Stats Work:
+
+PREHOOK: query: alter table orc_merge5a_n1 partition(year="2000",hour=24) concatenate
+PREHOOK: type: ALTER_PARTITION_MERGE
+PREHOOK: Input: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: query: alter table orc_merge5a_n1 partition(year="2000",hour=24) concatenate
+POSTHOOK: type: ALTER_PARTITION_MERGE
+POSTHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+PREHOOK: query: alter table orc_merge5a_n1 partition(year="2001",hour=24) concatenate
+PREHOOK: type: ALTER_PARTITION_MERGE
+PREHOOK: Input: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+POSTHOOK: query: alter table orc_merge5a_n1 partition(year="2001",hour=24) concatenate
+POSTHOOK: type: ALTER_PARTITION_MERGE
+POSTHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+PREHOOK: query: analyze table orc_merge5a_n1 partition(year="2000",hour=24) compute statistics noscan
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: query: analyze table orc_merge5a_n1 partition(year="2000",hour=24) compute statistics noscan
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+PREHOOK: query: analyze table orc_merge5a_n1 partition(year="2001",hour=24) compute statistics noscan
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+POSTHOOK: query: analyze table orc_merge5a_n1 partition(year="2001",hour=24) compute statistics noscan
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+PREHOOK: query: analyze table orc_merge5a_n1 partition(year,hour) compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@orc_merge5a_n1
+PREHOOK: Input: default@orc_merge5a_n1@year=2000/hour=24
+PREHOOK: Input: default@orc_merge5a_n1@year=2001/hour=24
+PREHOOK: Output: default@orc_merge5a_n1
+PREHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+PREHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table orc_merge5a_n1 partition(year,hour) compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: Input: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: Input: default@orc_merge5a_n1@year=2001/hour=24
+POSTHOOK: Output: default@orc_merge5a_n1
+POSTHOOK: Output: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: Output: default@orc_merge5a_n1@year=2001/hour=24
+#### A masked pattern was here ####
+Found 1 items
+#### A masked pattern was here ####
+Found 1 items
+#### A masked pattern was here ####
+PREHOOK: query: show partitions orc_merge5a_n1
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: show partitions orc_merge5a_n1
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@orc_merge5a_n1
+year=2000/hour=24
+year=2001/hour=24
+PREHOOK: query: select * from orc_merge5a_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_merge5a_n1
+PREHOOK: Input: default@orc_merge5a_n1@year=2000/hour=24
+PREHOOK: Input: default@orc_merge5a_n1@year=2001/hour=24
+#### A masked pattern was here ####
+POSTHOOK: query: select * from orc_merge5a_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: Input: default@orc_merge5a_n1@year=2000/hour=24
+POSTHOOK: Input: default@orc_merge5a_n1@year=2001/hour=24
+#### A masked pattern was here ####
+13	bar	80.0	2	1969-12-31 16:00:05	2000	24
+13	bar	80.0	2	1969-12-31 16:00:05	2001	24
+2	foo	0.8	1	1969-12-31 16:00:00	2000	24
+2	foo	0.8	1	1969-12-31 16:00:00	2001	24
+5	eat	0.8	6	1969-12-31 16:00:20	2000	24
+5	eat	0.8	6	1969-12-31 16:00:20	2001	24
+PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) userid
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) userid
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+col_name            	userid              
+data_type           	bigint              
+min                 	2                   
+max                 	13                  
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) decimal1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) decimal1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+col_name            	decimal1            
+data_type           	decimal(38,0)       
+min                 	1                   
+max                 	6                   
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) string1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) string1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+col_name            	string1             
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	3.0                 
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) ts
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2000', hour=24) ts
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+col_name            	ts                  
+data_type           	timestamp           
+min                 	1969-12-31 16:00:00 
+max                 	1969-12-31 16:00:20 
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) userid
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) userid
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+col_name            	userid              
+data_type           	bigint              
+min                 	2                   
+max                 	13                  
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) decimal1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) decimal1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+col_name            	decimal1            
+data_type           	decimal(38,0)       
+min                 	1                   
+max                 	6                   
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) string1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) string1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+col_name            	string1             
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	3.0                 
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) ts
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@orc_merge5a_n1
+POSTHOOK: query: describe formatted orc_merge5a_n1 PARTITION(year='2001', hour=24) ts
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@orc_merge5a_n1
+col_name            	ts                  
+data_type           	timestamp           
+min                 	1969-12-31 16:00:00 
+max                 	1969-12-31 16:00:20 
+num_nulls           	0                   
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   

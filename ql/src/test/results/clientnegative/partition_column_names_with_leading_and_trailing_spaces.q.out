@@ -1,0 +1,35 @@
+PREHOOK: query: create table foo (d string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@foo
+POSTHOOK: query: create table foo (d string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@foo
+PREHOOK: query: create table foo_p (d string) partitioned by (p string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@foo_p
+POSTHOOK: query: create table foo_p (d string) partitioned by (p string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@foo_p
+PREHOOK: query: insert into foo values ("1")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@foo
+POSTHOOK: query: insert into foo values ("1")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@foo
+POSTHOOK: Lineage: foo.d SCRIPT []
+PREHOOK: query: insert into foo_p partition (p="a ") select foo.d from foo
+PREHOOK: type: QUERY
+PREHOOK: Input: default@foo
+PREHOOK: Output: default@foo_p@p=a 
+POSTHOOK: query: insert into foo_p partition (p="a ") select foo.d from foo
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@foo
+POSTHOOK: Output: default@foo_p@p=a 
+POSTHOOK: Lineage: foo_p PARTITION(p=a ).d SIMPLE [(foo)foo.FieldSchema(name:d, type:string, comment:null), ]
+FAILED: SemanticException [Error 10006]: Line 3:29 Partition not found '"a"'

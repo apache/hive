@@ -1,0 +1,68 @@
+PREHOOK: query: CREATE TABLE table1(
+   t1_col1 bigint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table1
+POSTHOOK: query: CREATE TABLE table1(
+   t1_col1 bigint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table1
+PREHOOK: query: CREATE TABLE table2(
+   t2_col1 bigint,
+   t2_col2 int)
+ PARTITIONED BY (
+   t2_col3 date)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table2
+POSTHOOK: query: CREATE TABLE table2(
+   t2_col1 bigint,
+   t2_col2 int)
+ PARTITIONED BY (
+   t2_col3 date)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table2
+PREHOOK: query: insert into table1 values(1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table1
+POSTHOOK: query: insert into table1 values(1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table1
+POSTHOOK: Lineage: table1.t1_col1 SCRIPT []
+PREHOOK: query: insert into table2 values("1","1","1")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table2
+POSTHOOK: query: insert into table2 values("1","1","1")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table2
+POSTHOOK: Output: default@table2@t2_col3=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: table2 PARTITION(t2_col3=__HIVE_DEFAULT_PARTITION__).t2_col1 SCRIPT []
+POSTHOOK: Lineage: table2 PARTITION(t2_col3=__HIVE_DEFAULT_PARTITION__).t2_col2 SCRIPT []
+PREHOOK: query: create external table ext_table STORED AS ORC tblproperties('compression'='snappy','external.table.purge'='true') as
+SELECT a.* ,d.`(t2_col1|t2_col3)?+.+`
+FROM table1 a
+LEFT JOIN (SELECT * FROM table2 where t2_col3 like '2021-01-%') d
+on a.t1_col1 = d.t2_col1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@table1
+PREHOOK: Input: default@table2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ext_table
+POSTHOOK: query: create external table ext_table STORED AS ORC tblproperties('compression'='snappy','external.table.purge'='true') as
+SELECT a.* ,d.`(t2_col1|t2_col3)?+.+`
+FROM table1 a
+LEFT JOIN (SELECT * FROM table2 where t2_col3 like '2021-01-%') d
+on a.t1_col1 = d.t2_col1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ext_table
+POSTHOOK: Lineage: ext_table.t1_col1 SIMPLE [(table1)a.FieldSchema(name:t1_col1, type:bigint, comment:null), ]
+POSTHOOK: Lineage: ext_table.t2_col2 SIMPLE [(table2)table2.FieldSchema(name:t2_col2, type:int, comment:null), ]

@@ -1,0 +1,170 @@
+PREHOOK: query: DROP TABLE PW17
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE PW17
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE PW17(`USER` STRING, COMPLEXDT ARRAY<INT>) PARTITIONED BY (YEAR STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe1'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@PW17
+POSTHOOK: query: CREATE TABLE PW17(`USER` STRING, COMPLEXDT ARRAY<INT>) PARTITIONED BY (YEAR STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe1'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@PW17
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/pw17.txt' INTO TABLE PW17 PARTITION (YEAR='1')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@pw17
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/pw17.txt' INTO TABLE PW17 PARTITION (YEAR='1')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@pw17
+POSTHOOK: Output: default@pw17@year=1
+PREHOOK: query: ALTER TABLE PW17 PARTITION(YEAR='1') SET SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe2'
+PREHOOK: type: ALTERPARTITION_SERIALIZER
+PREHOOK: Input: default@pw17
+PREHOOK: Output: default@pw17@year=1
+POSTHOOK: query: ALTER TABLE PW17 PARTITION(YEAR='1') SET SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe2'
+POSTHOOK: type: ALTERPARTITION_SERIALIZER
+POSTHOOK: Input: default@pw17
+POSTHOOK: Input: default@pw17@year=1
+POSTHOOK: Output: default@pw17@year=1
+PREHOOK: query: ALTER TABLE PW17 SET SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe1'
+PREHOOK: type: ALTERTABLE_SERIALIZER
+PREHOOK: Input: default@pw17
+PREHOOK: Output: default@pw17
+POSTHOOK: query: ALTER TABLE PW17 SET SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe1'
+POSTHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: Input: default@pw17
+POSTHOOK: Output: default@pw17
+PREHOOK: query: SELECT * FROM PW17
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pw17
+PREHOOK: Input: default@pw17@year=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM PW17
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pw17
+POSTHOOK: Input: default@pw17@year=1
+#### A masked pattern was here ####
+NULL	NULL	1
+NULL	NULL	1
+NULL	NULL	1
+NULL	NULL	1
+PREHOOK: query: DROP TABLE PW17_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE PW17_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE PW17_2(`USER` STRING, COMPLEXDT ARRAY<INT>) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe1'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@PW17_2
+POSTHOOK: query: CREATE TABLE PW17_2(`USER` STRING, COMPLEXDT ARRAY<INT>) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe1'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@PW17_2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/pw17.txt' INTO TABLE PW17_2
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@pw17_2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/pw17.txt' INTO TABLE PW17_2
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@pw17_2
+PREHOOK: query: SELECT COUNT(*) FROM PW17_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pw17_2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM PW17_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pw17_2
+#### A masked pattern was here ####
+4
+PREHOOK: query: DROP TABLE PW17_3
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE PW17_3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE PW17_3(`USER` STRING, COMPLEXDT ARRAY<ARRAY<INT> >) PARTITIONED BY (YEAR STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe3'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@PW17_3
+POSTHOOK: query: CREATE TABLE PW17_3(`USER` STRING, COMPLEXDT ARRAY<ARRAY<INT> >) PARTITIONED BY (YEAR STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe3'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@PW17_3
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/pw17.txt' INTO TABLE PW17_3 PARTITION (YEAR='1')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@pw17_3
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/pw17.txt' INTO TABLE PW17_3 PARTITION (YEAR='1')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@pw17_3
+POSTHOOK: Output: default@pw17_3@year=1
+PREHOOK: query: ALTER TABLE PW17_3 PARTITION(YEAR='1') SET SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe2'
+PREHOOK: type: ALTERPARTITION_SERIALIZER
+PREHOOK: Input: default@pw17_3
+PREHOOK: Output: default@pw17_3@year=1
+POSTHOOK: query: ALTER TABLE PW17_3 PARTITION(YEAR='1') SET SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe2'
+POSTHOOK: type: ALTERPARTITION_SERIALIZER
+POSTHOOK: Input: default@pw17_3
+POSTHOOK: Input: default@pw17_3@year=1
+POSTHOOK: Output: default@pw17_3@year=1
+PREHOOK: query: ALTER TABLE PW17_3 SET SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe3'
+PREHOOK: type: ALTERTABLE_SERIALIZER
+PREHOOK: Input: default@pw17_3
+PREHOOK: Output: default@pw17_3
+POSTHOOK: query: ALTER TABLE PW17_3 SET SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe3'
+POSTHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: Input: default@pw17_3
+POSTHOOK: Output: default@pw17_3
+PREHOOK: query: SELECT * FROM PW17
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pw17
+PREHOOK: Input: default@pw17@year=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM PW17
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pw17
+POSTHOOK: Input: default@pw17@year=1
+#### A masked pattern was here ####
+NULL	NULL	1
+NULL	NULL	1
+NULL	NULL	1
+NULL	NULL	1
+PREHOOK: query: DROP TABLE PW17_4
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE PW17_4
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE PW17_4(`USER` STRING, COMPLEXDT ARRAY<ARRAY<INT> >) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe3'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@PW17_4
+POSTHOOK: query: CREATE TABLE PW17_4(`USER` STRING, COMPLEXDT ARRAY<ARRAY<INT> >) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe3'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@PW17_4
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/pw17.txt' INTO TABLE PW17_4
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@pw17_4
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/pw17.txt' INTO TABLE PW17_4
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@pw17_4
+PREHOOK: query: SELECT COUNT(*) FROM PW17_4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pw17_4
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM PW17_4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pw17_4
+#### A masked pattern was here ####
+4

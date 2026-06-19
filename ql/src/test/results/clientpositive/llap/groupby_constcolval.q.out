@@ -1,0 +1,34 @@
+PREHOOK: query: DROP TABLE IF EXISTS tlbtest
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS tlbtest
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table tlbtest (key int, key1 int, key2 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tlbtest
+POSTHOOK: query: create table tlbtest (key int, key1 int, key2 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tlbtest
+PREHOOK: query: select key, key1, key2 from (select a.key, 0 as key1 , 0 as key2 from tlbtest a inner join src b on a.key = b.key) a group by key, key1, key2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@tlbtest
+#### A masked pattern was here ####
+POSTHOOK: query: select key, key1, key2 from (select a.key, 0 as key1 , 0 as key2 from tlbtest a inner join src b on a.key = b.key) a group by key, key1, key2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@tlbtest
+#### A masked pattern was here ####
+PREHOOK: query: select key, key1, key2 from (select a.key, 0 as key1 , 1 as key2 from tlbtest a inner join src b on a.key = b.key) a group by key, key1, key2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@tlbtest
+#### A masked pattern was here ####
+POSTHOOK: query: select key, key1, key2 from (select a.key, 0 as key1 , 1 as key2 from tlbtest a inner join src b on a.key = b.key) a group by key, key1, key2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@tlbtest
+#### A masked pattern was here ####

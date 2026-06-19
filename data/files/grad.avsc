@@ -1,0 +1,12 @@
+{"namespace": "devmode", 
+"type": "record", 
+"name": "gradinfo", 
+"fields": [ 
+{"name": "col1", "type": "string"}, 
+{"name": "col2", "type": "string"}, 
+{"name": "col3", "type": "double"}, 
+{"name": "col4", "type": "string"}, 
+{"name": "col5", "type": "string"}, 
+{"name": "col6", "type": "int"} 
+] 
+}  

@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10332]: Invalid constraint definition Cannot exist more than one primary key definition for the same table

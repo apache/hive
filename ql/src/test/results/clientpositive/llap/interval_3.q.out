@@ -1,0 +1,237 @@
+PREHOOK: query: select
+  l_orderkey, l_shipdate, l_receiptdate
+from lineitem
+  where (cast(l_shipdate as date) - date '1992-01-01') < interval '365 0:0:0' day to second
+order by l_orderkey
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  l_orderkey, l_shipdate, l_receiptdate
+from lineitem
+  where (cast(l_shipdate as date) - date '1992-01-01') < interval '365 0:0:0' day to second
+order by l_orderkey
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem
+#### A masked pattern was here ####
+6	1992-04-27	1992-05-02
+37	1992-07-21	1992-08-15
+37	1992-07-02	1992-07-28
+37	1992-07-10	1992-08-02
+PREHOOK: query: select
+  l_orderkey, l_shipdate, l_receiptdate
+from lineitem
+  where (cast(l_shipdate as date) + interval '1-0' year to month) <= date '1994-01-01'
+order by l_orderkey
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  l_orderkey, l_shipdate, l_receiptdate
+from lineitem
+  where (cast(l_shipdate as date) + interval '1-0' year to month) <= date '1994-01-01'
+order by l_orderkey
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem
+#### A masked pattern was here ####
+6	1992-04-27	1992-05-02
+37	1992-07-21	1992-08-15
+37	1992-07-02	1992-07-28
+37	1992-07-10	1992-08-02
+PREHOOK: query: select
+  l_orderkey, l_shipdate, l_receiptdate
+from lineitem
+  where (cast(l_shipdate as date) + interval '1-0' year to month) <= date '1994-01-01'
+    and (cast(l_receiptdate as date) - cast(l_shipdate as date)) < interval '10' day
+order by l_orderkey
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  l_orderkey, l_shipdate, l_receiptdate
+from lineitem
+  where (cast(l_shipdate as date) + interval '1-0' year to month) <= date '1994-01-01'
+    and (cast(l_receiptdate as date) - cast(l_shipdate as date)) < interval '10' day
+order by l_orderkey
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem
+#### A masked pattern was here ####
+6	1992-04-27	1992-05-02
+PREHOOK: query: select
+  a.l_orderkey, b.l_orderkey, a.interval1
+from
+  (
+    select
+      l_orderkey, l_shipdate, l_receiptdate, (cast(l_receiptdate as date) - cast(l_shipdate as date)) as interval1
+    from lineitem
+  ) a 
+  join
+  (
+    select
+      l_orderkey, l_shipdate, l_receiptdate, (cast(l_receiptdate as date) - date '1992-07-02') as interval2
+    from lineitem
+  ) b
+  on a.interval1 = b.interval2 and a.l_orderkey = b.l_orderkey
+order by a.l_orderkey
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lineitem
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  a.l_orderkey, b.l_orderkey, a.interval1
+from
+  (
+    select
+      l_orderkey, l_shipdate, l_receiptdate, (cast(l_receiptdate as date) - cast(l_shipdate as date)) as interval1
+    from lineitem
+  ) a 
+  join
+  (
+    select
+      l_orderkey, l_shipdate, l_receiptdate, (cast(l_receiptdate as date) - date '1992-07-02') as interval2
+    from lineitem
+  ) b
+  on a.interval1 = b.interval2 and a.l_orderkey = b.l_orderkey
+order by a.l_orderkey
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lineitem
+#### A masked pattern was here ####
+37	37	26 00:00:00.000000000
+PREHOOK: query: create table date_dim_d1(
+	d_week_seq int,
+	d_date string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@date_dim_d1
+POSTHOOK: query: create table date_dim_d1(
+	d_week_seq int,
+	d_date string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@date_dim_d1
+Warning: Shuffle Join MERGEJOIN[16][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: EXPLAIN SELECT
+           d1.d_week_seq
+    FROM
+           date_dim_d1 d1
+           JOIN date_dim_d1 d3
+    WHERE
+           Cast(d3.d_date AS date) > Cast(d1.d_date AS date)
+    		+ INTERVAL '1' year
+    		+ INTERVAL '2' month
+    		+ INTERVAL '5' day
+    		+ INTERVAL '4' hour
+    		+ INTERVAL '10' minute
+    		+ INTERVAL '9' second
+    	AND Cast(d3.d_date AS date) < Cast(d1.d_date AS date) + INTERVAL '1-2' YEAR TO MONTH
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_dim_d1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT
+           d1.d_week_seq
+    FROM
+           date_dim_d1 d1
+           JOIN date_dim_d1 d3
+    WHERE
+           Cast(d3.d_date AS date) > Cast(d1.d_date AS date)
+    		+ INTERVAL '1' year
+    		+ INTERVAL '2' month
+    		+ INTERVAL '5' day
+    		+ INTERVAL '4' hour
+    		+ INTERVAL '10' minute
+    		+ INTERVAL '9' second
+    	AND Cast(d3.d_date AS date) < Cast(d1.d_date AS date) + INTERVAL '1-2' YEAR TO MONTH
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_dim_d1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (XPROD_EDGE), Map 3 (XPROD_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: d1
+                  filterExpr: CAST( d_date AS DATE) is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: CAST( d_date AS DATE) is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: d_week_seq (type: int), ((((((CAST( d_date AS DATE) + INTERVAL'1-0') + INTERVAL'0-2') + INTERVAL'5 00:00:00.000000000') + INTERVAL'0 04:00:00.000000000') + INTERVAL'0 00:10:00.000000000') + INTERVAL'0 00:00:09.000000000') (type: timestamp), (CAST( d_date AS DATE) + INTERVAL'1-2') (type: date)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int), _col1 (type: timestamp), _col2 (type: date)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: d3
+                  filterExpr: (CAST( CAST( d_date AS DATE) AS TIMESTAMP) is not null and CAST( d_date AS DATE) is not null) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (CAST( CAST( d_date AS DATE) AS TIMESTAMP) is not null and CAST( d_date AS DATE) is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: CAST( CAST( d_date AS DATE) AS TIMESTAMP) (type: timestamp), CAST( d_date AS DATE) (type: date)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: timestamp), _col1 (type: date)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                residual filter predicates: {(_col3 > _col1)} {(_col4 < _col2)}
+                Statistics: Num rows: 1 Data size: 373 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: int)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 373 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 373 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: DROP table date_dim_d1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@date_dim_d1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@date_dim_d1
+POSTHOOK: query: DROP table date_dim_d1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@date_dim_d1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@date_dim_d1

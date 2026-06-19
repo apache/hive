@@ -1,0 +1,92 @@
+PREHOOK: query: DROP TABLE IF EXISTS repairtable_n6
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS repairtable_n6
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE repairtable_n6(col STRING) PARTITIONED BY (p1 STRING, p2 STRING) STORED AS ORC tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repairtable_n6
+POSTHOOK: query: CREATE TABLE repairtable_n6(col STRING) PARTITIONED BY (p1 STRING, p2 STRING) STORED AS ORC tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repairtable_n6
+PREHOOK: query: EXPLAIN LOCKS MSCK TABLE repairtable_n6
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_n6
+POSTHOOK: query: EXPLAIN LOCKS MSCK TABLE repairtable_n6
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_n6
+LOCK INFORMATION:
+default.repairtable_n6 -> SHARED_READ
+PREHOOK: query: MSCK TABLE repairtable_n6
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_n6
+POSTHOOK: query: MSCK TABLE repairtable_n6
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_n6
+PREHOOK: query: show partitions repairtable_n6
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_n6
+POSTHOOK: query: show partitions repairtable_n6
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_n6
+PREHOOK: query: EXPLAIN LOCKS MSCK REPAIR TABLE default.repairtable_n6
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_n6
+POSTHOOK: query: EXPLAIN LOCKS MSCK REPAIR TABLE default.repairtable_n6
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_n6
+LOCK INFORMATION:
+default.repairtable_n6 -> EXCLUSIVE
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable_n6
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_n6
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_n6
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_n6
+Partitions not in metastore:	repairtable_n6:p1=a/p2=b	repairtable_n6:p1=c/p2=d
+#### A masked pattern was here ####
+PREHOOK: query: show partitions default.repairtable_n6
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_n6
+POSTHOOK: query: show partitions default.repairtable_n6
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_n6
+p1=a/p2=b
+p1=c/p2=d
+#### A masked pattern was here ####
+PREHOOK: query: EXPLAIN LOCKS MSCK REPAIR TABLE default.repairtable_n6 DROP PARTITIONS
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_n6
+POSTHOOK: query: EXPLAIN LOCKS MSCK REPAIR TABLE default.repairtable_n6 DROP PARTITIONS
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_n6
+LOCK INFORMATION:
+default.repairtable_n6 -> EXCLUSIVE
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable_n6 DROP PARTITIONS
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_n6
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_n6 DROP PARTITIONS
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_n6
+Partitions missing from filesystem:	repairtable_n6:p1=c/p2=d
+Repair: Dropped partition from metastore hive.default.repairtable_n6:p1=c/p2=d
+PREHOOK: query: show partitions default.repairtable_n6
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_n6
+POSTHOOK: query: show partitions default.repairtable_n6
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_n6
+p1=a/p2=b
+PREHOOK: query: DROP TABLE default.repairtable_n6
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@repairtable_n6
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repairtable_n6
+POSTHOOK: query: DROP TABLE default.repairtable_n6
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@repairtable_n6
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repairtable_n6

@@ -1,0 +1,133 @@
+PREHOOK: query: CREATE EXTERNAL TABLE logs2(
+facility STRING,
+severity STRING,
+version STRING,
+ts TIMESTAMP,
+hostname STRING,
+app_name STRING,
+proc_id STRING,
+msg_id STRING,
+structured_data MAP<STRING,STRING>,
+msg BINARY,
+unmatched BINARY
+)
+PARTITIONED BY(dt DATE,ns STRING,app STRING)
+STORED BY 'org.apache.hadoop.hive.ql.log.syslog.SyslogStorageHandler'
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@logs2
+POSTHOOK: query: CREATE EXTERNAL TABLE logs2(
+facility STRING,
+severity STRING,
+version STRING,
+ts TIMESTAMP,
+hostname STRING,
+app_name STRING,
+proc_id STRING,
+msg_id STRING,
+structured_data MAP<STRING,STRING>,
+msg BINARY,
+unmatched BINARY
+)
+PARTITIONED BY(dt DATE,ns STRING,app STRING)
+STORED BY 'org.apache.hadoop.hive.ql.log.syslog.SyslogStorageHandler'
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@logs2
+PREHOOK: query: MSCK REPAIR TABLE logs2
+PREHOOK: type: MSCK
+PREHOOK: Output: default@logs2
+POSTHOOK: query: MSCK REPAIR TABLE logs2
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@logs2
+Partitions not in metastore:	logs2:dt=2019-03-21/ns=foo/app=hs2
+#### A masked pattern was here ####
+PREHOOK: query: select count(*) as msg from logs2 where ts is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs2
+PREHOOK: Input: default@logs2@dt=2019-03-21/ns=foo/app=hs2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) as msg from logs2 where ts is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs2
+POSTHOOK: Input: default@logs2@dt=2019-03-21/ns=foo/app=hs2
+#### A masked pattern was here ####
+2
+PREHOOK: query: select count(*) as msg from logs2 where ts is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs2
+PREHOOK: Input: default@logs2@dt=2019-03-21/ns=foo/app=hs2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) as msg from logs2 where ts is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs2
+POSTHOOK: Input: default@logs2@dt=2019-03-21/ns=foo/app=hs2
+#### A masked pattern was here ####
+0
+PREHOOK: query: select length(decode(msg,'UTF-8')) as msg from logs2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs2
+PREHOOK: Input: default@logs2@dt=2019-03-21/ns=foo/app=hs2
+#### A masked pattern was here ####
+POSTHOOK: query: select length(decode(msg,'UTF-8')) as msg from logs2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs2
+POSTHOOK: Input: default@logs2@dt=2019-03-21/ns=foo/app=hs2
+#### A masked pattern was here ####
+2202
+83
+PREHOOK: query: select regexp_replace(regexp_replace(decode(msg,'UTF-8'), "at ", "at-"), "Caused by", "Caused-by") as msg from logs2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@logs2
+PREHOOK: Input: default@logs2@dt=2019-03-21/ns=foo/app=hs2
+#### A masked pattern was here ####
+POSTHOOK: query: select regexp_replace(regexp_replace(decode(msg,'UTF-8'), "at ", "at-"), "Caused by", "Caused-by") as msg from logs2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@logs2
+POSTHOOK: Input: default@logs2@dt=2019-03-21/ns=foo/app=hs2
+#### A masked pattern was here ####
+Error running hive query: 
+org.apache.hive.service.cli.HiveSQLException: Error while compiling statement: FAILED: SemanticException [Error 10072]: Database does not exist: ttt
+	at-org.apache.hive.service.cli.operation.Operation.toSQLException(Operation.java:348)
+	at-org.apache.hive.service.cli.operation.SQLOperation.prepare(SQLOperation.java:199)
+	at-org.apache.hive.service.cli.operation.SQLOperation$BackgroundWork$1.run(SQLOperation.java:322)
+	at-java.security.AccessController.doPrivileged(Native Method)
+	at-javax.security.auth.Subject.doAs(Subject.java:422)
+	at-org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1730)
+	at-org.apache.hive.service.cli.operation.SQLOperation$BackgroundWork.run(SQLOperation.java:342)
+	at-java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)
+	at-java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at-java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)
+	at-java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at-java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at-java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at-java.lang.Thread.run(Thread.java:748)
+Caused-by: org.apache.hadoop.hive.ql.parse.SemanticException: Database does not exist: ttt
+	at-org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.getDatabase(BaseSemanticAnalyzer.java:2154)
+	at-org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer.analyzeDropDatabase(DDLSemanticAnalyzer.java:1393)
+	at-org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer.analyzeInternal(DDLSemanticAnalyzer.java:514)
+	at-org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.analyze(BaseSemanticAnalyzer.java:289)
+	at-org.apache.hadoop.hive.ql.Driver.compile(Driver.java:666)
+	at-org.apache.hadoop.hive.ql.Driver.compileInternal(Driver.java:1881)
+	at-org.apache.hadoop.hive.ql.Driver.compileAndRespond(Driver.java:1828)
+	at-org.apache.hadoop.hive.ql.Driver.compileAndRespond(Driver.java:1823)
+	at-org.apache.hadoop.hive.ql.reexec.ReExecDriver.compileAndRespond(ReExecDriver.java:126)
+	at-org.apache.hive.service.cli.operation.SQLOperation.prepare(SQLOperation.java:197)
+#### A masked pattern was here ####
+
+Using the default value passed in for log id: 1ba9df58-94d3-4235-8920-cc4a8c7afd84
+
+PREHOOK: query: drop table logs2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@logs2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@logs2
+POSTHOOK: query: drop table logs2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@logs2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@logs2

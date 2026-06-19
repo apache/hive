@@ -1,0 +1,96 @@
+#### A masked pattern was here ####
+PREHOOK: query: set role ADMIN
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role ADMIN
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: drop database if exists src cascade
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: drop database if exists src cascade
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: drop database if exists destination cascade
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: drop database if exists destination cascade
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: create database src with DBPROPERTIES ('repl.source.for' = '1,2,3')
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:src
+POSTHOOK: query: create database src with DBPROPERTIES ('repl.source.for' = '1,2,3')
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:src
+PREHOOK: query: create table src.t(id int, cnt int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:src
+PREHOOK: Output: src@t
+POSTHOOK: query: create table src.t(id int, cnt int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:src
+POSTHOOK: Output: src@t
+PREHOOK: query: insert into src.t values(1,1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: src@t
+POSTHOOK: query: insert into src.t values(1,1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: src@t
+POSTHOOK: Lineage: t.cnt SCRIPT []
+POSTHOOK: Lineage: t.id SCRIPT []
+PREHOOK: query: create scheduled query repl1 every 15 minutes as repl dump src
+#### A masked pattern was here ####
+PREHOOK: type: CREATE SCHEDULED QUERY
+POSTHOOK: query: create scheduled query repl1 every 15 minutes as repl dump src
+#### A masked pattern was here ####
+POSTHOOK: type: CREATE SCHEDULED QUERY
+PREHOOK: query: alter scheduled query repl1 execute
+PREHOOK: type: ALTER SCHEDULED QUERY
+POSTHOOK: query: alter scheduled query repl1 execute
+POSTHOOK: type: ALTER SCHEDULED QUERY
+PREHOOK: query: alter scheduled query repl1 disabled
+PREHOOK: type: ALTER SCHEDULED QUERY
+POSTHOOK: query: alter scheduled query repl1 disabled
+POSTHOOK: type: ALTER SCHEDULED QUERY
+PREHOOK: query: create scheduled query repl2 every 15 minutes as repl load src into destination
+#### A masked pattern was here ####
+PREHOOK: type: CREATE SCHEDULED QUERY
+POSTHOOK: query: create scheduled query repl2 every 15 minutes as repl load src into destination
+#### A masked pattern was here ####
+POSTHOOK: type: CREATE SCHEDULED QUERY
+PREHOOK: query: alter scheduled query repl2 execute
+PREHOOK: type: ALTER SCHEDULED QUERY
+POSTHOOK: query: alter scheduled query repl2 execute
+POSTHOOK: type: ALTER SCHEDULED QUERY
+PREHOOK: query: alter scheduled query repl2 disabled
+PREHOOK: type: ALTER SCHEDULED QUERY
+POSTHOOK: query: alter scheduled query repl2 disabled
+POSTHOOK: type: ALTER SCHEDULED QUERY
+PREHOOK: query: show databases
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: show databases
+POSTHOOK: type: SHOWDATABASES
+default
+destination
+information_schema
+src
+sys
+PREHOOK: query: use sys
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:sys
+POSTHOOK: query: use sys
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:sys
+PREHOOK: query: select t1.POLICY_NAME, t1.DUMP_EXECUTION_ID, t1.METADATA, t1.PROGRESS, t2.PROGRESS, t1.MESSAGE_FORMAT
+from replication_metrics_orig as t1 join replication_metrics as t2 where
+t1.scheduled_execution_id=t2.scheduled_execution_id AND t2.progress not like ('%SKIPPED%') order by t1.dump_execution_id
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@replication_metrics
+PREHOOK: Input: sys@replication_metrics_orig
+#### A masked pattern was here ####
+POSTHOOK: query: select t1.POLICY_NAME, t1.DUMP_EXECUTION_ID, t1.METADATA, t1.PROGRESS, t2.PROGRESS, t1.MESSAGE_FORMAT
+from replication_metrics_orig as t1 join replication_metrics as t2 where
+t1.scheduled_execution_id=t2.scheduled_execution_id AND t2.progress not like ('%SKIPPED%') order by t1.dump_execution_id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@replication_metrics
+POSTHOOK: Input: sys@replication_metrics_orig
+#### A masked pattern was here ####
+repl1	1	{"dbName":"src","replicationType":"BOOTSTRAP","replicatedDBSizeInKB":0.0,"stagingDir":"dummyDir","lastReplId":0,"failoverMetadataLoc":null,"failoverEventId":0,"failoverEndPoint":null,"failoverType":null}	H4sIAAAAAAAA/22Qyw6CMBBF/6VrFrJlpwUTEhRiYWWIaUoFktKS6XRF+Hd5BCPqbnpuT3szA7HI0VkSEFZQGjFGvBnVckL3gWjeySm7RVnyCItLtqZ/BMC8na8ePCJ19T2nmoHYg7zGBShukTkhpLVPp0LX9XG1BJ1EaMWuxrm40jxOr/OfwgFIjdQ4vT6EBrnajqP3lvLjKYl+DX9v+GM5lQMwkJg649iQQDulPAKyV0zz3jZmUz+CaRd2BWM5vgCmU7uCTQEAAA==	{"status":"SUCCESS","stages":[{"name":"REPL_DUMP","status":"SUCCESS","startTime":0,"endTime":0,"endTimeOnSrc":0,"endTimeOnTgt":0,"lastSuccessfulDumpId":0,"metrics":[{"name":"FUNCTIONS","currentCount":0,"totalCount":0},{"name":"TABLES","currentCount":1,"totalCount":1}],"errorLogPath":null,"replSnapshotCount":null,"replStats":null}]}	gzip(json-2.0)
+repl2	1	{"dbName":"destination","replicationType":"BOOTSTRAP","replicatedDBSizeInKB":0.00390625,"stagingDir":"dummyDir","lastReplId":0,"failoverMetadataLoc":null,"failoverEventId":0,"failoverEndPoint":null,"failoverType":null}	H4sIAAAAAAAA/22QMQvCMBSE/0vmDrq6aVpBKLaYdpIiIT6rkCbl5WWS/HdTo0LVLXeX73LkzhxJ8o6tmGg5L4Rg2WT1EK3jnRk5QMwORV2eymqdp/QPgNTcpquLjIE5f58rI1DNjaanp6GlI+GVAucuXud+GHfnZzAA4U3NZmzbPW921X56U3lEMMStN6mILEn9liH7QM16Uxa/xHJOLEMXxyFaLG1fS7qylfFaZwxh1MLI0V3tG43VfuAIkiBNjTIHDUmGFxO/yaWS0IUHJuXY4GgBAAA=	{"status":"SUCCESS","stages":[{"name":"REPL_LOAD","status":"SUCCESS","startTime":0,"endTime":0,"endTimeOnSrc":0,"endTimeOnTgt":0,"lastSuccessfulDumpId":0,"metrics":[{"name":"FUNCTIONS","currentCount":0,"totalCount":0},{"name":"TABLES","currentCount":1,"totalCount":1}],"errorLogPath":null,"replSnapshotCount":{"numCreated":0,"numDeleted":0},"replStats":null}]}	gzip(json-2.0)

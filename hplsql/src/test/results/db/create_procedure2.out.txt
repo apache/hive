@@ -1,0 +1,15 @@
+Ln:1 CREATE PROCEDURE load_tab
+Ln:15 DECLARE str STRING
+Ln:16 EXEC PROCEDURE load_tab
+Ln:16 SET PARAM name = world
+Ln:16 SET PARAM result = null
+Ln:3 DROP
+Ln:3 DROP TABLE IF EXISTS test_tab
+Ln:5 CREATE TABLE
+Ln:5 CREATE TABLE IF NOT EXISTS test_tab STORED AS ORC
+  AS
+  SELECT *
+  FROM src
+Ln:11 SET result = 'world'
+Ln:17 PRINT
+world

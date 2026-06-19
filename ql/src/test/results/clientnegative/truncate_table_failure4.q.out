@@ -1,0 +1,11 @@
+PREHOOK: query: CREATE TABLE non_native(key int, value string)
+STORED BY 'org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@non_native
+POSTHOOK: query: CREATE TABLE non_native(key int, value string)
+STORED BY 'org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@non_native
+FAILED: SemanticException [Error 10147]: Cannot truncate non-native table non_native.

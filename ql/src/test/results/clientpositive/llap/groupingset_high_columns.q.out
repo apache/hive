@@ -1,0 +1,1457 @@
+PREHOOK: query: create table facts (val string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@facts
+POSTHOOK: query: create table facts (val string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@facts
+PREHOOK: query: insert into facts values ('abcdefghijklmnopqrstuvwxyz0123456789')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@facts
+POSTHOOK: query: insert into facts values ('abcdefghijklmnopqrstuvwxyz0123456789')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@facts
+POSTHOOK: Lineage: facts.val SCRIPT []
+PREHOOK: query: drop table groupingsets32
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table groupingsets32
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table groupingsets33
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table groupingsets33
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table groupingsets32a
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table groupingsets32a
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table groupingsets33a
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table groupingsets33a
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table groupingsets32 as 
+select 
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09, 
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19, 
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29, 
+c30,c31 
+,count(*) as n from ( 
+select 
+substring(val,01,1) as c00, substring(val,02,1) as c01, substring(val,03,1) as c02,substring(val,04,1) as c03,substring(val,05,1) as c04,substring(val,06,1) as c05,substring(val,07,1) as c06, substring(val,08,1) as c07,substring(val,09,1) as c08,substring(val,10,1) as c09, 
+substring(val,11,1) as c10, substring(val,12,1) as c11, substring(val,13,1) as c12,substring(val,14,1) as c13,substring(val,15,1) as c14,substring(val,16,1) as c15,substring(val,17,1) as c16, substring(val,18,1) as c17,substring(val,19,1) as c18,substring(val,20,1) as c19, 
+substring(val,21,1) as c20, substring(val,22,1) as c21, substring(val,23,1) as c22,substring(val,24,1) as c23,substring(val,25,1) as c24,substring(val,26,1) as c25,substring(val,27,1) as c26, substring(val,28,1) as c27,substring(val,29,1) as c28,substring(val,30,1) as c29, 
+substring(val,31,1) as c30,substring(val,32,1) as c31 
+from facts ) x 
+group by 
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09, 
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19, 
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29, 
+c30,c31 
+grouping sets ( 
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09, 
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19, 
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29, 
+c30,c31 
+)
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@facts
+PREHOOK: Output: database:default
+PREHOOK: Output: default@groupingsets32
+POSTHOOK: query: create table groupingsets32 as 
+select 
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09, 
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19, 
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29, 
+c30,c31 
+,count(*) as n from ( 
+select 
+substring(val,01,1) as c00, substring(val,02,1) as c01, substring(val,03,1) as c02,substring(val,04,1) as c03,substring(val,05,1) as c04,substring(val,06,1) as c05,substring(val,07,1) as c06, substring(val,08,1) as c07,substring(val,09,1) as c08,substring(val,10,1) as c09, 
+substring(val,11,1) as c10, substring(val,12,1) as c11, substring(val,13,1) as c12,substring(val,14,1) as c13,substring(val,15,1) as c14,substring(val,16,1) as c15,substring(val,17,1) as c16, substring(val,18,1) as c17,substring(val,19,1) as c18,substring(val,20,1) as c19, 
+substring(val,21,1) as c20, substring(val,22,1) as c21, substring(val,23,1) as c22,substring(val,24,1) as c23,substring(val,25,1) as c24,substring(val,26,1) as c25,substring(val,27,1) as c26, substring(val,28,1) as c27,substring(val,29,1) as c28,substring(val,30,1) as c29, 
+substring(val,31,1) as c30,substring(val,32,1) as c31 
+from facts ) x 
+group by 
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09, 
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19, 
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29, 
+c30,c31 
+grouping sets ( 
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09, 
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19, 
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29, 
+c30,c31 
+)
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@facts
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@groupingsets32
+POSTHOOK: Lineage: groupingsets32.c00 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c01 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c02 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c03 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c04 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c05 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c06 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c07 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c08 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c09 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c10 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c11 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c12 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c13 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c14 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c15 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c16 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c17 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c18 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c19 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c20 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c21 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c22 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c23 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c24 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c25 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c26 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c27 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c28 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c29 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c30 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c31 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.n EXPRESSION [(facts)facts.null, ]
+PREHOOK: query: select * from groupingsets32
+PREHOOK: type: QUERY
+PREHOOK: Input: default@groupingsets32
+#### A masked pattern was here ####
+POSTHOOK: query: select * from groupingsets32
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@groupingsets32
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	0	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	2	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	3	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	4	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	5	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	z	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	y	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	x	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	w	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	v	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	u	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	t	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	s	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	r	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	q	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	p	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	o	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	n	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	m	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	l	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	k	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	j	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	i	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	h	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	g	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	f	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	e	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	d	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	c	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	b	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+a	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+PREHOOK: query: create table groupingsets32a as
+select
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,
+count(*) as n,
+grouping__id,
+grouping(c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31)
+from (
+select
+substring(val,01,1) as c00, substring(val,02,1) as c01, substring(val,03,1) as c02,substring(val,04,1) as c03,substring(val,05,1) as c04,substring(val,06,1) as c05,substring(val,07,1) as c06, substring(val,08,1) as c07,substring(val,09,1) as c08,substring(val,10,1) as c09,
+substring(val,11,1) as c10, substring(val,12,1) as c11, substring(val,13,1) as c12,substring(val,14,1) as c13,substring(val,15,1) as c14,substring(val,16,1) as c15,substring(val,17,1) as c16, substring(val,18,1) as c17,substring(val,19,1) as c18,substring(val,20,1) as c19,
+substring(val,21,1) as c20, substring(val,22,1) as c21, substring(val,23,1) as c22,substring(val,24,1) as c23,substring(val,25,1) as c24,substring(val,26,1) as c25,substring(val,27,1) as c26, substring(val,28,1) as c27,substring(val,29,1) as c28,substring(val,30,1) as c29,
+substring(val,31,1) as c30,substring(val,32,1) as c31
+from facts ) x
+group by
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31
+grouping sets (
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31
+)
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@facts
+PREHOOK: Output: database:default
+PREHOOK: Output: default@groupingsets32a
+POSTHOOK: query: create table groupingsets32a as
+select
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,
+count(*) as n,
+grouping__id,
+grouping(c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31)
+from (
+select
+substring(val,01,1) as c00, substring(val,02,1) as c01, substring(val,03,1) as c02,substring(val,04,1) as c03,substring(val,05,1) as c04,substring(val,06,1) as c05,substring(val,07,1) as c06, substring(val,08,1) as c07,substring(val,09,1) as c08,substring(val,10,1) as c09,
+substring(val,11,1) as c10, substring(val,12,1) as c11, substring(val,13,1) as c12,substring(val,14,1) as c13,substring(val,15,1) as c14,substring(val,16,1) as c15,substring(val,17,1) as c16, substring(val,18,1) as c17,substring(val,19,1) as c18,substring(val,20,1) as c19,
+substring(val,21,1) as c20, substring(val,22,1) as c21, substring(val,23,1) as c22,substring(val,24,1) as c23,substring(val,25,1) as c24,substring(val,26,1) as c25,substring(val,27,1) as c26, substring(val,28,1) as c27,substring(val,29,1) as c28,substring(val,30,1) as c29,
+substring(val,31,1) as c30,substring(val,32,1) as c31
+from facts ) x
+group by
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31
+grouping sets (
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31
+)
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@facts
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@groupingsets32a
+POSTHOOK: Lineage: groupingsets32a._c34 EXPRESSION []
+POSTHOOK: Lineage: groupingsets32a.c00 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c01 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c02 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c03 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c04 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c05 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c06 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c07 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c08 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c09 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c10 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c11 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c12 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c13 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c14 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c15 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c16 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c17 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c18 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c19 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c20 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c21 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c22 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c23 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c24 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c25 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c26 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c27 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c28 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c29 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c30 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c31 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.grouping__id SIMPLE []
+POSTHOOK: Lineage: groupingsets32a.n EXPRESSION [(facts)facts.null, ]
+PREHOOK: query: select * from groupingsets32a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@groupingsets32a
+#### A masked pattern was here ####
+POSTHOOK: query: select * from groupingsets32a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@groupingsets32a
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	0	NULL	NULL	NULL	NULL	NULL	1	4294967263	4294967263
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	NULL	NULL	NULL	NULL	1	4294967279	4294967279
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	2	NULL	NULL	NULL	1	4294967287	4294967287
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	3	NULL	NULL	1	4294967291	4294967291
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	4	NULL	1	4294967293	4294967293
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	5	1	4294967294	4294967294
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	z	NULL	NULL	NULL	NULL	NULL	NULL	1	4294967231	4294967231
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	y	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4294967167	4294967167
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	x	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4294967039	4294967039
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	w	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4294966783	4294966783
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	v	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4294966271	4294966271
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	u	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4294965247	4294965247
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	t	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4294963199	4294963199
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	s	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4294959103	4294959103
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	r	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4294950911	4294950911
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	q	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4294934527	4294934527
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	p	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4294901759	4294901759
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	o	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4294836223	4294836223
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	n	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4294705151	4294705151
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	m	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4294443007	4294443007
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	l	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4293918719	4293918719
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	k	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4292870143	4292870143
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	j	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4290772991	4290772991
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	i	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4286578687	4286578687
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	h	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4278190079	4278190079
+NULL	NULL	NULL	NULL	NULL	NULL	g	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4261412863	4261412863
+NULL	NULL	NULL	NULL	NULL	f	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4227858431	4227858431
+NULL	NULL	NULL	NULL	e	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4160749567	4160749567
+NULL	NULL	NULL	d	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4026531839	4026531839
+NULL	NULL	c	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	3758096383	3758096383
+NULL	b	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	3221225471	3221225471
+a	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	2147483647	2147483647
+PREHOOK: query: create table groupingsets33 as 
+select 
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09, 
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19, 
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29, 
+c30,c31,c32 
+,count(*) as n from ( 
+select 
+substring(val,01,1) as c00, substring(val,02,1) as c01, substring(val,03,1) as c02,substring(val,04,1) as c03,substring(val,05,1) as c04,substring(val,06,1) as c05,substring(val,07,1) as c06, substring(val,08,1) as c07,substring(val,09,1) as c08,substring(val,10,1) as c09, 
+substring(val,11,1) as c10, substring(val,12,1) as c11, substring(val,13,1) as c12,substring(val,14,1) as c13,substring(val,15,1) as c14,substring(val,16,1) as c15,substring(val,17,1) as c16, substring(val,18,1) as c17,substring(val,19,1) as c18,substring(val,20,1) as c19, 
+substring(val,21,1) as c20, substring(val,22,1) as c21, substring(val,23,1) as c22,substring(val,24,1) as c23,substring(val,25,1) as c24,substring(val,26,1) as c25,substring(val,27,1) as c26, substring(val,28,1) as c27,substring(val,29,1) as c28,substring(val,30,1) as c29, 
+substring(val,31,1) as c30,substring(val,32,1) as c31,substring(val,33,1) as c32 
+from facts ) x 
+group by 
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09, 
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19, 
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29, 
+c30,c31,c32 
+grouping sets ( 
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09, 
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19, 
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29, 
+c30,c31,c32 
+)
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@facts
+PREHOOK: Output: database:default
+PREHOOK: Output: default@groupingsets33
+POSTHOOK: query: create table groupingsets33 as 
+select 
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09, 
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19, 
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29, 
+c30,c31,c32 
+,count(*) as n from ( 
+select 
+substring(val,01,1) as c00, substring(val,02,1) as c01, substring(val,03,1) as c02,substring(val,04,1) as c03,substring(val,05,1) as c04,substring(val,06,1) as c05,substring(val,07,1) as c06, substring(val,08,1) as c07,substring(val,09,1) as c08,substring(val,10,1) as c09, 
+substring(val,11,1) as c10, substring(val,12,1) as c11, substring(val,13,1) as c12,substring(val,14,1) as c13,substring(val,15,1) as c14,substring(val,16,1) as c15,substring(val,17,1) as c16, substring(val,18,1) as c17,substring(val,19,1) as c18,substring(val,20,1) as c19, 
+substring(val,21,1) as c20, substring(val,22,1) as c21, substring(val,23,1) as c22,substring(val,24,1) as c23,substring(val,25,1) as c24,substring(val,26,1) as c25,substring(val,27,1) as c26, substring(val,28,1) as c27,substring(val,29,1) as c28,substring(val,30,1) as c29, 
+substring(val,31,1) as c30,substring(val,32,1) as c31,substring(val,33,1) as c32 
+from facts ) x 
+group by 
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09, 
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19, 
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29, 
+c30,c31,c32 
+grouping sets ( 
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09, 
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19, 
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29, 
+c30,c31,c32 
+)
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@facts
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@groupingsets33
+POSTHOOK: Lineage: groupingsets33.c00 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c01 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c02 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c03 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c04 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c05 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c06 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c07 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c08 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c09 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c10 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c11 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c12 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c13 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c14 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c15 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c16 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c17 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c18 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c19 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c20 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c21 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c22 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c23 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c24 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c25 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c26 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c27 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c28 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c29 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c30 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c31 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c32 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.n EXPRESSION [(facts)facts.null, ]
+PREHOOK: query: select * from groupingsets33
+PREHOOK: type: QUERY
+PREHOOK: Input: default@groupingsets33
+#### A masked pattern was here ####
+POSTHOOK: query: select * from groupingsets33
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@groupingsets33
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	0	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	2	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	3	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	4	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	5	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	6	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	z	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	y	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	x	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	w	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	v	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	u	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	t	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	s	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	r	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	q	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	p	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	o	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	n	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	m	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	l	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	k	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	j	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	i	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	h	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	g	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	f	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	e	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	d	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	c	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	b	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+a	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+PREHOOK: query: create table groupingsets33a as
+select
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,c32
+,count(*) as n,
+grouping__id,
+grouping(c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,c32) 
+from (
+select
+substring(val,01,1) as c00, substring(val,02,1) as c01, substring(val,03,1) as c02,substring(val,04,1) as c03,substring(val,05,1) as c04,substring(val,06,1) as c05,substring(val,07,1) as c06, substring(val,08,1) as c07,substring(val,09,1) as c08,substring(val,10,1) as c09,
+substring(val,11,1) as c10, substring(val,12,1) as c11, substring(val,13,1) as c12,substring(val,14,1) as c13,substring(val,15,1) as c14,substring(val,16,1) as c15,substring(val,17,1) as c16, substring(val,18,1) as c17,substring(val,19,1) as c18,substring(val,20,1) as c19,
+substring(val,21,1) as c20, substring(val,22,1) as c21, substring(val,23,1) as c22,substring(val,24,1) as c23,substring(val,25,1) as c24,substring(val,26,1) as c25,substring(val,27,1) as c26, substring(val,28,1) as c27,substring(val,29,1) as c28,substring(val,30,1) as c29,
+substring(val,31,1) as c30,substring(val,32,1) as c31,substring(val,33,1) as c32
+from facts ) x
+group by
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,c32
+grouping sets (
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,c32
+)
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@facts
+PREHOOK: Output: database:default
+PREHOOK: Output: default@groupingsets33a
+POSTHOOK: query: create table groupingsets33a as
+select
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,c32
+,count(*) as n,
+grouping__id,
+grouping(c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,c32) 
+from (
+select
+substring(val,01,1) as c00, substring(val,02,1) as c01, substring(val,03,1) as c02,substring(val,04,1) as c03,substring(val,05,1) as c04,substring(val,06,1) as c05,substring(val,07,1) as c06, substring(val,08,1) as c07,substring(val,09,1) as c08,substring(val,10,1) as c09,
+substring(val,11,1) as c10, substring(val,12,1) as c11, substring(val,13,1) as c12,substring(val,14,1) as c13,substring(val,15,1) as c14,substring(val,16,1) as c15,substring(val,17,1) as c16, substring(val,18,1) as c17,substring(val,19,1) as c18,substring(val,20,1) as c19,
+substring(val,21,1) as c20, substring(val,22,1) as c21, substring(val,23,1) as c22,substring(val,24,1) as c23,substring(val,25,1) as c24,substring(val,26,1) as c25,substring(val,27,1) as c26, substring(val,28,1) as c27,substring(val,29,1) as c28,substring(val,30,1) as c29,
+substring(val,31,1) as c30,substring(val,32,1) as c31,substring(val,33,1) as c32
+from facts ) x
+group by
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,c32
+grouping sets (
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,c32
+)
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@facts
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@groupingsets33a
+POSTHOOK: Lineage: groupingsets33a._c35 EXPRESSION []
+POSTHOOK: Lineage: groupingsets33a.c00 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c01 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c02 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c03 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c04 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c05 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c06 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c07 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c08 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c09 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c10 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c11 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c12 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c13 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c14 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c15 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c16 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c17 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c18 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c19 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c20 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c21 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c22 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c23 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c24 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c25 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c26 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c27 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c28 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c29 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c30 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c31 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c32 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.grouping__id SIMPLE []
+POSTHOOK: Lineage: groupingsets33a.n EXPRESSION [(facts)facts.null, ]
+PREHOOK: query: select * from groupingsets33a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@groupingsets33a
+#### A masked pattern was here ####
+POSTHOOK: query: select * from groupingsets33a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@groupingsets33a
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	0	NULL	NULL	NULL	NULL	NULL	NULL	1	8589934527	8589934527
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	NULL	NULL	NULL	NULL	NULL	1	8589934559	8589934559
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	2	NULL	NULL	NULL	NULL	1	8589934575	8589934575
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	3	NULL	NULL	NULL	1	8589934583	8589934583
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	4	NULL	NULL	1	8589934587	8589934587
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	5	NULL	1	8589934589	8589934589
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	6	1	8589934590	8589934590
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	z	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589934463	8589934463
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	y	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589934335	8589934335
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	x	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589934079	8589934079
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	w	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589933567	8589933567
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	v	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589932543	8589932543
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	u	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589930495	8589930495
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	t	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589926399	8589926399
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	s	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589918207	8589918207
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	r	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589901823	8589901823
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	q	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589869055	8589869055
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	p	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589803519	8589803519
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	o	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589672447	8589672447
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	n	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589410303	8589410303
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	m	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8588886015	8588886015
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	l	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8587837439	8587837439
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	k	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8585740287	8585740287
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	j	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8581545983	8581545983
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	i	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8573157375	8573157375
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	h	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8556380159	8556380159
+NULL	NULL	NULL	NULL	NULL	NULL	g	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8522825727	8522825727
+NULL	NULL	NULL	NULL	NULL	f	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8455716863	8455716863
+NULL	NULL	NULL	NULL	e	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8321499135	8321499135
+NULL	NULL	NULL	d	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8053063679	8053063679
+NULL	NULL	c	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	7516192767	7516192767
+NULL	b	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	6442450943	6442450943
+a	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4294967295	4294967295
+PREHOOK: query: drop table groupingsets32
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@groupingsets32
+PREHOOK: Output: database:default
+PREHOOK: Output: default@groupingsets32
+POSTHOOK: query: drop table groupingsets32
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@groupingsets32
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@groupingsets32
+PREHOOK: query: drop table groupingsets33
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@groupingsets33
+PREHOOK: Output: database:default
+PREHOOK: Output: default@groupingsets33
+POSTHOOK: query: drop table groupingsets33
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@groupingsets33
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@groupingsets33
+PREHOOK: query: drop table groupingsets32
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table groupingsets32
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table groupingsets33
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table groupingsets33
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table groupingsets32a
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@groupingsets32a
+PREHOOK: Output: database:default
+PREHOOK: Output: default@groupingsets32a
+POSTHOOK: query: drop table groupingsets32a
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@groupingsets32a
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@groupingsets32a
+PREHOOK: query: drop table groupingsets33a
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@groupingsets33a
+PREHOOK: Output: database:default
+PREHOOK: Output: default@groupingsets33a
+POSTHOOK: query: drop table groupingsets33a
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@groupingsets33a
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@groupingsets33a
+PREHOOK: query: create table groupingsets32 as 
+select 
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09, 
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19, 
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29, 
+c30,c31 
+,count(*) as n from ( 
+select 
+substring(val,01,1) as c00, substring(val,02,1) as c01, substring(val,03,1) as c02,substring(val,04,1) as c03,substring(val,05,1) as c04,substring(val,06,1) as c05,substring(val,07,1) as c06, substring(val,08,1) as c07,substring(val,09,1) as c08,substring(val,10,1) as c09, 
+substring(val,11,1) as c10, substring(val,12,1) as c11, substring(val,13,1) as c12,substring(val,14,1) as c13,substring(val,15,1) as c14,substring(val,16,1) as c15,substring(val,17,1) as c16, substring(val,18,1) as c17,substring(val,19,1) as c18,substring(val,20,1) as c19, 
+substring(val,21,1) as c20, substring(val,22,1) as c21, substring(val,23,1) as c22,substring(val,24,1) as c23,substring(val,25,1) as c24,substring(val,26,1) as c25,substring(val,27,1) as c26, substring(val,28,1) as c27,substring(val,29,1) as c28,substring(val,30,1) as c29, 
+substring(val,31,1) as c30,substring(val,32,1) as c31 
+from facts ) x 
+group by 
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09, 
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19, 
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29, 
+c30,c31 
+grouping sets ( 
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09, 
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19, 
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29, 
+c30,c31 
+)
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@facts
+PREHOOK: Output: database:default
+PREHOOK: Output: default@groupingsets32
+POSTHOOK: query: create table groupingsets32 as 
+select 
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09, 
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19, 
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29, 
+c30,c31 
+,count(*) as n from ( 
+select 
+substring(val,01,1) as c00, substring(val,02,1) as c01, substring(val,03,1) as c02,substring(val,04,1) as c03,substring(val,05,1) as c04,substring(val,06,1) as c05,substring(val,07,1) as c06, substring(val,08,1) as c07,substring(val,09,1) as c08,substring(val,10,1) as c09, 
+substring(val,11,1) as c10, substring(val,12,1) as c11, substring(val,13,1) as c12,substring(val,14,1) as c13,substring(val,15,1) as c14,substring(val,16,1) as c15,substring(val,17,1) as c16, substring(val,18,1) as c17,substring(val,19,1) as c18,substring(val,20,1) as c19, 
+substring(val,21,1) as c20, substring(val,22,1) as c21, substring(val,23,1) as c22,substring(val,24,1) as c23,substring(val,25,1) as c24,substring(val,26,1) as c25,substring(val,27,1) as c26, substring(val,28,1) as c27,substring(val,29,1) as c28,substring(val,30,1) as c29, 
+substring(val,31,1) as c30,substring(val,32,1) as c31 
+from facts ) x 
+group by 
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09, 
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19, 
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29, 
+c30,c31 
+grouping sets ( 
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09, 
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19, 
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29, 
+c30,c31 
+)
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@facts
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@groupingsets32
+POSTHOOK: Lineage: groupingsets32.c00 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c01 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c02 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c03 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c04 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c05 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c06 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c07 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c08 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c09 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c10 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c11 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c12 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c13 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c14 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c15 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c16 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c17 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c18 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c19 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c20 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c21 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c22 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c23 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c24 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c25 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c26 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c27 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c28 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c29 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c30 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.c31 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32.n EXPRESSION [(facts)facts.null, ]
+PREHOOK: query: select * from groupingsets32
+PREHOOK: type: QUERY
+PREHOOK: Input: default@groupingsets32
+#### A masked pattern was here ####
+POSTHOOK: query: select * from groupingsets32
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@groupingsets32
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	0	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	2	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	3	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	4	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	5	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	z	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	y	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	x	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	w	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	v	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	u	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	t	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	s	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	r	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	q	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	p	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	o	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	n	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	m	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	l	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	k	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	j	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	i	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	h	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	g	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	f	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	e	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	d	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	c	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	b	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+a	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+PREHOOK: query: create table groupingsets32a as
+select
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,
+count(*) as n,
+grouping__id,
+grouping(c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31)
+from (
+select
+substring(val,01,1) as c00, substring(val,02,1) as c01, substring(val,03,1) as c02,substring(val,04,1) as c03,substring(val,05,1) as c04,substring(val,06,1) as c05,substring(val,07,1) as c06, substring(val,08,1) as c07,substring(val,09,1) as c08,substring(val,10,1) as c09,
+substring(val,11,1) as c10, substring(val,12,1) as c11, substring(val,13,1) as c12,substring(val,14,1) as c13,substring(val,15,1) as c14,substring(val,16,1) as c15,substring(val,17,1) as c16, substring(val,18,1) as c17,substring(val,19,1) as c18,substring(val,20,1) as c19,
+substring(val,21,1) as c20, substring(val,22,1) as c21, substring(val,23,1) as c22,substring(val,24,1) as c23,substring(val,25,1) as c24,substring(val,26,1) as c25,substring(val,27,1) as c26, substring(val,28,1) as c27,substring(val,29,1) as c28,substring(val,30,1) as c29,
+substring(val,31,1) as c30,substring(val,32,1) as c31
+from facts ) x
+group by
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31
+grouping sets (
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31
+)
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@facts
+PREHOOK: Output: database:default
+PREHOOK: Output: default@groupingsets32a
+POSTHOOK: query: create table groupingsets32a as
+select
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,
+count(*) as n,
+grouping__id,
+grouping(c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31)
+from (
+select
+substring(val,01,1) as c00, substring(val,02,1) as c01, substring(val,03,1) as c02,substring(val,04,1) as c03,substring(val,05,1) as c04,substring(val,06,1) as c05,substring(val,07,1) as c06, substring(val,08,1) as c07,substring(val,09,1) as c08,substring(val,10,1) as c09,
+substring(val,11,1) as c10, substring(val,12,1) as c11, substring(val,13,1) as c12,substring(val,14,1) as c13,substring(val,15,1) as c14,substring(val,16,1) as c15,substring(val,17,1) as c16, substring(val,18,1) as c17,substring(val,19,1) as c18,substring(val,20,1) as c19,
+substring(val,21,1) as c20, substring(val,22,1) as c21, substring(val,23,1) as c22,substring(val,24,1) as c23,substring(val,25,1) as c24,substring(val,26,1) as c25,substring(val,27,1) as c26, substring(val,28,1) as c27,substring(val,29,1) as c28,substring(val,30,1) as c29,
+substring(val,31,1) as c30,substring(val,32,1) as c31
+from facts ) x
+group by
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31
+grouping sets (
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31
+)
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@facts
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@groupingsets32a
+POSTHOOK: Lineage: groupingsets32a._c34 EXPRESSION []
+POSTHOOK: Lineage: groupingsets32a.c00 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c01 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c02 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c03 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c04 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c05 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c06 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c07 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c08 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c09 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c10 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c11 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c12 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c13 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c14 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c15 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c16 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c17 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c18 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c19 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c20 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c21 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c22 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c23 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c24 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c25 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c26 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c27 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c28 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c29 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c30 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.c31 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets32a.grouping__id SIMPLE []
+POSTHOOK: Lineage: groupingsets32a.n EXPRESSION [(facts)facts.null, ]
+PREHOOK: query: select * from groupingsets32a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@groupingsets32a
+#### A masked pattern was here ####
+POSTHOOK: query: select * from groupingsets32a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@groupingsets32a
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	0	NULL	NULL	NULL	NULL	NULL	1	4294967263	4294967263
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	NULL	NULL	NULL	NULL	1	4294967279	4294967279
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	2	NULL	NULL	NULL	1	4294967287	4294967287
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	3	NULL	NULL	1	4294967291	4294967291
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	4	NULL	1	4294967293	4294967293
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	5	1	4294967294	4294967294
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	z	NULL	NULL	NULL	NULL	NULL	NULL	1	4294967231	4294967231
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	y	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4294967167	4294967167
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	x	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4294967039	4294967039
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	w	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4294966783	4294966783
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	v	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4294966271	4294966271
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	u	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4294965247	4294965247
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	t	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4294963199	4294963199
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	s	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4294959103	4294959103
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	r	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4294950911	4294950911
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	q	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4294934527	4294934527
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	p	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4294901759	4294901759
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	o	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4294836223	4294836223
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	n	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4294705151	4294705151
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	m	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4294443007	4294443007
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	l	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4293918719	4293918719
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	k	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4292870143	4292870143
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	j	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4290772991	4290772991
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	i	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4286578687	4286578687
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	h	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4278190079	4278190079
+NULL	NULL	NULL	NULL	NULL	NULL	g	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4261412863	4261412863
+NULL	NULL	NULL	NULL	NULL	f	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4227858431	4227858431
+NULL	NULL	NULL	NULL	e	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4160749567	4160749567
+NULL	NULL	NULL	d	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4026531839	4026531839
+NULL	NULL	c	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	3758096383	3758096383
+NULL	b	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	3221225471	3221225471
+a	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	2147483647	2147483647
+PREHOOK: query: create table groupingsets33 as 
+select 
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09, 
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19, 
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29, 
+c30,c31,c32 
+,count(*) as n from ( 
+select 
+substring(val,01,1) as c00, substring(val,02,1) as c01, substring(val,03,1) as c02,substring(val,04,1) as c03,substring(val,05,1) as c04,substring(val,06,1) as c05,substring(val,07,1) as c06, substring(val,08,1) as c07,substring(val,09,1) as c08,substring(val,10,1) as c09, 
+substring(val,11,1) as c10, substring(val,12,1) as c11, substring(val,13,1) as c12,substring(val,14,1) as c13,substring(val,15,1) as c14,substring(val,16,1) as c15,substring(val,17,1) as c16, substring(val,18,1) as c17,substring(val,19,1) as c18,substring(val,20,1) as c19, 
+substring(val,21,1) as c20, substring(val,22,1) as c21, substring(val,23,1) as c22,substring(val,24,1) as c23,substring(val,25,1) as c24,substring(val,26,1) as c25,substring(val,27,1) as c26, substring(val,28,1) as c27,substring(val,29,1) as c28,substring(val,30,1) as c29, 
+substring(val,31,1) as c30,substring(val,32,1) as c31,substring(val,33,1) as c32 
+from facts ) x 
+group by 
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09, 
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19, 
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29, 
+c30,c31,c32 
+grouping sets ( 
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09, 
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19, 
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29, 
+c30,c31,c32 
+)
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@facts
+PREHOOK: Output: database:default
+PREHOOK: Output: default@groupingsets33
+POSTHOOK: query: create table groupingsets33 as 
+select 
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09, 
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19, 
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29, 
+c30,c31,c32 
+,count(*) as n from ( 
+select 
+substring(val,01,1) as c00, substring(val,02,1) as c01, substring(val,03,1) as c02,substring(val,04,1) as c03,substring(val,05,1) as c04,substring(val,06,1) as c05,substring(val,07,1) as c06, substring(val,08,1) as c07,substring(val,09,1) as c08,substring(val,10,1) as c09, 
+substring(val,11,1) as c10, substring(val,12,1) as c11, substring(val,13,1) as c12,substring(val,14,1) as c13,substring(val,15,1) as c14,substring(val,16,1) as c15,substring(val,17,1) as c16, substring(val,18,1) as c17,substring(val,19,1) as c18,substring(val,20,1) as c19, 
+substring(val,21,1) as c20, substring(val,22,1) as c21, substring(val,23,1) as c22,substring(val,24,1) as c23,substring(val,25,1) as c24,substring(val,26,1) as c25,substring(val,27,1) as c26, substring(val,28,1) as c27,substring(val,29,1) as c28,substring(val,30,1) as c29, 
+substring(val,31,1) as c30,substring(val,32,1) as c31,substring(val,33,1) as c32 
+from facts ) x 
+group by 
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09, 
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19, 
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29, 
+c30,c31,c32 
+grouping sets ( 
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09, 
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19, 
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29, 
+c30,c31,c32 
+)
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@facts
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@groupingsets33
+POSTHOOK: Lineage: groupingsets33.c00 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c01 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c02 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c03 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c04 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c05 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c06 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c07 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c08 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c09 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c10 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c11 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c12 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c13 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c14 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c15 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c16 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c17 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c18 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c19 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c20 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c21 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c22 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c23 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c24 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c25 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c26 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c27 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c28 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c29 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c30 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c31 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.c32 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33.n EXPRESSION [(facts)facts.null, ]
+PREHOOK: query: select * from groupingsets33
+PREHOOK: type: QUERY
+PREHOOK: Input: default@groupingsets33
+#### A masked pattern was here ####
+POSTHOOK: query: select * from groupingsets33
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@groupingsets33
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	0	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	2	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	3	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	4	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	5	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	6	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	z	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	y	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	x	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	w	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	v	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	u	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	t	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	s	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	r	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	q	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	p	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	o	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	n	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	m	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	l	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	k	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	j	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	i	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	h	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	NULL	g	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	NULL	f	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	NULL	e	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	NULL	d	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	NULL	c	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+NULL	b	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+a	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1
+PREHOOK: query: create table groupingsets33a as
+select
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,c32
+,count(*) as n,
+grouping__id,
+grouping(c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,c32) 
+from (
+select
+substring(val,01,1) as c00, substring(val,02,1) as c01, substring(val,03,1) as c02,substring(val,04,1) as c03,substring(val,05,1) as c04,substring(val,06,1) as c05,substring(val,07,1) as c06, substring(val,08,1) as c07,substring(val,09,1) as c08,substring(val,10,1) as c09,
+substring(val,11,1) as c10, substring(val,12,1) as c11, substring(val,13,1) as c12,substring(val,14,1) as c13,substring(val,15,1) as c14,substring(val,16,1) as c15,substring(val,17,1) as c16, substring(val,18,1) as c17,substring(val,19,1) as c18,substring(val,20,1) as c19,
+substring(val,21,1) as c20, substring(val,22,1) as c21, substring(val,23,1) as c22,substring(val,24,1) as c23,substring(val,25,1) as c24,substring(val,26,1) as c25,substring(val,27,1) as c26, substring(val,28,1) as c27,substring(val,29,1) as c28,substring(val,30,1) as c29,
+substring(val,31,1) as c30,substring(val,32,1) as c31,substring(val,33,1) as c32
+from facts ) x
+group by
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,c32
+grouping sets (
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,c32
+)
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@facts
+PREHOOK: Output: database:default
+PREHOOK: Output: default@groupingsets33a
+POSTHOOK: query: create table groupingsets33a as
+select
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,c32
+,count(*) as n,
+grouping__id,
+grouping(c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,c32) 
+from (
+select
+substring(val,01,1) as c00, substring(val,02,1) as c01, substring(val,03,1) as c02,substring(val,04,1) as c03,substring(val,05,1) as c04,substring(val,06,1) as c05,substring(val,07,1) as c06, substring(val,08,1) as c07,substring(val,09,1) as c08,substring(val,10,1) as c09,
+substring(val,11,1) as c10, substring(val,12,1) as c11, substring(val,13,1) as c12,substring(val,14,1) as c13,substring(val,15,1) as c14,substring(val,16,1) as c15,substring(val,17,1) as c16, substring(val,18,1) as c17,substring(val,19,1) as c18,substring(val,20,1) as c19,
+substring(val,21,1) as c20, substring(val,22,1) as c21, substring(val,23,1) as c22,substring(val,24,1) as c23,substring(val,25,1) as c24,substring(val,26,1) as c25,substring(val,27,1) as c26, substring(val,28,1) as c27,substring(val,29,1) as c28,substring(val,30,1) as c29,
+substring(val,31,1) as c30,substring(val,32,1) as c31,substring(val,33,1) as c32
+from facts ) x
+group by
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,c32
+grouping sets (
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,c32
+)
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@facts
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@groupingsets33a
+POSTHOOK: Lineage: groupingsets33a._c35 EXPRESSION []
+POSTHOOK: Lineage: groupingsets33a.c00 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c01 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c02 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c03 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c04 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c05 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c06 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c07 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c08 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c09 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c10 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c11 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c12 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c13 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c14 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c15 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c16 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c17 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c18 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c19 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c20 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c21 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c22 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c23 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c24 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c25 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c26 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c27 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c28 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c29 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c30 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c31 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.c32 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsets33a.grouping__id SIMPLE []
+POSTHOOK: Lineage: groupingsets33a.n EXPRESSION [(facts)facts.null, ]
+PREHOOK: query: select * from groupingsets33a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@groupingsets33a
+#### A masked pattern was here ####
+POSTHOOK: query: select * from groupingsets33a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@groupingsets33a
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	0	NULL	NULL	NULL	NULL	NULL	NULL	1	8589934527	8589934527
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	NULL	NULL	NULL	NULL	NULL	1	8589934559	8589934559
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	2	NULL	NULL	NULL	NULL	1	8589934575	8589934575
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	3	NULL	NULL	NULL	1	8589934583	8589934583
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	4	NULL	NULL	1	8589934587	8589934587
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	5	NULL	1	8589934589	8589934589
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	6	1	8589934590	8589934590
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	z	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589934463	8589934463
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	y	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589934335	8589934335
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	x	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589934079	8589934079
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	w	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589933567	8589933567
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	v	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589932543	8589932543
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	u	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589930495	8589930495
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	t	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589926399	8589926399
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	s	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589918207	8589918207
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	r	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589901823	8589901823
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	q	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589869055	8589869055
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	p	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589803519	8589803519
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	o	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589672447	8589672447
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	n	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589410303	8589410303
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	m	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8588886015	8588886015
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	l	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8587837439	8587837439
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	k	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8585740287	8585740287
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	j	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8581545983	8581545983
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	i	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8573157375	8573157375
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	h	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8556380159	8556380159
+NULL	NULL	NULL	NULL	NULL	NULL	g	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8522825727	8522825727
+NULL	NULL	NULL	NULL	NULL	f	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8455716863	8455716863
+NULL	NULL	NULL	NULL	e	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8321499135	8321499135
+NULL	NULL	NULL	d	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8053063679	8053063679
+NULL	NULL	c	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	7516192767	7516192767
+NULL	b	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	6442450943	6442450943
+a	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4294967295	4294967295
+PREHOOK: query: create view groupingsetview as
+select
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,c32
+,count(*) as n,
+grouping__id,
+grouping(c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,c32)
+from (
+select
+substring(val,01,1) as c00, substring(val,02,1) as c01, substring(val,03,1) as c02,substring(val,04,1) as c03,substring(val,05,1) as c04,substring(val,06,1) as c05,substring(val,07,1) as c06, substring(val,08,1) as c07,substring(val,09,1) as c08,substring(val,10,1) as c09,
+substring(val,11,1) as c10, substring(val,12,1) as c11, substring(val,13,1) as c12,substring(val,14,1) as c13,substring(val,15,1) as c14,substring(val,16,1) as c15,substring(val,17,1) as c16, substring(val,18,1) as c17,substring(val,19,1) as c18,substring(val,20,1) as c19,
+substring(val,21,1) as c20, substring(val,22,1) as c21, substring(val,23,1) as c22,substring(val,24,1) as c23,substring(val,25,1) as c24,substring(val,26,1) as c25,substring(val,27,1) as c26, substring(val,28,1) as c27,substring(val,29,1) as c28,substring(val,30,1) as c29,
+substring(val,31,1) as c30,substring(val,32,1) as c31,substring(val,33,1) as c32
+from facts ) x
+group by
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,c32
+grouping sets (
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,c32
+)
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@facts
+PREHOOK: Output: database:default
+PREHOOK: Output: default@groupingsetview
+POSTHOOK: query: create view groupingsetview as
+select
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,c32
+,count(*) as n,
+grouping__id,
+grouping(c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,c32)
+from (
+select
+substring(val,01,1) as c00, substring(val,02,1) as c01, substring(val,03,1) as c02,substring(val,04,1) as c03,substring(val,05,1) as c04,substring(val,06,1) as c05,substring(val,07,1) as c06, substring(val,08,1) as c07,substring(val,09,1) as c08,substring(val,10,1) as c09,
+substring(val,11,1) as c10, substring(val,12,1) as c11, substring(val,13,1) as c12,substring(val,14,1) as c13,substring(val,15,1) as c14,substring(val,16,1) as c15,substring(val,17,1) as c16, substring(val,18,1) as c17,substring(val,19,1) as c18,substring(val,20,1) as c19,
+substring(val,21,1) as c20, substring(val,22,1) as c21, substring(val,23,1) as c22,substring(val,24,1) as c23,substring(val,25,1) as c24,substring(val,26,1) as c25,substring(val,27,1) as c26, substring(val,28,1) as c27,substring(val,29,1) as c28,substring(val,30,1) as c29,
+substring(val,31,1) as c30,substring(val,32,1) as c31,substring(val,33,1) as c32
+from facts ) x
+group by
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,c32
+grouping sets (
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,c32
+)
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@facts
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@groupingsetview
+POSTHOOK: Lineage: groupingsetview._c35 EXPRESSION []
+POSTHOOK: Lineage: groupingsetview.c00 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c01 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c02 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c03 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c04 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c05 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c06 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c07 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c08 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c09 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c10 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c11 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c12 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c13 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c14 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c15 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c16 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c17 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c18 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c19 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c20 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c21 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c22 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c23 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c24 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c25 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c26 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c27 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c28 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c29 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c30 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c31 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c32 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.grouping__id SIMPLE []
+POSTHOOK: Lineage: groupingsetview.n EXPRESSION [(facts)facts.null, ]
+PREHOOK: query: select * from groupingsetview
+PREHOOK: type: QUERY
+PREHOOK: Input: default@facts
+PREHOOK: Input: default@groupingsetview
+#### A masked pattern was here ####
+POSTHOOK: query: select * from groupingsetview
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@facts
+POSTHOOK: Input: default@groupingsetview
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	0	NULL	NULL	NULL	NULL	NULL	NULL	1	8589934527	8589934527
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	NULL	NULL	NULL	NULL	NULL	1	8589934559	8589934559
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	2	NULL	NULL	NULL	NULL	1	8589934575	8589934575
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	3	NULL	NULL	NULL	1	8589934583	8589934583
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	4	NULL	NULL	1	8589934587	8589934587
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	5	NULL	1	8589934589	8589934589
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	6	1	8589934590	8589934590
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	z	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589934463	8589934463
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	y	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589934335	8589934335
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	x	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589934079	8589934079
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	w	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589933567	8589933567
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	v	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589932543	8589932543
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	u	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589930495	8589930495
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	t	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589926399	8589926399
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	s	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589918207	8589918207
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	r	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589901823	8589901823
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	q	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589869055	8589869055
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	p	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589803519	8589803519
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	o	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589672447	8589672447
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	n	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589410303	8589410303
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	m	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8588886015	8588886015
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	l	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8587837439	8587837439
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	k	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8585740287	8585740287
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	j	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8581545983	8581545983
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	i	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8573157375	8573157375
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	h	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8556380159	8556380159
+NULL	NULL	NULL	NULL	NULL	NULL	g	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8522825727	8522825727
+NULL	NULL	NULL	NULL	NULL	f	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8455716863	8455716863
+NULL	NULL	NULL	NULL	e	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8321499135	8321499135
+NULL	NULL	NULL	d	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8053063679	8053063679
+NULL	NULL	c	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	7516192767	7516192767
+NULL	b	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	6442450943	6442450943
+a	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4294967295	4294967295
+PREHOOK: query: describe formatted groupingsetview
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@groupingsetview
+POSTHOOK: query: describe formatted groupingsetview
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@groupingsetview
+# col_name            	data_type           	comment             
+c00                 	string              	                    
+c01                 	string              	                    
+c02                 	string              	                    
+c03                 	string              	                    
+c04                 	string              	                    
+c05                 	string              	                    
+c06                 	string              	                    
+c07                 	string              	                    
+c08                 	string              	                    
+c09                 	string              	                    
+c10                 	string              	                    
+c11                 	string              	                    
+c12                 	string              	                    
+c13                 	string              	                    
+c14                 	string              	                    
+c15                 	string              	                    
+c16                 	string              	                    
+c17                 	string              	                    
+c18                 	string              	                    
+c19                 	string              	                    
+c20                 	string              	                    
+c21                 	string              	                    
+c22                 	string              	                    
+c23                 	string              	                    
+c24                 	string              	                    
+c25                 	string              	                    
+c26                 	string              	                    
+c27                 	string              	                    
+c28                 	string              	                    
+c29                 	string              	                    
+c30                 	string              	                    
+c31                 	string              	                    
+c32                 	string              	                    
+n                   	bigint              	                    
+grouping__id        	bigint              	                    
+_c35                	bigint              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+Original Query:     	select              	 
+	                    	c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+	                    	c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+	                    	c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+	                    	c30,c31,c32         
+	                    	,count(*) as n,     
+	                    	grouping__id,       
+	                    	grouping(c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+	                    	c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+	                    	c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+	                    	c30,c31,c32)        
+	                    	from (              
+	                    	select              
+	                    	substring(val,01,1) as c00, substring(val,02,1) as c01, substring(val,03,1) as c02,substring(val,04,1) as c03,substring(val,05,1) as c04,substring(val,06,1) as c05,substring(val,07,1) as c06, substring(val,08,1) as c07,substring(val,09,1) as c08,substring(val,10,1) as c09,
+	                    	substring(val,11,1) as c10, substring(val,12,1) as c11, substring(val,13,1) as c12,substring(val,14,1) as c13,substring(val,15,1) as c14,substring(val,16,1) as c15,substring(val,17,1) as c16, substring(val,18,1) as c17,substring(val,19,1) as c18,substring(val,20,1) as c19,
+	                    	substring(val,21,1) as c20, substring(val,22,1) as c21, substring(val,23,1) as c22,substring(val,24,1) as c23,substring(val,25,1) as c24,substring(val,26,1) as c25,substring(val,27,1) as c26, substring(val,28,1) as c27,substring(val,29,1) as c28,substring(val,30,1) as c29,
+	                    	substring(val,31,1) as c30,substring(val,32,1) as c31,substring(val,33,1) as c32
+	                    	from facts ) x      
+	                    	group by            
+	                    	c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+	                    	c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+	                    	c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+	                    	c30,c31,c32         
+	                    	grouping sets (     
+	                    	c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+	                    	c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+	                    	c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+	                    	c30,c31,c32         
+	                    	)                   
+Expanded Query:     	select              	 
+	                    	`x`.`c00`,`x`.`c01`,`x`.`c02`,`x`.`c03`,`x`.`c04`,`x`.`c05`,`x`.`c06`,`x`.`c07`,`x`.`c08`,`x`.`c09`,
+	                    	`x`.`c10`,`x`.`c11`,`x`.`c12`,`x`.`c13`,`x`.`c14`,`x`.`c15`,`x`.`c16`,`x`.`c17`,`x`.`c18`,`x`.`c19`,
+	                    	`x`.`c20`,`x`.`c21`,`x`.`c22`,`x`.`c23`,`x`.`c24`,`x`.`c25`,`x`.`c26`,`x`.`c27`,`x`.`c28`,`x`.`c29`,
+	                    	`x`.`c30`,`x`.`c31`,`x`.`c32`
+	                    	,count(*) as `n`,   
+	                    	grouping__id,       
+	                    	grouping(`x`.`c00`,`x`.`c01`,`x`.`c02`,`x`.`c03`,`x`.`c04`,`x`.`c05`,`x`.`c06`,`x`.`c07`,`x`.`c08`,`x`.`c09`,
+	                    	`x`.`c10`,`x`.`c11`,`x`.`c12`,`x`.`c13`,`x`.`c14`,`x`.`c15`,`x`.`c16`,`x`.`c17`,`x`.`c18`,`x`.`c19`,
+	                    	`x`.`c20`,`x`.`c21`,`x`.`c22`,`x`.`c23`,`x`.`c24`,`x`.`c25`,`x`.`c26`,`x`.`c27`,`x`.`c28`,`x`.`c29`,
+	                    	`x`.`c30`,`x`.`c31`,`x`.`c32`)
+	                    	from (              
+	                    	select              
+	                    	substring(`facts`.`val`,01,1) as `c00`, substring(`facts`.`val`,02,1) as `c01`, substring(`facts`.`val`,03,1) as `c02`,substring(`facts`.`val`,04,1) as `c03`,substring(`facts`.`val`,05,1) as `c04`,substring(`facts`.`val`,06,1) as `c05`,substring(`facts`.`val`,07,1) as `c06`, substring(`facts`.`val`,08,1) as `c07`,substring(`facts`.`val`,09,1) as `c08`,substring(`facts`.`val`,10,1) as `c09`,
+	                    	substring(`facts`.`val`,11,1) as `c10`, substring(`facts`.`val`,12,1) as `c11`, substring(`facts`.`val`,13,1) as `c12`,substring(`facts`.`val`,14,1) as `c13`,substring(`facts`.`val`,15,1) as `c14`,substring(`facts`.`val`,16,1) as `c15`,substring(`facts`.`val`,17,1) as `c16`, substring(`facts`.`val`,18,1) as `c17`,substring(`facts`.`val`,19,1) as `c18`,substring(`facts`.`val`,20,1) as `c19`,
+	                    	substring(`facts`.`val`,21,1) as `c20`, substring(`facts`.`val`,22,1) as `c21`, substring(`facts`.`val`,23,1) as `c22`,substring(`facts`.`val`,24,1) as `c23`,substring(`facts`.`val`,25,1) as `c24`,substring(`facts`.`val`,26,1) as `c25`,substring(`facts`.`val`,27,1) as `c26`, substring(`facts`.`val`,28,1) as `c27`,substring(`facts`.`val`,29,1) as `c28`,substring(`facts`.`val`,30,1) as `c29`,
+	                    	substring(`facts`.`val`,31,1) as `c30`,substring(`facts`.`val`,32,1) as `c31`,substring(`facts`.`val`,33,1) as `c32`
+	                    	from `default`.`facts` ) `x`
+	                    	group by            
+	                    	`x`.`c00`,`x`.`c01`,`x`.`c02`,`x`.`c03`,`x`.`c04`,`x`.`c05`,`x`.`c06`,`x`.`c07`,`x`.`c08`,`x`.`c09`,
+	                    	`x`.`c10`,`x`.`c11`,`x`.`c12`,`x`.`c13`,`x`.`c14`,`x`.`c15`,`x`.`c16`,`x`.`c17`,`x`.`c18`,`x`.`c19`,
+	                    	`x`.`c20`,`x`.`c21`,`x`.`c22`,`x`.`c23`,`x`.`c24`,`x`.`c25`,`x`.`c26`,`x`.`c27`,`x`.`c28`,`x`.`c29`,
+	                    	`x`.`c30`,`x`.`c31`,`x`.`c32`
+	                    	grouping sets (     
+	                    	`x`.`c00`,`x`.`c01`,`x`.`c02`,`x`.`c03`,`x`.`c04`,`x`.`c05`,`x`.`c06`,`x`.`c07`,`x`.`c08`,`x`.`c09`,
+	                    	`x`.`c10`,`x`.`c11`,`x`.`c12`,`x`.`c13`,`x`.`c14`,`x`.`c15`,`x`.`c16`,`x`.`c17`,`x`.`c18`,`x`.`c19`,
+	                    	`x`.`c20`,`x`.`c21`,`x`.`c22`,`x`.`c23`,`x`.`c24`,`x`.`c25`,`x`.`c26`,`x`.`c27`,`x`.`c28`,`x`.`c29`,
+	                    	`x`.`c30`,`x`.`c31`,`x`.`c32`
+	                    	)                   

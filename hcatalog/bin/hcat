@@ -1,0 +1,199 @@
+#!/usr/bin/env bash
+
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Resolve our absolute path
+# resolve links - $0 may be a softlink
+this="${BASH_SOURCE-$0}"
+while [ -h "$this" ]; do
+    ls=`ls -ld "$this"`
+    link=`expr "$ls" : '.*-> \(.*\)$'`
+    if expr "$link" : '.*/.*' > /dev/null; then
+        this="$link"
+    else
+        this=`dirname "$this"`/"$link"
+    fi
+done
+
+# convert relative path to absolute path
+bin=`dirname "$this"`
+script=`basename "$this"`
+bin=`unset CDPATH; cd "$bin"; pwd`
+this="$bin/$script"
+#to preserve value of 'this' since any other file that defines 'this' and is sourced
+#here (e.g. hcat-config.sh) will overwrite it
+this_hcat=$this
+
+function echoerr() {
+    echo "${this_hcat}: $@" 1>&2
+}
+
+if [ -e "$bin/../libexec/hcat-config.sh" ]; then
+  . "$bin"/../libexec/hcat-config.sh
+else
+  . "$bin"/hcat-config.sh
+fi
+
+# filter debug command line parameter
+debug=false
+dump_classpath=false
+
+for f in $@; do
+     if [[ $f = "-secretDebugCmd" ]]; then
+        debug=true
+     else
+        remaining="${remaining} $f"
+     fi
+     if [[ $f = "-classpath" ]]; then
+        dump_classpath=true
+     fi
+done
+
+# check for hive in the path
+HIVE_IN_PATH=`which hive 2>/dev/null`
+# looks like [ -f '' ] is true...
+if [ -n "$HIVE_IN_PATH" ]; then
+  #dir of hive scrip
+  HIVE_DIR=`dirname "$HIVE_IN_PATH"`
+  #one level up for base dir
+  HIVE_DIR=`dirname "$HIVE_DIR"`
+fi
+
+# HIVE_HOME env variable overrides hive in the path
+HIVE_HOME=${HIVE_HOME:-$HIVE_DIR}
+
+#if hive is not in path and not set by env, set it to default in build tree
+if [ ! -n "${HIVE_HOME}" ]; then
+  HIVE_HOME="${bin}/../.."
+  echoerr "HIVE_HOME is not defined; assuming ${HIVE_HOME}";
+fi
+
+if [ "$HIVE_HOME" == "" ]; then
+  echo "${this_hcat}: Cannot find hive installation: \$HIVE_HOME must be set or hive must be in the path";
+  exit 4;
+fi
+
+if [ "$HIVE_HOME" == '/usr' ] || [ "$HIVE_HOME" == '/usr/' ]; then
+  #this would be a hive rpm install, bigtop rpm  has HIVE_HOME dir
+  #structure in /usr/lib/hive. Use that if the dir structure looks good
+  if [ -d '/usr/lib/hive/conf' ] && [ -d '/usr/lib/hive/lib' ]; then
+    HIVE_HOME='/usr/lib/hive/';
+  fi
+fi
+
+
+
+HIVE_LIB_DIR=${HIVE_HOME}/lib
+if [ ! -d "$HIVE_LIB_DIR" ]; then
+  echo "${this_hcat}: Cannot find lib dir within HIVE_HOME : $HIVE_LIB_DIR";
+  exit 4;
+fi
+
+HIVE_CONF_DIR=${HIVE_CONF_DIR:-$HIVE_HOME/conf}
+if [ ! -d "$HIVE_CONF_DIR" ]; then
+  echo "${this_hcat}: Cannot find conf dir within HIVE_HOME : $HIVE_CONF_DIR";
+  exit 4;
+fi
+
+
+# Find our hcatalog jar
+shopt -s extglob
+if [ "$(ls -1 $HCAT_PREFIX/share/hcatalog/hive-hcatalog-core-[0-9]*.jar | wc -l)" -ne 1 ]; then
+    echo "Error: did not find exactly one hive-hcatalog-core jar in $HCAT_PREFIX/share/hcatalog"
+    exit 1
+fi
+HCAT_JAR=`ls $HCAT_PREFIX/share/hcatalog/hive-hcatalog-core-[0-9]*.jar`
+
+# Add all of the other jars to our classpath
+for jar in ${HIVE_LIB_DIR}/*.jar ; do
+	HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$jar
+done
+
+# add the auxiliary jars such as serdes
+if [ -d "${HIVE_AUX_JARS_PATH}" ]; then
+  for f in ${HIVE_AUX_JARS_PATH}/*.jar; do
+    if [[ ! -f $f ]]; then
+        continue;
+    fi
+    HADOOP_CLASSPATH=${HADOOP_CLASSPATH}:$f
+  done
+elif [ "${HIVE_AUX_JARS_PATH}" != "" ]; then
+  HIVE_AUX_JARS_PATH=`echo $HIVE_AUX_JARS_PATH | sed 's/,/:/g'`
+  HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$HIVE_AUX_JARS_PATH
+fi
+
+# also pass hive classpath to hadoop
+if [ "$HIVE_CLASSPATH" != "" ]; then
+  export HADOOP_CLASSPATH="${HADOOP_CLASSPATH}:${HIVE_CLASSPATH}";
+fi
+
+# Put external jars, hcat jar, and config file in the classpath
+HADOOP_CLASSPATH=${HADOOP_CLASSPATH}:${HCAT_CLASSPATH}:${HCAT_JAR}:${HIVE_CONF_DIR}
+
+# HBase detection. Need bin/hbase and a conf dir for building classpath entries.
+# Start with BigTop defaults for HBASE_HOME and HBASE_CONF_DIR.
+HBASE_HOME=${HBASE_HOME:-"/usr/lib/hbase"}
+HBASE_CONF_DIR=${HBASE_CONF_DIR:-"/etc/hbase/conf"}
+if [[ ! -d $HBASE_CONF_DIR ]] ; then
+  # not explicitly set, nor in BigTop location. Try looking in HBASE_HOME.
+  HBASE_CONF_DIR="$HBASE_HOME/conf"
+fi
+
+# perhaps we've located the HBase config. if so, include it on classpath.
+if [[ -d $HBASE_CONF_DIR ]] ; then
+  export HADOOP_CLASSPATH="${HADOOP_CLASSPATH}:${HBASE_CONF_DIR}"
+fi
+
+# look for the hbase script. First check HBASE_HOME and then ask PATH.
+if [[ -e $HBASE_HOME/bin/hbase ]] ; then
+  HBASE_BIN="$HBASE_HOME/bin/hbase"
+fi
+HBASE_BIN=${HBASE_BIN:-"$(which hbase)"}
+
+# perhaps we've located HBase. If so, include its details on the classpath
+if [[ -n $HBASE_BIN ]] ; then
+  # exclude ZK, PB, and Guava (See HIVE-2055)
+  # depends on HBASE-8438 (hbase-0.94.14+, hbase-0.96.1+) for `hbase mapredcp` command
+  for x in $($HBASE_BIN mapredcp 2>&2 | tr ':' '\n') ; do
+    if [[ $x == *zookeeper* || $x == *protobuf-java* || $x == *guava* ]] ; then
+      continue
+    fi
+    # TODO: should these should be added to AUX_PARAM as well?
+    export HADOOP_CLASSPATH="${HADOOP_CLASSPATH}:${x}"
+  done
+fi
+
+export HADOOP_CLASSPATH=$HADOOP_CLASSPATH
+export HADOOP_OPTS=$HADOOP_OPTS
+
+if [ ! -d "${HADOOP_LIBEXEC_DIR}" ]; then
+  export HADOOP_LIBEXEC_DIR=$HADOOP_PREFIX/libexec;
+fi
+
+# run it
+if [ "$debug" == "true" ]; then
+	echo "Would run:"
+	echo "exec $HADOOP_PREFIX/bin/hadoop jar $HCAT_JAR org.apache.hive.hcatalog.cli.HCatCli $remaining"
+	echo "with HADOOP_CLASSPATH set to ($HADOOP_CLASSPATH)"
+	echo "and HADOOP_OPTS set to ($HADOOP_OPTS)"
+elif [ "$dump_classpath" == "true" ]; then
+    echo $HADOOP_CLASSPATH
+else
+	exec $HADOOP_PREFIX/bin/hadoop jar  $HCAT_JAR org.apache.hive.hcatalog.cli.HCatCli "$@"
+fi
+

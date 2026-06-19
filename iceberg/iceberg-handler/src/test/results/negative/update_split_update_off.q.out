@@ -1,0 +1,15 @@
+PREHOOK: query: drop table if exists test_update
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists test_update
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create external table test_update (id int, value string) stored by iceberg stored as orc tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_update
+POSTHOOK: query: create external table test_update (id int, value string) stored by iceberg stored as orc tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_update
+FAILED: SemanticException [Error 10435]: Update and Merge to a non-native ACID table in "merge-on-read" mode is only supported when "hive.split.update"="true"

@@ -1,0 +1,215 @@
+PREHOOK: query: drop table if exists json_serde1_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists json_serde1_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists json_serde1_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists json_serde1_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists json_serde1_3
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists json_serde1_3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists json_serde1_4
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists json_serde1_4
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table json_serde1_1 (a array<string>,b map<string,int>)
+  row format serde 'org.apache.hive.hcatalog.data.JsonSerDe'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@json_serde1_1
+POSTHOOK: query: create table json_serde1_1 (a array<string>,b map<string,int>)
+  row format serde 'org.apache.hive.hcatalog.data.JsonSerDe'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@json_serde1_1
+PREHOOK: query: insert into table json_serde1_1
+  select array('aaa'),map('aaa',1) from src limit 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@json_serde1_1
+POSTHOOK: query: insert into table json_serde1_1
+  select array('aaa'),map('aaa',1) from src limit 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@json_serde1_1
+POSTHOOK: Lineage: json_serde1_1.a EXPRESSION []
+POSTHOOK: Lineage: json_serde1_1.b EXPRESSION []
+PREHOOK: query: select * from json_serde1_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@json_serde1_1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from json_serde1_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@json_serde1_1
+#### A masked pattern was here ####
+["aaa"]	{"aaa":1}
+["aaa"]	{"aaa":1}
+PREHOOK: query: create table json_serde1_2 (
+  a array<int>,
+  b map<int,date>,
+  c struct<c1:int, c2:string, c3:array<string>, c4:map<string, int>, c5:struct<c5_1:string, c5_2:int>>
+) row format serde 'org.apache.hadoop.hive.serde2.JsonSerDe'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@json_serde1_2
+POSTHOOK: query: create table json_serde1_2 (
+  a array<int>,
+  b map<int,date>,
+  c struct<c1:int, c2:string, c3:array<string>, c4:map<string, int>, c5:struct<c5_1:string, c5_2:int>>
+) row format serde 'org.apache.hadoop.hive.serde2.JsonSerDe'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@json_serde1_2
+PREHOOK: query: insert into table json_serde1_2
+  select
+    array(3, 2, 1),
+    map(1, date '2001-01-01', 2, null),
+    named_struct(
+      'c1', 123456,
+      'c2', 'hello',
+      'c3', array('aa', 'bb', 'cc'),
+      'c4', map('abc', 123, 'xyz', 456),
+      'c5', named_struct('c5_1', 'bye', 'c5_2', 88))
+  from src limit 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@json_serde1_2
+POSTHOOK: query: insert into table json_serde1_2
+  select
+    array(3, 2, 1),
+    map(1, date '2001-01-01', 2, null),
+    named_struct(
+      'c1', 123456,
+      'c2', 'hello',
+      'c3', array('aa', 'bb', 'cc'),
+      'c4', map('abc', 123, 'xyz', 456),
+      'c5', named_struct('c5_1', 'bye', 'c5_2', 88))
+  from src limit 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@json_serde1_2
+POSTHOOK: Lineage: json_serde1_2.a EXPRESSION []
+POSTHOOK: Lineage: json_serde1_2.b EXPRESSION []
+POSTHOOK: Lineage: json_serde1_2.c EXPRESSION []
+PREHOOK: query: select * from json_serde1_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@json_serde1_2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from json_serde1_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@json_serde1_2
+#### A masked pattern was here ####
+[3,2,1]	{1:"2001-01-01",2:null}	{"c1":123456,"c2":"hello","c3":["aa","bb","cc"],"c4":{"abc":123,"xyz":456},"c5":{"c5_1":"bye","c5_2":88}}
+[3,2,1]	{1:"2001-01-01",2:null}	{"c1":123456,"c2":"hello","c3":["aa","bb","cc"],"c4":{"abc":123,"xyz":456},"c5":{"c5_1":"bye","c5_2":88}}
+PREHOOK: query: create table json_serde1_3 (c1 int, c2 string) stored as jsonfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@json_serde1_3
+POSTHOOK: query: create table json_serde1_3 (c1 int, c2 string) stored as jsonfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@json_serde1_3
+PREHOOK: query: show create table json_serde1_3
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@json_serde1_3
+POSTHOOK: query: show create table json_serde1_3
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@json_serde1_3
+CREATE TABLE `json_serde1_3`(
+  `c1` int COMMENT 'from deserializer', 
+  `c2` string COMMENT 'from deserializer')
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.JsonSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: create table json_serde1_4 (a array<string>,b map<string,int>)
+  row format serde 'org.apache.hive.hcatalog.data.JsonSerDe'
+  WITH SERDEPROPERTIES ('serialization.encoding'='ISO8859_1')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@json_serde1_4
+POSTHOOK: query: create table json_serde1_4 (a array<string>,b map<string,int>)
+  row format serde 'org.apache.hive.hcatalog.data.JsonSerDe'
+  WITH SERDEPROPERTIES ('serialization.encoding'='ISO8859_1')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@json_serde1_4
+PREHOOK: query: insert into table json_serde1_4
+  select array('MÃ¼ller'),map('MÃ¼ller',1) from src limit 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@json_serde1_4
+POSTHOOK: query: insert into table json_serde1_4
+  select array('MÃ¼ller'),map('MÃ¼ller',1) from src limit 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@json_serde1_4
+POSTHOOK: Lineage: json_serde1_4.a EXPRESSION []
+POSTHOOK: Lineage: json_serde1_4.b EXPRESSION []
+PREHOOK: query: select * from json_serde1_4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@json_serde1_4
+#### A masked pattern was here ####
+POSTHOOK: query: select * from json_serde1_4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@json_serde1_4
+#### A masked pattern was here ####
+["MÃ¼ller"]	{"MÃ¼ller":1}
+["MÃ¼ller"]	{"MÃ¼ller":1}
+PREHOOK: query: drop table json_serde1_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@json_serde1_1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@json_serde1_1
+POSTHOOK: query: drop table json_serde1_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@json_serde1_1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@json_serde1_1
+PREHOOK: query: drop table json_serde1_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@json_serde1_2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@json_serde1_2
+POSTHOOK: query: drop table json_serde1_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@json_serde1_2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@json_serde1_2
+PREHOOK: query: drop table json_serde1_3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@json_serde1_3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@json_serde1_3
+POSTHOOK: query: drop table json_serde1_3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@json_serde1_3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@json_serde1_3
+PREHOOK: query: drop table json_serde1_4
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@json_serde1_4
+PREHOOK: Output: database:default
+PREHOOK: Output: default@json_serde1_4
+POSTHOOK: query: drop table json_serde1_4
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@json_serde1_4
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@json_serde1_4

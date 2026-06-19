@@ -1,0 +1,1 @@
+FAILED: SemanticException Line 0:-1 Wrong arguments ''2011-11-11'': Casting DATE/TIMESTAMP types to NUMERIC is prohibited (hive.strict.timestamp.conversion)

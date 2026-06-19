@@ -1,0 +1,35 @@
+PREHOOK: query: create table noschemeTable(key string) partitioned by (value string, value2 string) row format delimited fields terminated by '\\t' stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@noschemeTable
+POSTHOOK: query: create table noschemeTable(key string) partitioned by (value string, value2 string) row format delimited fields terminated by '\\t' stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@noschemeTable
+PREHOOK: query: insert into noschemeTable partition(value='0', value2='clusterA') select key from src where (key = 10) order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@noschemetable@value=0/value2=clusterA
+POSTHOOK: query: insert into noschemeTable partition(value='0', value2='clusterA') select key from src where (key = 10) order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@noschemetable@value=0/value2=clusterA
+POSTHOOK: Lineage: noschemetable PARTITION(value=0,value2=clusterA).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTABLE_LOCATION
+PREHOOK: Input: default@noschemetable
+PREHOOK: Output: default@noschemetable
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTABLE_LOCATION
+POSTHOOK: Input: default@noschemetable
+POSTHOOK: Output: default@noschemetable
+#### A masked pattern was here ####
+PREHOOK: type: ALTERPARTITION_LOCATION
+PREHOOK: Input: default@noschemetable
+PREHOOK: Output: default@noschemetable@value=0/value2=clusterA
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERPARTITION_LOCATION
+POSTHOOK: Input: default@noschemetable
+POSTHOOK: Input: default@noschemetable@value=0/value2=clusterA
+POSTHOOK: Output: default@noschemetable@value=0/value2=clusterA
+#### A masked pattern was here ####

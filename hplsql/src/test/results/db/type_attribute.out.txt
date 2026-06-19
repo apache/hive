@@ -1,0 +1,15 @@
+Ln:2 DECLARE v1 string
+Ln:3 DECLARE v2 string
+Ln:4 DECLARE v3 DERIVED%TYPE
+Ln:6 SELECT
+Ln:6 SELECT 'A', 'B', 1 FROM src LIMIT 1
+Ln:6 SELECT completed successfully
+Ln:6 SELECT INTO statement executed
+Ln:6 COLUMN: _c0, string
+Ln:6 SET v1 = A
+Ln:6 COLUMN: _c1, string
+Ln:6 SET v2 = B
+Ln:6 COLUMN: _c2, int
+Ln:6 SET v3 = 1
+Ln:7 PRINT
+AB1

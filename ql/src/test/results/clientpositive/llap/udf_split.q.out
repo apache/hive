@@ -1,0 +1,68 @@
+PREHOOK: query: DESCRIBE FUNCTION split
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION split
+POSTHOOK: type: DESCFUNCTION
+split(str, regex) - Splits str around occurances that match regex
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED split
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED split
+POSTHOOK: type: DESCFUNCTION
+split(str, regex) - Splits str around occurances that match regex
+Example:
+  > SELECT split('oneAtwoBthreeC', '[ABC]') FROM src LIMIT 1;
+  ["one", "two", "three"]
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFSplit
+Function type:BUILTIN
+PREHOOK: query: EXPLAIN SELECT 
+  split('a b c', ' '),
+  split('oneAtwoBthreeC', '[ABC]'),
+  split('', '.'),
+  split(50401020, 0)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT 
+  split('a b c', ' '),
+  split('oneAtwoBthreeC', '[ABC]'),
+  split('', '.'),
+  split(50401020, 0)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: split('a b c', ' ') (type: array<string>), split('oneAtwoBthreeC', '[ABC]') (type: array<string>), split('', '.') (type: array<string>), split(50401020, 0) (type: array<string>)
+            outputColumnNames: _col0, _col1, _col2, _col3
+            ListSink
+
+PREHOOK: query: SELECT 
+  split('a b c', ' '),
+  split('oneAtwoBthreeC', '[ABC]'),
+  split('', '.'),
+  split(50401020, 0)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT 
+  split('a b c', ' '),
+  split('oneAtwoBthreeC', '[ABC]'),
+  split('', '.'),
+  split(50401020, 0)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+["a","b","c"]	["one","two","three",""]	[""]	["5","4","1","2",""]

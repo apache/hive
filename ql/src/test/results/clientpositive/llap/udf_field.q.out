@@ -1,0 +1,162 @@
+PREHOOK: query: DESCRIBE FUNCTION field
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION field
+POSTHOOK: type: DESCFUNCTION
+field(str, str1, str2, ...) - returns the index of str in the str1,str2,... list or 0 if not found
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED field
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED field
+POSTHOOK: type: DESCFUNCTION
+field(str, str1, str2, ...) - returns the index of str in the str1,str2,... list or 0 if not found
+All primitive types are supported, arguments are compared using str.equals(x). If str is NULL, the return value is 0.
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFField
+Function type:BUILTIN
+PREHOOK: query: SELECT
+  field("x", "a", "b", "c", "d"),
+  field(NULL, "a", "b", "c", "d"),
+  field(0, 1, 2, 3, 4)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  field("x", "a", "b", "c", "d"),
+  field(NULL, "a", "b", "c", "d"),
+  field(0, 1, 2, 3, 4)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	0	0
+PREHOOK: query: SELECT
+  field("a", "a", "b", "c", "d"),
+  field("b", "a", "b", "c", "d"),
+  field("c", "a", "b", "c", "d"),
+  field("d", "a", "b", "c", "d"),
+  field("d", "a", "b", NULL, "d")
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  field("a", "a", "b", "c", "d"),
+  field("b", "a", "b", "c", "d"),
+  field("c", "a", "b", "c", "d"),
+  field("d", "a", "b", "c", "d"),
+  field("d", "a", "b", NULL, "d")
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1	2	3	4	4
+PREHOOK: query: SELECT
+  field(1, 1, 2, 3, 4),
+  field(2, 1, 2, 3, 4),
+  field(3, 1, 2, 3, 4),
+  field(4, 1, 2, 3, 4),
+  field(4, 1, 2, NULL, 4)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  field(1, 1, 2, 3, 4),
+  field(2, 1, 2, 3, 4),
+  field(3, 1, 2, 3, 4),
+  field(4, 1, 2, 3, 4),
+  field(4, 1, 2, NULL, 4)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1	2	3	4	4
+PREHOOK: query: CREATE TABLE test_table_n10(col1 STRING, col2 STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table_n10
+POSTHOOK: query: CREATE TABLE test_table_n10(col1 STRING, col2 STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table_n10
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE test_table_n10
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@test_table_n10
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE test_table_n10
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@test_table_n10
+PREHOOK: query: select col1,col2,
+  field("66",col1),
+  field("66",col1, col2),
+  field("val_86",col1, col2),
+  field(NULL, col1, col2),
+  field(col1, 66, 88),
+  field(col1, "66", "88"),
+  field(col1, "666", "888"),
+  field(col2, "66", "88"),
+  field(col1, col2, col1),
+  field(col1, col2, "66")
+from test_table_n10 where col1="86" or col1="66"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table_n10
+#### A masked pattern was here ####
+POSTHOOK: query: select col1,col2,
+  field("66",col1),
+  field("66",col1, col2),
+  field("val_86",col1, col2),
+  field(NULL, col1, col2),
+  field(col1, 66, 88),
+  field(col1, "66", "88"),
+  field(col1, "666", "888"),
+  field(col2, "66", "88"),
+  field(col1, col2, col1),
+  field(col1, col2, "66")
+from test_table_n10 where col1="86" or col1="66"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table_n10
+#### A masked pattern was here ####
+86	val_86	0	0	2	0	0	0	0	0	2	0
+66	val_66	1	1	0	0	0	1	0	0	2	2
+PREHOOK: query: CREATE TABLE test_table1_n13(col1 int, col2 string) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table1_n13
+POSTHOOK: query: CREATE TABLE test_table1_n13(col1 int, col2 string) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table1_n13
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE test_table1_n13
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@test_table1_n13
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE test_table1_n13
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@test_table1_n13
+PREHOOK: query: select col1,col2,
+  field(66,col1),
+  field(66,col1, col2),
+  field(86, col2, col1),
+  field(86, col1, col1),
+  field(86,col1,n,col2),
+  field(NULL,col1,n,col2),
+  field(col1, col2)
+from (select col1, col2, NULL as n from test_table1_n13 where col1=86 or col1=66) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1_n13
+#### A masked pattern was here ####
+POSTHOOK: query: select col1,col2,
+  field(66,col1),
+  field(66,col1, col2),
+  field(86, col2, col1),
+  field(86, col1, col1),
+  field(86,col1,n,col2),
+  field(NULL,col1,n,col2),
+  field(col1, col2)
+from (select col1, col2, NULL as n from test_table1_n13 where col1=86 or col1=66) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1_n13
+#### A masked pattern was here ####
+86	val_86	0	0	2	1	1	0	0
+66	val_66	1	1	0	0	0	0	0

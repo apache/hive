@@ -1,0 +1,59 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
+
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+
+/**
+ * Generated from template FilterDecimal64ColumnCompareDecimal64Column.txt, which covers
+ * decimal64 comparison expressions between two columns, however output is not produced in
+ * a separate column. The selected vector of the input {@link org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch VectorizedRowBatch} is updated
+ * for in-place filtering.
+ */
+public class <ClassName> extends <BaseClassName> {
+
+  private static final long serialVersionUID = 1L;
+
+  public <ClassName>(int colNum1, int colNum2) {
+    super(colNum1, colNum2);
+  }
+
+  public <ClassName>() {
+    super();
+  }
+
+  @Override
+  public VectorExpressionDescriptor.Descriptor getDescriptor() {
+    return (new VectorExpressionDescriptor.Builder())
+        .setMode(
+            VectorExpressionDescriptor.Mode.FILTER)
+        .setNumArguments(2)
+        .setArgumentTypes(
+            VectorExpressionDescriptor.ArgumentType.DECIMAL_64,
+            VectorExpressionDescriptor.ArgumentType.DECIMAL_64)
+        .setInputExpressionTypes(
+            VectorExpressionDescriptor.InputExpressionType.COLUMN,
+            VectorExpressionDescriptor.InputExpressionType.COLUMN).build();
+  }
+
+  @Override
+  public boolean shouldConvertDecimal64ToDecimal() {
+    return false;
+  }
+}

@@ -1,0 +1,78 @@
+Found 1 items
+#### A masked pattern was here ####
+PREHOOK: query: drop table if exists test_parquet_na
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists test_parquet_na
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create external table test_parquet_na(
+            x int,
+            y int)
+  stored as parquet
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_na
+POSTHOOK: query: create external table test_parquet_na(
+            x int,
+            y int)
+  stored as parquet
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_na
+PREHOOK: query: select * from test_parquet_na
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_na
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_parquet_na
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_na
+#### A masked pattern was here ####
+NULL	1
+NULL	2
+PREHOOK: query: select * from test_parquet_na order by y
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_na
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_parquet_na order by y
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_na
+#### A masked pattern was here ####
+NULL	1
+NULL	2
+PREHOOK: query: select * from test_parquet_na
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_na
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_parquet_na
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_na
+#### A masked pattern was here ####
+NULL	1
+NULL	2
+PREHOOK: query: select * from test_parquet_na order by y
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_parquet_na
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_parquet_na order by y
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_parquet_na
+#### A masked pattern was here ####
+NULL	1
+NULL	2
+PREHOOK: query: drop table test_parquet_na
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_parquet_na
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_parquet_na
+POSTHOOK: query: drop table test_parquet_na
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_parquet_na
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_parquet_na
+Found 1 items
+#### A masked pattern was here ####

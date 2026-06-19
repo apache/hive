@@ -1,0 +1,39 @@
+PREHOOK: query: CREATE TABLE part_test (key STRING, value STRING) PARTITIONED BY (ds STRING) STORED AS SEQUENCEFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@part_test
+POSTHOOK: query: CREATE TABLE part_test (key STRING, value STRING) PARTITIONED BY (ds STRING) STORED AS SEQUENCEFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@part_test
+PREHOOK: query: ALTER TABLE part_test ADD PARTITION(ds='1')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@part_test
+POSTHOOK: query: ALTER TABLE part_test ADD PARTITION(ds='1')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@part_test
+POSTHOOK: Output: default@part_test@ds=1
+PREHOOK: query: ALTER TABLE part_test SET FILEFORMAT RCFILE
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@part_test
+PREHOOK: Output: default@part_test
+POSTHOOK: query: ALTER TABLE part_test SET FILEFORMAT RCFILE
+POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: Input: default@part_test
+POSTHOOK: Output: default@part_test
+PREHOOK: query: ALTER TABLE part_test ADD PARTITION(ds='2')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@part_test
+POSTHOOK: query: ALTER TABLE part_test ADD PARTITION(ds='2')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@part_test
+POSTHOOK: Output: default@part_test@ds=2
+PREHOOK: query: SELECT count(1) FROM part_test WHERE ds='3'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(1) FROM part_test WHERE ds='3'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_test
+#### A masked pattern was here ####
+0

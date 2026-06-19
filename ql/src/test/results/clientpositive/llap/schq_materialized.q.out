@@ -1,0 +1,300 @@
+PREHOOK: query: set role admin
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role admin
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: drop materialized view if exists mv1
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: query: drop materialized view if exists mv1
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: query: drop table if exists emps
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists emps
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists depts
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists depts
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE emps (
+  empid INT,
+  deptno INT,
+  name VARCHAR(256),
+  salary FLOAT,
+  hire_date TIMESTAMP)
+STORED AS ORC
+TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@emps
+POSTHOOK: query: CREATE TABLE emps (
+  empid INT,
+  deptno INT,
+  name VARCHAR(256),
+  salary FLOAT,
+  hire_date TIMESTAMP)
+STORED AS ORC
+TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@emps
+PREHOOK: query: CREATE TABLE depts (
+  deptno INT,
+  deptname VARCHAR(256),
+  locationid INT)
+STORED AS ORC
+TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@depts
+POSTHOOK: query: CREATE TABLE depts (
+  deptno INT,
+  deptname VARCHAR(256),
+  locationid INT)
+STORED AS ORC
+TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@depts
+PREHOOK: query: insert into emps values (100, 10, 'Bill', 10000, 1000), (200, 20, 'Eric', 8000, 500),
+  (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250), (120, 10, 'Bill', 10000, 250),
+  (1330, 10, 'Bill', 10000, '2020-01-02')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@emps
+POSTHOOK: query: insert into emps values (100, 10, 'Bill', 10000, 1000), (200, 20, 'Eric', 8000, 500),
+  (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250), (120, 10, 'Bill', 10000, 250),
+  (1330, 10, 'Bill', 10000, '2020-01-02')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@emps
+POSTHOOK: Lineage: emps.deptno SCRIPT []
+POSTHOOK: Lineage: emps.empid SCRIPT []
+POSTHOOK: Lineage: emps.hire_date SCRIPT []
+POSTHOOK: Lineage: emps.name SCRIPT []
+POSTHOOK: Lineage: emps.salary SCRIPT []
+PREHOOK: query: insert into depts values (10, 'Sales', 10), (30, 'Marketing', null), (20, 'HR', 20)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@depts
+POSTHOOK: query: insert into depts values (10, 'Sales', 10), (30, 'Marketing', null), (20, 'HR', 20)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@depts
+POSTHOOK: Lineage: depts.deptname SCRIPT []
+POSTHOOK: Lineage: depts.deptno SCRIPT []
+POSTHOOK: Lineage: depts.locationid SCRIPT []
+PREHOOK: query: insert into emps values (1330, 10, 'Bill', 10000, '2020-01-02')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@emps
+POSTHOOK: query: insert into emps values (1330, 10, 'Bill', 10000, '2020-01-02')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@emps
+POSTHOOK: Lineage: emps.deptno SCRIPT []
+POSTHOOK: Lineage: emps.empid SCRIPT []
+POSTHOOK: Lineage: emps.hire_date SCRIPT []
+POSTHOOK: Lineage: emps.name SCRIPT []
+POSTHOOK: Lineage: emps.salary SCRIPT []
+PREHOOK: query: CREATE MATERIALIZED VIEW mv1 AS
+  SELECT empid, deptname, hire_date FROM emps
+    JOIN depts ON (emps.deptno = depts.deptno)
+    WHERE hire_date >= '2016-01-01 00:00:00'
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv1
+POSTHOOK: query: CREATE MATERIALIZED VIEW mv1 AS
+  SELECT empid, deptname, hire_date FROM emps
+    JOIN depts ON (emps.deptno = depts.deptno)
+    WHERE hire_date >= '2016-01-01 00:00:00'
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1
+POSTHOOK: Lineage: mv1.deptname SIMPLE [(depts)depts.FieldSchema(name:deptname, type:varchar(256), comment:null), ]
+POSTHOOK: Lineage: mv1.empid SIMPLE [(emps)emps.FieldSchema(name:empid, type:int, comment:null), ]
+POSTHOOK: Lineage: mv1.hire_date SIMPLE [(emps)emps.FieldSchema(name:hire_date, type:timestamp, comment:null), ]
+PREHOOK: query: EXPLAIN
+SELECT empid, deptname FROM emps
+JOIN depts ON (emps.deptno = depts.deptno)
+WHERE hire_date >= '2018-01-01'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+PREHOOK: Input: default@mv1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT empid, deptname FROM emps
+JOIN depts ON (emps.deptno = depts.deptno)
+WHERE hire_date >= '2018-01-01'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@mv1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: default.mv1
+          filterExpr: (hire_date >= TIMESTAMP'2018-01-01 00:00:00') (type: boolean)
+          Filter Operator
+            predicate: (hire_date >= TIMESTAMP'2018-01-01 00:00:00') (type: boolean)
+            Select Operator
+              expressions: empid (type: int), deptname (type: varchar(256))
+              outputColumnNames: _col0, _col1
+              ListSink
+
+PREHOOK: query: insert into emps values (1330, 10, 'Bill', 10000, '2020-01-02')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@emps
+POSTHOOK: query: insert into emps values (1330, 10, 'Bill', 10000, '2020-01-02')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@emps
+POSTHOOK: Lineage: emps.deptno SCRIPT []
+POSTHOOK: Lineage: emps.empid SCRIPT []
+POSTHOOK: Lineage: emps.hire_date SCRIPT []
+POSTHOOK: Lineage: emps.name SCRIPT []
+POSTHOOK: Lineage: emps.salary SCRIPT []
+PREHOOK: query: EXPLAIN
+SELECT empid, deptname FROM emps
+JOIN depts ON (emps.deptno = depts.deptno)
+WHERE hire_date >= '2018-01-01'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT empid, deptname FROM emps
+JOIN depts ON (emps.deptno = depts.deptno)
+WHERE hire_date >= '2018-01-01'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: emps
+                  filterExpr: ((hire_date >= TIMESTAMP'2018-01-01 00:00:00') and deptno is not null) (type: boolean)
+                  Statistics: Num rows: 8 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((hire_date >= TIMESTAMP'2018-01-01 00:00:00') and deptno is not null) (type: boolean)
+                    Statistics: Num rows: 8 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: empid (type: int), deptno (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 8 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: int)
+                        Statistics: Num rows: 8 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: depts
+                  filterExpr: deptno is not null (type: boolean)
+                  Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: deptno is not null (type: boolean)
+                    Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: deptno (type: int), deptname (type: varchar(256))
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: varchar(256))
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col1 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0, _col3
+                Statistics: Num rows: 8 Data size: 744 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: int), _col3 (type: varchar(256))
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 8 Data size: 744 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 8 Data size: 744 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: create scheduled query d cron '0 0 0 1 * ? 2030' defined as 
+  alter materialized view mv1 rebuild
+PREHOOK: type: CREATE SCHEDULED QUERY
+POSTHOOK: query: create scheduled query d cron '0 0 0 1 * ? 2030' defined as 
+  alter materialized view mv1 rebuild
+POSTHOOK: type: CREATE SCHEDULED QUERY
+PREHOOK: query: select `(NEXT_EXECUTION|SCHEDULED_QUERY_ID)?+.+` from sys.scheduled_queries
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@scheduled_queries
+#### A masked pattern was here ####
+POSTHOOK: query: select `(NEXT_EXECUTION|SCHEDULED_QUERY_ID)?+.+` from sys.scheduled_queries
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@scheduled_queries
+#### A masked pattern was here ####
+d	true	hive	0 0 0 1 * ? 2030	hive_admin_user	alter materialized view `default`.`mv1` rebuild	NULL
+PREHOOK: query: alter scheduled query d execute
+PREHOOK: type: ALTER SCHEDULED QUERY
+POSTHOOK: query: alter scheduled query d execute
+POSTHOOK: type: ALTER SCHEDULED QUERY
+PREHOOK: query: select state,error_message from sys.scheduled_executions
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@scheduled_executions
+#### A masked pattern was here ####
+POSTHOOK: query: select state,error_message from sys.scheduled_executions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@scheduled_executions
+#### A masked pattern was here ####
+FINISHED	NULL

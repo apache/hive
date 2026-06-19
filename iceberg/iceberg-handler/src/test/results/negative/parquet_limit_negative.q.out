@@ -1,0 +1,30 @@
+PREHOOK: query: create table icebergtable (id int, name string) stored by iceberg stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@icebergtable
+POSTHOOK: query: create table icebergtable (id int, name string) stored by iceberg stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@icebergtable
+PREHOOK: query: insert into icebergtable values (1, 'Joe'), (2, 'Jack')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@icebergtable
+POSTHOOK: query: insert into icebergtable values (1, 'Joe'), (2, 'Jack')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@icebergtable
+PREHOOK: query: select * from icebergtable limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@icebergtable
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from icebergtable limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@icebergtable
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	Joe
+PREHOOK: query: create table icebergtable (id int, name string) stored by iceberg stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@icebergtable
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. AlreadyExistsException(message:Table hive.default.icebergtable already exists)

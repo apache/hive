@@ -1,0 +1,12 @@
+PREHOOK: query: DESCRIBE FUNCTION rand
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION rand
+POSTHOOK: type: DESCFUNCTION
+rand([seed]) - Returns a pseudorandom number between 0 and 1
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED rand
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED rand
+POSTHOOK: type: DESCFUNCTION
+rand([seed]) - Returns a pseudorandom number between 0 and 1
+Function class:org.apache.hadoop.hive.ql.udf.UDFRand
+Function type:BUILTIN

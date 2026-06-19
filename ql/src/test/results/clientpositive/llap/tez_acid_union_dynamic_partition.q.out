@@ -1,0 +1,169 @@
+PREHOOK: query: drop table if exists dummy_n2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists dummy_n2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists partunion1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists partunion1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists partunion2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists partunion2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table dummy_n2(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dummy_n2
+POSTHOOK: query: create table dummy_n2(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dummy_n2
+PREHOOK: query: insert into table dummy_n2 values (1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@dummy_n2
+POSTHOOK: query: insert into table dummy_n2 values (1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@dummy_n2
+POSTHOOK: Lineage: dummy_n2.i SCRIPT []
+PREHOOK: query: select * from dummy_n2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dummy_n2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from dummy_n2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dummy_n2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+PREHOOK: query: create table partunion1(id1 int) partitioned by (part1 string) stored as orc tblproperties('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@partunion1
+POSTHOOK: query: create table partunion1(id1 int) partitioned by (part1 string) stored as orc tblproperties('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partunion1
+PREHOOK: query: create table partunion2(id1 int) partitioned by (part1 string) stored as orc tblproperties('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@partunion2
+POSTHOOK: query: create table partunion2(id1 int) partitioned by (part1 string) stored as orc tblproperties('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partunion2
+PREHOOK: query: insert into table partunion1 partition(part1)
+select temps.* from (
+select 1 as id1, '2014' as part1 from dummy_n2 
+union all 
+select 2 as id1, '2014' as part1 from dummy_n2 ) temps
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dummy_n2
+PREHOOK: Output: default@partunion1
+POSTHOOK: query: insert into table partunion1 partition(part1)
+select temps.* from (
+select 1 as id1, '2014' as part1 from dummy_n2 
+union all 
+select 2 as id1, '2014' as part1 from dummy_n2 ) temps
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dummy_n2
+POSTHOOK: Output: default@partunion1
+POSTHOOK: Output: default@partunion1@part1=2014
+POSTHOOK: Lineage: partunion1 PARTITION(part1=2014).id1 EXPRESSION []
+PREHOOK: query: select * from partunion1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partunion1
+PREHOOK: Input: default@partunion1@part1=2014
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from partunion1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partunion1
+POSTHOOK: Input: default@partunion1@part1=2014
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	2014
+2	2014
+PREHOOK: query: show partitions partunion1
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@partunion1
+POSTHOOK: query: show partitions partunion1
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@partunion1
+part1=2014
+PREHOOK: query: insert into table partunion2 partition(part1)
+select temps.* from (
+select 1 as id1, '2014' as part1 from dummy_n2 
+union all 
+select 2 as id1, '2015' as part1 from dummy_n2 ) temps
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dummy_n2
+PREHOOK: Output: default@partunion2
+POSTHOOK: query: insert into table partunion2 partition(part1)
+select temps.* from (
+select 1 as id1, '2014' as part1 from dummy_n2 
+union all 
+select 2 as id1, '2015' as part1 from dummy_n2 ) temps
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dummy_n2
+POSTHOOK: Output: default@partunion2
+POSTHOOK: Output: default@partunion2@part1=2014
+POSTHOOK: Output: default@partunion2@part1=2015
+POSTHOOK: Lineage: partunion2 PARTITION(part1=2014).id1 EXPRESSION []
+POSTHOOK: Lineage: partunion2 PARTITION(part1=2015).id1 EXPRESSION []
+PREHOOK: query: select * from partunion2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@partunion2
+PREHOOK: Input: default@partunion2@part1=2014
+PREHOOK: Input: default@partunion2@part1=2015
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from partunion2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@partunion2
+POSTHOOK: Input: default@partunion2@part1=2014
+POSTHOOK: Input: default@partunion2@part1=2015
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	2014
+2	2015
+PREHOOK: query: show partitions partunion2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@partunion2
+POSTHOOK: query: show partitions partunion2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@partunion2
+part1=2014
+part1=2015
+PREHOOK: query: drop table if exists dummy_n2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@dummy_n2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dummy_n2
+POSTHOOK: query: drop table if exists dummy_n2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@dummy_n2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dummy_n2
+PREHOOK: query: drop table if exists partunion1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@partunion1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@partunion1
+POSTHOOK: query: drop table if exists partunion1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@partunion1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partunion1
+PREHOOK: query: drop table if exists partunion2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@partunion2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@partunion2
+POSTHOOK: query: drop table if exists partunion2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@partunion2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@partunion2

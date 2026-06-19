@@ -1,0 +1,64 @@
+PREHOOK: query: create table authorization_create_temp_table_1 as select * from src limit 10
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@authorization_create_temp_table_1
+POSTHOOK: query: create table authorization_create_temp_table_1 as select * from src limit 10
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@authorization_create_temp_table_1
+POSTHOOK: Lineage: authorization_create_temp_table_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: authorization_create_temp_table_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: grant select on authorization_create_temp_table_1 to user user1
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@authorization_create_temp_table_1
+POSTHOOK: query: grant select on authorization_create_temp_table_1 to user user1
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@authorization_create_temp_table_1
+PREHOOK: query: create temporary table tmp1(c1 string, c2 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp1
+POSTHOOK: query: create temporary table tmp1(c1 string, c2 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp1
+PREHOOK: query: insert overwrite table tmp1 select * from authorization_create_temp_table_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@authorization_create_temp_table_1
+PREHOOK: Output: default@tmp1
+POSTHOOK: query: insert overwrite table tmp1 select * from authorization_create_temp_table_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@authorization_create_temp_table_1
+POSTHOOK: Output: default@tmp1
+POSTHOOK: Lineage: tmp1.c1 SIMPLE [(authorization_create_temp_table_1)authorization_create_temp_table_1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: tmp1.c2 SIMPLE [(authorization_create_temp_table_1)authorization_create_temp_table_1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select c1, count(*) from tmp1 group by c1 order by c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp1
+#### A masked pattern was here ####
+POSTHOOK: query: select c1, count(*) from tmp1 group by c1 order by c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp1
+#### A masked pattern was here ####
+165	1
+238	1
+255	1
+27	1
+278	1
+311	1
+409	1
+484	1
+86	1
+98	1
+PREHOOK: query: drop table tmp1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tmp1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp1
+POSTHOOK: query: drop table tmp1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tmp1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp1

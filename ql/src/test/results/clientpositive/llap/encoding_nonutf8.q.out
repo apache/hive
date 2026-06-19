@@ -1,0 +1,38 @@
+PREHOOK: query: drop table if exists encodelat1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists encodelat1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table encodelat1 (name STRING) 
+ ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+ WITH SERDEPROPERTIES ('serialization.encoding'='ISO8859_1')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@encodelat1
+POSTHOOK: query: create table encodelat1 (name STRING) 
+ ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+ WITH SERDEPROPERTIES ('serialization.encoding'='ISO8859_1')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@encodelat1
+PREHOOK: query: load data local inpath '../../data/files/encoding_iso-8859-1.txt' overwrite into table encodelat1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@encodelat1
+POSTHOOK: query: load data local inpath '../../data/files/encoding_iso-8859-1.txt' overwrite into table encodelat1
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@encodelat1
+PREHOOK: query: select * from encodelat1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@encodelat1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from encodelat1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@encodelat1
+#### A masked pattern was here ####
+Müller,Thomas
+Jørgensen,Jørgen
+Peña,Andrés
+Nåm,Fæk

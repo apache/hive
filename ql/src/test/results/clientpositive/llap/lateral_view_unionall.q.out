@@ -1,0 +1,225 @@
+PREHOOK: query: create table tez_test_t1(md_exper string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tez_test_t1
+POSTHOOK: query: create table tez_test_t1(md_exper string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tez_test_t1
+PREHOOK: query: insert into tez_test_t1 values('tez_test_t1-md_expr')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tez_test_t1
+POSTHOOK: query: insert into tez_test_t1 values('tez_test_t1-md_expr')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tez_test_t1
+POSTHOOK: Lineage: tez_test_t1.md_exper SCRIPT []
+PREHOOK: query: create table tez_test_t5(md_exper string, did string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tez_test_t5
+POSTHOOK: query: create table tez_test_t5(md_exper string, did string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tez_test_t5
+PREHOOK: query: insert into tez_test_t5 values('tez_test_t5-md_expr','tez_test_t5-did')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tez_test_t5
+POSTHOOK: query: insert into tez_test_t5 values('tez_test_t5-md_expr','tez_test_t5-did')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tez_test_t5
+POSTHOOK: Lineage: tez_test_t5.did SCRIPT []
+POSTHOOK: Lineage: tez_test_t5.md_exper SCRIPT []
+PREHOOK: query: create table tez_test_t2(did string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tez_test_t2
+POSTHOOK: query: create table tez_test_t2(did string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tez_test_t2
+PREHOOK: query: insert into tez_test_t2 values('tez_test_t2-did')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tez_test_t2
+POSTHOOK: query: insert into tez_test_t2 values('tez_test_t2-did')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tez_test_t2
+POSTHOOK: Lineage: tez_test_t2.did SCRIPT []
+PREHOOK: query: explain
+SELECT NULL AS first_login_did
+   FROM tez_test_t5
+   LATERAL VIEW explode(split('0,6', ',')) gaps AS ads_h5_gap
+UNION ALL
+SELECT  null as first_login_did
+    FROM tez_test_t1
+UNION ALL
+   SELECT did AS first_login_did
+   FROM tez_test_t2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tez_test_t1
+PREHOOK: Input: default@tez_test_t2
+PREHOOK: Input: default@tez_test_t5
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+SELECT NULL AS first_login_did
+   FROM tez_test_t5
+   LATERAL VIEW explode(split('0,6', ',')) gaps AS ads_h5_gap
+UNION ALL
+SELECT  null as first_login_did
+    FROM tez_test_t1
+UNION ALL
+   SELECT did AS first_login_did
+   FROM tez_test_t2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tez_test_t1
+POSTHOOK: Input: default@tez_test_t2
+POSTHOOK: Input: default@tez_test_t5
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Union 2 (CONTAINS)
+        Map 3 <- Union 2 (CONTAINS)
+        Map 4 <- Union 2 (CONTAINS)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: tez_test_t5
+                  Statistics: Num rows: 1 Data size: 35 Basic stats: COMPLETE Column stats: COMPLETE
+                  Lateral View Forward
+                    Statistics: Num rows: 1 Data size: 35 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Lateral View Join Operator
+                        outputColumnNames: _col6
+                        Statistics: Num rows: 1 Data size: 416 Basic stats: COMPLETE Column stats: COMPLETE
+                        Select Operator
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          Select Operator
+                            expressions: null (type: string)
+                            outputColumnNames: _col0
+                            Statistics: Num rows: 2 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
+                            File Output Operator
+                              compressed: false
+                              Statistics: Num rows: 3 Data size: 183 Basic stats: COMPLETE Column stats: COMPLETE
+                              table:
+                                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    Select Operator
+                      expressions: split('0,6', ',') (type: array<string>)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: COMPLETE
+                      UDTF Operator
+                        Statistics: Num rows: 1 Data size: 408 Basic stats: COMPLETE Column stats: COMPLETE
+                        function name: explode
+                        Lateral View Join Operator
+                          outputColumnNames: _col6
+                          Statistics: Num rows: 1 Data size: 416 Basic stats: COMPLETE Column stats: COMPLETE
+                          Select Operator
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                            Select Operator
+                              expressions: null (type: string)
+                              outputColumnNames: _col0
+                              Statistics: Num rows: 2 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
+                              File Output Operator
+                                compressed: false
+                                Statistics: Num rows: 3 Data size: 183 Basic stats: COMPLETE Column stats: COMPLETE
+                                table:
+                                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: tez_test_t1
+                  Statistics: Num rows: 1 Data size: 19 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: null (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 3 Data size: 183 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: tez_test_t2
+                  Statistics: Num rows: 1 Data size: 99 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: did (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 99 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 3 Data size: 183 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Union 2 
+            Vertex: Union 2
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT NULL AS first_login_did
+   FROM tez_test_t5
+   LATERAL VIEW explode(split('0,6', ',')) gaps AS ads_h5_gap
+UNION ALL
+SELECT  null as first_login_did
+    FROM tez_test_t1
+UNION ALL
+   SELECT did AS first_login_did
+   FROM tez_test_t2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tez_test_t1
+PREHOOK: Input: default@tez_test_t2
+PREHOOK: Input: default@tez_test_t5
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT NULL AS first_login_did
+   FROM tez_test_t5
+   LATERAL VIEW explode(split('0,6', ',')) gaps AS ads_h5_gap
+UNION ALL
+SELECT  null as first_login_did
+    FROM tez_test_t1
+UNION ALL
+   SELECT did AS first_login_did
+   FROM tez_test_t2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tez_test_t1
+POSTHOOK: Input: default@tez_test_t2
+POSTHOOK: Input: default@tez_test_t5
+#### A masked pattern was here ####
+NULL
+NULL
+NULL
+tez_test_t2-did

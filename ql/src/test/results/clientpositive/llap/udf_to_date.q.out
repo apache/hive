@@ -1,0 +1,15 @@
+PREHOOK: query: DESCRIBE FUNCTION to_date
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION to_date
+POSTHOOK: type: DESCFUNCTION
+to_date(expr) - Extracts the date part of the date or datetime expression expr
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED to_date
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED to_date
+POSTHOOK: type: DESCFUNCTION
+to_date(expr) - Extracts the date part of the date or datetime expression expr
+Example:
+   > SELECT to_date('2009-07-30 04:17:52') FROM src LIMIT 1;
+  '2009-07-30'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFDate
+Function type:BUILTIN

@@ -1,0 +1,36 @@
+PREHOOK: query: drop table ambiguous
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table ambiguous
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table ambiguous (key string, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ambiguous
+POSTHOOK: query: create table ambiguous (key string, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ambiguous
+PREHOOK: query: FROM src key
+INSERT OVERWRITE TABLE ambiguous SELECT key.key, key.value WHERE key.value < 'val_100'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ambiguous
+POSTHOOK: query: FROM src key
+INSERT OVERWRITE TABLE ambiguous SELECT key.key, key.value WHERE key.value < 'val_100'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ambiguous
+POSTHOOK: Lineage: ambiguous.key SIMPLE [(src)key.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ambiguous.value SIMPLE [(src)key.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: drop table ambiguous
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ambiguous
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ambiguous
+POSTHOOK: query: drop table ambiguous
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ambiguous
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ambiguous

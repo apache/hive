@@ -1,0 +1,84 @@
+PREHOOK: query: create temporary table foo (id int, x map<string,int>) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@foo
+POSTHOOK: query: create temporary table foo (id int, x map<string,int>) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@foo
+PREHOOK: query: insert into foo values(1, map('ABC', 9)), (2, map('ABC', 7)), (3, map('ABC', 8)), (4, map('ABC', 9))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@foo
+POSTHOOK: query: insert into foo values(1, map('ABC', 9)), (2, map('ABC', 7)), (3, map('ABC', 8)), (4, map('ABC', 9))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@foo
+POSTHOOK: Lineage: foo.id SCRIPT []
+POSTHOOK: Lineage: foo.x SCRIPT []
+PREHOOK: query: select id from foo where x['ABC']=9
+PREHOOK: type: QUERY
+PREHOOK: Input: default@foo
+#### A masked pattern was here ####
+POSTHOOK: query: select id from foo where x['ABC']=9
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@foo
+#### A masked pattern was here ####
+1
+4
+PREHOOK: query: create temporary table bar (id int, x map<string,int>) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@bar
+POSTHOOK: query: create temporary table bar (id int, x map<string,int>) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@bar
+PREHOOK: query: insert into bar values(1, map('A', 9, 'B', 1)), (2, map('A', 7, 'B', 2)), (3, map('A', 8, 'B', 3)), (4, map('A', 9, 'B', 4))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@bar
+POSTHOOK: query: insert into bar values(1, map('A', 9, 'B', 1)), (2, map('A', 7, 'B', 2)), (3, map('A', 8, 'B', 3)), (4, map('A', 9, 'B', 4))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@bar
+POSTHOOK: Lineage: bar.id SCRIPT []
+POSTHOOK: Lineage: bar.x SCRIPT []
+PREHOOK: query: select id from bar where x['A']=9
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bar
+#### A masked pattern was here ####
+POSTHOOK: query: select id from bar where x['A']=9
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bar
+#### A masked pattern was here ####
+1
+4
+PREHOOK: query: create temporary table doo (id int, x map<string,int>) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@doo
+POSTHOOK: query: create temporary table doo (id int, x map<string,int>) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@doo
+PREHOOK: query: insert into doo values(1, map('ABC', 9, 'B', 1)), (2, map('AB', 7)), (3, map('A', 8, 'C', 3)), (4, map('D', 7, 'ABC', 9, 'E', 4))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@doo
+POSTHOOK: query: insert into doo values(1, map('ABC', 9, 'B', 1)), (2, map('AB', 7)), (3, map('A', 8, 'C', 3)), (4, map('D', 7, 'ABC', 9, 'E', 4))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@doo
+POSTHOOK: Lineage: doo.id SCRIPT []
+POSTHOOK: Lineage: doo.x SCRIPT []
+PREHOOK: query: select id from doo where x['ABC']=9
+PREHOOK: type: QUERY
+PREHOOK: Input: default@doo
+#### A masked pattern was here ####
+POSTHOOK: query: select id from doo where x['ABC']=9
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@doo
+#### A masked pattern was here ####
+1
+4

@@ -1,0 +1,12 @@
+SELECT '2017-03-11 18:00:00', to_utc_timestamp(timestamp '2017-03-11 18:00:00','US/Eastern');
+SELECT '2017-03-11 19:00:00', to_utc_timestamp(timestamp '2017-03-11 19:00:00','US/Eastern');
+SELECT '2017-03-11 20:00:00', to_utc_timestamp(timestamp '2017-03-11 20:00:00','US/Eastern');
+SELECT '2017-03-11 21:00:00', to_utc_timestamp(timestamp '2017-03-11 21:00:00','US/Eastern');
+SELECT '2017-03-11 22:00:00', to_utc_timestamp(timestamp '2017-03-11 22:00:00','US/Eastern');
+SELECT '2017-03-11 23:00:00', to_utc_timestamp(timestamp '2017-03-11 23:00:00','US/Eastern');
+SELECT '2017-03-12 00:00:00', to_utc_timestamp(timestamp '2017-03-12 00:00:00','US/Eastern');
+SELECT '2017-03-12 01:00:00', to_utc_timestamp(timestamp '2017-03-12 01:00:00','US/Eastern');
+SELECT '2017-03-12 02:00:00', to_utc_timestamp(timestamp '2017-03-12 02:00:00','US/Eastern');
+SELECT '2017-03-12 03:00:00', to_utc_timestamp(timestamp '2017-03-12 03:00:00','US/Eastern');
+SELECT '2017-03-12 04:00:00', to_utc_timestamp(timestamp '2017-03-12 04:00:00','US/Eastern');
+SELECT '2017-03-12 05:00:00', to_utc_timestamp(timestamp '2017-03-12 05:00:00','US/Eastern');

@@ -1,0 +1,132 @@
+PREHOOK: query: select cast('2011-05-06' as date) > 
+  cast('2011-05-06' as date) from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select cast('2011-05-06' as date) > 
+  cast('2011-05-06' as date) from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+false
+PREHOOK: query: select cast('2011-05-06' as date) <
+  cast('2011-05-06' as date) from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select cast('2011-05-06' as date) <
+  cast('2011-05-06' as date) from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+false
+PREHOOK: query: select cast('2011-05-06' as date) = 
+  cast('2011-05-06' as date) from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select cast('2011-05-06' as date) = 
+  cast('2011-05-06' as date) from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+true
+PREHOOK: query: select cast('2011-05-06' as date) <>
+  cast('2011-05-06' as date) from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select cast('2011-05-06' as date) <>
+  cast('2011-05-06' as date) from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+false
+PREHOOK: query: select cast('2011-05-06' as date) >=
+  cast('2011-05-06' as date) from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select cast('2011-05-06' as date) >=
+  cast('2011-05-06' as date) from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+true
+PREHOOK: query: select cast('2011-05-06' as date) <=
+  cast('2011-05-06' as date) from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select cast('2011-05-06' as date) <=
+  cast('2011-05-06' as date) from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+true
+PREHOOK: query: select cast('2011-05-05' as date) > 
+  cast('2011-05-06' as date) from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select cast('2011-05-05' as date) > 
+  cast('2011-05-06' as date) from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+false
+PREHOOK: query: select cast('2011-05-05' as date) <
+  cast('2011-05-06' as date) from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select cast('2011-05-05' as date) <
+  cast('2011-05-06' as date) from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+true
+PREHOOK: query: select cast('2011-05-05' as date) = 
+  cast('2011-05-06' as date) from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select cast('2011-05-05' as date) = 
+  cast('2011-05-06' as date) from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+false
+PREHOOK: query: select cast('2011-05-05' as date) <>
+  cast('2011-05-06' as date) from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select cast('2011-05-05' as date) <>
+  cast('2011-05-06' as date) from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+true
+PREHOOK: query: select cast('2011-05-05' as date) >=
+  cast('2011-05-06' as date) from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select cast('2011-05-05' as date) >=
+  cast('2011-05-06' as date) from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+false
+PREHOOK: query: select cast('2011-05-05' as date) <=
+  cast('2011-05-06' as date) from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select cast('2011-05-05' as date) <=
+  cast('2011-05-06' as date) from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+true

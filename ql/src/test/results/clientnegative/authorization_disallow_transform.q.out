@@ -1,0 +1,21 @@
+PREHOOK: query: set role ALL
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role ALL
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: create table t1(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: SELECT TRANSFORM (*) USING 'cat' AS (key, value) FROM t1
+PREHOOK: type: QUERY
+PREHOOK: Input: cat
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+FAILED: Hive Internal Error: org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException(Query with transform clause is disallowed in current configuration.)
+org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException: Query with transform clause is disallowed in current configuration.
+#### A masked pattern was here ####
+

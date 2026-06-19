@@ -1,0 +1,160 @@
+PREHOOK: query: CREATE TABLE timestampltz_formats (
+  formatid string,
+  tsval timestamp with local time zone
+)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@timestampltz_formats
+POSTHOOK: query: CREATE TABLE timestampltz_formats (
+  formatid string,
+  tsval timestamp with local time zone
+)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@timestampltz_formats
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/timestamps_mixed_formats.txt' overwrite into table timestampltz_formats
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@timestampltz_formats
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/timestamps_mixed_formats.txt' overwrite into table timestampltz_formats
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@timestampltz_formats
+PREHOOK: query: SELECT formatid, tsval FROM timestampltz_formats
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestampltz_formats
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT formatid, tsval FROM timestampltz_formats
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestampltz_formats
+#### A masked pattern was here ####
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 12:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 12:26:34.12345 US/Pacific
+DEFAULT	2016-05-03 12:26:34.12345 US/Pacific
+DEFAULT	2016-05-03 12:26:34.1 US/Pacific
+DEFAULT	2016-05-03 12:26:34.0 US/Pacific
+DEFAULT	2016-05-03 12:26:34.0 US/Pacific
+DEFAULT	2016-05-03 00:00:00.0 US/Pacific
+FORMAT1	NULL
+FORMAT1	NULL
+FORMAT2	NULL
+FORMAT2	NULL
+PREHOOK: query: ALTER TABLE timestampltz_formats SET SERDEPROPERTIES ("timestamp.formats"="yyyy-MM-dd'T'HH:mm:ssVV")
+PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
+PREHOOK: Input: default@timestampltz_formats
+PREHOOK: Output: default@timestampltz_formats
+POSTHOOK: query: ALTER TABLE timestampltz_formats SET SERDEPROPERTIES ("timestamp.formats"="yyyy-MM-dd'T'HH:mm:ssVV")
+POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: Input: default@timestampltz_formats
+POSTHOOK: Output: default@timestampltz_formats
+PREHOOK: query: SELECT formatid, tsval FROM timestampltz_formats
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestampltz_formats
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT formatid, tsval FROM timestampltz_formats
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestampltz_formats
+#### A masked pattern was here ####
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 12:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 12:26:34.12345 US/Pacific
+DEFAULT	2016-05-03 12:26:34.12345 US/Pacific
+DEFAULT	2016-05-03 12:26:34.1 US/Pacific
+DEFAULT	2016-05-03 12:26:34.0 US/Pacific
+DEFAULT	2016-05-03 12:26:34.0 US/Pacific
+DEFAULT	2016-05-03 00:00:00.0 US/Pacific
+FORMAT1	2016-05-03 04:26:34.0 US/Pacific
+FORMAT1	2016-05-03 04:26:34.0 US/Pacific
+FORMAT2	NULL
+FORMAT2	NULL
+PREHOOK: query: ALTER TABLE timestampltz_formats SET SERDEPROPERTIES ("timestamp.formats"="MMM d yyyy HH:mm:ss")
+PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
+PREHOOK: Input: default@timestampltz_formats
+PREHOOK: Output: default@timestampltz_formats
+POSTHOOK: query: ALTER TABLE timestampltz_formats SET SERDEPROPERTIES ("timestamp.formats"="MMM d yyyy HH:mm:ss")
+POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: Input: default@timestampltz_formats
+POSTHOOK: Output: default@timestampltz_formats
+PREHOOK: query: SELECT formatid, tsval FROM timestampltz_formats
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestampltz_formats
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT formatid, tsval FROM timestampltz_formats
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestampltz_formats
+#### A masked pattern was here ####
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 12:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 12:26:34.12345 US/Pacific
+DEFAULT	2016-05-03 12:26:34.12345 US/Pacific
+DEFAULT	2016-05-03 12:26:34.1 US/Pacific
+DEFAULT	2016-05-03 12:26:34.0 US/Pacific
+DEFAULT	2016-05-03 12:26:34.0 US/Pacific
+DEFAULT	2016-05-03 00:00:00.0 US/Pacific
+FORMAT1	NULL
+FORMAT1	NULL
+FORMAT2	2016-05-03 12:26:34.0 US/Pacific
+FORMAT2	2016-05-03 12:26:34.0 US/Pacific
+PREHOOK: query: ALTER TABLE timestampltz_formats SET SERDEPROPERTIES ("timestamp.formats"="yyyy-MM-dd'T'HH:mm:ssVV,MMM d yyyy HH:mm:ss")
+PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
+PREHOOK: Input: default@timestampltz_formats
+PREHOOK: Output: default@timestampltz_formats
+POSTHOOK: query: ALTER TABLE timestampltz_formats SET SERDEPROPERTIES ("timestamp.formats"="yyyy-MM-dd'T'HH:mm:ssVV,MMM d yyyy HH:mm:ss")
+POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: Input: default@timestampltz_formats
+POSTHOOK: Output: default@timestampltz_formats
+PREHOOK: query: SELECT formatid, tsval FROM timestampltz_formats
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestampltz_formats
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT formatid, tsval FROM timestampltz_formats
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestampltz_formats
+#### A masked pattern was here ####
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 04:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 12:26:34.123456789 US/Pacific
+DEFAULT	2016-05-03 12:26:34.12345 US/Pacific
+DEFAULT	2016-05-03 12:26:34.12345 US/Pacific
+DEFAULT	2016-05-03 12:26:34.1 US/Pacific
+DEFAULT	2016-05-03 12:26:34.0 US/Pacific
+DEFAULT	2016-05-03 12:26:34.0 US/Pacific
+DEFAULT	2016-05-03 00:00:00.0 US/Pacific
+FORMAT1	2016-05-03 04:26:34.0 US/Pacific
+FORMAT1	2016-05-03 04:26:34.0 US/Pacific
+FORMAT2	2016-05-03 12:26:34.0 US/Pacific
+FORMAT2	2016-05-03 12:26:34.0 US/Pacific

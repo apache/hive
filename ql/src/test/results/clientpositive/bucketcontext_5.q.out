@@ -1,0 +1,386 @@
+PREHOOK: query: CREATE TABLE bucket_small_n13 (key string, value string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+TBLPROPERTIES('bucketing_version'='1')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@bucket_small_n13
+POSTHOOK: query: CREATE TABLE bucket_small_n13 (key string, value string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+TBLPROPERTIES('bucketing_version'='1')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@bucket_small_n13
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_small_n13
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@bucket_small_n13
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_small_n13
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@bucket_small_n13
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_small_n13
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@bucket_small_n13
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_small_n13
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@bucket_small_n13
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000002_0' INTO TABLE bucket_small_n13
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@bucket_small_n13
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000002_0' INTO TABLE bucket_small_n13
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@bucket_small_n13
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000003_0' INTO TABLE bucket_small_n13
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@bucket_small_n13
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000003_0' INTO TABLE bucket_small_n13
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@bucket_small_n13
+PREHOOK: query: CREATE TABLE bucket_big_n13 (key string, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+TBLPROPERTIES('bucketing_version'='1')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@bucket_big_n13
+POSTHOOK: query: CREATE TABLE bucket_big_n13 (key string, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+TBLPROPERTIES('bucketing_version'='1')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@bucket_big_n13
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_big_n13
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@bucket_big_n13
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_big_n13
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@bucket_big_n13
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_big_n13
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@bucket_big_n13
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_big_n13
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@bucket_big_n13
+PREHOOK: query: explain extended select /*+ MAPJOIN(a) */ count(*) FROM bucket_small_n13 a JOIN bucket_big_n13 b ON a.key = b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_big_n13
+PREHOOK: Input: default@bucket_small_n13
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select /*+ MAPJOIN(a) */ count(*) FROM bucket_small_n13 a JOIN bucket_big_n13 b ON a.key = b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket_big_n13
+POSTHOOK: Input: default@bucket_small_n13
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-3 is a root stage
+  Stage-1 depends on stages: Stage-3
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-3
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        a 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        a 
+          TableScan
+            alias: a
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                Position of Big Table: 1
+      Bucket Mapjoin Context:
+          Alias Bucket Base File Name Mapping:
+            a {000000_0=[000000_0, 000002_0], 000001_0=[000001_0, 000003_0]}
+          Alias Bucket File Name Mapping:
+#### A masked pattern was here ####
+          Alias Bucket Output File Name Mapping:
+#### A masked pattern was here ####
+
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: b
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                Position of Big Table: 1
+                Statistics: Num rows: 1 Data size: 202 Basic stats: COMPLETE Column stats: NONE
+                BucketMapJoin: true
+                Group By Operator
+                  aggregations: count()
+                  minReductionHashAggr: 0.99
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    bucketingVersion: 2
+                    null sort order: 
+                    numBuckets: -1
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    tag: -1
+                    value expressions: _col0 (type: bigint)
+                    auto parallelism: false
+      Execution mode: vectorized
+      Local Work:
+        Map Reduce Local Work
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: bucket_big_n13
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              SORTBUCKETCOLSPREFIX TRUE
+              bucket_count 2
+              bucket_field_name key
+              bucketing_version 1
+              column.name.delimiter ,
+              columns key,value
+              columns.types string:string
+#### A masked pattern was here ####
+              name default.bucket_big_n13
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                SORTBUCKETCOLSPREFIX TRUE
+                bucket_count 2
+                bucket_field_name key
+                bucketing_version 1
+                column.name.delimiter ,
+                columns key,value
+                columns.comments 
+                columns.types string:string
+#### A masked pattern was here ####
+                name default.bucket_big_n13
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.bucket_big_n13
+            name: default.bucket_big_n13
+      Truncated Path -> Alias:
+        /bucket_big_n13 [b]
+      Needs Tagging: false
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            bucketingVersion: 2
+            compressed: false
+            GlobalTableId: 0
+#### A masked pattern was here ####
+            NumFilesPerFileSink: 1
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                properties:
+                  bucketing_version -1
+                  columns _col0
+                  columns.types bigint
+                  escape.delim \
+                  hive.serialization.extend.additional.nesting.levels true
+                  serialization.escape.crlf true
+                  serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            TotalFiles: 1
+            GatherStats: false
+            MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select /*+ MAPJOIN(a) */ count(*) FROM bucket_small_n13 a JOIN bucket_big_n13 b ON a.key = b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_big_n13
+PREHOOK: Input: default@bucket_small_n13
+#### A masked pattern was here ####
+POSTHOOK: query: select /*+ MAPJOIN(a) */ count(*) FROM bucket_small_n13 a JOIN bucket_big_n13 b ON a.key = b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket_big_n13
+POSTHOOK: Input: default@bucket_small_n13
+#### A masked pattern was here ####
+464
+PREHOOK: query: explain extended select /*+ MAPJOIN(a) */ count(*) FROM bucket_small_n13 a JOIN bucket_big_n13 b ON a.key = b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_big_n13
+PREHOOK: Input: default@bucket_small_n13
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended select /*+ MAPJOIN(a) */ count(*) FROM bucket_small_n13 a JOIN bucket_big_n13 b ON a.key = b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket_big_n13
+POSTHOOK: Input: default@bucket_small_n13
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: b
+            filterExpr: key is not null (type: boolean)
+            Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 key (type: string)
+                  1 key (type: string)
+                Position of Big Table: 1
+                Statistics: Num rows: 1 Data size: 202 Basic stats: COMPLETE Column stats: NONE
+                BucketMapJoin: true
+                Group By Operator
+                  aggregations: count()
+                  minReductionHashAggr: 0.99
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    bucketingVersion: 2
+                    null sort order: 
+                    numBuckets: -1
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    tag: -1
+                    value expressions: _col0 (type: bigint)
+                    auto parallelism: false
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: bucket_big_n13
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              SORTBUCKETCOLSPREFIX TRUE
+              bucket_count 2
+              bucket_field_name key
+              bucketing_version 1
+              column.name.delimiter ,
+              columns key,value
+              columns.types string:string
+#### A masked pattern was here ####
+              name default.bucket_big_n13
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                SORTBUCKETCOLSPREFIX TRUE
+                bucket_count 2
+                bucket_field_name key
+                bucketing_version 1
+                column.name.delimiter ,
+                columns key,value
+                columns.comments 
+                columns.types string:string
+#### A masked pattern was here ####
+                name default.bucket_big_n13
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.bucket_big_n13
+            name: default.bucket_big_n13
+      Truncated Path -> Alias:
+        /bucket_big_n13 [b]
+      Needs Tagging: false
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            bucketingVersion: 2
+            compressed: false
+            GlobalTableId: 0
+#### A masked pattern was here ####
+            NumFilesPerFileSink: 1
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                properties:
+                  bucketing_version -1
+                  columns _col0
+                  columns.types bigint
+                  escape.delim \
+                  hive.serialization.extend.additional.nesting.levels true
+                  serialization.escape.crlf true
+                  serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            TotalFiles: 1
+            GatherStats: false
+            MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select /*+ MAPJOIN(a) */ count(*) FROM bucket_small_n13 a JOIN bucket_big_n13 b ON a.key = b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_big_n13
+PREHOOK: Input: default@bucket_small_n13
+#### A masked pattern was here ####
+POSTHOOK: query: select /*+ MAPJOIN(a) */ count(*) FROM bucket_small_n13 a JOIN bucket_big_n13 b ON a.key = b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket_big_n13
+POSTHOOK: Input: default@bucket_small_n13
+#### A masked pattern was here ####
+464

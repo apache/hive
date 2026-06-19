@@ -1,0 +1,53 @@
+PREHOOK: query: CREATE TABLE t_target(
+name string CHECK (length(name)<=20),
+age int,
+gpa double CHECK (gpa BETWEEN 0.0 AND 4.0))
+stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_target
+POSTHOOK: query: CREATE TABLE t_target(
+name string CHECK (length(name)<=20),
+age int,
+gpa double CHECK (gpa BETWEEN 0.0 AND 4.0))
+stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_target
+PREHOOK: query: CREATE TABLE t_source(
+name string,
+age int,
+gpa double)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_source
+POSTHOOK: query: CREATE TABLE t_source(
+name string,
+age int,
+gpa double)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_source
+PREHOOK: query: insert into t_source(name, age, gpa) values ('student1', 16, null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_source
+POSTHOOK: query: insert into t_source(name, age, gpa) values ('student1', 16, null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_source
+POSTHOOK: Lineage: t_source.age SCRIPT []
+POSTHOOK: Lineage: t_source.gpa EXPRESSION []
+POSTHOOK: Lineage: t_source.name SCRIPT []
+PREHOOK: query: insert into t_target(name, age, gpa) values ('student1', 16, 2.0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_target
+POSTHOOK: query: insert into t_target(name, age, gpa) values ('student1', 16, 2.0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_target
+POSTHOOK: Lineage: t_target.age SCRIPT []
+POSTHOOK: Lineage: t_target.gpa SCRIPT []
+POSTHOOK: Lineage: t_target.name SCRIPT []
+FAILED: DataConstraintViolationError org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError: Either CHECK or NOT NULL constraint violated!

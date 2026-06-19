@@ -1,0 +1,74 @@
+PREHOOK: query: create table prt(key string, value string) partitioned by (dt string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@prt
+POSTHOOK: query: create table prt(key string, value string) partitioned by (dt string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@prt
+PREHOOK: query: insert overwrite table prt partition(dt='1') select * from src where key = 238
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@prt@dt=1
+POSTHOOK: query: insert overwrite table prt partition(dt='1') select * from src where key = 238
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@prt@dt=1
+POSTHOOK: Lineage: prt PARTITION(dt=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: prt PARTITION(dt=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from prt where dt is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@prt
+PREHOOK: Input: default@prt@dt=1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from prt where dt is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@prt
+POSTHOOK: Input: default@prt@dt=1
+#### A masked pattern was here ####
+238	val_238	1
+238	val_238	1
+PREHOOK: query: select key+key, value from prt where dt is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@prt
+PREHOOK: Input: default@prt@dt=1
+#### A masked pattern was here ####
+POSTHOOK: query: select key+key, value from prt where dt is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@prt
+POSTHOOK: Input: default@prt@dt=1
+#### A masked pattern was here ####
+476.0	val_238
+476.0	val_238
+PREHOOK: query: alter table prt add columns (value2 string)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@prt
+PREHOOK: Output: default@prt
+POSTHOOK: query: alter table prt add columns (value2 string)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@prt
+POSTHOOK: Output: default@prt
+PREHOOK: query: select key+key, value from prt where dt is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@prt
+PREHOOK: Input: default@prt@dt=1
+#### A masked pattern was here ####
+POSTHOOK: query: select key+key, value from prt where dt is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@prt
+POSTHOOK: Input: default@prt@dt=1
+#### A masked pattern was here ####
+476.0	val_238
+476.0	val_238
+PREHOOK: query: select * from prt where dt is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@prt
+PREHOOK: Input: default@prt@dt=1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from prt where dt is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@prt
+POSTHOOK: Input: default@prt@dt=1
+#### A masked pattern was here ####
+238	val_238	NULL	1
+238	val_238	NULL	1

@@ -1,0 +1,125 @@
+PREHOOK: query: create table part_dec(
+    p_partkey INT,
+    p_name STRING,
+    p_mfgr STRING,
+    p_brand STRING,
+    p_type STRING,
+    p_size INT,
+    p_container STRING,
+    p_retailprice decimal(10,3),
+    p_comment STRING
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@part_dec
+POSTHOOK: query: create table part_dec(
+    p_partkey INT,
+    p_name STRING,
+    p_mfgr STRING,
+    p_brand STRING,
+    p_type STRING,
+    p_size INT,
+    p_container STRING,
+    p_retailprice decimal(10,3),
+    p_comment STRING
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@part_dec
+PREHOOK: query: insert overwrite table part_dec select * from part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+PREHOOK: Output: default@part_dec
+POSTHOOK: query: insert overwrite table part_dec select * from part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+POSTHOOK: Output: default@part_dec
+POSTHOOK: Lineage: part_dec.p_brand SIMPLE [(part)part.FieldSchema(name:p_brand, type:string, comment:null), ]
+POSTHOOK: Lineage: part_dec.p_comment SIMPLE [(part)part.FieldSchema(name:p_comment, type:string, comment:null), ]
+POSTHOOK: Lineage: part_dec.p_container SIMPLE [(part)part.FieldSchema(name:p_container, type:string, comment:null), ]
+POSTHOOK: Lineage: part_dec.p_mfgr SIMPLE [(part)part.FieldSchema(name:p_mfgr, type:string, comment:null), ]
+POSTHOOK: Lineage: part_dec.p_name SIMPLE [(part)part.FieldSchema(name:p_name, type:string, comment:null), ]
+POSTHOOK: Lineage: part_dec.p_partkey SIMPLE [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), ]
+POSTHOOK: Lineage: part_dec.p_retailprice EXPRESSION [(part)part.FieldSchema(name:p_retailprice, type:double, comment:null), ]
+POSTHOOK: Lineage: part_dec.p_size SIMPLE [(part)part.FieldSchema(name:p_size, type:int, comment:null), ]
+POSTHOOK: Lineage: part_dec.p_type SIMPLE [(part)part.FieldSchema(name:p_type, type:string, comment:null), ]
+PREHOOK: query: select p_mfgr, p_retailprice, 
+first_value(p_retailprice) over(partition by p_mfgr order by p_retailprice) ,
+sum(p_retailprice) over(partition by p_mfgr order by p_retailprice)
+from part_dec
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_dec
+#### A masked pattern was here ####
+POSTHOOK: query: select p_mfgr, p_retailprice, 
+first_value(p_retailprice) over(partition by p_mfgr order by p_retailprice) ,
+sum(p_retailprice) over(partition by p_mfgr order by p_retailprice)
+from part_dec
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_dec
+#### A masked pattern was here ####
+Manufacturer#1	1173.150	1173.150	2346.300
+Manufacturer#1	1173.150	1173.150	2346.300
+Manufacturer#1	1414.420	1173.150	3760.720
+Manufacturer#1	1602.590	1173.150	5363.310
+Manufacturer#1	1632.660	1173.150	6995.970
+Manufacturer#1	1753.760	1173.150	8749.730
+Manufacturer#2	1690.680	1690.680	1690.680
+Manufacturer#2	1698.660	1690.680	3389.340
+Manufacturer#2	1701.600	1690.680	5090.940
+Manufacturer#2	1800.700	1690.680	6891.640
+Manufacturer#2	2031.980	1690.680	8923.620
+Manufacturer#3	1190.270	1190.270	1190.270
+Manufacturer#3	1337.290	1190.270	2527.560
+Manufacturer#3	1410.390	1190.270	3937.950
+Manufacturer#3	1671.680	1190.270	5609.630
+Manufacturer#3	1922.980	1190.270	7532.610
+Manufacturer#4	1206.260	1206.260	1206.260
+Manufacturer#4	1290.350	1206.260	2496.610
+Manufacturer#4	1375.420	1206.260	3872.030
+Manufacturer#4	1620.670	1206.260	5492.700
+Manufacturer#4	1844.920	1206.260	7337.620
+Manufacturer#5	1018.100	1018.100	1018.100
+Manufacturer#5	1464.480	1018.100	2482.580
+Manufacturer#5	1611.660	1018.100	4094.240
+Manufacturer#5	1788.730	1018.100	5882.970
+Manufacturer#5	1789.690	1018.100	7672.660
+PREHOOK: query: select p_mfgr, p_retailprice, 
+first_value(p_retailprice) over(partition by p_mfgr order by p_retailprice range between 5 preceding and current row) ,
+sum(p_retailprice) over(partition by p_mfgr order by p_retailprice range between 5 preceding and current row)
+from part_dec
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_dec
+#### A masked pattern was here ####
+POSTHOOK: query: select p_mfgr, p_retailprice, 
+first_value(p_retailprice) over(partition by p_mfgr order by p_retailprice range between 5 preceding and current row) ,
+sum(p_retailprice) over(partition by p_mfgr order by p_retailprice range between 5 preceding and current row)
+from part_dec
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_dec
+#### A masked pattern was here ####
+Manufacturer#1	1173.150	1173.150	2346.300
+Manufacturer#1	1173.150	1173.150	2346.300
+Manufacturer#1	1414.420	1173.150	1414.420
+Manufacturer#1	1602.590	1173.150	1602.590
+Manufacturer#1	1632.660	1173.150	1632.660
+Manufacturer#1	1753.760	1173.150	1753.760
+Manufacturer#2	1690.680	1690.680	1690.680
+Manufacturer#2	1698.660	1690.680	1698.660
+Manufacturer#2	1701.600	1690.680	3400.260
+Manufacturer#2	1800.700	1690.680	1800.700
+Manufacturer#2	2031.980	1690.680	2031.980
+Manufacturer#3	1190.270	1190.270	1190.270
+Manufacturer#3	1337.290	1190.270	1337.290
+Manufacturer#3	1410.390	1190.270	1410.390
+Manufacturer#3	1671.680	1190.270	1671.680
+Manufacturer#3	1922.980	1190.270	1922.980
+Manufacturer#4	1206.260	1206.260	1206.260
+Manufacturer#4	1290.350	1206.260	1290.350
+Manufacturer#4	1375.420	1206.260	1375.420
+Manufacturer#4	1620.670	1206.260	1620.670
+Manufacturer#4	1844.920	1206.260	1844.920
+Manufacturer#5	1018.100	1018.100	1018.100
+Manufacturer#5	1464.480	1018.100	1464.480
+Manufacturer#5	1611.660	1018.100	1611.660
+Manufacturer#5	1788.730	1018.100	1788.730
+Manufacturer#5	1789.690	1018.100	3578.420

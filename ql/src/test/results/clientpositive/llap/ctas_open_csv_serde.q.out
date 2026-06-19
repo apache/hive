@@ -1,0 +1,419 @@
+PREHOOK: query: create table T1_char(abc char(1))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T1_char
+POSTHOOK: query: create table T1_char(abc char(1))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T1_char
+PREHOOK: query: insert into table T1_char values('a'), ('b'), ('c'), ('d')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1_char
+POSTHOOK: query: insert into table T1_char values('a'), ('b'), ('c'), ('d')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1_char
+POSTHOOK: Lineage: t1_char.abc SCRIPT []
+PREHOOK: query: create table T2_char row format serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde' with serdeproperties
+("separatorChar" = ',' , "quoteChar" = '"') stored as textfile as select * from T1_char
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@t1_char
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T2_char
+POSTHOOK: query: create table T2_char row format serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde' with serdeproperties
+("separatorChar" = ',' , "quoteChar" = '"') stored as textfile as select * from T1_char
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@t1_char
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T2_char
+POSTHOOK: Lineage: t2_char.abc SIMPLE [(t1_char)t1_char.FieldSchema(name:abc, type:char(1), comment:null), ]
+PREHOOK: query: select * from T2_char
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_char
+#### A masked pattern was here ####
+POSTHOOK: query: select * from T2_char
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_char
+#### A masked pattern was here ####
+a
+b
+c
+d
+PREHOOK: query: create table T1_varchar(abc varchar (10))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T1_varchar
+POSTHOOK: query: create table T1_varchar(abc varchar (10))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T1_varchar
+PREHOOK: query: insert into table T1_varchar values('abc'), ('bca'), ('cde'), ('defg')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1_varchar
+POSTHOOK: query: insert into table T1_varchar values('abc'), ('bca'), ('cde'), ('defg')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1_varchar
+POSTHOOK: Lineage: t1_varchar.abc SCRIPT []
+PREHOOK: query: create table T2_varchar row format serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde' with serdeproperties
+("separatorChar" = ',' , "quoteChar" = '"') stored as textfile as select * from T1_varchar
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@t1_varchar
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T2_varchar
+POSTHOOK: query: create table T2_varchar row format serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde' with serdeproperties
+("separatorChar" = ',' , "quoteChar" = '"') stored as textfile as select * from T1_varchar
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@t1_varchar
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T2_varchar
+POSTHOOK: Lineage: t2_varchar.abc SIMPLE [(t1_varchar)t1_varchar.FieldSchema(name:abc, type:varchar(10), comment:null), ]
+PREHOOK: query: select * from T2_varchar
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_varchar
+#### A masked pattern was here ####
+POSTHOOK: query: select * from T2_varchar
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_varchar
+#### A masked pattern was here ####
+abc
+bca
+cde
+defg
+PREHOOK: query: create table T1_integer(abc int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T1_integer
+POSTHOOK: query: create table T1_integer(abc int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T1_integer
+PREHOOK: query: insert into table T1_integer values(1), (2), (3), (4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1_integer
+POSTHOOK: query: insert into table T1_integer values(1), (2), (3), (4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1_integer
+POSTHOOK: Lineage: t1_integer.abc SCRIPT []
+PREHOOK: query: create table T2_integer row format serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde' with serdeproperties
+("separatorChar" = ',' , "quoteChar" = '"') stored as textfile as select * from T1_integer
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@t1_integer
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T2_integer
+POSTHOOK: query: create table T2_integer row format serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde' with serdeproperties
+("separatorChar" = ',' , "quoteChar" = '"') stored as textfile as select * from T1_integer
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@t1_integer
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T2_integer
+POSTHOOK: Lineage: t2_integer.abc SIMPLE [(t1_integer)t1_integer.FieldSchema(name:abc, type:int, comment:null), ]
+PREHOOK: query: select * from T2_integer
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_integer
+#### A masked pattern was here ####
+POSTHOOK: query: select * from T2_integer
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_integer
+#### A masked pattern was here ####
+1
+2
+3
+4
+PREHOOK: query: create table T1_tinyInt(abc tinyint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T1_tinyInt
+POSTHOOK: query: create table T1_tinyInt(abc tinyint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T1_tinyInt
+PREHOOK: query: insert into table T1_tinyInt values(11), (21), (32), (42)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1_tinyint
+POSTHOOK: query: insert into table T1_tinyInt values(11), (21), (32), (42)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1_tinyint
+POSTHOOK: Lineage: t1_tinyint.abc SCRIPT []
+PREHOOK: query: create table T2_tinyInt row format serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde' with serdeproperties
+("separatorChar" = ',' , "quoteChar" = '"') stored as textfile as select * from T1_tinyInt
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@t1_tinyint
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T2_tinyInt
+POSTHOOK: query: create table T2_tinyInt row format serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde' with serdeproperties
+("separatorChar" = ',' , "quoteChar" = '"') stored as textfile as select * from T1_tinyInt
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@t1_tinyint
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T2_tinyInt
+POSTHOOK: Lineage: t2_tinyint.abc SIMPLE [(t1_tinyint)t1_tinyint.FieldSchema(name:abc, type:tinyint, comment:null), ]
+PREHOOK: query: select * from T2_tinyInt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_tinyint
+#### A masked pattern was here ####
+POSTHOOK: query: select * from T2_tinyInt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_tinyint
+#### A masked pattern was here ####
+11
+21
+32
+42
+PREHOOK: query: create table T1_bigInt(abc bigint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T1_bigInt
+POSTHOOK: query: create table T1_bigInt(abc bigint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T1_bigInt
+PREHOOK: query: insert into table T1_bigInt values(11), (21), (32), (42)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1_bigint
+POSTHOOK: query: insert into table T1_bigInt values(11), (21), (32), (42)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1_bigint
+POSTHOOK: Lineage: t1_bigint.abc SCRIPT []
+PREHOOK: query: create table T2_bigInt row format serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde' with serdeproperties
+("separatorChar" = ',' , "quoteChar" = '"') stored as textfile as select * from T1_bigInt
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@t1_bigint
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T2_bigInt
+POSTHOOK: query: create table T2_bigInt row format serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde' with serdeproperties
+("separatorChar" = ',' , "quoteChar" = '"') stored as textfile as select * from T1_bigInt
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@t1_bigint
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T2_bigInt
+POSTHOOK: Lineage: t2_bigint.abc SIMPLE [(t1_bigint)t1_bigint.FieldSchema(name:abc, type:bigint, comment:null), ]
+PREHOOK: query: select * from T2_bigInt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_bigint
+#### A masked pattern was here ####
+POSTHOOK: query: select * from T2_bigInt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_bigint
+#### A masked pattern was here ####
+11
+21
+32
+42
+PREHOOK: query: create table T1_decimal(abc decimal(10,2))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T1_decimal
+POSTHOOK: query: create table T1_decimal(abc decimal(10,2))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T1_decimal
+PREHOOK: query: insert into table T1_decimal values(1.25), (3.332), (6.2), (10)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1_decimal
+POSTHOOK: query: insert into table T1_decimal values(1.25), (3.332), (6.2), (10)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1_decimal
+POSTHOOK: Lineage: t1_decimal.abc SCRIPT []
+PREHOOK: query: create table T2_decimal row format serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde' with serdeproperties
+("separatorChar" = ',' , "quoteChar" = '"') stored as textfile as select * from T1_decimal
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@t1_decimal
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T2_decimal
+POSTHOOK: query: create table T2_decimal row format serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde' with serdeproperties
+("separatorChar" = ',' , "quoteChar" = '"') stored as textfile as select * from T1_decimal
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@t1_decimal
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T2_decimal
+POSTHOOK: Lineage: t2_decimal.abc SIMPLE [(t1_decimal)t1_decimal.FieldSchema(name:abc, type:decimal(10,2), comment:null), ]
+PREHOOK: query: select * from T2_decimal
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_decimal
+#### A masked pattern was here ####
+POSTHOOK: query: select * from T2_decimal
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_decimal
+#### A masked pattern was here ####
+1.25
+3.33
+6.2
+10
+PREHOOK: query: create table T1_float(abc float)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T1_float
+POSTHOOK: query: create table T1_float(abc float)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T1_float
+PREHOOK: query: insert into table T1_float values(2.25), (4.33), (6.99), (9.88)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1_float
+POSTHOOK: query: insert into table T1_float values(2.25), (4.33), (6.99), (9.88)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1_float
+POSTHOOK: Lineage: t1_float.abc SCRIPT []
+PREHOOK: query: create table T2_float row format serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde' with serdeproperties
+("separatorChar" = ',' , "quoteChar" = '"') stored as textfile as select * from T1_float
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@t1_float
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T2_float
+POSTHOOK: query: create table T2_float row format serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde' with serdeproperties
+("separatorChar" = ',' , "quoteChar" = '"') stored as textfile as select * from T1_float
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@t1_float
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T2_float
+POSTHOOK: Lineage: t2_float.abc SIMPLE [(t1_float)t1_float.FieldSchema(name:abc, type:float, comment:null), ]
+PREHOOK: query: select * from T2_float
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_float
+#### A masked pattern was here ####
+POSTHOOK: query: select * from T2_float
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_float
+#### A masked pattern was here ####
+2.25
+4.33
+6.99
+9.88
+PREHOOK: query: create table T1_boolean(abc boolean)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T1_boolean
+POSTHOOK: query: create table T1_boolean(abc boolean)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T1_boolean
+PREHOOK: query: insert into table T1_boolean values(true), (false), (true), (true)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1_boolean
+POSTHOOK: query: insert into table T1_boolean values(true), (false), (true), (true)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1_boolean
+POSTHOOK: Lineage: t1_boolean.abc SCRIPT []
+PREHOOK: query: create table T2_boolean row format serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde' with serdeproperties
+("separatorChar" = ',' , "quoteChar" = '"') stored as textfile as select * from T1_boolean
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@t1_boolean
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T2_boolean
+POSTHOOK: query: create table T2_boolean row format serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde' with serdeproperties
+("separatorChar" = ',' , "quoteChar" = '"') stored as textfile as select * from T1_boolean
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@t1_boolean
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T2_boolean
+POSTHOOK: Lineage: t2_boolean.abc SIMPLE [(t1_boolean)t1_boolean.FieldSchema(name:abc, type:boolean, comment:null), ]
+PREHOOK: query: select * from T2_boolean
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_boolean
+#### A masked pattern was here ####
+POSTHOOK: query: select * from T2_boolean
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_boolean
+#### A masked pattern was here ####
+true
+false
+true
+true
+PREHOOK: query: create table T1_date(abc date)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T1_date
+POSTHOOK: query: create table T1_date(abc date)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T1_date
+PREHOOK: query: insert into table T1_date values(cast('2014-01-01' as date)), (cast('2016-08-07' as date)),
+(cast('2018-03-30' as date)), (cast('2019-02-14' as date))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1_date
+POSTHOOK: query: insert into table T1_date values(cast('2014-01-01' as date)), (cast('2016-08-07' as date)),
+(cast('2018-03-30' as date)), (cast('2019-02-14' as date))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1_date
+POSTHOOK: Lineage: t1_date.abc SCRIPT []
+PREHOOK: query: create table T2_date row format serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde' with serdeproperties
+("separatorChar" = ',' , "quoteChar" = '"') stored as textfile as select * from T1_date
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@t1_date
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T2_date
+POSTHOOK: query: create table T2_date row format serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde' with serdeproperties
+("separatorChar" = ',' , "quoteChar" = '"') stored as textfile as select * from T1_date
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@t1_date
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T2_date
+POSTHOOK: Lineage: t2_date.abc SIMPLE [(t1_date)t1_date.FieldSchema(name:abc, type:date, comment:null), ]
+PREHOOK: query: select * from T2_date
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_date
+#### A masked pattern was here ####
+POSTHOOK: query: select * from T2_date
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_date
+#### A masked pattern was here ####
+2014-01-01
+2016-08-07
+2018-03-30
+2019-02-14
+PREHOOK: query: create table T1_timestamp(abc timestamp)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T1_timestamp
+POSTHOOK: query: create table T1_timestamp(abc timestamp)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T1_timestamp
+PREHOOK: query: insert into table T1_timestamp values (cast('2016-01-01 00:00:00' as timestamp))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1_timestamp
+POSTHOOK: query: insert into table T1_timestamp values (cast('2016-01-01 00:00:00' as timestamp))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1_timestamp
+POSTHOOK: Lineage: t1_timestamp.abc SCRIPT []
+PREHOOK: query: create table T2_timestamp row format serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde' with serdeproperties
+("separatorChar" = ',' , "quoteChar" = '"') stored as textfile as select * from T1_timestamp
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@t1_timestamp
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T2_timestamp
+POSTHOOK: query: create table T2_timestamp row format serde 'org.apache.hadoop.hive.serde2.OpenCSVSerde' with serdeproperties
+("separatorChar" = ',' , "quoteChar" = '"') stored as textfile as select * from T1_timestamp
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@t1_timestamp
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T2_timestamp
+POSTHOOK: Lineage: t2_timestamp.abc SIMPLE [(t1_timestamp)t1_timestamp.FieldSchema(name:abc, type:timestamp, comment:null), ]
+PREHOOK: query: select * from T2_timestamp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_timestamp
+#### A masked pattern was here ####
+POSTHOOK: query: select * from T2_timestamp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_timestamp
+#### A masked pattern was here ####
+2016-01-01 00:00:00

@@ -1,0 +1,21 @@
+PREHOOK: query: create database bad_rename1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:bad_rename1
+POSTHOOK: query: create database bad_rename1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:bad_rename1
+PREHOOK: query: use bad_rename1
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:bad_rename1
+POSTHOOK: query: use bad_rename1
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:bad_rename1
+PREHOOK: query: create table rename1(a int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: bad_rename1@rename1
+PREHOOK: Output: database:bad_rename1
+POSTHOOK: query: create table rename1(a int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: bad_rename1@rename1
+POSTHOOK: Output: database:bad_rename1
+FAILED: SemanticException [Error 10072]: Database does not exist: bad_db_notexists

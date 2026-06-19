@@ -1,0 +1,129 @@
+PREHOOK: query: DROP TABLE IF EXISTS atab
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS atab
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE IF NOT EXISTS atab (ks_uid BIGINT, sr_uid STRING, sr_id STRING, tstamp STRING, m_id STRING, act STRING, at_sr_uid STRING, tstamp_type STRING, original_m_id STRING, original_tstamp STRING, registered_flag TINYINT, at_ks_uid BIGINT) PARTITIONED BY (dt STRING,nt STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@atab
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS atab (ks_uid BIGINT, sr_uid STRING, sr_id STRING, tstamp STRING, m_id STRING, act STRING, at_sr_uid STRING, tstamp_type STRING, original_m_id STRING, original_tstamp STRING, registered_flag TINYINT, at_ks_uid BIGINT) PARTITIONED BY (dt STRING,nt STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@atab
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/v1.txt' INTO TABLE atab PARTITION (dt='20130312', nt='tw')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@atab
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/v1.txt' INTO TABLE atab PARTITION (dt='20130312', nt='tw')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@atab
+POSTHOOK: Output: default@atab@dt=20130312/nt=tw
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/v1.txt' INTO TABLE atab PARTITION (dt='20130311', nt='tw')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@atab
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/v1.txt' INTO TABLE atab PARTITION (dt='20130311', nt='tw')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@atab
+POSTHOOK: Output: default@atab@dt=20130311/nt=tw
+PREHOOK: query: DROP TABLE IF EXISTS  mstab
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS  mstab
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE  mstab(ks_uid INT, csc INT) PARTITIONED BY (dt STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mstab
+POSTHOOK: query: CREATE TABLE  mstab(ks_uid INT, csc INT) PARTITIONED BY (dt STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mstab
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/v2.txt' INTO TABLE mstab PARTITION (dt='20130311')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@mstab
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/v2.txt' INTO TABLE mstab PARTITION (dt='20130311')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@mstab
+POSTHOOK: Output: default@mstab@dt=20130311
+PREHOOK: query: DROP VIEW IF EXISTS aa_view_tw
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW IF EXISTS aa_view_tw
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: CREATE VIEW aa_view_tw AS SELECT ks_uid, sr_id, act, at_ks_uid, at_sr_uid, from_unixtime(CAST(CAST( tstamp as BIGINT)/1000 AS BIGINT),'yyyyMMdd') AS act_date, from_unixtime(CAST(CAST( original_tstamp AS BIGINT)/1000 AS BIGINT),'yyyyMMdd') AS content_creation_date FROM atab WHERE dt='20130312' AND nt='tw' AND ks_uid != at_ks_uid
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@atab
+PREHOOK: Output: database:default
+PREHOOK: Output: default@aa_view_tw
+POSTHOOK: query: CREATE VIEW aa_view_tw AS SELECT ks_uid, sr_id, act, at_ks_uid, at_sr_uid, from_unixtime(CAST(CAST( tstamp as BIGINT)/1000 AS BIGINT),'yyyyMMdd') AS act_date, from_unixtime(CAST(CAST( original_tstamp AS BIGINT)/1000 AS BIGINT),'yyyyMMdd') AS content_creation_date FROM atab WHERE dt='20130312' AND nt='tw' AND ks_uid != at_ks_uid
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@atab
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@aa_view_tw
+POSTHOOK: Lineage: aa_view_tw.act SIMPLE [(atab)atab.FieldSchema(name:act, type:string, comment:null), ]
+POSTHOOK: Lineage: aa_view_tw.act_date EXPRESSION [(atab)atab.FieldSchema(name:tstamp, type:string, comment:null), ]
+POSTHOOK: Lineage: aa_view_tw.at_ks_uid SIMPLE [(atab)atab.FieldSchema(name:at_ks_uid, type:bigint, comment:null), ]
+POSTHOOK: Lineage: aa_view_tw.at_sr_uid SIMPLE [(atab)atab.FieldSchema(name:at_sr_uid, type:string, comment:null), ]
+POSTHOOK: Lineage: aa_view_tw.content_creation_date EXPRESSION [(atab)atab.FieldSchema(name:original_tstamp, type:string, comment:null), ]
+POSTHOOK: Lineage: aa_view_tw.ks_uid SIMPLE [(atab)atab.FieldSchema(name:ks_uid, type:bigint, comment:null), ]
+POSTHOOK: Lineage: aa_view_tw.sr_id SIMPLE [(atab)atab.FieldSchema(name:sr_id, type:string, comment:null), ]
+PREHOOK: query: DROP VIEW IF EXISTS joined_aa_view_tw
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW IF EXISTS joined_aa_view_tw
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: CREATE VIEW joined_aa_view_tw AS SELECT aa.ks_uid, aa.sr_id, aa.act, at_sr_uid, aa.act_date, aa.at_ks_uid, aa.content_creation_date, coalesce( other.ksc, 10.0) AS at_ksc, coalesce( self.ksc , 10.0 ) AS self_ksc FROM aa_view_tw aa LEFT OUTER JOIN ( SELECT ks_uid, csc AS ksc FROM mstab WHERE dt='20130311' ) self ON ( CAST(aa.ks_uid AS BIGINT) = CAST(self.ks_uid AS BIGINT) ) LEFT OUTER JOIN ( SELECT ks_uid, csc AS ksc FROM mstab WHERE dt='20130311' ) other ON ( CAST(aa.at_ks_uid AS BIGINT) = CAST(other.ks_uid AS BIGINT) )
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@aa_view_tw
+PREHOOK: Input: default@atab
+PREHOOK: Input: default@mstab
+PREHOOK: Output: database:default
+PREHOOK: Output: default@joined_aa_view_tw
+POSTHOOK: query: CREATE VIEW joined_aa_view_tw AS SELECT aa.ks_uid, aa.sr_id, aa.act, at_sr_uid, aa.act_date, aa.at_ks_uid, aa.content_creation_date, coalesce( other.ksc, 10.0) AS at_ksc, coalesce( self.ksc , 10.0 ) AS self_ksc FROM aa_view_tw aa LEFT OUTER JOIN ( SELECT ks_uid, csc AS ksc FROM mstab WHERE dt='20130311' ) self ON ( CAST(aa.ks_uid AS BIGINT) = CAST(self.ks_uid AS BIGINT) ) LEFT OUTER JOIN ( SELECT ks_uid, csc AS ksc FROM mstab WHERE dt='20130311' ) other ON ( CAST(aa.at_ks_uid AS BIGINT) = CAST(other.ks_uid AS BIGINT) )
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@aa_view_tw
+POSTHOOK: Input: default@atab
+POSTHOOK: Input: default@mstab
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@joined_aa_view_tw
+POSTHOOK: Lineage: joined_aa_view_tw.act SIMPLE [(atab)atab.FieldSchema(name:act, type:string, comment:null), ]
+POSTHOOK: Lineage: joined_aa_view_tw.act_date EXPRESSION [(atab)atab.FieldSchema(name:tstamp, type:string, comment:null), ]
+POSTHOOK: Lineage: joined_aa_view_tw.at_ks_uid SIMPLE [(atab)atab.FieldSchema(name:at_ks_uid, type:bigint, comment:null), ]
+POSTHOOK: Lineage: joined_aa_view_tw.at_ksc EXPRESSION [(mstab)mstab.FieldSchema(name:csc, type:int, comment:null), ]
+POSTHOOK: Lineage: joined_aa_view_tw.at_sr_uid SIMPLE [(atab)atab.FieldSchema(name:at_sr_uid, type:string, comment:null), ]
+POSTHOOK: Lineage: joined_aa_view_tw.content_creation_date EXPRESSION [(atab)atab.FieldSchema(name:original_tstamp, type:string, comment:null), ]
+POSTHOOK: Lineage: joined_aa_view_tw.ks_uid SIMPLE [(atab)atab.FieldSchema(name:ks_uid, type:bigint, comment:null), ]
+POSTHOOK: Lineage: joined_aa_view_tw.self_ksc EXPRESSION [(mstab)mstab.FieldSchema(name:csc, type:int, comment:null), ]
+POSTHOOK: Lineage: joined_aa_view_tw.sr_id SIMPLE [(atab)atab.FieldSchema(name:sr_id, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM joined_aa_view_tw
+PREHOOK: type: QUERY
+PREHOOK: Input: default@aa_view_tw
+PREHOOK: Input: default@atab
+PREHOOK: Input: default@atab@dt=20130312/nt=tw
+PREHOOK: Input: default@joined_aa_view_tw
+PREHOOK: Input: default@mstab
+PREHOOK: Input: default@mstab@dt=20130311
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM joined_aa_view_tw
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@aa_view_tw
+POSTHOOK: Input: default@atab
+POSTHOOK: Input: default@atab@dt=20130312/nt=tw
+POSTHOOK: Input: default@joined_aa_view_tw
+POSTHOOK: Input: default@mstab
+POSTHOOK: Input: default@mstab@dt=20130311
+#### A masked pattern was here ####
+1111	abc	fun	bar	NULL	2222	NULL	99999	99999
+1111	abc	fun	bar	NULL	2222	NULL	99999	99999
+2222	abc	fun	bar	NULL	4444	NULL	99999	99999
+2222	abc	fun	bar	NULL	4444	NULL	99999	99999
+3333	abc	fun	bar	NULL	6666	NULL	99999	10
+3333	abc	fun	bar	NULL	6666	NULL	99999	10
+3333	abc	fun	bar	NULL	6666	NULL	99999	10
+4444	abc	fun	bar	NULL	8888	NULL	99999	99999

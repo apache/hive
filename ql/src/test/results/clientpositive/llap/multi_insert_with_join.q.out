@@ -1,0 +1,136 @@
+PREHOOK: query: drop table if exists status_updates
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists status_updates
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists profiles
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists profiles
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists school_summary
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists school_summary
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists gender_summary
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists gender_summary
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table status_updates(userid int,status string,ds string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@status_updates
+POSTHOOK: query: create table status_updates(userid int,status string,ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@status_updates
+PREHOOK: query: create table profiles(userid int,school string,gender int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@profiles
+POSTHOOK: query: create table profiles(userid int,school string,gender int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@profiles
+PREHOOK: query: create table school_summary(school string,cnt int) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@school_summary
+POSTHOOK: query: create table school_summary(school string,cnt int) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@school_summary
+PREHOOK: query: create table gender_summary(gender int, cnt int) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@gender_summary
+POSTHOOK: query: create table gender_summary(gender int, cnt int) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@gender_summary
+PREHOOK: query: insert into status_updates values (1, "status_1", "2009-03-20")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@status_updates
+POSTHOOK: query: insert into status_updates values (1, "status_1", "2009-03-20")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@status_updates
+POSTHOOK: Lineage: status_updates.ds SCRIPT []
+POSTHOOK: Lineage: status_updates.status SCRIPT []
+POSTHOOK: Lineage: status_updates.userid SCRIPT []
+PREHOOK: query: insert into profiles values (1, "school_1", 0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@profiles
+POSTHOOK: query: insert into profiles values (1, "school_1", 0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@profiles
+POSTHOOK: Lineage: profiles.gender SCRIPT []
+POSTHOOK: Lineage: profiles.school SCRIPT []
+POSTHOOK: Lineage: profiles.userid SCRIPT []
+PREHOOK: query: FROM (SELECT a.status, b.school, b.gender
+FROM status_updates a JOIN profiles b
+ON (a.userid = b.userid and
+a.ds='2009-03-20' )
+) subq1
+INSERT OVERWRITE TABLE gender_summary
+PARTITION(ds='2009-03-20')
+SELECT subq1.gender, COUNT(1) GROUP BY subq1.gender
+INSERT OVERWRITE TABLE school_summary
+PARTITION(ds='2009-03-20')
+SELECT subq1.school, COUNT(1) GROUP BY subq1.school
+PREHOOK: type: QUERY
+PREHOOK: Input: default@profiles
+PREHOOK: Input: default@status_updates
+PREHOOK: Output: default@gender_summary@ds=2009-03-20
+PREHOOK: Output: default@school_summary@ds=2009-03-20
+POSTHOOK: query: FROM (SELECT a.status, b.school, b.gender
+FROM status_updates a JOIN profiles b
+ON (a.userid = b.userid and
+a.ds='2009-03-20' )
+) subq1
+INSERT OVERWRITE TABLE gender_summary
+PARTITION(ds='2009-03-20')
+SELECT subq1.gender, COUNT(1) GROUP BY subq1.gender
+INSERT OVERWRITE TABLE school_summary
+PARTITION(ds='2009-03-20')
+SELECT subq1.school, COUNT(1) GROUP BY subq1.school
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@profiles
+POSTHOOK: Input: default@status_updates
+POSTHOOK: Output: default@gender_summary@ds=2009-03-20
+POSTHOOK: Output: default@school_summary@ds=2009-03-20
+POSTHOOK: Lineage: gender_summary PARTITION(ds=2009-03-20).cnt EXPRESSION [(status_updates)a.null, (profiles)b.null, ]
+POSTHOOK: Lineage: gender_summary PARTITION(ds=2009-03-20).gender SIMPLE [(profiles)b.FieldSchema(name:gender, type:int, comment:null), ]
+POSTHOOK: Lineage: school_summary PARTITION(ds=2009-03-20).cnt EXPRESSION [(status_updates)a.null, (profiles)b.null, ]
+POSTHOOK: Lineage: school_summary PARTITION(ds=2009-03-20).school SIMPLE [(profiles)b.FieldSchema(name:school, type:string, comment:null), ]
+PREHOOK: query: select * from school_summary
+PREHOOK: type: QUERY
+PREHOOK: Input: default@school_summary
+PREHOOK: Input: default@school_summary@ds=2009-03-20
+#### A masked pattern was here ####
+POSTHOOK: query: select * from school_summary
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@school_summary
+POSTHOOK: Input: default@school_summary@ds=2009-03-20
+#### A masked pattern was here ####
+school_1	1	2009-03-20
+PREHOOK: query: select * from gender_summary
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gender_summary
+PREHOOK: Input: default@gender_summary@ds=2009-03-20
+#### A masked pattern was here ####
+POSTHOOK: query: select * from gender_summary
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gender_summary
+POSTHOOK: Input: default@gender_summary@ds=2009-03-20
+#### A masked pattern was here ####
+0	1	2009-03-20

@@ -1,0 +1,20 @@
+PREHOOK: query: create table t ( a int )
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: create table t ( a int )
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: create view export_view as select * from t
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@t
+PREHOOK: Output: database:default
+PREHOOK: Output: default@export_view
+POSTHOOK: query: create view export_view as select * from t
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@t
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@export_view
+POSTHOOK: Lineage: export_view.a SIMPLE [(t)t.FieldSchema(name:a, type:int, comment:null), ]
+FAILED: SemanticException Views and Materialized Views can not be exported.

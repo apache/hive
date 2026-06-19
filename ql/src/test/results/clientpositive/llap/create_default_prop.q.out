@@ -1,0 +1,54 @@
+PREHOOK: query: CREATE TABLE table_p1 (a STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_p1
+POSTHOOK: query: CREATE TABLE table_p1 (a STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_p1
+PREHOOK: query: DESC EXTENDED table_p1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table_p1
+POSTHOOK: query: DESC EXTENDED table_p1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table_p1
+a                   	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: CREATE TABLE table_p2 LIKE table_p1
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_p2
+POSTHOOK: query: CREATE TABLE table_p2 LIKE table_p1
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_p2
+PREHOOK: query: DESC EXTENDED table_p2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table_p2
+POSTHOOK: query: DESC EXTENDED table_p2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table_p2
+a                   	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: CREATE TABLE table_p3 AS SELECT * FROM table_p1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@table_p1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_p3
+POSTHOOK: query: CREATE TABLE table_p3 AS SELECT * FROM table_p1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@table_p1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_p3
+POSTHOOK: Lineage: table_p3.a SIMPLE [(table_p1)table_p1.FieldSchema(name:a, type:string, comment:null), ]
+PREHOOK: query: DESC EXTENDED table_p3
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@table_p3
+POSTHOOK: query: DESC EXTENDED table_p3
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@table_p3
+a                   	string              	                    
+	 	 
+#### A masked pattern was here ####

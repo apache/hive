@@ -1,0 +1,36 @@
+PREHOOK: query: create external table insert_after_drop_partition(key string, val string) partitioned by (insertdate string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@insert_after_drop_partition
+POSTHOOK: query: create external table insert_after_drop_partition(key string, val string) partitioned by (insertdate string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@insert_after_drop_partition
+PREHOOK: query: insert overwrite table insert_after_drop_partition partition (insertdate='2008-01-01') select * from src limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@insert_after_drop_partition@insertdate=2008-01-01
+POSTHOOK: query: insert overwrite table insert_after_drop_partition partition (insertdate='2008-01-01') select * from src limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@insert_after_drop_partition@insertdate=2008-01-01
+POSTHOOK: Lineage: insert_after_drop_partition PARTITION(insertdate=2008-01-01).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: insert_after_drop_partition PARTITION(insertdate=2008-01-01).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: alter table insert_after_drop_partition drop partition (insertdate='2008-01-01')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@insert_after_drop_partition
+PREHOOK: Output: default@insert_after_drop_partition@insertdate=2008-01-01
+POSTHOOK: query: alter table insert_after_drop_partition drop partition (insertdate='2008-01-01')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@insert_after_drop_partition
+POSTHOOK: Output: default@insert_after_drop_partition@insertdate=2008-01-01
+PREHOOK: query: insert overwrite table insert_after_drop_partition partition (insertdate='2008-01-01') select * from src limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@insert_after_drop_partition@insertdate=2008-01-01
+POSTHOOK: query: insert overwrite table insert_after_drop_partition partition (insertdate='2008-01-01') select * from src limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@insert_after_drop_partition@insertdate=2008-01-01
+POSTHOOK: Lineage: insert_after_drop_partition PARTITION(insertdate=2008-01-01).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: insert_after_drop_partition PARTITION(insertdate=2008-01-01).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

@@ -1,0 +1,15 @@
+
+
+
+
+
+SELECT * FROM src LIMIT 1
+PREHOOK: query: SELECT * FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+238	val_238

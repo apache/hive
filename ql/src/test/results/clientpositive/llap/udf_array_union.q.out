@@ -1,0 +1,132 @@
+PREHOOK: query: DESCRIBE FUNCTION array_union
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION array_union
+POSTHOOK: type: DESCFUNCTION
+array_union(array1, array2) - Returns an array of the elements in the union of array1 and array2 without duplicates.
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED array_union
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED array_union
+POSTHOOK: type: DESCFUNCTION
+array_union(array1, array2) - Returns an array of the elements in the union of array1 and array2 without duplicates.
+Example:
+  > SELECT array_union(array(1, 2, 2,4), array(2,3)) FROM src LIMIT 1;
+  [1,2,3,4]
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFArrayUnion
+Function type:BUILTIN
+PREHOOK: query: SELECT array_union(array(1, 2, 3, null,3,4),array(1, 3, null))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array_union(array(1, 2, 3, null,3,4),array(1, 3, null))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+[1,2,3,null,4]
+PREHOOK: query: SELECT array_union(array(),array())
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array_union(array(),array())
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+[]
+PREHOOK: query: SELECT array_union(array(null),array(null))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array_union(array(null),array(null))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+[null]
+PREHOOK: query: SELECT array_union(array(1.12, 2.23, 3.34, null,1.11,1.12,2.9),array(1.12,3.34,1.11,1.12))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array_union(array(1.12, 2.23, 3.34, null,1.11,1.12,2.9),array(1.12,3.34,1.11,1.12))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+[1.12,2.23,3.34,null,1.11,2.9]
+PREHOOK: query: SELECT array(1,2,3),array_union(array(1, 2, 3),array(1,3,4))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array(1,2,3),array_union(array(1, 2, 3),array(1,3,4))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+[1,2,3]	[1,2,3,4]
+PREHOOK: query: SELECT array_union(array(1.1234567890, 2.234567890, 3.34567890, null, 3.3456789, 2.234567,1.1234567890),array(1.1234567890, 3.34567890, null,2.234567))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array_union(array(1.1234567890, 2.234567890, 3.34567890, null, 3.3456789, 2.234567,1.1234567890),array(1.1234567890, 3.34567890, null,2.234567))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+[1.123456789,2.23456789,3.3456789,null,2.234567]
+PREHOOK: query: SELECT array_union(array(11234567890, 2234567890, 334567890, null, 11234567890, 2234567890, 334567890, null),array(11234567890, 2234567890, 334567890))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array_union(array(11234567890, 2234567890, 334567890, null, 11234567890, 2234567890, 334567890, null),array(11234567890, 2234567890, 334567890))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+[11234567890,2234567890,334567890,null]
+PREHOOK: query: SELECT array_union(array(array("a","b","c","d"),array("a","b","c","d"),array("a","b","c","d","e"),null,array("e","a","b","c","d")),array(array("a","b","c","d"),array("a","b","c","d"),array("a","b","c","d","e"),null))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array_union(array(array("a","b","c","d"),array("a","b","c","d"),array("a","b","c","d","e"),null,array("e","a","b","c","d")),array(array("a","b","c","d"),array("a","b","c","d"),array("a","b","c","d","e"),null))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+[["a","b","c","d"],["a","b","c","d","e"],null,["e","a","b","c","d"]]
+PREHOOK: query: create external table test_null_array (id int, value Array<String>) ROW FORMAT DELIMITED
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_null_array
+POSTHOOK: query: create external table test_null_array (id int, value Array<String>) ROW FORMAT DELIMITED
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_null_array
+PREHOOK: query: select value from test_null_array
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_null_array
+#### A masked pattern was here ####
+POSTHOOK: query: select value from test_null_array
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_null_array
+#### A masked pattern was here ####
+["NULL"]
+["null","null"]
+[]
+PREHOOK: query: select array_union(value,value) from test_null_array
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_null_array
+#### A masked pattern was here ####
+POSTHOOK: query: select array_union(value,value) from test_null_array
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_null_array
+#### A masked pattern was here ####
+["NULL"]
+["null"]
+[]
+PREHOOK: query: select value, array_union(value,value) from test_null_array
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_null_array
+#### A masked pattern was here ####
+POSTHOOK: query: select value, array_union(value,value) from test_null_array
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_null_array
+#### A masked pattern was here ####
+["NULL"]	["NULL"]
+["null","null"]	["null"]
+[]	[]

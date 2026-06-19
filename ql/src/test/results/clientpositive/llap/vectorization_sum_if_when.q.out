@@ -1,0 +1,132 @@
+PREHOOK: query: drop table if exists vectorization_sum_if_when_a
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists vectorization_sum_if_when_a
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists vectorization_sum_if_when_b
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists vectorization_sum_if_when_b
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table vectorization_sum_if_when_a (x int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vectorization_sum_if_when_a
+POSTHOOK: query: create table vectorization_sum_if_when_a (x int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vectorization_sum_if_when_a
+PREHOOK: query: insert into table vectorization_sum_if_when_a values (0), (1), (0), (NULL), (NULL), (NULL), (NULL), (NULL), (NULL), (NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@vectorization_sum_if_when_a
+POSTHOOK: query: insert into table vectorization_sum_if_when_a values (0), (1), (0), (NULL), (NULL), (NULL), (NULL), (NULL), (NULL), (NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@vectorization_sum_if_when_a
+POSTHOOK: Lineage: vectorization_sum_if_when_a.x SCRIPT []
+PREHOOK: query: create table vectorization_sum_if_when_b (x int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vectorization_sum_if_when_b
+POSTHOOK: query: create table vectorization_sum_if_when_b (x int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vectorization_sum_if_when_b
+Warning: Shuffle Join MERGEJOIN[26][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[27][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[28][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
+PREHOOK: query: insert into table vectorization_sum_if_when_b select least(t1.x + t2.x + t3.x + t4.x, 1) from vectorization_sum_if_when_a t1, vectorization_sum_if_when_a t2, vectorization_sum_if_when_a t3, vectorization_sum_if_when_a t4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectorization_sum_if_when_a
+PREHOOK: Output: default@vectorization_sum_if_when_b
+POSTHOOK: query: insert into table vectorization_sum_if_when_b select least(t1.x + t2.x + t3.x + t4.x, 1) from vectorization_sum_if_when_a t1, vectorization_sum_if_when_a t2, vectorization_sum_if_when_a t3, vectorization_sum_if_when_a t4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectorization_sum_if_when_a
+POSTHOOK: Output: default@vectorization_sum_if_when_b
+POSTHOOK: Lineage: vectorization_sum_if_when_b.x EXPRESSION [(vectorization_sum_if_when_a)t1.FieldSchema(name:x, type:int, comment:null), (vectorization_sum_if_when_a)t2.FieldSchema(name:x, type:int, comment:null), (vectorization_sum_if_when_a)t3.FieldSchema(name:x, type:int, comment:null), (vectorization_sum_if_when_a)t4.FieldSchema(name:x, type:int, comment:null), ]
+PREHOOK: query: select count(*), x from vectorization_sum_if_when_b group by x
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectorization_sum_if_when_b
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*), x from vectorization_sum_if_when_b group by x
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectorization_sum_if_when_b
+#### A masked pattern was here ####
+16	0
+65	1
+9919	NULL
+PREHOOK: query: select sum(IF(x is null, 1, 0)), count(1) from vectorization_sum_if_when_b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectorization_sum_if_when_b
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(IF(x is null, 1, 0)), count(1) from vectorization_sum_if_when_b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectorization_sum_if_when_b
+#### A masked pattern was here ####
+9919	10000
+PREHOOK: query: select sum(IF(x=1, 1, 0)), count(1) from vectorization_sum_if_when_b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectorization_sum_if_when_b
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(IF(x=1, 1, 0)), count(1) from vectorization_sum_if_when_b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectorization_sum_if_when_b
+#### A masked pattern was here ####
+65	10000
+PREHOOK: query: select sum((case WHEN x = 1 THEN 1 else 0 end)) from vectorization_sum_if_when_b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectorization_sum_if_when_b
+#### A masked pattern was here ####
+POSTHOOK: query: select sum((case WHEN x = 1 THEN 1 else 0 end)) from vectorization_sum_if_when_b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectorization_sum_if_when_b
+#### A masked pattern was here ####
+65
+PREHOOK: query: select sum((case WHEN x = 1 THEN 1 else 0 end)), sum((case WHEN x = 1 THEN 1 when x is null then 0 else 0 end)) from vectorization_sum_if_when_b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectorization_sum_if_when_b
+#### A masked pattern was here ####
+POSTHOOK: query: select sum((case WHEN x = 1 THEN 1 else 0 end)), sum((case WHEN x = 1 THEN 1 when x is null then 0 else 0 end)) from vectorization_sum_if_when_b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectorization_sum_if_when_b
+#### A masked pattern was here ####
+65	65
+PREHOOK: query: select sum(IF(x is null, 1, 0)), count(1) from vectorization_sum_if_when_b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectorization_sum_if_when_b
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(IF(x is null, 1, 0)), count(1) from vectorization_sum_if_when_b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectorization_sum_if_when_b
+#### A masked pattern was here ####
+9919	10000
+PREHOOK: query: select sum(IF(x=1, 1, 0)), count(1) from vectorization_sum_if_when_b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectorization_sum_if_when_b
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(IF(x=1, 1, 0)), count(1) from vectorization_sum_if_when_b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectorization_sum_if_when_b
+#### A masked pattern was here ####
+65	10000
+PREHOOK: query: select sum((case WHEN x = 1 THEN 1 else 0 end)) from vectorization_sum_if_when_b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectorization_sum_if_when_b
+#### A masked pattern was here ####
+POSTHOOK: query: select sum((case WHEN x = 1 THEN 1 else 0 end)) from vectorization_sum_if_when_b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectorization_sum_if_when_b
+#### A masked pattern was here ####
+65
+PREHOOK: query: select sum((case WHEN x = 1 THEN 1 else 0 end)), sum((case WHEN x = 1 THEN 1 when x is null then 0 else 0 end)) from vectorization_sum_if_when_b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vectorization_sum_if_when_b
+#### A masked pattern was here ####
+POSTHOOK: query: select sum((case WHEN x = 1 THEN 1 else 0 end)), sum((case WHEN x = 1 THEN 1 when x is null then 0 else 0 end)) from vectorization_sum_if_when_b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vectorization_sum_if_when_b
+#### A masked pattern was here ####
+65	65

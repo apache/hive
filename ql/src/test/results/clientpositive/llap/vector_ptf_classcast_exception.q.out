@@ -1,0 +1,376 @@
+PREHOOK: query: CREATE TABLE store_sales_repro(ss_ext_sales_price decimal(7,2), ss_item_sk bigint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@store_sales_repro
+POSTHOOK: query: CREATE TABLE store_sales_repro(ss_ext_sales_price decimal(7,2), ss_item_sk bigint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@store_sales_repro
+PREHOOK: query: CREATE TABLE item_repro(i_class char(50), i_item_sk bigint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@item_repro
+POSTHOOK: query: CREATE TABLE item_repro(i_class char(50), i_item_sk bigint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@item_repro
+PREHOOK: query: INSERT INTO store_sales_repro VALUES (4721.57, 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@store_sales_repro
+POSTHOOK: query: INSERT INTO store_sales_repro VALUES (4721.57, 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@store_sales_repro
+POSTHOOK: Lineage: store_sales_repro.ss_ext_sales_price SCRIPT []
+POSTHOOK: Lineage: store_sales_repro.ss_item_sk SCRIPT []
+PREHOOK: query: INSERT INTO store_sales_repro VALUES (4721.58, 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@store_sales_repro
+POSTHOOK: query: INSERT INTO store_sales_repro VALUES (4721.58, 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@store_sales_repro
+POSTHOOK: Lineage: store_sales_repro.ss_ext_sales_price SCRIPT []
+POSTHOOK: Lineage: store_sales_repro.ss_item_sk SCRIPT []
+PREHOOK: query: INSERT INTO item_repro VALUES ('shirts', 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@item_repro
+POSTHOOK: query: INSERT INTO item_repro VALUES ('shirts', 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@item_repro
+POSTHOOK: Lineage: item_repro.i_class SCRIPT []
+POSTHOOK: Lineage: item_repro.i_item_sk SCRIPT []
+PREHOOK: query: explain vectorization detail 
+select i_class,
+sum(ss_ext_sales_price)*100 / sum(sum(ss_ext_sales_price)) over (partition by i_class) as revenueratio
+from store_sales_repro, item_repro
+where ss_item_sk = i_item_sk
+group by i_class, ss_ext_sales_price
+PREHOOK: type: QUERY
+PREHOOK: Input: default@item_repro
+PREHOOK: Input: default@store_sales_repro
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail 
+select i_class,
+sum(ss_ext_sales_price)*100 / sum(sum(ss_ext_sales_price)) over (partition by i_class) as revenueratio
+from store_sales_repro, item_repro
+where ss_item_sk = i_item_sk
+group by i_class, ss_ext_sales_price
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@item_repro
+POSTHOOK: Input: default@store_sales_repro
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Map 4 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: store_sales_repro
+                  filterExpr: ss_item_sk is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_33_container, bigKeyColName:ss_item_sk, smallTablePos:1, keyRatio:1.0
+                  Statistics: Num rows: 2 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:ss_ext_sales_price:decimal(7,2)/DECIMAL_64, 1:ss_item_sk:bigint, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: SelectColumnIsNotNull(col 1:bigint)
+                    predicate: ss_item_sk is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: ss_ext_sales_price (type: decimal(7,2)), ss_item_sk (type: bigint)
+                      outputColumnNames: _col0, _col1
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0, 1]
+                      Statistics: Num rows: 2 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col1 (type: bigint)
+                          1 _col1 (type: bigint)
+                        Map Join Vectorization:
+                            bigTableKeyColumns: 1:bigint
+                            bigTableRetainColumnNums: [0]
+                            bigTableValueColumns: 0:decimal(7,2)
+                            className: VectorMapJoinInnerLongOperator
+                            native: true
+                            nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                            nonOuterSmallTableKeyMapping: []
+                            projectedOutput: 0:decimal(7,2), 4:char(50)
+                            smallTableValueMapping: 4:char(50)
+                            hashTableImplementationType: OPTIMIZED
+                        outputColumnNames: _col0, _col2
+                        input vertices:
+                          1 Map 4
+                        Statistics: Num rows: 2 Data size: 404 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          aggregations: sum(_col0)
+                          Group By Vectorization:
+                              aggregators: VectorUDAFSumDecimal64(col 0:decimal(7,2)/DECIMAL_64) -> decimal(17,2)/DECIMAL_64
+                              className: VectorGroupByOperator
+                              groupByMode: HASH
+                              keyExpressions: ConvertDecimal64ToDecimal(col 0:decimal(7,2)/DECIMAL_64) -> 5:decimal(7,2), col 4:char(50)
+                              native: false
+                              vectorProcessingMode: HASH
+                              projectedOutputColumnNums: [0]
+                          keys: _col0 (type: decimal(7,2)), _col2 (type: char(50))
+                          minReductionHashAggr: 0.4
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2
+                          Statistics: Num rows: 2 Data size: 628 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            key expressions: _col0 (type: decimal(7,2)), _col1 (type: char(50))
+                            null sort order: zz
+                            sort order: ++
+                            Map-reduce partition columns: _col0 (type: decimal(7,2)), _col1 (type: char(50))
+                            Reduce Sink Vectorization:
+                                className: VectorReduceSinkMultiKeyOperator
+                                keyColumns: 0:decimal(7,2), 1:char(50)
+                                native: true
+                                nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                                valueColumns: 2:decimal(17,2)
+                            Statistics: Num rows: 2 Data size: 628 Basic stats: COMPLETE Column stats: COMPLETE
+                            value expressions: _col2 (type: decimal(17,2))
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0, 1]
+                    dataColumns: ss_ext_sales_price:decimal(7,2)/DECIMAL_64, ss_item_sk:bigint
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [string, decimal(7,2)]
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: item_repro
+                  filterExpr: i_item_sk is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 98 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:i_class:char(50), 1:i_item_sk:bigint, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 3:ROW__IS__DELETED:boolean]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: SelectColumnIsNotNull(col 1:bigint)
+                    predicate: i_item_sk is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 98 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: i_class (type: char(50)), i_item_sk (type: bigint)
+                      outputColumnNames: _col0, _col1
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0, 1]
+                      Statistics: Num rows: 1 Data size: 98 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: bigint)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: bigint)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkLongOperator
+                            keyColumns: 1:bigint
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: 0:char(50)
+                        Statistics: Num rows: 1 Data size: 98 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: char(50))
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0, 1]
+                    dataColumns: i_class:char(50), i_item_sk:bigint
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                reduceColumnNullOrder: zz
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY._col0:decimal(7,2), KEY._col1:char(50), VALUE._col0:decimal(17,2)/DECIMAL_64
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFSumDecimal64(col 2:decimal(17,2)/DECIMAL_64) -> decimal(17,2)/DECIMAL_64
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    keyExpressions: col 0:decimal(7,2), col 1:char(50)
+                    native: false
+                    vectorProcessingMode: MERGE_PARTIAL
+                    projectedOutputColumnNums: [0]
+                keys: KEY._col0 (type: decimal(7,2)), KEY._col1 (type: char(50))
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 2 Data size: 628 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col1 (type: char(50))
+                  null sort order: a
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: char(50))
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkStringOperator
+                      keyColumns: 1:char(50)
+                      native: true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      valueColumns: 2:decimal(17,2)
+                  Statistics: Num rows: 2 Data size: 628 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col2 (type: decimal(17,2))
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    dataColumns: KEY.reducesinkkey0:char(50), VALUE._col1:decimal(17,2)/DECIMAL_64
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [decimal(27,2), decimal(17,2), decimal(17,2), decimal(21,2), decimal(38,17)]
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: char(50)), VALUE._col1 (type: decimal(17,2))
+                outputColumnNames: _col1, _col2
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 1]
+                Statistics: Num rows: 2 Data size: 404 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col1: char(50), _col2: decimal(17,2)
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col1 ASC NULLS FIRST
+                        partition by: _col1
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: sum_window_0
+                              arguments: _col2
+                              name: sum
+                              window function: GenericUDAFSumHiveDecimal
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                  PTF Vectorization:
+                      allEvaluatorsAreStreaming: false
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorDecimalSum]
+                      functionInputExpressions: [ConvertDecimal64ToDecimal(col 1:decimal(17,2)/DECIMAL_64) -> 3:decimal(17,2)]
+                      functionNames: [sum]
+                      keyInputColumns: [0]
+                      native: true
+                      nonKeyInputColumns: [1]
+                      orderExpressions: [col 0:char(50)]
+                      outputColumns: [2, 0, 1]
+                      outputTypes: [decimal(27,2), char(50), decimal(17,2)]
+                      partitionExpressions: [col 0:char(50)]
+                      streamingColumns: []
+                  Statistics: Num rows: 2 Data size: 404 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col1 (type: char(50)), ((_col2 * 100) / sum_window_0) (type: decimal(38,17))
+                    outputColumnNames: _col0, _col1
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 6]
+                        selectExpressions: DecimalColDivideDecimalColumn(col 5:decimal(21,2), col 2:decimal(27,2))(children: DecimalColMultiplyDecimalScalar(col 4:decimal(17,2), val 100)(children: ConvertDecimal64ToDecimal(col 1:decimal(17,2)/DECIMAL_64) -> 4:decimal(17,2)) -> 5:decimal(21,2)) -> 6:decimal(38,17)
+                    Statistics: Num rows: 2 Data size: 404 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 2 Data size: 404 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select i_class,
+sum(ss_ext_sales_price)*100 / sum(sum(ss_ext_sales_price)) over (partition by i_class) as revenueratio
+from store_sales_repro, item_repro
+where ss_item_sk = i_item_sk
+group by i_class, ss_ext_sales_price
+PREHOOK: type: QUERY
+PREHOOK: Input: default@item_repro
+PREHOOK: Input: default@store_sales_repro
+#### A masked pattern was here ####
+POSTHOOK: query: select i_class,
+sum(ss_ext_sales_price)*100 / sum(sum(ss_ext_sales_price)) over (partition by i_class) as revenueratio
+from store_sales_repro, item_repro
+where ss_item_sk = i_item_sk
+group by i_class, ss_ext_sales_price
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@item_repro
+POSTHOOK: Input: default@store_sales_repro
+#### A masked pattern was here ####
+shirts                                            	49.99994705156647941
+shirts                                            	50.00005294843352059

@@ -1,0 +1,125 @@
+PREHOOK: query: create temporary table ptestfilter_n3_temp (a string, b int) partitioned by (c string, d int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ptestfilter_n3_temp
+POSTHOOK: query: create temporary table ptestfilter_n3_temp (a string, b int) partitioned by (c string, d int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ptestfilter_n3_temp
+PREHOOK: query: describe ptestfilter_n3_temp
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ptestfilter_n3_temp
+POSTHOOK: query: describe ptestfilter_n3_temp
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ptestfilter_n3_temp
+a                   	string              	                    
+b                   	int                 	                    
+c                   	string              	                    
+d                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+c                   	string              	                    
+d                   	int                 	                    
+PREHOOK: query: alter table ptestfilter_n3_temp add partition (c='1', d=1)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@ptestfilter_n3_temp
+POSTHOOK: query: alter table ptestfilter_n3_temp add partition (c='1', d=1)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@ptestfilter_n3_temp
+POSTHOOK: Output: default@ptestfilter_n3_temp@c=1/d=1
+PREHOOK: query: alter table ptestfilter_n3_temp add partition (c='1', d=2)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@ptestfilter_n3_temp
+POSTHOOK: query: alter table ptestfilter_n3_temp add partition (c='1', d=2)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@ptestfilter_n3_temp
+POSTHOOK: Output: default@ptestfilter_n3_temp@c=1/d=2
+PREHOOK: query: alter table ptestfilter_n3_temp add partition (c='2', d=1)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@ptestfilter_n3_temp
+POSTHOOK: query: alter table ptestfilter_n3_temp add partition (c='2', d=1)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@ptestfilter_n3_temp
+POSTHOOK: Output: default@ptestfilter_n3_temp@c=2/d=1
+PREHOOK: query: alter table ptestfilter_n3_temp add partition (c='2', d=2)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@ptestfilter_n3_temp
+POSTHOOK: query: alter table ptestfilter_n3_temp add partition (c='2', d=2)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@ptestfilter_n3_temp
+POSTHOOK: Output: default@ptestfilter_n3_temp@c=2/d=2
+PREHOOK: query: alter table ptestfilter_n3_temp add partition (c='3', d=1)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@ptestfilter_n3_temp
+POSTHOOK: query: alter table ptestfilter_n3_temp add partition (c='3', d=1)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@ptestfilter_n3_temp
+POSTHOOK: Output: default@ptestfilter_n3_temp@c=3/d=1
+PREHOOK: query: alter table ptestfilter_n3_temp add partition (c='3', d=2)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@ptestfilter_n3_temp
+POSTHOOK: query: alter table ptestfilter_n3_temp add partition (c='3', d=2)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@ptestfilter_n3_temp
+POSTHOOK: Output: default@ptestfilter_n3_temp@c=3/d=2
+PREHOOK: query: show partitions ptestfilter_n3_temp
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@ptestfilter_n3_temp
+POSTHOOK: query: show partitions ptestfilter_n3_temp
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@ptestfilter_n3_temp
+c=1/d=1
+c=1/d=2
+c=2/d=1
+c=2/d=2
+c=3/d=1
+c=3/d=2
+PREHOOK: query: alter table ptestfilter_n3_temp drop partition (c='1', d=1)
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@ptestfilter_n3_temp
+PREHOOK: Output: default@ptestfilter_n3_temp@c=1/d=1
+POSTHOOK: query: alter table ptestfilter_n3_temp drop partition (c='1', d=1)
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@ptestfilter_n3_temp
+POSTHOOK: Output: default@ptestfilter_n3_temp@c=1/d=1
+PREHOOK: query: show partitions ptestfilter_n3_temp
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@ptestfilter_n3_temp
+POSTHOOK: query: show partitions ptestfilter_n3_temp
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@ptestfilter_n3_temp
+c=1/d=2
+c=2/d=1
+c=2/d=2
+c=3/d=1
+c=3/d=2
+PREHOOK: query: alter table ptestfilter_n3_temp drop partition (c='2')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@ptestfilter_n3_temp
+PREHOOK: Output: default@ptestfilter_n3_temp@c=2/d=1
+PREHOOK: Output: default@ptestfilter_n3_temp@c=2/d=2
+POSTHOOK: query: alter table ptestfilter_n3_temp drop partition (c='2')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@ptestfilter_n3_temp
+POSTHOOK: Output: default@ptestfilter_n3_temp@c=2/d=1
+POSTHOOK: Output: default@ptestfilter_n3_temp@c=2/d=2
+PREHOOK: query: show partitions ptestfilter_n3_temp
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@ptestfilter_n3_temp
+POSTHOOK: query: show partitions ptestfilter_n3_temp
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@ptestfilter_n3_temp
+c=1/d=2
+c=3/d=1
+c=3/d=2
+PREHOOK: query: drop table ptestfilter_n3_temp
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ptestfilter_n3_temp
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ptestfilter_n3_temp
+POSTHOOK: query: drop table ptestfilter_n3_temp
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ptestfilter_n3_temp
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ptestfilter_n3_temp

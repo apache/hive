@@ -1,0 +1,198 @@
+PREHOOK: query: CREATE TABLE person (id INT, fname STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@person
+POSTHOOK: query: CREATE TABLE person (id INT, fname STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@person
+PREHOOK: query: EXPLAIN FORMATTED SELECT fname FROM person WHERE id > 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@person
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN FORMATTED SELECT fname FROM person WHERE id > 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@person
+#### A masked pattern was here ####
+{
+  "CBOPlan": {
+    "rels": [
+      {
+        "id": "0",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "person"
+        ],
+        "table:alias": "person",
+        "inputs": [],
+        "rowCount": 1,
+        "avgRowSize": 104,
+        "rowType": {
+          "fields": [
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "id"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "fname"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "id",
+            "ndv": 1,
+            "minValue": -2147483648,
+            "maxValue": 2147483647
+          },
+          {
+            "name": "fname",
+            "ndv": 1
+          }
+        ]
+      },
+      {
+        "id": "1",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": ">",
+            "kind": "GREATER_THAN",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 0,
+              "name": "$0"
+            },
+            {
+              "literal": 100,
+              "type": {
+                "type": "INTEGER",
+                "nullable": false
+              }
+            }
+          ]
+        },
+        "rowCount": 1
+      },
+      {
+        "id": "2",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "fname"
+        ],
+        "exprs": [
+          {
+            "input": 1,
+            "name": "$1"
+          }
+        ],
+        "rowCount": 1
+      }
+    ]
+  },
+  "optimizedSQL": "SELECT `fname`\nFROM `default`.`person`\nWHERE `id` > 100",
+  "cboInfo": "Plan optimized by CBO.",
+  "STAGE DEPENDENCIES": {
+    "Stage-0": {
+      "ROOT STAGE": "TRUE"
+    }
+  },
+  "STAGE PLANS": {
+    "Stage-0": {
+      "Fetch Operator": {
+        "limit:": "-1",
+        "Processor Tree:": {
+          "TableScan": {
+            "alias:": "person",
+            "columns:": [
+              "id",
+              "fname"
+            ],
+            "database:": "default",
+            "filterExpr:": "(id > 100) (type: boolean)",
+            "table:": "person",
+            "isTempTable:": "false",
+            "OperatorId:": "TS_0",
+            "children": {
+              "Filter Operator": {
+                "predicate:": "(id > 100) (type: boolean)",
+                "OperatorId:": "FIL_4",
+                "children": {
+                  "Select Operator": {
+                    "expressions:": "fname (type: string)",
+                    "columnExprMap:": {
+                      "_col0": "fname"
+                    },
+                    "outputColumnNames:": [
+                      "_col0"
+                    ],
+                    "OperatorId:": "SEL_2",
+                    "children": {
+                      "ListSink": {
+                        "OperatorId:": "LIST_SINK_5"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+PREHOOK: query: EXPLAIN FORMATTED SELECT fname FROM person WHERE id > 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@person
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN FORMATTED SELECT fname FROM person WHERE id > 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@person
+#### A masked pattern was here ####
+{"CBOPlan":{"rels":[{"id":"0","relOp":"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan","table":["default","person"],"table:alias":"person","inputs":[],"rowCount":1,"avgRowSize":104,"rowType":{"fields":[{"type":"INTEGER","nullable":true,"name":"id"},{"type":"VARCHAR","nullable":true,"precision":2147483647,"name":"fname"},{"type":"BIGINT","nullable":true,"name":"BLOCK__OFFSET__INSIDE__FILE"},{"type":"VARCHAR","nullable":true,"precision":2147483647,"name":"INPUT__FILE__NAME"},{"fields":[{"type":"BIGINT","nullable":true,"name":"writeid"},{"type":"INTEGER","nullable":true,"name":"bucketid"},{"type":"BIGINT","nullable":true,"name":"rowid"}],"nullable":true,"name":"ROW__ID"},{"type":"BOOLEAN","nullable":true,"name":"ROW__IS__DELETED"}],"nullable":false},"colStats":[{"name":"id","ndv":1,"minValue":-2147483648,"maxValue":2147483647},{"name":"fname","ndv":1}]},{"id":"1","relOp":"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter","condition":{"op":{"name":">","kind":"GREATER_THAN","syntax":"BINARY"},"operands":[{"input":0,"name":"$0"},{"literal":100,"type":{"type":"INTEGER","nullable":false}}]},"rowCount":1},{"id":"2","relOp":"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject","fields":["fname"],"exprs":[{"input":1,"name":"$1"}],"rowCount":1}]},"optimizedSQL":"SELECT `fname`\nFROM `default`.`person`\nWHERE `id` > 100","cboInfo":"Plan optimized by CBO.","STAGE DEPENDENCIES":{"Stage-0":{"ROOT STAGE":"TRUE"}},"STAGE PLANS":{"Stage-0":{"Fetch Operator":{"limit:":"-1","Processor Tree:":{"TableScan":{"alias:":"person","columns:":["id","fname"],"database:":"default","filterExpr:":"(id > 100) (type: boolean)","table:":"person","isTempTable:":"false","OperatorId:":"TS_0","children":{"Filter Operator":{"predicate:":"(id > 100) (type: boolean)","OperatorId:":"FIL_4","children":{"Select Operator":{"expressions:":"fname (type: string)","columnExprMap:":{"_col0":"fname"},"outputColumnNames:":["_col0"],"OperatorId:":"SEL_2","children":{"ListSink":{"OperatorId:":"LIST_SINK_5"}}}}}}}}}}}}

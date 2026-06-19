@@ -1,0 +1,5 @@
+PREHOOK: query: create table acid_notbucketed(a int, b varchar(128)) TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid_notbucketed
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. MetaException(message:The table must be stored using an ACID compliant format (such as ORC): default.acid_notbucketed)

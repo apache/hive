@@ -1,0 +1,53 @@
+PREHOOK: query: CREATE TABLE drop_partition (
+sensor_id STRING,
+location_id STRING,
+reading_time TIMESTAMP,
+temperature DOUBLE,
+humidity DOUBLE
+)
+PARTITIONED BY SPEC (location_id, days(reading_time))
+STORED BY ICEBERG
+TBLPROPERTIES (
+'write.format.default'='parquet',
+'format-version'='2',
+'write.parquet.compression-codec'='gzip'
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@drop_partition
+POSTHOOK: query: CREATE TABLE drop_partition (
+sensor_id STRING,
+location_id STRING,
+reading_time TIMESTAMP,
+temperature DOUBLE,
+humidity DOUBLE
+)
+PARTITIONED BY SPEC (location_id, days(reading_time))
+STORED BY ICEBERG
+TBLPROPERTIES (
+'write.format.default'='parquet',
+'format-version'='2',
+'write.parquet.compression-codec'='gzip'
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@drop_partition
+PREHOOK: query: INSERT INTO drop_partition VALUES
+('sensor_001', 'loc_001', '2024-06-01 10:00:00', 22.5, 60.0),
+('sensor_002', 'loc_002', '2024-06-01 10:15:00', 23.0, 58.0),
+('sensor_001', 'loc_001', '2024-06-02 11:00:00', 22.8, 61.0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@drop_partition
+POSTHOOK: query: INSERT INTO drop_partition VALUES
+('sensor_001', 'loc_001', '2024-06-01 10:00:00', 22.5, 60.0),
+('sensor_002', 'loc_002', '2024-06-01 10:15:00', 23.0, 58.0),
+('sensor_001', 'loc_001', '2024-06-02 11:00:00', 22.8, 61.0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@drop_partition
+PREHOOK: query: ALTER TABLE drop_partition DROP PARTITION (location_id = 'loc_002', reading_time = '2024-06-01 10:15:00')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@drop_partition
+PREHOOK: Output: default@drop_partition@location_id=loc_002/reading_time_day=2024-06-01
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. Invalid transform for column: reading_time Expected: day Found: IDENTITY

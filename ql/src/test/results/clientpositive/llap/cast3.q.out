@@ -1,0 +1,40 @@
+PREHOOK: query: create table cx1(bool0 boolean)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cx1
+POSTHOOK: query: create table cx1(bool0 boolean)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cx1
+PREHOOK: query: select cast(NULL as boolean) or bool0 from cx1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cx1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(NULL as boolean) or bool0 from cx1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cx1
+#### A masked pattern was here ####
+PREHOOK: query: select NULL or bool0 from cx1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cx1
+#### A masked pattern was here ####
+POSTHOOK: query: select NULL or bool0 from cx1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cx1
+#### A masked pattern was here ####
+PREHOOK: query: select cast(NULL as boolean) and bool0 from cx1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cx1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(NULL as boolean) and bool0 from cx1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cx1
+#### A masked pattern was here ####
+PREHOOK: query: select NULL and bool0 from cx1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cx1
+#### A masked pattern was here ####
+POSTHOOK: query: select NULL and bool0 from cx1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cx1
+#### A masked pattern was here ####

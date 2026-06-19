@@ -1,0 +1,10 @@
+PREHOOK: query: DESCRIBE FUNCTION udf_stddev_pop
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION udf_stddev_pop
+POSTHOOK: type: DESCFUNCTION
+Function 'udf_stddev_pop' does not exist.
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED udf_stddev_pop
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED udf_stddev_pop
+POSTHOOK: type: DESCFUNCTION
+Function 'udf_stddev_pop' does not exist.

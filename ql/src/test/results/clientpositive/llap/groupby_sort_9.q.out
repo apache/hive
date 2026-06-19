@@ -1,0 +1,145 @@
+PREHOOK: query: CREATE TABLE T1_n96(key STRING, val STRING) PARTITIONED BY (ds string)
+CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T1_n96
+POSTHOOK: query: CREATE TABLE T1_n96(key STRING, val STRING) PARTITIONED BY (ds string)
+CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T1_n96
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bucket_files/000000_0' INTO TABLE T1_n96  PARTITION (ds='1')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@t1_n96
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/bucket_files/000000_0' INTO TABLE T1_n96  PARTITION (ds='1')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@t1_n96
+POSTHOOK: Output: default@t1_n96@ds=1
+PREHOOK: query: INSERT OVERWRITE TABLE T1_n96 PARTITION (ds='1') select key, val from T1_n96 where ds = '1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n96
+PREHOOK: Input: default@t1_n96@ds=1
+PREHOOK: Output: default@t1_n96@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE T1_n96 PARTITION (ds='1') select key, val from T1_n96 where ds = '1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n96
+POSTHOOK: Input: default@t1_n96@ds=1
+POSTHOOK: Output: default@t1_n96@ds=1
+POSTHOOK: Lineage: t1_n96 PARTITION(ds=1).key SIMPLE [(t1_n96)t1_n96.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t1_n96 PARTITION(ds=1).val SIMPLE [(t1_n96)t1_n96.FieldSchema(name:val, type:string, comment:null), ]
+PREHOOK: query: INSERT OVERWRITE TABLE T1_n96 PARTITION (ds='2') select key, val from T1_n96 where ds = '1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n96
+PREHOOK: Input: default@t1_n96@ds=1
+PREHOOK: Output: default@t1_n96@ds=2
+POSTHOOK: query: INSERT OVERWRITE TABLE T1_n96 PARTITION (ds='2') select key, val from T1_n96 where ds = '1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n96
+POSTHOOK: Input: default@t1_n96@ds=1
+POSTHOOK: Output: default@t1_n96@ds=2
+POSTHOOK: Lineage: t1_n96 PARTITION(ds=2).key SIMPLE [(t1_n96)t1_n96.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t1_n96 PARTITION(ds=2).val SIMPLE [(t1_n96)t1_n96.FieldSchema(name:val, type:string, comment:null), ]
+PREHOOK: query: EXPLAIN
+select key, count(1) from T1_n96 group by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n96
+PREHOOK: Input: default@t1_n96@ds=1
+PREHOOK: Input: default@t1_n96@ds=2
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+select key, count(1) from T1_n96 group by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n96
+POSTHOOK: Input: default@t1_n96@ds=1
+POSTHOOK: Input: default@t1_n96@ds=2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1_n96
+                  Statistics: Num rows: 12 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: key
+                    Statistics: Num rows: 12 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count()
+                      bucketGroup: true
+                      keys: key (type: string)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 12 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 12 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 6 Data size: 1104 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 6 Data size: 1104 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select key, count(1) from T1_n96 group by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n96
+PREHOOK: Input: default@t1_n96@ds=1
+PREHOOK: Input: default@t1_n96@ds=2
+#### A masked pattern was here ####
+POSTHOOK: query: select key, count(1) from T1_n96 group by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n96
+POSTHOOK: Input: default@t1_n96@ds=1
+POSTHOOK: Input: default@t1_n96@ds=2
+#### A masked pattern was here ####
+1	2
+2	2
+3	2
+7	2
+8	4
+PREHOOK: query: DROP TABLE T1_n96
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t1_n96
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1_n96
+POSTHOOK: query: DROP TABLE T1_n96
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t1_n96
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1_n96

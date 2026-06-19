@@ -1,0 +1,486 @@
+PREHOOK: query: DROP TABLE table1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE table1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/table1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table1
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/table1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table1
+PREHOOK: query: INSERT INTO TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table1
+POSTHOOK: query: INSERT INTO TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table1
+POSTHOOK: Output: default@table1@key=101
+POSTHOOK: Output: default@table1@key=202
+POSTHOOK: Output: default@table1@key=303
+POSTHOOK: Output: default@table1@key=404
+POSTHOOK: Output: default@table1@key=505
+POSTHOOK: Lineage: table1 PARTITION(key=101).id SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(key=202).id SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(key=303).id SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(key=404).id SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(key=505).id SCRIPT []
+PREHOOK: query: INSERT INTO TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table1
+POSTHOOK: query: INSERT INTO TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table1
+POSTHOOK: Output: default@table1@key=101
+POSTHOOK: Output: default@table1@key=202
+POSTHOOK: Output: default@table1@key=303
+POSTHOOK: Output: default@table1@key=404
+POSTHOOK: Output: default@table1@key=505
+POSTHOOK: Lineage: table1 PARTITION(key=101).id SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(key=202).id SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(key=303).id SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(key=404).id SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(key=505).id SCRIPT []
+PREHOOK: query: SELECT * FROM table1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1@key=101
+PREHOOK: Input: default@table1@key=202
+PREHOOK: Input: default@table1@key=303
+PREHOOK: Input: default@table1@key=404
+PREHOOK: Input: default@table1@key=505
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM table1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1@key=101
+POSTHOOK: Input: default@table1@key=202
+POSTHOOK: Input: default@table1@key=303
+POSTHOOK: Input: default@table1@key=404
+POSTHOOK: Input: default@table1@key=505
+#### A masked pattern was here ####
+1	101
+1	101
+2	202
+2	202
+3	303
+3	303
+4	404
+4	404
+5	505
+5	505
+PREHOOK: query: EXPLAIN EXTENDED INSERT INTO TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table1
+POSTHOOK: query: EXPLAIN EXTENDED INSERT INTO TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table1
+OPTIMIZED SQL: SELECT *
+FROM TABLE(INLINE(ARRAY[(1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')]))
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0, Stage-3
+  Stage-3 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: _dummy_table
+            Row Limit Per Split: 1
+            Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+            GatherStats: false
+            Select Operator
+              expressions: array(const struct(1,'101'),const struct(2,'202'),const struct(3,'303'),const struct(4,'404'),const struct(5,'505')) (type: array<struct<col1:int,col2:string>>)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+              UDTF Operator
+                Statistics: Num rows: 1 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                function name: inline
+                Select Operator
+                  expressions: col1 (type: int), col2 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    bucketingVersion: 2
+                    key expressions: _col1 (type: string), _bucket_number (type: string), _col0 (type: int)
+                    null sort order: zzz
+                    numBuckets: 2
+                    sort order: +++
+                    Map-reduce partition columns: _col1 (type: string)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    tag: -1
+                    auto parallelism: false
+                  Select Operator
+                    expressions: _col0 (type: int), _col1 (type: string)
+                    outputColumnNames: id, key
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: min(id), max(id), count(1), count(id), compute_bit_vector_hll(id)
+                      keys: key (type: string)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                      Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        bucketingVersion: 1
+                        compressed: false
+                        GlobalTableId: 0
+#### A masked pattern was here ####
+                        NumFilesPerFileSink: 1
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            properties:
+                              column.name.delimiter ,
+                              columns _col0,_col1,_col2,_col3,_col4,_col5
+                              columns.types string,int,int,bigint,bigint,binary
+                              escape.delim \
+                              serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                            serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                        TotalFiles: 1
+                        GatherStats: false
+                        MultiFileSpray: false
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: dummy_path
+            input format: org.apache.hadoop.hive.ql.io.NullRowsInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              bucket_count -1
+              bucketing_version 2
+              column.name.delimiter ,
+              columns 
+              columns.types 
+#### A masked pattern was here ####
+              name _dummy_database._dummy_table
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
+            serde: org.apache.hadoop.hive.serde2.NullStructSerDe
+          
+              input format: org.apache.hadoop.hive.ql.io.NullRowsInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucketing_version 2
+                column.name.delimiter ,
+                columns 
+                columns.comments 
+                columns.types 
+#### A masked pattern was here ####
+                name _dummy_database._dummy_table
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
+              serde: org.apache.hadoop.hive.serde2.NullStructSerDe
+              name: _dummy_database._dummy_table
+            name: _dummy_database._dummy_table
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
+      Needs Tagging: false
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY._col0 (type: int), KEY._col1 (type: string), KEY._bucket_number (type: string)
+          outputColumnNames: _col0, _col1, _bucket_number
+          File Output Operator
+            bucketingVersion: 2
+            compressed: false
+            GlobalTableId: 1
+            directory: ### BLOBSTORE_STAGING_PATH ###
+            Dp Sort State: PARTITION_BUCKET_SORTED
+            NumFilesPerFileSink: 1
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            Stats Publishing Key Prefix: ### BLOBSTORE_STAGING_PATH ###
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                properties:
+                  bucket_count 2
+                  bucket_field_name id
+                  bucketing_version 2
+                  column.name.delimiter ,
+                  columns id
+                  columns.comments 
+                  columns.types int
+#### A masked pattern was here ####
+                  location ### test.blobstore.path ###/table1
+                  name default.table1
+                  partition_columns key
+                  partition_columns.types string
+                  serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: default.table1
+            TotalFiles: 1
+            GatherStats: true
+            MultiFileSpray: false
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            key 
+          replace: false
+          source: ### BLOBSTORE_STAGING_PATH ###
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count 2
+                bucket_field_name id
+                bucketing_version 2
+                column.name.delimiter ,
+                columns id
+                columns.comments 
+                columns.types int
+#### A masked pattern was here ####
+                location ### test.blobstore.path ###/table1
+                name default.table1
+                partition_columns key
+                partition_columns.types string
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.table1
+
+  Stage: Stage-2
+    Stats Work
+      Basic Stats Work:
+          Stats Aggregation Key Prefix: ### BLOBSTORE_STAGING_PATH ###
+      Column Stats Desc:
+          Columns: id
+          Column Types: int
+          Table: default.table1
+          Is Table Level Stats: false
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            GatherStats: false
+            Reduce Output Operator
+              bucketingVersion: 2
+              key expressions: _col0 (type: string)
+              null sort order: z
+              numBuckets: -1
+              sort order: +
+              Map-reduce partition columns: _col0 (type: string)
+              Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: COMPLETE
+              tag: -1
+              value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary)
+              auto parallelism: false
+      Execution mode: vectorized
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: -mr-10002
+            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+            properties:
+              column.name.delimiter ,
+              columns _col0,_col1,_col2,_col3,_col4,_col5
+              columns.types string,int,int,bigint,bigint,binary
+              escape.delim \
+              serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+          
+              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+              properties:
+                column.name.delimiter ,
+                columns _col0,_col1,_col2,_col3,_col4,_col5
+                columns.types string,int,int,bigint,bigint,binary
+                escape.delim \
+                serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+              serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
+      Needs Tagging: false
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4)
+          keys: KEY._col0 (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+          Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: 'LONG' (type: string), UDFToLong(_col1) (type: bigint), UDFToLong(_col2) (type: bigint), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), _col0 (type: string)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+            Statistics: Num rows: 1 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              bucketingVersion: 2
+              compressed: false
+              GlobalTableId: 0
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+              Statistics: Num rows: 1 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  properties:
+                    bucketing_version -1
+                    columns _col0,_col1,_col2,_col3,_col4,_col5,_col6
+                    columns.types string:bigint:bigint:bigint:bigint:binary:string
+                    escape.delim \
+                    hive.serialization.extend.additional.nesting.levels true
+                    serialization.escape.crlf true
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+
+PREHOOK: query: DROP TABLE table1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@table1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table1
+POSTHOOK: query: DROP TABLE table1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@table1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table1
+PREHOOK: query: CREATE TABLE table1 (name string, age int) PARTITIONED BY (country string, state string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table1
+POSTHOOK: query: CREATE TABLE table1 (name string, age int) PARTITIONED BY (country string, state string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table1
+PREHOOK: query: INSERT INTO table1 PARTITION (country='USA', state='CA') values ('John Doe', 23), ('Jane Doe', 22)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table1@country=USA/state=CA
+POSTHOOK: query: INSERT INTO table1 PARTITION (country='USA', state='CA') values ('John Doe', 23), ('Jane Doe', 22)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table1@country=USA/state=CA
+POSTHOOK: Lineage: table1 PARTITION(country=USA,state=CA).age SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(country=USA,state=CA).name SCRIPT []
+PREHOOK: query: INSERT INTO table1 PARTITION (country='USA', state='CA') values ('Mark Cage', 38), ('Mirna Cage', 37)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table1@country=USA/state=CA
+POSTHOOK: query: INSERT INTO table1 PARTITION (country='USA', state='CA') values ('Mark Cage', 38), ('Mirna Cage', 37)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table1@country=USA/state=CA
+POSTHOOK: Lineage: table1 PARTITION(country=USA,state=CA).age SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(country=USA,state=CA).name SCRIPT []
+PREHOOK: query: INSERT INTO table1 PARTITION (country='USA', state='TX') values ('Bill Rose', 52), ('Maria Full', 50)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table1@country=USA/state=TX
+POSTHOOK: query: INSERT INTO table1 PARTITION (country='USA', state='TX') values ('Bill Rose', 52), ('Maria Full', 50)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table1@country=USA/state=TX
+POSTHOOK: Lineage: table1 PARTITION(country=USA,state=TX).age SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(country=USA,state=TX).name SCRIPT []
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/table2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table2
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/table2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table2
+PREHOOK: query: INSERT INTO TABLE table2 PARTITION (country, state) SELECT * FROM table1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1@country=USA/state=CA
+PREHOOK: Input: default@table1@country=USA/state=TX
+PREHOOK: Output: default@table2
+POSTHOOK: query: INSERT INTO TABLE table2 PARTITION (country, state) SELECT * FROM table1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1@country=USA/state=CA
+POSTHOOK: Input: default@table1@country=USA/state=TX
+POSTHOOK: Output: default@table2
+POSTHOOK: Output: default@table2@country=USA/state=CA
+POSTHOOK: Output: default@table2@country=USA/state=TX
+POSTHOOK: Lineage: table2 PARTITION(country=USA,state=CA).age SIMPLE [(table1)table1.FieldSchema(name:age, type:int, comment:null), ]
+POSTHOOK: Lineage: table2 PARTITION(country=USA,state=CA).name SIMPLE [(table1)table1.FieldSchema(name:name, type:string, comment:null), ]
+POSTHOOK: Lineage: table2 PARTITION(country=USA,state=TX).age SIMPLE [(table1)table1.FieldSchema(name:age, type:int, comment:null), ]
+POSTHOOK: Lineage: table2 PARTITION(country=USA,state=TX).name SIMPLE [(table1)table1.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: INSERT INTO TABLE table2 PARTITION (country='MEX', state) VALUES ('Peter Mo', 87, 'SON')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table2@country=MEX
+POSTHOOK: query: INSERT INTO TABLE table2 PARTITION (country='MEX', state) VALUES ('Peter Mo', 87, 'SON')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table2@country=MEX/state=SON
+POSTHOOK: Lineage: table2 PARTITION(country=MEX,state=SON).age SCRIPT []
+POSTHOOK: Lineage: table2 PARTITION(country=MEX,state=SON).name SCRIPT []
+PREHOOK: query: SHOW PARTITIONS table2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@table2
+POSTHOOK: query: SHOW PARTITIONS table2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@table2
+country=MEX/state=SON
+country=USA/state=CA
+country=USA/state=TX
+PREHOOK: query: SELECT * FROM table2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table2
+PREHOOK: Input: default@table2@country=MEX/state=SON
+PREHOOK: Input: default@table2@country=USA/state=CA
+PREHOOK: Input: default@table2@country=USA/state=TX
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM table2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table2
+POSTHOOK: Input: default@table2@country=MEX/state=SON
+POSTHOOK: Input: default@table2@country=USA/state=CA
+POSTHOOK: Input: default@table2@country=USA/state=TX
+#### A masked pattern was here ####
+Bill Rose	52	USA	TX
+Jane Doe	22	USA	CA
+John Doe	23	USA	CA
+Maria Full	50	USA	TX
+Mark Cage	38	USA	CA
+Mirna Cage	37	USA	CA
+Peter Mo	87	MEX	SON
+PREHOOK: query: DROP TABLE table2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@table2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table2
+POSTHOOK: query: DROP TABLE table2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@table2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table2
+PREHOOK: query: DROP TABLE table1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@table1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table1
+POSTHOOK: query: DROP TABLE table1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@table1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table1

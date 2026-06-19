@@ -1,0 +1,154 @@
+PREHOOK: query: drop table if exists t_n29
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists t_n29
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table t_n29 (a int,v int, b boolean)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_n29
+POSTHOOK: query: create table t_n29 (a int,v int, b boolean)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_n29
+PREHOOK: query: insert into t_n29 values (1,null, true)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_n29
+POSTHOOK: query: insert into t_n29 values (1,null, true)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_n29
+POSTHOOK: Lineage: t_n29.a SCRIPT []
+POSTHOOK: Lineage: t_n29.b SCRIPT []
+POSTHOOK: Lineage: t_n29.v EXPRESSION []
+PREHOOK: query: insert into t_n29 values (2,1,    false)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_n29
+POSTHOOK: query: insert into t_n29 values (2,1,    false)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_n29
+POSTHOOK: Lineage: t_n29.a SCRIPT []
+POSTHOOK: Lineage: t_n29.b SCRIPT []
+POSTHOOK: Lineage: t_n29.v SCRIPT []
+PREHOOK: query: insert into t_n29 values (3,2,    null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_n29
+POSTHOOK: query: insert into t_n29 values (3,2,    null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_n29
+POSTHOOK: Lineage: t_n29.a SCRIPT []
+POSTHOOK: Lineage: t_n29.b EXPRESSION []
+POSTHOOK: Lineage: t_n29.v SCRIPT []
+PREHOOK: query: select assert_true(sum(a*a) = 1) from t_n29
+	where v is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n29
+#### A masked pattern was here ####
+POSTHOOK: query: select assert_true(sum(a*a) = 1) from t_n29
+	where v is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n29
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select assert_true(sum(a*a) = 2*2+3*3) from t_n29
+	where v is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n29
+#### A masked pattern was here ####
+POSTHOOK: query: select assert_true(sum(a*a) = 2*2+3*3) from t_n29
+	where v is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n29
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select assert_true(sum(a*a) = 1) from t_n29
+	where b is true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n29
+#### A masked pattern was here ####
+POSTHOOK: query: select assert_true(sum(a*a) = 1) from t_n29
+	where b is true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n29
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select assert_true(sum(a*a) = 2*2 + 3*3) from t_n29
+	where b is not true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n29
+#### A masked pattern was here ####
+POSTHOOK: query: select assert_true(sum(a*a) = 2*2 + 3*3) from t_n29
+	where b is not true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n29
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select assert_true(sum(a*a) = 4) from t_n29
+	where b is false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n29
+#### A masked pattern was here ####
+POSTHOOK: query: select assert_true(sum(a*a) = 4) from t_n29
+	where b is false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n29
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select assert_true(sum(a*a) = 1*1 + 3*3) from t_n29
+	where b is not false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n29
+#### A masked pattern was here ####
+POSTHOOK: query: select assert_true(sum(a*a) = 1*1 + 3*3) from t_n29
+	where b is not false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n29
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select assert_true(sum(a*a) = 2*2) from t_n29
+	where (v>0 and v<2) is true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n29
+#### A masked pattern was here ####
+POSTHOOK: query: select assert_true(sum(a*a) = 2*2) from t_n29
+	where (v>0 and v<2) is true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n29
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select assert_true(sum(a*a) = 2*2) from t_n29
+	where (v<2) is true
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n29
+#### A masked pattern was here ####
+POSTHOOK: query: select assert_true(sum(a*a) = 2*2) from t_n29
+	where (v<2) is true
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n29
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select  NULL is true,
+        NULL is not true,
+        NULL is false,
+        NULL is not false
+from t_n29
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n29
+#### A masked pattern was here ####
+POSTHOOK: query: select  NULL is true,
+        NULL is not true,
+        NULL is false,
+        NULL is not false
+from t_n29
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n29
+#### A masked pattern was here ####
+false	true	false	true
+false	true	false	true
+false	true	false	true

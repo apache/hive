@@ -1,0 +1,58 @@
+PREHOOK: query: drop table masking_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table masking_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create temporary table masking_test as select cast(key as int) as key, value from src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@masking_test
+POSTHOOK: query: create temporary table masking_test as select cast(key as int) as key, value from src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@masking_test
+POSTHOOK: Lineage: masking_test.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: masking_test.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain select ROW__ID from masking_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test
+#### A masked pattern was here ####
+POSTHOOK: query: explain select ROW__ID from masking_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: masking_test
+          filterExpr: ((key < 10) and ((key % 2) = 0)) (type: boolean)
+          Filter Operator
+            predicate: ((key < 10) and ((key % 2) = 0)) (type: boolean)
+            Select Operator
+              expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: select ROW__ID from masking_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test
+#### A masked pattern was here ####
+POSTHOOK: query: select ROW__ID from masking_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test
+#### A masked pattern was here ####
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL

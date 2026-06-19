@@ -1,0 +1,711 @@
+PREHOOK: query: create table studenttab10k (name string, age int, gpa double)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@studenttab10k
+POSTHOOK: query: create table studenttab10k (name string, age int, gpa double)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@studenttab10k
+PREHOOK: query: create table votertab10k (name string, age int, registration string, contributions float)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@votertab10k
+POSTHOOK: query: create table votertab10k (name string, age int, registration string, contributions float)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@votertab10k
+PREHOOK: query: explain select s.name, count(distinct registration)
+from studenttab10k s join votertab10k v
+on (s.name = v.name)
+group by s.name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@studenttab10k
+PREHOOK: Input: default@votertab10k
+#### A masked pattern was here ####
+POSTHOOK: query: explain select s.name, count(distinct registration)
+from studenttab10k s join votertab10k v
+on (s.name = v.name)
+group by s.name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@studenttab10k
+POSTHOOK: Input: default@votertab10k
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 2 <- Map 1 (BROADCAST_EDGE)
+        Reducer 3 <- Map 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: s
+                  filterExpr: name is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: name is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: name (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: v
+                  filterExpr: name is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_34_container, bigKeyColName:name, smallTablePos:0, keyRatio:1.0
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: name is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: name (type: string), registration (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: string)
+                          1 _col0 (type: string)
+                        outputColumnNames: _col0, _col2
+                        input vertices:
+                          0 Map 1
+                        Statistics: Num rows: 1 Data size: 202 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          keys: _col0 (type: string), _col2 (type: string)
+                          minReductionHashAggr: 0.99
+                          mode: hash
+                          outputColumnNames: _col0, _col1
+                          Statistics: Num rows: 1 Data size: 202 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            key expressions: _col0 (type: string), _col1 (type: string)
+                            null sort order: zz
+                            sort order: ++
+                            Map-reduce partition columns: _col0 (type: string)
+                            Statistics: Num rows: 1 Data size: 202 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 202 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count(_col1)
+                  keys: _col0 (type: string)
+                  mode: complete
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 202 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 202 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select s.name, count(distinct registration)
+from studenttab10k s join votertab10k v
+on (s.name = v.name)
+group by s.name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@studenttab10k
+PREHOOK: Input: default@votertab10k
+#### A masked pattern was here ####
+POSTHOOK: query: select s.name, count(distinct registration)
+from studenttab10k s join votertab10k v
+on (s.name = v.name)
+group by s.name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@studenttab10k
+POSTHOOK: Input: default@votertab10k
+#### A masked pattern was here ####
+PREHOOK: query: create table studenttab10k_smb (name string, age int, gpa double) clustered by (name) sorted by (name) into 2 buckets
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@studenttab10k_smb
+POSTHOOK: query: create table studenttab10k_smb (name string, age int, gpa double) clustered by (name) sorted by (name) into 2 buckets
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@studenttab10k_smb
+PREHOOK: query: create table votertab10k_smb (name string, age int, registration string, contributions float) clustered by (name) sorted by (name) into 2 buckets
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@votertab10k_smb
+POSTHOOK: query: create table votertab10k_smb (name string, age int, registration string, contributions float) clustered by (name) sorted by (name) into 2 buckets
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@votertab10k_smb
+PREHOOK: query: explain select s.name, count(distinct registration)
+from studenttab10k_smb s join votertab10k_smb v
+on (s.name = v.name)
+group by s.name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@studenttab10k_smb
+PREHOOK: Input: default@votertab10k_smb
+#### A masked pattern was here ####
+POSTHOOK: query: explain select s.name, count(distinct registration)
+from studenttab10k_smb s join votertab10k_smb v
+on (s.name = v.name)
+group by s.name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@studenttab10k_smb
+POSTHOOK: Input: default@votertab10k_smb
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 2 <- Map 1 (CUSTOM_EDGE)
+        Reducer 3 <- Map 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: s
+                  filterExpr: name is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: name is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: name (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: v
+                  filterExpr: name is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_34_container, bigKeyColName:name, smallTablePos:0, keyRatio:1.0
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: name is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: name (type: string), registration (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: string)
+                          1 _col0 (type: string)
+                        outputColumnNames: _col0, _col2
+                        input vertices:
+                          0 Map 1
+                        Statistics: Num rows: 1 Data size: 202 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          keys: _col0 (type: string), _col2 (type: string)
+                          minReductionHashAggr: 0.99
+                          mode: hash
+                          outputColumnNames: _col0, _col1
+                          Statistics: Num rows: 1 Data size: 202 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            key expressions: _col0 (type: string), _col1 (type: string)
+                            null sort order: zz
+                            sort order: ++
+                            Map-reduce partition columns: _col0 (type: string)
+                            Statistics: Num rows: 1 Data size: 202 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 202 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count(_col1)
+                  keys: _col0 (type: string)
+                  mode: complete
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 202 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 202 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select s.name, count(distinct registration)
+from studenttab10k_smb s join votertab10k_smb v
+on (s.name = v.name)
+group by s.name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@studenttab10k_smb
+PREHOOK: Input: default@votertab10k_smb
+#### A masked pattern was here ####
+POSTHOOK: query: select s.name, count(distinct registration)
+from studenttab10k_smb s join votertab10k_smb v
+on (s.name = v.name)
+group by s.name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@studenttab10k_smb
+POSTHOOK: Input: default@votertab10k_smb
+#### A masked pattern was here ####
+PREHOOK: query: load data local inpath '../../data/files/empty/000000_0' into table studenttab10k_smb
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@studenttab10k_smb
+POSTHOOK: query: load data local inpath '../../data/files/empty/000000_0' into table studenttab10k_smb
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@studenttab10k_smb
+PREHOOK: query: load data local inpath '../../data/files/empty/000001_0' into table studenttab10k_smb
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@studenttab10k_smb
+POSTHOOK: query: load data local inpath '../../data/files/empty/000001_0' into table studenttab10k_smb
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@studenttab10k_smb
+PREHOOK: query: load data local inpath '../../data/files/empty/000000_0' into table votertab10k_smb
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@votertab10k_smb
+POSTHOOK: query: load data local inpath '../../data/files/empty/000000_0' into table votertab10k_smb
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@votertab10k_smb
+PREHOOK: query: load data local inpath '../../data/files/empty/000001_0' into table votertab10k_smb
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@votertab10k_smb
+POSTHOOK: query: load data local inpath '../../data/files/empty/000001_0' into table votertab10k_smb
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@votertab10k_smb
+PREHOOK: query: explain select s.name, count(distinct registration)
+from studenttab10k_smb s join votertab10k_smb v
+on (s.name = v.name)
+group by s.name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@studenttab10k_smb
+PREHOOK: Input: default@votertab10k_smb
+#### A masked pattern was here ####
+POSTHOOK: query: explain select s.name, count(distinct registration)
+from studenttab10k_smb s join votertab10k_smb v
+on (s.name = v.name)
+group by s.name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@studenttab10k_smb
+POSTHOOK: Input: default@votertab10k_smb
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 2 <- Map 1 (CUSTOM_EDGE)
+        Reducer 3 <- Map 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: s
+                  filterExpr: name is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: name is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: name (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: v
+                  filterExpr: name is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_34_container, bigKeyColName:name, smallTablePos:0, keyRatio:1.0
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: name is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: name (type: string), registration (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: string)
+                          1 _col0 (type: string)
+                        outputColumnNames: _col0, _col2
+                        input vertices:
+                          0 Map 1
+                        Statistics: Num rows: 1 Data size: 202 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          keys: _col0 (type: string), _col2 (type: string)
+                          minReductionHashAggr: 0.99
+                          mode: hash
+                          outputColumnNames: _col0, _col1
+                          Statistics: Num rows: 1 Data size: 202 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            key expressions: _col0 (type: string), _col1 (type: string)
+                            null sort order: zz
+                            sort order: ++
+                            Map-reduce partition columns: _col0 (type: string)
+                            Statistics: Num rows: 1 Data size: 202 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 202 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count(_col1)
+                  keys: _col0 (type: string)
+                  mode: complete
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 202 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 202 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select s.name, count(distinct registration)
+from studenttab10k_smb s join votertab10k_smb v
+on (s.name = v.name)
+group by s.name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@studenttab10k_smb
+PREHOOK: Input: default@votertab10k_smb
+#### A masked pattern was here ####
+POSTHOOK: query: select s.name, count(distinct registration)
+from studenttab10k_smb s join votertab10k_smb v
+on (s.name = v.name)
+group by s.name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@studenttab10k_smb
+POSTHOOK: Input: default@votertab10k_smb
+#### A masked pattern was here ####
+PREHOOK: query: create table studenttab10k_part (name string, age int, gpa double) partitioned by (p string) clustered by (name) sorted by (name) into 2 buckets
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@studenttab10k_part
+POSTHOOK: query: create table studenttab10k_part (name string, age int, gpa double) partitioned by (p string) clustered by (name) sorted by (name) into 2 buckets
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@studenttab10k_part
+PREHOOK: query: create table votertab10k_part (name string, age int, registration string, contributions float) partitioned by (p string) clustered by (name) sorted by (name) into 2 buckets
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@votertab10k_part
+POSTHOOK: query: create table votertab10k_part (name string, age int, registration string, contributions float) partitioned by (p string) clustered by (name) sorted by (name) into 2 buckets
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@votertab10k_part
+PREHOOK: query: load data local inpath '../../data/files/empty/000000_0' into table studenttab10k_part partition (p='foo')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@studenttab10k_part
+POSTHOOK: query: load data local inpath '../../data/files/empty/000000_0' into table studenttab10k_part partition (p='foo')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@studenttab10k_part
+POSTHOOK: Output: default@studenttab10k_part@p=foo
+PREHOOK: query: load data local inpath '../../data/files/empty/000001_0' into table studenttab10k_part partition (p='foo')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@studenttab10k_part@p=foo
+POSTHOOK: query: load data local inpath '../../data/files/empty/000001_0' into table studenttab10k_part partition (p='foo')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@studenttab10k_part@p=foo
+PREHOOK: query: load data local inpath '../../data/files/empty/000000_0' into table votertab10k_part partition (p='foo')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@votertab10k_part
+POSTHOOK: query: load data local inpath '../../data/files/empty/000000_0' into table votertab10k_part partition (p='foo')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@votertab10k_part
+POSTHOOK: Output: default@votertab10k_part@p=foo
+PREHOOK: query: load data local inpath '../../data/files/empty/000001_0' into table votertab10k_part partition (p='foo')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@votertab10k_part@p=foo
+POSTHOOK: query: load data local inpath '../../data/files/empty/000001_0' into table votertab10k_part partition (p='foo')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@votertab10k_part@p=foo
+PREHOOK: query: explain select s.name, count(distinct registration)
+from studenttab10k_part s join votertab10k_part v
+on (s.name = v.name)
+where s.p = 'bar'
+and v.p = 'bar'
+group by s.name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@studenttab10k_part
+PREHOOK: Input: default@votertab10k_part
+#### A masked pattern was here ####
+POSTHOOK: query: explain select s.name, count(distinct registration)
+from studenttab10k_part s join votertab10k_part v
+on (s.name = v.name)
+where s.p = 'bar'
+and v.p = 'bar'
+group by s.name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@studenttab10k_part
+POSTHOOK: Input: default@votertab10k_part
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Map 3 (CUSTOM_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: s
+                  filterExpr: ((p = 'bar') and name is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_34_container, bigKeyColName:name, smallTablePos:1, keyRatio:0.0
+                  Statistics: Num rows: 1 Data size: 268 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((p = 'bar') and name is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 268 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: name (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: string)
+                          1 _col0 (type: string)
+                        outputColumnNames: _col0, _col2
+                        input vertices:
+                          1 Map 3
+                        Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          keys: _col0 (type: string), _col2 (type: string)
+                          minReductionHashAggr: 0.99
+                          mode: hash
+                          outputColumnNames: _col0, _col1
+                          Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            key expressions: _col0 (type: string), _col1 (type: string)
+                            null sort order: zz
+                            sort order: ++
+                            Map-reduce partition columns: _col0 (type: string)
+                            Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: unknown
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: v
+                  filterExpr: ((p = 'bar') and name is not null) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((p = 'bar') and name is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: name (type: string), registration (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: unknown
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: count(_col1)
+                  keys: _col0 (type: string)
+                  mode: complete
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select s.name, count(distinct registration)
+from studenttab10k_part s join votertab10k_part v
+on (s.name = v.name)
+where s.p = 'bar'
+and v.p = 'bar'
+group by s.name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@studenttab10k_part
+PREHOOK: Input: default@votertab10k_part
+#### A masked pattern was here ####
+POSTHOOK: query: select s.name, count(distinct registration)
+from studenttab10k_part s join votertab10k_part v
+on (s.name = v.name)
+where s.p = 'bar'
+and v.p = 'bar'
+group by s.name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@studenttab10k_part
+POSTHOOK: Input: default@votertab10k_part
+#### A masked pattern was here ####
+PREHOOK: query: drop table studenttab10k
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@studenttab10k
+PREHOOK: Output: database:default
+PREHOOK: Output: default@studenttab10k
+POSTHOOK: query: drop table studenttab10k
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@studenttab10k
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@studenttab10k
+PREHOOK: query: drop table votertab10k
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@votertab10k
+PREHOOK: Output: database:default
+PREHOOK: Output: default@votertab10k
+POSTHOOK: query: drop table votertab10k
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@votertab10k
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@votertab10k
+PREHOOK: query: drop table studenttab10k_smb
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@studenttab10k_smb
+PREHOOK: Output: database:default
+PREHOOK: Output: default@studenttab10k_smb
+POSTHOOK: query: drop table studenttab10k_smb
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@studenttab10k_smb
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@studenttab10k_smb
+PREHOOK: query: drop table votertab10k_smb
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@votertab10k_smb
+PREHOOK: Output: database:default
+PREHOOK: Output: default@votertab10k_smb
+POSTHOOK: query: drop table votertab10k_smb
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@votertab10k_smb
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@votertab10k_smb
+PREHOOK: query: drop table studenttab10k_part
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@studenttab10k_part
+PREHOOK: Output: database:default
+PREHOOK: Output: default@studenttab10k_part
+POSTHOOK: query: drop table studenttab10k_part
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@studenttab10k_part
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@studenttab10k_part
+PREHOOK: query: drop table votertab10k_part
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@votertab10k_part
+PREHOOK: Output: database:default
+PREHOOK: Output: default@votertab10k_part
+POSTHOOK: query: drop table votertab10k_part
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@votertab10k_part
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@votertab10k_part

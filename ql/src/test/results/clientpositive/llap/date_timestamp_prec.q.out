@@ -1,0 +1,39 @@
+PREHOOK: query: create table mytable (i integer, d date)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mytable
+POSTHOOK: query: create table mytable (i integer, d date)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mytable
+PREHOOK: query: insert overwrite table mytable 
+  select 1, cast('2011-01-01' as date) from src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@mytable
+POSTHOOK: query: insert overwrite table mytable 
+  select 1, cast('2011-01-01' as date) from src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@mytable
+POSTHOOK: Lineage: mytable.d EXPRESSION []
+POSTHOOK: Lineage: mytable.i SIMPLE []
+PREHOOK: query: select i, coalesce(d, cast(d as timestamp)) from mytable
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mytable
+#### A masked pattern was here ####
+POSTHOOK: query: select i, coalesce(d, cast(d as timestamp)) from mytable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mytable
+#### A masked pattern was here ####
+1	2011-01-01 00:00:00
+PREHOOK: query: drop table mytable
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@mytable
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mytable
+POSTHOOK: query: drop table mytable
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@mytable
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mytable

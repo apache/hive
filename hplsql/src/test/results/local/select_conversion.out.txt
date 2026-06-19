@@ -1,0 +1,9 @@
+Ln:1 DECLARE v1 STRING = abc
+Ln:3 SELECT
+Ln:3 Statement:
+SELECT CONCAT('a', 'b', 'c'), CONCAT('a', 'b') FROM default.dual
+Ln:3 Not executed - offline mode set
+Ln:5 SELECT
+Ln:5 Statement:
+SELECT 'abc' AS c1, CONCAT('abc', 'abc'), NVL(NVL(CONCAT('abc', NVL(id, 1), id), 1), 1), 'abc', 'abc' AS c4 FROM default.dual t1 WHERE 'abc' = 'abc' AND (NVL(NVL('abc', 1), 1) = 'abc' or 'abc' = 'abc')
+Ln:5 Not executed - offline mode set

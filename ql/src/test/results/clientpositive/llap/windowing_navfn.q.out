@@ -1,0 +1,898 @@
+PREHOOK: query: drop table over10k_n19
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table over10k_n19
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table over10k_n19(
+           t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp, 
+           `dec` decimal(4,2),  
+           bin binary)
+       row format delimited
+       fields terminated by '|'
+       TBLPROPERTIES ("hive.serialization.decode.binary.as.base64"="false")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@over10k_n19
+POSTHOOK: query: create table over10k_n19(
+           t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp, 
+           `dec` decimal(4,2),  
+           bin binary)
+       row format delimited
+       fields terminated by '|'
+       TBLPROPERTIES ("hive.serialization.decode.binary.as.base64"="false")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@over10k_n19
+PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n19
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@over10k_n19
+POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n19
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@over10k_n19
+PREHOOK: query: explain select row_number() over()  from src where key = '238'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain select row_number() over()  from src where key = '238'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  filterExpr: (key = '238') (type: boolean)
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (key = '238') (type: boolean)
+                    Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: 0 (type: int)
+                      null sort order: a
+                      sort order: +
+                      Map-reduce partition columns: 0 (type: int)
+                      Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              PTF Operator
+                Function definitions:
+                    Input definition
+                      input alias: ptf_0
+                      output shape: 
+                      type: WINDOWING
+                    Windowing table definition
+                      input alias: ptf_1
+                      name: windowingtablefunction
+                      order by: 0 ASC NULLS FIRST
+                      partition by: 0
+                      raw input shape:
+                      window functions:
+                          window function definition
+                            alias: row_number_window_0
+                            name: row_number
+                            window function: GenericUDAFRowNumberEvaluator
+                            window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                            isPivotResult: true
+                Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: row_number_window_0 (type: int)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select row_number() over()  from src where key = '238'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select row_number() over()  from src where key = '238'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1
+2
+PREHOOK: query: select s, row_number() over (partition by d order by `dec`) from over10k_n19 limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n19
+#### A masked pattern was here ####
+POSTHOOK: query: select s, row_number() over (partition by d order by `dec`) from over10k_n19 limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n19
+#### A masked pattern was here ####
+calvin miller	1
+yuri laertes	1
+wendy quirinius	2
+holly polk	3
+nick steinbeck	1
+tom young	1
+priscilla quirinius	2
+katie brown	3
+xavier robinson	1
+gabriella quirinius	2
+katie falkner	3
+ethan carson	1
+victor johnson	2
+zach white	1
+jessica white	2
+jessica king	3
+victor davidson	1
+quinn falkner	2
+holly falkner	3
+holly young	1
+xavier steinbeck	1
+nick robinson	2
+irene king	1
+quinn zipper	1
+priscilla miller	1
+yuri miller	2
+wendy zipper	3
+zach steinbeck	1
+fred nixon	1
+katie brown	1
+nick davidson	1
+gabriella davidson	1
+zach carson	2
+wendy king	1
+tom xylophone	2
+holly hernandez	3
+jessica quirinius	4
+gabriella brown	1
+quinn johnson	2
+yuri zipper	3
+david robinson	1
+mike nixon	2
+rachel davidson	1
+gabriella white	2
+yuri garcia	1
+yuri zipper	2
+katie hernandez	1
+alice king	2
+jessica steinbeck	3
+quinn davidson	1
+katie ovid	2
+priscilla young	3
+quinn van buren	4
+victor steinbeck	5
+gabriella brown	1
+zach laertes	1
+jessica ichabod	2
+ethan miller	1
+irene carson	2
+priscilla zipper	3
+irene falkner	4
+tom robinson	5
+katie polk	1
+xavier laertes	2
+sarah davidson	3
+nick white	4
+nick polk	1
+alice ichabod	2
+luke brown	1
+wendy allen	2
+gabriella robinson	3
+holly steinbeck	1
+calvin ichabod	2
+holly van buren	1
+tom nixon	2
+gabriella carson	3
+mike brown	1
+katie laertes	2
+zach garcia	1
+oscar nixon	2
+tom polk	1
+mike allen	1
+alice johnson	1
+yuri young	1
+holly robinson	2
+priscilla thompson	3
+rachel carson	1
+gabriella laertes	1
+victor brown	2
+holly allen	1
+bob carson	2
+rachel carson	1
+fred nixon	2
+priscilla brown	1
+alice nixon	2
+victor falkner	1
+david garcia	1
+holly hernandez	2
+tom white	3
+rachel ellison	1
+PREHOOK: query: select i, lead(s) over (partition by bin order by d,i desc) from over10k_n19 limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n19
+#### A masked pattern was here ####
+POSTHOOK: query: select i, lead(s) over (partition by bin order by d,i desc) from over10k_n19 limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n19
+#### A masked pattern was here ####
+65773	gabriella van buren
+65727	quinn steinbeck
+65649	katie laertes
+65643	luke young
+65712	xavier white
+65554	oscar garcia
+65715	katie ichabod
+65737	mike garcia
+65641	katie thompson
+65674	zach falkner
+65627	katie ovid
+65628	irene davidson
+65657	wendy van buren
+65686	yuri ichabod
+65594	ethan underhill
+65615	zach young
+65708	calvin falkner
+65674	nick xylophone
+65717	tom hernandez
+65713	tom ichabod
+65681	priscilla ichabod
+65654	victor laertes
+65580	victor van buren
+65711	holly xylophone
+65727	david garcia
+65692	yuri ovid
+65760	oscar xylophone
+65545	luke falkner
+65653	alice falkner
+65773	jessica robinson
+65756	fred davidson
+65698	tom hernandez
+65659	irene ellison
+65662	holly robinson
+65610	mike garcia
+65537	yuri hernandez
+65601	ulysses garcia
+65545	mike brown
+65538	ethan nixon
+65551	yuri falkner
+65709	rachel robinson
+65774	yuri polk
+65713	yuri nixon
+65613	sarah thompson
+65693	nick nixon
+65650	ethan carson
+65781	oscar king
+65675	priscilla ichabod
+65541	jessica thompson
+65719	mike polk
+65694	luke brown
+65538	victor young
+65746	oscar nixon
+65564	tom zipper
+65708	irene ellison
+65696	alice davidson
+65596	jessica garcia
+65586	victor miller
+65696	holly white
+65600	david robinson
+65785	jessica davidson
+65606	ulysses brown
+65734	ethan underhill
+65546	ethan miller
+65578	tom thompson
+65776	holly steinbeck
+65741	yuri underhill
+65770	priscilla king
+65562	bob white
+65605	victor van buren
+65764	bob allen
+65725	david underhill
+65700	holly king
+65648	victor ovid
+65733	priscilla xylophone
+65682	katie miller
+65694	victor xylophone
+65553	mike steinbeck
+65635	holly laertes
+65537	katie steinbeck
+65761	zach white
+65747	ethan falkner
+65601	ulysses king
+65590	rachel davidson
+65732	irene young
+65642	bob thompson
+65570	tom xylophone
+65692	sarah davidson
+65760	tom laertes
+65784	yuri johnson
+65630	zach laertes
+65774	nick polk
+65788	quinn xylophone
+65595	yuri white
+65765	xavier ellison
+65541	jessica ichabod
+65711	tom steinbeck
+65536	alice hernandez
+65545	tom zipper
+65789	ulysses hernandez
+PREHOOK: query: select i, lag(`dec`) over (partition by i order by s,i,`dec`) from over10k_n19 limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n19
+#### A masked pattern was here ####
+POSTHOOK: query: select i, lag(`dec`) over (partition by i order by s,i,`dec`) from over10k_n19 limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n19
+#### A masked pattern was here ####
+65536	NULL
+65536	31.09
+65536	1.33
+65536	86.04
+65536	52.78
+65536	93.68
+65536	98.42
+65536	0.93
+65536	83.48
+65536	75.70
+65536	88.04
+65536	94.09
+65536	33.45
+65536	44.41
+65536	22.15
+65536	20.50
+65536	58.86
+65536	30.91
+65536	74.47
+65536	11.31
+65536	59.67
+65536	63.08
+65536	5.53
+65536	95.99
+65536	59.58
+65536	32.68
+65536	16.85
+65536	4.34
+65536	28.49
+65536	80.26
+65536	35.07
+65536	95.88
+65536	30.60
+65536	46.97
+65536	58.80
+65536	5.72
+65536	29.27
+65536	62.25
+65536	45.25
+65536	85.25
+65536	30.25
+65536	65.17
+65536	1.05
+65536	39.32
+65536	32.03
+65537	NULL
+65537	14.48
+65537	95.64
+65537	4.49
+65537	11.87
+65537	89.52
+65537	56.83
+65537	99.34
+65537	7.72
+65537	94.52
+65537	35.86
+65537	47.75
+65537	1.12
+65537	52.90
+65537	53.92
+65537	43.45
+65537	7.52
+65537	91.35
+65537	56.13
+65537	51.91
+65537	81.04
+65537	19.44
+65537	8.63
+65537	29.01
+65537	56.48
+65537	83.21
+65537	56.52
+65537	36.60
+65537	59.70
+65537	80.14
+65537	66.30
+65537	94.87
+65537	40.92
+65537	25.20
+65537	7.36
+65538	NULL
+65538	53.35
+65538	54.64
+65538	76.67
+65538	15.17
+65538	1.20
+65538	13.71
+65538	81.59
+65538	43.33
+65538	30.27
+65538	8.91
+65538	95.81
+65538	92.44
+65538	98.11
+65538	18.02
+65538	78.41
+65538	35.14
+65538	9.53
+65538	48.61
+65538	2.03
+PREHOOK: query: select s, last_value(t) over (partition by d order by f) from over10k_n19 limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n19
+#### A masked pattern was here ####
+POSTHOOK: query: select s, last_value(t) over (partition by d order by f) from over10k_n19 limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n19
+#### A masked pattern was here ####
+calvin miller	99
+holly polk	83
+wendy quirinius	-3
+yuri laertes	115
+nick steinbeck	21
+tom young	34
+katie brown	66
+priscilla quirinius	67
+gabriella quirinius	37
+katie falkner	118
+xavier robinson	47
+ethan carson	105
+victor johnson	19
+jessica white	29
+zach white	99
+jessica king	-3
+victor davidson	83
+holly falkner	110
+quinn falkner	33
+holly young	82
+nick robinson	106
+xavier steinbeck	8
+irene king	66
+quinn zipper	14
+priscilla miller	61
+yuri miller	7
+wendy zipper	1
+zach steinbeck	124
+fred nixon	91
+katie brown	104
+nick davidson	74
+gabriella davidson	112
+zach carson	109
+wendy king	78
+jessica quirinius	22
+holly hernandez	35
+tom xylophone	30
+quinn johnson	117
+yuri zipper	-1
+gabriella brown	92
+david robinson	103
+mike nixon	96
+gabriella white	6
+rachel davidson	7
+yuri garcia	121
+yuri zipper	92
+jessica steinbeck	86
+katie hernandez	57
+alice king	26
+victor steinbeck	87
+katie ovid	4
+priscilla young	71
+quinn van buren	18
+quinn davidson	93
+gabriella brown	-3
+zach laertes	124
+jessica ichabod	86
+irene falkner	49
+ethan miller	72
+irene carson	26
+priscilla zipper	37
+tom robinson	33
+sarah davidson	86
+katie polk	62
+nick white	8
+xavier laertes	17
+alice ichabod	18
+nick polk	52
+luke brown	47
+wendy allen	16
+gabriella robinson	6
+calvin ichabod	-3
+holly steinbeck	25
+gabriella carson	39
+holly van buren	19
+tom nixon	45
+katie laertes	-1
+mike brown	3
+oscar nixon	65
+zach garcia	29
+tom polk	93
+mike allen	115
+alice johnson	17
+holly robinson	43
+yuri young	24
+priscilla thompson	9
+rachel carson	24
+victor brown	34
+gabriella laertes	18
+bob carson	6
+holly allen	63
+fred nixon	111
+rachel carson	89
+alice nixon	48
+priscilla brown	68
+victor falkner	81
+tom white	43
+holly hernandez	4
+david garcia	101
+rachel ellison	51
+PREHOOK: query: select s, first_value(s) over (partition by bo order by s) from over10k_n19 limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n19
+#### A masked pattern was here ####
+POSTHOOK: query: select s, first_value(s) over (partition by bo order by s) from over10k_n19 limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n19
+#### A masked pattern was here ####
+alice allen	alice allen
+alice allen	alice allen
+alice allen	alice allen
+alice allen	alice allen
+alice brown	alice allen
+alice brown	alice allen
+alice brown	alice allen
+alice brown	alice allen
+alice brown	alice allen
+alice brown	alice allen
+alice brown	alice allen
+alice brown	alice allen
+alice carson	alice allen
+alice carson	alice allen
+alice carson	alice allen
+alice davidson	alice allen
+alice davidson	alice allen
+alice davidson	alice allen
+alice davidson	alice allen
+alice davidson	alice allen
+alice davidson	alice allen
+alice davidson	alice allen
+alice davidson	alice allen
+alice davidson	alice allen
+alice davidson	alice allen
+alice ellison	alice allen
+alice ellison	alice allen
+alice ellison	alice allen
+alice ellison	alice allen
+alice ellison	alice allen
+alice ellison	alice allen
+alice ellison	alice allen
+alice ellison	alice allen
+alice ellison	alice allen
+alice falkner	alice allen
+alice falkner	alice allen
+alice falkner	alice allen
+alice falkner	alice allen
+alice falkner	alice allen
+alice falkner	alice allen
+alice garcia	alice allen
+alice garcia	alice allen
+alice garcia	alice allen
+alice garcia	alice allen
+alice garcia	alice allen
+alice hernandez	alice allen
+alice hernandez	alice allen
+alice hernandez	alice allen
+alice hernandez	alice allen
+alice hernandez	alice allen
+alice hernandez	alice allen
+alice hernandez	alice allen
+alice hernandez	alice allen
+alice hernandez	alice allen
+alice hernandez	alice allen
+alice hernandez	alice allen
+alice ichabod	alice allen
+alice ichabod	alice allen
+alice ichabod	alice allen
+alice ichabod	alice allen
+alice ichabod	alice allen
+alice ichabod	alice allen
+alice ichabod	alice allen
+alice ichabod	alice allen
+alice ichabod	alice allen
+alice ichabod	alice allen
+alice ichabod	alice allen
+alice johnson	alice allen
+alice johnson	alice allen
+alice johnson	alice allen
+alice johnson	alice allen
+alice johnson	alice allen
+alice johnson	alice allen
+alice johnson	alice allen
+alice johnson	alice allen
+alice king	alice allen
+alice king	alice allen
+alice king	alice allen
+alice king	alice allen
+alice king	alice allen
+alice king	alice allen
+alice laertes	alice allen
+alice laertes	alice allen
+alice laertes	alice allen
+alice laertes	alice allen
+alice laertes	alice allen
+alice laertes	alice allen
+alice miller	alice allen
+alice miller	alice allen
+alice miller	alice allen
+alice miller	alice allen
+alice miller	alice allen
+alice miller	alice allen
+alice miller	alice allen
+alice miller	alice allen
+alice miller	alice allen
+alice miller	alice allen
+alice nixon	alice allen
+alice nixon	alice allen
+alice nixon	alice allen
+PREHOOK: query: select t, s, i, last_value(i) over (partition by t order by s) 
+from over10k_n19 where (s = 'oscar allen' or s = 'oscar carson') and t = 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n19
+#### A masked pattern was here ####
+POSTHOOK: query: select t, s, i, last_value(i) over (partition by t order by s) 
+from over10k_n19 where (s = 'oscar allen' or s = 'oscar carson') and t = 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n19
+#### A masked pattern was here ####
+10	oscar allen	65662	65662
+10	oscar carson	65549	65549
+PREHOOK: query: drop table if exists wtest_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists wtest_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table wtest_n0 as
+select a, b
+from
+(
+SELECT explode(
+   map(
+   3, array(1,2,3,4,5), 
+   1, array(int(null),int(null),int(null), int(null), int(null)), 
+   2, array(1,null,2, null, 3)
+   )
+  ) as (a,barr) FROM (select * from src limit 1) s
+  ) s1 lateral view explode(barr) arr as b
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@wtest_n0
+POSTHOOK: query: create table wtest_n0 as
+select a, b
+from
+(
+SELECT explode(
+   map(
+   3, array(1,2,3,4,5), 
+   1, array(int(null),int(null),int(null), int(null), int(null)), 
+   2, array(1,null,2, null, 3)
+   )
+  ) as (a,barr) FROM (select * from src limit 1) s
+  ) s1 lateral view explode(barr) arr as b
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@wtest_n0
+POSTHOOK: Lineage: wtest_n0.a SCRIPT []
+POSTHOOK: Lineage: wtest_n0.b SCRIPT []
+PREHOOK: query: select a, b,
+first_value(b) over (partition by a order by b rows between 1 preceding and 1 following ) ,
+first_value(b) respect nulls over (partition by a order by b rows between 1 preceding and 1 following ) ,
+first_value(b respect nulls) over (partition by a order by b rows between 1 preceding and 1 following ) ,
+first_value(b, true) over (partition by a order by b rows between 1 preceding and 1 following ) ,
+first_value(b) ignore nulls over (partition by a order by b rows between 1 preceding and 1 following ) ,
+first_value(b ignore nulls) over (partition by a order by b rows between 1 preceding and 1 following ) ,
+first_value(b) over (partition by a order by b rows between unbounded preceding and 1 following ) ,
+first_value(b) respect nulls over (partition by a order by b rows between unbounded preceding and 1 following ) ,
+first_value(b, true) over (partition by a order by b rows between unbounded preceding and 1 following ),
+first_value(b) ignore nulls over (partition by a order by b rows between unbounded preceding and 1 following )
+from wtest_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@wtest_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select a, b,
+first_value(b) over (partition by a order by b rows between 1 preceding and 1 following ) ,
+first_value(b) respect nulls over (partition by a order by b rows between 1 preceding and 1 following ) ,
+first_value(b respect nulls) over (partition by a order by b rows between 1 preceding and 1 following ) ,
+first_value(b, true) over (partition by a order by b rows between 1 preceding and 1 following ) ,
+first_value(b) ignore nulls over (partition by a order by b rows between 1 preceding and 1 following ) ,
+first_value(b ignore nulls) over (partition by a order by b rows between 1 preceding and 1 following ) ,
+first_value(b) over (partition by a order by b rows between unbounded preceding and 1 following ) ,
+first_value(b) respect nulls over (partition by a order by b rows between unbounded preceding and 1 following ) ,
+first_value(b, true) over (partition by a order by b rows between unbounded preceding and 1 following ),
+first_value(b) ignore nulls over (partition by a order by b rows between unbounded preceding and 1 following )
+from wtest_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@wtest_n0
+#### A masked pattern was here ####
+1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+2	1	1	1	1	1	1	1	1	1	1	1
+2	2	1	1	1	1	1	1	1	1	1	1
+2	3	2	2	2	2	2	2	1	1	1	1
+2	NULL	3	3	3	3	3	3	1	1	1	1
+2	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	1	1	1
+3	1	1	1	1	1	1	1	1	1	1	1
+3	2	1	1	1	1	1	1	1	1	1	1
+3	3	2	2	2	2	2	2	1	1	1	1
+3	4	3	3	3	3	3	3	1	1	1	1
+3	5	4	4	4	4	4	4	1	1	1	1
+PREHOOK: query: select a, b,
+first_value(b) over (partition by a order by b desc  rows between 1 preceding and 1 following ) ,
+first_value(b) respect nulls over (partition by a order by b desc  rows between 1 preceding and 1 following ) ,
+first_value(b, true) over (partition by a order by b desc rows between 1 preceding and 1 following ) ,
+first_value(b) ignore nulls over (partition by a order by b desc rows between 1 preceding and 1 following ) ,
+first_value(b) over (partition by a order by b desc rows between unbounded preceding and 1 following ) ,
+first_value(b) respect nulls over (partition by a order by b desc rows between unbounded preceding and 1 following ) ,
+first_value(b, true) over (partition by a order by b desc rows between unbounded preceding and 1 following ),
+first_value(b) ignore nulls over (partition by a order by b desc rows between unbounded preceding and 1 following )
+from wtest_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@wtest_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select a, b,
+first_value(b) over (partition by a order by b desc  rows between 1 preceding and 1 following ) ,
+first_value(b) respect nulls over (partition by a order by b desc  rows between 1 preceding and 1 following ) ,
+first_value(b, true) over (partition by a order by b desc rows between 1 preceding and 1 following ) ,
+first_value(b) ignore nulls over (partition by a order by b desc rows between 1 preceding and 1 following ) ,
+first_value(b) over (partition by a order by b desc rows between unbounded preceding and 1 following ) ,
+first_value(b) respect nulls over (partition by a order by b desc rows between unbounded preceding and 1 following ) ,
+first_value(b, true) over (partition by a order by b desc rows between unbounded preceding and 1 following ),
+first_value(b) ignore nulls over (partition by a order by b desc rows between unbounded preceding and 1 following )
+from wtest_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@wtest_n0
+#### A masked pattern was here ####
+1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+2	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+2	NULL	NULL	NULL	3	3	NULL	NULL	3	3
+2	3	NULL	NULL	3	3	NULL	NULL	3	3
+2	2	3	3	3	3	NULL	NULL	3	3
+2	1	2	2	2	2	NULL	NULL	3	3
+3	5	5	5	5	5	5	5	5	5
+3	4	5	5	5	5	5	5	5	5
+3	3	4	4	4	4	5	5	5	5
+3	2	3	3	3	3	5	5	5	5
+3	1	2	2	2	2	5	5	5	5
+PREHOOK: query: select a, b,
+last_value(b) over (partition by a order by b rows between 1 preceding and 1 following ) ,
+last_value(b) respect nulls over (partition by a order by b rows between 1 preceding and 1 following ) ,
+last_value(b, true) over (partition by a order by b rows between 1 preceding and 1 following ) ,
+last_value(b) ignore nulls over (partition by a order by b rows between 1 preceding and 1 following ) ,
+last_value(b) over (partition by a order by b rows between unbounded preceding and 1 following ) ,
+last_value(b) respect nulls over (partition by a order by b rows between unbounded preceding and 1 following ) ,
+last_value(b, true) over (partition by a order by b rows between unbounded preceding and 1 following ),
+last_value(b) ignore nulls over (partition by a order by b rows between unbounded preceding and 1 following )
+from wtest_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@wtest_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select a, b,
+last_value(b) over (partition by a order by b rows between 1 preceding and 1 following ) ,
+last_value(b) respect nulls over (partition by a order by b rows between 1 preceding and 1 following ) ,
+last_value(b, true) over (partition by a order by b rows between 1 preceding and 1 following ) ,
+last_value(b) ignore nulls over (partition by a order by b rows between 1 preceding and 1 following ) ,
+last_value(b) over (partition by a order by b rows between unbounded preceding and 1 following ) ,
+last_value(b) respect nulls over (partition by a order by b rows between unbounded preceding and 1 following ) ,
+last_value(b, true) over (partition by a order by b rows between unbounded preceding and 1 following ),
+last_value(b) ignore nulls over (partition by a order by b rows between unbounded preceding and 1 following )
+from wtest_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@wtest_n0
+#### A masked pattern was here ####
+1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+2	1	2	2	2	2	2	2	2	2
+2	2	3	3	3	3	3	3	3	3
+2	3	NULL	NULL	3	3	NULL	NULL	3	3
+2	NULL	NULL	NULL	3	3	NULL	NULL	3	3
+2	NULL	NULL	NULL	NULL	NULL	NULL	NULL	3	3
+3	1	2	2	2	2	2	2	2	2
+3	2	3	3	3	3	3	3	3	3
+3	3	4	4	4	4	4	4	4	4
+3	4	5	5	5	5	5	5	5	5
+3	5	5	5	5	5	5	5	5	5
+PREHOOK: query: select a, b,
+last_value(b) over (partition by a order by b desc  rows between 1 preceding and 1 following ) ,
+last_value(b) respect nulls over (partition by a order by b desc  rows between 1 preceding and 1 following ) ,
+last_value(b, true) over (partition by a order by b desc rows between 1 preceding and 1 following ) ,
+last_value(b) ignore nulls over (partition by a order by b desc rows between 1 preceding and 1 following ) ,
+last_value(b) over (partition by a order by b desc rows between unbounded preceding and 1 following ) ,
+last_value(b) respect nulls over (partition by a order by b desc rows between unbounded preceding and 1 following ) ,
+last_value(b) over (partition by a order by b desc rows between unbounded preceding and 1 following ),
+last_value(b) ignore nulls over (partition by a order by b desc rows between unbounded preceding and 1 following )
+from wtest_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@wtest_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select a, b,
+last_value(b) over (partition by a order by b desc  rows between 1 preceding and 1 following ) ,
+last_value(b) respect nulls over (partition by a order by b desc  rows between 1 preceding and 1 following ) ,
+last_value(b, true) over (partition by a order by b desc rows between 1 preceding and 1 following ) ,
+last_value(b) ignore nulls over (partition by a order by b desc rows between 1 preceding and 1 following ) ,
+last_value(b) over (partition by a order by b desc rows between unbounded preceding and 1 following ) ,
+last_value(b) respect nulls over (partition by a order by b desc rows between unbounded preceding and 1 following ) ,
+last_value(b) over (partition by a order by b desc rows between unbounded preceding and 1 following ),
+last_value(b) ignore nulls over (partition by a order by b desc rows between unbounded preceding and 1 following )
+from wtest_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@wtest_n0
+#### A masked pattern was here ####
+1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+2	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+2	NULL	3	3	3	3	3	3	3	3
+2	3	2	2	2	2	2	2	2	2
+2	2	1	1	1	1	1	1	1	1
+2	1	1	1	1	1	1	1	1	1
+3	5	4	4	4	4	4	4	4	4
+3	4	3	3	3	3	3	3	3	3
+3	3	2	2	2	2	2	2	2	2
+3	2	1	1	1	1	1	1	1	1
+3	1	1	1	1	1	1	1	1	1

@@ -1,0 +1,189 @@
+PREHOOK: query: CREATE TABLE t1 (col1 char(3))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: CREATE TABLE t1 (col1 char(3))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: INSERT INTO t1 VALUES ('A'),('b'),('c'),(null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: INSERT INTO t1 VALUES ('A'),('b'),('c'),(null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.col1 SCRIPT []
+PREHOOK: query: explain cbo
+select col1, case upper(col1) when 'A' then 'OK' else 'N/A' end as col2 from t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select col1, case upper(col1) when 'A' then 'OK' else 'N/A' end as col2 from t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(col1=[$0], col2=[CASE(=(CAST(UPPER($0)):VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'A'), _UTF-16LE'OK':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'N/A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
+  HiveTableScan(table=[[default, t1]], table:alias=[t1])
+
+PREHOOK: query: explain
+select col1, case upper(col1) when 'A' then 'OK' else 'N/A' end as col2 from t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select col1, case upper(col1) when 'A' then 'OK' else 'N/A' end as col2 from t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: t1
+          Select Operator
+            expressions: col1 (type: char(3)), if((CAST( upper(col1) AS STRING) = 'A'), 'OK', 'N/A') (type: string)
+            outputColumnNames: _col0, _col1
+            ListSink
+
+PREHOOK: query: select col1, case upper(col1) when 'A' then 'OK' else 'N/A' end as col2 from t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: select col1, case upper(col1) when 'A' then 'OK' else 'N/A' end as col2 from t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+A  	OK
+b  	N/A
+c  	N/A
+NULL	N/A
+PREHOOK: query: explain cbo
+select col1, case when upper(col1)='A' then 'OK' else 'N/A' end as col2 from t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select col1, case when upper(col1)='A' then 'OK' else 'N/A' end as col2 from t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(col1=[$0], col2=[CASE(=(CAST(UPPER($0)):VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'A'), _UTF-16LE'OK':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'N/A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
+  HiveTableScan(table=[[default, t1]], table:alias=[t1])
+
+PREHOOK: query: explain
+select col1, case when upper(col1)='A' then 'OK' else 'N/A' end as col2 from t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select col1, case when upper(col1)='A' then 'OK' else 'N/A' end as col2 from t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: t1
+          Select Operator
+            expressions: col1 (type: char(3)), if((CAST( upper(col1) AS STRING) = 'A'), 'OK', 'N/A') (type: string)
+            outputColumnNames: _col0, _col1
+            ListSink
+
+PREHOOK: query: select col1, case when upper(col1)='A' then 'OK' else 'N/A' end as col2 from t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: select col1, case when upper(col1)='A' then 'OK' else 'N/A' end as col2 from t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+A  	OK
+b  	N/A
+c  	N/A
+NULL	N/A
+PREHOOK: query: explain cbo
+select col1,
+  case lower(col1)
+    when 'a' then 'OK a'
+    when 'b' then 'OK b'
+    else 'N/A'
+    end as col2 from t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select col1,
+  case lower(col1)
+    when 'a' then 'OK a'
+    when 'b' then 'OK b'
+    else 'N/A'
+    end as col2 from t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(col1=[$0], col2=[CASE(=(CAST(LOWER($0)):VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'a'), _UTF-16LE'OK a':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", =(CAST(LOWER($0)):VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'b'), _UTF-16LE'OK b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'N/A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
+  HiveTableScan(table=[[default, t1]], table:alias=[t1])
+
+PREHOOK: query: explain cbo
+select col1,
+  case
+    when lower(col1) = 'a' then 'OK a'
+    when lower(col1) = 'b' then 'OK b'
+    else 'N/A'
+    end as col2 from t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select col1,
+  case
+    when lower(col1) = 'a' then 'OK a'
+    when lower(col1) = 'b' then 'OK b'
+    else 'N/A'
+    end as col2 from t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(col1=[$0], col2=[CASE(=(CAST(LOWER($0)):VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'a'), _UTF-16LE'OK a':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", =(CAST(LOWER($0)):VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'b'), _UTF-16LE'OK b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'N/A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
+  HiveTableScan(table=[[default, t1]], table:alias=[t1])
+
+PREHOOK: query: select col1,
+  case lower(col1)
+    when 'a' then 'OK a'
+    when 'b' then 'OK b'
+    else 'N/A'
+    end as col2 from t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: select col1,
+  case lower(col1)
+    when 'a' then 'OK a'
+    when 'b' then 'OK b'
+    else 'N/A'
+    end as col2 from t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+A  	OK a
+b  	OK b
+c  	N/A
+NULL	N/A

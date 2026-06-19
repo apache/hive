@@ -1,0 +1,19 @@
+PREHOOK: query: CREATE CONNECTOR IF NOT EXISTS derby_auth
+TYPE 'derby'
+#### A masked pattern was here ####
+COMMENT 'test derby connector'
+WITH DCPROPERTIES (
+"hive.sql.dbcp.username"="APP",
+"hive.sql.dbcp.password"="mine")
+PREHOOK: type: CREATEDATACONNECTOR
+PREHOOK: Output: connector:derby_auth
+POSTHOOK: query: CREATE CONNECTOR IF NOT EXISTS derby_auth
+TYPE 'derby'
+#### A masked pattern was here ####
+COMMENT 'test derby connector'
+WITH DCPROPERTIES (
+"hive.sql.dbcp.username"="APP",
+"hive.sql.dbcp.password"="mine")
+POSTHOOK: type: CREATEDATACONNECTOR
+POSTHOOK: Output: connector:derby_auth
+FAILED: HiveAccessControlException Permission denied: Principal [name=hive_test_user, type=USER] does not have following privileges for operation ALTERDATACONNECTOR [[ADMIN PRIVILEGE] on Object [type=DATACONNECTOR, name=derby_auth]]

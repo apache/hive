@@ -1,0 +1,35 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+WARNING: org.apache.hadoop.metrics.jvm.EventCounter is deprecated. Please use org.apache.hadoop.log.metrics.EventCounter in all the log4j.properties files.
+Logging initialized using configuration in jar:file:/Users/daijy/hadoop-1.0.3/tmp/mapred/local/taskTracker/distcache/7168149899505899073_637041239_1133292873/localhost/apps/templeton/hive-0.10.0.tar.gz/hive-0.10.0/lib/hive-common-0.10.0.jar!/hive-log4j.properties
+Hive history file=/tmp/daijy/hive_job_log_daijy_201305091500_862342848.txt
+Total jobs = 1
+Launching Job 1 out of 1
+Number of reduce tasks is set to 0 since there's no reduce operator
+Starting Job = job_201305091437_0012, Tracking URL = http://localhost:50030/jobdetails.jsp?jobid=job_201305091437_0012
+Kill Command = /Users/daijy/hadoop-1.0.3/libexec/../bin/hadoop job  -kill job_201305091437_0012
+Hadoop job information for Stage-1: number of mappers: 0; number of reducers: 0
+2013-05-09 15:01:13,625 Stage-1 map = 0%,  reduce = 0%
+2013-05-09 15:01:19,660 Stage-1 map = 100%,  reduce = 100%
+Ended Job = job_201305091437_0012
+MapReduce Jobs Launched: 
+Job 0:  HDFS Read: 0 HDFS Write: 0 SUCCESS
+Total MapReduce CPU Time Spent: 0 msec
+OK
+Time taken: 26.187 seconds

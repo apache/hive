@@ -1,0 +1,44 @@
+Ln:1 DECLARE state VARCHAR
+Ln:2 DECLARE count INT
+Ln:4 SET state = 'CA'
+Ln:5 SET count = 1
+Ln:7 IF
+Ln:7 IF TRUE executed
+Ln:8 PRINT
+True block - Correct
+Ln:11 IF
+Ln:11 IF TRUE executed
+Ln:12 PRINT
+True block - Correct
+Ln:17 IF
+Ln:17 ELSE executed
+Ln:20 PRINT
+False block - Correct
+Ln:23 IF
+Ln:23 ELSE executed
+Ln:30 PRINT
+False block - Correct
+Ln:33 IF
+Ln:33 ELSE IF executed
+Ln:38 PRINT
+True block - Correct
+Ln:43 PRINT
+IS NOT NULL AND BETWEEN
+Ln:44 IF
+Ln:44 IF TRUE executed
+Ln:45 PRINT
+True block - Correct
+Ln:50 PRINT
+Transact-SQL - Single statement
+Ln:52 IF
+Ln:52 IF TRUE executed
+Ln:53 PRINT
+True block - Correct
+Ln:57 PRINT
+Transact-SQL - BEGIN-END block
+Ln:59 IF
+Ln:59 IF TRUE executed
+Ln:61 PRINT
+True block - Correct
+Ln:62 PRINT
+True block - Correct

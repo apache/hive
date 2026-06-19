@@ -1,0 +1,13 @@
+PREHOOK: query: drop temporary function row_sequence
+PREHOOK: type: DROPFUNCTION
+POSTHOOK: query: drop temporary function row_sequence
+POSTHOOK: type: DROPFUNCTION
+PREHOOK: query: create temporary function row_sequence as 
+'org.apache.hadoop.hive.contrib.udf.UDFRowSequence'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: row_sequence
+POSTHOOK: query: create temporary function row_sequence as 
+'org.apache.hadoop.hive.contrib.udf.UDFRowSequence'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: row_sequence
+FAILED: SemanticException [Error 10084]: Stateful UDF's can only be invoked in the SELECT list

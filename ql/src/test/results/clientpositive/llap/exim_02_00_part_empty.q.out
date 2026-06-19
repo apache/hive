@@ -1,0 +1,109 @@
+PREHOOK: query: create table exim_employee_n9 ( emp_id int comment "employee id") 	
+	comment "employee table"
+	partitioned by (emp_country string comment "two char iso code", emp_state string comment "free text")
+	stored as textfile	
+	tblproperties("creator"="krishna")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@exim_employee_n9
+POSTHOOK: query: create table exim_employee_n9 ( emp_id int comment "employee id") 	
+	comment "employee table"
+	partitioned by (emp_country string comment "two char iso code", emp_state string comment "free text")
+	stored as textfile	
+	tblproperties("creator"="krishna")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@exim_employee_n9
+#### A masked pattern was here ####
+PREHOOK: query: export table exim_employee_n9 to 'ql/test/data/exports/exim_employee'
+PREHOOK: type: EXPORT
+#### A masked pattern was here ####
+POSTHOOK: query: export table exim_employee_n9 to 'ql/test/data/exports/exim_employee'
+POSTHOOK: type: EXPORT
+#### A masked pattern was here ####
+PREHOOK: query: drop table exim_employee_n9
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@exim_employee_n9
+PREHOOK: Output: database:default
+PREHOOK: Output: default@exim_employee_n9
+POSTHOOK: query: drop table exim_employee_n9
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@exim_employee_n9
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@exim_employee_n9
+PREHOOK: query: create database importer
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:importer
+POSTHOOK: query: create database importer
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:importer
+PREHOOK: query: use importer
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:importer
+POSTHOOK: query: use importer
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:importer
+PREHOOK: query: import from 'ql/test/data/exports/exim_employee'
+PREHOOK: type: IMPORT
+#### A masked pattern was here ####
+PREHOOK: Output: database:importer
+POSTHOOK: query: import from 'ql/test/data/exports/exim_employee'
+POSTHOOK: type: IMPORT
+#### A masked pattern was here ####
+POSTHOOK: Output: database:importer
+POSTHOOK: Output: importer@exim_employee_n9
+PREHOOK: query: describe extended exim_employee_n9
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: importer@exim_employee_n9
+POSTHOOK: query: describe extended exim_employee_n9
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: importer@exim_employee_n9
+emp_id              	int                 	employee id         
+emp_country         	string              	two char iso code   
+emp_state           	string              	free text           
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+emp_country         	string              	two char iso code   
+emp_state           	string              	free text           
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: show table extended like exim_employee_n9
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like exim_employee_n9
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:exim_employee_n9
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { i32 emp_id}
+partitioned:true
+partitionColumns:struct partition_columns { string emp_country, string emp_state}
+
+#### A masked pattern was here ####
+PREHOOK: query: select * from exim_employee_n9
+PREHOOK: type: QUERY
+PREHOOK: Input: importer@exim_employee_n9
+#### A masked pattern was here ####
+POSTHOOK: query: select * from exim_employee_n9
+POSTHOOK: type: QUERY
+POSTHOOK: Input: importer@exim_employee_n9
+#### A masked pattern was here ####
+PREHOOK: query: drop table exim_employee_n9
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: importer@exim_employee_n9
+PREHOOK: Output: database:importer
+PREHOOK: Output: importer@exim_employee_n9
+POSTHOOK: query: drop table exim_employee_n9
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: importer@exim_employee_n9
+POSTHOOK: Output: database:importer
+POSTHOOK: Output: importer@exim_employee_n9
+PREHOOK: query: drop database importer
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:importer
+PREHOOK: Output: database:importer
+POSTHOOK: query: drop database importer
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:importer
+POSTHOOK: Output: database:importer

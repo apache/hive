@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10016]: Line 2:38 Argument type mismatch '1': This argument takes only constant STRING, got int

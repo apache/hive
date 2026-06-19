@@ -1,0 +1,121 @@
+PREHOOK: query: DROP TABLE txt_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE txt_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE part_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE part_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE txt_table (id int, value string, year string, month string, day string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@txt_table
+POSTHOOK: query: CREATE TABLE txt_table (id int, value string, year string, month string, day string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@txt_table
+PREHOOK: query: INSERT INTO TABLE txt_table VALUES (1, 'one', '2020', '02', '11')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@txt_table
+POSTHOOK: query: INSERT INTO TABLE txt_table VALUES (1, 'one', '2020', '02', '11')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@txt_table
+POSTHOOK: Lineage: txt_table.day SCRIPT []
+POSTHOOK: Lineage: txt_table.id SCRIPT []
+POSTHOOK: Lineage: txt_table.month SCRIPT []
+POSTHOOK: Lineage: txt_table.value SCRIPT []
+POSTHOOK: Lineage: txt_table.year SCRIPT []
+PREHOOK: query: INSERT INTO TABLE txt_table VALUES (2, 'two', '2019', '03', '12')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@txt_table
+POSTHOOK: query: INSERT INTO TABLE txt_table VALUES (2, 'two', '2019', '03', '12')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@txt_table
+POSTHOOK: Lineage: txt_table.day SCRIPT []
+POSTHOOK: Lineage: txt_table.id SCRIPT []
+POSTHOOK: Lineage: txt_table.month SCRIPT []
+POSTHOOK: Lineage: txt_table.value SCRIPT []
+POSTHOOK: Lineage: txt_table.year SCRIPT []
+PREHOOK: query: INSERT INTO TABLE txt_table VALUES (3, 'three', '2020', '03', '13')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@txt_table
+POSTHOOK: query: INSERT INTO TABLE txt_table VALUES (3, 'three', '2020', '03', '13')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@txt_table
+POSTHOOK: Lineage: txt_table.day SCRIPT []
+POSTHOOK: Lineage: txt_table.id SCRIPT []
+POSTHOOK: Lineage: txt_table.month SCRIPT []
+POSTHOOK: Lineage: txt_table.value SCRIPT []
+POSTHOOK: Lineage: txt_table.year SCRIPT []
+PREHOOK: query: CREATE TABLE part_table (id int, value string) PARTITIONED BY(year string, month string, day string) STORED AS ORC TBLPROPERTIES('transactional'='true','transactional_properties'='insert_only')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@part_table
+POSTHOOK: query: CREATE TABLE part_table (id int, value string) PARTITIONED BY(year string, month string, day string) STORED AS ORC TBLPROPERTIES('transactional'='true','transactional_properties'='insert_only')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@part_table
+PREHOOK: query: INSERT INTO TABLE part_table PARTITION (year, month, day) SELECT id, value, year, month, day FROM txt_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@txt_table
+PREHOOK: Output: default@part_table
+POSTHOOK: query: INSERT INTO TABLE part_table PARTITION (year, month, day) SELECT id, value, year, month, day FROM txt_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@txt_table
+POSTHOOK: Output: default@part_table
+POSTHOOK: Output: default@part_table@year=2019/month=03/day=12
+POSTHOOK: Output: default@part_table@year=2020/month=02/day=11
+POSTHOOK: Output: default@part_table@year=2020/month=03/day=13
+POSTHOOK: Lineage: part_table PARTITION(year=2019,month=03,day=12).id SIMPLE [(txt_table)txt_table.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: part_table PARTITION(year=2019,month=03,day=12).value SIMPLE [(txt_table)txt_table.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: part_table PARTITION(year=2020,month=02,day=11).id SIMPLE [(txt_table)txt_table.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: part_table PARTITION(year=2020,month=02,day=11).value SIMPLE [(txt_table)txt_table.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: part_table PARTITION(year=2020,month=03,day=13).id SIMPLE [(txt_table)txt_table.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: part_table PARTITION(year=2020,month=03,day=13).value SIMPLE [(txt_table)txt_table.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM part_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_table
+PREHOOK: Input: default@part_table@year=2019/month=03/day=12
+PREHOOK: Input: default@part_table@year=2020/month=02/day=11
+PREHOOK: Input: default@part_table@year=2020/month=03/day=13
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM part_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_table
+POSTHOOK: Input: default@part_table@year=2019/month=03/day=12
+POSTHOOK: Input: default@part_table@year=2020/month=02/day=11
+POSTHOOK: Input: default@part_table@year=2020/month=03/day=13
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	one	2020	02	11
+2	two	2019	03	12
+3	three	2020	03	13
+PREHOOK: query: DROP TABLE txt_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@txt_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@txt_table
+POSTHOOK: query: DROP TABLE txt_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@txt_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@txt_table
+PREHOOK: query: DROP TABLE part_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@part_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@part_table
+POSTHOOK: query: DROP TABLE part_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@part_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@part_table

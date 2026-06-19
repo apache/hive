@@ -1,0 +1,3 @@
+FAILED: SemanticException Line 3:7 Invalid column reference '`+++`': Dangling meta character '+' near index 0
++++
+^

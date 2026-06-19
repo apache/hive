@@ -1,0 +1,35 @@
+PREHOOK: query: create table t_cli(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_cli
+POSTHOOK: query: create table t_cli(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_cli
+PREHOOK: query: show grant user hive_test_user on t_cli
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on t_cli
+POSTHOOK: type: SHOW_GRANT
+default	t_cli			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	t_cli			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	t_cli			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	t_cli			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+PREHOOK: query: create view v_cli (i) as select i from t_cli
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@t_cli
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v_cli
+POSTHOOK: query: create view v_cli (i) as select i from t_cli
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@t_cli
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v_cli
+POSTHOOK: Lineage: v_cli.i SIMPLE [(t_cli)t_cli.FieldSchema(name:i, type:int, comment:null), ]
+PREHOOK: query: show grant user hive_test_user on v_cli
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on v_cli
+POSTHOOK: type: SHOW_GRANT
+default	v_cli			hive_test_user	USER	DELETE	true	-1	hive_test_user
+default	v_cli			hive_test_user	USER	INSERT	true	-1	hive_test_user
+default	v_cli			hive_test_user	USER	SELECT	true	-1	hive_test_user
+default	v_cli			hive_test_user	USER	UPDATE	true	-1	hive_test_user

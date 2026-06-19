@@ -1,0 +1,161 @@
+PREHOOK: query: drop table if exists mydim
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists mydim
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists updates_staging_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists updates_staging_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop view if exists updates_staging_view
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: drop view if exists updates_staging_view
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: create table mydim (key int, name string, zip string, is_current boolean)
+clustered by(key) into 3 buckets
+stored as orc tblproperties ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mydim
+POSTHOOK: query: create table mydim (key int, name string, zip string, is_current boolean)
+clustered by(key) into 3 buckets
+stored as orc tblproperties ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mydim
+PREHOOK: query: insert into mydim values
+  (1, 'bob',   '95136', true),
+  (2, 'joe',   '70068', true),
+  (3, 'steve', '22150', true)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@mydim
+POSTHOOK: query: insert into mydim values
+  (1, 'bob',   '95136', true),
+  (2, 'joe',   '70068', true),
+  (3, 'steve', '22150', true)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@mydim
+POSTHOOK: Lineage: mydim.is_current SCRIPT []
+POSTHOOK: Lineage: mydim.key SCRIPT []
+POSTHOOK: Lineage: mydim.name SCRIPT []
+POSTHOOK: Lineage: mydim.zip SCRIPT []
+PREHOOK: query: create table updates_staging_table (ks int, newzip string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@updates_staging_table
+POSTHOOK: query: create table updates_staging_table (ks int, newzip string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@updates_staging_table
+PREHOOK: query: insert into updates_staging_table values (1, 87102), (3, 45220)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@updates_staging_table
+POSTHOOK: query: insert into updates_staging_table values (1, 87102), (3, 45220)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@updates_staging_table
+POSTHOOK: Lineage: updates_staging_table.ks SCRIPT []
+POSTHOOK: Lineage: updates_staging_table.newzip SCRIPT []
+PREHOOK: query: create view updates_staging_view (kv, newzip) as select ks, newzip from updates_staging_table
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@updates_staging_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@updates_staging_view
+POSTHOOK: query: create view updates_staging_view (kv, newzip) as select ks, newzip from updates_staging_table
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@updates_staging_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@updates_staging_view
+POSTHOOK: Lineage: updates_staging_view.kv SIMPLE [(updates_staging_table)updates_staging_table.FieldSchema(name:ks, type:int, comment:null), ]
+POSTHOOK: Lineage: updates_staging_view.newzip SIMPLE [(updates_staging_table)updates_staging_table.FieldSchema(name:newzip, type:string, comment:null), ]
+PREHOOK: query: delete from mydim
+where mydim.key in (select kv from updates_staging_view where kv >=3)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mydim
+PREHOOK: Input: default@updates_staging_table
+PREHOOK: Input: default@updates_staging_view
+PREHOOK: Output: default@mydim
+POSTHOOK: query: delete from mydim
+where mydim.key in (select kv from updates_staging_view where kv >=3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mydim
+POSTHOOK: Input: default@updates_staging_table
+POSTHOOK: Input: default@updates_staging_view
+POSTHOOK: Output: default@mydim
+PREHOOK: query: select * from mydim order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mydim
+#### A masked pattern was here ####
+POSTHOOK: query: select * from mydim order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mydim
+#### A masked pattern was here ####
+1	bob	95136	true
+2	joe	70068	true
+Warning: Shuffle Join MERGEJOIN[42][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+PREHOOK: query: update mydim set is_current = false
+where mydim.key not in(select kv from updates_staging_view)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mydim
+PREHOOK: Input: default@updates_staging_table
+PREHOOK: Input: default@updates_staging_view
+PREHOOK: Output: default@mydim
+PREHOOK: Output: default@mydim
+POSTHOOK: query: update mydim set is_current = false
+where mydim.key not in(select kv from updates_staging_view)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mydim
+POSTHOOK: Input: default@updates_staging_table
+POSTHOOK: Input: default@updates_staging_view
+POSTHOOK: Output: default@mydim
+POSTHOOK: Output: default@mydim
+POSTHOOK: Lineage: mydim.is_current SIMPLE []
+POSTHOOK: Lineage: mydim.key SIMPLE [(mydim)mydim.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: mydim.name SIMPLE [(mydim)mydim.FieldSchema(name:name, type:string, comment:null), ]
+POSTHOOK: Lineage: mydim.zip SIMPLE [(mydim)mydim.FieldSchema(name:zip, type:string, comment:null), ]
+PREHOOK: query: select * from mydim order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mydim
+#### A masked pattern was here ####
+POSTHOOK: query: select * from mydim order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mydim
+#### A masked pattern was here ####
+1	bob	95136	true
+2	joe	70068	false
+PREHOOK: query: update mydim set name = 'Olaf'
+where mydim.key in(select kv from updates_staging_view)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mydim
+PREHOOK: Input: default@updates_staging_table
+PREHOOK: Input: default@updates_staging_view
+PREHOOK: Output: default@mydim
+PREHOOK: Output: default@mydim
+POSTHOOK: query: update mydim set name = 'Olaf'
+where mydim.key in(select kv from updates_staging_view)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mydim
+POSTHOOK: Input: default@updates_staging_table
+POSTHOOK: Input: default@updates_staging_view
+POSTHOOK: Output: default@mydim
+POSTHOOK: Output: default@mydim
+POSTHOOK: Lineage: mydim.is_current SIMPLE [(mydim)mydim.FieldSchema(name:is_current, type:boolean, comment:null), ]
+POSTHOOK: Lineage: mydim.key SIMPLE [(mydim)mydim.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: mydim.name SIMPLE []
+POSTHOOK: Lineage: mydim.zip SIMPLE [(mydim)mydim.FieldSchema(name:zip, type:string, comment:null), ]
+PREHOOK: query: select * from mydim order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mydim
+#### A masked pattern was here ####
+POSTHOOK: query: select * from mydim order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mydim
+#### A masked pattern was here ####
+1	Olaf	95136	true
+2	joe	70068	false

@@ -1,0 +1,15 @@
+PREHOOK: query: DESCRIBE FUNCTION ln
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION ln
+POSTHOOK: type: DESCFUNCTION
+ln(x) - Returns the natural logarithm of x
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED ln
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED ln
+POSTHOOK: type: DESCFUNCTION
+ln(x) - Returns the natural logarithm of x
+Example:
+  > SELECT ln(1) FROM src LIMIT 1;
+  0
+Function class:org.apache.hadoop.hive.ql.udf.UDFLn
+Function type:BUILTIN

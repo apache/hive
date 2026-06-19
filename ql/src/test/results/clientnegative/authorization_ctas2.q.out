@@ -1,0 +1,27 @@
+PREHOOK: query: create database ctas_auth
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:ctas_auth
+POSTHOOK: query: create database ctas_auth
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:ctas_auth
+PREHOOK: query: create table t1(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: use ctas_auth
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:ctas_auth
+POSTHOOK: query: use ctas_auth
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:ctas_auth
+PREHOOK: query: show tables
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:ctas_auth
+POSTHOOK: query: show tables
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:ctas_auth
+FAILED: HiveAccessControlException Permission denied: Principal [name=user_unauth, type=USER] does not have following privileges for operation CREATETABLE_AS_SELECT [[OBJECT OWNERSHIP] on Object [type=DATABASE, name=ctas_auth]]

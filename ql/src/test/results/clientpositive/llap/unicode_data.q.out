@@ -1,0 +1,113 @@
+PREHOOK: query: create database unicode_data_db
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:unicode_data_db
+POSTHOOK: query: create database unicode_data_db
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:unicode_data_db
+PREHOOK: query: use unicode_data_db
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:unicode_data_db
+POSTHOOK: query: use unicode_data_db
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:unicode_data_db
+PREHOOK: query: create table t_test (name string, value int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:unicode_data_db
+PREHOOK: Output: unicode_data_db@t_test
+POSTHOOK: query: create table t_test (name string, value int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:unicode_data_db
+POSTHOOK: Output: unicode_data_db@t_test
+PREHOOK: query: insert into table t_test VALUES ('李四', 100),('ちぱっち', 200)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: unicode_data_db@t_test
+POSTHOOK: query: insert into table t_test VALUES ('李四', 100),('ちぱっち', 200)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: unicode_data_db@t_test
+POSTHOOK: Lineage: t_test.name SCRIPT []
+POSTHOOK: Lineage: t_test.value SCRIPT []
+PREHOOK: query: select  name, value from t_test
+PREHOOK: type: QUERY
+PREHOOK: Input: unicode_data_db@t_test
+#### A masked pattern was here ####
+POSTHOOK: query: select  name, value from t_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: unicode_data_db@t_test
+#### A masked pattern was here ####
+李四	100
+ちぱっち	200
+PREHOOK: query: select name, value from t_test where name='李四'
+PREHOOK: type: QUERY
+PREHOOK: Input: unicode_data_db@t_test
+#### A masked pattern was here ####
+POSTHOOK: query: select name, value from t_test where name='李四'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: unicode_data_db@t_test
+#### A masked pattern was here ####
+李四	100
+PREHOOK: query: create view t_view_test as select value from t_test where name='李四'
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: unicode_data_db@t_test
+PREHOOK: Output: database:unicode_data_db
+PREHOOK: Output: unicode_data_db@t_view_test
+POSTHOOK: query: create view t_view_test as select value from t_test where name='李四'
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: unicode_data_db@t_test
+POSTHOOK: Output: database:unicode_data_db
+POSTHOOK: Output: unicode_data_db@t_view_test
+POSTHOOK: Lineage: t_view_test.value SIMPLE [(t_test)t_test.FieldSchema(name:value, type:int, comment:null), ]
+PREHOOK: query: explain select * from t_view_test
+PREHOOK: type: QUERY
+PREHOOK: Input: unicode_data_db@t_test
+PREHOOK: Input: unicode_data_db@t_view_test
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from t_view_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: unicode_data_db@t_test
+POSTHOOK: Input: unicode_data_db@t_view_test
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: t_test
+          filterExpr: (name = '李四') (type: boolean)
+          properties:
+            insideView TRUE
+          Filter Operator
+            predicate: (name = '李四') (type: boolean)
+            Select Operator
+              expressions: value (type: int)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: select  * from t_view_test
+PREHOOK: type: QUERY
+PREHOOK: Input: unicode_data_db@t_test
+PREHOOK: Input: unicode_data_db@t_view_test
+#### A masked pattern was here ####
+POSTHOOK: query: select  * from t_view_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: unicode_data_db@t_test
+POSTHOOK: Input: unicode_data_db@t_view_test
+#### A masked pattern was here ####
+100
+PREHOOK: query: drop database unicode_data_db cascade
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:unicode_data_db
+PREHOOK: Output: database:unicode_data_db
+PREHOOK: Output: unicode_data_db@t_test
+PREHOOK: Output: unicode_data_db@t_view_test
+POSTHOOK: query: drop database unicode_data_db cascade
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:unicode_data_db
+POSTHOOK: Output: database:unicode_data_db
+POSTHOOK: Output: unicode_data_db@t_test
+POSTHOOK: Output: unicode_data_db@t_view_test

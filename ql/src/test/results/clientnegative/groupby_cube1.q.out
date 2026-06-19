@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10209]: Grouping sets aggregations (with rollups or cubes) are not allowed if map-side  aggregation is turned off. Set hive.map.aggr=true if you want to use grouping sets

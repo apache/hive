@@ -1,0 +1,447 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
+import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationDesc;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
+import org.apache.hadoop.hive.ql.util.TimestampUtils;
+
+import com.google.common.base.Preconditions;
+
+/**
+ * Generated from template VectorUDAFAvg.txt.
+ */
+@Description(name = "avg",
+    value = "_FUNC_(expr) - Returns the average value of expr (vectorized, type: timestamp)")
+public class <ClassName> extends VectorAggregateExpression {
+
+    private static final long serialVersionUID = 1L;
+
+    /** class for storing the current aggregate value. */
+    static class Aggregation implements AggregationBuffer {
+
+      private static final long serialVersionUID = 1L;
+
+      transient private double sum;
+      transient private long count;
+
+      public void avgValue(double value) {
+        sum += value;
+        count++;
+      }
+
+      @Override
+      public int getVariableSize() {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public void reset() {
+        sum = 0;
+        count = 0L;
+      }
+    }
+
+  // This constructor is used to momentarily create the object so match can be called.
+  public <ClassName>() {
+    super();
+  }
+
+  public <ClassName>(VectorAggregationDesc vecAggrDesc) {
+    super(vecAggrDesc);
+#IF PARTIAL1
+      Preconditions.checkState(this.mode == GenericUDAFEvaluator.Mode.PARTIAL1);
+#ENDIF PARTIAL1
+#IF COMPLETE
+      Preconditions.checkState(this.mode == GenericUDAFEvaluator.Mode.COMPLETE);
+#ENDIF COMPLETE
+    init();
+  }
+
+    private void init() {
+    }
+
+    private Aggregation getCurrentAggregationBuffer(
+        VectorAggregationBufferRow[] aggregationBufferSets,
+        int bufferIndex,
+        int row) {
+      VectorAggregationBufferRow mySet = aggregationBufferSets[row];
+      Aggregation myagg = (Aggregation) mySet.getAggregationBuffer(bufferIndex);
+      return myagg;
+    }
+
+    @Override
+    public void aggregateInputSelection(
+      VectorAggregationBufferRow[] aggregationBufferSets,
+      int bufferIndex,
+      VectorizedRowBatch batch) throws HiveException {
+
+      int batchSize = batch.size;
+
+      if (batchSize == 0) {
+        return;
+      }
+
+      inputExpression.evaluate(batch);
+
+      TimestampColumnVector inputColVector =
+          (TimestampColumnVector)batch.cols[
+              this.inputExpression.getOutputColumnNum()];
+
+      if (inputColVector.noNulls) {
+        if (inputColVector.isRepeating) {
+          iterateNoNullsRepeatingWithAggregationSelection(
+            aggregationBufferSets, bufferIndex,
+            inputColVector.getDouble(0),
+            batchSize);
+        } else {
+          if (batch.selectedInUse) {
+            iterateNoNullsSelectionWithAggregationSelection(
+              aggregationBufferSets, bufferIndex,
+              inputColVector, batch.selected, batchSize);
+          } else {
+            iterateNoNullsWithAggregationSelection(
+              aggregationBufferSets, bufferIndex,
+              inputColVector, batchSize);
+          }
+        }
+      } else {
+        if (inputColVector.isRepeating) {
+          iterateHasNullsRepeatingWithAggregationSelection(
+            aggregationBufferSets, bufferIndex,
+            inputColVector.getDouble(0), batchSize, inputColVector.isNull);
+        } else {
+          if (batch.selectedInUse) {
+            iterateHasNullsSelectionWithAggregationSelection(
+              aggregationBufferSets, bufferIndex,
+              inputColVector, batchSize, batch.selected, inputColVector.isNull);
+          } else {
+            iterateHasNullsWithAggregationSelection(
+              aggregationBufferSets, bufferIndex,
+              inputColVector, batchSize, inputColVector.isNull);
+          }
+        }
+      }
+    }
+
+    private void iterateNoNullsRepeatingWithAggregationSelection(
+      VectorAggregationBufferRow[] aggregationBufferSets,
+      int bufferIndex,
+      double value,
+      int batchSize) {
+
+      for (int i=0; i < batchSize; ++i) {
+        Aggregation myagg = getCurrentAggregationBuffer(
+          aggregationBufferSets,
+          bufferIndex,
+          i);
+        myagg.avgValue(value);
+      }
+    }
+
+    private void iterateNoNullsSelectionWithAggregationSelection(
+      VectorAggregationBufferRow[] aggregationBufferSets,
+      int bufferIndex,
+      TimestampColumnVector inputColVector,
+      int[] selection,
+      int batchSize) {
+
+      for (int i=0; i < batchSize; ++i) {
+        Aggregation myagg = getCurrentAggregationBuffer(
+          aggregationBufferSets,
+          bufferIndex,
+          i);
+        myagg.avgValue(
+            inputColVector.getDouble(selection[i]));
+      }
+    }
+
+    private void iterateNoNullsWithAggregationSelection(
+      VectorAggregationBufferRow[] aggregationBufferSets,
+      int bufferIndex,
+      TimestampColumnVector inputColVector,
+      int batchSize) {
+      for (int i=0; i < batchSize; ++i) {
+        Aggregation myagg = getCurrentAggregationBuffer(
+          aggregationBufferSets,
+          bufferIndex,
+          i);
+        myagg.avgValue(inputColVector.getDouble(i));
+      }
+    }
+
+    private void iterateHasNullsRepeatingWithAggregationSelection(
+      VectorAggregationBufferRow[] aggregationBufferSets,
+      int bufferIndex,
+      double value,
+      int batchSize,
+      boolean[] isNull) {
+
+      if (isNull[0]) {
+        return;
+      }
+
+      for (int i=0; i < batchSize; ++i) {
+        Aggregation myagg = getCurrentAggregationBuffer(
+          aggregationBufferSets,
+          bufferIndex,
+          i);
+        myagg.avgValue(value);
+      }
+    }
+
+    private void iterateHasNullsSelectionWithAggregationSelection(
+      VectorAggregationBufferRow[] aggregationBufferSets,
+      int bufferIndex,
+      TimestampColumnVector inputColVector,
+      int batchSize,
+      int[] selection,
+      boolean[] isNull) {
+
+      for (int j=0; j < batchSize; ++j) {
+        int i = selection[j];
+        if (!isNull[i]) {
+          Aggregation myagg = getCurrentAggregationBuffer(
+            aggregationBufferSets,
+            bufferIndex,
+            j);
+          myagg.avgValue(inputColVector.getDouble(i));
+        }
+      }
+   }
+
+    private void iterateHasNullsWithAggregationSelection(
+      VectorAggregationBufferRow[] aggregationBufferSets,
+      int bufferIndex,
+      TimestampColumnVector inputColVector,
+      int batchSize,
+      boolean[] isNull) {
+
+      for (int i=0; i < batchSize; ++i) {
+        if (!isNull[i]) {
+          Aggregation myagg = getCurrentAggregationBuffer(
+            aggregationBufferSets,
+            bufferIndex,
+            i);
+          myagg.avgValue(inputColVector.getDouble(i));
+        }
+      }
+   }
+
+    @Override
+    public void aggregateInput(AggregationBuffer agg, VectorizedRowBatch batch)
+        throws HiveException {
+
+        inputExpression.evaluate(batch);
+
+        TimestampColumnVector inputColVector =
+            (TimestampColumnVector) batch.cols[
+                this.inputExpression.getOutputColumnNum()];
+
+        int batchSize = batch.size;
+
+        if (batchSize == 0) {
+          return;
+        }
+
+        Aggregation myagg = (Aggregation)agg;
+
+        if (inputColVector.isRepeating) {
+          if (inputColVector.noNulls || !inputColVector.isNull[0]) {
+            myagg.sum += inputColVector.getDouble(0)*batchSize;
+            myagg.count += batchSize;
+          }
+          return;
+        }
+
+        if (!batch.selectedInUse && inputColVector.noNulls) {
+          iterateNoSelectionNoNulls(myagg, inputColVector, batchSize);
+        }
+        else if (!batch.selectedInUse) {
+          iterateNoSelectionHasNulls(myagg, inputColVector, batchSize, inputColVector.isNull);
+        }
+        else if (inputColVector.noNulls){
+          iterateSelectionNoNulls(myagg, inputColVector, batchSize, batch.selected);
+        }
+        else {
+          iterateSelectionHasNulls(myagg, inputColVector, batchSize, inputColVector.isNull, batch.selected);
+        }
+    }
+
+    private void iterateSelectionHasNulls(
+        Aggregation myagg,
+        TimestampColumnVector inputColVector,
+        int batchSize,
+        boolean[] isNull,
+        int[] selected) {
+
+      for (int j=0; j< batchSize; ++j) {
+        int i = selected[j];
+        if (!isNull[i]) {
+          myagg.sum += inputColVector.getDouble(i);
+          myagg.count += 1;
+        }
+      }
+    }
+
+    private void iterateSelectionNoNulls(
+        Aggregation myagg,
+        TimestampColumnVector inputColVector,
+        int batchSize,
+        int[] selected) {
+
+      for (int i=0; i< batchSize; ++i) {
+        myagg.sum += inputColVector.getDouble(selected[i]);
+        myagg.count += 1;
+      }
+    }
+
+    private void iterateNoSelectionHasNulls(
+        Aggregation myagg,
+        TimestampColumnVector inputColVector,
+        int batchSize,
+        boolean[] isNull) {
+
+      for(int i=0;i<batchSize;++i) {
+        if (!isNull[i]) {
+          myagg.sum += inputColVector.getDouble(i);
+          myagg.count += 1;
+        }
+      }
+    }
+
+    private void iterateNoSelectionNoNulls(
+        Aggregation myagg,
+        TimestampColumnVector inputColVector,
+        int batchSize) {
+
+      for (int i=0;i<batchSize;++i) {
+        myagg.sum += inputColVector.getDouble(i);
+        myagg.count += 1;
+      }
+    }
+
+    @Override
+    public AggregationBuffer getNewAggregationBuffer() throws HiveException {
+      return new Aggregation();
+    }
+
+    @Override
+    public void reset(AggregationBuffer agg) throws HiveException {
+      Aggregation myAgg = (Aggregation) agg;
+      myAgg.reset();
+    }
+
+  @Override
+  public long getAggregationBufferFixedSize() {
+    JavaDataModel model = JavaDataModel.get();
+    return JavaDataModel.alignUp(
+      model.object() +
+      model.primitive2() * 2,
+      model.memoryAlign());
+  }
+
+  @Override
+  public boolean matches(String name, ColumnVector.Type inputColVectorType,
+      ColumnVector.Type outputColVectorType, Mode mode) {
+
+    /*
+     * Average input is TIMESTAMP.
+#IF PARTIAL1
+     * Output is STRUCT.
+     *
+     * Mode PARTIAL1.
+#ENDIF PARTIAL1
+#IF COMPLETE
+     * Output is DOUBLE.
+     *
+     * Mode COMPLETE.
+#ENDIF COMPLETE
+     */
+    return
+        name.equals("avg") &&
+        inputColVectorType == ColumnVector.Type.TIMESTAMP &&
+#IF PARTIAL1
+        outputColVectorType == ColumnVector.Type.STRUCT &&
+        mode == Mode.PARTIAL1;
+#ENDIF PARTIAL1
+#IF COMPLETE
+        outputColVectorType == ColumnVector.Type.DOUBLE &&
+        mode == Mode.COMPLETE;
+#ENDIF COMPLETE
+  }
+
+  @Override
+  public void assignRowColumn(VectorizedRowBatch batch, int batchIndex, int columnNum,
+      AggregationBuffer agg) throws HiveException {
+
+    Aggregation myagg = (Aggregation) agg;
+
+#IF PARTIAL1
+    StructColumnVector outputColVector = (StructColumnVector) batch.cols[columnNum];
+
+    // For AVG, we do not mark NULL if all inputs were NULL.
+    outputColVector.isNull[batchIndex] = false;
+
+    ColumnVector[] fields = outputColVector.fields;
+    fields[AVERAGE_COUNT_FIELD_INDEX].isNull[batchIndex] = false;
+    ((LongColumnVector) fields[AVERAGE_COUNT_FIELD_INDEX]).vector[batchIndex] = myagg.count;
+    fields[AVERAGE_SUM_FIELD_INDEX].isNull[batchIndex] = false;
+    ((DoubleColumnVector) fields[AVERAGE_SUM_FIELD_INDEX]).vector[batchIndex] = myagg.sum;
+
+    // NULL out useless source field.
+    ColumnVector sourceColVector = (ColumnVector) fields[AVERAGE_SOURCE_FIELD_INDEX];
+    sourceColVector.isRepeating = true;
+    sourceColVector.noNulls = false;
+    sourceColVector.isNull[0] = true;
+
+#ENDIF PARTIAL1
+#IF COMPLETE
+    DoubleColumnVector outputColVector = (DoubleColumnVector) batch.cols[columnNum];
+
+    if (myagg.count == 0) {
+      outputColVector.noNulls = false;
+      outputColVector.isNull[batchIndex] = true;
+      return;
+    }
+    outputColVector.isNull[batchIndex] = false;
+
+    outputColVector.vector[batchIndex] = myagg.sum / myagg.count;
+#ENDIF COMPLETE
+  }
+}
+

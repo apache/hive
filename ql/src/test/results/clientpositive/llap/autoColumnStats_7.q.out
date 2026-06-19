@@ -1,0 +1,216 @@
+PREHOOK: query: CREATE TABLE dest_g2_n5(key STRING, c1 INT, c2 STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest_g2_n5
+POSTHOOK: query: CREATE TABLE dest_g2_n5(key STRING, c1 INT, c2 STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest_g2_n5
+PREHOOK: query: CREATE TEMPORARY TABLE src_temp AS SELECT * FROM src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_temp
+POSTHOOK: query: CREATE TEMPORARY TABLE src_temp AS SELECT * FROM src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_temp
+POSTHOOK: Lineage: src_temp.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_temp.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain FROM src_temp
+INSERT OVERWRITE TABLE dest_g2_n5 SELECT substr(src_temp.key,1,1), count(DISTINCT substr(src_temp.value,5)), concat(substr(src_temp.key,1,1),sum(substr(src_temp.value,5))) GROUP BY substr(src_temp.key,1,1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_temp
+PREHOOK: Output: default@dest_g2_n5
+POSTHOOK: query: explain FROM src_temp
+INSERT OVERWRITE TABLE dest_g2_n5 SELECT substr(src_temp.key,1,1), count(DISTINCT substr(src_temp.value,5)), concat(substr(src_temp.key,1,1),sum(substr(src_temp.value,5))) GROUP BY substr(src_temp.key,1,1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_temp
+POSTHOOK: Output: default@dest_g2_n5
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
+        Reducer 5 <- Reducer 4 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src_temp
+                  Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: substr(key, 1, 1) (type: string), substr(value, 5) (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string), _col1 (type: string)
+                      null sort order: zz
+                      sort order: ++
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(DISTINCT KEY._col1:0._col0), sum(KEY._col1:0._col0)
+                keys: KEY._col0 (type: string)
+                mode: partial1
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint), _col2 (type: double)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0), sum(VALUE._col1)
+                keys: KEY._col0 (type: string)
+                mode: final
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 250 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), UDFToInteger(_col1) (type: int), concat(_col0, _col2) (type: string)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 250 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 250 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.dest_g2_n5
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: int), _col2 (type: string)
+                    outputColumnNames: key, c1, c2
+                    Statistics: Num rows: 250 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Map-reduce partition columns: rand() (type: double)
+                      Statistics: Num rows: 250 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: length(key) (type: int), COALESCE(length(key),0) (type: int), key (type: string), c1 (type: int), length(c2) (type: int), COALESCE(length(c2),0) (type: int), c2 (type: string)
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(1), count(VALUE._col3), compute_bit_vector_hll(VALUE._col3), min(VALUE._col4), max(VALUE._col4), count(VALUE._col4), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col7)
+                mode: partial1
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                Statistics: Num rows: 1 Data size: 1000 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 1000 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary), _col9 (type: int), _col10 (type: struct<count:bigint,sum:double,input:int>), _col11 (type: bigint), _col12 (type: binary)
+        Reducer 5 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), max(VALUE._col9), avg(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                mode: final
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                Statistics: Num rows: 1 Data size: 1000 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), UDFToLong(_col5) (type: bigint), UDFToLong(_col6) (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col9,0)) (type: bigint), COALESCE(_col10,0) (type: double), (_col2 - _col11) (type: bigint), COALESCE(ndv_compute_bit_vector(_col12),0) (type: bigint), _col12 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
+                  Statistics: Num rows: 1 Data size: 1000 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 1000 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest_g2_n5
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, c1, c2
+          Column Types: string, int, string
+          Table: default.dest_g2_n5
+
+PREHOOK: query: FROM src_temp
+INSERT OVERWRITE TABLE dest_g2_n5 SELECT substr(src_temp.key,1,1), count(DISTINCT substr(src_temp.value,5)), concat(substr(src_temp.key,1,1),sum(substr(src_temp.value,5))) GROUP BY substr(src_temp.key,1,1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_temp
+PREHOOK: Output: default@dest_g2_n5
+POSTHOOK: query: FROM src_temp
+INSERT OVERWRITE TABLE dest_g2_n5 SELECT substr(src_temp.key,1,1), count(DISTINCT substr(src_temp.value,5)), concat(substr(src_temp.key,1,1),sum(substr(src_temp.value,5))) GROUP BY substr(src_temp.key,1,1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_temp
+POSTHOOK: Output: default@dest_g2_n5
+POSTHOOK: Lineage: dest_g2_n5.c1 EXPRESSION [(src_temp)src_temp.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest_g2_n5.c2 EXPRESSION [(src_temp)src_temp.FieldSchema(name:key, type:string, comment:null), (src_temp)src_temp.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: dest_g2_n5.key EXPRESSION [(src_temp)src_temp.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT dest_g2_n5.* FROM dest_g2_n5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest_g2_n5
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT dest_g2_n5.* FROM dest_g2_n5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest_g2_n5
+#### A masked pattern was here ####
+1	71	116414.0
+3	62	332004.0
+4	74	452763.0
+6	5	6398.0
+0	1	00.0
+2	69	225571.0
+5	6	5397.0
+7	6	7735.0
+8	8	8762.0
+9	7	91047.0
+PREHOOK: query: DROP TABLE dest_g2_n5
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@dest_g2_n5
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest_g2_n5
+POSTHOOK: query: DROP TABLE dest_g2_n5
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@dest_g2_n5
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest_g2_n5
+PREHOOK: query: DROP TABLE src_temp
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src_temp
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_temp
+POSTHOOK: query: DROP TABLE src_temp
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src_temp
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_temp

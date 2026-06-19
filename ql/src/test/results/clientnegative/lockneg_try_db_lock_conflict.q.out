@@ -1,0 +1,20 @@
+PREHOOK: query: create database lockneg4
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:lockneg4
+POSTHOOK: query: create database lockneg4
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:lockneg4
+PREHOOK: query: lock database lockneg4 exclusive
+PREHOOK: type: LOCKDATABASE
+PREHOOK: Input: database:lockneg4
+PREHOOK: Output: database:lockneg4
+POSTHOOK: query: lock database lockneg4 exclusive
+POSTHOOK: type: LOCKDATABASE
+POSTHOOK: Input: database:lockneg4
+POSTHOOK: Output: database:lockneg4
+PREHOOK: query: lock database lockneg4 shared
+PREHOOK: type: LOCKDATABASE
+PREHOOK: Input: database:lockneg4
+PREHOOK: Output: database:lockneg4
+Unable to acquire EXPLICIT, SHARED lock lockneg4 after 1 attempts.
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask

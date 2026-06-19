@@ -1,0 +1,27 @@
+PREHOOK: query: CREATE VIEW tmp_copy_src AS SELECT * FROM src
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmp_copy_src
+POSTHOOK: query: CREATE VIEW tmp_copy_src AS SELECT * FROM src
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmp_copy_src
+POSTHOOK: Lineage: tmp_copy_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_copy_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SHOW CREATE TABLE tmp_copy_src
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@tmp_copy_src
+POSTHOOK: query: SHOW CREATE TABLE tmp_copy_src
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@tmp_copy_src
+CREATE VIEW `tmp_copy_src` AS SELECT `src`.`key`, `src`.`value` FROM `default`.`src`
+PREHOOK: query: DROP VIEW tmp_copy_src
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@tmp_copy_src
+PREHOOK: Output: default@tmp_copy_src
+POSTHOOK: query: DROP VIEW tmp_copy_src
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@tmp_copy_src
+POSTHOOK: Output: default@tmp_copy_src

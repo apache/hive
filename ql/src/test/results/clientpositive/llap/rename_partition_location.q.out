@@ -1,0 +1,77 @@
+PREHOOK: query: CREATE TABLE rename_partition_table_n0 (key STRING, value STRING) PARTITIONED BY (part STRING)
+STORED AS RCFILE
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@rename_partition_table_n0
+POSTHOOK: query: CREATE TABLE rename_partition_table_n0 (key STRING, value STRING) PARTITIONED BY (part STRING)
+STORED AS RCFILE
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@rename_partition_table_n0
+PREHOOK: query: INSERT OVERWRITE TABLE rename_partition_table_n0 PARTITION (part = '1') SELECT * FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@rename_partition_table_n0@part=1
+POSTHOOK: query: INSERT OVERWRITE TABLE rename_partition_table_n0 PARTITION (part = '1') SELECT * FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@rename_partition_table_n0@part=1
+POSTHOOK: Lineage: rename_partition_table_n0 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: rename_partition_table_n0 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTABLE_LOCATION
+PREHOOK: Input: default@rename_partition_table_n0
+PREHOOK: Output: default@rename_partition_table_n0
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTABLE_LOCATION
+POSTHOOK: Input: default@rename_partition_table_n0
+POSTHOOK: Output: default@rename_partition_table_n0
+#### A masked pattern was here ####
+PREHOOK: query: ALTER TABLE rename_partition_table_n0 PARTITION (part = '1') RENAME TO PARTITION (part = '2')
+PREHOOK: type: ALTERTABLE_RENAMEPART
+PREHOOK: Input: default@rename_partition_table_n0
+PREHOOK: Output: default@rename_partition_table_n0@part=1
+POSTHOOK: query: ALTER TABLE rename_partition_table_n0 PARTITION (part = '1') RENAME TO PARTITION (part = '2')
+POSTHOOK: type: ALTERTABLE_RENAMEPART
+POSTHOOK: Input: default@rename_partition_table_n0
+POSTHOOK: Input: default@rename_partition_table_n0@part=1
+POSTHOOK: Output: default@rename_partition_table_n0@part=1
+POSTHOOK: Output: default@rename_partition_table_n0@part=2
+PREHOOK: query: SELECT count(*) FROM rename_partition_table_n0 where part = '2'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@rename_partition_table_n0
+#### A masked pattern was here ####
+500
+PREHOOK: query: CREATE TABLE rename_partition_table_2 (key STRING, value STRING) PARTITIONED BY (part STRING)
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@rename_partition_table_2
+PREHOOK: query: INSERT OVERWRITE TABLE rename_partition_table_2 PARTITION (part = '1') SELECT * FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@rename_partition_table_2@part=1
+PREHOOK: query: ALTER TABLE rename_partition_table_2 PARTITION (part = '1') RENAME TO PARTITION (part = '2')
+PREHOOK: type: ALTERTABLE_RENAMEPART
+PREHOOK: Input: default@rename_partition_table_2
+PREHOOK: Output: default@rename_partition_table_2@part=1
+PREHOOK: query: SELECT count(*) FROM rename_partition_table_2 where part = '2'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@rename_partition_table_2
+#### A masked pattern was here ####
+500
+PREHOOK: query: DROP TABLE rename_partition_table_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@rename_partition_table_n0
+PREHOOK: Output: database:default
+PREHOOK: Output: default@rename_partition_table_n0
+PREHOOK: query: DROP TABLE rename_partition_table_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@rename_partition_table_2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@rename_partition_table_2

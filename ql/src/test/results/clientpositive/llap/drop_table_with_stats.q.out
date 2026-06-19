@@ -1,0 +1,256 @@
+PREHOOK: query: CREATE DATABASE IF NOT EXISTS tblstatsdb1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:tblstatsdb1
+POSTHOOK: query: CREATE DATABASE IF NOT EXISTS tblstatsdb1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:tblstatsdb1
+PREHOOK: query: USE tblstatsdb1
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:tblstatsdb1
+POSTHOOK: query: USE tblstatsdb1
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:tblstatsdb1
+PREHOOK: query: CREATE TABLE IF NOT EXISTS testtable (key STRING, value STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:tblstatsdb1
+PREHOOK: Output: tblstatsdb1@testtable
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS testtable (key STRING, value STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:tblstatsdb1
+POSTHOOK: Output: tblstatsdb1@testtable
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE testtable
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: tblstatsdb1@testtable
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE testtable
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: tblstatsdb1@testtable
+PREHOOK: query: ANALYZE TABLE testtable COMPUTE STATISTICS FOR COLUMNS key
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: tblstatsdb1@testtable
+#### A masked pattern was here ####
+PREHOOK: Output: tblstatsdb1@testtable
+POSTHOOK: query: ANALYZE TABLE testtable COMPUTE STATISTICS FOR COLUMNS key
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: tblstatsdb1@testtable
+#### A masked pattern was here ####
+POSTHOOK: Output: tblstatsdb1@testtable
+PREHOOK: query: CREATE TABLE IF NOT EXISTS TestTable1_n0 (key STRING, value STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:tblstatsdb1
+PREHOOK: Output: tblstatsdb1@TestTable1_n0
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS TestTable1_n0 (key STRING, value STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:tblstatsdb1
+POSTHOOK: Output: tblstatsdb1@TestTable1_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TestTable1_n0
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: tblstatsdb1@testtable1_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TestTable1_n0
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: tblstatsdb1@testtable1_n0
+PREHOOK: query: ANALYZE TABLE TestTable1_n0 COMPUTE STATISTICS FOR COLUMNS key
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: tblstatsdb1@testtable1_n0
+#### A masked pattern was here ####
+PREHOOK: Output: tblstatsdb1@testtable1_n0
+POSTHOOK: query: ANALYZE TABLE TestTable1_n0 COMPUTE STATISTICS FOR COLUMNS key
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: tblstatsdb1@testtable1_n0
+#### A masked pattern was here ####
+POSTHOOK: Output: tblstatsdb1@testtable1_n0
+PREHOOK: query: CREATE TABLE IF NOT EXISTS TESTTABLE2_n0 (key STRING, value STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:tblstatsdb1
+PREHOOK: Output: tblstatsdb1@TESTTABLE2_n0
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS TESTTABLE2_n0 (key STRING, value STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:tblstatsdb1
+POSTHOOK: Output: tblstatsdb1@TESTTABLE2_n0
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TESTTABLE2_n0
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: tblstatsdb1@testtable2_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TESTTABLE2_n0
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: tblstatsdb1@testtable2_n0
+PREHOOK: query: ANALYZE TABLE TESTTABLE2_n0 COMPUTE STATISTICS FOR COLUMNS key
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: tblstatsdb1@testtable2_n0
+#### A masked pattern was here ####
+PREHOOK: Output: tblstatsdb1@testtable2_n0
+POSTHOOK: query: ANALYZE TABLE TESTTABLE2_n0 COMPUTE STATISTICS FOR COLUMNS key
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: tblstatsdb1@testtable2_n0
+#### A masked pattern was here ####
+POSTHOOK: Output: tblstatsdb1@testtable2_n0
+PREHOOK: query: DROP TABLE tblstatsdb1.testtable
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: tblstatsdb1@testtable
+PREHOOK: Output: database:tblstatsdb1
+PREHOOK: Output: tblstatsdb1@testtable
+POSTHOOK: query: DROP TABLE tblstatsdb1.testtable
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: tblstatsdb1@testtable
+POSTHOOK: Output: database:tblstatsdb1
+POSTHOOK: Output: tblstatsdb1@testtable
+PREHOOK: query: DROP TABLE tblstatsdb1.TestTable1_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: tblstatsdb1@testtable1_n0
+PREHOOK: Output: database:tblstatsdb1
+PREHOOK: Output: tblstatsdb1@testtable1_n0
+POSTHOOK: query: DROP TABLE tblstatsdb1.TestTable1_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: tblstatsdb1@testtable1_n0
+POSTHOOK: Output: database:tblstatsdb1
+POSTHOOK: Output: tblstatsdb1@testtable1_n0
+PREHOOK: query: DROP TABLE tblstatsdb1.TESTTABLE2_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: tblstatsdb1@testtable2_n0
+PREHOOK: Output: database:tblstatsdb1
+PREHOOK: Output: tblstatsdb1@testtable2_n0
+POSTHOOK: query: DROP TABLE tblstatsdb1.TESTTABLE2_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: tblstatsdb1@testtable2_n0
+POSTHOOK: Output: database:tblstatsdb1
+POSTHOOK: Output: tblstatsdb1@testtable2_n0
+PREHOOK: query: DROP DATABASE tblstatsdb1
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:tblstatsdb1
+PREHOOK: Output: database:tblstatsdb1
+POSTHOOK: query: DROP DATABASE tblstatsdb1
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:tblstatsdb1
+POSTHOOK: Output: database:tblstatsdb1
+PREHOOK: query: CREATE DATABASE IF NOT EXISTS TBLSTATSDB2
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:TBLSTATSDB2
+POSTHOOK: query: CREATE DATABASE IF NOT EXISTS TBLSTATSDB2
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:TBLSTATSDB2
+PREHOOK: query: USE TBLSTATSDB2
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:tblstatsdb2
+POSTHOOK: query: USE TBLSTATSDB2
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:tblstatsdb2
+PREHOOK: query: CREATE TABLE IF NOT EXISTS testtable (key STRING, value STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: TBLSTATSDB2@testtable
+PREHOOK: Output: database:tblstatsdb2
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS testtable (key STRING, value STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: TBLSTATSDB2@testtable
+POSTHOOK: Output: database:tblstatsdb2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE testtable
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: tblstatsdb2@testtable
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE testtable
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: tblstatsdb2@testtable
+PREHOOK: query: ANALYZE TABLE testtable COMPUTE STATISTICS FOR COLUMNS key
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: tblstatsdb2@testtable
+#### A masked pattern was here ####
+PREHOOK: Output: tblstatsdb2@testtable
+POSTHOOK: query: ANALYZE TABLE testtable COMPUTE STATISTICS FOR COLUMNS key
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: tblstatsdb2@testtable
+#### A masked pattern was here ####
+POSTHOOK: Output: tblstatsdb2@testtable
+PREHOOK: query: CREATE TABLE IF NOT EXISTS TestTable1_n0 (key STRING, value STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: TBLSTATSDB2@TestTable1_n0
+PREHOOK: Output: database:tblstatsdb2
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS TestTable1_n0 (key STRING, value STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: TBLSTATSDB2@TestTable1_n0
+POSTHOOK: Output: database:tblstatsdb2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TestTable1_n0
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: tblstatsdb2@testtable1_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TestTable1_n0
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: tblstatsdb2@testtable1_n0
+PREHOOK: query: ANALYZE TABLE TestTable1_n0 COMPUTE STATISTICS FOR COLUMNS key
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: tblstatsdb2@testtable1_n0
+#### A masked pattern was here ####
+PREHOOK: Output: tblstatsdb2@testtable1_n0
+POSTHOOK: query: ANALYZE TABLE TestTable1_n0 COMPUTE STATISTICS FOR COLUMNS key
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: tblstatsdb2@testtable1_n0
+#### A masked pattern was here ####
+POSTHOOK: Output: tblstatsdb2@testtable1_n0
+PREHOOK: query: CREATE TABLE IF NOT EXISTS TESTTABLE2_n0 (key STRING, value STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: TBLSTATSDB2@TESTTABLE2_n0
+PREHOOK: Output: database:tblstatsdb2
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS TESTTABLE2_n0 (key STRING, value STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: TBLSTATSDB2@TESTTABLE2_n0
+POSTHOOK: Output: database:tblstatsdb2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TESTTABLE2_n0
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: tblstatsdb2@testtable2_n0
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE TESTTABLE2_n0
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: tblstatsdb2@testtable2_n0
+PREHOOK: query: ANALYZE TABLE TESTTABLE2_n0 COMPUTE STATISTICS FOR COLUMNS key
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: tblstatsdb2@testtable2_n0
+#### A masked pattern was here ####
+PREHOOK: Output: tblstatsdb2@testtable2_n0
+POSTHOOK: query: ANALYZE TABLE TESTTABLE2_n0 COMPUTE STATISTICS FOR COLUMNS key
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: tblstatsdb2@testtable2_n0
+#### A masked pattern was here ####
+POSTHOOK: Output: tblstatsdb2@testtable2_n0
+PREHOOK: query: DROP TABLE TBLSTATSDB2.testtable
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: tblstatsdb2@testtable
+PREHOOK: Output: database:tblstatsdb2
+PREHOOK: Output: tblstatsdb2@testtable
+POSTHOOK: query: DROP TABLE TBLSTATSDB2.testtable
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: tblstatsdb2@testtable
+POSTHOOK: Output: database:tblstatsdb2
+POSTHOOK: Output: tblstatsdb2@testtable
+PREHOOK: query: DROP TABLE TBLSTATSDB2.TestTable1_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: tblstatsdb2@testtable1_n0
+PREHOOK: Output: database:tblstatsdb2
+PREHOOK: Output: tblstatsdb2@testtable1_n0
+POSTHOOK: query: DROP TABLE TBLSTATSDB2.TestTable1_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: tblstatsdb2@testtable1_n0
+POSTHOOK: Output: database:tblstatsdb2
+POSTHOOK: Output: tblstatsdb2@testtable1_n0
+PREHOOK: query: DROP TABLE TBLSTATSDB2.TESTTABLE2_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: tblstatsdb2@testtable2_n0
+PREHOOK: Output: database:tblstatsdb2
+PREHOOK: Output: tblstatsdb2@testtable2_n0
+POSTHOOK: query: DROP TABLE TBLSTATSDB2.TESTTABLE2_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: tblstatsdb2@testtable2_n0
+POSTHOOK: Output: database:tblstatsdb2
+POSTHOOK: Output: tblstatsdb2@testtable2_n0
+PREHOOK: query: DROP DATABASE TBLSTATSDB2
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:tblstatsdb2
+PREHOOK: Output: database:tblstatsdb2
+POSTHOOK: query: DROP DATABASE TBLSTATSDB2
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:tblstatsdb2
+POSTHOOK: Output: database:tblstatsdb2

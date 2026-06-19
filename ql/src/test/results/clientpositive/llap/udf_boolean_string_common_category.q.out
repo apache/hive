@@ -1,0 +1,74 @@
+PREHOOK: query: create table boolarray1(id int, txt string, num int, flag string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@boolarray1
+POSTHOOK: query: create table boolarray1(id int, txt string, num int, flag string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@boolarray1
+PREHOOK: query: create table boolarray2(id int, txt string, num int, flag boolean)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@boolarray2
+POSTHOOK: query: create table boolarray2(id int, txt string, num int, flag boolean)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@boolarray2
+PREHOOK: query: insert into  boolarray1 values
+  (1, 'one',   5, 'FALSE'),
+  (2, 'two',  14, 'TRUE'),
+  (3,  NULL,   3, 'FALSE')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@boolarray1
+POSTHOOK: query: insert into  boolarray1 values
+  (1, 'one',   5, 'FALSE'),
+  (2, 'two',  14, 'TRUE'),
+  (3,  NULL,   3, 'FALSE')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@boolarray1
+POSTHOOK: Lineage: boolarray1.flag SCRIPT []
+POSTHOOK: Lineage: boolarray1.id SCRIPT []
+POSTHOOK: Lineage: boolarray1.num SCRIPT []
+POSTHOOK: Lineage: boolarray1.txt SCRIPT []
+PREHOOK: query: insert into  boolarray2 values
+  (1, 'one',   5, 'FALSE'),
+  (2, 'two',  14, 'TRUE'),
+  (3,  NULL,   3, 'FALSE')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@boolarray2
+POSTHOOK: query: insert into  boolarray2 values
+  (1, 'one',   5, 'FALSE'),
+  (2, 'two',  14, 'TRUE'),
+  (3,  NULL,   3, 'FALSE')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@boolarray2
+POSTHOOK: Lineage: boolarray2.flag SCRIPT []
+POSTHOOK: Lineage: boolarray2.id SCRIPT []
+POSTHOOK: Lineage: boolarray2.num SCRIPT []
+POSTHOOK: Lineage: boolarray2.txt SCRIPT []
+PREHOOK: query: select array(*) from boolarray1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@boolarray1
+#### A masked pattern was here ####
+POSTHOOK: query: select array(*) from boolarray1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@boolarray1
+#### A masked pattern was here ####
+["1","one","5","FALSE"]
+["2","two","14","TRUE"]
+["3",null,"3","FALSE"]
+PREHOOK: query: select array(*) from boolarray2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@boolarray2
+#### A masked pattern was here ####
+POSTHOOK: query: select array(*) from boolarray2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@boolarray2
+#### A masked pattern was here ####
+["1","one","5","FALSE"]
+["2","two","14","TRUE"]
+["3",null,"3","FALSE"]

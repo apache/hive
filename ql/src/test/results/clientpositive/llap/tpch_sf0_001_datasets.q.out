@@ -1,0 +1,78 @@
+PREHOOK: query: USE tpch_0_001
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:tpch_0_001
+POSTHOOK: query: USE tpch_0_001
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:tpch_0_001
+PREHOOK: query: SELECT COUNT(1) FROM customer
+PREHOOK: type: QUERY
+PREHOOK: Input: tpch_0_001@customer
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(1) FROM customer
+POSTHOOK: type: QUERY
+POSTHOOK: Input: tpch_0_001@customer
+#### A masked pattern was here ####
+150
+PREHOOK: query: SELECT COUNT(1) FROM lineitem
+PREHOOK: type: QUERY
+PREHOOK: Input: tpch_0_001@lineitem
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(1) FROM lineitem
+POSTHOOK: type: QUERY
+POSTHOOK: Input: tpch_0_001@lineitem
+#### A masked pattern was here ####
+6005
+PREHOOK: query: SELECT COUNT(1) FROM nation
+PREHOOK: type: QUERY
+PREHOOK: Input: tpch_0_001@nation
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(1) FROM nation
+POSTHOOK: type: QUERY
+POSTHOOK: Input: tpch_0_001@nation
+#### A masked pattern was here ####
+25
+PREHOOK: query: SELECT COUNT(1) FROM orders
+PREHOOK: type: QUERY
+PREHOOK: Input: tpch_0_001@orders
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(1) FROM orders
+POSTHOOK: type: QUERY
+POSTHOOK: Input: tpch_0_001@orders
+#### A masked pattern was here ####
+1500
+PREHOOK: query: SELECT COUNT(1) FROM part
+PREHOOK: type: QUERY
+PREHOOK: Input: tpch_0_001@part
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(1) FROM part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: tpch_0_001@part
+#### A masked pattern was here ####
+200
+PREHOOK: query: SELECT COUNT(1) FROM partsupp
+PREHOOK: type: QUERY
+PREHOOK: Input: tpch_0_001@partsupp
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(1) FROM partsupp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: tpch_0_001@partsupp
+#### A masked pattern was here ####
+800
+PREHOOK: query: SELECT COUNT(1) FROM region
+PREHOOK: type: QUERY
+PREHOOK: Input: tpch_0_001@region
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(1) FROM region
+POSTHOOK: type: QUERY
+POSTHOOK: Input: tpch_0_001@region
+#### A masked pattern was here ####
+5
+PREHOOK: query: SELECT COUNT(1) FROM supplier
+PREHOOK: type: QUERY
+PREHOOK: Input: tpch_0_001@supplier
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(1) FROM supplier
+POSTHOOK: type: QUERY
+POSTHOOK: Input: tpch_0_001@supplier
+#### A masked pattern was here ####
+10

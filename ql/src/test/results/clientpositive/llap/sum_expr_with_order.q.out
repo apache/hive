@@ -1,0 +1,15 @@
+PREHOOK: query: select 
+cast(sum(key)*100 as decimal(15,3)) as c1
+from src
+order by c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select 
+cast(sum(key)*100 as decimal(15,3)) as c1
+from src
+order by c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+13009100.000

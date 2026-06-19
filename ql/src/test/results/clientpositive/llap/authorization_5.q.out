@@ -1,0 +1,62 @@
+PREHOOK: query: CREATE DATABASE IF NOT EXISTS test_db COMMENT 'Hive test database'
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test_db
+POSTHOOK: query: CREATE DATABASE IF NOT EXISTS test_db COMMENT 'Hive test database'
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test_db
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+test_db
+PREHOOK: query: GRANT drop ON DATABASE test_db TO USER hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: query: GRANT drop ON DATABASE test_db TO USER hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+PREHOOK: query: GRANT select ON DATABASE test_db TO USER hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: query: GRANT select ON DATABASE test_db TO USER hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+PREHOOK: query: SHOW GRANT USER hive_test_user ON DATABASE test_db
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT USER hive_test_user ON DATABASE test_db
+POSTHOOK: type: SHOW_GRANT
+test_db				hive_test_user	USER	DROP	false	-1	hive_test_user
+test_db				hive_test_user	USER	SELECT	false	-1	hive_test_user
+PREHOOK: query: CREATE ROLE db_TEST_Role
+PREHOOK: type: CREATEROLE
+POSTHOOK: query: CREATE ROLE db_TEST_Role
+POSTHOOK: type: CREATEROLE
+PREHOOK: query: GRANT ROLE db_TEST_Role TO USER hive_test_user
+PREHOOK: type: GRANT_ROLE
+POSTHOOK: query: GRANT ROLE db_TEST_Role TO USER hive_test_user
+POSTHOOK: type: GRANT_ROLE
+PREHOOK: query: SHOW ROLE GRANT USER hive_test_user
+PREHOOK: type: SHOW_ROLE_GRANT
+POSTHOOK: query: SHOW ROLE GRANT USER hive_test_user
+POSTHOOK: type: SHOW_ROLE_GRANT
+db_TEST_Role	false	-1	hive_test_user
+public	false	-1	
+PREHOOK: query: GRANT drop ON DATABASE test_db TO ROLE db_TEST_Role
+PREHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: query: GRANT drop ON DATABASE test_db TO ROLE db_TEST_Role
+POSTHOOK: type: GRANT_PRIVILEGE
+PREHOOK: query: GRANT select ON DATABASE test_db TO ROLE db_TEST_Role
+PREHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: query: GRANT select ON DATABASE test_db TO ROLE db_TEST_Role
+POSTHOOK: type: GRANT_PRIVILEGE
+PREHOOK: query: SHOW GRANT ROLE db_TEST_Role ON DATABASE test_db
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT ROLE db_TEST_Role ON DATABASE test_db
+POSTHOOK: type: SHOW_GRANT
+test_db				db_TEST_Role	ROLE	DROP	false	-1	hive_test_user
+test_db				db_TEST_Role	ROLE	SELECT	false	-1	hive_test_user
+PREHOOK: query: DROP DATABASE IF EXISTS test_db
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:test_db
+PREHOOK: Output: database:test_db
+POSTHOOK: query: DROP DATABASE IF EXISTS test_db
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:test_db
+POSTHOOK: Output: database:test_db

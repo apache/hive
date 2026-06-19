@@ -1,0 +1,299 @@
+PREHOOK: query: DROP TABLE parquet_type_promotion_staging
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE parquet_type_promotion_staging
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE parquet_type_promotion
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE parquet_type_promotion
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE parquet_type_promotion_staging (
+  cint int,
+  cint2 int,
+  cint3 int,
+  clong bigint,
+  clong2 bigint,
+  cfloat float,
+  cdouble double,
+  m1 map<string, int>,
+  m2 map<string, bigint>,
+  l1 array<int>,
+  l2 array<bigint>,
+  st1 struct<c1:int, c2:int>,
+  fm1 map<string, float>,
+  fl1 array<float>,
+  fst1 struct<c1:float, c2:float>
+) ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+COLLECTION ITEMS TERMINATED BY ','
+MAP KEYS TERMINATED BY ':'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_type_promotion_staging
+POSTHOOK: query: CREATE TABLE parquet_type_promotion_staging (
+  cint int,
+  cint2 int,
+  cint3 int,
+  clong bigint,
+  clong2 bigint,
+  cfloat float,
+  cdouble double,
+  m1 map<string, int>,
+  m2 map<string, bigint>,
+  l1 array<int>,
+  l2 array<bigint>,
+  st1 struct<c1:int, c2:int>,
+  fm1 map<string, float>,
+  fl1 array<float>,
+  fst1 struct<c1:float, c2:float>
+) ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+COLLECTION ITEMS TERMINATED BY ','
+MAP KEYS TERMINATED BY ':'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_type_promotion_staging
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_type_promotion.txt' OVERWRITE INTO TABLE parquet_type_promotion_staging
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_type_promotion_staging
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_type_promotion.txt' OVERWRITE INTO TABLE parquet_type_promotion_staging
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_type_promotion_staging
+PREHOOK: query: SELECT * FROM parquet_type_promotion_staging
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_type_promotion_staging
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_type_promotion_staging
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_type_promotion_staging
+#### A masked pattern was here ####
+100	150	155	5643	6666	0.3	0.7	{"k1":11}	{"k1":71}	[7,17,22]	[9,11,13]	{"c1":10,"c2":20}	{"k11":4.0}	[2.3,3.0,5.5]	{"c1":5.7,"c2":4.8}
+200	250	255	5643	7777	0.4	0.8	{"k2":14}	{"k2":13}	[8,17,24]	[15,17,19]	{"c1":20,"c2":20}	{"v11":5.0}	[3.3,3.1,5.6]	{"c1":5.8,"c2":4.7}
+300	350	355	7643	8888	0.4	0.9	{"k3":12}	{"k3":19}	[9,17,25]	[21,23,25]	{"c1":30,"c2":60}	{"b11":6.0}	[4.3,3.2,5.7]	{"c1":5.9,"c2":4.6}
+400	450	455	8643	9999	0.4	0.5	{"k4":15}	{"k4":23}	[7,18,27]	[27,29,31]	{"c1":50,"c2":70}	{"d11":8.0}	[6.3,3.3,5.8]	{"c1":5.0,"c2":4.5}
+PREHOOK: query: CREATE TABLE parquet_type_promotion (
+  cint int,
+  cint2 int,
+  cint3 int,
+  clong bigint,
+  clong2 bigint,
+  cfloat float,
+  cdouble double,
+  m1 map<string, int>,
+  m2 map<string, bigint>,
+  l1 array<int>,
+  l2 array<bigint>,
+  st1 struct<c1:int, c2:int>,
+  fm1 map<string, float>,
+  fl1 array<float>,
+  fst1 struct<c1:float, c2:float>
+) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_type_promotion
+POSTHOOK: query: CREATE TABLE parquet_type_promotion (
+  cint int,
+  cint2 int,
+  cint3 int,
+  clong bigint,
+  clong2 bigint,
+  cfloat float,
+  cdouble double,
+  m1 map<string, int>,
+  m2 map<string, bigint>,
+  l1 array<int>,
+  l2 array<bigint>,
+  st1 struct<c1:int, c2:int>,
+  fm1 map<string, float>,
+  fl1 array<float>,
+  fst1 struct<c1:float, c2:float>
+) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_type_promotion
+PREHOOK: query: INSERT OVERWRITE TABLE parquet_type_promotion
+   SELECT * FROM parquet_type_promotion_staging
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_type_promotion_staging
+PREHOOK: Output: default@parquet_type_promotion
+POSTHOOK: query: INSERT OVERWRITE TABLE parquet_type_promotion
+   SELECT * FROM parquet_type_promotion_staging
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_type_promotion_staging
+POSTHOOK: Output: default@parquet_type_promotion
+POSTHOOK: Lineage: parquet_type_promotion.cdouble SIMPLE [(parquet_type_promotion_staging)parquet_type_promotion_staging.FieldSchema(name:cdouble, type:double, comment:null), ]
+POSTHOOK: Lineage: parquet_type_promotion.cfloat SIMPLE [(parquet_type_promotion_staging)parquet_type_promotion_staging.FieldSchema(name:cfloat, type:float, comment:null), ]
+POSTHOOK: Lineage: parquet_type_promotion.cint SIMPLE [(parquet_type_promotion_staging)parquet_type_promotion_staging.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_type_promotion.cint2 SIMPLE [(parquet_type_promotion_staging)parquet_type_promotion_staging.FieldSchema(name:cint2, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_type_promotion.cint3 SIMPLE [(parquet_type_promotion_staging)parquet_type_promotion_staging.FieldSchema(name:cint3, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_type_promotion.clong SIMPLE [(parquet_type_promotion_staging)parquet_type_promotion_staging.FieldSchema(name:clong, type:bigint, comment:null), ]
+POSTHOOK: Lineage: parquet_type_promotion.clong2 SIMPLE [(parquet_type_promotion_staging)parquet_type_promotion_staging.FieldSchema(name:clong2, type:bigint, comment:null), ]
+POSTHOOK: Lineage: parquet_type_promotion.fl1 SIMPLE [(parquet_type_promotion_staging)parquet_type_promotion_staging.FieldSchema(name:fl1, type:array<float>, comment:null), ]
+POSTHOOK: Lineage: parquet_type_promotion.fm1 SIMPLE [(parquet_type_promotion_staging)parquet_type_promotion_staging.FieldSchema(name:fm1, type:map<string,float>, comment:null), ]
+POSTHOOK: Lineage: parquet_type_promotion.fst1 SIMPLE [(parquet_type_promotion_staging)parquet_type_promotion_staging.FieldSchema(name:fst1, type:struct<c1:float,c2:float>, comment:null), ]
+POSTHOOK: Lineage: parquet_type_promotion.l1 SIMPLE [(parquet_type_promotion_staging)parquet_type_promotion_staging.FieldSchema(name:l1, type:array<int>, comment:null), ]
+POSTHOOK: Lineage: parquet_type_promotion.l2 SIMPLE [(parquet_type_promotion_staging)parquet_type_promotion_staging.FieldSchema(name:l2, type:array<bigint>, comment:null), ]
+POSTHOOK: Lineage: parquet_type_promotion.m1 SIMPLE [(parquet_type_promotion_staging)parquet_type_promotion_staging.FieldSchema(name:m1, type:map<string,int>, comment:null), ]
+POSTHOOK: Lineage: parquet_type_promotion.m2 SIMPLE [(parquet_type_promotion_staging)parquet_type_promotion_staging.FieldSchema(name:m2, type:map<string,bigint>, comment:null), ]
+POSTHOOK: Lineage: parquet_type_promotion.st1 SIMPLE [(parquet_type_promotion_staging)parquet_type_promotion_staging.FieldSchema(name:st1, type:struct<c1:int,c2:int>, comment:null), ]
+PREHOOK: query: SELECT * FROM parquet_type_promotion
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_type_promotion
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_type_promotion
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_type_promotion
+#### A masked pattern was here ####
+100	150	155	5643	6666	0.3	0.7	{"k1":11}	{"k1":71}	[7,17,22]	[9,11,13]	{"c1":10,"c2":20}	{"k11":4.0}	[2.3,3.0,5.5]	{"c1":5.7,"c2":4.8}
+200	250	255	5643	7777	0.4	0.8	{"k2":14}	{"k2":13}	[8,17,24]	[15,17,19]	{"c1":20,"c2":20}	{"v11":5.0}	[3.3,3.1,5.6]	{"c1":5.8,"c2":4.7}
+300	350	355	7643	8888	0.4	0.9	{"k3":12}	{"k3":19}	[9,17,25]	[21,23,25]	{"c1":30,"c2":60}	{"b11":6.0}	[4.3,3.2,5.7]	{"c1":5.9,"c2":4.6}
+400	450	455	8643	9999	0.4	0.5	{"k4":15}	{"k4":23}	[7,18,27]	[27,29,31]	{"c1":50,"c2":70}	{"d11":8.0}	[6.3,3.3,5.8]	{"c1":5.0,"c2":4.5}
+PREHOOK: query: ALTER TABLE  parquet_type_promotion REPLACE COLUMNS(
+  cint bigint,
+  cint2 float,
+  cint3 double,
+  clong float,
+  clong2 double,
+  cfloat double,
+  cdouble double,
+  m1 map<string, bigint>,
+  m2 map<string, float>,
+  l1 array<bigint>,
+  l2 array<double>,
+  st1 struct<c1:int, c2:bigint>,
+  fm1 map<string, double>,
+  fl1 array<double>,
+  fst1 struct<c1:double, c2:float>
+)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@parquet_type_promotion
+PREHOOK: Output: default@parquet_type_promotion
+POSTHOOK: query: ALTER TABLE  parquet_type_promotion REPLACE COLUMNS(
+  cint bigint,
+  cint2 float,
+  cint3 double,
+  clong float,
+  clong2 double,
+  cfloat double,
+  cdouble double,
+  m1 map<string, bigint>,
+  m2 map<string, float>,
+  l1 array<bigint>,
+  l2 array<double>,
+  st1 struct<c1:int, c2:bigint>,
+  fm1 map<string, double>,
+  fl1 array<double>,
+  fst1 struct<c1:double, c2:float>
+)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@parquet_type_promotion
+POSTHOOK: Output: default@parquet_type_promotion
+PREHOOK: query: SELECT * FROM parquet_type_promotion
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_type_promotion
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_type_promotion
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_type_promotion
+#### A masked pattern was here ####
+100	150.0	155.0	5643.0	6666.0	0.30000001192092896	0.7	{"k1":11}	{"k1":71.0}	[7,17,22]	[9.0,11.0,13.0]	{"c1":10,"c2":20}	{"k11":4.0}	[2.299999952316284,3.0,5.5]	{"c1":5.699999809265137,"c2":4.8}
+200	250.0	255.0	5643.0	7777.0	0.4000000059604645	0.8	{"k2":14}	{"k2":13.0}	[8,17,24]	[15.0,17.0,19.0]	{"c1":20,"c2":20}	{"v11":5.0}	[3.299999952316284,3.0999999046325684,5.599999904632568]	{"c1":5.800000190734863,"c2":4.7}
+300	350.0	355.0	7643.0	8888.0	0.4000000059604645	0.9	{"k3":12}	{"k3":19.0}	[9,17,25]	[21.0,23.0,25.0]	{"c1":30,"c2":60}	{"b11":6.0}	[4.300000190734863,3.200000047683716,5.699999809265137]	{"c1":5.900000095367432,"c2":4.6}
+400	450.0	455.0	8643.0	9999.0	0.4000000059604645	0.5	{"k4":15}	{"k4":23.0}	[7,18,27]	[27.0,29.0,31.0]	{"c1":50,"c2":70}	{"d11":8.0}	[6.300000190734863,3.299999952316284,5.800000190734863]	{"c1":5.0,"c2":4.5}
+PREHOOK: query: DROP TABLE arrays_of_struct_to_map
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE arrays_of_struct_to_map
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE arrays_of_struct_to_map (locations1 array<struct<c1:int,c2:int>>, locations2 array<struct<f1:int,
+f2:int,f3:int>>) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@arrays_of_struct_to_map
+POSTHOOK: query: CREATE TABLE arrays_of_struct_to_map (locations1 array<struct<c1:int,c2:int>>, locations2 array<struct<f1:int,
+f2:int,f3:int>>) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@arrays_of_struct_to_map
+PREHOOK: query: INSERT INTO TABLE arrays_of_struct_to_map select array(named_struct("c1",1,"c2",2)), array(named_struct("f1",
+77,"f2",88,"f3",99)) FROM parquet_type_promotion LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_type_promotion
+PREHOOK: Output: default@arrays_of_struct_to_map
+POSTHOOK: query: INSERT INTO TABLE arrays_of_struct_to_map select array(named_struct("c1",1,"c2",2)), array(named_struct("f1",
+77,"f2",88,"f3",99)) FROM parquet_type_promotion LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_type_promotion
+POSTHOOK: Output: default@arrays_of_struct_to_map
+POSTHOOK: Lineage: arrays_of_struct_to_map.locations1 EXPRESSION []
+POSTHOOK: Lineage: arrays_of_struct_to_map.locations2 EXPRESSION []
+PREHOOK: query: SELECT * FROM arrays_of_struct_to_map
+PREHOOK: type: QUERY
+PREHOOK: Input: default@arrays_of_struct_to_map
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM arrays_of_struct_to_map
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@arrays_of_struct_to_map
+#### A masked pattern was here ####
+[{"c1":1,"c2":2}]	[{"f1":77,"f2":88,"f3":99}]
+PREHOOK: query: ALTER TABLE arrays_of_struct_to_map REPLACE COLUMNS (locations1 array<struct<c1:int>>, locations2
+array<struct<f2:int>>)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@arrays_of_struct_to_map
+PREHOOK: Output: default@arrays_of_struct_to_map
+POSTHOOK: query: ALTER TABLE arrays_of_struct_to_map REPLACE COLUMNS (locations1 array<struct<c1:int>>, locations2
+array<struct<f2:int>>)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@arrays_of_struct_to_map
+POSTHOOK: Output: default@arrays_of_struct_to_map
+PREHOOK: query: SELECT * FROM arrays_of_struct_to_map
+PREHOOK: type: QUERY
+PREHOOK: Input: default@arrays_of_struct_to_map
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM arrays_of_struct_to_map
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@arrays_of_struct_to_map
+#### A masked pattern was here ####
+[{"c1":1}]	[{"f2":88}]
+PREHOOK: query: ALTER TABLE arrays_of_struct_to_map REPLACE COLUMNS (locations1 array<struct<c1:int,c2:int,c3:int>>, locations2
+array<struct<f1:int,f2:int,f3:int>>)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@arrays_of_struct_to_map
+PREHOOK: Output: default@arrays_of_struct_to_map
+POSTHOOK: query: ALTER TABLE arrays_of_struct_to_map REPLACE COLUMNS (locations1 array<struct<c1:int,c2:int,c3:int>>, locations2
+array<struct<f1:int,f2:int,f3:int>>)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@arrays_of_struct_to_map
+POSTHOOK: Output: default@arrays_of_struct_to_map
+PREHOOK: query: SELECT * FROM arrays_of_struct_to_map
+PREHOOK: type: QUERY
+PREHOOK: Input: default@arrays_of_struct_to_map
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM arrays_of_struct_to_map
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@arrays_of_struct_to_map
+#### A masked pattern was here ####
+[{"c1":1,"c2":2,"c3":null}]	[{"f1":77,"f2":88,"f3":99}]
+PREHOOK: query: ALTER TABLE arrays_of_struct_to_map REPLACE COLUMNS (locations1 map<int,bigint>, locations2 map<bigint,int>)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@arrays_of_struct_to_map
+PREHOOK: Output: default@arrays_of_struct_to_map
+POSTHOOK: query: ALTER TABLE arrays_of_struct_to_map REPLACE COLUMNS (locations1 map<int,bigint>, locations2 map<bigint,int>)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@arrays_of_struct_to_map
+POSTHOOK: Output: default@arrays_of_struct_to_map
+PREHOOK: query: SELECT * FROM arrays_of_struct_to_map
+PREHOOK: type: QUERY
+PREHOOK: Input: default@arrays_of_struct_to_map
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM arrays_of_struct_to_map
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@arrays_of_struct_to_map
+#### A masked pattern was here ####
+{1:2}	{77:88}

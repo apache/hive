@@ -1,0 +1,487 @@
+PREHOOK: query: DROP TABLE IF EXISTS repairtable_filter
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS repairtable_filter
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE repairtable_filter(col STRING) PARTITIONED BY (p1 STRING, p2 STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repairtable_filter
+POSTHOOK: query: CREATE TABLE repairtable_filter(col STRING) PARTITIONED BY (p1 STRING, p2 STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repairtable_filter
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_filter
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_filter
+Partitions not in metastore:	repairtable_filter:p1=b/p2=a	repairtable_filter:p1=c/p2=a
+#### A masked pattern was here ####
+PREHOOK: query: show partitions repairtable_filter
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_filter
+POSTHOOK: query: show partitions repairtable_filter
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_filter
+p1=b/p2=a
+p1=c/p2=a
+PREHOOK: query: MSCK REPAIR TABLE repairtable_filter SYNC PARTITIONS (p1 = 'b')
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_filter
+POSTHOOK: query: MSCK REPAIR TABLE repairtable_filter SYNC PARTITIONS (p1 = 'b')
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_filter
+Partitions not in metastore:	repairtable_filter:p1=b/p2=e
+#### A masked pattern was here ####
+PREHOOK: query: show partitions repairtable_filter
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_filter
+POSTHOOK: query: show partitions repairtable_filter
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_filter
+p1=b/p2=a
+p1=b/p2=e
+p1=c/p2=a
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1 LIKE 'c%')
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_filter
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1 LIKE 'c%')
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_filter
+Partitions not in metastore:	repairtable_filter:p1=c/p2=e	repairtable_filter:p1=ca/p2=e	repairtable_filter:p1=cb/p2=e
+#### A masked pattern was here ####
+PREHOOK: query: show partitions repairtable_filter
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_filter
+POSTHOOK: query: show partitions repairtable_filter
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_filter
+p1=b/p2=a
+p1=b/p2=e
+p1=c/p2=a
+p1=c/p2=e
+p1=ca/p2=e
+p1=cb/p2=e
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1 != 'bba')
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_filter
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1 != 'bba')
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_filter
+Partitions not in metastore:	repairtable_filter:p1=bb/p2=e	repairtable_filter:p1=bbc/p2=e
+#### A masked pattern was here ####
+PREHOOK: query: show partitions repairtable_filter
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_filter
+POSTHOOK: query: show partitions repairtable_filter
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_filter
+p1=b/p2=a
+p1=b/p2=e
+p1=bb/p2=e
+p1=bbc/p2=e
+p1=c/p2=a
+p1=c/p2=e
+p1=ca/p2=e
+p1=cb/p2=e
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1 = 'ber', p2 = 'ehb')
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_filter
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1 = 'ber', p2 = 'ehb')
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_filter
+Partitions not in metastore:	repairtable_filter:p1=ber/p2=ehb
+#### A masked pattern was here ####
+PREHOOK: query: show partitions repairtable_filter
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_filter
+POSTHOOK: query: show partitions repairtable_filter
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_filter
+p1=b/p2=a
+p1=b/p2=e
+p1=bb/p2=e
+p1=bbc/p2=e
+p1=ber/p2=ehb
+p1=c/p2=a
+p1=c/p2=e
+p1=ca/p2=e
+p1=cb/p2=e
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1 like 'c%', p2 like 'e%')
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_filter
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1 like 'c%', p2 like 'e%')
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_filter
+Partitions not in metastore:	repairtable_filter:p1=cab/p2=eb	repairtable_filter:p1=cob/p2=es	repairtable_filter:p1=cp/p2=eg
+#### A masked pattern was here ####
+PREHOOK: query: show partitions repairtable_filter
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_filter
+POSTHOOK: query: show partitions repairtable_filter
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_filter
+p1=b/p2=a
+p1=b/p2=e
+p1=bb/p2=e
+p1=bbc/p2=e
+p1=ber/p2=ehb
+p1=c/p2=a
+p1=c/p2=e
+p1=ca/p2=e
+p1=cab/p2=eb
+p1=cb/p2=e
+p1=cob/p2=es
+p1=cp/p2=eg
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1!='bba', p2 != 'e')
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_filter
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1!='bba', p2 != 'e')
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_filter
+Partitions not in metastore:	repairtable_filter:p1=bb/p2=ep
+#### A masked pattern was here ####
+PREHOOK: query: show partitions repairtable_filter
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_filter
+POSTHOOK: query: show partitions repairtable_filter
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_filter
+p1=b/p2=a
+p1=b/p2=e
+p1=bb/p2=e
+p1=bb/p2=ep
+p1=bbc/p2=e
+p1=ber/p2=ehb
+p1=c/p2=a
+p1=c/p2=e
+p1=ca/p2=e
+p1=cab/p2=eb
+p1=cb/p2=e
+p1=cob/p2=es
+p1=cp/p2=eg
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1 > 'bba')
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_filter
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1 > 'bba')
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_filter
+Partitions not in metastore:	repairtable_filter:p1=bbqa/p2=eq	repairtable_filter:p1=bwbc/p2=eq
+#### A masked pattern was here ####
+PREHOOK: query: show partitions repairtable_filter
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_filter
+POSTHOOK: query: show partitions repairtable_filter
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_filter
+p1=b/p2=a
+p1=b/p2=e
+p1=bb/p2=e
+p1=bb/p2=ep
+p1=bbc/p2=e
+p1=bbqa/p2=eq
+p1=ber/p2=ehb
+p1=bwbc/p2=eq
+p1=c/p2=a
+p1=c/p2=e
+p1=ca/p2=e
+p1=cab/p2=eb
+p1=cb/p2=e
+p1=cob/p2=es
+p1=cp/p2=eg
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1 < 'bwbc')
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_filter
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1 < 'bwbc')
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_filter
+Partitions not in metastore:	repairtable_filter:p1=bba/p2=e
+#### A masked pattern was here ####
+PREHOOK: query: show partitions repairtable_filter
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_filter
+POSTHOOK: query: show partitions repairtable_filter
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_filter
+p1=b/p2=a
+p1=b/p2=e
+p1=bb/p2=e
+p1=bb/p2=ep
+p1=bba/p2=e
+p1=bbc/p2=e
+p1=bbqa/p2=eq
+p1=ber/p2=ehb
+p1=bwbc/p2=eq
+p1=c/p2=a
+p1=c/p2=e
+p1=ca/p2=e
+p1=cab/p2=eb
+p1=cb/p2=e
+p1=cob/p2=es
+p1=cp/p2=eg
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1 >= 'bwbc')
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_filter
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1 >= 'bwbc')
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_filter
+PREHOOK: query: show partitions repairtable_filter
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_filter
+POSTHOOK: query: show partitions repairtable_filter
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_filter
+p1=b/p2=a
+p1=b/p2=e
+p1=bb/p2=e
+p1=bb/p2=ep
+p1=bba/p2=e
+p1=bbc/p2=e
+p1=bbqa/p2=eq
+p1=ber/p2=ehb
+p1=bwbc/p2=eq
+p1=c/p2=a
+p1=c/p2=e
+p1=ca/p2=e
+p1=cab/p2=eb
+p1=cb/p2=e
+p1=cob/p2=es
+p1=cp/p2=eg
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1 <= 'bbqa')
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_filter
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1 <= 'bbqa')
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_filter
+PREHOOK: query: show partitions repairtable_filter
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_filter
+POSTHOOK: query: show partitions repairtable_filter
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_filter
+p1=b/p2=a
+p1=b/p2=e
+p1=bb/p2=e
+p1=bb/p2=ep
+p1=bba/p2=e
+p1=bbc/p2=e
+p1=bbqa/p2=eq
+p1=ber/p2=ehb
+p1=bwbc/p2=eq
+p1=c/p2=a
+p1=c/p2=e
+p1=ca/p2=e
+p1=cab/p2=eb
+p1=cb/p2=e
+p1=cob/p2=es
+p1=cp/p2=eg
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1='ber', p2!='ehb')
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_filter
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1='ber', p2!='ehb')
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_filter
+PREHOOK: query: show partitions repairtable_filter
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_filter
+POSTHOOK: query: show partitions repairtable_filter
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_filter
+p1=b/p2=a
+p1=b/p2=e
+p1=bb/p2=e
+p1=bb/p2=ep
+p1=bba/p2=e
+p1=bbc/p2=e
+p1=bbqa/p2=eq
+p1=ber/p2=ehb
+p1=bwbc/p2=eq
+p1=c/p2=a
+p1=c/p2=e
+p1=ca/p2=e
+p1=cab/p2=eb
+p1=cb/p2=e
+p1=cob/p2=es
+p1=cp/p2=eg
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1 like 'c%', p2='e')
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_filter
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1 like 'c%', p2='e')
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_filter
+PREHOOK: query: show partitions repairtable_filter
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_filter
+POSTHOOK: query: show partitions repairtable_filter
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_filter
+p1=b/p2=a
+p1=b/p2=e
+p1=bb/p2=e
+p1=bb/p2=ep
+p1=bba/p2=e
+p1=bbc/p2=e
+p1=bbqa/p2=eq
+p1=ber/p2=ehb
+p1=bwbc/p2=eq
+p1=c/p2=a
+p1=c/p2=e
+p1=ca/p2=e
+p1=cab/p2=eb
+p1=cb/p2=e
+p1=cob/p2=es
+p1=cp/p2=eg
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1!='bba', p2 like 'e%')
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_filter
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1!='bba', p2 like 'e%')
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_filter
+Partitions not in metastore:	repairtable_filter:p1=bbe/p2=ep	repairtable_filter:p1=bbsc/p2=e	repairtable_filter:p1=bbw/p2=e	repairtable_filter:p1=bter/p2=ehb	repairtable_filter:p1=cobf/p2=ess	repairtable_filter:p1=cpa/p2=eg
+#### A masked pattern was here ####
+PREHOOK: query: show partitions repairtable_filter
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_filter
+POSTHOOK: query: show partitions repairtable_filter
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_filter
+p1=b/p2=a
+p1=b/p2=e
+p1=bb/p2=e
+p1=bb/p2=ep
+p1=bba/p2=e
+p1=bbc/p2=e
+p1=bbe/p2=ep
+p1=bbqa/p2=eq
+p1=bbsc/p2=e
+p1=bbw/p2=e
+p1=ber/p2=ehb
+p1=bter/p2=ehb
+p1=bwbc/p2=eq
+p1=c/p2=a
+p1=c/p2=e
+p1=ca/p2=e
+p1=cab/p2=eb
+p1=cb/p2=e
+p1=cob/p2=es
+p1=cobf/p2=ess
+p1=cp/p2=eg
+p1=cpa/p2=eg
+#### A masked pattern was here ####
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1='bbsc')
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_filter
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1='bbsc')
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_filter
+Partitions missing from filesystem:	repairtable_filter:p1=bbsc/p2=e
+Repair: Dropped partition from metastore hive.default.repairtable_filter:p1=bbsc/p2=e
+PREHOOK: query: show partitions repairtable_filter
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_filter
+POSTHOOK: query: show partitions repairtable_filter
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_filter
+p1=b/p2=a
+p1=b/p2=e
+p1=bb/p2=e
+p1=bb/p2=ep
+p1=bba/p2=e
+p1=bbc/p2=e
+p1=bbe/p2=ep
+p1=bbqa/p2=eq
+p1=bbw/p2=e
+p1=ber/p2=ehb
+p1=bter/p2=ehb
+p1=bwbc/p2=eq
+p1=c/p2=a
+p1=c/p2=e
+p1=ca/p2=e
+p1=cab/p2=eb
+p1=cb/p2=e
+p1=cob/p2=es
+p1=cobf/p2=ess
+p1=cp/p2=eg
+p1=cpa/p2=eg
+#### A masked pattern was here ####
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1 like 'b%')
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_filter
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1 like 'b%')
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_filter
+Partitions missing from filesystem:	repairtable_filter:p1=bbw/p2=e
+Repair: Dropped partition from metastore hive.default.repairtable_filter:p1=bbw/p2=e
+PREHOOK: query: show partitions repairtable_filter
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_filter
+POSTHOOK: query: show partitions repairtable_filter
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_filter
+p1=b/p2=a
+p1=b/p2=e
+p1=bb/p2=e
+p1=bb/p2=ep
+p1=bba/p2=e
+p1=bbc/p2=e
+p1=bbe/p2=ep
+p1=bbqa/p2=eq
+p1=ber/p2=ehb
+p1=bter/p2=ehb
+p1=bwbc/p2=eq
+p1=c/p2=a
+p1=c/p2=e
+p1=ca/p2=e
+p1=cab/p2=eb
+p1=cb/p2=e
+p1=cob/p2=es
+p1=cobf/p2=ess
+p1=cp/p2=eg
+p1=cpa/p2=eg
+#### A masked pattern was here ####
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1 like 'bb%')
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_filter
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1 like 'bb%')
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_filter
+Partitions missing from filesystem:	repairtable_filter:p1=bba/p2=e
+Repair: Dropped partition from metastore hive.default.repairtable_filter:p1=bba/p2=e
+PREHOOK: query: show partitions repairtable_filter
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_filter
+POSTHOOK: query: show partitions repairtable_filter
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_filter
+p1=b/p2=a
+p1=b/p2=e
+p1=bb/p2=e
+p1=bb/p2=ep
+p1=bbc/p2=e
+p1=bbe/p2=ep
+p1=bbqa/p2=eq
+p1=ber/p2=ehb
+p1=bter/p2=ehb
+p1=bwbc/p2=eq
+p1=c/p2=a
+p1=c/p2=e
+p1=ca/p2=e
+p1=cab/p2=eb
+p1=cb/p2=e
+p1=cob/p2=es
+p1=cobf/p2=ess
+p1=cp/p2=eg
+p1=cpa/p2=eg
+PREHOOK: query: DROP TABLE repairtable_filter
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@repairtable_filter
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repairtable_filter
+POSTHOOK: query: DROP TABLE repairtable_filter
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@repairtable_filter
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repairtable_filter

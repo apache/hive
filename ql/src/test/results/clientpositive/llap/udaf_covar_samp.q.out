@@ -1,0 +1,107 @@
+PREHOOK: query: DROP TABLE covar_tab_n1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE covar_tab_n1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE covar_tab_n1 (a INT, b INT, c INT)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@covar_tab_n1
+POSTHOOK: query: CREATE TABLE covar_tab_n1 (a INT, b INT, c INT)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@covar_tab_n1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/covar_tab.txt' OVERWRITE
+INTO TABLE covar_tab_n1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@covar_tab_n1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/covar_tab.txt' OVERWRITE
+INTO TABLE covar_tab_n1
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@covar_tab_n1
+PREHOOK: query: DESCRIBE FUNCTION covar_samp
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION covar_samp
+POSTHOOK: type: DESCFUNCTION
+covar_samp(x,y) - Returns the sample covariance of a set of number pairs
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED covar_samp
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED covar_samp
+POSTHOOK: type: DESCFUNCTION
+covar_samp(x,y) - Returns the sample covariance of a set of number pairs
+The function takes as arguments any pair of numeric types and returns a double.
+Any pair with a NULL is ignored.
+If applied to an empty set: NULL is returned.
+If applied to a set with a single element: NULL is returned.
+Otherwise, it computes the following:
+   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/(COUNT(x,y)-1)
+where neither x nor y is null.
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCovarianceSample
+Function type:BUILTIN
+PREHOOK: query: SELECT covar_samp(b, c) FROM covar_tab_n1 WHERE a < 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@covar_tab_n1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT covar_samp(b, c) FROM covar_tab_n1 WHERE a < 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@covar_tab_n1
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT covar_samp(b, c) FROM covar_tab_n1 WHERE a < 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@covar_tab_n1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT covar_samp(b, c) FROM covar_tab_n1 WHERE a < 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@covar_tab_n1
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT covar_samp(b, c) FROM covar_tab_n1 WHERE a = 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@covar_tab_n1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT covar_samp(b, c) FROM covar_tab_n1 WHERE a = 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@covar_tab_n1
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT a, covar_samp(b, c) FROM covar_tab_n1 GROUP BY a ORDER BY a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@covar_tab_n1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT a, covar_samp(b, c) FROM covar_tab_n1 GROUP BY a ORDER BY a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@covar_tab_n1
+#### A masked pattern was here ####
+1	NULL
+2	NULL
+3	NULL
+4	NULL
+5	NULL
+6	NULL
+PREHOOK: query: SELECT ROUND(covar_samp(b, c), 5) FROM covar_tab_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@covar_tab_n1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT ROUND(covar_samp(b, c), 5) FROM covar_tab_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@covar_tab_n1
+#### A masked pattern was here ####
+4.83333
+PREHOOK: query: DROP TABLE covar_tab_n1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@covar_tab_n1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@covar_tab_n1
+POSTHOOK: query: DROP TABLE covar_tab_n1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@covar_tab_n1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@covar_tab_n1

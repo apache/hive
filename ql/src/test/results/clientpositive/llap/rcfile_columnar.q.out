@@ -1,0 +1,56 @@
+PREHOOK: query: CREATE table columnTable (key STRING, value STRING)
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+STORED AS
+  INPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileInputFormat'
+  OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@columnTable
+POSTHOOK: query: CREATE table columnTable (key STRING, value STRING)
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+STORED AS
+  INPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileInputFormat'
+  OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@columnTable
+PREHOOK: query: FROM src
+INSERT OVERWRITE TABLE columnTable SELECT src.key, src.value LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@columntable
+POSTHOOK: query: FROM src
+INSERT OVERWRITE TABLE columnTable SELECT src.key, src.value LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@columntable
+POSTHOOK: Lineage: columntable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: columntable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: describe columnTable
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@columntable
+POSTHOOK: query: describe columnTable
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@columntable
+key                 	string              	                    
+value               	string              	                    
+PREHOOK: query: SELECT columnTable.* FROM columnTable ORDER BY key ASC, value ASC
+PREHOOK: type: QUERY
+PREHOOK: Input: default@columntable
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT columnTable.* FROM columnTable ORDER BY key ASC, value ASC
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@columntable
+#### A masked pattern was here ####
+165	val_165
+238	val_238
+255	val_255
+27	val_27
+278	val_278
+311	val_311
+409	val_409
+484	val_484
+86	val_86
+98	val_98

@@ -1,0 +1,67 @@
+PREHOOK: query: CREATE TEMPORARY FUNCTION example_format AS 'org.apache.hadoop.hive.contrib.udf.example.UDFExampleFormat'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: example_format
+POSTHOOK: query: CREATE TEMPORARY FUNCTION example_format AS 'org.apache.hadoop.hive.contrib.udf.example.UDFExampleFormat'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: example_format
+PREHOOK: query: EXPLAIN
+SELECT example_format("abc"),
+       example_format("%1$s", 1.1),
+       example_format("%1$s %2$e", 1.1D, 1.2D),
+       example_format("%1$x %2$o %3$d", 10, 10, 10)
+FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT example_format("abc"),
+       example_format("%1$s", 1.1),
+       example_format("%1$s %2$e", 1.1D, 1.2D),
+       example_format("%1$x %2$o %3$d", 10, 10, 10)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        TableScan
+          alias: src
+          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
+          Limit
+            Number of rows: 1
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: 'abc' (type: string), '1.1' (type: string), '1.1 1.200000e+00' (type: string), 'a 12 10' (type: string)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics: Num rows: 1 Data size: 365 Basic stats: COMPLETE Column stats: COMPLETE
+              ListSink
+
+PREHOOK: query: SELECT example_format("abc"),
+       example_format("%1$s", 1.1),
+       example_format("%1$s %2$e", 1.1D, 1.2D),
+       example_format("%1$x %2$o %3$d", 10, 10, 10)
+FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT example_format("abc"),
+       example_format("%1$s", 1.1),
+       example_format("%1$s %2$e", 1.1D, 1.2D),
+       example_format("%1$x %2$o %3$d", 10, 10, 10)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+abc	1.1	1.1 1.200000e+00	a 12 10
+PREHOOK: query: DROP TEMPORARY FUNCTION example_format
+PREHOOK: type: DROPFUNCTION
+PREHOOK: Output: example_format
+POSTHOOK: query: DROP TEMPORARY FUNCTION example_format
+POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Output: example_format

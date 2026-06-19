@@ -1,0 +1,480 @@
+PREHOOK: query: drop table over10k_n13
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table over10k_n13
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table over10k_n13(
+           t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+	   ts timestamp, 
+           `dec` decimal(4,2),  
+           bin binary)
+       row format delimited
+       fields terminated by '|'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@over10k_n13
+POSTHOOK: query: create table over10k_n13(
+           t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+	   ts timestamp, 
+           `dec` decimal(4,2),  
+           bin binary)
+       row format delimited
+       fields terminated by '|'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@over10k_n13
+PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n13
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@over10k_n13
+POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n13
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@over10k_n13
+PREHOOK: query: select i, ntile(10) over (partition by s order by i) from over10k_n13 limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n13
+#### A masked pattern was here ####
+POSTHOOK: query: select i, ntile(10) over (partition by s order by i) from over10k_n13 limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n13
+#### A masked pattern was here ####
+65545	1
+65557	2
+65600	3
+65609	4
+65662	5
+65670	6
+65720	7
+65758	8
+65569	1
+65570	1
+65666	2
+65667	2
+65673	3
+65696	3
+65704	4
+65707	4
+65708	5
+65711	6
+65733	7
+65779	8
+65781	9
+65790	10
+65545	1
+65559	2
+65559	3
+65565	4
+65576	5
+65695	6
+65710	7
+65713	8
+65747	9
+65785	10
+65544	1
+65547	1
+65554	2
+65560	2
+65563	3
+65590	3
+65596	4
+65631	4
+65641	5
+65676	5
+65677	6
+65677	6
+65690	7
+65707	7
+65740	8
+65742	8
+65747	9
+65791	10
+65537	1
+65544	1
+65557	2
+65572	2
+65612	3
+65677	3
+65681	4
+65698	4
+65699	5
+65713	5
+65730	6
+65741	7
+65744	8
+65745	9
+65787	10
+65596	1
+65597	1
+65611	2
+65622	2
+65669	3
+65685	3
+65690	4
+65699	4
+65709	5
+65710	5
+65715	6
+65718	6
+65722	7
+65752	7
+65773	8
+65775	9
+65785	10
+65573	1
+65613	1
+65623	2
+65630	2
+65674	3
+65675	3
+65712	4
+65725	5
+65734	6
+65744	7
+65746	8
+65746	9
+65759	10
+65543	1
+65545	1
+65569	2
+65603	2
+65633	3
+PREHOOK: query: select s, ntile(100) over (partition by i order by s) from over10k_n13 limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n13
+#### A masked pattern was here ####
+POSTHOOK: query: select s, ntile(100) over (partition by i order by s) from over10k_n13 limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n13
+#### A masked pattern was here ####
+alice ichabod	1
+alice robinson	2
+bob robinson	3
+calvin thompson	4
+david johnson	5
+david laertes	6
+david nixon	7
+david nixon	8
+ethan johnson	9
+ethan ovid	10
+ethan underhill	11
+fred miller	12
+fred miller	13
+gabriella garcia	14
+gabriella underhill	15
+holly white	16
+irene johnson	17
+katie ellison	18
+luke allen	19
+mike quirinius	20
+mike white	21
+nick davidson	22
+oscar allen	23
+oscar garcia	24
+oscar ichabod	25
+oscar ovid	26
+oscar steinbeck	27
+priscilla garcia	28
+priscilla white	29
+priscilla xylophone	30
+priscilla young	31
+rachel brown	32
+rachel ichabod	33
+rachel xylophone	34
+sarah thompson	35
+sarah thompson	36
+tom johnson	37
+tom steinbeck	38
+ulysses polk	39
+victor johnson	40
+wendy polk	41
+xavier davidson	42
+yuri ellison	43
+zach allen	44
+zach hernandez	45
+alice ellison	1
+bob carson	2
+calvin brown	3
+david xylophone	4
+ethan white	5
+fred johnson	6
+fred van buren	7
+gabriella ichabod	8
+holly laertes	9
+holly quirinius	10
+jessica hernandez	11
+katie robinson	12
+katie thompson	13
+luke nixon	14
+mike garcia	15
+mike hernandez	16
+nick carson	17
+nick davidson	18
+oscar carson	19
+oscar robinson	20
+priscilla white	21
+sarah falkner	22
+sarah ichabod	23
+ulysses falkner	24
+victor xylophone	25
+wendy garcia	26
+wendy van buren	27
+xavier underhill	28
+yuri garcia	29
+yuri quirinius	30
+yuri white	31
+zach falkner	32
+zach ichabod	33
+zach nixon	34
+zach ovid	35
+alice ichabod	1
+alice king	2
+alice robinson	3
+calvin allen	4
+gabriella johnson	5
+gabriella nixon	6
+holly falkner	7
+holly hernandez	8
+holly thompson	9
+katie nixon	10
+luke brown	11
+luke davidson	12
+luke white	13
+mike brown	14
+nick quirinius	15
+oscar white	16
+priscilla xylophone	17
+quinn garcia	18
+quinn laertes	19
+rachel young	20
+PREHOOK: query: select f, ntile(4) over (partition by d order by f) from over10k_n13 limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n13
+#### A masked pattern was here ####
+POSTHOOK: query: select f, ntile(4) over (partition by d order by f) from over10k_n13 limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n13
+#### A masked pattern was here ####
+8.39	1
+5.29	1
+25.5	2
+37.59	3
+79.24	1
+48.5	1
+60.0	2
+77.84	3
+14.36	1
+51.57	2
+87.91	3
+40.91	1
+59.09	2
+31.46	1
+46.55	2
+92.71	3
+59.72	1
+97.35	2
+98.89	3
+19.11	1
+13.33	1
+35.21	2
+30.47	1
+90.04	1
+15.36	1
+60.76	2
+77.44	3
+9.07	1
+50.08	1
+13.3	1
+87.05	1
+3.94	1
+66.95	2
+18.65	1
+41.66	2
+48.52	3
+75.93	4
+50.15	1
+70.77	2
+84.83	3
+64.79	1
+88.94	2
+1.42	1
+96.71	2
+9.88	1
+94.14	2
+25.69	1
+67.56	2
+85.72	3
+30.0	1
+40.0	1
+61.73	2
+82.8	3
+95.11	4
+80.65	1
+7.96	1
+96.54	2
+20.74	1
+49.61	1
+61.07	2
+69.97	3
+89.36	4
+2.66	1
+38.69	2
+58.25	3
+61.71	4
+32.69	1
+98.29	2
+0.62	1
+25.63	2
+90.1	3
+29.06	1
+69.42	2
+38.09	1
+68.81	2
+85.03	3
+75.75	1
+88.22	2
+24.02	1
+77.6	2
+76.99	1
+96.45	1
+1.09	1
+26.21	1
+57.61	2
+84.92	3
+80.99	1
+39.16	1
+39.82	2
+24.15	1
+44.57	2
+38.05	1
+81.55	2
+49.13	1
+74.45	2
+42.49	1
+37.63	1
+49.09	2
+67.28	3
+10.6	1
+PREHOOK: query: select d, ntile(1000) over (partition by `dec` order by d) from over10k_n13 limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n13
+#### A masked pattern was here ####
+POSTHOOK: query: select d, ntile(1000) over (partition by `dec` order by d) from over10k_n13 limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n13
+#### A masked pattern was here ####
+9.71	1
+41.04	2
+43.7	1
+1.42	1
+33.72	2
+4.83	1
+12.49	1
+6.26	1
+14.11	2
+41.76	3
+6.55	1
+11.27	1
+32.62	2
+40.35	3
+41.23	1
+39.43	1
+21.2	1
+40.64	1
+12.07	1
+43.97	2
+27.64	1
+0.7	1
+4.1	2
+33.38	1
+18.69	1
+33.65	2
+2.2	1
+0.38	1
+15.83	1
+11.38	1
+43.34	2
+15.95	1
+23.27	2
+38.18	3
+20.76	1
+5.63	1
+13.64	1
+34.33	2
+43.48	3
+44.21	1
+46.79	2
+6.52	1
+3.59	1
+40.26	2
+16.31	1
+25.9	2
+46.21	3
+45.08	1
+7.91	1
+24.37	2
+37.13	1
+5.37	1
+39.25	2
+7.25	1
+7.64	2
+16.09	3
+49.82	1
+16.08	1
+4.6	1
+14.12	1
+27.58	1
+28.42	2
+45.53	3
+48.56	4
+36.7	1
+32.68	1
+3.17	1
+24.84	2
+40.09	3
+26.36	1
+33.49	1
+24.76	1
+26.72	1
+13.95	1
+22.1	1
+18.94	1
+15.41	1
+10.76	1
+21.78	1
+39.02	2
+19.4	1
+25.37	1
+3.08	1
+6.32	1
+33.75	1
+49.49	1
+37.82	1
+15.27	1
+15.22	1
+11.43	1
+40.54	2
+4.81	1
+22.64	2
+14.18	1
+44.83	1
+5.15	1
+2.78	1
+3.7	2
+7.52	3
+45.55	4

@@ -1,0 +1,176 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.hadoop.hive.ql.exec;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.exec.tez.TezContext;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.Reporter;
+
+/**
+ * Runtime context of MapredTask providing additional information to GenericUDF
+ */
+public class MapredContext {
+
+  private static final Logger logger = LoggerFactory.getLogger("MapredContext");
+  private static final ThreadLocal<MapredContext> contexts = new ThreadLocal<MapredContext>();
+
+  public static MapredContext get() {
+    return contexts.get();
+  }
+
+  public static MapredContext init(boolean isMap, JobConf jobConf) {
+    MapredContext context =
+        HiveConf.getVar(jobConf, ConfVars.HIVE_EXECUTION_ENGINE).equals("tez") ?
+            new TezContext(isMap, jobConf) : new MapredContext(isMap, jobConf);
+    contexts.set(context);
+    if (logger.isDebugEnabled()) {
+      logger.debug("MapredContext initialized.");
+    }
+    return context;
+  }
+
+  // Creates a dummy MapredContext that uses conf as the basis for JobConf
+  // - the intent is for this to be used in situations where there is a
+  // need to provide a MapredContext but one is not available. (For example
+  // when hive.fetch.task.conversion optimization kicks in UDFs still expect
+  // configure to be called but a MapredContext isn't available)
+  public static MapredContext createDummy(Configuration conf) {
+    return new MapredContext(false, new JobConf(conf));
+  }
+
+  public static void close() {
+    MapredContext context = contexts.get();
+    if (context != null) {
+      context.closeAll();
+    }
+    contexts.remove();
+  }
+
+  private final boolean isMap;
+  private final JobConf jobConf;
+  private final List<Closeable> udfs;
+
+  private Reporter reporter;
+
+  protected MapredContext(boolean isMap, JobConf jobConf) {
+    this.isMap = isMap;
+    this.jobConf = jobConf;
+    this.udfs = new ArrayList<Closeable>();
+  }
+
+  /**
+   * Returns whether the UDF is called from Map or Reduce task.
+   */
+  public boolean isMap() {
+    return isMap;
+  }
+
+  /**
+   * Returns Reporter, which is set right before reading the first row.
+   */
+  public Reporter getReporter() {
+    return reporter;
+  }
+
+  /**
+   * Returns JobConf.
+   */
+  public JobConf getJobConf() {
+    return jobConf;
+  }
+
+  public void setReporter(Reporter reporter) {
+    this.reporter = reporter;
+  }
+
+  private void registerCloseable(Closeable closeable) {
+    udfs.add(closeable);
+  }
+
+  private void closeAll() {
+    for (Closeable eval : udfs) {
+      try {
+        eval.close();
+      } catch (IOException e) {
+        logger.info("Hit error while closing udf " + eval);
+      }
+    }
+    udfs.clear();
+  }
+
+  public void setup(GenericUDF genericUDF) {
+    if (needConfigure(genericUDF)) {
+      genericUDF.configure(this);
+    }
+    if (needClose(genericUDF)) {
+      registerCloseable(genericUDF);
+    }
+  }
+
+  void setup(GenericUDAFEvaluator genericUDAF) {
+    if (needConfigure(genericUDAF)) {
+      genericUDAF.configure(this);
+    }
+    if (needClose(genericUDAF)) {
+      registerCloseable(genericUDAF);
+    }
+  }
+
+  void setup(GenericUDTF genericUDTF) {
+    if (needConfigure(genericUDTF)) {
+      genericUDTF.configure(this);
+    }
+    // close is called by UDTFOperator
+  }
+
+  static boolean needConfigure(Object func) {
+    try {
+      Method initMethod = func.getClass().getMethod("configure", MapredContext.class);
+      return initMethod.getDeclaringClass() != GenericUDF.class &&
+        initMethod.getDeclaringClass() != GenericUDAFEvaluator.class &&
+        initMethod.getDeclaringClass() != GenericUDTF.class;
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+  private boolean needClose(Closeable func) {
+    try {
+      Method closeMethod = func.getClass().getMethod("close");
+      return closeMethod.getDeclaringClass() != GenericUDF.class &&
+        closeMethod.getDeclaringClass() != GenericUDAFEvaluator.class;
+    } catch (Exception e) {
+      return false;
+    }
+  }
+}

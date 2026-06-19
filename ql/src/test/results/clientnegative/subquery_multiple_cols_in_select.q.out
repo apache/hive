@@ -1,0 +1,1 @@
+FAILED: CalciteSubquerySemanticException [Error 10250]: Invalid SubQuery expression SubQuery can contain only 1 item in Select List.

@@ -1,0 +1,428 @@
+PREHOOK: query: drop table if exists json_serde3_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists json_serde3_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists json_serde3_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists json_serde3_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists json_serde3_3
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists json_serde3_3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists json_serde3_4
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists json_serde3_4
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists json_serde3_5
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists json_serde3_5
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists json_serde3_6
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists json_serde3_6
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table json_serde3_1 (
+    binarycolumn1 binary,
+    binarycolumn2 binary,
+    binarycolumn3 binary,
+    binarycolumn4 binary,
+    binarycolumn5 binary,
+    binarycolumn6 binary
+    )
+  row format serde 'org.apache.hadoop.hive.serde2.JsonSerDe'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@json_serde3_1
+POSTHOOK: query: create table json_serde3_1 (
+    binarycolumn1 binary,
+    binarycolumn2 binary,
+    binarycolumn3 binary,
+    binarycolumn4 binary,
+    binarycolumn5 binary,
+    binarycolumn6 binary
+    )
+  row format serde 'org.apache.hadoop.hive.serde2.JsonSerDe'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@json_serde3_1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/jsonserde.txt' into table json_serde3_1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@json_serde3_1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/jsonserde.txt' into table json_serde3_1
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@json_serde3_1
+PREHOOK: query: INSERT INTO TABLE json_serde3_1 VALUES (BINARY(CAST(-2 AS STRING)), BINARY(CAST(false AS STRING)), null, BINARY(CAST(true AS STRING)), BINARY(CAST(1.23e45 AS STRING)), "value")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@json_serde3_1
+POSTHOOK: query: INSERT INTO TABLE json_serde3_1 VALUES (BINARY(CAST(-2 AS STRING)), BINARY(CAST(false AS STRING)), null, BINARY(CAST(true AS STRING)), BINARY(CAST(1.23e45 AS STRING)), "value")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@json_serde3_1
+POSTHOOK: Lineage: json_serde3_1.binarycolumn1 SCRIPT []
+POSTHOOK: Lineage: json_serde3_1.binarycolumn2 SCRIPT []
+POSTHOOK: Lineage: json_serde3_1.binarycolumn3 EXPRESSION []
+POSTHOOK: Lineage: json_serde3_1.binarycolumn4 SCRIPT []
+POSTHOOK: Lineage: json_serde3_1.binarycolumn5 SCRIPT []
+POSTHOOK: Lineage: json_serde3_1.binarycolumn6 SCRIPT []
+PREHOOK: query: select * from json_serde3_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@json_serde3_1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from json_serde3_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@json_serde3_1
+#### A masked pattern was here ####
+-2	FALSE	NULL	TRUE	1.23E45	value
+-2	false	NULL	true	1.23E+45	value
+PREHOOK: query: create table json_serde3_2 (
+    binarycolumn1 binary,
+    binarycolumn2 binary,
+    binarycolumn3 binary,
+    binarycolumn4 binary,
+    binarycolumn5 binary,
+    binarycolumn6 binary)
+  row format serde 'org.apache.hive.hcatalog.data.JsonSerDe'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@json_serde3_2
+POSTHOOK: query: create table json_serde3_2 (
+    binarycolumn1 binary,
+    binarycolumn2 binary,
+    binarycolumn3 binary,
+    binarycolumn4 binary,
+    binarycolumn5 binary,
+    binarycolumn6 binary)
+  row format serde 'org.apache.hive.hcatalog.data.JsonSerDe'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@json_serde3_2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/jsonserde.txt' into table json_serde3_2
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@json_serde3_2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/jsonserde.txt' into table json_serde3_2
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@json_serde3_2
+PREHOOK: query: INSERT INTO TABLE json_serde3_2 VALUES (BINARY(CAST(-2 AS STRING)), BINARY(CAST(false AS STRING)), null, BINARY(CAST(true AS STRING)), BINARY(CAST(1.23e45 AS STRING)), "value")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@json_serde3_2
+POSTHOOK: query: INSERT INTO TABLE json_serde3_2 VALUES (BINARY(CAST(-2 AS STRING)), BINARY(CAST(false AS STRING)), null, BINARY(CAST(true AS STRING)), BINARY(CAST(1.23e45 AS STRING)), "value")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@json_serde3_2
+POSTHOOK: Lineage: json_serde3_2.binarycolumn1 SCRIPT []
+POSTHOOK: Lineage: json_serde3_2.binarycolumn2 SCRIPT []
+POSTHOOK: Lineage: json_serde3_2.binarycolumn3 EXPRESSION []
+POSTHOOK: Lineage: json_serde3_2.binarycolumn4 SCRIPT []
+POSTHOOK: Lineage: json_serde3_2.binarycolumn5 SCRIPT []
+POSTHOOK: Lineage: json_serde3_2.binarycolumn6 SCRIPT []
+PREHOOK: query: select * from json_serde3_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@json_serde3_2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from json_serde3_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@json_serde3_2
+#### A masked pattern was here ####
+-2	FALSE	NULL	TRUE	1.23E45	value
+-2	false	NULL	true	1.23E+45	value
+PREHOOK: query: create table json_serde3_3 (
+    booleancaseinsensitive boolean,
+    booleanstring boolean,
+    booleanboolean boolean,
+    stringfalse boolean,
+    somestring boolean,
+    booleannull boolean,
+    booleannumfalse boolean,
+    booleannumtrue boolean)
+  row format serde 'org.apache.hadoop.hive.serde2.JsonSerDe'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@json_serde3_3
+POSTHOOK: query: create table json_serde3_3 (
+    booleancaseinsensitive boolean,
+    booleanstring boolean,
+    booleanboolean boolean,
+    stringfalse boolean,
+    somestring boolean,
+    booleannull boolean,
+    booleannumfalse boolean,
+    booleannumtrue boolean)
+  row format serde 'org.apache.hadoop.hive.serde2.JsonSerDe'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@json_serde3_3
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/jsonserde.txt' into table json_serde3_3
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@json_serde3_3
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/jsonserde.txt' into table json_serde3_3
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@json_serde3_3
+PREHOOK: query: INSERT INTO TABLE json_serde3_3 VALUES ("TrUE", "true", true, "FaLSE", "somestringhere", null, 0, -1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@json_serde3_3
+POSTHOOK: query: INSERT INTO TABLE json_serde3_3 VALUES ("TrUE", "true", true, "FaLSE", "somestringhere", null, 0, -1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@json_serde3_3
+POSTHOOK: Lineage: json_serde3_3.booleanboolean SCRIPT []
+POSTHOOK: Lineage: json_serde3_3.booleancaseinsensitive SCRIPT []
+POSTHOOK: Lineage: json_serde3_3.booleannull EXPRESSION []
+POSTHOOK: Lineage: json_serde3_3.booleannumfalse SCRIPT []
+POSTHOOK: Lineage: json_serde3_3.booleannumtrue SCRIPT []
+POSTHOOK: Lineage: json_serde3_3.booleanstring SCRIPT []
+POSTHOOK: Lineage: json_serde3_3.somestring SCRIPT []
+POSTHOOK: Lineage: json_serde3_3.stringfalse SCRIPT []
+PREHOOK: query: select * from json_serde3_3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@json_serde3_3
+#### A masked pattern was here ####
+POSTHOOK: query: select * from json_serde3_3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@json_serde3_3
+#### A masked pattern was here ####
+true	true	true	false	true	NULL	false	true
+true	true	true	false	true	NULL	false	true
+PREHOOK: query: create table json_serde3_4 (
+    booleancaseinsensitive boolean,
+    booleanstring boolean,
+    booleanboolean boolean,
+    stringfalse boolean,
+    somestring boolean,
+    booleannull boolean,
+    booleannumfalse boolean,
+    booleannumtrue boolean)
+  row format serde 'org.apache.hive.hcatalog.data.JsonSerDe'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@json_serde3_4
+POSTHOOK: query: create table json_serde3_4 (
+    booleancaseinsensitive boolean,
+    booleanstring boolean,
+    booleanboolean boolean,
+    stringfalse boolean,
+    somestring boolean,
+    booleannull boolean,
+    booleannumfalse boolean,
+    booleannumtrue boolean)
+  row format serde 'org.apache.hive.hcatalog.data.JsonSerDe'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@json_serde3_4
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/jsonserde.txt' into table json_serde3_4
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@json_serde3_4
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/jsonserde.txt' into table json_serde3_4
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@json_serde3_4
+PREHOOK: query: INSERT INTO TABLE json_serde3_4 VALUES ("TrUE", "true", true, "FaLSE", "somestringhere", null, 0, -1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@json_serde3_4
+POSTHOOK: query: INSERT INTO TABLE json_serde3_4 VALUES ("TrUE", "true", true, "FaLSE", "somestringhere", null, 0, -1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@json_serde3_4
+POSTHOOK: Lineage: json_serde3_4.booleanboolean SCRIPT []
+POSTHOOK: Lineage: json_serde3_4.booleancaseinsensitive SCRIPT []
+POSTHOOK: Lineage: json_serde3_4.booleannull EXPRESSION []
+POSTHOOK: Lineage: json_serde3_4.booleannumfalse SCRIPT []
+POSTHOOK: Lineage: json_serde3_4.booleannumtrue SCRIPT []
+POSTHOOK: Lineage: json_serde3_4.booleanstring SCRIPT []
+POSTHOOK: Lineage: json_serde3_4.somestring SCRIPT []
+POSTHOOK: Lineage: json_serde3_4.stringfalse SCRIPT []
+PREHOOK: query: select * from json_serde3_4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@json_serde3_4
+#### A masked pattern was here ####
+POSTHOOK: query: select * from json_serde3_4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@json_serde3_4
+#### A masked pattern was here ####
+true	true	true	false	true	NULL	false	true
+true	true	true	false	true	NULL	false	true
+PREHOOK: query: create table json_serde3_5 (
+    decimalcol1 decimal(18,2),
+    decimalcol2 decimal(38,2),
+    decimalcol3 decimal(38,2),
+    decimalcol4 decimal(18,2),
+    decimalcol5 decimal(38,2))
+  row format serde 'org.apache.hadoop.hive.serde2.JsonSerDe'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@json_serde3_5
+POSTHOOK: query: create table json_serde3_5 (
+    decimalcol1 decimal(18,2),
+    decimalcol2 decimal(38,2),
+    decimalcol3 decimal(38,2),
+    decimalcol4 decimal(18,2),
+    decimalcol5 decimal(38,2))
+  row format serde 'org.apache.hadoop.hive.serde2.JsonSerDe'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@json_serde3_5
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/jsonserde.txt' into table json_serde3_5
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@json_serde3_5
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/jsonserde.txt' into table json_serde3_5
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@json_serde3_5
+PREHOOK: query: INSERT INTO TABLE json_serde3_5 VALUES (-9999999999999999.99, 9999999999999999.99, 1000000000000000000000000000000000000.00, 99.999, 1e39)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@json_serde3_5
+POSTHOOK: query: INSERT INTO TABLE json_serde3_5 VALUES (-9999999999999999.99, 9999999999999999.99, 1000000000000000000000000000000000000.00, 99.999, 1e39)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@json_serde3_5
+POSTHOOK: Lineage: json_serde3_5.decimalcol1 SCRIPT []
+POSTHOOK: Lineage: json_serde3_5.decimalcol2 SCRIPT []
+POSTHOOK: Lineage: json_serde3_5.decimalcol3 SCRIPT []
+POSTHOOK: Lineage: json_serde3_5.decimalcol4 SCRIPT []
+POSTHOOK: Lineage: json_serde3_5.decimalcol5 SCRIPT []
+PREHOOK: query: select * from json_serde3_5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@json_serde3_5
+#### A masked pattern was here ####
+POSTHOOK: query: select * from json_serde3_5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@json_serde3_5
+#### A masked pattern was here ####
+-9999999999999999.99	9999999999999999.99	NULL	100.00	NULL
+-9999999999999999.99	9999999999999999.99	NULL	100.00	NULL
+PREHOOK: query: create table json_serde3_6 (
+    decimalcol1 decimal(18,2),
+    decimalcol2 decimal(38,2),
+    decimalcol3 decimal(38,2),
+    decimalcol4 decimal(18,2),
+    decimalcol5 decimal(38,2))
+  row format serde 'org.apache.hive.hcatalog.data.JsonSerDe'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@json_serde3_6
+POSTHOOK: query: create table json_serde3_6 (
+    decimalcol1 decimal(18,2),
+    decimalcol2 decimal(38,2),
+    decimalcol3 decimal(38,2),
+    decimalcol4 decimal(18,2),
+    decimalcol5 decimal(38,2))
+  row format serde 'org.apache.hive.hcatalog.data.JsonSerDe'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@json_serde3_6
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/jsonserde.txt' into table json_serde3_6
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@json_serde3_6
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/jsonserde.txt' into table json_serde3_6
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@json_serde3_6
+PREHOOK: query: INSERT INTO TABLE json_serde3_6 VALUES (-9999999999999999.99, 9999999999999999.99, 1000000000000000000000000000000000000.00, 99.999, 1e39)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@json_serde3_6
+POSTHOOK: query: INSERT INTO TABLE json_serde3_6 VALUES (-9999999999999999.99, 9999999999999999.99, 1000000000000000000000000000000000000.00, 99.999, 1e39)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@json_serde3_6
+POSTHOOK: Lineage: json_serde3_6.decimalcol1 SCRIPT []
+POSTHOOK: Lineage: json_serde3_6.decimalcol2 SCRIPT []
+POSTHOOK: Lineage: json_serde3_6.decimalcol3 SCRIPT []
+POSTHOOK: Lineage: json_serde3_6.decimalcol4 SCRIPT []
+POSTHOOK: Lineage: json_serde3_6.decimalcol5 SCRIPT []
+PREHOOK: query: select * from json_serde3_6
+PREHOOK: type: QUERY
+PREHOOK: Input: default@json_serde3_6
+#### A masked pattern was here ####
+POSTHOOK: query: select * from json_serde3_6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@json_serde3_6
+#### A masked pattern was here ####
+-9999999999999999.99	9999999999999999.99	NULL	100.00	NULL
+-9999999999999999.99	9999999999999999.99	NULL	100.00	NULL
+PREHOOK: query: drop table json_serde3_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@json_serde3_1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@json_serde3_1
+POSTHOOK: query: drop table json_serde3_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@json_serde3_1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@json_serde3_1
+PREHOOK: query: drop table json_serde3_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@json_serde3_2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@json_serde3_2
+POSTHOOK: query: drop table json_serde3_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@json_serde3_2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@json_serde3_2
+PREHOOK: query: drop table json_serde3_3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@json_serde3_3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@json_serde3_3
+POSTHOOK: query: drop table json_serde3_3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@json_serde3_3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@json_serde3_3
+PREHOOK: query: drop table json_serde3_4
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@json_serde3_4
+PREHOOK: Output: database:default
+PREHOOK: Output: default@json_serde3_4
+POSTHOOK: query: drop table json_serde3_4
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@json_serde3_4
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@json_serde3_4
+PREHOOK: query: drop table json_serde3_5
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@json_serde3_5
+PREHOOK: Output: database:default
+PREHOOK: Output: default@json_serde3_5
+POSTHOOK: query: drop table json_serde3_5
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@json_serde3_5
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@json_serde3_5
+PREHOOK: query: drop table json_serde3_6
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@json_serde3_6
+PREHOOK: Output: database:default
+PREHOOK: Output: default@json_serde3_6
+POSTHOOK: query: drop table json_serde3_6
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@json_serde3_6
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@json_serde3_6

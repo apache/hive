@@ -1,0 +1,21 @@
+{
+  "contentColumn": {
+    "name": "body",
+    "pos": 1
+  },
+  "keyColumnName": "player_id",
+  "dataColumns": [
+    {
+      "name": "o",
+      "pos": 2
+    },
+    {
+      "name": "m",
+      "pos": 3
+    },
+    {
+      "name": "f",
+      "pos": 4
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+PREHOOK: query: CREATE TABLE  t_gpr1(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_gpr1
+POSTHOOK: query: CREATE TABLE  t_gpr1(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_gpr1
+PREHOOK: query: GRANT ALL ON t_gpr1 TO ROLE pubLic
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@t_gpr1
+POSTHOOK: query: GRANT ALL ON t_gpr1 TO ROLE pubLic
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@t_gpr1
+PREHOOK: query: SHOW GRANT USER user1 ON TABLE t_gpr1
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT USER user1 ON TABLE t_gpr1
+POSTHOOK: type: SHOW_GRANT
+default	t_gpr1			user1	USER	DELETE	true	-1	user1
+default	t_gpr1			user1	USER	INSERT	true	-1	user1
+default	t_gpr1			user1	USER	SELECT	true	-1	user1
+default	t_gpr1			user1	USER	UPDATE	true	-1	user1
+PREHOOK: query: SHOW GRANT ROLE pubLic ON TABLE t_gpr1
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT ROLE pubLic ON TABLE t_gpr1
+POSTHOOK: type: SHOW_GRANT
+default	t_gpr1			public	ROLE	DELETE	false	-1	user1
+default	t_gpr1			public	ROLE	INSERT	false	-1	user1
+default	t_gpr1			public	ROLE	SELECT	false	-1	user1
+default	t_gpr1			public	ROLE	UPDATE	false	-1	user1
+PREHOOK: query: SHOW CURRENT ROLES
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: SHOW CURRENT ROLES
+POSTHOOK: type: SHOW_ROLES
+public
+PREHOOK: query: DESC t_gpr1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t_gpr1
+POSTHOOK: query: DESC t_gpr1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t_gpr1
+i                   	int                 	                    

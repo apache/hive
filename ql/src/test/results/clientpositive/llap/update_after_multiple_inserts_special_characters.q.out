@@ -1,0 +1,79 @@
+PREHOOK: query: create table `aci/d_u/ami`(i int,
+                 `d?*de e` decimal(5,2),
+                 vc varchar(128)) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@aci/d_u/ami
+POSTHOOK: query: create table `aci/d_u/ami`(i int,
+                 `d?*de e` decimal(5,2),
+                 vc varchar(128)) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@aci/d_u/ami
+PREHOOK: query: insert into table `aci/d_u/ami` values 
+    (1, 109.23, 'mary had a little lamb'),
+    (6553, 923.19, 'its fleece was white as snow')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@aci/d_u/ami
+POSTHOOK: query: insert into table `aci/d_u/ami` values 
+    (1, 109.23, 'mary had a little lamb'),
+    (6553, 923.19, 'its fleece was white as snow')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@aci/d_u/ami
+POSTHOOK: Lineage: aci/d_u/ami.d?*de e SCRIPT []
+POSTHOOK: Lineage: aci/d_u/ami.i SCRIPT []
+POSTHOOK: Lineage: aci/d_u/ami.vc SCRIPT []
+PREHOOK: query: insert into table `aci/d_u/ami` values 
+    (10, 119.23, 'and everywhere that mary went'),
+    (65530, 823.19, 'the lamb was sure to go')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@aci/d_u/ami
+POSTHOOK: query: insert into table `aci/d_u/ami` values 
+    (10, 119.23, 'and everywhere that mary went'),
+    (65530, 823.19, 'the lamb was sure to go')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@aci/d_u/ami
+POSTHOOK: Lineage: aci/d_u/ami.d?*de e SCRIPT []
+POSTHOOK: Lineage: aci/d_u/ami.i SCRIPT []
+POSTHOOK: Lineage: aci/d_u/ami.vc SCRIPT []
+PREHOOK: query: select * from `aci/d_u/ami` order by `d?*de e`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@aci/d_u/ami
+#### A masked pattern was here ####
+POSTHOOK: query: select * from `aci/d_u/ami` order by `d?*de e`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@aci/d_u/ami
+#### A masked pattern was here ####
+1	109.23	mary had a little lamb
+10	119.23	and everywhere that mary went
+6553	923.19	its fleece was white as snow
+65530	823.19	the lamb was sure to go
+PREHOOK: query: update `aci/d_u/ami` set `d?*de e` = 3.14 where `d?*de e` = 109.23 or `d?*de e` = 119.23
+PREHOOK: type: QUERY
+PREHOOK: Input: default@aci/d_u/ami
+PREHOOK: Output: default@aci/d_u/ami
+PREHOOK: Output: default@aci/d_u/ami
+POSTHOOK: query: update `aci/d_u/ami` set `d?*de e` = 3.14 where `d?*de e` = 109.23 or `d?*de e` = 119.23
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@aci/d_u/ami
+POSTHOOK: Output: default@aci/d_u/ami
+POSTHOOK: Output: default@aci/d_u/ami
+POSTHOOK: Lineage: aci/d_u/ami.d?*de e EXPRESSION []
+POSTHOOK: Lineage: aci/d_u/ami.i SIMPLE [(aci/d_u/ami)aci/d_u/ami.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: aci/d_u/ami.vc SIMPLE [(aci/d_u/ami)aci/d_u/ami.FieldSchema(name:vc, type:varchar(128), comment:null), ]
+PREHOOK: query: select * from `aci/d_u/ami` order by `d?*de e`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@aci/d_u/ami
+#### A masked pattern was here ####
+POSTHOOK: query: select * from `aci/d_u/ami` order by `d?*de e`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@aci/d_u/ami
+#### A masked pattern was here ####
+1	3.14	mary had a little lamb
+10	3.14	and everywhere that mary went
+6553	923.19	its fleece was white as snow
+65530	823.19	the lamb was sure to go

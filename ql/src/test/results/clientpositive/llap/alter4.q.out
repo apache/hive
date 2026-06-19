@@ -1,0 +1,135 @@
+PREHOOK: query: CREATE TABLE set_bucketing_test (key INT, value STRING) CLUSTERED BY (key) INTO 10 BUCKETS
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@set_bucketing_test
+POSTHOOK: query: CREATE TABLE set_bucketing_test (key INT, value STRING) CLUSTERED BY (key) INTO 10 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@set_bucketing_test
+PREHOOK: query: DESCRIBE EXTENDED set_bucketing_test
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@set_bucketing_test
+POSTHOOK: query: DESCRIBE EXTENDED set_bucketing_test
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@set_bucketing_test
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: ALTER TABLE set_bucketing_test NOT CLUSTERED
+PREHOOK: type: ALTERTABLE_CLUSTER_SORT
+PREHOOK: Input: default@set_bucketing_test
+PREHOOK: Output: default@set_bucketing_test
+POSTHOOK: query: ALTER TABLE set_bucketing_test NOT CLUSTERED
+POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
+POSTHOOK: Input: default@set_bucketing_test
+POSTHOOK: Output: default@set_bucketing_test
+PREHOOK: query: DESCRIBE EXTENDED set_bucketing_test
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@set_bucketing_test
+POSTHOOK: query: DESCRIBE EXTENDED set_bucketing_test
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@set_bucketing_test
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: DROP TABLE set_bucketing_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@set_bucketing_test
+PREHOOK: Output: database:default
+PREHOOK: Output: default@set_bucketing_test
+POSTHOOK: query: DROP TABLE set_bucketing_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@set_bucketing_test
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@set_bucketing_test
+PREHOOK: query: SHOW TABLES LIKE "set_bucketing_%"
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
+POSTHOOK: query: SHOW TABLES LIKE "set_bucketing_%"
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
+PREHOOK: query: CREATE DATABASE alter4_db
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:alter4_db
+POSTHOOK: query: CREATE DATABASE alter4_db
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:alter4_db
+PREHOOK: query: USE alter4_db
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:alter4_db
+POSTHOOK: query: USE alter4_db
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:alter4_db
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:alter4_db
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:alter4_db
+PREHOOK: query: CREATE TABLE set_bucketing_test (key INT, value STRING) CLUSTERED BY (key) INTO 10 BUCKETS
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: alter4_db@set_bucketing_test
+PREHOOK: Output: database:alter4_db
+POSTHOOK: query: CREATE TABLE set_bucketing_test (key INT, value STRING) CLUSTERED BY (key) INTO 10 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: alter4_db@set_bucketing_test
+POSTHOOK: Output: database:alter4_db
+PREHOOK: query: DESCRIBE EXTENDED set_bucketing_test
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter4_db@set_bucketing_test
+POSTHOOK: query: DESCRIBE EXTENDED set_bucketing_test
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter4_db@set_bucketing_test
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: ALTER TABLE set_bucketing_test NOT CLUSTERED
+PREHOOK: type: ALTERTABLE_CLUSTER_SORT
+PREHOOK: Input: alter4_db@set_bucketing_test
+PREHOOK: Output: alter4_db@set_bucketing_test
+POSTHOOK: query: ALTER TABLE set_bucketing_test NOT CLUSTERED
+POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
+POSTHOOK: Input: alter4_db@set_bucketing_test
+POSTHOOK: Output: alter4_db@set_bucketing_test
+PREHOOK: query: DESCRIBE EXTENDED set_bucketing_test
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter4_db@set_bucketing_test
+POSTHOOK: query: DESCRIBE EXTENDED set_bucketing_test
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter4_db@set_bucketing_test
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: DROP TABLE set_bucketing_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: alter4_db@set_bucketing_test
+PREHOOK: Output: alter4_db@set_bucketing_test
+PREHOOK: Output: database:alter4_db
+POSTHOOK: query: DROP TABLE set_bucketing_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: alter4_db@set_bucketing_test
+POSTHOOK: Output: alter4_db@set_bucketing_test
+POSTHOOK: Output: database:alter4_db
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: DROP DATABASE alter4_db
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:alter4_db
+PREHOOK: Output: database:alter4_db
+POSTHOOK: query: DROP DATABASE alter4_db
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:alter4_db
+POSTHOOK: Output: database:alter4_db
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default

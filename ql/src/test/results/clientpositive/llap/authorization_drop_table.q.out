@@ -1,0 +1,194 @@
+PREHOOK: query: DROP TABLE auth_db.auth_permanent_table
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE auth_db.auth_permanent_table
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS auth_db.auth_permanent_table
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS auth_db.auth_permanent_table
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE DATABASE auth_db
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:auth_db
+POSTHOOK: query: CREATE DATABASE auth_db
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:auth_db
+PREHOOK: query: GRANT DROP ON DATABASE auth_db TO USER hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: query: GRANT DROP ON DATABASE auth_db TO USER hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+PREHOOK: query: DROP TABLE auth_db.auth_permanent_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:auth_db
+POSTHOOK: query: DROP TABLE auth_db.auth_permanent_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:auth_db
+PREHOOK: query: DROP TABLE IF EXISTS auth_db.auth_permanent_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:auth_db
+POSTHOOK: query: DROP TABLE IF EXISTS auth_db.auth_permanent_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:auth_db
+PREHOOK: query: create table auth_db.drop_table_auth_1 (key int, value string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: auth_db@drop_table_auth_1
+PREHOOK: Output: database:auth_db
+POSTHOOK: query: create table auth_db.drop_table_auth_1 (key int, value string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: auth_db@drop_table_auth_1
+POSTHOOK: Output: database:auth_db
+PREHOOK: query: create table auth_db.drop_table_auth_2 (key int, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: auth_db@drop_table_auth_2
+PREHOOK: Output: database:auth_db
+POSTHOOK: query: create table auth_db.drop_table_auth_2 (key int, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: auth_db@drop_table_auth_2
+POSTHOOK: Output: database:auth_db
+PREHOOK: query: CREATE TEMPORARY TABLE auth_temp_table_1(key STRING, c1 INT, c2 STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@auth_temp_table_1
+POSTHOOK: query: CREATE TEMPORARY TABLE auth_temp_table_1(key STRING, c1 INT, c2 STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@auth_temp_table_1
+PREHOOK: query: CREATE TEMPORARY TABLE auth_temp_table_2(key STRING, c1 INT, c2 STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@auth_temp_table_2
+POSTHOOK: query: CREATE TEMPORARY TABLE auth_temp_table_2(key STRING, c1 INT, c2 STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@auth_temp_table_2
+PREHOOK: query: DROP TABLE auth_db.drop_table_auth_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: auth_db@drop_table_auth_1
+PREHOOK: Output: auth_db@drop_table_auth_1
+PREHOOK: Output: database:auth_db
+POSTHOOK: query: DROP TABLE auth_db.drop_table_auth_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: auth_db@drop_table_auth_1
+POSTHOOK: Output: auth_db@drop_table_auth_1
+POSTHOOK: Output: database:auth_db
+PREHOOK: query: DROP TABLE IF EXISTS auth_db.drop_table_auth_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: auth_db@drop_table_auth_2
+PREHOOK: Output: auth_db@drop_table_auth_2
+PREHOOK: Output: database:auth_db
+POSTHOOK: query: DROP TABLE IF EXISTS auth_db.drop_table_auth_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: auth_db@drop_table_auth_2
+POSTHOOK: Output: auth_db@drop_table_auth_2
+POSTHOOK: Output: database:auth_db
+PREHOOK: query: DROP TABLE auth_db.auth_temp_table_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:auth_db
+POSTHOOK: query: DROP TABLE auth_db.auth_temp_table_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:auth_db
+PREHOOK: query: DROP TABLE IF EXISTS auth_db.auth_temp_table_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:auth_db
+POSTHOOK: query: DROP TABLE IF EXISTS auth_db.auth_temp_table_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:auth_db
+PREHOOK: query: CREATE DATABASE auth_db_1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:auth_db_1
+POSTHOOK: query: CREATE DATABASE auth_db_1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:auth_db_1
+PREHOOK: query: use auth_db_1
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:auth_db_1
+POSTHOOK: query: use auth_db_1
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:auth_db_1
+PREHOOK: query: GRANT DROP ON DATABASE auth_db_1 TO USER hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: query: GRANT DROP ON DATABASE auth_db_1 TO USER hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+PREHOOK: query: create table drop_table_auth_3 (key int, value string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: auth_db_1@drop_table_auth_3
+PREHOOK: Output: database:auth_db_1
+POSTHOOK: query: create table drop_table_auth_3 (key int, value string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: auth_db_1@drop_table_auth_3
+POSTHOOK: Output: database:auth_db_1
+PREHOOK: query: create table drop_table_auth_4 (key int, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: auth_db_1@drop_table_auth_4
+PREHOOK: Output: database:auth_db_1
+POSTHOOK: query: create table drop_table_auth_4 (key int, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: auth_db_1@drop_table_auth_4
+POSTHOOK: Output: database:auth_db_1
+PREHOOK: query: CREATE TEMPORARY TABLE auth_temp_table_1(key STRING, c1 INT, c2 STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: auth_db_1@auth_temp_table_1
+PREHOOK: Output: database:auth_db_1
+POSTHOOK: query: CREATE TEMPORARY TABLE auth_temp_table_1(key STRING, c1 INT, c2 STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: auth_db_1@auth_temp_table_1
+POSTHOOK: Output: database:auth_db_1
+PREHOOK: query: CREATE TEMPORARY TABLE auth_temp_table_2(key STRING, c1 INT, c2 STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: auth_db_1@auth_temp_table_2
+PREHOOK: Output: database:auth_db_1
+POSTHOOK: query: CREATE TEMPORARY TABLE auth_temp_table_2(key STRING, c1 INT, c2 STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: auth_db_1@auth_temp_table_2
+POSTHOOK: Output: database:auth_db_1
+PREHOOK: query: DROP TABLE auth_temp_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:auth_db_1
+POSTHOOK: query: DROP TABLE auth_temp_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:auth_db_1
+PREHOOK: query: DROP TABLE IF EXISTS auth_temp_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:auth_db_1
+POSTHOOK: query: DROP TABLE IF EXISTS auth_temp_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:auth_db_1
+PREHOOK: query: DROP TABLE drop_table_auth_3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: auth_db_1@drop_table_auth_3
+PREHOOK: Output: auth_db_1@drop_table_auth_3
+PREHOOK: Output: database:auth_db_1
+POSTHOOK: query: DROP TABLE drop_table_auth_3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: auth_db_1@drop_table_auth_3
+POSTHOOK: Output: auth_db_1@drop_table_auth_3
+POSTHOOK: Output: database:auth_db_1
+PREHOOK: query: DROP TABLE IF EXISTS drop_table_auth_4
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: auth_db_1@drop_table_auth_4
+PREHOOK: Output: auth_db_1@drop_table_auth_4
+PREHOOK: Output: database:auth_db_1
+POSTHOOK: query: DROP TABLE IF EXISTS drop_table_auth_4
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: auth_db_1@drop_table_auth_4
+POSTHOOK: Output: auth_db_1@drop_table_auth_4
+POSTHOOK: Output: database:auth_db_1
+PREHOOK: query: DROP TABLE auth_temp_table_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: auth_db_1@auth_temp_table_1
+PREHOOK: Output: auth_db_1@auth_temp_table_1
+PREHOOK: Output: database:auth_db_1
+POSTHOOK: query: DROP TABLE auth_temp_table_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: auth_db_1@auth_temp_table_1
+POSTHOOK: Output: auth_db_1@auth_temp_table_1
+POSTHOOK: Output: database:auth_db_1
+PREHOOK: query: DROP TABLE IF EXISTS auth_temp_table_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: auth_db_1@auth_temp_table_2
+PREHOOK: Output: auth_db_1@auth_temp_table_2
+PREHOOK: Output: database:auth_db_1
+POSTHOOK: query: DROP TABLE IF EXISTS auth_temp_table_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: auth_db_1@auth_temp_table_2
+POSTHOOK: Output: auth_db_1@auth_temp_table_2
+POSTHOOK: Output: database:auth_db_1

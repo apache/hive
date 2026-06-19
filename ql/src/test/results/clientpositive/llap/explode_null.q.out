@@ -1,0 +1,34 @@
+PREHOOK: query: SELECT explode(col) AS myCol FROM 
+    (select * from (SELECT array(1,2,3) AS col FROM src LIMIT 1)ea 
+     UNION ALL
+     select * from (SELECT NULLIF(array(1,2,3),array(1,2,3)) AS col FROM src LIMIT 1)eb) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT explode(col) AS myCol FROM 
+    (select * from (SELECT array(1,2,3) AS col FROM src LIMIT 1)ea 
+     UNION ALL
+     select * from (SELECT NULLIF(array(1,2,3),array(1,2,3)) AS col FROM src LIMIT 1)eb) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1
+2
+3
+PREHOOK: query: SELECT explode(col) AS (myCol1,myCol2) FROM
+    (select * from (SELECT map(1,'one',2,'two',3,'three') AS col FROM src LIMIT 1)ea
+     UNION ALL
+     select * from (SELECT NULLIF(map(1,'one',2,'two',3,'three'),map(1,'one',2,'two',3,'three')) AS col FROM src LIMIT 1)eb ) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT explode(col) AS (myCol1,myCol2) FROM
+    (select * from (SELECT map(1,'one',2,'two',3,'three') AS col FROM src LIMIT 1)ea
+     UNION ALL
+     select * from (SELECT NULLIF(map(1,'one',2,'two',3,'three'),map(1,'one',2,'two',3,'three')) AS col FROM src LIMIT 1)eb ) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1	one
+2	two
+3	three

@@ -1,0 +1,90 @@
+PREHOOK: query: CREATE TABLE IF NOT EXISTS t1(c0 boolean, c1 boolean)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS t1(c0 boolean, c1 boolean)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: Explain SELECT SUM(1) FROM t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: Explain SELECT SUM(1) FROM t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT SUM(1) FROM t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(1) FROM t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT SUM(1), SUM(1), 1, 2, 3 FROM t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(1), SUM(1), 1, 2, 3 FROM t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+NULL	NULL	1	2	3
+PREHOOK: query: SELECT SUM(1), SUM(2), 1, 2, 3 FROM t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(1), SUM(2), 1, 2, 3 FROM t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+NULL	NULL	1	2	3
+PREHOOK: query: SELECT COUNT(*) FROM t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+0
+PREHOOK: query: INSERT INTO TABLE t1 VALUES (true, false), (false, true)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: INSERT INTO TABLE t1 VALUES (true, false), (false, true)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.c0 SCRIPT []
+POSTHOOK: Lineage: t1.c1 SCRIPT []
+PREHOOK: query: SELECT SUM(1) FROM t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(1) FROM t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+2
+PREHOOK: query: SELECT COUNT(*) FROM t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+2

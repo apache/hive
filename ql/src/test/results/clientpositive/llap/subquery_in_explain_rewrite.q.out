@@ -1,0 +1,229 @@
+PREHOOK: query: explain rewrite
+ select * 
+from src 
+where src.key in (select key from src s1 where s1.key > '9')
+PREHOOK: type: QUERY
+POSTHOOK: query: explain rewrite
+ select * 
+from src 
+where src.key in (select key from src s1 where s1.key > '9')
+POSTHOOK: type: QUERY
+
+Where Clause  Rewritten SubQuery:
+(select key from src s1 where s1.key > '9') sq_1
+
+Where Clause  SubQuery Joining Condition:
+ on src.key = sq_1.key
+
+Rewritten Query:
+select * 
+from src  left semi join (select key from src s1 where s1.key > '9') sq_1  on src.key = sq_1.key 
+where 1 = 1
+PREHOOK: query: explain rewrite
+select * 
+from src b 
+where b.key in
+        (select a.key 
+         from src a 
+         where b.value = a.value and a.key > '9'
+        )
+PREHOOK: type: QUERY
+POSTHOOK: query: explain rewrite
+select * 
+from src b 
+where b.key in
+        (select a.key 
+         from src a 
+         where b.value = a.value and a.key > '9'
+        )
+POSTHOOK: type: QUERY
+
+Where Clause  Rewritten SubQuery:
+(select a.key, a.value as sq_corr_0 
+         from src a 
+         where a.key > '9'
+        ) sq_1
+
+Where Clause  SubQuery Joining Condition:
+ on b.value = sq_1.sq_corr_0 and b.key = sq_1.key
+
+Rewritten Query:
+select * 
+from src b  left semi join (select a.key, a.value as sq_corr_0 
+         from src a 
+         where a.key > '9'
+        ) sq_1  on b.value = sq_1.sq_corr_0 and b.key = sq_1.key 
+where 1 = 1
+PREHOOK: query: explain rewrite
+select p_name, p_size 
+from 
+part where part.p_size in 
+	(select avg(p_size) 
+	 from (select p_size, rank() over(partition by p_mfgr order by p_size) as r from part) a 
+	 where r <= 2
+	)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain rewrite
+select p_name, p_size 
+from 
+part where part.p_size in 
+	(select avg(p_size) 
+	 from (select p_size, rank() over(partition by p_mfgr order by p_size) as r from part) a 
+	 where r <= 2
+	)
+POSTHOOK: type: QUERY
+
+Where Clause  Rewritten SubQuery:
+(select avg(p_size) 
+	 from (select p_size, rank() over(partition by p_mfgr order by p_size) as r from part) a 
+	 where r <= 2
+	) sq_1
+
+Where Clause  SubQuery Joining Condition:
+ on part.p_size = sq_1._c0
+
+Rewritten Query:
+select p_name, p_size 
+from 
+part  left semi join (select avg(p_size) 
+	 from (select p_size, rank() over(partition by p_mfgr order by p_size) as r from part) a 
+	 where r <= 2
+	) sq_1  on part.p_size = sq_1._c0 where 1 = 1
+PREHOOK: query: explain rewrite
+select p_mfgr, p_name, p_size 
+from part b where b.p_size in 
+	(select min(p_size) 
+	 from (select p_mfgr, p_size, rank() over(partition by p_mfgr order by p_size) as r from part) a 
+	 where r <= 2 and b.p_mfgr = a.p_mfgr
+	)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain rewrite
+select p_mfgr, p_name, p_size 
+from part b where b.p_size in 
+	(select min(p_size) 
+	 from (select p_mfgr, p_size, rank() over(partition by p_mfgr order by p_size) as r from part) a 
+	 where r <= 2 and b.p_mfgr = a.p_mfgr
+	)
+POSTHOOK: type: QUERY
+
+Where Clause  Rewritten SubQuery:
+(select min(p_size), a.p_mfgr as sq_corr_0 
+	 from (select p_mfgr, p_size, rank() over(partition by p_mfgr order by p_size) as r from part) a 
+	 where r <= 2
+	 group by  group by a.p_mfgr) sq_1
+
+Where Clause  SubQuery Joining Condition:
+ on b.p_mfgr = sq_1.sq_corr_0 and b.p_size = sq_1._c0
+
+Rewritten Query:
+select p_mfgr, p_name, p_size 
+from part b  left semi join (select min(p_size), a.p_mfgr as sq_corr_0 
+	 from (select p_mfgr, p_size, rank() over(partition by p_mfgr order by p_size) as r from part) a 
+	 where r <= 2
+	 group by a.p_mfgr) sq_1  on b.p_mfgr = sq_1.sq_corr_0 and b.p_size = sq_1._c0 where 1 = 1
+PREHOOK: query: explain rewrite
+select * 
+from src b 
+where b.key in
+        (select distinct a.key 
+         from src a 
+         where b.value = a.value and a.key > '9'
+        )
+PREHOOK: type: QUERY
+POSTHOOK: query: explain rewrite
+select * 
+from src b 
+where b.key in
+        (select distinct a.key 
+         from src a 
+         where b.value = a.value and a.key > '9'
+        )
+POSTHOOK: type: QUERY
+
+Where Clause  Rewritten SubQuery:
+(select distinct a.key, a.value as sq_corr_0 
+         from src a 
+         where a.key > '9'
+        ) sq_1
+
+Where Clause  SubQuery Joining Condition:
+ on b.value = sq_1.sq_corr_0 and b.key = sq_1.key
+
+Rewritten Query:
+select * 
+from src b  left semi join (select distinct a.key, a.value as sq_corr_0 
+         from src a 
+         where a.key > '9'
+        ) sq_1  on b.value = sq_1.sq_corr_0 and b.key = sq_1.key 
+where 1 = 1
+PREHOOK: query: explain rewrite
+select p_mfgr, p_name, p_size 
+from part 
+where part.p_size in 
+  (select first_value(p_size) over(partition by p_mfgr order by p_size) from part)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain rewrite
+select p_mfgr, p_name, p_size 
+from part 
+where part.p_size in 
+  (select first_value(p_size) over(partition by p_mfgr order by p_size) from part)
+POSTHOOK: type: QUERY
+
+Where Clause  Rewritten SubQuery:
+(select first_value(p_size) over(partition by p_mfgr order by p_size) from part) sq_1
+
+Where Clause  SubQuery Joining Condition:
+ on part.p_size = sq_1.first_value_window_0
+
+Rewritten Query:
+select p_mfgr, p_name, p_size 
+from part  left semi join (select first_value(p_size) over(partition by p_mfgr order by p_size) from part) sq_1  on part.p_size = sq_1.first_value_window_0 
+where 1 = 1
+PREHOOK: query: explain rewrite
+select p.p_partkey, li.l_suppkey 
+from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
+where li.l_linenumber = 1 and
+ li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR')
+PREHOOK: type: QUERY
+POSTHOOK: query: explain rewrite
+select p.p_partkey, li.l_suppkey 
+from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
+where li.l_linenumber = 1 and
+ li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR')
+POSTHOOK: type: QUERY
+
+Where Clause  Rewritten SubQuery:
+(select l_orderkey from lineitem where l_shipmode = 'AIR') sq_1
+
+Where Clause  SubQuery Joining Condition:
+ on li.l_orderkey = sq_1.l_orderkey
+
+Rewritten Query:
+select p.p_partkey, li.l_suppkey 
+from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey  left semi join (select l_orderkey from lineitem where l_shipmode = 'AIR') sq_1  on li.l_orderkey = sq_1.l_orderkey 
+where li.l_linenumber = 1 and
+ 1 = 1
+PREHOOK: query: explain rewrite
+select p.p_partkey, li.l_suppkey 
+from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
+where li.l_linenumber = 1 and
+ li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR' and l_linenumber = li.l_linenumber)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain rewrite
+select p.p_partkey, li.l_suppkey 
+from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
+where li.l_linenumber = 1 and
+ li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR' and l_linenumber = li.l_linenumber)
+POSTHOOK: type: QUERY
+
+Where Clause  Rewritten SubQuery:
+(select l_orderkey, l_linenumber as sq_corr_0 from lineitem where l_shipmode = 'AIR') sq_1
+
+Where Clause  SubQuery Joining Condition:
+ on sq_1.sq_corr_0 = li.l_linenumber and li.l_orderkey = sq_1.l_orderkey
+
+Rewritten Query:
+select p.p_partkey, li.l_suppkey 
+from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey  left semi join (select l_orderkey, l_linenumber as sq_corr_0 from lineitem where l_shipmode = 'AIR') sq_1  on sq_1.sq_corr_0 = li.l_linenumber and li.l_orderkey = sq_1.l_orderkey 
+where li.l_linenumber = 1 and
+ 1 = 1

@@ -1,0 +1,7 @@
+PREHOOK: query: create database dbao
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:dbao
+POSTHOOK: query: create database dbao
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:dbao
+FAILED: HiveAccessControlException Permission denied: Principal [name=user1, type=USER] does not have following privileges for operation ALTERDATABASE_OWNER [[ADMIN PRIVILEGE] on Object [type=DATABASE, name=dbao]]

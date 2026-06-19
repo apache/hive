@@ -1,0 +1,138 @@
+PREHOOK: query: drop table if exists unionall_lv_src1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists unionall_lv_src1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists unionall_lv_src2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists unionall_lv_src2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists unionall_lv_dest
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists unionall_lv_dest
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table unionall_lv_src1(id int, dt string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@unionall_lv_src1
+POSTHOOK: query: create table unionall_lv_src1(id int, dt string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@unionall_lv_src1
+PREHOOK: query: insert into unionall_lv_src1 values (2, '2019-04-01')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@unionall_lv_src1
+POSTHOOK: query: insert into unionall_lv_src1 values (2, '2019-04-01')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@unionall_lv_src1
+POSTHOOK: Lineage: unionall_lv_src1.dt SCRIPT []
+POSTHOOK: Lineage: unionall_lv_src1.id SCRIPT []
+PREHOOK: query: create table unionall_lv_src2( id int, dates array<string>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@unionall_lv_src2
+POSTHOOK: query: create table unionall_lv_src2( id int, dates array<string>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@unionall_lv_src2
+PREHOOK: query: insert into unionall_lv_src2 select 1 as id, array('2019-01-01','2019-01-02','2019-01-03') as dates
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@unionall_lv_src2
+POSTHOOK: query: insert into unionall_lv_src2 select 1 as id, array('2019-01-01','2019-01-02','2019-01-03') as dates
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@unionall_lv_src2
+POSTHOOK: Lineage: unionall_lv_src2.dates EXPRESSION []
+POSTHOOK: Lineage: unionall_lv_src2.id SIMPLE []
+PREHOOK: query: create table unionall_lv_dest (id int) partitioned by (dt string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@unionall_lv_dest
+POSTHOOK: query: create table unionall_lv_dest (id int) partitioned by (dt string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@unionall_lv_dest
+PREHOOK: query: insert overwrite table unionall_lv_dest partition (dt)
+select t.id, t.dt from (
+select id, dt from unionall_lv_src1
+union all
+select id, dts as dt from unionall_lv_src2 tt lateral view explode(tt.dates) dd as dts ) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unionall_lv_src1
+PREHOOK: Input: default@unionall_lv_src2
+PREHOOK: Output: default@unionall_lv_dest
+POSTHOOK: query: insert overwrite table unionall_lv_dest partition (dt)
+select t.id, t.dt from (
+select id, dt from unionall_lv_src1
+union all
+select id, dts as dt from unionall_lv_src2 tt lateral view explode(tt.dates) dd as dts ) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unionall_lv_src1
+POSTHOOK: Input: default@unionall_lv_src2
+POSTHOOK: Output: default@unionall_lv_dest
+POSTHOOK: Output: default@unionall_lv_dest@dt=2019-01-01
+POSTHOOK: Output: default@unionall_lv_dest@dt=2019-01-02
+POSTHOOK: Output: default@unionall_lv_dest@dt=2019-01-03
+POSTHOOK: Output: default@unionall_lv_dest@dt=2019-04-01
+POSTHOOK: Lineage: unionall_lv_dest PARTITION(dt=2019-01-01).id EXPRESSION [(unionall_lv_src1)unionall_lv_src1.FieldSchema(name:id, type:int, comment:null), (unionall_lv_src2)tt.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: unionall_lv_dest PARTITION(dt=2019-01-02).id EXPRESSION [(unionall_lv_src1)unionall_lv_src1.FieldSchema(name:id, type:int, comment:null), (unionall_lv_src2)tt.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: unionall_lv_dest PARTITION(dt=2019-01-03).id EXPRESSION [(unionall_lv_src1)unionall_lv_src1.FieldSchema(name:id, type:int, comment:null), (unionall_lv_src2)tt.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: unionall_lv_dest PARTITION(dt=2019-04-01).id EXPRESSION [(unionall_lv_src1)unionall_lv_src1.FieldSchema(name:id, type:int, comment:null), (unionall_lv_src2)tt.FieldSchema(name:id, type:int, comment:null), ]
+PREHOOK: query: select * from unionall_lv_dest
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unionall_lv_dest
+PREHOOK: Input: default@unionall_lv_dest@dt=2019-01-01
+PREHOOK: Input: default@unionall_lv_dest@dt=2019-01-02
+PREHOOK: Input: default@unionall_lv_dest@dt=2019-01-03
+PREHOOK: Input: default@unionall_lv_dest@dt=2019-04-01
+#### A masked pattern was here ####
+POSTHOOK: query: select * from unionall_lv_dest
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unionall_lv_dest
+POSTHOOK: Input: default@unionall_lv_dest@dt=2019-01-01
+POSTHOOK: Input: default@unionall_lv_dest@dt=2019-01-02
+POSTHOOK: Input: default@unionall_lv_dest@dt=2019-01-03
+POSTHOOK: Input: default@unionall_lv_dest@dt=2019-04-01
+#### A masked pattern was here ####
+1	2019-01-01
+1	2019-01-02
+1	2019-01-03
+2	2019-04-01
+PREHOOK: query: drop table unionall_lv_src1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@unionall_lv_src1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@unionall_lv_src1
+POSTHOOK: query: drop table unionall_lv_src1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@unionall_lv_src1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@unionall_lv_src1
+PREHOOK: query: drop table unionall_lv_src2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@unionall_lv_src2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@unionall_lv_src2
+POSTHOOK: query: drop table unionall_lv_src2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@unionall_lv_src2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@unionall_lv_src2
+PREHOOK: query: drop table unionall_lv_dest
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@unionall_lv_dest
+PREHOOK: Output: database:default
+PREHOOK: Output: default@unionall_lv_dest
+POSTHOOK: query: drop table unionall_lv_dest
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@unionall_lv_dest
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@unionall_lv_dest

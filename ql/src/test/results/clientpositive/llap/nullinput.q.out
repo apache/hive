@@ -1,0 +1,24 @@
+PREHOOK: query: create table tstnullinut(a string, b string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tstnullinut
+POSTHOOK: query: create table tstnullinut(a string, b string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tstnullinut
+PREHOOK: query: select x.* from tstnullinut x
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tstnullinut
+#### A masked pattern was here ####
+POSTHOOK: query: select x.* from tstnullinut x
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstnullinut
+#### A masked pattern was here ####
+PREHOOK: query: select x.a, count(1) from tstnullinut x group by x.a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tstnullinut
+#### A masked pattern was here ####
+POSTHOOK: query: select x.a, count(1) from tstnullinut x group by x.a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstnullinut
+#### A masked pattern was here ####

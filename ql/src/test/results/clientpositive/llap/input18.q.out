@@ -1,0 +1,256 @@
+PREHOOK: query: CREATE TABLE dest1_n124(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1_n124
+POSTHOOK: query: CREATE TABLE dest1_n124(key INT, value STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest1_n124
+PREHOOK: query: EXPLAIN
+FROM (
+  FROM src
+  SELECT TRANSFORM(src.key, src.value, 1+2, 3+4)
+         USING 'cat'
+  CLUSTER BY key
+) tmap
+INSERT OVERWRITE TABLE dest1_n124 SELECT tmap.key, regexp_replace(tmap.value,'\t','+') WHERE tmap.key < 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n124
+POSTHOOK: query: EXPLAIN
+FROM (
+  FROM src
+  SELECT TRANSFORM(src.key, src.value, 1+2, 3+4)
+         USING 'cat'
+  CLUSTER BY key
+) tmap
+INSERT OVERWRITE TABLE dest1_n124 SELECT tmap.key, regexp_replace(tmap.value,'\t','+') WHERE tmap.key < 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n124
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: string), value (type: string), 3 (type: int), 7 (type: int)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 500 Data size: 93000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Transform Operator
+                      command: cat
+                      output info:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      Statistics: Num rows: 500 Data size: 93000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Filter Operator
+                        predicate: (_col0 < 100) (type: boolean)
+                        Statistics: Num rows: 166 Data size: 30876 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          null sort order: a
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 166 Data size: 30876 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: string), _col1 (type: string)
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: UDFToInteger(VALUE._col0) (type: int), regexp_replace(VALUE._col1, '	', '+') (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 166 Data size: 31208 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 166 Data size: 31208 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.dest1_n124
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: string)
+                  outputColumnNames: key, value
+                  Statistics: Num rows: 166 Data size: 31208 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: min(key), max(key), count(1), count(key), compute_bit_vector_hll(key), max(length(value)), avg(COALESCE(length(value),0)), count(value), compute_bit_vector_hll(value)
+                    minReductionHashAggr: 0.99
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                    Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 332 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col0) (type: bigint), UDFToLong(_col1) (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col5,0)) (type: bigint), COALESCE(_col6,0) (type: double), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest1_n124
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, value
+          Column Types: int, string
+          Table: default.dest1_n124
+
+PREHOOK: query: FROM (
+  FROM src
+  SELECT TRANSFORM(src.key, src.value, 1+2, 3+4)
+         USING 'cat'
+  CLUSTER BY key
+) tmap
+INSERT OVERWRITE TABLE dest1_n124 SELECT tmap.key, regexp_replace(tmap.value,'\t','+') WHERE tmap.key < 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n124
+POSTHOOK: query: FROM (
+  FROM src
+  SELECT TRANSFORM(src.key, src.value, 1+2, 3+4)
+         USING 'cat'
+  CLUSTER BY key
+) tmap
+INSERT OVERWRITE TABLE dest1_n124 SELECT tmap.key, regexp_replace(tmap.value,'\t','+') WHERE tmap.key < 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n124
+POSTHOOK: Lineage: dest1_n124.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1_n124.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT dest1_n124.* FROM dest1_n124
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1_n124
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT dest1_n124.* FROM dest1_n124
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1_n124
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0	val_0+3+7
+0	val_0+3+7
+0	val_0+3+7
+10	val_10+3+7
+11	val_11+3+7
+12	val_12+3+7
+12	val_12+3+7
+15	val_15+3+7
+15	val_15+3+7
+17	val_17+3+7
+18	val_18+3+7
+18	val_18+3+7
+19	val_19+3+7
+2	val_2+3+7
+20	val_20+3+7
+24	val_24+3+7
+24	val_24+3+7
+26	val_26+3+7
+26	val_26+3+7
+27	val_27+3+7
+28	val_28+3+7
+30	val_30+3+7
+33	val_33+3+7
+34	val_34+3+7
+35	val_35+3+7
+35	val_35+3+7
+35	val_35+3+7
+37	val_37+3+7
+37	val_37+3+7
+4	val_4+3+7
+41	val_41+3+7
+42	val_42+3+7
+42	val_42+3+7
+43	val_43+3+7
+44	val_44+3+7
+47	val_47+3+7
+5	val_5+3+7
+5	val_5+3+7
+5	val_5+3+7
+51	val_51+3+7
+51	val_51+3+7
+53	val_53+3+7
+54	val_54+3+7
+57	val_57+3+7
+58	val_58+3+7
+58	val_58+3+7
+64	val_64+3+7
+65	val_65+3+7
+66	val_66+3+7
+67	val_67+3+7
+67	val_67+3+7
+69	val_69+3+7
+70	val_70+3+7
+70	val_70+3+7
+70	val_70+3+7
+72	val_72+3+7
+72	val_72+3+7
+74	val_74+3+7
+76	val_76+3+7
+76	val_76+3+7
+77	val_77+3+7
+78	val_78+3+7
+8	val_8+3+7
+80	val_80+3+7
+82	val_82+3+7
+83	val_83+3+7
+83	val_83+3+7
+84	val_84+3+7
+84	val_84+3+7
+85	val_85+3+7
+86	val_86+3+7
+87	val_87+3+7
+9	val_9+3+7
+90	val_90+3+7
+90	val_90+3+7
+90	val_90+3+7
+92	val_92+3+7
+95	val_95+3+7
+95	val_95+3+7
+96	val_96+3+7
+97	val_97+3+7
+97	val_97+3+7
+98	val_98+3+7
+98	val_98+3+7

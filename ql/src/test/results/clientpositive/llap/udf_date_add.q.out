@@ -1,0 +1,29 @@
+PREHOOK: query: DESCRIBE FUNCTION date_add
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION date_add
+POSTHOOK: type: DESCFUNCTION
+date_add(start_date, num_days) - Returns the date that is num_days after start_date.
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED date_add
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED date_add
+POSTHOOK: type: DESCFUNCTION
+date_add(start_date, num_days) - Returns the date that is num_days after start_date.
+start_date is a string in the format 'yyyy-MM-dd HH:mm:ss' or 'yyyy-MM-dd'. num_days is a number. The time part of start_date is ignored.
+Example:
+   > SELECT date_add('2009-07-30', 1) FROM src LIMIT 1;
+  '2009-07-31'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFDateAdd
+Function type:BUILTIN
+PREHOOK: query: SELECT date_add('1900-01-01', cast(10 as tinyint)),
+       date_add('1900-01-01', cast(10 as smallint)),
+       date_add('1900-01-01', cast(10 as int))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT date_add('1900-01-01', cast(10 as tinyint)),
+       date_add('1900-01-01', cast(10 as smallint)),
+       date_add('1900-01-01', cast(10 as int))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1900-01-11	1900-01-11	1900-01-11

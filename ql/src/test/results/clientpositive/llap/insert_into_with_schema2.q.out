@@ -1,0 +1,138 @@
+PREHOOK: query: create table studenttab10k_n0 (age2 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@studenttab10k_n0
+POSTHOOK: query: create table studenttab10k_n0 (age2 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@studenttab10k_n0
+PREHOOK: query: insert into studenttab10k_n0 values(1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@studenttab10k_n0
+POSTHOOK: query: insert into studenttab10k_n0 values(1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@studenttab10k_n0
+POSTHOOK: Lineage: studenttab10k_n0.age2 SCRIPT []
+PREHOOK: query: create table student_acid (age int, grade int)
+ clustered by (age) into 1 buckets
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@student_acid
+POSTHOOK: query: create table student_acid (age int, grade int)
+ clustered by (age) into 1 buckets
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@student_acid
+PREHOOK: query: insert into student_acid(age) select * from studenttab10k_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@studenttab10k_n0
+PREHOOK: Output: default@student_acid
+POSTHOOK: query: insert into student_acid(age) select * from studenttab10k_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@studenttab10k_n0
+POSTHOOK: Output: default@student_acid
+POSTHOOK: Lineage: student_acid.age SIMPLE [(studenttab10k_n0)studenttab10k_n0.FieldSchema(name:age2, type:int, comment:null), ]
+POSTHOOK: Lineage: student_acid.grade SIMPLE []
+PREHOOK: query: select * from student_acid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@student_acid
+#### A masked pattern was here ####
+POSTHOOK: query: select * from student_acid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@student_acid
+#### A masked pattern was here ####
+1	NULL
+PREHOOK: query: insert into student_acid(grade, age) select 3 g, * from studenttab10k_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@studenttab10k_n0
+PREHOOK: Output: default@student_acid
+POSTHOOK: query: insert into student_acid(grade, age) select 3 g, * from studenttab10k_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@studenttab10k_n0
+POSTHOOK: Output: default@student_acid
+POSTHOOK: Lineage: student_acid.age SIMPLE [(studenttab10k_n0)studenttab10k_n0.FieldSchema(name:age2, type:int, comment:null), ]
+POSTHOOK: Lineage: student_acid.grade SIMPLE []
+PREHOOK: query: select * from student_acid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@student_acid
+#### A masked pattern was here ####
+POSTHOOK: query: select * from student_acid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@student_acid
+#### A masked pattern was here ####
+1	3
+1	NULL
+PREHOOK: query: insert into student_acid(grade, age) values(20, 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@student_acid
+POSTHOOK: query: insert into student_acid(grade, age) values(20, 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@student_acid
+POSTHOOK: Lineage: student_acid.age SCRIPT []
+POSTHOOK: Lineage: student_acid.grade SCRIPT []
+PREHOOK: query: insert into student_acid(age) values(22)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@student_acid
+POSTHOOK: query: insert into student_acid(age) values(22)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@student_acid
+POSTHOOK: Lineage: student_acid.age SCRIPT []
+POSTHOOK: Lineage: student_acid.grade SIMPLE []
+PREHOOK: query: select * from student_acid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@student_acid
+#### A masked pattern was here ####
+POSTHOOK: query: select * from student_acid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@student_acid
+#### A masked pattern was here ####
+1	3
+1	NULL
+2	20
+22	NULL
+PREHOOK: query: drop table if exists acid_partitioned
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists acid_partitioned
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table acid_partitioned (a int, c string)
+  partitioned by (p int)
+  clustered by (a) into 1 buckets
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid_partitioned
+POSTHOOK: query: create table acid_partitioned (a int, c string)
+  partitioned by (p int)
+  clustered by (a) into 1 buckets
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acid_partitioned
+PREHOOK: query: insert into acid_partitioned partition (p) (a,p) values(1,2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@acid_partitioned
+POSTHOOK: query: insert into acid_partitioned partition (p) (a,p) values(1,2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@acid_partitioned
+POSTHOOK: Output: default@acid_partitioned@p=2
+POSTHOOK: Lineage: acid_partitioned PARTITION(p=2).a SCRIPT []
+POSTHOOK: Lineage: acid_partitioned PARTITION(p=2).c SIMPLE []
+PREHOOK: query: select * from acid_partitioned
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_partitioned
+PREHOOK: Input: default@acid_partitioned@p=2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from acid_partitioned
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_partitioned
+POSTHOOK: Input: default@acid_partitioned@p=2
+#### A masked pattern was here ####
+1	NULL	2

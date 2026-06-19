@@ -1,0 +1,13 @@
+PREHOOK: query: SHOW TABLES 'src'
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
+POSTHOOK: query: SHOW TABLES 'src'
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
+src
+PREHOOK: query: SHOW TABLES 'src'
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
+POSTHOOK: query: SHOW TABLES 'src'
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default

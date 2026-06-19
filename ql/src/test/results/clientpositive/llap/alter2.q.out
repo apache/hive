@@ -1,0 +1,446 @@
+PREHOOK: query: create table alter2(a int, b int) partitioned by (insertdate string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter2
+POSTHOOK: query: create table alter2(a int, b int) partitioned by (insertdate string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter2
+PREHOOK: query: describe extended alter2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter2
+POSTHOOK: query: describe extended alter2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter2
+a                   	int                 	                    
+b                   	int                 	                    
+insertdate          	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+insertdate          	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: show partitions alter2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@alter2
+POSTHOOK: query: show partitions alter2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@alter2
+PREHOOK: query: alter table alter2 add partition (insertdate='2008-01-01') location '2008/01/01'
+PREHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+PREHOOK: Output: default@alter2
+POSTHOOK: query: alter table alter2 add partition (insertdate='2008-01-01') location '2008/01/01'
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+POSTHOOK: Output: default@alter2
+POSTHOOK: Output: default@alter2@insertdate=2008-01-01
+PREHOOK: query: describe extended alter2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter2
+POSTHOOK: query: describe extended alter2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter2
+a                   	int                 	                    
+b                   	int                 	                    
+insertdate          	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+insertdate          	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: show partitions alter2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@alter2
+POSTHOOK: query: show partitions alter2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@alter2
+insertdate=2008-01-01
+PREHOOK: query: alter table alter2 add partition (insertdate='2008-01-02') location '2008/01/02'
+PREHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+PREHOOK: Output: default@alter2
+POSTHOOK: query: alter table alter2 add partition (insertdate='2008-01-02') location '2008/01/02'
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+POSTHOOK: Output: default@alter2
+POSTHOOK: Output: default@alter2@insertdate=2008-01-02
+PREHOOK: query: describe extended alter2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter2
+POSTHOOK: query: describe extended alter2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter2
+a                   	int                 	                    
+b                   	int                 	                    
+insertdate          	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+insertdate          	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: show partitions alter2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@alter2
+POSTHOOK: query: show partitions alter2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@alter2
+insertdate=2008-01-01
+insertdate=2008-01-02
+PREHOOK: query: drop table alter2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@alter2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter2
+POSTHOOK: query: drop table alter2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@alter2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter2
+PREHOOK: query: create external table alter2(a int, b int) partitioned by (insertdate string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter2
+POSTHOOK: query: create external table alter2(a int, b int) partitioned by (insertdate string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter2
+PREHOOK: query: describe extended alter2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter2
+POSTHOOK: query: describe extended alter2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter2
+a                   	int                 	                    
+b                   	int                 	                    
+insertdate          	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+insertdate          	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: show partitions alter2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@alter2
+POSTHOOK: query: show partitions alter2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@alter2
+PREHOOK: query: alter table alter2 add partition (insertdate='2008-01-01') location '2008/01/01'
+PREHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+PREHOOK: Output: default@alter2
+POSTHOOK: query: alter table alter2 add partition (insertdate='2008-01-01') location '2008/01/01'
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+POSTHOOK: Output: default@alter2
+POSTHOOK: Output: default@alter2@insertdate=2008-01-01
+PREHOOK: query: describe extended alter2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter2
+POSTHOOK: query: describe extended alter2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter2
+a                   	int                 	                    
+b                   	int                 	                    
+insertdate          	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+insertdate          	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: show partitions alter2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@alter2
+POSTHOOK: query: show partitions alter2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@alter2
+insertdate=2008-01-01
+PREHOOK: query: alter table alter2 add partition (insertdate='2008-01-02') location '2008/01/02'
+PREHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+PREHOOK: Output: default@alter2
+POSTHOOK: query: alter table alter2 add partition (insertdate='2008-01-02') location '2008/01/02'
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+POSTHOOK: Output: default@alter2
+POSTHOOK: Output: default@alter2@insertdate=2008-01-02
+PREHOOK: query: describe extended alter2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter2
+POSTHOOK: query: describe extended alter2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter2
+a                   	int                 	                    
+b                   	int                 	                    
+insertdate          	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+insertdate          	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: show partitions alter2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@alter2
+POSTHOOK: query: show partitions alter2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@alter2
+insertdate=2008-01-01
+insertdate=2008-01-02
+PREHOOK: query: DROP TABLE alter2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@alter2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter2
+POSTHOOK: query: DROP TABLE alter2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@alter2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter2
+PREHOOK: query: SHOW TABLES LIKE "alter%"
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
+POSTHOOK: query: SHOW TABLES LIKE "alter%"
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
+PREHOOK: query: CREATE DATABASE alter2_db
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:alter2_db
+POSTHOOK: query: CREATE DATABASE alter2_db
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:alter2_db
+PREHOOK: query: USE alter2_db
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:alter2_db
+POSTHOOK: query: USE alter2_db
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:alter2_db
+PREHOOK: query: SHOW TABLES LIKE "alter%"
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:alter2_db
+POSTHOOK: query: SHOW TABLES LIKE "alter%"
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:alter2_db
+PREHOOK: query: CREATE TABLE alter2(a int, b int) PARTITIONED BY (insertdate string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: alter2_db@alter2
+PREHOOK: Output: database:alter2_db
+POSTHOOK: query: CREATE TABLE alter2(a int, b int) PARTITIONED BY (insertdate string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: alter2_db@alter2
+POSTHOOK: Output: database:alter2_db
+PREHOOK: query: DESCRIBE EXTENDED alter2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter2_db@alter2
+POSTHOOK: query: DESCRIBE EXTENDED alter2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter2_db@alter2
+a                   	int                 	                    
+b                   	int                 	                    
+insertdate          	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+insertdate          	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: SHOW PARTITIONS alter2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: alter2_db@alter2
+POSTHOOK: query: SHOW PARTITIONS alter2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: alter2_db@alter2
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+PREHOOK: Output: alter2_db@alter2
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+POSTHOOK: Output: alter2_db@alter2
+POSTHOOK: Output: alter2_db@alter2@insertdate=2008-01-01
+PREHOOK: query: DESCRIBE EXTENDED alter2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter2_db@alter2
+POSTHOOK: query: DESCRIBE EXTENDED alter2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter2_db@alter2
+a                   	int                 	                    
+b                   	int                 	                    
+insertdate          	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+insertdate          	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: SHOW PARTITIONS alter2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: alter2_db@alter2
+POSTHOOK: query: SHOW PARTITIONS alter2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: alter2_db@alter2
+insertdate=2008-01-01
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+PREHOOK: Output: alter2_db@alter2
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+POSTHOOK: Output: alter2_db@alter2
+POSTHOOK: Output: alter2_db@alter2@insertdate=2008-01-02
+PREHOOK: query: DESCRIBE EXTENDED alter2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter2_db@alter2
+POSTHOOK: query: DESCRIBE EXTENDED alter2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter2_db@alter2
+a                   	int                 	                    
+b                   	int                 	                    
+insertdate          	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+insertdate          	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: SHOW PARTITIONS alter2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: alter2_db@alter2
+POSTHOOK: query: SHOW PARTITIONS alter2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: alter2_db@alter2
+insertdate=2008-01-01
+insertdate=2008-01-02
+PREHOOK: query: DROP TABLE alter2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: alter2_db@alter2
+PREHOOK: Output: alter2_db@alter2
+PREHOOK: Output: database:alter2_db
+POSTHOOK: query: DROP TABLE alter2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: alter2_db@alter2
+POSTHOOK: Output: alter2_db@alter2
+POSTHOOK: Output: database:alter2_db
+PREHOOK: query: CREATE EXTERNAL TABLE alter2(a int, b int) PARTITIONED BY (insertdate string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: alter2_db@alter2
+PREHOOK: Output: database:alter2_db
+POSTHOOK: query: CREATE EXTERNAL TABLE alter2(a int, b int) PARTITIONED BY (insertdate string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: alter2_db@alter2
+POSTHOOK: Output: database:alter2_db
+PREHOOK: query: DESCRIBE EXTENDED alter2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter2_db@alter2
+POSTHOOK: query: DESCRIBE EXTENDED alter2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter2_db@alter2
+a                   	int                 	                    
+b                   	int                 	                    
+insertdate          	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+insertdate          	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: SHOW PARTITIONS alter2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: alter2_db@alter2
+POSTHOOK: query: SHOW PARTITIONS alter2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: alter2_db@alter2
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+PREHOOK: Output: alter2_db@alter2
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+POSTHOOK: Output: alter2_db@alter2
+POSTHOOK: Output: alter2_db@alter2@insertdate=2008-01-01
+PREHOOK: query: DESCRIBE EXTENDED alter2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter2_db@alter2
+POSTHOOK: query: DESCRIBE EXTENDED alter2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter2_db@alter2
+a                   	int                 	                    
+b                   	int                 	                    
+insertdate          	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+insertdate          	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: SHOW PARTITIONS alter2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: alter2_db@alter2
+POSTHOOK: query: SHOW PARTITIONS alter2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: alter2_db@alter2
+insertdate=2008-01-01
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+PREHOOK: Output: alter2_db@alter2
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+POSTHOOK: Output: alter2_db@alter2
+POSTHOOK: Output: alter2_db@alter2@insertdate=2008-01-02
+PREHOOK: query: DESCRIBE EXTENDED alter2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter2_db@alter2
+POSTHOOK: query: DESCRIBE EXTENDED alter2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter2_db@alter2
+a                   	int                 	                    
+b                   	int                 	                    
+insertdate          	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+insertdate          	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: SHOW PARTITIONS alter2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: alter2_db@alter2
+POSTHOOK: query: SHOW PARTITIONS alter2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: alter2_db@alter2
+insertdate=2008-01-01
+insertdate=2008-01-02
+PREHOOK: query: DROP TABLE alter2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: alter2_db@alter2
+PREHOOK: Output: alter2_db@alter2
+PREHOOK: Output: database:alter2_db
+POSTHOOK: query: DROP TABLE alter2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: alter2_db@alter2
+POSTHOOK: Output: alter2_db@alter2
+POSTHOOK: Output: database:alter2_db
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: DROP DATABASE alter2_db
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:alter2_db
+PREHOOK: Output: database:alter2_db
+POSTHOOK: query: DROP DATABASE alter2_db
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:alter2_db
+POSTHOOK: Output: database:alter2_db

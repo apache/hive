@@ -1,0 +1,134 @@
+PREHOOK: query: drop table masking_test_n_compact
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table masking_test_n_compact
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table check_real_data
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table check_real_data
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table masking_test_n_compact (key int, value string) stored as orc TBLPROPERTIES('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@masking_test_n_compact
+POSTHOOK: query: create table masking_test_n_compact (key int, value string) stored as orc TBLPROPERTIES('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@masking_test_n_compact
+PREHOOK: query: insert into masking_test_n_compact values('1', 'text1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@masking_test_n_compact
+POSTHOOK: query: insert into masking_test_n_compact values('1', 'text1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@masking_test_n_compact
+POSTHOOK: Lineage: masking_test_n_compact.key SCRIPT []
+POSTHOOK: Lineage: masking_test_n_compact.value SCRIPT []
+PREHOOK: query: insert into masking_test_n_compact values('2', 'text2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@masking_test_n_compact
+POSTHOOK: query: insert into masking_test_n_compact values('2', 'text2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@masking_test_n_compact
+POSTHOOK: Lineage: masking_test_n_compact.key SCRIPT []
+POSTHOOK: Lineage: masking_test_n_compact.value SCRIPT []
+PREHOOK: query: insert into masking_test_n_compact values('3', 'text3')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@masking_test_n_compact
+POSTHOOK: query: insert into masking_test_n_compact values('3', 'text3')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@masking_test_n_compact
+POSTHOOK: Lineage: masking_test_n_compact.key SCRIPT []
+POSTHOOK: Lineage: masking_test_n_compact.value SCRIPT []
+PREHOOK: query: select * from masking_test_n_compact
+PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n_compact
+#### A masked pattern was here ####
+POSTHOOK: query: select * from masking_test_n_compact
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n_compact
+#### A masked pattern was here ####
+2	2txet
+PREHOOK: query: alter table masking_test_n_compact rename to check_real_data
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: default@masking_test_n_compact
+PREHOOK: Output: database:default
+PREHOOK: Output: default@check_real_data
+PREHOOK: Output: default@masking_test_n_compact
+POSTHOOK: query: alter table masking_test_n_compact rename to check_real_data
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: default@masking_test_n_compact
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@check_real_data
+POSTHOOK: Output: default@masking_test_n_compact
+PREHOOK: query: select * from check_real_data
+PREHOOK: type: QUERY
+PREHOOK: Input: default@check_real_data
+#### A masked pattern was here ####
+POSTHOOK: query: select * from check_real_data
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@check_real_data
+#### A masked pattern was here ####
+1	text1
+2	text2
+3	text3
+PREHOOK: query: alter table check_real_data rename to masking_test_n_compact
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: default@check_real_data
+PREHOOK: Output: database:default
+PREHOOK: Output: default@check_real_data
+PREHOOK: Output: default@masking_test_n_compact
+POSTHOOK: query: alter table check_real_data rename to masking_test_n_compact
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: default@check_real_data
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@check_real_data
+POSTHOOK: Output: default@masking_test_n_compact
+PREHOOK: query: alter table masking_test_n_compact compact 'MAJOR' and wait
+PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@masking_test_n_compact
+PREHOOK: Output: default@masking_test_n_compact
+POSTHOOK: query: alter table masking_test_n_compact compact 'MAJOR' and wait
+POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@masking_test_n_compact
+POSTHOOK: Output: default@masking_test_n_compact
+PREHOOK: query: select * from masking_test_n_compact
+PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_test_n_compact
+#### A masked pattern was here ####
+POSTHOOK: query: select * from masking_test_n_compact
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_test_n_compact
+#### A masked pattern was here ####
+2	2txet
+PREHOOK: query: alter table masking_test_n_compact rename to check_real_data
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: default@masking_test_n_compact
+PREHOOK: Output: database:default
+PREHOOK: Output: default@check_real_data
+PREHOOK: Output: default@masking_test_n_compact
+POSTHOOK: query: alter table masking_test_n_compact rename to check_real_data
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: default@masking_test_n_compact
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@check_real_data
+POSTHOOK: Output: default@masking_test_n_compact
+PREHOOK: query: select * from check_real_data
+PREHOOK: type: QUERY
+PREHOOK: Input: default@check_real_data
+#### A masked pattern was here ####
+POSTHOOK: query: select * from check_real_data
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@check_real_data
+#### A masked pattern was here ####
+1	text1
+2	text2
+3	text3

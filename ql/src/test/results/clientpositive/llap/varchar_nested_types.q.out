@@ -1,0 +1,285 @@
+PREHOOK: query: drop table varchar_nested_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table varchar_nested_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table varchar_nested_array
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table varchar_nested_array
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table varchar_nested_map
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table varchar_nested_map
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table varchar_nested_struct
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table varchar_nested_struct
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table varchar_nested_cta
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table varchar_nested_cta
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table varchar_nested_view
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table varchar_nested_view
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table varchar_nested_1 (key int, value varchar(20))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_nested_1
+POSTHOOK: query: create table varchar_nested_1 (key int, value varchar(20))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@varchar_nested_1
+PREHOOK: query: insert overwrite table varchar_nested_1
+  select key, value from src order by key limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@varchar_nested_1
+POSTHOOK: query: insert overwrite table varchar_nested_1
+  select key, value from src order by key limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@varchar_nested_1
+POSTHOOK: Lineage: varchar_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: varchar_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table varchar_nested_array (c1 array<varchar(20)>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_nested_array
+POSTHOOK: query: create table varchar_nested_array (c1 array<varchar(20)>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@varchar_nested_array
+PREHOOK: query: insert overwrite table varchar_nested_array
+  select array(value, value) from varchar_nested_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@varchar_nested_1
+PREHOOK: Output: default@varchar_nested_array
+POSTHOOK: query: insert overwrite table varchar_nested_array
+  select array(value, value) from varchar_nested_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchar_nested_1
+POSTHOOK: Output: default@varchar_nested_array
+POSTHOOK: Lineage: varchar_nested_array.c1 EXPRESSION [(varchar_nested_1)varchar_nested_1.FieldSchema(name:value, type:varchar(20), comment:null), ]
+PREHOOK: query: describe varchar_nested_array
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@varchar_nested_array
+POSTHOOK: query: describe varchar_nested_array
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@varchar_nested_array
+c1                  	array<varchar(20)>  	                    
+PREHOOK: query: select * from varchar_nested_array
+PREHOOK: type: QUERY
+PREHOOK: Input: default@varchar_nested_array
+#### A masked pattern was here ####
+POSTHOOK: query: select * from varchar_nested_array
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchar_nested_array
+#### A masked pattern was here ####
+["val_0","val_0"]
+PREHOOK: query: create table varchar_nested_map (c1 map<int, varchar(20)>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_nested_map
+POSTHOOK: query: create table varchar_nested_map (c1 map<int, varchar(20)>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@varchar_nested_map
+PREHOOK: query: insert overwrite table varchar_nested_map
+  select map(key, value) from varchar_nested_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@varchar_nested_1
+PREHOOK: Output: default@varchar_nested_map
+POSTHOOK: query: insert overwrite table varchar_nested_map
+  select map(key, value) from varchar_nested_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchar_nested_1
+POSTHOOK: Output: default@varchar_nested_map
+POSTHOOK: Lineage: varchar_nested_map.c1 EXPRESSION [(varchar_nested_1)varchar_nested_1.FieldSchema(name:key, type:int, comment:null), (varchar_nested_1)varchar_nested_1.FieldSchema(name:value, type:varchar(20), comment:null), ]
+PREHOOK: query: describe varchar_nested_map
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@varchar_nested_map
+POSTHOOK: query: describe varchar_nested_map
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@varchar_nested_map
+c1                  	map<int,varchar(20)>	                    
+PREHOOK: query: select * from varchar_nested_map
+PREHOOK: type: QUERY
+PREHOOK: Input: default@varchar_nested_map
+#### A masked pattern was here ####
+POSTHOOK: query: select * from varchar_nested_map
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchar_nested_map
+#### A masked pattern was here ####
+{0:"val_0"}
+PREHOOK: query: create table varchar_nested_struct (c1 struct<a:int, b:varchar(20), c:string>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_nested_struct
+POSTHOOK: query: create table varchar_nested_struct (c1 struct<a:int, b:varchar(20), c:string>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@varchar_nested_struct
+PREHOOK: query: insert overwrite table varchar_nested_struct
+  select named_struct('a', key,
+                      'b', value,
+                      'c', cast(value as string))
+  from varchar_nested_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@varchar_nested_1
+PREHOOK: Output: default@varchar_nested_struct
+POSTHOOK: query: insert overwrite table varchar_nested_struct
+  select named_struct('a', key,
+                      'b', value,
+                      'c', cast(value as string))
+  from varchar_nested_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchar_nested_1
+POSTHOOK: Output: default@varchar_nested_struct
+POSTHOOK: Lineage: varchar_nested_struct.c1 EXPRESSION [(varchar_nested_1)varchar_nested_1.FieldSchema(name:key, type:int, comment:null), (varchar_nested_1)varchar_nested_1.FieldSchema(name:value, type:varchar(20), comment:null), ]
+PREHOOK: query: describe varchar_nested_struct
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@varchar_nested_struct
+POSTHOOK: query: describe varchar_nested_struct
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@varchar_nested_struct
+c1                  	struct<a:int,b:varchar(20),c:string>	                    
+PREHOOK: query: select * from varchar_nested_struct
+PREHOOK: type: QUERY
+PREHOOK: Input: default@varchar_nested_struct
+#### A masked pattern was here ####
+POSTHOOK: query: select * from varchar_nested_struct
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchar_nested_struct
+#### A masked pattern was here ####
+{"a":0,"b":"val_0","c":"val_0"}
+PREHOOK: query: create table varchar_nested_cta as 
+  select * from varchar_nested_struct
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@varchar_nested_struct
+PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_nested_cta
+POSTHOOK: query: create table varchar_nested_cta as 
+  select * from varchar_nested_struct
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@varchar_nested_struct
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@varchar_nested_cta
+POSTHOOK: Lineage: varchar_nested_cta.c1 SIMPLE [(varchar_nested_struct)varchar_nested_struct.FieldSchema(name:c1, type:struct<a:int,b:varchar(20),c:string>, comment:null), ]
+PREHOOK: query: describe varchar_nested_cta
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@varchar_nested_cta
+POSTHOOK: query: describe varchar_nested_cta
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@varchar_nested_cta
+c1                  	struct<a:int,b:varchar(20),c:string>	                    
+PREHOOK: query: select * from varchar_nested_cta
+PREHOOK: type: QUERY
+PREHOOK: Input: default@varchar_nested_cta
+#### A masked pattern was here ####
+POSTHOOK: query: select * from varchar_nested_cta
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchar_nested_cta
+#### A masked pattern was here ####
+{"a":0,"b":"val_0","c":"val_0"}
+PREHOOK: query: create table varchar_nested_view as 
+  select * from varchar_nested_struct
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@varchar_nested_struct
+PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_nested_view
+POSTHOOK: query: create table varchar_nested_view as 
+  select * from varchar_nested_struct
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@varchar_nested_struct
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@varchar_nested_view
+POSTHOOK: Lineage: varchar_nested_view.c1 SIMPLE [(varchar_nested_struct)varchar_nested_struct.FieldSchema(name:c1, type:struct<a:int,b:varchar(20),c:string>, comment:null), ]
+PREHOOK: query: describe varchar_nested_view
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@varchar_nested_view
+POSTHOOK: query: describe varchar_nested_view
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@varchar_nested_view
+c1                  	struct<a:int,b:varchar(20),c:string>	                    
+PREHOOK: query: select * from varchar_nested_view
+PREHOOK: type: QUERY
+PREHOOK: Input: default@varchar_nested_view
+#### A masked pattern was here ####
+POSTHOOK: query: select * from varchar_nested_view
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchar_nested_view
+#### A masked pattern was here ####
+{"a":0,"b":"val_0","c":"val_0"}
+PREHOOK: query: drop table varchar_nested_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@varchar_nested_1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_nested_1
+POSTHOOK: query: drop table varchar_nested_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@varchar_nested_1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@varchar_nested_1
+PREHOOK: query: drop table varchar_nested_array
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@varchar_nested_array
+PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_nested_array
+POSTHOOK: query: drop table varchar_nested_array
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@varchar_nested_array
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@varchar_nested_array
+PREHOOK: query: drop table varchar_nested_map
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@varchar_nested_map
+PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_nested_map
+POSTHOOK: query: drop table varchar_nested_map
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@varchar_nested_map
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@varchar_nested_map
+PREHOOK: query: drop table varchar_nested_struct
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@varchar_nested_struct
+PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_nested_struct
+POSTHOOK: query: drop table varchar_nested_struct
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@varchar_nested_struct
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@varchar_nested_struct
+PREHOOK: query: drop table varchar_nested_cta
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@varchar_nested_cta
+PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_nested_cta
+POSTHOOK: query: drop table varchar_nested_cta
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@varchar_nested_cta
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@varchar_nested_cta
+PREHOOK: query: drop table varchar_nested_view
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@varchar_nested_view
+PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_nested_view
+POSTHOOK: query: drop table varchar_nested_view
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@varchar_nested_view
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@varchar_nested_view

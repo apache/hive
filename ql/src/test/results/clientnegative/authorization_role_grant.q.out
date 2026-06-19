@@ -1,0 +1,34 @@
+PREHOOK: query: set role ADMIN
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role ADMIN
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: create role role_noadmin
+PREHOOK: type: CREATEROLE
+POSTHOOK: query: create role role_noadmin
+POSTHOOK: type: CREATEROLE
+PREHOOK: query: create role src_role_wadmin
+PREHOOK: type: CREATEROLE
+POSTHOOK: query: create role src_role_wadmin
+POSTHOOK: type: CREATEROLE
+PREHOOK: query: grant  src_role_wadmin to user user2 with admin option
+PREHOOK: type: GRANT_ROLE
+POSTHOOK: query: grant  src_role_wadmin to user user2 with admin option
+POSTHOOK: type: GRANT_ROLE
+PREHOOK: query: grant  role_noadmin to user user2
+PREHOOK: type: GRANT_ROLE
+POSTHOOK: query: grant  role_noadmin to user user2
+POSTHOOK: type: GRANT_ROLE
+PREHOOK: query: show role grant user user2
+PREHOOK: type: SHOW_ROLE_GRANT
+POSTHOOK: query: show role grant user user2
+POSTHOOK: type: SHOW_ROLE_GRANT
+public	false	-1	
+role_noadmin	false	-1	hive_admin_user
+src_role_wadmin	true	-1	hive_admin_user
+PREHOOK: query: set role role_noadmin
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role role_noadmin
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: grant  src_role_wadmin to user user3
+PREHOOK: type: GRANT_ROLE
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. Current user : user2 is not allowed to grant role. User has to belong to ADMIN role and have it as current role, for this action. Otherwise, grantor need to have ADMIN OPTION on role being granted and have it as a current role for this action.

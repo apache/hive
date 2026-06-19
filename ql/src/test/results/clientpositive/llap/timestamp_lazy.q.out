@@ -1,0 +1,51 @@
+PREHOOK: query: drop table timestamp_lazy
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table timestamp_lazy
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table timestamp_lazy (t timestamp, key string, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@timestamp_lazy
+POSTHOOK: query: create table timestamp_lazy (t timestamp, key string, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@timestamp_lazy
+PREHOOK: query: insert overwrite table timestamp_lazy select cast('2011-01-01 01:01:01' as timestamp), key, value from src tablesample (5 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@timestamp_lazy
+POSTHOOK: query: insert overwrite table timestamp_lazy select cast('2011-01-01 01:01:01' as timestamp), key, value from src tablesample (5 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@timestamp_lazy
+POSTHOOK: Lineage: timestamp_lazy.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: timestamp_lazy.t EXPRESSION []
+POSTHOOK: Lineage: timestamp_lazy.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select t,key,value from timestamp_lazy ORDER BY key ASC, value ASC
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamp_lazy
+#### A masked pattern was here ####
+POSTHOOK: query: select t,key,value from timestamp_lazy ORDER BY key ASC, value ASC
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamp_lazy
+#### A masked pattern was here ####
+2011-01-01 01:01:01	165	val_165
+2011-01-01 01:01:01	238	val_238
+2011-01-01 01:01:01	27	val_27
+2011-01-01 01:01:01	311	val_311
+2011-01-01 01:01:01	86	val_86
+PREHOOK: query: select t,key,value from timestamp_lazy distribute by t sort by key ASC, value ASC
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamp_lazy
+#### A masked pattern was here ####
+POSTHOOK: query: select t,key,value from timestamp_lazy distribute by t sort by key ASC, value ASC
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamp_lazy
+#### A masked pattern was here ####
+2011-01-01 01:01:01	165	val_165
+2011-01-01 01:01:01	238	val_238
+2011-01-01 01:01:01	27	val_27
+2011-01-01 01:01:01	311	val_311
+2011-01-01 01:01:01	86	val_86

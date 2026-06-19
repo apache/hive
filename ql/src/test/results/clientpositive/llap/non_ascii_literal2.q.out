@@ -1,0 +1,25 @@
+PREHOOK: query: create table non_ascii_literal2 as
+select "谢谢" as col1, "Абвгде" as col2
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@non_ascii_literal2
+POSTHOOK: query: create table non_ascii_literal2 as
+select "谢谢" as col1, "Абвгде" as col2
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@non_ascii_literal2
+POSTHOOK: Lineage: non_ascii_literal2.col1 SIMPLE []
+POSTHOOK: Lineage: non_ascii_literal2.col2 SIMPLE []
+PREHOOK: query: select * from non_ascii_literal2
+where col2 = "Абвгде"
+PREHOOK: type: QUERY
+PREHOOK: Input: default@non_ascii_literal2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from non_ascii_literal2
+where col2 = "Абвгде"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@non_ascii_literal2
+#### A masked pattern was here ####
+谢谢	Абвгде

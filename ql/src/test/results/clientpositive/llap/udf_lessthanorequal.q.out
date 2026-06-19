@@ -1,0 +1,21 @@
+PREHOOK: query: DESCRIBE FUNCTION <=
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION <=
+POSTHOOK: type: DESCFUNCTION
+a <= b - Returns TRUE if a is not greater than b
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED <=
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED <=
+POSTHOOK: type: DESCFUNCTION
+a <= b - Returns TRUE if a is not greater than b
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan
+Function type:BUILTIN
+PREHOOK: query: SELECT true<=false, false<=true, false<=false, true<=true FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT true<=false, false<=true, false<=false, true<=true FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+false	true	true	true

@@ -1,0 +1,102 @@
+PREHOOK: query: explain
+select PI() FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select PI() FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: 3.141592653589793D (type: double)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: select PI() FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select PI() FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+3.141592653589793
+PREHOOK: query: DESCRIBE FUNCTION PI
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION PI
+POSTHOOK: type: DESCFUNCTION
+PI() - returns pi 
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED PI
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED PI
+POSTHOOK: type: DESCFUNCTION
+PI() - returns pi 
+Synonyms: pi
+Example:
+ > SELECT PI() FROM src LIMIT 1;
+ 3.14159...
+Function class:org.apache.hadoop.hive.ql.udf.UDFPI
+Function type:BUILTIN
+PREHOOK: query: explain 
+select PI() FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain 
+select PI() FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: 3.141592653589793D (type: double)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: select PI() FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select PI() FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+3.141592653589793
+PREHOOK: query: DESCRIBE FUNCTION PI
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION PI
+POSTHOOK: type: DESCFUNCTION
+PI() - returns pi 
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED PI
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED PI
+POSTHOOK: type: DESCFUNCTION
+PI() - returns pi 
+Synonyms: pi
+Example:
+ > SELECT PI() FROM src LIMIT 1;
+ 3.14159...
+Function class:org.apache.hadoop.hive.ql.udf.UDFPI
+Function type:BUILTIN

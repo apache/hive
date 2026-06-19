@@ -1,0 +1,37 @@
+PREHOOK: query: DESCRIBE FUNCTION sin
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION sin
+POSTHOOK: type: DESCFUNCTION
+sin(x) - returns the sine of x (x is in radians)
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED sin
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED sin
+POSTHOOK: type: DESCFUNCTION
+sin(x) - returns the sine of x (x is in radians)
+Example:
+   > SELECT sin(0) FROM src LIMIT 1;
+  0
+Function class:org.apache.hadoop.hive.ql.udf.UDFSin
+Function type:BUILTIN
+PREHOOK: query: SELECT sin(null)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sin(null)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT sin(0.98), sin(1.57), sin(-0.5)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sin(0.98), sin(1.57), sin(-0.5)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0.8304973704919705	0.9999996829318346	-0.479425538604203

@@ -1,0 +1,152 @@
+PREHOOK: query: drop table if exists udf_tb1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists udf_tb1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists udf_tb2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists udf_tb2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table udf_tb1 (year int, month int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@udf_tb1
+POSTHOOK: query: create table udf_tb1 (year int, month int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@udf_tb1
+PREHOOK: query: create table udf_tb2(month int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@udf_tb2
+POSTHOOK: query: create table udf_tb2(month int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@udf_tb2
+PREHOOK: query: insert into udf_tb1 values(2001, 11)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@udf_tb1
+POSTHOOK: query: insert into udf_tb1 values(2001, 11)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@udf_tb1
+POSTHOOK: Lineage: udf_tb1.month SCRIPT []
+POSTHOOK: Lineage: udf_tb1.year SCRIPT []
+PREHOOK: query: insert into udf_tb2 values(11)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@udf_tb2
+POSTHOOK: query: insert into udf_tb2 values(11)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@udf_tb2
+POSTHOOK: Lineage: udf_tb2.month SCRIPT []
+PREHOOK: query: explain
+select unix_timestamp(concat(a.year, '-01-01 00:00:00')) from (select * from udf_tb1 where year=2001) a join udf_tb2 b on (a.month=b.month)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@udf_tb1
+PREHOOK: Input: default@udf_tb2
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select unix_timestamp(concat(a.year, '-01-01 00:00:00')) from (select * from udf_tb1 where year=2001) a join udf_tb2 b on (a.month=b.month)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@udf_tb1
+POSTHOOK: Input: default@udf_tb2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: udf_tb1
+                  filterExpr: ((year = 2001) and month is not null) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((year = 2001) and month is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: month (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  filterExpr: month is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: month is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: month (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 978336000L (type: bigint)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select unix_timestamp(concat(a.year, '-01-01 00:00:00')) from (select * from udf_tb1 where year=2001) a join udf_tb2 b on (a.month=b.month)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@udf_tb1
+PREHOOK: Input: default@udf_tb2
+#### A masked pattern was here ####
+POSTHOOK: query: select unix_timestamp(concat(a.year, '-01-01 00:00:00')) from (select * from udf_tb1 where year=2001) a join udf_tb2 b on (a.month=b.month)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@udf_tb1
+POSTHOOK: Input: default@udf_tb2
+#### A masked pattern was here ####
+978336000

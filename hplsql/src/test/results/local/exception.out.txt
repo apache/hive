@@ -1,0 +1,13 @@
+Ln:2 PRINT
+Correct
+Ln:3 WHILE - ENTERED
+Ln:4 FETCH
+Ln:4 Cursor not found: cur
+Ln:3 WHILE - LEFT
+Ln:7 EXCEPTION HANDLER
+Ln:8 PRINT
+Correct
+Ln:9 PRINT
+Correct
+Ln:10 PRINT
+Correct - Exception raised

@@ -1,0 +1,78 @@
+PREHOOK: query: CREATE TABLE `store_sales` (`ss_item_sk` bigint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@store_sales
+POSTHOOK: query: CREATE TABLE `store_sales` (`ss_item_sk` bigint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@store_sales
+PREHOOK: query: CREATE TABLE `household_demographics` (`hd_demo_sk` bigint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@household_demographics
+POSTHOOK: query: CREATE TABLE `household_demographics` (`hd_demo_sk` bigint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@household_demographics
+PREHOOK: query: CREATE TABLE `item` (`i_item_sk` bigint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@item
+POSTHOOK: query: CREATE TABLE `item` (`i_item_sk` bigint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@item
+PREHOOK: query: ALTER TABLE `store_sales` ADD CONSTRAINT `pk_ss` PRIMARY KEY (`ss_item_sk`) DISABLE NOVALIDATE RELY
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: default@store_sales
+POSTHOOK: query: ALTER TABLE `store_sales` ADD CONSTRAINT `pk_ss` PRIMARY KEY (`ss_item_sk`) DISABLE NOVALIDATE RELY
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: default@store_sales
+PREHOOK: query: ALTER TABLE `item` ADD CONSTRAINT `pk_i` PRIMARY KEY (`i_item_sk`) DISABLE NOVALIDATE RELY
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@item
+PREHOOK: Output: default@item
+POSTHOOK: query: ALTER TABLE `item` ADD CONSTRAINT `pk_i` PRIMARY KEY (`i_item_sk`) DISABLE NOVALIDATE RELY
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@item
+POSTHOOK: Output: default@item
+PREHOOK: query: ALTER TABLE `store_sales` ADD CONSTRAINT `ss_i` FOREIGN KEY (`ss_item_sk`) REFERENCES `item`(`i_item_sk`) DISABLE NOVALIDATE RELY
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: default@store_sales
+POSTHOOK: query: ALTER TABLE `store_sales` ADD CONSTRAINT `ss_i` FOREIGN KEY (`ss_item_sk`) REFERENCES `item`(`i_item_sk`) DISABLE NOVALIDATE RELY
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: default@store_sales
+Warning: Shuffle Join MERGEJOIN[29][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: EXPLAIN CBO
+SELECT i_item_sk
+FROM store_sales, household_demographics, item
+WHERE ss_item_sk = i_item_sk
+PREHOOK: type: QUERY
+PREHOOK: Input: default@household_demographics
+PREHOOK: Input: default@item
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT i_item_sk
+FROM store_sales, household_demographics, item
+WHERE ss_item_sk = i_item_sk
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@household_demographics
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(i_item_sk=[$2])
+  HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(ss_item_sk=[$0])
+        HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+      HiveProject(DUMMY=[0])
+        HiveTableScan(table=[[default, household_demographics]], table:alias=[household_demographics])
+    HiveProject(i_item_sk=[$0])
+      HiveTableScan(table=[[default, item]], table:alias=[item])
+

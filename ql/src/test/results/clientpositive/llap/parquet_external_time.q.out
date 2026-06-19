@@ -1,0 +1,25 @@
+PREHOOK: query: create table timetest_parquet(t timestamp) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@timetest_parquet
+POSTHOOK: query: create table timetest_parquet(t timestamp) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@timetest_parquet
+PREHOOK: query: load data local inpath '../../data/files/parquet_external_time.parq' into table timetest_parquet
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@timetest_parquet
+POSTHOOK: query: load data local inpath '../../data/files/parquet_external_time.parq' into table timetest_parquet
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@timetest_parquet
+PREHOOK: query: select * from timetest_parquet
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timetest_parquet
+#### A masked pattern was here ####
+POSTHOOK: query: select * from timetest_parquet
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timetest_parquet
+#### A masked pattern was here ####
+2011-01-01 00:30:30.111111111

@@ -1,0 +1,36 @@
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+PREHOOK: query: CREATE DATABASE test_db
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test_db
+POSTHOOK: query: CREATE DATABASE test_db
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test_db
+PREHOOK: query: USE test_db
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:test_db
+POSTHOOK: query: USE test_db
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:test_db
+PREHOOK: query: CREATE TABLE t(a INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test_db
+PREHOOK: Output: test_db@t
+POSTHOOK: query: CREATE TABLE t(a INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test_db
+POSTHOOK: Output: test_db@t
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: DROP DATABASE test_db
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:test_db
+PREHOOK: Output: database:test_db
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. InvalidOperationException(message:Database test_db is not empty. One or more tables exist.)

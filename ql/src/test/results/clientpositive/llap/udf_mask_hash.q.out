@@ -1,0 +1,72 @@
+PREHOOK: query: DESCRIBE FUNCTION mask_hash
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION mask_hash
+POSTHOOK: type: DESCFUNCTION
+returns hash of the given value
+PREHOOK: query: DESC FUNCTION EXTENDED mask_hash
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESC FUNCTION EXTENDED mask_hash
+POSTHOOK: type: DESCFUNCTION
+returns hash of the given value
+Examples:
+   mask_hash(value)
+ Arguments:
+   value - value to mask. Supported types: STRING, VARCHAR, CHAR
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFMaskHash
+Function type:BUILTIN
+PREHOOK: query: explain select mask_hash('TestString-123')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain select mask_hash('TestString-123')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: '8b44d559dc5d60e4453c9b4edf2a455fbce054bb8504cd3eb9b5f391bd239c90' (type: string)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: select mask_hash('TestString-123'),
+       mask_hash(cast('TestString-123' as varchar(24))),
+       mask_hash(cast('TestString-123' as char(24))),
+       mask_hash(cast(123 as tinyint)),
+       mask_hash(cast(12345 as smallint)),
+       mask_hash(cast(12345 as int)),
+       mask_hash(cast(12345 as bigint)),
+       mask_hash(cast('2016-04-20' as date))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select mask_hash('TestString-123'),
+       mask_hash(cast('TestString-123' as varchar(24))),
+       mask_hash(cast('TestString-123' as char(24))),
+       mask_hash(cast(123 as tinyint)),
+       mask_hash(cast(12345 as smallint)),
+       mask_hash(cast(12345 as int)),
+       mask_hash(cast(12345 as bigint)),
+       mask_hash(cast('2016-04-20' as date))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+8b44d559dc5d60e4453c9b4edf2a455fbce054bb8504cd3eb9b5f391bd239c90	8b44d559dc5d60e4453c9b4edf2a455fbce054bb8504cd3eb9b5f391bd239c90	30a88603135d3a6f7a66b4f9193da1ab4423aed45fb8fe736c2f2a08977f2bdd                                                                                                                                                                                               	NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: select mask_hash('01-28-2021')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select mask_hash('01-28-2021')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+7b375ec2327810383a3c6cfb871b5e433feda829cb882b8880a38f17039a34d71900de20b17884e703e411c483c47bec54fd9e8ef06adf1269202776e5b3c607

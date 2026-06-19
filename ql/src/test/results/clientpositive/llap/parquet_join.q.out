@@ -1,0 +1,415 @@
+PREHOOK: query: drop table if exists staging_n5
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists staging_n5
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists parquet_jointable1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists parquet_jointable1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists parquet_jointable2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists parquet_jointable2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists parquet_jointable1_bucketed_sorted
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists parquet_jointable1_bucketed_sorted
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists parquet_jointable2_bucketed_sorted
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists parquet_jointable2_bucketed_sorted
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table staging_n5 (key int, value string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@staging_n5
+POSTHOOK: query: create table staging_n5 (key int, value string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@staging_n5
+PREHOOK: query: insert into table staging_n5 select distinct key, value from src order by key limit 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@staging_n5
+POSTHOOK: query: insert into table staging_n5 select distinct key, value from src order by key limit 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@staging_n5
+POSTHOOK: Lineage: staging_n5.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: staging_n5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table parquet_jointable1 stored as parquet as select * from staging_n5
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@staging_n5
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_jointable1
+POSTHOOK: query: create table parquet_jointable1 stored as parquet as select * from staging_n5
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@staging_n5
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_jointable1
+POSTHOOK: Lineage: parquet_jointable1.key SIMPLE [(staging_n5)staging_n5.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_jointable1.value SIMPLE [(staging_n5)staging_n5.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: create table parquet_jointable2 stored as parquet as select key,key+1,concat(value,"value") as myvalue from staging_n5
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@staging_n5
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_jointable2
+POSTHOOK: query: create table parquet_jointable2 stored as parquet as select key,key+1,concat(value,"value") as myvalue from staging_n5
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@staging_n5
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_jointable2
+POSTHOOK: Lineage: parquet_jointable2._c1 EXPRESSION [(staging_n5)staging_n5.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_jointable2.key SIMPLE [(staging_n5)staging_n5.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_jointable2.myvalue EXPRESSION [(staging_n5)staging_n5.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: explain select p2.myvalue from parquet_jointable1 p1 join parquet_jointable2 p2 on p1.key=p2.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_jointable1
+PREHOOK: Input: default@parquet_jointable2
+#### A masked pattern was here ####
+POSTHOOK: query: explain select p2.myvalue from parquet_jointable1 p1 join parquet_jointable2 p2 on p1.key=p2.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_jointable1
+POSTHOOK: Input: default@parquet_jointable2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: p1
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            LLAP IO: all inputs (cache only)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: p2
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 2 Data size: 198 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 198 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: int), myvalue (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 198 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 2 Data size: 198 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: string)
+            Execution mode: llap
+            LLAP IO: all inputs (cache only)
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col2
+                Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col2 (type: string)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select p2.myvalue from parquet_jointable1 p1 join parquet_jointable2 p2 on p1.key=p2.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_jointable1
+PREHOOK: Input: default@parquet_jointable2
+#### A masked pattern was here ####
+POSTHOOK: query: select p2.myvalue from parquet_jointable1 p1 join parquet_jointable2 p2 on p1.key=p2.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_jointable1
+POSTHOOK: Input: default@parquet_jointable2
+#### A masked pattern was here ####
+val_0value
+val_10value
+PREHOOK: query: explain select p2.myvalue from parquet_jointable1 p1 join parquet_jointable2 p2 on p1.key=p2.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_jointable1
+PREHOOK: Input: default@parquet_jointable2
+#### A masked pattern was here ####
+POSTHOOK: query: explain select p2.myvalue from parquet_jointable1 p1 join parquet_jointable2 p2 on p1.key=p2.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_jointable1
+POSTHOOK: Input: default@parquet_jointable2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 2 <- Map 1 (BROADCAST_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: p1
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            LLAP IO: all inputs (cache only)
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: p2
+                  filterExpr: key is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:key, smallTablePos:0, keyRatio:1.0
+                  Statistics: Num rows: 2 Data size: 198 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 198 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: int), myvalue (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 198 Basic stats: COMPLETE Column stats: COMPLETE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+                        outputColumnNames: _col2
+                        input vertices:
+                          0 Map 1
+                        Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                        Select Operator
+                          expressions: _col2 (type: string)
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                          File Output Operator
+                            compressed: false
+                            Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                            table:
+                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: llap
+            LLAP IO: all inputs (cache only)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select p2.myvalue from parquet_jointable1 p1 join parquet_jointable2 p2 on p1.key=p2.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_jointable1
+PREHOOK: Input: default@parquet_jointable2
+#### A masked pattern was here ####
+POSTHOOK: query: select p2.myvalue from parquet_jointable1 p1 join parquet_jointable2 p2 on p1.key=p2.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_jointable1
+POSTHOOK: Input: default@parquet_jointable2
+#### A masked pattern was here ####
+val_0value
+val_10value
+PREHOOK: query: create table parquet_jointable1_bucketed_sorted (key int,value string) clustered by (key) sorted by (key ASC) INTO 1 BUCKETS stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_jointable1_bucketed_sorted
+POSTHOOK: query: create table parquet_jointable1_bucketed_sorted (key int,value string) clustered by (key) sorted by (key ASC) INTO 1 BUCKETS stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_jointable1_bucketed_sorted
+PREHOOK: query: insert overwrite table parquet_jointable1_bucketed_sorted select key,concat(value,"value1") as value from staging_n5 cluster by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@staging_n5
+PREHOOK: Output: default@parquet_jointable1_bucketed_sorted
+POSTHOOK: query: insert overwrite table parquet_jointable1_bucketed_sorted select key,concat(value,"value1") as value from staging_n5 cluster by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@staging_n5
+POSTHOOK: Output: default@parquet_jointable1_bucketed_sorted
+POSTHOOK: Lineage: parquet_jointable1_bucketed_sorted.key SIMPLE [(staging_n5)staging_n5.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_jointable1_bucketed_sorted.value EXPRESSION [(staging_n5)staging_n5.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: create table parquet_jointable2_bucketed_sorted (key int,value1 string, value2 string) clustered by (key) sorted by (key ASC) INTO 1 BUCKETS stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_jointable2_bucketed_sorted
+POSTHOOK: query: create table parquet_jointable2_bucketed_sorted (key int,value1 string, value2 string) clustered by (key) sorted by (key ASC) INTO 1 BUCKETS stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_jointable2_bucketed_sorted
+PREHOOK: query: insert overwrite table parquet_jointable2_bucketed_sorted select key,concat(value,"value2-1") as value1,concat(value,"value2-2") as value2 from staging_n5 cluster by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@staging_n5
+PREHOOK: Output: default@parquet_jointable2_bucketed_sorted
+POSTHOOK: query: insert overwrite table parquet_jointable2_bucketed_sorted select key,concat(value,"value2-1") as value1,concat(value,"value2-2") as value2 from staging_n5 cluster by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@staging_n5
+POSTHOOK: Output: default@parquet_jointable2_bucketed_sorted
+POSTHOOK: Lineage: parquet_jointable2_bucketed_sorted.key SIMPLE [(staging_n5)staging_n5.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_jointable2_bucketed_sorted.value1 EXPRESSION [(staging_n5)staging_n5.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: parquet_jointable2_bucketed_sorted.value2 EXPRESSION [(staging_n5)staging_n5.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: explain select p1.value,p2.value2 from parquet_jointable1_bucketed_sorted p1 join parquet_jointable2_bucketed_sorted p2 on p1.key=p2.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_jointable1_bucketed_sorted
+PREHOOK: Input: default@parquet_jointable2_bucketed_sorted
+#### A masked pattern was here ####
+POSTHOOK: query: explain select p1.value,p2.value2 from parquet_jointable1_bucketed_sorted p1 join parquet_jointable2_bucketed_sorted p2 on p1.key=p2.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_jointable1_bucketed_sorted
+POSTHOOK: Input: default@parquet_jointable2_bucketed_sorted
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 2 <- Map 1 (BROADCAST_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: p1
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 2 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 2 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: string)
+            Execution mode: llap
+            LLAP IO: all inputs (cache only)
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: p2
+                  filterExpr: key is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:key, smallTablePos:0, keyRatio:1.0
+                  Statistics: Num rows: 2 Data size: 204 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 204 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: int), value2 (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 204 Basic stats: COMPLETE Column stats: COMPLETE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+                        outputColumnNames: _col1, _col3
+                        input vertices:
+                          0 Map 1
+                        Statistics: Num rows: 2 Data size: 388 Basic stats: COMPLETE Column stats: COMPLETE
+                        Select Operator
+                          expressions: _col1 (type: string), _col3 (type: string)
+                          outputColumnNames: _col0, _col1
+                          Statistics: Num rows: 2 Data size: 388 Basic stats: COMPLETE Column stats: COMPLETE
+                          File Output Operator
+                            compressed: false
+                            Statistics: Num rows: 2 Data size: 388 Basic stats: COMPLETE Column stats: COMPLETE
+                            table:
+                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: llap
+            LLAP IO: all inputs (cache only)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select p1.value,p2.value2 from parquet_jointable1_bucketed_sorted p1 join parquet_jointable2_bucketed_sorted p2 on p1.key=p2.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_jointable1_bucketed_sorted
+PREHOOK: Input: default@parquet_jointable2_bucketed_sorted
+#### A masked pattern was here ####
+POSTHOOK: query: select p1.value,p2.value2 from parquet_jointable1_bucketed_sorted p1 join parquet_jointable2_bucketed_sorted p2 on p1.key=p2.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_jointable1_bucketed_sorted
+POSTHOOK: Input: default@parquet_jointable2_bucketed_sorted
+#### A masked pattern was here ####
+val_0value1	val_0value2-2
+val_10value1	val_10value2-2

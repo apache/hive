@@ -1,0 +1,1 @@
+FAILED: SemanticException org.apache.hadoop.hive.ql.parse.SemanticException: Database does not exist: nonexistentdb

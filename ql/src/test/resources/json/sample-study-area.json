@@ -1,0 +1,9 @@
+{"fields": [],
+"hasZ": false,
+"hasM": false,
+"spatialReference": {"wkid": 4301},
+"features": [{
+"attributes":{},
+"geometry":{"rings":[[[135.0,38.0],[136.0,39.0],[137.0,38.0],[136.0,37.0],[135.0,38.0]]]}
+}]
+}

@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10061]: Numerator should not be bigger than denominator in sample clause for table srcbucket

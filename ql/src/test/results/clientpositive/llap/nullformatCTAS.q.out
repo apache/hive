@@ -1,0 +1,266 @@
+PREHOOK: query: DROP TABLE IF EXISTS base_tab_n2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS base_tab_n2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE base_tab_n2(a STRING, b STRING, c STRING, d STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@base_tab_n2
+POSTHOOK: query: CREATE TABLE base_tab_n2(a STRING, b STRING, c STRING, d STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@base_tab_n2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/null.txt' INTO TABLE base_tab_n2
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@base_tab_n2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/null.txt' INTO TABLE base_tab_n2
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@base_tab_n2
+PREHOOK: query: DESCRIBE EXTENDED base_tab_n2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@base_tab_n2
+POSTHOOK: query: DESCRIBE EXTENDED base_tab_n2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@base_tab_n2
+a                   	string              	                    
+b                   	string              	                    
+c                   	string              	                    
+d                   	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: DROP TABLE IF EXISTS null_tab3
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS null_tab3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: EXPLAIN CREATE TABLE null_tab3 ROW FORMAT DELIMITED NULL DEFINED AS 'fooNull'
+   AS SELECT a, b FROM base_tab_n2
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@base_tab_n2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@null_tab3
+POSTHOOK: query: EXPLAIN CREATE TABLE null_tab3 ROW FORMAT DELIMITED NULL DEFINED AS 'fooNull'
+   AS SELECT a, b FROM base_tab_n2
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@base_tab_n2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@null_tab3
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-4 depends on stages: Stage-0, Stage-2
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: base_tab_n2
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: a (type: string), b (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.null_tab3
+                    Select Operator
+                      expressions: _col0 (type: string), _col1 (type: string)
+                      outputColumnNames: col1, col2
+                      Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: max(length(col1)), avg(COALESCE(length(col1),0)), count(1), count(col1), compute_bit_vector_hll(col1), max(length(col2)), avg(COALESCE(length(col2),0)), count(col2), compute_bit_vector_hll(col2)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                        Statistics: Num rows: 1 Data size: 840 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 840 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 840 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col5,0)) (type: bigint), COALESCE(_col6,0) (type: double), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 840 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 840 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-4
+    Create Table
+      columns: a string, b string
+      name: default.null_tab3
+      input format: org.apache.hadoop.mapred.TextInputFormat
+      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+      serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: a, b
+          Column Types: string, string
+          Table: default.null_tab3
+
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+PREHOOK: query: CREATE TABLE null_tab3 ROW FORMAT DELIMITED NULL DEFINED AS 'fooNull'
+   AS SELECT a, b FROM base_tab_n2
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@base_tab_n2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@null_tab3
+POSTHOOK: query: CREATE TABLE null_tab3 ROW FORMAT DELIMITED NULL DEFINED AS 'fooNull'
+   AS SELECT a, b FROM base_tab_n2
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@base_tab_n2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@null_tab3
+POSTHOOK: Lineage: null_tab3.a SIMPLE [(base_tab_n2)base_tab_n2.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: null_tab3.b SIMPLE [(base_tab_n2)base_tab_n2.FieldSchema(name:b, type:string, comment:null), ]
+PREHOOK: query: DESCRIBE EXTENDED null_tab3
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@null_tab3
+POSTHOOK: query: DESCRIBE EXTENDED null_tab3
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@null_tab3
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: SHOW CREATE TABLE null_tab3
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@null_tab3
+POSTHOOK: query: SHOW CREATE TABLE null_tab3
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@null_tab3
+CREATE TABLE `null_tab3`(
+  `a` string, 
+  `b` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+WITH SERDEPROPERTIES ( 
+  'serialization.null.format'='fooNull') 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+1.01
+1.01
+1.01
+1.01
+1.01
+fooNull1
+fooNullfooNull
+1.0fooNull
+1.01
+1.01
+PREHOOK: query: SELECT * FROM null_tab3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@null_tab3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM null_tab3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@null_tab3
+#### A masked pattern was here ####
+1.0	1
+1.0	1
+1.0	1
+1.0	1
+1.0	1
+NULL	1
+NULL	NULL
+1.0	NULL
+1.0	1
+1.0	1
+PREHOOK: query: ALTER TABLE null_tab3 SET SERDEPROPERTIES ( 'serialization.null.format'='foo')
+PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
+PREHOOK: Input: default@null_tab3
+PREHOOK: Output: default@null_tab3
+POSTHOOK: query: ALTER TABLE null_tab3 SET SERDEPROPERTIES ( 'serialization.null.format'='foo')
+POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: Input: default@null_tab3
+POSTHOOK: Output: default@null_tab3
+PREHOOK: query: SELECT * FROM null_tab3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@null_tab3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM null_tab3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@null_tab3
+#### A masked pattern was here ####
+1.0	1
+1.0	1
+1.0	1
+1.0	1
+1.0	1
+fooNull	1
+fooNull	fooNull
+1.0	fooNull
+1.0	1
+1.0	1
+PREHOOK: query: DROP TABLE null_tab3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@null_tab3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@null_tab3
+POSTHOOK: query: DROP TABLE null_tab3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@null_tab3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@null_tab3
+PREHOOK: query: DROP TABLE base_tab_n2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@base_tab_n2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@base_tab_n2
+POSTHOOK: query: DROP TABLE base_tab_n2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@base_tab_n2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@base_tab_n2

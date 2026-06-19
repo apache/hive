@@ -1,0 +1,269 @@
+PREHOOK: query: drop table float_text
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table float_text
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table float_text(f float)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@float_text
+POSTHOOK: query: create table float_text(f float)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@float_text
+PREHOOK: query: insert into float_text values(74.72)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@float_text
+POSTHOOK: query: insert into float_text values(74.72)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@float_text
+POSTHOOK: Lineage: float_text.f SCRIPT []
+PREHOOK: query: insert into float_text values(0.22)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@float_text
+POSTHOOK: query: insert into float_text values(0.22)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@float_text
+POSTHOOK: Lineage: float_text.f SCRIPT []
+PREHOOK: query: select f from float_text
+PREHOOK: type: QUERY
+PREHOOK: Input: default@float_text
+#### A masked pattern was here ####
+POSTHOOK: query: select f from float_text
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@float_text
+#### A masked pattern was here ####
+0.22
+74.72
+PREHOOK: query: alter table float_text change column f f double
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@float_text
+PREHOOK: Output: default@float_text
+POSTHOOK: query: alter table float_text change column f f double
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@float_text
+POSTHOOK: Output: default@float_text
+PREHOOK: query: select f from float_text
+PREHOOK: type: QUERY
+PREHOOK: Input: default@float_text
+#### A masked pattern was here ####
+POSTHOOK: query: select f from float_text
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@float_text
+#### A masked pattern was here ####
+0.22
+74.72
+PREHOOK: query: select f from float_text where f=74.72
+PREHOOK: type: QUERY
+PREHOOK: Input: default@float_text
+#### A masked pattern was here ####
+POSTHOOK: query: select f from float_text where f=74.72
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@float_text
+#### A masked pattern was here ####
+74.72
+PREHOOK: query: select f from float_text where f=0.22
+PREHOOK: type: QUERY
+PREHOOK: Input: default@float_text
+#### A masked pattern was here ####
+POSTHOOK: query: select f from float_text where f=0.22
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@float_text
+#### A masked pattern was here ####
+0.22
+PREHOOK: query: alter table float_text change column f f decimal(14,5)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@float_text
+PREHOOK: Output: default@float_text
+POSTHOOK: query: alter table float_text change column f f decimal(14,5)
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@float_text
+POSTHOOK: Output: default@float_text
+PREHOOK: query: select f from float_text
+PREHOOK: type: QUERY
+PREHOOK: Input: default@float_text
+#### A masked pattern was here ####
+POSTHOOK: query: select f from float_text
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@float_text
+#### A masked pattern was here ####
+0.22000
+74.72000
+PREHOOK: query: select f from float_text where f=74.72
+PREHOOK: type: QUERY
+PREHOOK: Input: default@float_text
+#### A masked pattern was here ####
+POSTHOOK: query: select f from float_text where f=74.72
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@float_text
+#### A masked pattern was here ####
+74.72000
+PREHOOK: query: select f from float_text where f=0.22
+PREHOOK: type: QUERY
+PREHOOK: Input: default@float_text
+#### A masked pattern was here ####
+POSTHOOK: query: select f from float_text where f=0.22
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@float_text
+#### A masked pattern was here ####
+0.22000
+PREHOOK: query: create table float_orc(f float) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@float_orc
+POSTHOOK: query: create table float_orc(f float) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@float_orc
+PREHOOK: query: insert overwrite table float_orc select * from float_text
+PREHOOK: type: QUERY
+PREHOOK: Input: default@float_text
+PREHOOK: Output: default@float_orc
+POSTHOOK: query: insert overwrite table float_orc select * from float_text
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@float_text
+POSTHOOK: Output: default@float_orc
+POSTHOOK: Lineage: float_orc.f EXPRESSION [(float_text)float_text.FieldSchema(name:f, type:decimal(14,5), comment:null), ]
+PREHOOK: query: select f from float_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@float_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select f from float_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@float_orc
+#### A masked pattern was here ####
+0.22
+74.72
+PREHOOK: query: alter table float_orc change column f f double
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@float_orc
+PREHOOK: Output: default@float_orc
+POSTHOOK: query: alter table float_orc change column f f double
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@float_orc
+POSTHOOK: Output: default@float_orc
+PREHOOK: query: select f from float_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@float_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select f from float_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@float_orc
+#### A masked pattern was here ####
+0.2199999988079071
+74.72000122070312
+PREHOOK: query: select f from float_orc where f=74.72000122070312
+PREHOOK: type: QUERY
+PREHOOK: Input: default@float_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select f from float_orc where f=74.72000122070312
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@float_orc
+#### A masked pattern was here ####
+74.72000122070312
+PREHOOK: query: select f from float_orc where f=0.2199999988079071
+PREHOOK: type: QUERY
+PREHOOK: Input: default@float_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select f from float_orc where f=0.2199999988079071
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@float_orc
+#### A masked pattern was here ####
+0.2199999988079071
+PREHOOK: query: select f from float_orc where f=74.72000122070312
+PREHOOK: type: QUERY
+PREHOOK: Input: default@float_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select f from float_orc where f=74.72000122070312
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@float_orc
+#### A masked pattern was here ####
+74.72000122070312
+PREHOOK: query: select f from float_orc where f=0.2199999988079071
+PREHOOK: type: QUERY
+PREHOOK: Input: default@float_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select f from float_orc where f=0.2199999988079071
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@float_orc
+#### A masked pattern was here ####
+0.2199999988079071
+PREHOOK: query: alter table float_orc change column f f decimal(14,5)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@float_orc
+PREHOOK: Output: default@float_orc
+POSTHOOK: query: alter table float_orc change column f f decimal(14,5)
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@float_orc
+POSTHOOK: Output: default@float_orc
+PREHOOK: query: select f from float_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@float_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select f from float_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@float_orc
+#### A masked pattern was here ####
+0.22000
+74.72000
+PREHOOK: query: select f from float_orc where f=74.72
+PREHOOK: type: QUERY
+PREHOOK: Input: default@float_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select f from float_orc where f=74.72
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@float_orc
+#### A masked pattern was here ####
+74.72000
+PREHOOK: query: select f from float_orc where f=0.22
+PREHOOK: type: QUERY
+PREHOOK: Input: default@float_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select f from float_orc where f=0.22
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@float_orc
+#### A masked pattern was here ####
+0.22000
+PREHOOK: query: select f from float_orc where f=74.72
+PREHOOK: type: QUERY
+PREHOOK: Input: default@float_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select f from float_orc where f=74.72
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@float_orc
+#### A masked pattern was here ####
+74.72000
+PREHOOK: query: select f from float_orc where f=0.22
+PREHOOK: type: QUERY
+PREHOOK: Input: default@float_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select f from float_orc where f=0.22
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@float_orc
+#### A masked pattern was here ####
+0.22000
+PREHOOK: query: drop table float_text
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@float_text
+PREHOOK: Output: database:default
+PREHOOK: Output: default@float_text
+POSTHOOK: query: drop table float_text
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@float_text
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@float_text
+PREHOOK: query: drop table float_orc
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@float_orc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@float_orc
+POSTHOOK: query: drop table float_orc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@float_orc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@float_orc

@@ -1,0 +1,161 @@
+PREHOOK: query: drop table IF EXISTS encryptedTable PURGE
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table IF EXISTS encryptedTable PURGE
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table IF EXISTS unencryptedTable PURGE
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table IF EXISTS unencryptedTable PURGE
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table encryptedTable(key string,
+    value string) partitioned by (ds string) clustered by (key) into 2 buckets stored as orc
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: hdfs://### HDFS PATH ###
+PREHOOK: Output: database:default
+PREHOOK: Output: default@encryptedTable
+POSTHOOK: query: create table encryptedTable(key string,
+    value string) partitioned by (ds string) clustered by (key) into 2 buckets stored as orc
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: hdfs://### HDFS PATH ###
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@encryptedTable
+Encryption key created: 'key_1'
+Encryption zone created: '/build/ql/test/data/warehouse/encryptedTable' using key: 'key_1'
+PREHOOK: query: create table unencryptedTable(key string,
+    value string) partitioned by (ds string) clustered by (key) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@unencryptedTable
+POSTHOOK: query: create table unencryptedTable(key string,
+    value string) partitioned by (ds string) clustered by (key) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@unencryptedTable
+PREHOOK: query: insert into table encryptedTable partition
+    (ds='today') values
+    ('501', 'val_501'),
+    ('502', 'val_502')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@encryptedtable@ds=today
+POSTHOOK: query: insert into table encryptedTable partition
+    (ds='today') values
+    ('501', 'val_501'),
+    ('502', 'val_502')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@encryptedtable@ds=today
+POSTHOOK: Lineage: encryptedtable PARTITION(ds=today).key SCRIPT []
+POSTHOOK: Lineage: encryptedtable PARTITION(ds=today).value SCRIPT []
+PREHOOK: query: select * from encryptedTable order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@encryptedtable
+PREHOOK: Input: default@encryptedtable@ds=today
+#### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
+POSTHOOK: query: select * from encryptedTable order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@encryptedtable
+POSTHOOK: Input: default@encryptedtable@ds=today
+#### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
+501	val_501	today
+502	val_502	today
+PREHOOK: query: insert into table encryptedTable partition (ds='yesterday')
+select * from src where key in ('238', '86')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@encryptedtable@ds=yesterday
+POSTHOOK: query: insert into table encryptedTable partition (ds='yesterday')
+select * from src where key in ('238', '86')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@encryptedtable@ds=yesterday
+POSTHOOK: Lineage: encryptedtable PARTITION(ds=yesterday).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: encryptedtable PARTITION(ds=yesterday).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from encryptedTable order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@encryptedtable
+PREHOOK: Input: default@encryptedtable@ds=today
+PREHOOK: Input: default@encryptedtable@ds=yesterday
+#### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
+POSTHOOK: query: select * from encryptedTable order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@encryptedtable
+POSTHOOK: Input: default@encryptedtable@ds=today
+POSTHOOK: Input: default@encryptedtable@ds=yesterday
+#### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
+238	val_238	yesterday
+238	val_238	yesterday
+501	val_501	today
+502	val_502	today
+86	val_86	yesterday
+PREHOOK: query: insert into table unencryptedTable partition (ds='today')
+select key, value from encryptedTable where ds='today'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@encryptedtable
+PREHOOK: Input: default@encryptedtable@ds=today
+PREHOOK: Output: default@unencryptedtable@ds=today
+POSTHOOK: query: insert into table unencryptedTable partition (ds='today')
+select key, value from encryptedTable where ds='today'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@encryptedtable
+POSTHOOK: Input: default@encryptedtable@ds=today
+POSTHOOK: Output: default@unencryptedtable@ds=today
+POSTHOOK: Lineage: unencryptedtable PARTITION(ds=today).key SIMPLE [(encryptedtable)encryptedtable.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: unencryptedtable PARTITION(ds=today).value SIMPLE [(encryptedtable)encryptedtable.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: insert into table unencryptedTable partition (ds='yesterday')
+select key, value from encryptedTable where ds='yesterday'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@encryptedtable
+PREHOOK: Input: default@encryptedtable@ds=yesterday
+PREHOOK: Output: default@unencryptedtable@ds=yesterday
+POSTHOOK: query: insert into table unencryptedTable partition (ds='yesterday')
+select key, value from encryptedTable where ds='yesterday'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@encryptedtable
+POSTHOOK: Input: default@encryptedtable@ds=yesterday
+POSTHOOK: Output: default@unencryptedtable@ds=yesterday
+POSTHOOK: Lineage: unencryptedtable PARTITION(ds=yesterday).key SIMPLE [(encryptedtable)encryptedtable.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: unencryptedtable PARTITION(ds=yesterday).value SIMPLE [(encryptedtable)encryptedtable.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from unencryptedTable order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@unencryptedtable
+PREHOOK: Input: default@unencryptedtable@ds=today
+PREHOOK: Input: default@unencryptedtable@ds=yesterday
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from unencryptedTable order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@unencryptedtable
+POSTHOOK: Input: default@unencryptedtable@ds=today
+POSTHOOK: Input: default@unencryptedtable@ds=yesterday
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+238	val_238	yesterday
+238	val_238	yesterday
+501	val_501	today
+502	val_502	today
+86	val_86	yesterday
+PREHOOK: query: drop table encryptedTable PURGE
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@encryptedtable
+PREHOOK: Output: database:default
+PREHOOK: Output: default@encryptedtable
+POSTHOOK: query: drop table encryptedTable PURGE
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@encryptedtable
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@encryptedtable
+Encryption key deleted: 'key_1'
+PREHOOK: query: drop table unencryptedTable PURGE
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@unencryptedtable
+PREHOOK: Output: database:default
+PREHOOK: Output: default@unencryptedtable
+POSTHOOK: query: drop table unencryptedTable PURGE
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@unencryptedtable
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@unencryptedtable

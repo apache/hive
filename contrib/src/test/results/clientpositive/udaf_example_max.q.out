@@ -1,0 +1,92 @@
+PREHOOK: query: CREATE TEMPORARY FUNCTION example_max AS 'org.apache.hadoop.hive.contrib.udaf.example.UDAFExampleMax'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: example_max
+POSTHOOK: query: CREATE TEMPORARY FUNCTION example_max AS 'org.apache.hadoop.hive.contrib.udaf.example.UDAFExampleMax'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: example_max
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED example_max
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED example_max
+POSTHOOK: type: DESCFUNCTION
+example_max(expr) - Returns the maximum value of expr
+Function class:org.apache.hadoop.hive.contrib.udaf.example.UDAFExampleMax
+Function type:TEMPORARY
+PREHOOK: query: EXPLAIN
+SELECT example_max(substr(value,5)),
+       example_max(IF(substr(value,5) > 250, NULL, substr(value,5)))
+FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT example_max(substr(value,5)),
+       example_max(IF(substr(value,5) > 250, NULL, substr(value,5)))
+FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: src
+            Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              expressions: substr(value, 5) (type: string), if((UDFToDouble(substr(value, 5)) > 250.0D), null, substr(value, 5)) (type: string)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                aggregations: example_max(_col0), example_max(_col1)
+                minReductionHashAggr: 0.99
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: string), _col1 (type: string)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: example_max(VALUE._col0), example_max(VALUE._col1)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT example_max(substr(value,5)),
+       example_max(IF(substr(value,5) > 250, NULL, substr(value,5)))
+FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT example_max(substr(value,5)),
+       example_max(IF(substr(value,5) > 250, NULL, substr(value,5)))
+FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+98	98
+PREHOOK: query: DROP TEMPORARY FUNCTION example_max
+PREHOOK: type: DROPFUNCTION
+PREHOOK: Output: example_max
+POSTHOOK: query: DROP TEMPORARY FUNCTION example_max
+POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Output: example_max

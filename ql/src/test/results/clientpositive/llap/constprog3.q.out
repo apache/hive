@@ -1,0 +1,42 @@
+PREHOOK: query: create temporary table table1(id int, val int, val1 int, dimid int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table1
+POSTHOOK: query: create temporary table table1(id int, val int, val1 int, dimid int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table1
+PREHOOK: query: create temporary table table3(id int, val int, val1 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table3
+POSTHOOK: query: create temporary table table3(id int, val int, val1 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table3
+PREHOOK: query: explain
+select table1.id, table1.val, table1.val1
+from table1 inner join table3
+on table1.dimid = table3.id and table3.id = 1 where table1.dimid <> 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+PREHOOK: Input: default@table3
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select table1.id, table1.val, table1.val1
+from table1 inner join table3
+on table1.dimid = table3.id and table3.id = 1 where table1.dimid <> 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table3
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 0
+      Processor Tree:
+        ListSink
+

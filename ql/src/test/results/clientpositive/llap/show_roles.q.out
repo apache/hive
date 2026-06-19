@@ -1,0 +1,16 @@
+PREHOOK: query: create role role1
+PREHOOK: type: CREATEROLE
+POSTHOOK: query: create role role1
+POSTHOOK: type: CREATEROLE
+PREHOOK: query: create role role2
+PREHOOK: type: CREATEROLE
+POSTHOOK: query: create role role2
+POSTHOOK: type: CREATEROLE
+PREHOOK: query: show roles
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: show roles
+POSTHOOK: type: SHOW_ROLES
+admin
+public
+role1
+role2

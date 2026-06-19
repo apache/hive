@@ -1,0 +1,26 @@
+PREHOOK: query: DESCRIBE FUNCTION int
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION int
+POSTHOOK: type: DESCFUNCTION
+int(x) - converts it's parameter to int
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED int
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED int
+POSTHOOK: type: DESCFUNCTION
+int(x) - converts it's parameter to int
+Synonyms: udftointeger
+- x is NULL -> NULL
+- byte, short, integer, long, timestamp:
+  x fits into the type int -> integer part of x
+  undefined otherwise
+- boolean:
+  true  -> 1
+  false -> 0
+- string:
+  x is a valid integer -> x
+  NULL otherwise
+Example:
+   > SELECT int(true);
+  1
+Function class:org.apache.hadoop.hive.ql.udf.UDFToInteger
+Function type:BUILTIN

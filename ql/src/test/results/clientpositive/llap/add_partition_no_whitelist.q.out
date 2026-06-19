@@ -1,0 +1,21 @@
+PREHOOK: query: CREATE TABLE part_nowhitelist_test (key STRING, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@part_nowhitelist_test
+POSTHOOK: query: CREATE TABLE part_nowhitelist_test (key STRING, value STRING) PARTITIONED BY (ds STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@part_nowhitelist_test
+PREHOOK: query: SHOW PARTITIONS part_nowhitelist_test
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@part_nowhitelist_test
+POSTHOOK: query: SHOW PARTITIONS part_nowhitelist_test
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@part_nowhitelist_test
+PREHOOK: query: ALTER TABLE part_nowhitelist_test ADD PARTITION (ds='1,2,3,4')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@part_nowhitelist_test
+POSTHOOK: query: ALTER TABLE part_nowhitelist_test ADD PARTITION (ds='1,2,3,4')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@part_nowhitelist_test
+POSTHOOK: Output: default@part_nowhitelist_test@ds=1,2,3,4

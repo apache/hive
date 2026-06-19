@@ -1,0 +1,47 @@
+PREHOOK: query: drop table tstsrcpart
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table tstsrcpart
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table tstsrcpart like srcpart
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tstsrcpart
+POSTHOOK: query: create table tstsrcpart like srcpart
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tstsrcpart
+PREHOOK: query: INSERT OVERWRITE TABLE tstsrcpart PARTITION (ds='2008-04-08', hr='11')
+SELECT key, value FROM srcpart WHERE ds='2008-04-08' AND hr='11'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: default@tstsrcpart@ds=2008-04-08/hr=11
+POSTHOOK: query: INSERT OVERWRITE TABLE tstsrcpart PARTITION (ds='2008-04-08', hr='11')
+SELECT key, value FROM srcpart WHERE ds='2008-04-08' AND hr='11'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@tstsrcpart@ds=2008-04-08/hr=11
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table tstsrcpart partition (ds='2008-04-08', hr='12')
+select key, value from srcpart where ds='2008-04-08' and hr='12'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@tstsrcpart@ds=2008-04-08/hr=12
+POSTHOOK: query: insert overwrite table tstsrcpart partition (ds='2008-04-08', hr='12')
+select key, value from srcpart where ds='2008-04-08' and hr='12'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@tstsrcpart@ds=2008-04-08/hr=12
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: ALTER TABLE tstsrcpart UNARCHIVE PARTITION (ds='2008-04-08', hr='12')
+PREHOOK: type: ALTERTABLE_UNARCHIVE
+PREHOOK: Input: default@tstsrcpart
+PREHOOK: Output: default@tstsrcpart@ds=2008-04-08/hr=12
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. Partition ds=2008-04-08/hr=12 is not archived.

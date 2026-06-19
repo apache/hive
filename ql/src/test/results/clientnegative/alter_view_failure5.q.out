@@ -1,0 +1,22 @@
+PREHOOK: query: DROP VIEW xxx6
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW xxx6
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: CREATE VIEW xxx6
+PARTITIONED ON (value)
+AS 
+SELECT * FROM src
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@xxx6
+POSTHOOK: query: CREATE VIEW xxx6
+PARTITIONED ON (value)
+AS 
+SELECT * FROM src
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@xxx6
+POSTHOOK: Lineage: xxx6.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+FAILED: ValidationFailureSemanticException default.xxx6: Partition spec {v=val_86} contains non-partition columns

@@ -1,0 +1,37 @@
+PREHOOK: query: DESCRIBE FUNCTION cos
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION cos
+POSTHOOK: type: DESCFUNCTION
+cos(x) - returns the cosine of x (x is in radians)
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED cos
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED cos
+POSTHOOK: type: DESCFUNCTION
+cos(x) - returns the cosine of x (x is in radians)
+Example:
+   > SELECT cos(0) FROM src LIMIT 1;
+  1
+Function class:org.apache.hadoop.hive.ql.udf.UDFCos
+Function type:BUILTIN
+PREHOOK: query: SELECT cos(null)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cos(null)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT cos(0.98), cos(1.57), cos(-0.5)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cos(0.98), cos(1.57), cos(-0.5)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0.5570225467662173	7.963267107332633E-4	0.8775825618903728

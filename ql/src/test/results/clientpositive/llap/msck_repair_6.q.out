@@ -1,0 +1,53 @@
+PREHOOK: query: DROP TABLE IF EXISTS repairtable_n6
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS repairtable_n6
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repairtable_n6
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repairtable_n6
+PREHOOK: query: MSCK REPAIR TABLE repairtable_n6
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_n6
+POSTHOOK: query: MSCK REPAIR TABLE repairtable_n6
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_n6
+PREHOOK: query: show partitions repairtable_n6
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_n6
+POSTHOOK: query: show partitions repairtable_n6
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_n6
+PREHOOK: query: MSCK REPAIR TABLE repairtable_n6
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_n6
+POSTHOOK: query: MSCK REPAIR TABLE repairtable_n6
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_n6
+Partitions not in metastore:	repairtable_n6:year=2020/month=4/day=1
+#### A masked pattern was here ####
+PREHOOK: query: show partitions repairtable_n6
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_n6
+POSTHOOK: query: show partitions repairtable_n6
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_n6
+year=2020/month=4/day=1
+PREHOOK: query: DROP TABLE default.repairtable_n6
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@repairtable_n6
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repairtable_n6
+POSTHOOK: query: DROP TABLE default.repairtable_n6
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@repairtable_n6
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repairtable_n6

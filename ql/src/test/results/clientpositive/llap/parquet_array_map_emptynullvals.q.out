@@ -1,0 +1,95 @@
+PREHOOK: query: drop table if exists testSets
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists testSets
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists testSets2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists testSets2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table testSets (
+key string,
+arrayValues array<string>,
+mapValues map<string,string>)
+stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testSets
+POSTHOOK: query: create table testSets (
+key string,
+arrayValues array<string>,
+mapValues map<string,string>)
+stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testSets
+PREHOOK: query: insert into table testSets select 'abcd', array(), map() from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@testsets
+POSTHOOK: query: insert into table testSets select 'abcd', array(), map() from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@testsets
+POSTHOOK: Lineage: testsets.arrayvalues EXPRESSION []
+POSTHOOK: Lineage: testsets.key SIMPLE []
+POSTHOOK: Lineage: testsets.mapvalues EXPRESSION []
+PREHOOK: query: create table testSets2 (
+key string,
+arrayValues array<string>,
+mapValues map<string,string>)
+stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testSets2
+POSTHOOK: query: create table testSets2 (
+key string,
+arrayValues array<string>,
+mapValues map<string,string>)
+stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testSets2
+PREHOOK: query: insert into table testSets2 select * from testSets
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testsets
+PREHOOK: Output: default@testsets2
+POSTHOOK: query: insert into table testSets2 select * from testSets
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testsets
+POSTHOOK: Output: default@testsets2
+POSTHOOK: Lineage: testsets2.arrayvalues SIMPLE [(testsets)testsets.FieldSchema(name:arrayvalues, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: testsets2.key SIMPLE [(testsets)testsets.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: testsets2.mapvalues SIMPLE [(testsets)testsets.FieldSchema(name:mapvalues, type:map<string,string>, comment:null), ]
+PREHOOK: query: select * from testSets2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testsets2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from testSets2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testsets2
+#### A masked pattern was here ####
+abcd	[]	{}
+PREHOOK: query: drop table testSets
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testsets
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testsets
+POSTHOOK: query: drop table testSets
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testsets
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testsets
+PREHOOK: query: drop table testSets2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testsets2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testsets2
+POSTHOOK: query: drop table testSets2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testsets2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testsets2

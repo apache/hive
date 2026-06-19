@@ -1,0 +1,52 @@
+PREHOOK: query: create table listtable(l array<string>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@listtable
+POSTHOOK: query: create table listtable(l array<string>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@listtable
+PREHOOK: query: create table listtable_orc(l array<string>) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@listtable_orc
+POSTHOOK: query: create table listtable_orc(l array<string>) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@listtable_orc
+PREHOOK: query: insert overwrite table listtable select array(null) from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@listtable
+POSTHOOK: query: insert overwrite table listtable select array(null) from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@listtable
+POSTHOOK: Lineage: listtable.l EXPRESSION []
+PREHOOK: query: insert overwrite table listtable_orc select * from listtable
+PREHOOK: type: QUERY
+PREHOOK: Input: default@listtable
+PREHOOK: Output: default@listtable_orc
+POSTHOOK: query: insert overwrite table listtable_orc select * from listtable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@listtable
+POSTHOOK: Output: default@listtable_orc
+POSTHOOK: Lineage: listtable_orc.l SIMPLE [(listtable)listtable.FieldSchema(name:l, type:array<string>, comment:null), ]
+PREHOOK: query: select size(l) from listtable_orc limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@listtable_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select size(l) from listtable_orc limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@listtable_orc
+#### A masked pattern was here ####
+-1
+-1
+-1
+-1
+-1
+-1
+-1
+-1
+-1
+-1

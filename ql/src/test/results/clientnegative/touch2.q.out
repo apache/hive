@@ -1,0 +1,1 @@
+FAILED: ValidationFailureSemanticException default.src table is not partitioned but partition spec exists: {ds=2008-04-08, hr=12}

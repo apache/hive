@@ -1,0 +1,39 @@
+PREHOOK: query: CREATE VIEW test_view1 AS SELECT * FROM src
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_view1
+POSTHOOK: query: CREATE VIEW test_view1 AS SELECT * FROM src
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_view1
+POSTHOOK: Lineage: test_view1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_view1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: CREATE VIEW test_view2 AS SELECT * FROM test_view1
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Input: default@test_view1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_view2
+POSTHOOK: query: CREATE VIEW test_view2 AS SELECT * FROM test_view1
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@test_view1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_view2
+POSTHOOK: Lineage: test_view2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_view2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT COUNT(*) FROM test_view1 a JOIN test_view2 b ON a.key = b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@test_view1
+PREHOOK: Input: default@test_view2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM test_view1 a JOIN test_view2 b ON a.key = b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@test_view1
+POSTHOOK: Input: default@test_view2
+#### A masked pattern was here ####
+1028

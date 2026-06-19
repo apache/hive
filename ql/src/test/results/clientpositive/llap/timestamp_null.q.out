@@ -1,0 +1,40 @@
+PREHOOK: query: DROP TABLE IF EXISTS timestamp_null
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS timestamp_null
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE timestamp_null (t1 TIMESTAMP)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@timestamp_null
+POSTHOOK: query: CREATE TABLE timestamp_null (t1 TIMESTAMP)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@timestamp_null
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/test.dat' OVERWRITE INTO TABLE timestamp_null
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@timestamp_null
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/test.dat' OVERWRITE INTO TABLE timestamp_null
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@timestamp_null
+PREHOOK: query: SELECT * FROM timestamp_null LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamp_null
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM timestamp_null LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamp_null
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT t1 FROM timestamp_null LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamp_null
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT t1 FROM timestamp_null LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamp_null
+#### A masked pattern was here ####
+NULL

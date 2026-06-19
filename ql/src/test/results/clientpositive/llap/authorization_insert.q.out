@@ -1,0 +1,67 @@
+PREHOOK: query: CREATE TABLE  t_auth_ins(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_auth_ins
+POSTHOOK: query: CREATE TABLE  t_auth_ins(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_auth_ins
+PREHOOK: query: CREATE TABLE t_select(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_select
+POSTHOOK: query: CREATE TABLE t_select(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_select
+PREHOOK: query: GRANT ALL ON TABLE t_select TO ROLE public
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@t_select
+POSTHOOK: query: GRANT ALL ON TABLE t_select TO ROLE public
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@t_select
+PREHOOK: query: GRANT INSERT ON t_auth_ins TO USER userWIns
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@t_auth_ins
+POSTHOOK: query: GRANT INSERT ON t_auth_ins TO USER userWIns
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@t_auth_ins
+PREHOOK: query: GRANT INSERT,DELETE ON t_auth_ins TO USER userWInsAndDel
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@t_auth_ins
+POSTHOOK: query: GRANT INSERT,DELETE ON t_auth_ins TO USER userWInsAndDel
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@t_auth_ins
+PREHOOK: query: set role admin
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role admin
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: SHOW GRANT ON TABLE t_auth_ins
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT ON TABLE t_auth_ins
+POSTHOOK: type: SHOW_GRANT
+default	t_auth_ins			user1	USER	DELETE	true	-1	user1
+default	t_auth_ins			user1	USER	INSERT	true	-1	user1
+default	t_auth_ins			user1	USER	SELECT	true	-1	user1
+default	t_auth_ins			user1	USER	UPDATE	true	-1	user1
+default	t_auth_ins			userWIns	USER	INSERT	false	-1	user1
+default	t_auth_ins			userWInsAndDel	USER	DELETE	false	-1	user1
+default	t_auth_ins			userWInsAndDel	USER	INSERT	false	-1	user1
+PREHOOK: query: INSERT INTO TABLE t_auth_ins SELECT * from t_select
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_select
+PREHOOK: Output: default@t_auth_ins
+POSTHOOK: query: INSERT INTO TABLE t_auth_ins SELECT * from t_select
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_select
+POSTHOOK: Output: default@t_auth_ins
+POSTHOOK: Lineage: t_auth_ins.i SIMPLE [(t_select)t_select.FieldSchema(name:i, type:int, comment:null), ]
+PREHOOK: query: INSERT OVERWRITE TABLE t_auth_ins SELECT * from t_select
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_select
+PREHOOK: Output: default@t_auth_ins
+POSTHOOK: query: INSERT OVERWRITE TABLE t_auth_ins SELECT * from t_select
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_select
+POSTHOOK: Output: default@t_auth_ins
+POSTHOOK: Lineage: t_auth_ins.i SIMPLE [(t_select)t_select.FieldSchema(name:i, type:int, comment:null), ]

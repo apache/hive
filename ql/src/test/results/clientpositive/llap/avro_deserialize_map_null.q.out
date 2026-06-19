@@ -1,0 +1,45 @@
+PREHOOK: query: DROP TABLE IF EXISTS avro_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS avro_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE avro_table (avreau_col_1 map<string,string>) STORED AS AVRO
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@avro_table
+POSTHOOK: query: CREATE TABLE avro_table (avreau_col_1 map<string,string>) STORED AS AVRO
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@avro_table
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/map_null_val.avro' OVERWRITE INTO TABLE avro_table
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@avro_table
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/map_null_val.avro' OVERWRITE INTO TABLE avro_table
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@avro_table
+PREHOOK: query: SELECT * FROM avro_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@avro_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM avro_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@avro_table
+#### A masked pattern was here ####
+{"key3":"val3","key4":null}
+{"key3":"val3","key4":null}
+{"key1":null,"key2":"val2"}
+{"key3":"val3","key4":null}
+{"key3":"val3","key4":null}
+PREHOOK: query: DROP TABLE avro_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@avro_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@avro_table
+POSTHOOK: query: DROP TABLE avro_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@avro_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@avro_table

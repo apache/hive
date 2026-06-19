@@ -1,0 +1,79 @@
+PREHOOK: query: CREATE TEMPORARY TABLE add_part_test_n0_temp (key STRING, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@add_part_test_n0_temp
+POSTHOOK: query: CREATE TEMPORARY TABLE add_part_test_n0_temp (key STRING, value STRING) PARTITIONED BY (ds STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@add_part_test_n0_temp
+PREHOOK: query: SHOW PARTITIONS add_part_test_n0_temp
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@add_part_test_n0_temp
+POSTHOOK: query: SHOW PARTITIONS add_part_test_n0_temp
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@add_part_test_n0_temp
+{"partitions":[]}
+PREHOOK: query: ALTER TABLE add_part_test_n0_temp ADD PARTITION (ds='2010-01-01')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@add_part_test_n0_temp
+POSTHOOK: query: ALTER TABLE add_part_test_n0_temp ADD PARTITION (ds='2010-01-01')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@add_part_test_n0_temp
+POSTHOOK: Output: default@add_part_test_n0_temp@ds=2010-01-01
+PREHOOK: query: SHOW PARTITIONS add_part_test_n0_temp
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@add_part_test_n0_temp
+POSTHOOK: query: SHOW PARTITIONS add_part_test_n0_temp
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@add_part_test_n0_temp
+{"partitions":[{"name":"ds='2010-01-01'","values":[{"columnName":"ds","columnValue":"2010-01-01"}]}]}
+PREHOOK: query: ALTER TABLE add_part_test_n0_temp ADD IF NOT EXISTS PARTITION (ds='2010-01-01')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@add_part_test_n0_temp
+POSTHOOK: query: ALTER TABLE add_part_test_n0_temp ADD IF NOT EXISTS PARTITION (ds='2010-01-01')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@add_part_test_n0_temp
+PREHOOK: query: SHOW PARTITIONS add_part_test_n0_temp
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@add_part_test_n0_temp
+POSTHOOK: query: SHOW PARTITIONS add_part_test_n0_temp
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@add_part_test_n0_temp
+{"partitions":[{"name":"ds='2010-01-01'","values":[{"columnName":"ds","columnValue":"2010-01-01"}]}]}
+PREHOOK: query: ALTER TABLE add_part_test_n0_temp ADD IF NOT EXISTS PARTITION (ds='2010-01-02')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@add_part_test_n0_temp
+POSTHOOK: query: ALTER TABLE add_part_test_n0_temp ADD IF NOT EXISTS PARTITION (ds='2010-01-02')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@add_part_test_n0_temp
+POSTHOOK: Output: default@add_part_test_n0_temp@ds=2010-01-02
+PREHOOK: query: SHOW PARTITIONS add_part_test_n0_temp
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@add_part_test_n0_temp
+POSTHOOK: query: SHOW PARTITIONS add_part_test_n0_temp
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@add_part_test_n0_temp
+{"partitions":[{"name":"ds='2010-01-01'","values":[{"columnName":"ds","columnValue":"2010-01-01"}]},{"name":"ds='2010-01-02'","values":[{"columnName":"ds","columnValue":"2010-01-02"}]}]}
+PREHOOK: query: SHOW TABLE EXTENDED LIKE add_part_test_n0_temp PARTITION (ds='2010-01-02')
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: SHOW TABLE EXTENDED LIKE add_part_test_n0_temp PARTITION (ds='2010-01-02')
+POSTHOOK: type: SHOW_TABLESTATUS
+#### A masked pattern was here ####
+PREHOOK: query: ALTER TABLE add_part_test_n0_temp DROP PARTITION (ds='2010-01-02')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@add_part_test_n0_temp
+PREHOOK: Output: default@add_part_test_n0_temp@ds=2010-01-02
+POSTHOOK: query: ALTER TABLE add_part_test_n0_temp DROP PARTITION (ds='2010-01-02')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@add_part_test_n0_temp
+POSTHOOK: Output: default@add_part_test_n0_temp@ds=2010-01-02
+PREHOOK: query: DROP TABLE add_part_test_n0_temp
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@add_part_test_n0_temp
+PREHOOK: Output: database:default
+PREHOOK: Output: default@add_part_test_n0_temp
+POSTHOOK: query: DROP TABLE add_part_test_n0_temp
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@add_part_test_n0_temp
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@add_part_test_n0_temp

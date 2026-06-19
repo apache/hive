@@ -1,0 +1,91 @@
+PREHOOK: query: create table if not exists numt --comment1
+ (idx int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@numt
+POSTHOOK: query: create table if not exists numt --comment1
+ (idx int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@numt
+PREHOOK: query: --comment2
+insert into numt values(1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@numt
+POSTHOOK: query: --comment2
+insert into numt values(1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@numt
+POSTHOOK: Lineage: numt.idx SCRIPT []
+PREHOOK: query: --comment3
+insert into numt values(2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@numt
+POSTHOOK: query: --comment3
+insert into numt values(2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@numt
+POSTHOOK: Lineage: numt.idx SCRIPT []
+PREHOOK: query: select idx from numt where --comment5
+idx = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@numt
+#### A masked pattern was here ####
+POSTHOOK: query: select idx from numt where --comment5
+idx = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@numt
+#### A masked pattern was here ####
+1
+PREHOOK: query: --comment6
+select idx from numt where idx = 2 --comment6
+limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@numt
+#### A masked pattern was here ####
+POSTHOOK: query: --comment6
+select idx from numt where idx = 2 --comment6
+limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@numt
+#### A masked pattern was here ####
+2
+PREHOOK: query: select "this is
+another --string value" from numt where idx =2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@numt
+#### A masked pattern was here ####
+POSTHOOK: query: select "this is
+another --string value" from numt where idx =2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@numt
+#### A masked pattern was here ####
+this is
+another --string value
+PREHOOK: query: --comment8
+select 1, --comment
+2
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: --comment8
+select 1, --comment
+2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1	2
+PREHOOK: query: drop table numt
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@numt
+PREHOOK: Output: database:default
+PREHOOK: Output: default@numt
+POSTHOOK: query: drop table numt
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@numt
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@numt

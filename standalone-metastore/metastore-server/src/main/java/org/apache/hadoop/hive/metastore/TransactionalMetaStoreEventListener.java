@@ -1,0 +1,53 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.hadoop.hive.metastore;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.api.HiveObjectType;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.events.CreateDataConnectorEvent;
+import org.apache.hadoop.hive.metastore.events.DropDataConnectorEvent;
+import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.DropTableEvent;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+
+/**
+ * Special type of MetaStoreEventListener which should only be called in a transactional context
+ * and only if the transaction is successful.
+ * The events are expected to have a success status.
+ */
+public abstract class TransactionalMetaStoreEventListener extends MetaStoreEventListener {
+
+  /**
+   * Constructor
+   *
+   * @param config configuration object
+   */
+  public TransactionalMetaStoreEventListener(Configuration config) {
+    super(config);
+  }
+
+  @Override
+  public void onDropDataConnector(DropDataConnectorEvent connectorEvent) throws MetaException {
+  }
+
+  @Override
+  public void onCreateDataConnector(CreateDataConnectorEvent connectorEvent)  throws MetaException {
+  }
+}

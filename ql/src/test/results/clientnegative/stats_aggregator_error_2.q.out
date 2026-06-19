@@ -1,0 +1,52 @@
+PREHOOK: query: create table tmptable(key string, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tmptable
+POSTHOOK: query: create table tmptable(key string, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tmptable
+PREHOOK: query: INSERT OVERWRITE TABLE tmptable select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tmptable
+[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30000]: StatsPublisher cannot be obtained. There was a error to retrieve the StatsPublisher, and retrying might help. If you don't want the query to fail because accurate statistics could not be collected, set hive.stats.reliable=false
+POSTHOOK: query: INSERT OVERWRITE TABLE tmptable select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tmptable
+POSTHOOK: Lineage: tmptable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmptable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE tmptable select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tmptable
+Status: Failed
+Vertex failed, vertexName=Map 1, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators
+#### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30000]: StatsPublisher cannot be obtained. There was a error to retrieve the StatsPublisher, and retrying might help. If you don't want the query to fail because accurate statistics could not be collected, set hive.stats.reliable=false
+#### A masked pattern was here ####
+], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators
+#### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30000]: StatsPublisher cannot be obtained. There was a error to retrieve the StatsPublisher, and retrying might help. If you don't want the query to fail because accurate statistics could not be collected, set hive.stats.reliable=false
+#### A masked pattern was here ####
+]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Map 1] killed/failed due to:OWN_TASK_FAILURE]
+[Masked Vertex killed due to OTHER_VERTEX_FAILURE]
+DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:1
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.TezTask. Vertex failed, vertexName=Map 1, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators
+#### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30000]: StatsPublisher cannot be obtained. There was a error to retrieve the StatsPublisher, and retrying might help. If you don't want the query to fail because accurate statistics could not be collected, set hive.stats.reliable=false
+#### A masked pattern was here ####
+], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators
+#### A masked pattern was here ####
+Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators
+#### A masked pattern was here ####
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30000]: StatsPublisher cannot be obtained. There was a error to retrieve the StatsPublisher, and retrying might help. If you don't want the query to fail because accurate statistics could not be collected, set hive.stats.reliable=false
+#### A masked pattern was here ####
+]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Map 1] killed/failed due to:OWN_TASK_FAILURE][Masked Vertex killed due to OTHER_VERTEX_FAILURE]DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:1

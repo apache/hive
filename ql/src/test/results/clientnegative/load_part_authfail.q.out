@@ -1,0 +1,9 @@
+PREHOOK: query: create table hive_test_src ( col1 string ) partitioned by (pcol1 string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive_test_src
+POSTHOOK: query: create table hive_test_src ( col1 string ) partitioned by (pcol1 string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive_test_src
+Authorization failed:No privilege 'Update' found for outputs { database:default, table:hive_test_src}. Use SHOW GRANT to get more details.

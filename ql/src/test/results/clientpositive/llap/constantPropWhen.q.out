@@ -1,0 +1,304 @@
+PREHOOK: query: drop table test_1_n4
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table test_1_n4
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table test_1_n4 (id int, id2 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_1_n4
+POSTHOOK: query: create table test_1_n4 (id int, id2 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_1_n4
+PREHOOK: query: insert into table test_1_n4 values (123, NULL), (NULL, NULL), (NULL, 123), (123, 123)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_1_n4
+POSTHOOK: query: insert into table test_1_n4 values (123, NULL), (NULL, NULL), (NULL, 123), (123, 123)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_1_n4
+POSTHOOK: Lineage: test_1_n4.id SCRIPT []
+POSTHOOK: Lineage: test_1_n4.id2 SCRIPT []
+PREHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+POSTHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: test_1_n4
+          Select Operator
+            expressions: (id = id2) is not true (type: boolean)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: SELECT cast(CASE WHEN id = id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cast(CASE WHEN id = id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+true
+true
+true
+false
+PREHOOK: query: explain SELECT cast(CASE id when id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+POSTHOOK: query: explain SELECT cast(CASE id when id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: test_1_n4
+          Select Operator
+            expressions: (id = id2) is not true (type: boolean)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: SELECT cast(CASE id when id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cast(CASE id when id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+true
+true
+true
+false
+PREHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+POSTHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: test_1_n4
+          Select Operator
+            expressions: (id = id2) is true (type: boolean)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: SELECT cast(CASE WHEN id = id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cast(CASE WHEN id = id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+false
+false
+false
+true
+PREHOOK: query: explain SELECT cast(CASE id when id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+POSTHOOK: query: explain SELECT cast(CASE id when id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: test_1_n4
+          Select Operator
+            expressions: (id = id2) is true (type: boolean)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: SELECT cast(CASE id when id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cast(CASE id when id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+false
+false
+false
+true
+PREHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+POSTHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: test_1_n4
+          Select Operator
+            expressions: (not COALESCE((id = id2),false)) (type: boolean)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: SELECT cast(CASE WHEN id = id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cast(CASE WHEN id = id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+true
+true
+true
+false
+PREHOOK: query: explain SELECT cast(CASE id when id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+POSTHOOK: query: explain SELECT cast(CASE id when id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: test_1_n4
+          Select Operator
+            expressions: (not COALESCE((id = id2),false)) (type: boolean)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: SELECT cast(CASE id when id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cast(CASE id when id2 THEN FALSE ELSE TRUE END AS BOOLEAN) AS b FROM test_1_n4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+true
+true
+true
+false
+PREHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+POSTHOOK: query: explain SELECT cast(CASE WHEN id = id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: test_1_n4
+          Select Operator
+            expressions: COALESCE((id = id2),false) (type: boolean)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: SELECT cast(CASE WHEN id = id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cast(CASE WHEN id = id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+false
+false
+false
+true
+PREHOOK: query: explain SELECT cast(CASE id when id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+POSTHOOK: query: explain SELECT cast(CASE id when id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: test_1_n4
+          Select Operator
+            expressions: COALESCE((id = id2),false) (type: boolean)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: SELECT cast(CASE id when id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cast(CASE id when id2 THEN TRUE ELSE FALSE END AS BOOLEAN) AS b FROM test_1_n4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1_n4
+#### A masked pattern was here ####
+false
+false
+false
+true

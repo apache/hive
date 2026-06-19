@@ -1,0 +1,32 @@
+PREHOOK: query: drop table if exists tbl_ice
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists tbl_ice
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create external table tbl_ice(a int, b string, c int) stored by iceberg stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_ice
+POSTHOOK: query: create external table tbl_ice(a int, b string, c int) stored by iceberg stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_ice
+PREHOOK: query: explain alter table tbl_ice execute rollback(11111)
+PREHOOK: type: ALTERTABLE_EXECUTE
+PREHOOK: Input: default@tbl_ice
+POSTHOOK: query: explain alter table tbl_ice execute rollback(11111)
+POSTHOOK: type: ALTERTABLE_EXECUTE
+POSTHOOK: Input: default@tbl_ice
+Stage-0
+  Execute operation{"table name:":"default.tbl_ice","spec:":"AlterTableExecuteSpec{operationType=ROLLBACK, operationParams=RollbackSpec{rollbackType=VERSION, param=11111}}"}
+
+PREHOOK: query: explain alter table tbl_ice execute rollback('2022-05-12 00:00:00')
+PREHOOK: type: ALTERTABLE_EXECUTE
+PREHOOK: Input: default@tbl_ice
+POSTHOOK: query: explain alter table tbl_ice execute rollback('2022-05-12 00:00:00')
+POSTHOOK: type: ALTERTABLE_EXECUTE
+POSTHOOK: Input: default@tbl_ice
+Stage-0
+  Execute operation{"table name:":"default.tbl_ice","spec:":"AlterTableExecuteSpec{operationType=ROLLBACK, operationParams=RollbackSpec{rollbackType=TIME, param=1652338800000}}"}
+

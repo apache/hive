@@ -1,0 +1,150 @@
+PREHOOK: query: drop table `table_tsltz`
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table `table_tsltz`
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE table_tsltz (tz VARCHAR(200),
+                         c_ts1 TIMESTAMP,
+                         c_ts2 TIMESTAMP,
+                         c_tsltz1 TIMESTAMP WITH LOCAL TIME ZONE,
+                         c_tsltz2 TIMESTAMP WITH LOCAL TIME ZONE)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_tsltz
+POSTHOOK: query: CREATE TABLE table_tsltz (tz VARCHAR(200),
+                         c_ts1 TIMESTAMP,
+                         c_ts2 TIMESTAMP,
+                         c_tsltz1 TIMESTAMP WITH LOCAL TIME ZONE,
+                         c_tsltz2 TIMESTAMP WITH LOCAL TIME ZONE)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_tsltz
+PREHOOK: query: insert into table_tsltz values (
+  '-08:00',
+  cast('2016-01-01 00:00:00' as timestamp),
+  cast('2016-01-01 00:00:00 -05:00' as timestamp with local time zone),
+  cast('2016-01-01 00:00:00' as timestamp),
+  cast('2016-01-01 00:00:00 -05:00' as timestamp with local time zone))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table_tsltz
+POSTHOOK: query: insert into table_tsltz values (
+  '-08:00',
+  cast('2016-01-01 00:00:00' as timestamp),
+  cast('2016-01-01 00:00:00 -05:00' as timestamp with local time zone),
+  cast('2016-01-01 00:00:00' as timestamp),
+  cast('2016-01-01 00:00:00 -05:00' as timestamp with local time zone))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table_tsltz
+POSTHOOK: Lineage: table_tsltz.c_ts1 SCRIPT []
+POSTHOOK: Lineage: table_tsltz.c_ts2 SCRIPT []
+POSTHOOK: Lineage: table_tsltz.c_tsltz1 SCRIPT []
+POSTHOOK: Lineage: table_tsltz.c_tsltz2 SCRIPT []
+POSTHOOK: Lineage: table_tsltz.tz SCRIPT []
+PREHOOK: query: insert into table_tsltz values (
+  'UTC',
+  cast('2016-01-01 00:00:00' as timestamp),
+  cast('2016-01-01 00:00:00 -05:00' as timestamp with local time zone),
+  cast('2016-01-01 00:00:00' as timestamp),
+  cast('2016-01-01 00:00:00 -05:00' as timestamp with local time zone))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table_tsltz
+POSTHOOK: query: insert into table_tsltz values (
+  'UTC',
+  cast('2016-01-01 00:00:00' as timestamp),
+  cast('2016-01-01 00:00:00 -05:00' as timestamp with local time zone),
+  cast('2016-01-01 00:00:00' as timestamp),
+  cast('2016-01-01 00:00:00 -05:00' as timestamp with local time zone))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table_tsltz
+POSTHOOK: Lineage: table_tsltz.c_ts1 SCRIPT []
+POSTHOOK: Lineage: table_tsltz.c_ts2 SCRIPT []
+POSTHOOK: Lineage: table_tsltz.c_tsltz1 SCRIPT []
+POSTHOOK: Lineage: table_tsltz.c_tsltz2 SCRIPT []
+POSTHOOK: Lineage: table_tsltz.tz SCRIPT []
+PREHOOK: query: insert into table_tsltz values (
+  '+02:00',
+  cast('2016-01-01 00:00:00' as timestamp),
+  cast('2016-01-01 00:00:00 -05:00' as timestamp with local time zone),
+  cast('2016-01-01 00:00:00' as timestamp),
+  cast('2016-01-01 00:00:00 -05:00' as timestamp with local time zone))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table_tsltz
+POSTHOOK: query: insert into table_tsltz values (
+  '+02:00',
+  cast('2016-01-01 00:00:00' as timestamp),
+  cast('2016-01-01 00:00:00 -05:00' as timestamp with local time zone),
+  cast('2016-01-01 00:00:00' as timestamp),
+  cast('2016-01-01 00:00:00 -05:00' as timestamp with local time zone))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table_tsltz
+POSTHOOK: Lineage: table_tsltz.c_ts1 SCRIPT []
+POSTHOOK: Lineage: table_tsltz.c_ts2 SCRIPT []
+POSTHOOK: Lineage: table_tsltz.c_tsltz1 SCRIPT []
+POSTHOOK: Lineage: table_tsltz.c_tsltz2 SCRIPT []
+POSTHOOK: Lineage: table_tsltz.tz SCRIPT []
+PREHOOK: query: insert into table_tsltz values (
+  'US/Pacific',
+  cast('2016-01-01 00:00:00' as timestamp),
+  cast('2016-01-01 00:00:00 -05:00' as timestamp with local time zone),
+  cast('2016-01-01 00:00:00' as timestamp),
+  cast('2016-01-01 00:00:00 -05:00' as timestamp with local time zone))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table_tsltz
+POSTHOOK: query: insert into table_tsltz values (
+  'US/Pacific',
+  cast('2016-01-01 00:00:00' as timestamp),
+  cast('2016-01-01 00:00:00 -05:00' as timestamp with local time zone),
+  cast('2016-01-01 00:00:00' as timestamp),
+  cast('2016-01-01 00:00:00 -05:00' as timestamp with local time zone))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table_tsltz
+POSTHOOK: Lineage: table_tsltz.c_ts1 SCRIPT []
+POSTHOOK: Lineage: table_tsltz.c_ts2 SCRIPT []
+POSTHOOK: Lineage: table_tsltz.c_tsltz1 SCRIPT []
+POSTHOOK: Lineage: table_tsltz.c_tsltz2 SCRIPT []
+POSTHOOK: Lineage: table_tsltz.tz SCRIPT []
+PREHOOK: query: select tz,
+    c_ts1, c_ts2,
+    cast(c_tsltz1 as VARCHAR(200)) as c_tsltz1, cast(c_tsltz2 as VARCHAR(200)) as c_tsltz2
+from table_tsltz
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_tsltz
+#### A masked pattern was here ####
+POSTHOOK: query: select tz,
+    c_ts1, c_ts2,
+    cast(c_tsltz1 as VARCHAR(200)) as c_tsltz1, cast(c_tsltz2 as VARCHAR(200)) as c_tsltz2
+from table_tsltz
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_tsltz
+#### A masked pattern was here ####
+-08:00	2016-01-01 00:00:00	2015-12-31 21:00:00	2016-01-01 00:00:00.0 US/Pacific	2015-12-31 21:00:00.0 US/Pacific
+UTC	2016-01-01 00:00:00	2016-01-01 05:00:00	2015-12-31 16:00:00.0 US/Pacific	2015-12-31 21:00:00.0 US/Pacific
++02:00	2016-01-01 00:00:00	2016-01-01 07:00:00	2015-12-31 14:00:00.0 US/Pacific	2015-12-31 21:00:00.0 US/Pacific
+US/Pacific	2016-01-01 00:00:00	2015-12-31 21:00:00	2016-01-01 00:00:00.0 US/Pacific	2015-12-31 21:00:00.0 US/Pacific
+PREHOOK: query: select tz,
+    c_ts1, c_ts2,
+    cast(c_tsltz1 as VARCHAR(200)) as c_tsltz1, cast(c_tsltz2 as VARCHAR(200)) as c_tsltz2
+from table_tsltz
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_tsltz
+#### A masked pattern was here ####
+POSTHOOK: query: select tz,
+    c_ts1, c_ts2,
+    cast(c_tsltz1 as VARCHAR(200)) as c_tsltz1, cast(c_tsltz2 as VARCHAR(200)) as c_tsltz2
+from table_tsltz
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_tsltz
+#### A masked pattern was here ####
+-08:00	2016-01-01 00:00:00	2015-12-31 21:00:00	2016-01-01 08:00:00.0 UTC	2016-01-01 05:00:00.0 UTC
+UTC	2016-01-01 00:00:00	2016-01-01 05:00:00	2016-01-01 00:00:00.0 UTC	2016-01-01 05:00:00.0 UTC
++02:00	2016-01-01 00:00:00	2016-01-01 07:00:00	2015-12-31 22:00:00.0 UTC	2016-01-01 05:00:00.0 UTC
+US/Pacific	2016-01-01 00:00:00	2015-12-31 21:00:00	2016-01-01 08:00:00.0 UTC	2016-01-01 05:00:00.0 UTC

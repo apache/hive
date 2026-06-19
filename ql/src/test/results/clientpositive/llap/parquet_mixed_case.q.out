@@ -1,0 +1,44 @@
+PREHOOK: query: DROP TABLE parquet_mixed_case
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE parquet_mixed_case
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE parquet_mixed_case (
+  lowerCase string,
+  UPPERcase string,
+  stats bigint,
+  moreuppercase string,
+  MORELOWERCASE string
+) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_mixed_case
+POSTHOOK: query: CREATE TABLE parquet_mixed_case (
+  lowerCase string,
+  UPPERcase string,
+  stats bigint,
+  moreuppercase string,
+  MORELOWERCASE string
+) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_mixed_case
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_mixed_case' OVERWRITE INTO TABLE parquet_mixed_case
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_mixed_case
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_mixed_case' OVERWRITE INTO TABLE parquet_mixed_case
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_mixed_case
+PREHOOK: query: SELECT lowercase, "|", uppercase, "|", stats, "|", moreuppercase, "|", morelowercase FROM parquet_mixed_case
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_mixed_case
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT lowercase, "|", uppercase, "|", stats, "|", moreuppercase, "|", morelowercase FROM parquet_mixed_case
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_mixed_case
+#### A masked pattern was here ####
+test lowercase string	|	test upperCase string	|	NULL	|	more upperCase string	|	more lowercase string
+test lowercase string2	|	test upperCase string2	|	NULL	|	more upperCase string2	|	more lowercase string2

@@ -1,0 +1,6 @@
+CREATE TABLE target1 (tc int);
+CREATE TABLE target2 (tc int);
+
+EXPLAIN FROM (SELECT 100 as sa, 200 as sb) source
+INSERT OVERWRITE TABLE target1 SELECT sa WHERE sb > 0 GROUP BY sa
+INSERT OVERWRITE TABLE target2 SELECT sa GROUP BY sa;

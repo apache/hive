@@ -1,0 +1,110 @@
+PREHOOK: query: create database dmp
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:dmp
+POSTHOOK: query: create database dmp
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:dmp
+PREHOOK: query: create table dmp.mp_n0 (a string) partitioned by (b string, c string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:dmp
+PREHOOK: Output: dmp@mp_n0
+POSTHOOK: query: create table dmp.mp_n0 (a string) partitioned by (b string, c string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:dmp
+POSTHOOK: Output: dmp@mp_n0
+PREHOOK: query: alter table dmp.mp_n0 add partition (b='1', c='1')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: dmp@mp_n0
+POSTHOOK: query: alter table dmp.mp_n0 add partition (b='1', c='1')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: dmp@mp_n0
+POSTHOOK: Output: dmp@mp_n0@b=1/c=1
+PREHOOK: query: alter table dmp.mp_n0 add partition (b='1', c='2')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: dmp@mp_n0
+POSTHOOK: query: alter table dmp.mp_n0 add partition (b='1', c='2')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: dmp@mp_n0
+POSTHOOK: Output: dmp@mp_n0@b=1/c=2
+PREHOOK: query: alter table dmp.mp_n0 add partition (b='2', c='2')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: dmp@mp_n0
+POSTHOOK: query: alter table dmp.mp_n0 add partition (b='2', c='2')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: dmp@mp_n0
+POSTHOOK: Output: dmp@mp_n0@b=2/c=2
+PREHOOK: query: show partitions dmp.mp_n0
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: dmp@mp_n0
+POSTHOOK: query: show partitions dmp.mp_n0
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: dmp@mp_n0
+b=1/c=1
+b=1/c=2
+b=2/c=2
+PREHOOK: query: explain extended alter table dmp.mp_n0 drop partition (b='1')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: dmp@mp_n0
+PREHOOK: Output: dmp@mp_n0@b=1/c=1
+PREHOOK: Output: dmp@mp_n0@b=1/c=2
+POSTHOOK: query: explain extended alter table dmp.mp_n0 drop partition (b='1')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: dmp@mp_n0
+POSTHOOK: Output: dmp@mp_n0@b=1/c=1
+POSTHOOK: Output: dmp@mp_n0@b=1/c=2
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Drop Partition
+      table: dmp.mp_n0
+
+PREHOOK: query: alter table dmp.mp_n0 drop partition (b='1')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: dmp@mp_n0
+PREHOOK: Output: dmp@mp_n0@b=1/c=1
+PREHOOK: Output: dmp@mp_n0@b=1/c=2
+POSTHOOK: query: alter table dmp.mp_n0 drop partition (b='1')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: dmp@mp_n0
+POSTHOOK: Output: dmp@mp_n0@b=1/c=1
+POSTHOOK: Output: dmp@mp_n0@b=1/c=2
+PREHOOK: query: show partitions dmp.mp_n0
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: dmp@mp_n0
+POSTHOOK: query: show partitions dmp.mp_n0
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: dmp@mp_n0
+b=2/c=2
+PREHOOK: query: alter table dmp.mp_n0 drop if exists partition (b='3')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: dmp@mp_n0
+POSTHOOK: query: alter table dmp.mp_n0 drop if exists partition (b='3')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: dmp@mp_n0
+PREHOOK: query: show partitions dmp.mp_n0
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: dmp@mp_n0
+POSTHOOK: query: show partitions dmp.mp_n0
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: dmp@mp_n0
+b=2/c=2
+PREHOOK: query: drop table dmp.mp_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: dmp@mp_n0
+PREHOOK: Output: database:dmp
+PREHOOK: Output: dmp@mp_n0
+POSTHOOK: query: drop table dmp.mp_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: dmp@mp_n0
+POSTHOOK: Output: database:dmp
+POSTHOOK: Output: dmp@mp_n0
+PREHOOK: query: drop database dmp
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:dmp
+PREHOOK: Output: database:dmp
+POSTHOOK: query: drop database dmp
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:dmp
+POSTHOOK: Output: database:dmp

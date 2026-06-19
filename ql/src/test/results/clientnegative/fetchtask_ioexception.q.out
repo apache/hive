@@ -1,0 +1,29 @@
+PREHOOK: query: CREATE TABLE fetchtask_ioexception (
+  KEY STRING,
+  VALUE STRING) STORED AS SEQUENCEFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@fetchtask_ioexception
+POSTHOOK: query: CREATE TABLE fetchtask_ioexception (
+  KEY STRING,
+  VALUE STRING) STORED AS SEQUENCEFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@fetchtask_ioexception
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1_broken.seq' OVERWRITE INTO TABLE fetchtask_ioexception
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@fetchtask_ioexception
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1_broken.seq' OVERWRITE INTO TABLE fetchtask_ioexception
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@fetchtask_ioexception
+PREHOOK: query: SELECT * FROM fetchtask_ioexception
+PREHOOK: type: QUERY
+PREHOOK: Input: default@fetchtask_ioexception
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM fetchtask_ioexception
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fetchtask_ioexception
+#### A masked pattern was here ####
+Failed with exception java.io.IOException:java.io.EOFException

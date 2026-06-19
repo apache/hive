@@ -1,0 +1,579 @@
+PREHOOK: query: CREATE TABLE batch1_19671_fin(
+    pts char(15),
+    CoNameOrCIK char(60)
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@batch1_19671_fin
+POSTHOOK: query: CREATE TABLE batch1_19671_fin(
+    pts char(15),
+    CoNameOrCIK char(60)
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@batch1_19671_fin
+PREHOOK: query: CREATE TABLE dimCompany(
+    sk_CompanyId bigint,
+    name char(60),
+    companyId bigint
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dimCompany
+POSTHOOK: query: CREATE TABLE dimCompany(
+    sk_CompanyId bigint,
+    name char(60),
+    companyId bigint
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dimCompany
+PREHOOK: query: CREATE TABLE  Financial (
+  SK_CompanyID BIGINT,
+  FI_YEAR NUMERIC(4) ,
+  FI_QTR char(10) ,
+  FI_QTR_START_DATE DATE,
+  cId        TINYINT,
+  cTimeStamp TIMESTAMP,
+  cDecimal   DECIMAL(38,18),
+  cDouble    DOUBLE,
+  cFloat     FLOAT,
+  cBigInt    BIGINT,
+  cInt       INT,
+  cSmallInt  SMALLINT,
+  cTinyint   TINYINT,
+  cBoolean   BOOLEAN
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@Financial
+POSTHOOK: query: CREATE TABLE  Financial (
+  SK_CompanyID BIGINT,
+  FI_YEAR NUMERIC(4) ,
+  FI_QTR char(10) ,
+  FI_QTR_START_DATE DATE,
+  cId        TINYINT,
+  cTimeStamp TIMESTAMP,
+  cDecimal   DECIMAL(38,18),
+  cDouble    DOUBLE,
+  cFloat     FLOAT,
+  cBigInt    BIGINT,
+  cInt       INT,
+  cSmallInt  SMALLINT,
+  cTinyint   TINYINT,
+  cBoolean   BOOLEAN
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@Financial
+PREHOOK: query: CREATE TABLE  FinancialPart (
+  SK_CompanyID BIGINT,
+  FI_YEAR NUMERIC(4) ,
+  FI_QTR char(10) ,
+  FI_QTR_START_DATE DATE,
+  cId        TINYINT,
+  cTimeStamp TIMESTAMP,
+  cDecimal   DECIMAL(38,18),
+  cDouble    DOUBLE,
+  cFloat     FLOAT,
+  cBigInt    BIGINT,
+  cInt       INT,
+  cSmallInt  SMALLINT,
+  cTinyint   TINYINT,
+  cBoolean   BOOLEAN
+)
+PARTITIONED BY (country string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@FinancialPart
+POSTHOOK: query: CREATE TABLE  FinancialPart (
+  SK_CompanyID BIGINT,
+  FI_YEAR NUMERIC(4) ,
+  FI_QTR char(10) ,
+  FI_QTR_START_DATE DATE,
+  cId        TINYINT,
+  cTimeStamp TIMESTAMP,
+  cDecimal   DECIMAL(38,18),
+  cDouble    DOUBLE,
+  cFloat     FLOAT,
+  cBigInt    BIGINT,
+  cInt       INT,
+  cSmallInt  SMALLINT,
+  cTinyint   TINYINT,
+  cBoolean   BOOLEAN
+)
+PARTITIONED BY (country string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@FinancialPart
+WARNING: Comparing char(60) and bigint may result in loss of information.
+WARNING: Comparing char(60) and bigint may result in loss of information.
+PREHOOK: query: INSERT INTO FinancialPart partition (country='country1') (
+  SK_CompanyID,
+  FI_YEAR,
+  FI_QTR,
+  FI_QTR_START_DATE,
+  cId,
+  cTimeStamp,
+  cDecimal,
+  cDouble,
+  cFloat,
+  cBigInt,
+  cInt,
+  cSmallInt,
+  cTinyint,
+  cBoolean
+)
+SELECT
+   DimCompany.SK_CompanyID,
+   2021,
+   'third',
+   to_date('2021-11-21'),
+   1,
+   '2017-11-07 09:02:49.999999999',
+   12345678901234567890.123456789012345678,
+   1.79e308,
+   3.4e38,
+   1234567890123456789,
+   1234567890,
+   12345,
+   123,
+   TRUE
+FROM
+  batch1_19671_fin finwire_fin
+  JOIN DimCompany ON (
+    finwire_fin.CoNameOrCIK = DimCompany.CompanyID )
+UNION
+SELECT
+   DimCompany.SK_CompanyID,
+   2021,
+   'first',
+   to_date('2021-01-21'),
+   1,
+   '2017-11-07 09:02:49.999999999',
+   12345678901234567890.123456789012345678,
+   1.79e308,
+   3.4e38,
+   1234567890123456789,
+   1234567890,
+   12345,
+   123,
+   TRUE
+FROM
+  batch1_19671_fin finwire_fin
+  JOIN DimCompany ON (
+    finwire_fin.CoNameOrCIK = DimCompany.Name)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@batch1_19671_fin
+PREHOOK: Input: default@dimcompany
+PREHOOK: Output: default@financialpart@country=country1
+POSTHOOK: query: INSERT INTO FinancialPart partition (country='country1') (
+  SK_CompanyID,
+  FI_YEAR,
+  FI_QTR,
+  FI_QTR_START_DATE,
+  cId,
+  cTimeStamp,
+  cDecimal,
+  cDouble,
+  cFloat,
+  cBigInt,
+  cInt,
+  cSmallInt,
+  cTinyint,
+  cBoolean
+)
+SELECT
+   DimCompany.SK_CompanyID,
+   2021,
+   'third',
+   to_date('2021-11-21'),
+   1,
+   '2017-11-07 09:02:49.999999999',
+   12345678901234567890.123456789012345678,
+   1.79e308,
+   3.4e38,
+   1234567890123456789,
+   1234567890,
+   12345,
+   123,
+   TRUE
+FROM
+  batch1_19671_fin finwire_fin
+  JOIN DimCompany ON (
+    finwire_fin.CoNameOrCIK = DimCompany.CompanyID )
+UNION
+SELECT
+   DimCompany.SK_CompanyID,
+   2021,
+   'first',
+   to_date('2021-01-21'),
+   1,
+   '2017-11-07 09:02:49.999999999',
+   12345678901234567890.123456789012345678,
+   1.79e308,
+   3.4e38,
+   1234567890123456789,
+   1234567890,
+   12345,
+   123,
+   TRUE
+FROM
+  batch1_19671_fin finwire_fin
+  JOIN DimCompany ON (
+    finwire_fin.CoNameOrCIK = DimCompany.Name)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@batch1_19671_fin
+POSTHOOK: Input: default@dimcompany
+POSTHOOK: Output: default@financialpart@country=country1
+POSTHOOK: Lineage: financialpart PARTITION(country=country1).cbigint SIMPLE []
+POSTHOOK: Lineage: financialpart PARTITION(country=country1).cboolean SIMPLE []
+POSTHOOK: Lineage: financialpart PARTITION(country=country1).cdecimal SIMPLE []
+POSTHOOK: Lineage: financialpart PARTITION(country=country1).cdouble SIMPLE []
+POSTHOOK: Lineage: financialpart PARTITION(country=country1).cfloat EXPRESSION []
+POSTHOOK: Lineage: financialpart PARTITION(country=country1).cid EXPRESSION []
+POSTHOOK: Lineage: financialpart PARTITION(country=country1).cint SIMPLE []
+POSTHOOK: Lineage: financialpart PARTITION(country=country1).csmallint EXPRESSION []
+POSTHOOK: Lineage: financialpart PARTITION(country=country1).ctimestamp EXPRESSION []
+POSTHOOK: Lineage: financialpart PARTITION(country=country1).ctinyint EXPRESSION []
+POSTHOOK: Lineage: financialpart PARTITION(country=country1).fi_qtr EXPRESSION []
+POSTHOOK: Lineage: financialpart PARTITION(country=country1).fi_qtr_start_date EXPRESSION []
+POSTHOOK: Lineage: financialpart PARTITION(country=country1).fi_year EXPRESSION []
+POSTHOOK: Lineage: financialpart PARTITION(country=country1).sk_companyid EXPRESSION [(dimcompany)dimcompany.FieldSchema(name:sk_companyid, type:bigint, comment:null), ]
+PREHOOK: query: desc formatted FinancialPart partition(country='country1') SK_CompanyID
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@financialpart
+POSTHOOK: query: desc formatted FinancialPart partition(country='country1') SK_CompanyID
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@financialpart
+col_name            	SK_CompanyID        
+data_type           	bigint              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+PREHOOK: query: INSERT INTO FinancialPart partition (country) values
+ (
+  1099511627778,
+  1967,
+  'second',
+  to_date('1967-04-01'),
+  1,
+   '2017-11-07 09:02:49.999999999',
+   12345678901234567890.123456789012345678,
+   1.79e308,
+   3.4e38,
+   1234567890123456789,
+   1234567890,
+   12345,
+   123,
+   TRUE,
+   'country3'
+)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@financialpart
+POSTHOOK: query: INSERT INTO FinancialPart partition (country) values
+ (
+  1099511627778,
+  1967,
+  'second',
+  to_date('1967-04-01'),
+  1,
+   '2017-11-07 09:02:49.999999999',
+   12345678901234567890.123456789012345678,
+   1.79e308,
+   3.4e38,
+   1234567890123456789,
+   1234567890,
+   12345,
+   123,
+   TRUE,
+   'country3'
+)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@financialpart
+POSTHOOK: Output: default@financialpart@country=country3
+POSTHOOK: Lineage: financialpart PARTITION(country=country3).cbigint SCRIPT []
+POSTHOOK: Lineage: financialpart PARTITION(country=country3).cboolean SCRIPT []
+POSTHOOK: Lineage: financialpart PARTITION(country=country3).cdecimal SCRIPT []
+POSTHOOK: Lineage: financialpart PARTITION(country=country3).cdouble SCRIPT []
+POSTHOOK: Lineage: financialpart PARTITION(country=country3).cfloat SCRIPT []
+POSTHOOK: Lineage: financialpart PARTITION(country=country3).cid SCRIPT []
+POSTHOOK: Lineage: financialpart PARTITION(country=country3).cint SCRIPT []
+POSTHOOK: Lineage: financialpart PARTITION(country=country3).csmallint SCRIPT []
+POSTHOOK: Lineage: financialpart PARTITION(country=country3).ctimestamp SCRIPT []
+POSTHOOK: Lineage: financialpart PARTITION(country=country3).ctinyint SCRIPT []
+POSTHOOK: Lineage: financialpart PARTITION(country=country3).fi_qtr SCRIPT []
+POSTHOOK: Lineage: financialpart PARTITION(country=country3).fi_qtr_start_date SCRIPT []
+POSTHOOK: Lineage: financialpart PARTITION(country=country3).fi_year SCRIPT []
+POSTHOOK: Lineage: financialpart PARTITION(country=country3).sk_companyid SCRIPT []
+PREHOOK: query: desc formatted FinancialPart partition(country='country1') SK_CompanyID
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@financialpart
+POSTHOOK: query: desc formatted FinancialPart partition(country='country1') SK_CompanyID
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@financialpart
+col_name            	SK_CompanyID        
+data_type           	bigint              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+PREHOOK: query: desc formatted FinancialPart partition(country='country3') SK_CompanyID
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@financialpart
+POSTHOOK: query: desc formatted FinancialPart partition(country='country3') SK_CompanyID
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@financialpart
+col_name            	SK_CompanyID        
+data_type           	bigint              
+min                 	1099511627778       
+max                 	1099511627778       
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+WARNING: Comparing char(60) and bigint may result in loss of information.
+WARNING: Comparing char(60) and bigint may result in loss of information.
+PREHOOK: query: INSERT INTO Financial (
+  SK_CompanyID,
+  FI_YEAR,
+  FI_QTR,
+  FI_QTR_START_DATE,
+  cId,
+  cTimeStamp,
+  cDecimal,
+  cDouble,
+  cFloat,
+  cBigInt,
+  cInt,
+  cSmallInt,
+  cTinyint,
+  cBoolean
+)
+SELECT
+   DimCompany.SK_CompanyID,
+   2021,
+   'third',
+   to_date('2021-11-21'),
+   1,
+   '2017-11-07 09:02:49.999999999',
+   12345678901234567890.123456789012345678,
+   1.79e308,
+   3.4e38,
+   1234567890123456789,
+   1234567890,
+   12345,
+   123,
+   TRUE
+FROM
+  batch1_19671_fin finwire_fin
+  JOIN DimCompany ON (
+    finwire_fin.CoNameOrCIK = DimCompany.CompanyID )
+UNION
+SELECT
+   DimCompany.SK_CompanyID,
+   2021,
+   'first',
+   to_date('2021-01-21'),
+   1,
+   '2017-11-07 09:02:49.999999999',
+   12345678901234567890.123456789012345678,
+   1.79e308,
+   3.4e38,
+   1234567890123456789,
+   1234567890,
+   12345,
+   123,
+   TRUE
+FROM
+  batch1_19671_fin finwire_fin
+  JOIN DimCompany ON (
+    finwire_fin.CoNameOrCIK = DimCompany.Name)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@batch1_19671_fin
+PREHOOK: Input: default@dimcompany
+PREHOOK: Output: default@financial
+POSTHOOK: query: INSERT INTO Financial (
+  SK_CompanyID,
+  FI_YEAR,
+  FI_QTR,
+  FI_QTR_START_DATE,
+  cId,
+  cTimeStamp,
+  cDecimal,
+  cDouble,
+  cFloat,
+  cBigInt,
+  cInt,
+  cSmallInt,
+  cTinyint,
+  cBoolean
+)
+SELECT
+   DimCompany.SK_CompanyID,
+   2021,
+   'third',
+   to_date('2021-11-21'),
+   1,
+   '2017-11-07 09:02:49.999999999',
+   12345678901234567890.123456789012345678,
+   1.79e308,
+   3.4e38,
+   1234567890123456789,
+   1234567890,
+   12345,
+   123,
+   TRUE
+FROM
+  batch1_19671_fin finwire_fin
+  JOIN DimCompany ON (
+    finwire_fin.CoNameOrCIK = DimCompany.CompanyID )
+UNION
+SELECT
+   DimCompany.SK_CompanyID,
+   2021,
+   'first',
+   to_date('2021-01-21'),
+   1,
+   '2017-11-07 09:02:49.999999999',
+   12345678901234567890.123456789012345678,
+   1.79e308,
+   3.4e38,
+   1234567890123456789,
+   1234567890,
+   12345,
+   123,
+   TRUE
+FROM
+  batch1_19671_fin finwire_fin
+  JOIN DimCompany ON (
+    finwire_fin.CoNameOrCIK = DimCompany.Name)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@batch1_19671_fin
+POSTHOOK: Input: default@dimcompany
+POSTHOOK: Output: default@financial
+POSTHOOK: Lineage: financial.cbigint SIMPLE []
+POSTHOOK: Lineage: financial.cboolean SIMPLE []
+POSTHOOK: Lineage: financial.cdecimal SIMPLE []
+POSTHOOK: Lineage: financial.cdouble SIMPLE []
+POSTHOOK: Lineage: financial.cfloat EXPRESSION []
+POSTHOOK: Lineage: financial.cid EXPRESSION []
+POSTHOOK: Lineage: financial.cint SIMPLE []
+POSTHOOK: Lineage: financial.csmallint EXPRESSION []
+POSTHOOK: Lineage: financial.ctimestamp EXPRESSION []
+POSTHOOK: Lineage: financial.ctinyint EXPRESSION []
+POSTHOOK: Lineage: financial.fi_qtr EXPRESSION []
+POSTHOOK: Lineage: financial.fi_qtr_start_date EXPRESSION []
+POSTHOOK: Lineage: financial.fi_year EXPRESSION []
+POSTHOOK: Lineage: financial.sk_companyid EXPRESSION [(dimcompany)dimcompany.FieldSchema(name:sk_companyid, type:bigint, comment:null), ]
+PREHOOK: query: desc formatted Financial FI_QTR
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@financial
+POSTHOOK: query: desc formatted Financial FI_QTR
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@financial
+col_name            	FI_QTR              
+data_type           	char(10)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	0                   
+avg_col_len         	0.0                 
+max_col_len         	0                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"cbigint\":\"true\",\"cboolean\":\"true\",\"cdecimal\":\"true\",\"cdouble\":\"true\",\"cfloat\":\"true\",\"cid\":\"true\",\"cint\":\"true\",\"csmallint\":\"true\",\"ctimestamp\":\"true\",\"ctinyint\":\"true\",\"fi_qtr\":\"true\",\"fi_qtr_start_date\":\"true\",\"fi_year\":\"true\",\"sk_companyid\":\"true\"}}
+PREHOOK: query: INSERT INTO Financial values
+ (
+  1099511627778,
+  1967,
+  'second',
+  to_date('1967-04-01'),
+  1,
+   '2017-11-07 09:02:49.999999999',
+   12345678901234567890.123456789012345678,
+   1.79e308,
+   3.4e38,
+   1234567890123456789,
+   1234567890,
+   12345,
+   123,
+   TRUE
+)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@financial
+POSTHOOK: query: INSERT INTO Financial values
+ (
+  1099511627778,
+  1967,
+  'second',
+  to_date('1967-04-01'),
+  1,
+   '2017-11-07 09:02:49.999999999',
+   12345678901234567890.123456789012345678,
+   1.79e308,
+   3.4e38,
+   1234567890123456789,
+   1234567890,
+   12345,
+   123,
+   TRUE
+)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@financial
+POSTHOOK: Lineage: financial.cbigint SCRIPT []
+POSTHOOK: Lineage: financial.cboolean SCRIPT []
+POSTHOOK: Lineage: financial.cdecimal SCRIPT []
+POSTHOOK: Lineage: financial.cdouble SCRIPT []
+POSTHOOK: Lineage: financial.cfloat SCRIPT []
+POSTHOOK: Lineage: financial.cid SCRIPT []
+POSTHOOK: Lineage: financial.cint SCRIPT []
+POSTHOOK: Lineage: financial.csmallint SCRIPT []
+POSTHOOK: Lineage: financial.ctimestamp SCRIPT []
+POSTHOOK: Lineage: financial.ctinyint SCRIPT []
+POSTHOOK: Lineage: financial.fi_qtr SCRIPT []
+POSTHOOK: Lineage: financial.fi_qtr_start_date SCRIPT []
+POSTHOOK: Lineage: financial.fi_year SCRIPT []
+POSTHOOK: Lineage: financial.sk_companyid SCRIPT []
+PREHOOK: query: desc formatted Financial FI_QTR
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@financial
+POSTHOOK: query: desc formatted Financial FI_QTR
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@financial
+col_name            	FI_QTR              
+data_type           	char(10)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	6.0                 
+max_col_len         	6                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"cbigint\":\"true\",\"cboolean\":\"true\",\"cdecimal\":\"true\",\"cdouble\":\"true\",\"cfloat\":\"true\",\"cid\":\"true\",\"cint\":\"true\",\"csmallint\":\"true\",\"ctimestamp\":\"true\",\"ctinyint\":\"true\",\"fi_qtr\":\"true\",\"fi_qtr_start_date\":\"true\",\"fi_year\":\"true\",\"sk_companyid\":\"true\"}}

@@ -1,0 +1,8 @@
+Ln:1 SET code = 'A'
+Ln:2 SET status = 1
+Ln:3 SET count = 0
+Ln:5 SET code = 'A'
+Ln:6 SET status = 1
+Ln:6 SET count = 0
+Ln:7 SET count = 0
+Ln:7 SET limit = 100

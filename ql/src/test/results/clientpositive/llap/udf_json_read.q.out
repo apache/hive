@@ -1,0 +1,107 @@
+PREHOOK: query: DESCRIBE FUNCTION java_read
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION java_read
+POSTHOOK: type: DESCFUNCTION
+Function 'java_read' does not exist.
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED java_read
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED java_read
+POSTHOOK: type: DESCFUNCTION
+Function 'java_read' does not exist.
+PREHOOK: query: select json_read('[{"name":"john","alias":"j","address":{"city":"LA"}},{"name":"kinga","alias":"binga","age":2}]',
+		'array<struct<name:string,age:int,alias:string,address:struct<city:string,street:string>>>')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select json_read('[{"name":"john","alias":"j","address":{"city":"LA"}},{"name":"kinga","alias":"binga","age":2}]',
+		'array<struct<name:string,age:int,alias:string,address:struct<city:string,street:string>>>')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+[{"name":"john","age":null,"alias":"j","address":{"city":"LA","street":null}},{"name":"kinga","age":2,"alias":"binga","address":null}]
+PREHOOK: query: create table t (info array<struct<name:string,age:int,alias:string,address:struct<city:string,street:string>>>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: create table t (info array<struct<name:string,age:int,alias:string,address:struct<city:string,street:string>>>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: insert into t
+	select json_read('[{"name":"john","alias":"j","address":{"city":"LA"}},{"name":"kinga","alias":"binga","age":2}]',
+			'array<struct<name:string,age:int,alias:string,address:struct<city:string,street:string>>>')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t
+POSTHOOK: query: insert into t
+	select json_read('[{"name":"john","alias":"j","address":{"city":"LA"}},{"name":"kinga","alias":"binga","age":2}]',
+			'array<struct<name:string,age:int,alias:string,address:struct<city:string,street:string>>>')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t
+POSTHOOK: Lineage: t.info EXPRESSION []
+PREHOOK: query: select json_read('[
+{
+    "business_id": "vcNAWiLM4dR7D2nwwJ7nCA",
+    "hours": {
+        "Tuesday": {
+            "close": "17:00",
+            "open": "08:00"
+        },
+        "Friday": {
+            "close": "17:00",
+            "open": "08:00"
+        }
+    },
+    "open": true,
+    "categories": [
+        "Doctors",
+        "Health & Medical"
+    ],
+    "review_count": 9,
+    "name": "Eric Goldberg, MD",
+    "neighborhoods": [],
+    "attributes": {
+        "By Appointment Only": true,
+        "Accepts Credit Cards": true,
+        "Good For Groups": 1
+    },
+    "type": "business"
+}
+]','array<struct<attributes:struct<accepts credit cards:boolean,by appointment only:boolean,good for groups:int>,business_id:string,categories:array<string>,hours:map<string,struct<close:string,open:string>>,name:string,neighborhoods:array<string>,open:boolean,review_count:int,type:string>>')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select json_read('[
+{
+    "business_id": "vcNAWiLM4dR7D2nwwJ7nCA",
+    "hours": {
+        "Tuesday": {
+            "close": "17:00",
+            "open": "08:00"
+        },
+        "Friday": {
+            "close": "17:00",
+            "open": "08:00"
+        }
+    },
+    "open": true,
+    "categories": [
+        "Doctors",
+        "Health & Medical"
+    ],
+    "review_count": 9,
+    "name": "Eric Goldberg, MD",
+    "neighborhoods": [],
+    "attributes": {
+        "By Appointment Only": true,
+        "Accepts Credit Cards": true,
+        "Good For Groups": 1
+    },
+    "type": "business"
+}
+]','array<struct<attributes:struct<accepts credit cards:boolean,by appointment only:boolean,good for groups:int>,business_id:string,categories:array<string>,hours:map<string,struct<close:string,open:string>>,name:string,neighborhoods:array<string>,open:boolean,review_count:int,type:string>>')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+[{"attributes":{"accepts credit cards":true,"by appointment only":true,"good for groups":1},"business_id":"vcNAWiLM4dR7D2nwwJ7nCA","categories":["Doctors","Health & Medical"],"hours":{"Tuesday":{"close":"17:00","open":"08:00"},"Friday":{"close":"17:00","open":"08:00"}},"name":"Eric Goldberg, MD","neighborhoods":[],"open":true,"review_count":9,"type":"business"}]

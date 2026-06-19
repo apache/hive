@@ -1,0 +1,106 @@
+PREHOOK: query: CREATE table rcfileTableLazyDecompress (key STRING, value STRING) STORED AS RCFile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@rcfileTableLazyDecompress
+POSTHOOK: query: CREATE table rcfileTableLazyDecompress (key STRING, value STRING) STORED AS RCFile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@rcfileTableLazyDecompress
+PREHOOK: query: FROM src
+INSERT OVERWRITE TABLE rcfileTableLazyDecompress SELECT src.key, src.value LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@rcfiletablelazydecompress
+POSTHOOK: query: FROM src
+INSERT OVERWRITE TABLE rcfileTableLazyDecompress SELECT src.key, src.value LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@rcfiletablelazydecompress
+POSTHOOK: Lineage: rcfiletablelazydecompress.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: rcfiletablelazydecompress.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT key, value FROM rcfileTableLazyDecompress where key > 238 ORDER BY key ASC, value ASC
+PREHOOK: type: QUERY
+PREHOOK: Input: default@rcfiletablelazydecompress
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, value FROM rcfileTableLazyDecompress where key > 238 ORDER BY key ASC, value ASC
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@rcfiletablelazydecompress
+#### A masked pattern was here ####
+255	val_255
+278	val_278
+311	val_311
+409	val_409
+484	val_484
+PREHOOK: query: SELECT key, value FROM rcfileTableLazyDecompress where key > 238 and key < 400 ORDER BY key ASC, value ASC
+PREHOOK: type: QUERY
+PREHOOK: Input: default@rcfiletablelazydecompress
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, value FROM rcfileTableLazyDecompress where key > 238 and key < 400 ORDER BY key ASC, value ASC
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@rcfiletablelazydecompress
+#### A masked pattern was here ####
+255	val_255
+278	val_278
+311	val_311
+PREHOOK: query: SELECT key, count(1) FROM rcfileTableLazyDecompress where key > 238 group by key ORDER BY key ASC
+PREHOOK: type: QUERY
+PREHOOK: Input: default@rcfiletablelazydecompress
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, count(1) FROM rcfileTableLazyDecompress where key > 238 group by key ORDER BY key ASC
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@rcfiletablelazydecompress
+#### A masked pattern was here ####
+255	1
+278	1
+311	1
+409	1
+484	1
+PREHOOK: query: FROM src
+INSERT OVERWRITE TABLE rcfileTableLazyDecompress SELECT src.key, src.value LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@rcfiletablelazydecompress
+POSTHOOK: query: FROM src
+INSERT OVERWRITE TABLE rcfileTableLazyDecompress SELECT src.key, src.value LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@rcfiletablelazydecompress
+POSTHOOK: Lineage: rcfiletablelazydecompress.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: rcfiletablelazydecompress.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT key, value FROM rcfileTableLazyDecompress where key > 238 ORDER BY key ASC, value ASC
+PREHOOK: type: QUERY
+PREHOOK: Input: default@rcfiletablelazydecompress
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, value FROM rcfileTableLazyDecompress where key > 238 ORDER BY key ASC, value ASC
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@rcfiletablelazydecompress
+#### A masked pattern was here ####
+255	val_255
+278	val_278
+311	val_311
+409	val_409
+484	val_484
+PREHOOK: query: SELECT key, value FROM rcfileTableLazyDecompress where key > 238 and key < 400 ORDER BY key ASC, value ASC
+PREHOOK: type: QUERY
+PREHOOK: Input: default@rcfiletablelazydecompress
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, value FROM rcfileTableLazyDecompress where key > 238 and key < 400 ORDER BY key ASC, value ASC
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@rcfiletablelazydecompress
+#### A masked pattern was here ####
+255	val_255
+278	val_278
+311	val_311
+PREHOOK: query: SELECT key, count(1) FROM rcfileTableLazyDecompress where key > 238 group by key ORDER BY key ASC
+PREHOOK: type: QUERY
+PREHOOK: Input: default@rcfiletablelazydecompress
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, count(1) FROM rcfileTableLazyDecompress where key > 238 group by key ORDER BY key ASC
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@rcfiletablelazydecompress
+#### A masked pattern was here ####
+255	1
+278	1
+311	1
+409	1
+484	1

@@ -1,0 +1,216 @@
+PREHOOK: query: DESCRIBE FUNCTION collect_set
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION collect_set
+POSTHOOK: type: DESCFUNCTION
+collect_set(x) - Returns a set of objects with duplicate elements eliminated
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED collect_set
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED collect_set
+POSTHOOK: type: DESCFUNCTION
+collect_set(x) - Returns a set of objects with duplicate elements eliminated
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCollectSet
+Function type:BUILTIN
+PREHOOK: query: DESCRIBE FUNCTION collect_list
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION collect_list
+POSTHOOK: type: DESCFUNCTION
+collect_list(x) - Returns a list of objects with duplicates
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED collect_list
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED collect_list
+POSTHOOK: type: DESCFUNCTION
+collect_list(x) - Returns a list of objects with duplicates
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCollectList
+Function type:BUILTIN
+PREHOOK: query: SELECT key, collect_set(value)
+FROM src
+GROUP BY key ORDER BY key limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, collect_set(value)
+FROM src
+GROUP BY key ORDER BY key limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	["val_0"]
+10	["val_10"]
+100	["val_100"]
+103	["val_103"]
+104	["val_104"]
+105	["val_105"]
+11	["val_11"]
+111	["val_111"]
+113	["val_113"]
+114	["val_114"]
+116	["val_116"]
+118	["val_118"]
+119	["val_119"]
+12	["val_12"]
+120	["val_120"]
+125	["val_125"]
+126	["val_126"]
+128	["val_128"]
+129	["val_129"]
+131	["val_131"]
+PREHOOK: query: SELECT key, collect_list(value)
+FROM src
+GROUP BY key ORDER by key limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, collect_list(value)
+FROM src
+GROUP BY key ORDER by key limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	["val_0","val_0","val_0"]
+10	["val_10"]
+100	["val_100","val_100"]
+103	["val_103","val_103"]
+104	["val_104","val_104"]
+105	["val_105"]
+11	["val_11"]
+111	["val_111"]
+113	["val_113","val_113"]
+114	["val_114"]
+116	["val_116"]
+118	["val_118","val_118"]
+119	["val_119","val_119","val_119"]
+12	["val_12","val_12"]
+120	["val_120","val_120"]
+125	["val_125","val_125"]
+126	["val_126"]
+128	["val_128","val_128","val_128"]
+129	["val_129","val_129"]
+131	["val_131"]
+PREHOOK: query: SELECT key, collect_set(value)
+FROM src
+GROUP BY key ORDER BY key limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, collect_set(value)
+FROM src
+GROUP BY key ORDER BY key limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	["val_0"]
+10	["val_10"]
+100	["val_100"]
+103	["val_103"]
+104	["val_104"]
+105	["val_105"]
+11	["val_11"]
+111	["val_111"]
+113	["val_113"]
+114	["val_114"]
+116	["val_116"]
+118	["val_118"]
+119	["val_119"]
+12	["val_12"]
+120	["val_120"]
+125	["val_125"]
+126	["val_126"]
+128	["val_128"]
+129	["val_129"]
+131	["val_131"]
+PREHOOK: query: SELECT key, collect_list(value)
+FROM src
+GROUP BY key ORDER BY key limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, collect_list(value)
+FROM src
+GROUP BY key ORDER BY key limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	["val_0","val_0","val_0"]
+10	["val_10"]
+100	["val_100","val_100"]
+103	["val_103","val_103"]
+104	["val_104","val_104"]
+105	["val_105"]
+11	["val_11"]
+111	["val_111"]
+113	["val_113","val_113"]
+114	["val_114"]
+116	["val_116"]
+118	["val_118","val_118"]
+119	["val_119","val_119","val_119"]
+12	["val_12","val_12"]
+120	["val_120","val_120"]
+125	["val_125","val_125"]
+126	["val_126"]
+128	["val_128","val_128","val_128"]
+129	["val_129","val_129"]
+131	["val_131"]
+PREHOOK: query: SELECT key, collect_set(value)
+FROM src
+GROUP BY key ORDER BY key limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, collect_set(value)
+FROM src
+GROUP BY key ORDER BY key limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	["val_0"]
+10	["val_10"]
+100	["val_100"]
+103	["val_103"]
+104	["val_104"]
+105	["val_105"]
+11	["val_11"]
+111	["val_111"]
+113	["val_113"]
+114	["val_114"]
+116	["val_116"]
+118	["val_118"]
+119	["val_119"]
+12	["val_12"]
+120	["val_120"]
+125	["val_125"]
+126	["val_126"]
+128	["val_128"]
+129	["val_129"]
+131	["val_131"]
+PREHOOK: query: SELECT key, collect_set(value)
+FROM src
+GROUP BY key ORDER BY key limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, collect_set(value)
+FROM src
+GROUP BY key ORDER BY key limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	["val_0"]
+10	["val_10"]
+100	["val_100"]
+103	["val_103"]
+104	["val_104"]
+105	["val_105"]
+11	["val_11"]
+111	["val_111"]
+113	["val_113"]
+114	["val_114"]
+116	["val_116"]
+118	["val_118"]
+119	["val_119"]
+12	["val_12"]
+120	["val_120"]
+125	["val_125"]
+126	["val_126"]
+128	["val_128"]
+129	["val_129"]
+131	["val_131"]

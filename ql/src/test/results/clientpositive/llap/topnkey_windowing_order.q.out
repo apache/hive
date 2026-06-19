@@ -1,0 +1,567 @@
+PREHOOK: query: CREATE TABLE topnkey_windowing (tw_a string, tw_b string, tw_v1 double, tw_v2 double)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@topnkey_windowing
+POSTHOOK: query: CREATE TABLE topnkey_windowing (tw_a string, tw_b string, tw_v1 double, tw_v2 double)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@topnkey_windowing
+PREHOOK: query: INSERT INTO topnkey_windowing VALUES
+  (NULL, NULL, NULL, NULL),
+  (NULL, 'D', 109, 9),
+  ('A', 'D', 109, 9),
+  ('A', 'D', 104, 9),
+  ('A', 'D', 109, 9),
+  ('A', 'C', 109, 9),
+  ('A', 'C', 103, 9),
+  (NULL, NULL, NULL, NULL),
+  (NULL, 'D', 109, 9),
+  ('A', 'D', 109, 9),
+  ('A', 'D', 101, 9),
+  ('A', 'D', 101, 9),
+  ('A', 'D', 114, 9),
+  ('A', 'D', 120, 9),
+  ('B', 'E', 105, 9),
+  ('B', 'E', 106, 9),
+  ('B', 'E', 106, 9),
+  ('B', 'E', NULL, NULL),
+  ('B', 'E', 106, 9),
+  ('A', 'C', 107, 9),
+  ('B', 'E', 108, 9),
+  ('A', 'C', 102, 9),
+  ('B', 'E', 110, 9),
+  (NULL, NULL, NULL, NULL),
+  (NULL, NULL, 109, 9),
+  ('A', 'D', 109, 9)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@topnkey_windowing
+POSTHOOK: query: INSERT INTO topnkey_windowing VALUES
+  (NULL, NULL, NULL, NULL),
+  (NULL, 'D', 109, 9),
+  ('A', 'D', 109, 9),
+  ('A', 'D', 104, 9),
+  ('A', 'D', 109, 9),
+  ('A', 'C', 109, 9),
+  ('A', 'C', 103, 9),
+  (NULL, NULL, NULL, NULL),
+  (NULL, 'D', 109, 9),
+  ('A', 'D', 109, 9),
+  ('A', 'D', 101, 9),
+  ('A', 'D', 101, 9),
+  ('A', 'D', 114, 9),
+  ('A', 'D', 120, 9),
+  ('B', 'E', 105, 9),
+  ('B', 'E', 106, 9),
+  ('B', 'E', 106, 9),
+  ('B', 'E', NULL, NULL),
+  ('B', 'E', 106, 9),
+  ('A', 'C', 107, 9),
+  ('B', 'E', 108, 9),
+  ('A', 'C', 102, 9),
+  ('B', 'E', 110, 9),
+  (NULL, NULL, NULL, NULL),
+  (NULL, NULL, 109, 9),
+  ('A', 'D', 109, 9)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@topnkey_windowing
+POSTHOOK: Lineage: topnkey_windowing.tw_a SCRIPT []
+POSTHOOK: Lineage: topnkey_windowing.tw_b SCRIPT []
+POSTHOOK: Lineage: topnkey_windowing.tw_v1 SCRIPT []
+POSTHOOK: Lineage: topnkey_windowing.tw_v2 SCRIPT []
+PREHOOK: query: EXPLAIN
+SELECT tw_a, ranking
+FROM (
+  SELECT tw_a AS tw_a,
+    rank() OVER (PARTITION BY tw_a ORDER BY tw_v1 NULLS FIRST) AS ranking
+  FROM topnkey_windowing) tmp1
+  WHERE ranking <= 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@topnkey_windowing
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT tw_a, ranking
+FROM (
+  SELECT tw_a AS tw_a,
+    rank() OVER (PARTITION BY tw_a ORDER BY tw_v1 NULLS FIRST) AS ranking
+  FROM topnkey_windowing) tmp1
+  WHERE ranking <= 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@topnkey_windowing
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: topnkey_windowing
+                  Statistics: Num rows: 26 Data size: 1969 Basic stats: COMPLETE Column stats: COMPLETE
+                  Top N Key Operator
+                    sort order: ++
+                    keys: tw_a (type: string), tw_v1 (type: double)
+                    null sort order: aa
+                    Map-reduce partition columns: tw_a (type: string)
+                    Statistics: Num rows: 26 Data size: 1969 Basic stats: COMPLETE Column stats: COMPLETE
+                    top n: 4
+                    Reduce Output Operator
+                      key expressions: tw_a (type: string), tw_v1 (type: double)
+                      null sort order: aa
+                      sort order: ++
+                      Map-reduce partition columns: tw_a (type: string)
+                      Statistics: Num rows: 26 Data size: 1969 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: double)
+                outputColumnNames: _col0, _col2
+                Statistics: Num rows: 26 Data size: 1427 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: string, _col2: double
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col2 ASC NULLS FIRST
+                        partition by: _col0
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: rank_window_0
+                              arguments: _col2
+                              name: rank
+                              window function: GenericUDAFRankEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 26 Data size: 1427 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (rank_window_0 <= 3) (type: boolean)
+                    Statistics: Num rows: 8 Data size: 202 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col0 (type: string), rank_window_0 (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 8 Data size: 202 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 8 Data size: 202 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT tw_a, ranking
+FROM (
+  SELECT tw_a AS tw_a,
+    rank() OVER (PARTITION BY tw_a ORDER BY tw_v1 NULLS FIRST) AS ranking
+  FROM topnkey_windowing) tmp1
+  WHERE ranking <= 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@topnkey_windowing
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tw_a, ranking
+FROM (
+  SELECT tw_a AS tw_a,
+    rank() OVER (PARTITION BY tw_a ORDER BY tw_v1 NULLS FIRST) AS ranking
+  FROM topnkey_windowing) tmp1
+  WHERE ranking <= 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@topnkey_windowing
+#### A masked pattern was here ####
+NULL	1
+NULL	1
+NULL	1
+A	1
+A	1
+A	3
+B	1
+B	2
+B	3
+B	3
+B	3
+PREHOOK: query: SELECT tw_a, ranking
+FROM (
+  SELECT tw_a AS tw_a,
+    rank() OVER (PARTITION BY tw_a ORDER BY tw_v1 NULLS FIRST) AS ranking
+  FROM topnkey_windowing) tmp1
+  WHERE ranking <= 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@topnkey_windowing
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tw_a, ranking
+FROM (
+  SELECT tw_a AS tw_a,
+    rank() OVER (PARTITION BY tw_a ORDER BY tw_v1 NULLS FIRST) AS ranking
+  FROM topnkey_windowing) tmp1
+  WHERE ranking <= 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@topnkey_windowing
+#### A masked pattern was here ####
+NULL	1
+NULL	1
+NULL	1
+A	1
+A	1
+A	3
+B	1
+B	2
+B	3
+B	3
+B	3
+PREHOOK: query: EXPLAIN
+SELECT tw_a, ranking
+FROM (
+  SELECT tw_a AS tw_a,
+    rank() OVER (PARTITION BY tw_a ORDER BY tw_v1 ASC NULLS LAST, tw_v2 DESC NULLS FIRST) AS ranking
+  FROM topnkey_windowing) tmp1
+  WHERE ranking <= 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@topnkey_windowing
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT tw_a, ranking
+FROM (
+  SELECT tw_a AS tw_a,
+    rank() OVER (PARTITION BY tw_a ORDER BY tw_v1 ASC NULLS LAST, tw_v2 DESC NULLS FIRST) AS ranking
+  FROM topnkey_windowing) tmp1
+  WHERE ranking <= 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@topnkey_windowing
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: topnkey_windowing
+                  Statistics: Num rows: 26 Data size: 2153 Basic stats: COMPLETE Column stats: COMPLETE
+                  Top N Key Operator
+                    sort order: ++-
+                    keys: tw_a (type: string), tw_v1 (type: double), tw_v2 (type: double)
+                    null sort order: aza
+                    Map-reduce partition columns: tw_a (type: string)
+                    Statistics: Num rows: 26 Data size: 2153 Basic stats: COMPLETE Column stats: COMPLETE
+                    top n: 4
+                    Reduce Output Operator
+                      key expressions: tw_a (type: string), tw_v1 (type: double), tw_v2 (type: double)
+                      null sort order: aza
+                      sort order: ++-
+                      Map-reduce partition columns: tw_a (type: string)
+                      Statistics: Num rows: 26 Data size: 2153 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: double), KEY.reducesinkkey2 (type: double)
+                outputColumnNames: _col0, _col2, _col3
+                Statistics: Num rows: 26 Data size: 1579 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: string, _col2: double, _col3: double
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col2 ASC NULLS LAST, _col3 DESC NULLS FIRST
+                        partition by: _col0
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: rank_window_0
+                              arguments: _col2, _col3
+                              name: rank
+                              window function: GenericUDAFRankEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 26 Data size: 1579 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (rank_window_0 <= 3) (type: boolean)
+                    Statistics: Num rows: 8 Data size: 234 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col0 (type: string), rank_window_0 (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 8 Data size: 202 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 8 Data size: 202 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT tw_a, ranking
+FROM (
+  SELECT tw_a AS tw_a,
+    rank() OVER (PARTITION BY tw_a ORDER BY tw_v1 ASC NULLS LAST, tw_v2 DESC NULLS FIRST) AS ranking
+  FROM topnkey_windowing) tmp1
+  WHERE ranking <= 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@topnkey_windowing
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tw_a, ranking
+FROM (
+  SELECT tw_a AS tw_a,
+    rank() OVER (PARTITION BY tw_a ORDER BY tw_v1 ASC NULLS LAST, tw_v2 DESC NULLS FIRST) AS ranking
+  FROM topnkey_windowing) tmp1
+  WHERE ranking <= 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@topnkey_windowing
+#### A masked pattern was here ####
+NULL	1
+NULL	1
+NULL	1
+A	1
+A	1
+A	3
+B	1
+B	2
+B	2
+B	2
+PREHOOK: query: SELECT tw_a, ranking
+FROM (
+  SELECT tw_a AS tw_a,
+    rank() OVER (PARTITION BY tw_a ORDER BY tw_v1 ASC NULLS LAST, tw_v2 DESC NULLS FIRST) AS ranking
+  FROM topnkey_windowing) tmp1
+  WHERE ranking <= 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@topnkey_windowing
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tw_a, ranking
+FROM (
+  SELECT tw_a AS tw_a,
+    rank() OVER (PARTITION BY tw_a ORDER BY tw_v1 ASC NULLS LAST, tw_v2 DESC NULLS FIRST) AS ranking
+  FROM topnkey_windowing) tmp1
+  WHERE ranking <= 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@topnkey_windowing
+#### A masked pattern was here ####
+NULL	1
+NULL	1
+NULL	1
+A	1
+A	1
+A	3
+B	1
+B	2
+B	2
+B	2
+PREHOOK: query: EXPLAIN
+SELECT tw_a, ranking
+FROM (
+  SELECT tw_a AS tw_a,
+    rank() OVER (PARTITION BY tw_a, tw_b ORDER BY tw_v1) AS ranking
+  FROM topnkey_windowing) tmp1
+  WHERE ranking <= 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@topnkey_windowing
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT tw_a, ranking
+FROM (
+  SELECT tw_a AS tw_a,
+    rank() OVER (PARTITION BY tw_a, tw_b ORDER BY tw_v1) AS ranking
+  FROM topnkey_windowing) tmp1
+  WHERE ranking <= 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@topnkey_windowing
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: topnkey_windowing
+                  Statistics: Num rows: 26 Data size: 3924 Basic stats: COMPLETE Column stats: COMPLETE
+                  Top N Key Operator
+                    sort order: +++
+                    keys: tw_a (type: string), tw_b (type: string), tw_v1 (type: double)
+                    null sort order: aaz
+                    Map-reduce partition columns: tw_a (type: string), tw_b (type: string)
+                    Statistics: Num rows: 26 Data size: 3924 Basic stats: COMPLETE Column stats: COMPLETE
+                    top n: 4
+                    Reduce Output Operator
+                      key expressions: tw_a (type: string), tw_b (type: string), tw_v1 (type: double)
+                      null sort order: aaz
+                      sort order: +++
+                      Map-reduce partition columns: tw_a (type: string), tw_b (type: string)
+                      Statistics: Num rows: 26 Data size: 3924 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey2 (type: double)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 26 Data size: 3042 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: string, _col1: string, _col2: double
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col2 ASC NULLS LAST
+                        partition by: _col0, _col1
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: rank_window_0
+                              arguments: _col2
+                              name: rank
+                              window function: GenericUDAFRankEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 26 Data size: 3042 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (rank_window_0 <= 3) (type: boolean)
+                    Statistics: Num rows: 8 Data size: 542 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col0 (type: string), rank_window_0 (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 8 Data size: 202 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 8 Data size: 202 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT tw_a, ranking
+FROM (
+  SELECT tw_a AS tw_a,
+    rank() OVER (PARTITION BY tw_a, tw_b ORDER BY tw_v1) AS ranking
+  FROM topnkey_windowing) tmp1
+  WHERE ranking <= 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@topnkey_windowing
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tw_a, ranking
+FROM (
+  SELECT tw_a AS tw_a,
+    rank() OVER (PARTITION BY tw_a, tw_b ORDER BY tw_v1) AS ranking
+  FROM topnkey_windowing) tmp1
+  WHERE ranking <= 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@topnkey_windowing
+#### A masked pattern was here ####
+NULL	1
+NULL	2
+NULL	2
+NULL	2
+NULL	1
+NULL	1
+A	1
+A	2
+A	3
+A	1
+A	1
+A	3
+B	1
+B	2
+B	2
+B	2
+PREHOOK: query: SELECT tw_a, ranking
+FROM (
+  SELECT tw_a AS tw_a,
+    rank() OVER (PARTITION BY tw_a, tw_b ORDER BY tw_v1) AS ranking
+  FROM topnkey_windowing) tmp1
+  WHERE ranking <= 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@topnkey_windowing
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tw_a, ranking
+FROM (
+  SELECT tw_a AS tw_a,
+    rank() OVER (PARTITION BY tw_a, tw_b ORDER BY tw_v1) AS ranking
+  FROM topnkey_windowing) tmp1
+  WHERE ranking <= 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@topnkey_windowing
+#### A masked pattern was here ####
+NULL	1
+NULL	2
+NULL	2
+NULL	2
+NULL	1
+NULL	1
+A	1
+A	2
+A	3
+A	1
+A	1
+A	3
+B	1
+B	2
+B	2
+B	2
+PREHOOK: query: DROP TABLE topnkey_windowing
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@topnkey_windowing
+PREHOOK: Output: database:default
+PREHOOK: Output: default@topnkey_windowing
+POSTHOOK: query: DROP TABLE topnkey_windowing
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@topnkey_windowing
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@topnkey_windowing

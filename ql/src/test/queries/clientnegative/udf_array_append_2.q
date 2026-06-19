@@ -1,0 +1,1 @@
+SELECT array_append(array(3), array(3));

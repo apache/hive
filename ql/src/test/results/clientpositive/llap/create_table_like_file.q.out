@@ -1,0 +1,629 @@
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_all_types
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_all_types
+PREHOOK: query: INSERT INTO test_all_types VALUES (1, 2, 3, 4, 2.2, 2.2, 20.20, '2022-06-30 10:20:30', '2020-04-23', 'str1', 'varchar1', 'char', true, 'binary_maybe'),
+       (1, 2, 3, 4, 2.2, 2.2, 20.20, '2022-06-30 10:20:30', '2020-04-23', 'str1', 'varchar1', 'char', true, 'binary_maybe')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_all_types
+POSTHOOK: query: INSERT INTO test_all_types VALUES (1, 2, 3, 4, 2.2, 2.2, 20.20, '2022-06-30 10:20:30', '2020-04-23', 'str1', 'varchar1', 'char', true, 'binary_maybe'),
+       (1, 2, 3, 4, 2.2, 2.2, 20.20, '2022-06-30 10:20:30', '2020-04-23', 'str1', 'varchar1', 'char', true, 'binary_maybe')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_all_types
+POSTHOOK: Lineage: test_all_types.bigint_type SCRIPT []
+POSTHOOK: Lineage: test_all_types.binary_type SCRIPT []
+POSTHOOK: Lineage: test_all_types.boolean_type SCRIPT []
+POSTHOOK: Lineage: test_all_types.char_type SCRIPT []
+POSTHOOK: Lineage: test_all_types.date_type SCRIPT []
+POSTHOOK: Lineage: test_all_types.decimal_type SCRIPT []
+POSTHOOK: Lineage: test_all_types.double_type SCRIPT []
+POSTHOOK: Lineage: test_all_types.float_type SCRIPT []
+POSTHOOK: Lineage: test_all_types.int_type SCRIPT []
+POSTHOOK: Lineage: test_all_types.smallint_type SCRIPT []
+POSTHOOK: Lineage: test_all_types.string_type SCRIPT []
+POSTHOOK: Lineage: test_all_types.timestamp_type SCRIPT []
+POSTHOOK: Lineage: test_all_types.tinyint_type SCRIPT []
+POSTHOOK: Lineage: test_all_types.varchar_type SCRIPT []
+PREHOOK: query: SELECT * FROM test_all_types
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_all_types
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM test_all_types
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_all_types
+#### A masked pattern was here ####
+1	2	3	4	2.2	2.2	20.20	2022-06-30 10:20:30	2020-04-23	str1	varchar1	char                              	true	binary_maybe
+1	2	3	4	2.2	2.2	20.20	2022-06-30 10:20:30	2020-04-23	str1	varchar1	char                              	true	binary_maybe
+PREHOOK: query: DESCRIBE test_all_types
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_all_types
+POSTHOOK: query: DESCRIBE test_all_types
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_all_types
+tinyint_type        	tinyint             	                    
+smallint_type       	smallint            	                    
+bigint_type         	bigint              	                    
+int_type            	int                 	                    
+float_type          	float               	                    
+double_type         	double              	                    
+decimal_type        	decimal(4,2)        	                    
+timestamp_type      	timestamp           	                    
+date_type           	date                	                    
+string_type         	string              	                    
+varchar_type        	varchar(100)        	                    
+char_type           	char(34)            	                    
+boolean_type        	boolean             	                    
+binary_type         	binary              	                    
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@like_test_all_types
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@like_test_all_types
+PREHOOK: query: INSERT INTO like_test_all_types VALUES (1, 2, 3, 4, 2.2, 2.2, 20.20, '2022-06-30 10:20:30', '2020-04-23', 'str1', 'varchar1', 'char', true, 'binary_maybe'),
+       (1, 2, 3, 4, 2.2, 2.2, 20.20, '2022-06-30 10:20:30', '2020-04-23', 'str1', 'varchar1', 'char', true, 'binary_maybe')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@like_test_all_types
+POSTHOOK: query: INSERT INTO like_test_all_types VALUES (1, 2, 3, 4, 2.2, 2.2, 20.20, '2022-06-30 10:20:30', '2020-04-23', 'str1', 'varchar1', 'char', true, 'binary_maybe'),
+       (1, 2, 3, 4, 2.2, 2.2, 20.20, '2022-06-30 10:20:30', '2020-04-23', 'str1', 'varchar1', 'char', true, 'binary_maybe')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@like_test_all_types
+POSTHOOK: Lineage: like_test_all_types.bigint_type SCRIPT []
+POSTHOOK: Lineage: like_test_all_types.binary_type SCRIPT []
+POSTHOOK: Lineage: like_test_all_types.boolean_type SCRIPT []
+POSTHOOK: Lineage: like_test_all_types.char_type SCRIPT []
+POSTHOOK: Lineage: like_test_all_types.date_type SCRIPT []
+POSTHOOK: Lineage: like_test_all_types.decimal_type SCRIPT []
+POSTHOOK: Lineage: like_test_all_types.double_type SCRIPT []
+POSTHOOK: Lineage: like_test_all_types.float_type SCRIPT []
+POSTHOOK: Lineage: like_test_all_types.int_type SCRIPT []
+POSTHOOK: Lineage: like_test_all_types.smallint_type SCRIPT []
+POSTHOOK: Lineage: like_test_all_types.string_type SCRIPT []
+POSTHOOK: Lineage: like_test_all_types.timestamp_type SCRIPT []
+POSTHOOK: Lineage: like_test_all_types.tinyint_type SCRIPT []
+POSTHOOK: Lineage: like_test_all_types.varchar_type SCRIPT []
+PREHOOK: query: SELECT * FROM like_test_all_types
+PREHOOK: type: QUERY
+PREHOOK: Input: default@like_test_all_types
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM like_test_all_types
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@like_test_all_types
+#### A masked pattern was here ####
+1	2	3	4	2.2	2.2	20.20	2022-06-30 10:20:30	2020-04-23	str1	varchar1	char	true	binary_maybe
+1	2	3	4	2.2	2.2	20.20	2022-06-30 10:20:30	2020-04-23	str1	varchar1	char	true	binary_maybe
+PREHOOK: query: DESCRIBE like_test_all_types
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@like_test_all_types
+POSTHOOK: query: DESCRIBE like_test_all_types
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@like_test_all_types
+tinyint_type        	tinyint             	Inferred from Parquet file.
+smallint_type       	smallint            	Inferred from Parquet file.
+bigint_type         	bigint              	Inferred from Parquet file.
+int_type            	int                 	Inferred from Parquet file.
+float_type          	float               	Inferred from Parquet file.
+double_type         	double              	Inferred from Parquet file.
+decimal_type        	decimal(4,2)        	Inferred from Parquet file.
+timestamp_type      	timestamp           	Inferred from Parquet file.
+date_type           	date                	Inferred from Parquet file.
+string_type         	string              	Inferred from Parquet file.
+varchar_type        	string              	Inferred from Parquet file.
+char_type           	string              	Inferred from Parquet file.
+boolean_type        	boolean             	Inferred from Parquet file.
+binary_type         	binary              	Inferred from Parquet file.
+PREHOOK: query: DROP TABLE test_all_types
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_all_types
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_all_types
+POSTHOOK: query: DROP TABLE test_all_types
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_all_types
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_all_types
+PREHOOK: query: DROP TABLE like_test_all_types
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@like_test_all_types
+PREHOOK: Output: database:default
+PREHOOK: Output: default@like_test_all_types
+POSTHOOK: query: DROP TABLE like_test_all_types
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@like_test_all_types
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@like_test_all_types
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@like_test_all_types
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@like_test_all_types
+PREHOOK: query: INSERT INTO like_test_all_types VALUES (1, 2, 3, 4, 2.2, 2.2, 20.20, '2022-06-30 10:20:30', '2020-04-23', 'str1', 'varchar1', 'char', true, 'binary_maybe'),
+       (1, 2, 3, 4, 2.2, 2.2, 20.20, '2022-06-30 10:20:30', '2020-04-23', 'str1', 'varchar1', 'char', true, 'binary_maybe')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@like_test_all_types
+POSTHOOK: query: INSERT INTO like_test_all_types VALUES (1, 2, 3, 4, 2.2, 2.2, 20.20, '2022-06-30 10:20:30', '2020-04-23', 'str1', 'varchar1', 'char', true, 'binary_maybe'),
+       (1, 2, 3, 4, 2.2, 2.2, 20.20, '2022-06-30 10:20:30', '2020-04-23', 'str1', 'varchar1', 'char', true, 'binary_maybe')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@like_test_all_types
+POSTHOOK: Lineage: like_test_all_types.bigint_type SCRIPT []
+POSTHOOK: Lineage: like_test_all_types.binary_type SCRIPT []
+POSTHOOK: Lineage: like_test_all_types.boolean_type SCRIPT []
+POSTHOOK: Lineage: like_test_all_types.char_type SCRIPT []
+POSTHOOK: Lineage: like_test_all_types.date_type SCRIPT []
+POSTHOOK: Lineage: like_test_all_types.decimal_type SCRIPT []
+POSTHOOK: Lineage: like_test_all_types.double_type SCRIPT []
+POSTHOOK: Lineage: like_test_all_types.float_type SCRIPT []
+POSTHOOK: Lineage: like_test_all_types.int_type SCRIPT []
+POSTHOOK: Lineage: like_test_all_types.smallint_type SCRIPT []
+POSTHOOK: Lineage: like_test_all_types.string_type SCRIPT []
+POSTHOOK: Lineage: like_test_all_types.timestamp_type SCRIPT []
+POSTHOOK: Lineage: like_test_all_types.tinyint_type SCRIPT []
+POSTHOOK: Lineage: like_test_all_types.varchar_type SCRIPT []
+PREHOOK: query: SELECT * FROM like_test_all_types
+PREHOOK: type: QUERY
+PREHOOK: Input: default@like_test_all_types
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM like_test_all_types
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@like_test_all_types
+#### A masked pattern was here ####
+1	2	3	4	2.2	2.2	20.20	2022-06-30 10:20:30	2020-04-23	str1	varchar1	char	true	binary_maybe
+1	2	3	4	2.2	2.2	20.20	2022-06-30 10:20:30	2020-04-23	str1	varchar1	char	true	binary_maybe
+PREHOOK: query: DESCRIBE like_test_all_types
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@like_test_all_types
+POSTHOOK: query: DESCRIBE like_test_all_types
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@like_test_all_types
+tinyint_type        	tinyint             	Inferred from Parquet file.
+smallint_type       	smallint            	Inferred from Parquet file.
+bigint_type         	bigint              	Inferred from Parquet file.
+int_type            	int                 	Inferred from Parquet file.
+float_type          	float               	Inferred from Parquet file.
+double_type         	double              	Inferred from Parquet file.
+decimal_type        	decimal(4,2)        	Inferred from Parquet file.
+timestamp_type      	timestamp           	Inferred from Parquet file.
+date_type           	date                	Inferred from Parquet file.
+string_type         	string              	Inferred from Parquet file.
+varchar_type        	string              	Inferred from Parquet file.
+char_type           	string              	Inferred from Parquet file.
+boolean_type        	boolean             	Inferred from Parquet file.
+binary_type         	string              	Inferred from Parquet file.
+PREHOOK: query: DROP TABLE test_all_types
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE test_all_types
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE like_test_all_types
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@like_test_all_types
+PREHOOK: Output: database:default
+PREHOOK: Output: default@like_test_all_types
+POSTHOOK: query: DROP TABLE like_test_all_types
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@like_test_all_types
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@like_test_all_types
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_array
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_array
+PREHOOK: query: DESCRIBE test_array
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_array
+POSTHOOK: query: DESCRIBE test_array
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_array
+str_array           	array<string>       	                    
+PREHOOK: query: INSERT INTO test_array SELECT array("bob", "sue")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_array
+POSTHOOK: query: INSERT INTO test_array SELECT array("bob", "sue")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_array
+POSTHOOK: Lineage: test_array.str_array EXPRESSION []
+PREHOOK: query: SELECT * FROM test_array
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_array
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM test_array
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_array
+#### A masked pattern was here ####
+["bob","sue"]
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@like_test_array
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@like_test_array
+PREHOOK: query: DESCRIBE like_test_array
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@like_test_array
+POSTHOOK: query: DESCRIBE like_test_array
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@like_test_array
+str_array           	array<string>       	Inferred from Parquet file.
+PREHOOK: query: INSERT INTO like_test_array SELECT array("bob", "sue")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@like_test_array
+POSTHOOK: query: INSERT INTO like_test_array SELECT array("bob", "sue")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@like_test_array
+POSTHOOK: Lineage: like_test_array.str_array EXPRESSION []
+PREHOOK: query: SELECT * FROM like_test_array
+PREHOOK: type: QUERY
+PREHOOK: Input: default@like_test_array
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM like_test_array
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@like_test_array
+#### A masked pattern was here ####
+["bob","sue"]
+PREHOOK: query: DROP TABLE like_test_array
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@like_test_array
+PREHOOK: Output: database:default
+PREHOOK: Output: default@like_test_array
+POSTHOOK: query: DROP TABLE like_test_array
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@like_test_array
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@like_test_array
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_map
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_map
+PREHOOK: query: DESCRIBE test_map
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_map
+POSTHOOK: query: DESCRIBE test_map
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_map
+simple_map          	map<int,string>     	                    
+map_to_struct       	map<string,struct<i:int>>	                    
+map_to_map          	map<date,map<int,string>>	                    
+map_to_array        	map<binary,array<array<int>>>	                    
+PREHOOK: query: INSERT INTO test_map SELECT map(10, "foo"), map("bar", named_struct("i", 99)), map(cast('1984-01-01' as date), map(10, "goodbye")), map(cast("binary" as binary), array(array(1,2,3)))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_map
+POSTHOOK: query: INSERT INTO test_map SELECT map(10, "foo"), map("bar", named_struct("i", 99)), map(cast('1984-01-01' as date), map(10, "goodbye")), map(cast("binary" as binary), array(array(1,2,3)))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_map
+POSTHOOK: Lineage: test_map.map_to_array EXPRESSION []
+POSTHOOK: Lineage: test_map.map_to_map EXPRESSION []
+POSTHOOK: Lineage: test_map.map_to_struct EXPRESSION []
+POSTHOOK: Lineage: test_map.simple_map EXPRESSION []
+PREHOOK: query: SELECT * FROM test_map
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_map
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM test_map
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_map
+#### A masked pattern was here ####
+{10:"foo"}	{"bar":{"i":99}}	{"1984-01-01":{10:"goodbye"}}	{binary:[[1,2,3]]}
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@like_test_map
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@like_test_map
+PREHOOK: query: DESCRIBE like_test_map
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@like_test_map
+POSTHOOK: query: DESCRIBE like_test_map
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@like_test_map
+simple_map          	map<int,string>     	Inferred from Parquet file.
+map_to_struct       	map<string,struct<i:int>>	Inferred from Parquet file.
+map_to_map          	map<date,map<int,string>>	Inferred from Parquet file.
+map_to_array        	map<binary,array<array<int>>>	Inferred from Parquet file.
+PREHOOK: query: INSERT INTO like_test_map SELECT map(10, "foo"), map("bar", named_struct("i", 99)), map(cast('1984-01-01' as date), map(10, "goodbye")), map(cast("binary" as binary), array(array(1,2,3)))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@like_test_map
+POSTHOOK: query: INSERT INTO like_test_map SELECT map(10, "foo"), map("bar", named_struct("i", 99)), map(cast('1984-01-01' as date), map(10, "goodbye")), map(cast("binary" as binary), array(array(1,2,3)))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@like_test_map
+POSTHOOK: Lineage: like_test_map.map_to_array EXPRESSION []
+POSTHOOK: Lineage: like_test_map.map_to_map EXPRESSION []
+POSTHOOK: Lineage: like_test_map.map_to_struct EXPRESSION []
+POSTHOOK: Lineage: like_test_map.simple_map EXPRESSION []
+PREHOOK: query: SELECT * FROM like_test_map
+PREHOOK: type: QUERY
+PREHOOK: Input: default@like_test_map
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM like_test_map
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@like_test_map
+#### A masked pattern was here ####
+{10:"foo"}	{"bar":{"i":99}}	{"1984-01-01":{10:"goodbye"}}	{binary:[[1,2,3]]}
+PREHOOK: query: DROP TABLE like_test_map
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@like_test_map
+PREHOOK: Output: database:default
+PREHOOK: Output: default@like_test_map
+POSTHOOK: query: DROP TABLE like_test_map
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@like_test_map
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@like_test_map
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_complex_struct
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_complex_struct
+PREHOOK: query: DESCRIBE test_complex_struct
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_complex_struct
+POSTHOOK: query: DESCRIBE test_complex_struct
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_complex_struct
+struct_type         	struct<tinyint_type:tinyint,smallint_type:smallint,bigint_type:bigint,int_type:int,float_type:float,double_type:double,decimal_type:decimal(4,2),timestamp_type:timestamp,date_type:date,string_type:string,varchar_type:varchar(100),char_type:char(34),boolean_type:boolean,binary_type:binary>	                    
+PREHOOK: query: INSERT INTO test_complex_struct SELECT named_struct("tinyint_type", cast(1 as tinyint), "smallint_type", cast(2 as smallint), "bigint_type", cast(3 as bigint), "int_type", 4, "float_type", cast(2.2 as float), "double_type", cast(2.2 as double), "decimal_type", cast(20.22 as decimal(4,2)), "timestamp_type", cast('2022-06-30 10:20:30' as timestamp), "date_type", cast('2020-04-23' as date), "string_type", 'str1', "varchar_type", cast('varchar1' as varchar(100)), "char_type", cast('char' as char(34)), "boolean_type", true, "binary_type", cast('binary_maybe' as binary))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_complex_struct
+POSTHOOK: query: INSERT INTO test_complex_struct SELECT named_struct("tinyint_type", cast(1 as tinyint), "smallint_type", cast(2 as smallint), "bigint_type", cast(3 as bigint), "int_type", 4, "float_type", cast(2.2 as float), "double_type", cast(2.2 as double), "decimal_type", cast(20.22 as decimal(4,2)), "timestamp_type", cast('2022-06-30 10:20:30' as timestamp), "date_type", cast('2020-04-23' as date), "string_type", 'str1', "varchar_type", cast('varchar1' as varchar(100)), "char_type", cast('char' as char(34)), "boolean_type", true, "binary_type", cast('binary_maybe' as binary))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_complex_struct
+POSTHOOK: Lineage: test_complex_struct.struct_type EXPRESSION []
+PREHOOK: query: SELECT * FROM test_complex_struct
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_complex_struct
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM test_complex_struct
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_complex_struct
+#### A masked pattern was here ####
+{"tinyint_type":1,"smallint_type":2,"bigint_type":3,"int_type":4,"float_type":2.2,"double_type":2.2,"decimal_type":20.22,"timestamp_type":"2022-06-30 10:20:30","date_type":"2020-04-23","string_type":"str1","varchar_type":"varchar1","char_type":"char                              ","boolean_type":true,"binary_type":binary_maybe}
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@like_test_complex_struct
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@like_test_complex_struct
+PREHOOK: query: DESCRIBE like_test_complex_struct
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@like_test_complex_struct
+POSTHOOK: query: DESCRIBE like_test_complex_struct
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@like_test_complex_struct
+struct_type         	struct<tinyint_type:tinyint,smallint_type:smallint,bigint_type:bigint,int_type:int,float_type:float,double_type:double,decimal_type:decimal(4,2),timestamp_type:timestamp,date_type:date,string_type:string,varchar_type:string,char_type:string,boolean_type:boolean,binary_type:binary>	Inferred from Parquet file.
+PREHOOK: query: INSERT INTO like_test_complex_struct SELECT named_struct("tinyint_type", cast(1 as tinyint), "smallint_type", cast(2 as smallint), "bigint_type", cast(3 as bigint), "int_type", 4, "float_type", cast(2.2 as float), "double_type", cast(2.2 as double), "decimal_type", cast(20.22 as decimal(4,2)), "timestamp_type", cast('2022-06-30 10:20:30' as timestamp), "date_type", cast('2020-04-23' as date), "string_type", 'str1', "varchar_type", 'varchar1', "char_type", 'char', "boolean_type", true, "binary_type", cast('binary_maybe' as binary))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@like_test_complex_struct
+POSTHOOK: query: INSERT INTO like_test_complex_struct SELECT named_struct("tinyint_type", cast(1 as tinyint), "smallint_type", cast(2 as smallint), "bigint_type", cast(3 as bigint), "int_type", 4, "float_type", cast(2.2 as float), "double_type", cast(2.2 as double), "decimal_type", cast(20.22 as decimal(4,2)), "timestamp_type", cast('2022-06-30 10:20:30' as timestamp), "date_type", cast('2020-04-23' as date), "string_type", 'str1', "varchar_type", 'varchar1', "char_type", 'char', "boolean_type", true, "binary_type", cast('binary_maybe' as binary))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@like_test_complex_struct
+POSTHOOK: Lineage: like_test_complex_struct.struct_type EXPRESSION []
+PREHOOK: query: SELECT * FROM like_test_complex_struct
+PREHOOK: type: QUERY
+PREHOOK: Input: default@like_test_complex_struct
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM like_test_complex_struct
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@like_test_complex_struct
+#### A masked pattern was here ####
+{"tinyint_type":1,"smallint_type":2,"bigint_type":3,"int_type":4,"float_type":2.2,"double_type":2.2,"decimal_type":20.22,"timestamp_type":"2022-06-30 10:20:30","date_type":"2020-04-23","string_type":"str1","varchar_type":"varchar1","char_type":"char","boolean_type":true,"binary_type":binary_maybe}
+PREHOOK: query: DROP TABLE like_test_complex_struct
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@like_test_complex_struct
+PREHOOK: Output: database:default
+PREHOOK: Output: default@like_test_complex_struct
+POSTHOOK: query: DROP TABLE like_test_complex_struct
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@like_test_complex_struct
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@like_test_complex_struct
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_complex_complex
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_complex_complex
+PREHOOK: query: DESCRIBE test_complex_complex
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_complex_complex
+POSTHOOK: query: DESCRIBE test_complex_complex
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_complex_complex
+struct_type         	struct<i:int,s:string,m:map<string,array<int>>,struct_i:struct<str:string>>	                    
+PREHOOK: query: INSERT INTO test_complex_complex SELECT named_struct("i", 10, "s", "hello, world", "m", map("arr", array(1,2,3,4)), "struct_i", named_struct("str", "test_str"))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_complex_complex
+POSTHOOK: query: INSERT INTO test_complex_complex SELECT named_struct("i", 10, "s", "hello, world", "m", map("arr", array(1,2,3,4)), "struct_i", named_struct("str", "test_str"))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_complex_complex
+POSTHOOK: Lineage: test_complex_complex.struct_type EXPRESSION []
+PREHOOK: query: SELECT * FROM test_complex_complex
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_complex_complex
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM test_complex_complex
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_complex_complex
+#### A masked pattern was here ####
+{"i":10,"s":"hello, world","m":{"arr":[1,2,3,4]},"struct_i":{"str":"test_str"}}
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@like_test_complex_complex
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@like_test_complex_complex
+PREHOOK: query: DESCRIBE like_test_complex_complex
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@like_test_complex_complex
+POSTHOOK: query: DESCRIBE like_test_complex_complex
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@like_test_complex_complex
+struct_type         	struct<i:int,s:string,m:map<string,array<int>>,struct_i:struct<str:string>>	Inferred from Parquet file.
+PREHOOK: query: INSERT INTO like_test_complex_complex SELECT named_struct("i", 10, "s", "hello, world", "m", map("arr", array(1,2,3,4)), "struct_i", named_struct("str", "test_str"))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@like_test_complex_complex
+POSTHOOK: query: INSERT INTO like_test_complex_complex SELECT named_struct("i", 10, "s", "hello, world", "m", map("arr", array(1,2,3,4)), "struct_i", named_struct("str", "test_str"))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@like_test_complex_complex
+POSTHOOK: Lineage: like_test_complex_complex.struct_type EXPRESSION []
+PREHOOK: query: SELECT * FROM like_test_complex_complex
+PREHOOK: type: QUERY
+PREHOOK: Input: default@like_test_complex_complex
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM like_test_complex_complex
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@like_test_complex_complex
+#### A masked pattern was here ####
+{"i":10,"s":"hello, world","m":{"arr":[1,2,3,4]},"struct_i":{"str":"test_str"}}
+PREHOOK: query: DROP TABLE like_test_complex_complex
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@like_test_complex_complex
+PREHOOK: Output: database:default
+PREHOOK: Output: default@like_test_complex_complex
+POSTHOOK: query: DROP TABLE like_test_complex_complex
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@like_test_complex_complex
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@like_test_complex_complex
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@like_test_partitioning
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@like_test_partitioning
+PREHOOK: query: DESCRIBE like_test_partitioning
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@like_test_partitioning
+POSTHOOK: query: DESCRIBE like_test_partitioning
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@like_test_partitioning
+tinyint_type        	tinyint             	Inferred from Parquet file.
+smallint_type       	smallint            	Inferred from Parquet file.
+bigint_type         	bigint              	Inferred from Parquet file.
+int_type            	int                 	Inferred from Parquet file.
+float_type          	float               	Inferred from Parquet file.
+double_type         	double              	Inferred from Parquet file.
+decimal_type        	decimal(4,2)        	Inferred from Parquet file.
+timestamp_type      	timestamp           	Inferred from Parquet file.
+date_type           	date                	Inferred from Parquet file.
+string_type         	string              	Inferred from Parquet file.
+varchar_type        	string              	Inferred from Parquet file.
+char_type           	string              	Inferred from Parquet file.
+boolean_type        	boolean             	Inferred from Parquet file.
+binary_type         	binary              	Inferred from Parquet file.
+year                	string              	                    
+month               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+year                	string              	                    
+month               	string              	                    
+PREHOOK: query: INSERT INTO like_test_partitioning PARTITION (year='1984', month='1') VALUES (1, 2, 3, 4, 2.2, 2.2, 20.20, '2022-06-30 10:20:30', '2020-04-23', 'str1', 'varchar1', 'char', true, 'binary_maybe'),
+       (1, 2, 3, 4, 2.2, 2.2, 20.20, '2022-06-30 10:20:30', '2020-04-23', 'str1', 'varchar1', 'char', true, 'binary_maybe')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@like_test_partitioning@year=1984/month=1
+POSTHOOK: query: INSERT INTO like_test_partitioning PARTITION (year='1984', month='1') VALUES (1, 2, 3, 4, 2.2, 2.2, 20.20, '2022-06-30 10:20:30', '2020-04-23', 'str1', 'varchar1', 'char', true, 'binary_maybe'),
+       (1, 2, 3, 4, 2.2, 2.2, 20.20, '2022-06-30 10:20:30', '2020-04-23', 'str1', 'varchar1', 'char', true, 'binary_maybe')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@like_test_partitioning@year=1984/month=1
+POSTHOOK: Lineage: like_test_partitioning PARTITION(year=1984,month=1).bigint_type SCRIPT []
+POSTHOOK: Lineage: like_test_partitioning PARTITION(year=1984,month=1).binary_type SCRIPT []
+POSTHOOK: Lineage: like_test_partitioning PARTITION(year=1984,month=1).boolean_type SCRIPT []
+POSTHOOK: Lineage: like_test_partitioning PARTITION(year=1984,month=1).char_type SCRIPT []
+POSTHOOK: Lineage: like_test_partitioning PARTITION(year=1984,month=1).date_type SCRIPT []
+POSTHOOK: Lineage: like_test_partitioning PARTITION(year=1984,month=1).decimal_type SCRIPT []
+POSTHOOK: Lineage: like_test_partitioning PARTITION(year=1984,month=1).double_type SCRIPT []
+POSTHOOK: Lineage: like_test_partitioning PARTITION(year=1984,month=1).float_type SCRIPT []
+POSTHOOK: Lineage: like_test_partitioning PARTITION(year=1984,month=1).int_type SCRIPT []
+POSTHOOK: Lineage: like_test_partitioning PARTITION(year=1984,month=1).smallint_type SCRIPT []
+POSTHOOK: Lineage: like_test_partitioning PARTITION(year=1984,month=1).string_type SCRIPT []
+POSTHOOK: Lineage: like_test_partitioning PARTITION(year=1984,month=1).timestamp_type SCRIPT []
+POSTHOOK: Lineage: like_test_partitioning PARTITION(year=1984,month=1).tinyint_type SCRIPT []
+POSTHOOK: Lineage: like_test_partitioning PARTITION(year=1984,month=1).varchar_type SCRIPT []
+PREHOOK: query: SELECT * FROM like_test_partitioning
+PREHOOK: type: QUERY
+PREHOOK: Input: default@like_test_partitioning
+PREHOOK: Input: default@like_test_partitioning@year=1984/month=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM like_test_partitioning
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@like_test_partitioning
+POSTHOOK: Input: default@like_test_partitioning@year=1984/month=1
+#### A masked pattern was here ####
+1	2	3	4	2.2	2.2	20.20	2022-06-30 10:20:30	2020-04-23	str1	varchar1	char	true	binary_maybe	1984	1
+1	2	3	4	2.2	2.2	20.20	2022-06-30 10:20:30	2020-04-23	str1	varchar1	char	true	binary_maybe	1984	1
+PREHOOK: query: DROP TABLE like_test_partitioning
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@like_test_partitioning
+PREHOOK: Output: database:default
+PREHOOK: Output: default@like_test_partitioning
+POSTHOOK: query: DROP TABLE like_test_partitioning
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@like_test_partitioning
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@like_test_partitioning

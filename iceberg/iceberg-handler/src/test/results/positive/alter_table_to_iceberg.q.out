@@ -1,0 +1,574 @@
+PREHOOK: query: drop table if exists tbl_orc
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists tbl_orc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create external table tbl_orc(a int, b string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_orc
+POSTHOOK: query: create external table tbl_orc(a int, b string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_orc
+PREHOOK: query: describe formatted tbl_orc
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_orc
+POSTHOOK: query: describe formatted tbl_orc
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_orc
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: insert into table tbl_orc values (1, 'one'), (2, 'two'), (3, 'three'), (4, 'four'), (5, 'five')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_orc
+POSTHOOK: query: insert into table tbl_orc values (1, 'one'), (2, 'two'), (3, 'three'), (4, 'four'), (5, 'five')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_orc
+POSTHOOK: Lineage: tbl_orc.a SCRIPT []
+POSTHOOK: Lineage: tbl_orc.b SCRIPT []
+PREHOOK: query: select * from tbl_orc order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_orc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_orc order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_orc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	one
+2	two
+3	three
+4	four
+5	five
+PREHOOK: query: explain alter table tbl_orc convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: Input: default@tbl_orc
+POSTHOOK: query: explain alter table tbl_orc convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: Input: default@tbl_orc
+Stage-0
+  Convert operation{"table name:":"default.tbl_orc","spec:":"AlterTableConvertSpec{ConvertTo=iceberg, TBLProperties={}}"}
+
+PREHOOK: query: alter table tbl_orc convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: Input: default@tbl_orc
+POSTHOOK: query: alter table tbl_orc convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: Input: default@tbl_orc
+POSTHOOK: Output: default@tbl_orc
+PREHOOK: query: describe formatted tbl_orc
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_orc
+POSTHOOK: query: describe formatted tbl_orc
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_orc
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
+	EXTERNAL            	TRUE                
+	MIGRATED_TO_ICEBERG 	true                
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"a\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"b\",\"required\":false,\"type\":\"string\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"5\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"5\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"1\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	format-version      	2                   
+	iceberg.orc.files.only	true                
+#### A masked pattern was here ####
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	1                   
+	numRows             	5                   
+	parquet.compression 	zstd                
+	previous_metadata_location	hdfs://### HDFS PATH ###
+	rawDataSize         	455                 
+	schema.name-mapping.default	[ {                 
+	                           	  \"field-id\" : 1, 
+	                           	  \"names\" : [ \"a\" ]
+	                           	}, {                
+	                           	  \"field-id\" : 2, 
+	                           	  \"names\" : [ \"b\" ]
+	                           	} ]                 
+	snapshot-count      	1                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.format.default	orc                 
+	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: select * from tbl_orc order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_orc
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_orc order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_orc
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	one
+2	two
+3	three
+4	four
+5	five
+PREHOOK: query: drop table tbl_orc
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tbl_orc
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_orc
+POSTHOOK: query: drop table tbl_orc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tbl_orc
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_orc
+PREHOOK: query: drop table if exists tbl_parquet
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists tbl_parquet
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create external table tbl_parquet(a int, b string) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_parquet
+POSTHOOK: query: create external table tbl_parquet(a int, b string) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_parquet
+PREHOOK: query: describe formatted tbl_parquet
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_parquet
+POSTHOOK: query: describe formatted tbl_parquet
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_parquet
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: insert into table tbl_parquet values (1, 'one'), (2, 'two'), (3, 'three'), (4, 'four'), (5, 'five')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet
+POSTHOOK: query: insert into table tbl_parquet values (1, 'one'), (2, 'two'), (3, 'three'), (4, 'four'), (5, 'five')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet
+POSTHOOK: Lineage: tbl_parquet.a SCRIPT []
+POSTHOOK: Lineage: tbl_parquet.b SCRIPT []
+PREHOOK: query: select * from tbl_parquet order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_parquet order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	one
+2	two
+3	three
+4	four
+5	five
+PREHOOK: query: explain alter table tbl_parquet convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: Input: default@tbl_parquet
+POSTHOOK: query: explain alter table tbl_parquet convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: Input: default@tbl_parquet
+Stage-0
+  Convert operation{"table name:":"default.tbl_parquet","spec:":"AlterTableConvertSpec{ConvertTo=iceberg, TBLProperties={}}"}
+
+PREHOOK: query: alter table tbl_parquet convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: Input: default@tbl_parquet
+POSTHOOK: query: alter table tbl_parquet convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: Input: default@tbl_parquet
+POSTHOOK: Output: default@tbl_parquet
+PREHOOK: query: describe formatted tbl_parquet
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_parquet
+POSTHOOK: query: describe formatted tbl_parquet
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_parquet
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
+	EXTERNAL            	TRUE                
+	MIGRATED_TO_ICEBERG 	true                
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"a\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"b\",\"required\":false,\"type\":\"string\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"5\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"5\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"1\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	format-version      	2                   
+	iceberg.orc.files.only	false               
+#### A masked pattern was here ####
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	1                   
+	numRows             	5                   
+	parquet.compression 	zstd                
+	previous_metadata_location	hdfs://### HDFS PATH ###
+	rawDataSize         	116                 
+	schema.name-mapping.default	[ {                 
+	                           	  \"field-id\" : 1, 
+	                           	  \"names\" : [ \"a\" ]
+	                           	}, {                
+	                           	  \"field-id\" : 2, 
+	                           	  \"names\" : [ \"b\" ]
+	                           	} ]                 
+	snapshot-count      	1                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.format.default	parquet             
+	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: select * from tbl_parquet order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_parquet order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	one
+2	two
+3	three
+4	four
+5	five
+PREHOOK: query: drop table tbl_parquet
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tbl_parquet
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_parquet
+POSTHOOK: query: drop table tbl_parquet
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tbl_parquet
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_parquet
+PREHOOK: query: drop table if exists tbl_avro
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists tbl_avro
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create external table tbl_avro(a int, b string) stored as avro
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_avro
+POSTHOOK: query: create external table tbl_avro(a int, b string) stored as avro
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_avro
+PREHOOK: query: describe formatted tbl_avro
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_avro
+POSTHOOK: query: describe formatted tbl_avro
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_avro
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.avro.AvroSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: insert into table tbl_avro values (1, 'one'), (2, 'two'), (3, 'three'), (4, 'four'), (5, 'five')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_avro
+POSTHOOK: query: insert into table tbl_avro values (1, 'one'), (2, 'two'), (3, 'three'), (4, 'four'), (5, 'five')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_avro
+POSTHOOK: Lineage: tbl_avro.a SCRIPT []
+POSTHOOK: Lineage: tbl_avro.b SCRIPT []
+PREHOOK: query: select * from tbl_avro order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_avro
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_avro order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_avro
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	one
+2	two
+3	three
+4	four
+5	five
+PREHOOK: query: explain alter table tbl_avro convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: Input: default@tbl_avro
+POSTHOOK: query: explain alter table tbl_avro convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: Input: default@tbl_avro
+Stage-0
+  Convert operation{"table name:":"default.tbl_avro","spec:":"AlterTableConvertSpec{ConvertTo=iceberg, TBLProperties={}}"}
+
+PREHOOK: query: alter table tbl_avro convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: Input: default@tbl_avro
+POSTHOOK: query: alter table tbl_avro convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: Input: default@tbl_avro
+POSTHOOK: Output: default@tbl_avro
+PREHOOK: query: describe formatted tbl_avro
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_avro
+POSTHOOK: query: describe formatted tbl_avro
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_avro
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
+	EXTERNAL            	TRUE                
+	MIGRATED_TO_ICEBERG 	true                
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"a\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"b\",\"required\":false,\"type\":\"string\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"5\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"5\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"1\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	format-version      	2                   
+	iceberg.orc.files.only	false               
+#### A masked pattern was here ####
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	1                   
+	numRows             	5                   
+	parquet.compression 	zstd                
+	previous_metadata_location	hdfs://### HDFS PATH ###
+	rawDataSize         	0                   
+	schema.name-mapping.default	[ {                 
+	                           	  \"field-id\" : 1, 
+	                           	  \"names\" : [ \"a\" ]
+	                           	}, {                
+	                           	  \"field-id\" : 2, 
+	                           	  \"names\" : [ \"b\" ]
+	                           	} ]                 
+	snapshot-count      	1                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.format.default	avro                
+	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: select * from tbl_avro order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_avro
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_avro order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_avro
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	one
+2	two
+3	three
+4	four
+5	five
+PREHOOK: query: drop table tbl_avro
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tbl_avro
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_avro
+POSTHOOK: query: drop table tbl_avro
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tbl_avro
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_avro
+PREHOOK: query: drop table if exists part_tbl_parquet
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists part_tbl_parquet
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create external table part_tbl_parquet (a int) partitioned by (s string) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@part_tbl_parquet
+POSTHOOK: query: create external table part_tbl_parquet (a int) partitioned by (s string) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@part_tbl_parquet
+PREHOOK: query: insert into part_tbl_parquet partition (s) values (1, '2023/05/18')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@part_tbl_parquet
+POSTHOOK: query: insert into part_tbl_parquet partition (s) values (1, '2023/05/18')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@part_tbl_parquet
+POSTHOOK: Output: default@part_tbl_parquet@s=2023%2F05%2F18
+POSTHOOK: Lineage: part_tbl_parquet PARTITION(s=2023/05/18).a SCRIPT []
+PREHOOK: query: select * from part_tbl_parquet
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_tbl_parquet
+PREHOOK: Input: default@part_tbl_parquet@s=2023%2F05%2F18
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from part_tbl_parquet
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_tbl_parquet
+POSTHOOK: Input: default@part_tbl_parquet@s=2023%2F05%2F18
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	2023/05/18
+PREHOOK: query: alter table part_tbl_parquet convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: Input: default@part_tbl_parquet
+POSTHOOK: query: alter table part_tbl_parquet convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: Input: default@part_tbl_parquet
+POSTHOOK: Output: default@part_tbl_parquet
+PREHOOK: query: select * from part_tbl_parquet
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_tbl_parquet
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from part_tbl_parquet
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_tbl_parquet
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	2023/05/18
+PREHOOK: query: drop table part_tbl_parquet
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@part_tbl_parquet
+PREHOOK: Output: database:default
+PREHOOK: Output: default@part_tbl_parquet
+POSTHOOK: query: drop table part_tbl_parquet
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@part_tbl_parquet
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@part_tbl_parquet

@@ -1,0 +1,241 @@
+PREHOOK: query: create table src_b3(`x+1` string, `!@#$%^&*()_q` string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_b3
+POSTHOOK: query: create table src_b3(`x+1` string, `!@#$%^&*()_q` string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_b3
+PREHOOK: query: alter table src_b3 
+clustered by (`!@#$%^&*()_q`) sorted by (`!@#$%^&*()_q`) into 2 buckets
+PREHOOK: type: ALTERTABLE_CLUSTER_SORT
+PREHOOK: Input: default@src_b3
+PREHOOK: Output: default@src_b3
+POSTHOOK: query: alter table src_b3 
+clustered by (`!@#$%^&*()_q`) sorted by (`!@#$%^&*()_q`) into 2 buckets
+POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
+POSTHOOK: Input: default@src_b3
+POSTHOOK: Output: default@src_b3
+PREHOOK: query: create table src_p3(`x+1` string, `y&y` string) partitioned by (`!@#$%^&*()_q` string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_p3
+POSTHOOK: query: create table src_p3(`x+1` string, `y&y` string) partitioned by (`!@#$%^&*()_q` string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_p3
+PREHOOK: query: insert overwrite table src_p3 partition(`!@#$%^&*()_q`='a') select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_p3@!@%23$%25%5E&%2A()_q=a
+POSTHOOK: query: insert overwrite table src_p3 partition(`!@#$%^&*()_q`='a') select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_p3@!@%23$%25%5E&%2A()_q=a
+POSTHOOK: Lineage: src_p3 PARTITION(!@#$%^&*()_q=a).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p3 PARTITION(!@#$%^&*()_q=a).y&y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table src_p3 partition(`!@#$%^&*()_q`='d') select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_p3@!@%23$%25%5E&%2A()_q=d
+POSTHOOK: query: insert overwrite table src_p3 partition(`!@#$%^&*()_q`='d') select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_p3@!@%23$%25%5E&%2A()_q=d
+POSTHOOK: Lineage: src_p3 PARTITION(!@#$%^&*()_q=d).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p3 PARTITION(!@#$%^&*()_q=d).y&y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: show partitions src_p3
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@src_p3
+POSTHOOK: query: show partitions src_p3
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@src_p3
+!@%23$%25%5E&%2A()_q=a
+!@%23$%25%5E&%2A()_q=d
+PREHOOK: query: analyze table src_p3 partition(`!@#$%^&*()_q`) compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@src_p3
+PREHOOK: Input: default@src_p3@!@%23$%25%5E&%2A()_q=a
+PREHOOK: Input: default@src_p3@!@%23$%25%5E&%2A()_q=d
+PREHOOK: Output: default@src_p3
+PREHOOK: Output: default@src_p3@!@%23$%25%5E&%2A()_q=a
+PREHOOK: Output: default@src_p3@!@%23$%25%5E&%2A()_q=d
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table src_p3 partition(`!@#$%^&*()_q`) compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@src_p3
+POSTHOOK: Input: default@src_p3@!@%23$%25%5E&%2A()_q=a
+POSTHOOK: Input: default@src_p3@!@%23$%25%5E&%2A()_q=d
+POSTHOOK: Output: default@src_p3
+POSTHOOK: Output: default@src_p3@!@%23$%25%5E&%2A()_q=a
+POSTHOOK: Output: default@src_p3@!@%23$%25%5E&%2A()_q=d
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted src_p3 PARTITION(`!@#$%^&*()_q`='a') `x+1`
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_p3
+POSTHOOK: query: describe formatted src_p3 PARTITION(`!@#$%^&*()_q`='a') `x+1`
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_p3
+col_name            	x+1                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	316                 
+avg_col_len         	2.812               
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: alter table src_p3 add if not exists partition(`!@#$%^&*()_q`='b')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@src_p3
+POSTHOOK: query: alter table src_p3 add if not exists partition(`!@#$%^&*()_q`='b')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@src_p3
+POSTHOOK: Output: default@src_p3@!@%23$%25%5E&%2A()_q=b
+PREHOOK: query: show partitions src_p3
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@src_p3
+POSTHOOK: query: show partitions src_p3
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@src_p3
+!@%23$%25%5E&%2A()_q=a
+!@%23$%25%5E&%2A()_q=b
+!@%23$%25%5E&%2A()_q=d
+PREHOOK: query: analyze table src_p3 partition(`!@#$%^&*()_q`) compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@src_p3
+PREHOOK: Input: default@src_p3@!@%23$%25%5E&%2A()_q=a
+PREHOOK: Input: default@src_p3@!@%23$%25%5E&%2A()_q=b
+PREHOOK: Input: default@src_p3@!@%23$%25%5E&%2A()_q=d
+PREHOOK: Output: default@src_p3
+PREHOOK: Output: default@src_p3@!@%23$%25%5E&%2A()_q=a
+PREHOOK: Output: default@src_p3@!@%23$%25%5E&%2A()_q=b
+PREHOOK: Output: default@src_p3@!@%23$%25%5E&%2A()_q=d
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table src_p3 partition(`!@#$%^&*()_q`) compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@src_p3
+POSTHOOK: Input: default@src_p3@!@%23$%25%5E&%2A()_q=a
+POSTHOOK: Input: default@src_p3@!@%23$%25%5E&%2A()_q=b
+POSTHOOK: Input: default@src_p3@!@%23$%25%5E&%2A()_q=d
+POSTHOOK: Output: default@src_p3
+POSTHOOK: Output: default@src_p3@!@%23$%25%5E&%2A()_q=a
+POSTHOOK: Output: default@src_p3@!@%23$%25%5E&%2A()_q=b
+POSTHOOK: Output: default@src_p3@!@%23$%25%5E&%2A()_q=d
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted src_p3 PARTITION(`!@#$%^&*()_q`='a') `x+1`
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_p3
+POSTHOOK: query: describe formatted src_p3 PARTITION(`!@#$%^&*()_q`='a') `x+1`
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_p3
+col_name            	x+1                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	316                 
+avg_col_len         	2.812               
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted src_p3 PARTITION(`!@#$%^&*()_q`='b') `x+1`
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_p3
+POSTHOOK: query: describe formatted src_p3 PARTITION(`!@#$%^&*()_q`='b') `x+1`
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_p3
+col_name            	x+1                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+PREHOOK: query: alter table src_p3 partition(`!@#$%^&*()_q`='b') rename to partition(`!@#$%^&*()_q`='c')
+PREHOOK: type: ALTERTABLE_RENAMEPART
+PREHOOK: Input: default@src_p3
+PREHOOK: Output: default@src_p3@!@%23$%25%5E&%2A()_q=b
+POSTHOOK: query: alter table src_p3 partition(`!@#$%^&*()_q`='b') rename to partition(`!@#$%^&*()_q`='c')
+POSTHOOK: type: ALTERTABLE_RENAMEPART
+POSTHOOK: Input: default@src_p3
+POSTHOOK: Input: default@src_p3@!@%23$%25%5E&%2A()_q=b
+POSTHOOK: Output: default@src_p3@!@%23$%25%5E&%2A()_q=b
+POSTHOOK: Output: default@src_p3@!@%23$%25%5E&%2A()_q=c
+PREHOOK: query: show partitions src_p3
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@src_p3
+POSTHOOK: query: show partitions src_p3
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@src_p3
+!@%23$%25%5E&%2A()_q=a
+!@%23$%25%5E&%2A()_q=c
+!@%23$%25%5E&%2A()_q=d
+PREHOOK: query: analyze table src_p3 partition(`!@#$%^&*()_q`) compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@src_p3
+PREHOOK: Input: default@src_p3@!@%23$%25%5E&%2A()_q=a
+PREHOOK: Input: default@src_p3@!@%23$%25%5E&%2A()_q=c
+PREHOOK: Input: default@src_p3@!@%23$%25%5E&%2A()_q=d
+PREHOOK: Output: default@src_p3
+PREHOOK: Output: default@src_p3@!@%23$%25%5E&%2A()_q=a
+PREHOOK: Output: default@src_p3@!@%23$%25%5E&%2A()_q=c
+PREHOOK: Output: default@src_p3@!@%23$%25%5E&%2A()_q=d
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table src_p3 partition(`!@#$%^&*()_q`) compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@src_p3
+POSTHOOK: Input: default@src_p3@!@%23$%25%5E&%2A()_q=a
+POSTHOOK: Input: default@src_p3@!@%23$%25%5E&%2A()_q=c
+POSTHOOK: Input: default@src_p3@!@%23$%25%5E&%2A()_q=d
+POSTHOOK: Output: default@src_p3
+POSTHOOK: Output: default@src_p3@!@%23$%25%5E&%2A()_q=a
+POSTHOOK: Output: default@src_p3@!@%23$%25%5E&%2A()_q=c
+POSTHOOK: Output: default@src_p3@!@%23$%25%5E&%2A()_q=d
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted src_p3 PARTITION(`!@#$%^&*()_q`='a') `x+1`
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_p3
+POSTHOOK: query: describe formatted src_p3 PARTITION(`!@#$%^&*()_q`='a') `x+1`
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_p3
+col_name            	x+1                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	316                 
+avg_col_len         	2.812               
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe formatted src_p3 PARTITION(`!@#$%^&*()_q`='c') `x+1`
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_p3
+POSTHOOK: query: describe formatted src_p3 PARTITION(`!@#$%^&*()_q`='c') `x+1`
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_p3
+col_name            	x+1                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   

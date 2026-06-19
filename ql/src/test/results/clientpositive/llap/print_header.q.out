@@ -1,0 +1,55 @@
+Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: SELECT src1.key as k1, src1.value as v1, 
+         src2.key as k2, src2.value as v2
+    FROM (SELECT * FROM src WHERE src.key < 10) src1 
+    JOIN (SELECT * FROM src WHERE src.key < 10) src2
+ORDER BY k1, v1, k2, v2
+   LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT src1.key as k1, src1.value as v1, 
+         src2.key as k2, src2.value as v2
+    FROM (SELECT * FROM src WHERE src.key < 10) src1 
+    JOIN (SELECT * FROM src WHERE src.key < 10) src2
+ORDER BY k1, v1, k2, v2
+   LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+k1	v1	k2	v2
+0	val_0	0	val_0
+0	val_0	0	val_0
+0	val_0	0	val_0
+0	val_0	0	val_0
+0	val_0	0	val_0
+0	val_0	0	val_0
+0	val_0	0	val_0
+0	val_0	0	val_0
+0	val_0	0	val_0
+0	val_0	2	val_2
+PREHOOK: query: SELECT src.key, sum(substr(src.value,5)) FROM src GROUP BY src.key ORDER BY src.key LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT src.key, sum(substr(src.value,5)) FROM src GROUP BY src.key ORDER BY src.key LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+src.key	_c1
+0	0.0
+10	10.0
+100	200.0
+103	206.0
+104	208.0
+105	105.0
+11	11.0
+111	111.0
+113	226.0
+114	114.0
+PREHOOK: query: use default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: use default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default

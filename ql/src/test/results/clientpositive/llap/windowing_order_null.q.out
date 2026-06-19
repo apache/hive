@@ -1,0 +1,185 @@
+PREHOOK: query: drop table over10k
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table over10k
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table over10k(
+           t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+	   ts timestamp, 
+           `dec` decimal,  
+           bin binary)
+       row format delimited
+       fields terminated by '|'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@over10k
+POSTHOOK: query: create table over10k(
+           t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+	   ts timestamp, 
+           `dec` decimal,  
+           bin binary)
+       row format delimited
+       fields terminated by '|'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@over10k
+PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@over10k
+POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@over10k
+PREHOOK: query: load data local inpath '../../data/files/over4_null' into table over10k
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@over10k
+POSTHOOK: query: load data local inpath '../../data/files/over4_null' into table over10k
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@over10k
+PREHOOK: query: select i, s, b, sum(b) over (partition by i order by s nulls last,b rows unbounded preceding) from over10k limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select i, s, b, sum(b) over (partition by i order by s nulls last,b rows unbounded preceding) from over10k limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+NULL	alice ichabod	NULL	NULL
+NULL	NULL	NULL	NULL
+65534	calvin miller	NULL	NULL
+65534	NULL	NULL	NULL
+65536	alice ichabod	4294967441	4294967441
+65536	alice robinson	4294967476	8589934917
+65536	bob robinson	4294967349	12884902266
+65536	calvin thompson	4294967336	17179869602
+65536	david johnson	4294967490	21474837092
+65536	david laertes	4294967431	25769804523
+PREHOOK: query: select d, s, f, sum(f) over (partition by d order by s,f desc nulls first rows unbounded preceding) from over10k limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select d, s, f, sum(f) over (partition by d order by s,f desc nulls first rows unbounded preceding) from over10k limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+NULL	alice ichabod	NULL	NULL
+NULL	calvin miller	NULL	NULL
+0.01	calvin miller	8.39	8.390000343322754
+0.01	NULL	NULL	8.390000343322754
+0.01	NULL	NULL	8.390000343322754
+0.02	holly polk	5.29	5.289999961853027
+0.02	wendy quirinius	25.5	30.789999961853027
+0.02	yuri laertes	37.59	68.38000011444092
+0.02	NULL	NULL	68.38000011444092
+0.03	nick steinbeck	79.24	79.23999786376953
+PREHOOK: query: select ts, s, f, sum(f) over (partition by ts order by f asc nulls first range between current row and unbounded following) from over10k limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select ts, s, f, sum(f) over (partition by ts order by f asc nulls first range between current row and unbounded following) from over10k limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+2013-03-01 09:11:58.70307	NULL	NULL	1276.850001335144
+2013-03-01 09:11:58.70307	gabriella xylophone	3.17	1276.850001335144
+2013-03-01 09:11:58.70307	calvin brown	10.89	1273.68000125885
+2013-03-01 09:11:58.70307	jessica laertes	14.54	1262.7900009155273
+2013-03-01 09:11:58.70307	yuri allen	14.78	1248.2500009536743
+2013-03-01 09:11:58.70307	tom johnson	17.85	1233.4700012207031
+2013-03-01 09:11:58.70307	bob ovid	20.61	1215.6200008392334
+2013-03-01 09:11:58.70307	fred nixon	28.69	1195.0100002288818
+2013-03-01 09:11:58.70307	oscar brown	29.22	1166.3199996948242
+2013-03-01 09:11:58.70307	calvin laertes	31.17	1137.1000003814697
+PREHOOK: query: select t, s, d, avg(d) over (partition by t order by s,d desc nulls first rows between 5 preceding and 5 following) from over10k limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select t, s, d, avg(d) over (partition by t order by s,d desc nulls first rows between 5 preceding and 5 following) from over10k limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+-3	alice allen	29.44	33.20166666666666
+-3	alice davidson	31.52	30.741428571428568
+-3	alice falkner	49.8	27.742499999999996
+-3	alice king	41.5	26.706666666666663
+-3	alice king	30.76	26.306999999999995
+-3	alice xylophone	16.19	24.458181818181814
+-3	bob ellison	15.98	25.029090909090908
+-3	bob falkner	6.75	24.216363636363635
+-3	bob ichabod	18.42	20.173636363636362
+-3	bob johnson	22.71	16.431818181818176
+PREHOOK: query: select ts, s, sum(i) over(partition by ts order by s nulls last) from over10k limit 10 offset 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select ts, s, sum(i) over(partition by ts order by s nulls last) from over10k limit 10 offset 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+2013-03-01 09:11:58.70307	calvin steinbeck	262874
+2013-03-01 09:11:58.70307	david falkner	328506
+2013-03-01 09:11:58.70307	fred nixon	394118
+2013-03-01 09:11:58.70307	fred zipper	459719
+2013-03-01 09:11:58.70307	gabriella van buren	525334
+2013-03-01 09:11:58.70307	gabriella xylophone	591058
+2013-03-01 09:11:58.70307	jessica laertes	656771
+2013-03-01 09:11:58.70307	jessica polk	722558
+2013-03-01 09:11:58.70307	katie king	788310
+2013-03-01 09:11:58.70307	katie white	853920
+PREHOOK: query: select s, i, round(sum(d) over (partition by s order by i desc nulls last) , 3) from over10k limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select s, i, round(sum(d) over (partition by s order by i desc nulls last) , 3) from over10k limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+NULL	65536	0.02
+NULL	65534	0.03
+NULL	NULL	0.04
+alice allen	65758	23.59
+alice allen	65720	43.98
+PREHOOK: query: select s, i, round(avg(d) over (partition by s order by i desc nulls last) / 10.0 , 3) from over10k limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select s, i, round(avg(d) over (partition by s order by i desc nulls last) / 10.0 , 3) from over10k limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+NULL	65536	0.002
+NULL	65534	0.002
+NULL	NULL	0.001
+alice allen	65758	2.359
+alice allen	65720	2.199
+PREHOOK: query: select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),3) from over10k window w1 as (partition by s order by i nulls last) limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),3) from over10k window w1 as (partition by s order by i nulls last) limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+NULL	65534	20.0
+NULL	65536	20.0
+NULL	NULL	20.0
+alice allen	65545	20.0
+alice allen	65557	20.0

@@ -1,0 +1,47 @@
+PREHOOK: query: drop view v
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: drop view v
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: create view v1 partitioned on (ds, hr) as select * from srcpart
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@srcpart
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v1
+POSTHOOK: query: create view v1 partitioned on (ds, hr) as select * from srcpart
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v1
+POSTHOOK: Lineage: v1.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v1.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create view v2 partitioned on (ds, hr) as select * from v1
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@v1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v2
+POSTHOOK: query: create view v2 partitioned on (ds, hr) as select * from v1
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@v1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v2
+POSTHOOK: Lineage: v2.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v2.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create view v3 partitioned on (ds, hr) as select * from v2
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@v1
+PREHOOK: Input: default@v2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v3
+POSTHOOK: query: create view v3 partitioned on (ds, hr) as select * from v2
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@v1
+POSTHOOK: Input: default@v2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v3
+POSTHOOK: Lineage: v3.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v3.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+FAILED: SemanticException Recursive view default.v1 detected (cycle: default.v1 -> default.v3 -> default.v2 -> default.v1).

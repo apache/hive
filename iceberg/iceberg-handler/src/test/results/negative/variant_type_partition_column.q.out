@@ -1,0 +1,18 @@
+PREHOOK: query: CREATE EXTERNAL TABLE variant_test_partition (
+  id INT,
+  data VARIANT
+) PARTITIONED BY spec (data)
+STORED BY ICEBERG tblproperties('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@variant_test_partition
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. org.apache.iceberg.exceptions.ValidationException: Cannot partition by non-primitive source field: variant
+PREHOOK: query: CREATE EXTERNAL TABLE variant_test_partition (
+  id INT,
+  data VARIANT
+) PARTITIONED BY spec (data)
+STORED BY ICEBERG tblproperties('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@variant_test_partition
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. org.apache.iceberg.exceptions.ValidationException: Cannot partition by non-primitive source field: variant

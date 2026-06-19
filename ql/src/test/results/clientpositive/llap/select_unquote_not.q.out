@@ -1,0 +1,94 @@
+PREHOOK: query: CREATE TABLE npe_test_n1 (key STRING, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@npe_test_n1
+POSTHOOK: query: CREATE TABLE npe_test_n1 (key STRING, value STRING) PARTITIONED BY (ds STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@npe_test_n1
+PREHOOK: query: INSERT OVERWRITE TABLE npe_test_n1 PARTITION(ds='2012-12-11')
+SELECT src.key, src.value FROM src WHERE key < '200'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@npe_test_n1@ds=2012-12-11
+POSTHOOK: query: INSERT OVERWRITE TABLE npe_test_n1 PARTITION(ds='2012-12-11')
+SELECT src.key, src.value FROM src WHERE key < '200'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@npe_test_n1@ds=2012-12-11
+POSTHOOK: Lineage: npe_test_n1 PARTITION(ds=2012-12-11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: npe_test_n1 PARTITION(ds=2012-12-11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE npe_test_n1 PARTITION(ds='2012-12-12')
+SELECT src.key, src.value FROM src WHERE key > '200'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@npe_test_n1@ds=2012-12-12
+POSTHOOK: query: INSERT OVERWRITE TABLE npe_test_n1 PARTITION(ds='2012-12-12')
+SELECT src.key, src.value FROM src WHERE key > '200'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@npe_test_n1@ds=2012-12-12
+POSTHOOK: Lineage: npe_test_n1 PARTITION(ds=2012-12-12).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: npe_test_n1 PARTITION(ds=2012-12-12).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT count(*) FROM npe_test_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@npe_test_n1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*) FROM npe_test_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@npe_test_n1
+#### A masked pattern was here ####
+498
+PREHOOK: query: EXPLAIN SELECT * FROM npe_test_n1 WHERE NOT ds < 2012-11-31
+PREHOOK: type: QUERY
+PREHOOK: Input: default@npe_test_n1
+PREHOOK: Input: default@npe_test_n1@ds=2012-12-11
+PREHOOK: Input: default@npe_test_n1@ds=2012-12-12
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT * FROM npe_test_n1 WHERE NOT ds < 2012-11-31
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@npe_test_n1
+POSTHOOK: Input: default@npe_test_n1@ds=2012-12-11
+POSTHOOK: Input: default@npe_test_n1@ds=2012-12-12
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: npe_test_n1
+          filterExpr: (UDFToDouble(ds) >= 1970.0D) (type: boolean)
+          Filter Operator
+            predicate: (UDFToDouble(ds) >= 1970.0D) (type: boolean)
+            Select Operator
+              expressions: key (type: string), value (type: string), ds (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              ListSink
+
+PREHOOK: query: SELECT count(*) FROM npe_test_n1 WHERE NOT ds < 2012-11-31
+PREHOOK: type: QUERY
+PREHOOK: Input: default@npe_test_n1
+PREHOOK: Input: default@npe_test_n1@ds=2012-12-11
+PREHOOK: Input: default@npe_test_n1@ds=2012-12-12
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*) FROM npe_test_n1 WHERE NOT ds < 2012-11-31
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@npe_test_n1
+POSTHOOK: Input: default@npe_test_n1@ds=2012-12-11
+POSTHOOK: Input: default@npe_test_n1@ds=2012-12-12
+#### A masked pattern was here ####
+0
+PREHOOK: query: DROP TABLE npe_test_n1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@npe_test_n1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@npe_test_n1
+POSTHOOK: query: DROP TABLE npe_test_n1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@npe_test_n1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@npe_test_n1

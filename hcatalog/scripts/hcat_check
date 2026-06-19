@@ -1,0 +1,170 @@
+#!/usr/bin/env python
+
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# Script to check if hcat_server is reachable.
+# Checks if databases can be enumerated, and databases can be created/dropped.
+
+import sys, os, random, string, logging, logging.handlers
+from optparse import OptionParser
+from decimal import *
+
+def generate_random_id( length=8, charset=(string.ascii_lowercase + string.digits) ):
+  return ''.join(random.choice(charset) for i in range(length))
+
+# PING-DB related "constants".
+HCAT_CHECK_DATABASE_NAME = 'hcat_ping_' + generate_random_id()
+HCAT_CHECK_DATABASE_LOCATION = '/tmp/hcat_ping/' + HCAT_CHECK_DATABASE_NAME
+
+ATTEMPT_CLEANUP=False
+logger = logging.getLogger()
+logLevels = [ logging.ERROR, logging.INFO, logging.DEBUG ]
+THE_CHECK_COMMAND = ""
+
+def check_unique_database_name():
+  global HCAT_CHECK_DATABASE_NAME
+  global HCAT_CHECK_DATABASE_LOCATION
+  # If directory already exists, pick a new database-name/location.
+  while run_command_quietly("hadoop dfs -ls " + HCAT_CHECK_DATABASE_LOCATION) == 0:
+    HCAT_CHECK_DATABASENAME = 'hcat_ping_' + generate_random_id()
+    HCAT_CHECK_DATABASE_LOCATION = '/tmp/hcat_ping/' + HCAT_CHECK_DATABASE_NAME
+
+def run_command_quietly(command):
+  global logger
+  os.putenv("HADOOP_HOME_WARN_SUPPRESS", "true")
+  return_code = os.system(command + " >/dev/null 2>&1")
+  logger.debug("Running command: " + command + " ... returned " + str(return_code))
+  return return_code
+
+def run_hcat_command(command):
+  return run_command_quietly(THE_CHECK_COMMAND + " -e \"" + command + "\" ")
+
+def init_ping_command():
+  global THE_CHECK_COMMAND
+
+  if is_command_in_path("hcat"):
+    THE_CHECK_COMMAND = "hcat"
+  elif is_command_in_path("hive"):
+    THE_CHECK_COMMAND = "hive"
+  else:
+    logger.error("Could not find hcat or hive in $PATH. Can't connect to \
+                 HCatalog Server.")
+    sys.exit(2)
+
+def is_command_in_path(command):
+  return run_command_quietly("which " + command) == 0
+
+def list_databases():
+  global logger
+  return_code = run_hcat_command("SHOW DATABASES") 
+  if return_code != 0:
+    logger.debug("Could not list-databases.")
+    return False
+
+  return True
+
+def create_database():
+  check_unique_database_name()
+  global ATTEMPT_CLEANUP
+  global logger
+  ATTEMPT_CLEANUP = True  # State is changing. Must attempt cleanup.
+
+  create_db = "CREATE DATABASE " + HCAT_CHECK_DATABASE_NAME + " LOCATION '"+ HCAT_CHECK_DATABASE_LOCATION + "'"
+  list_db_dir = "hadoop dfs -ls " + HCAT_CHECK_DATABASE_LOCATION
+
+  if run_hcat_command(create_db) !=0 or run_command_quietly(list_db_dir) != 0:
+    logger.debug("Creating database failed.")
+    return False
+  
+  return True
+
+def drop_database(suppressError):
+  global logger
+  drop_db = "DROP DATABASE " + HCAT_CHECK_DATABASE_NAME
+  list_db_dir = "hadoop dfs -ls " + HCAT_CHECK_DATABASE_LOCATION
+
+  if run_hcat_command(drop_db) != 0 or run_command_quietly(list_db_dir) == 0:
+    if not suppressError:
+      logger.debug("Dropping database failed.")
+    return False
+
+  return True
+
+def cleanup():
+  drop_database(True)
+  run_command_quietly( "hadoop dfs -rmr -skipTrash " + HCAT_CHECK_DATABASE_LOCATION )
+
+def parse_options():
+  global logger
+  global logLevels
+
+  streamHandler = logging.StreamHandler()
+  logger.addHandler(streamHandler)
+
+  parser = OptionParser()
+  parser.add_option("-v", "--verbose", dest="verbosity_level", 
+                    help="Controls verbosity of output to LEVEL (0-2)", metavar="LEVEL", default="1")
+  parser.add_option("-f", "--file",    dest="filename",        
+                    help="Write output to FILE", metavar="FILE")
+  (options, args) = parser.parse_args()
+
+  level = int(Decimal(options.verbosity_level))
+  if not level in range(0,3):
+    print "Invalid verbosity level. Should be in range [0, 2]."
+    sys.exit(3)
+
+  if options.filename:
+    logger.removeHandler(streamHandler)
+    handler = logging.handlers.RotatingFileHandler(options.filename,
+                                                   maxBytes=1024*1024,
+                                                   backupCount=3)
+    logger.addHandler(handler)
+  else:
+    handler = streamHandler
+
+  formatter = logging.Formatter("%(asctime)s %(filename)s:%(lineno)d %(levelname)s - %(message)s")
+  handler.setFormatter( formatter )
+  logger.setLevel( logLevels[level] )
+
+def main(*args):
+  global logger
+  try:
+    try:
+      parse_options()
+      init_ping_command()
+
+      # Not making assumptions on availability of ternary.
+      if list_databases() and create_database() and drop_database(False):
+        logger.info("HCatalog Server is running fine.")
+        return 0 # OK!
+      else:
+        logger.critical("HCatalog Server could not be contacted.")
+        return 2  # Critical!
+    except SystemExit, sysExit:
+      return sysExit
+    except Exception, e:
+      logger.exception("Could not determine if HCatalog Server is running.")
+      return 3  # Unknown Error.
+
+  finally: # Nested try. Pre-2.5 Python won't allow try-except-finally.
+    if ATTEMPT_CLEANUP:
+      cleanup()
+    
+if __name__ == '__main__':
+  sys.exit( main(*sys.argv) )
+      

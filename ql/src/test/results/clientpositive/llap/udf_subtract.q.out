@@ -1,0 +1,12 @@
+PREHOOK: query: DESCRIBE FUNCTION -
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION -
+POSTHOOK: type: DESCFUNCTION
+a - b - Returns the difference a-b
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED -
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED -
+POSTHOOK: type: DESCFUNCTION
+a - b - Returns the difference a-b
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMinus
+Function type:BUILTIN

@@ -1,0 +1,23 @@
+PREHOOK: query: CREATE TEMPORARY FUNCTION explode2 AS 'org.apache.hadoop.hive.contrib.udtf.example.GenericUDTFExplode2'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: explode2
+POSTHOOK: query: CREATE TEMPORARY FUNCTION explode2 AS 'org.apache.hadoop.hive.contrib.udtf.example.GenericUDTFExplode2'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: explode2
+PREHOOK: query: SELECT explode2(array(1,2,3)) AS (col1, col2) FROM src LIMIT 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT explode2(array(1,2,3)) AS (col1, col2) FROM src LIMIT 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1	1
+2	2
+3	3
+PREHOOK: query: DROP TEMPORARY FUNCTION explode2
+PREHOOK: type: DROPFUNCTION
+PREHOOK: Output: explode2
+POSTHOOK: query: DROP TEMPORARY FUNCTION explode2
+POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Output: explode2

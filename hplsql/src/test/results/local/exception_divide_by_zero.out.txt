@@ -1,0 +1,8 @@
+Ln:2 DECLARE booknum int
+Ln:3 DECLARE total int
+Ln:4 DECLARE percent int
+Ln:6 SET booknum = 10
+Ln:7 SET total = 0
+Ln:8 SET percent = NULL
+Ln:9 EXCEPTION HANDLER
+Correct

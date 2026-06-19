@@ -1,0 +1,19 @@
+PREHOOK: query: CREATE DATABASE some_database comment 'for show create db test' WITH DBPROPERTIES ('somekey'='somevalue')
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:some_database
+POSTHOOK: query: CREATE DATABASE some_database comment 'for show create db test' WITH DBPROPERTIES ('somekey'='somevalue')
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:some_database
+PREHOOK: query: SHOW CREATE DATABASE some_database
+PREHOOK: type: SHOW_CREATEDATABASE
+PREHOOK: Input: database:some_database
+POSTHOOK: query: SHOW CREATE DATABASE some_database
+POSTHOOK: type: SHOW_CREATEDATABASE
+POSTHOOK: Input: database:some_database
+CREATE DATABASE `some_database`
+COMMENT
+  'for show create db test'
+LOCATION
+#### A masked pattern was here ####
+WITH DBPROPERTIES (
+  'somekey'='somevalue')

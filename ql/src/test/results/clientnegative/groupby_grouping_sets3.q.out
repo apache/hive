@@ -1,0 +1,9 @@
+PREHOOK: query: CREATE TABLE T1(a STRING, b STRING, c STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T1
+POSTHOOK: query: CREATE TABLE T1(a STRING, b STRING, c STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T1
+FAILED: SemanticException 4:46 [Error 10213]: Grouping sets expression is not in GROUP BY key. Error encountered near token 'b'

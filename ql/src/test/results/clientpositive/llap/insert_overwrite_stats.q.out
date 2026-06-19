@@ -1,0 +1,178 @@
+PREHOOK: query: DROP TABLE IF EXISTS test_stats
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS test_stats
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS test_stats_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS test_stats_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE test_stats(i int, j bigint) STORED AS ORC tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_stats
+POSTHOOK: query: CREATE TABLE test_stats(i int, j bigint) STORED AS ORC tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_stats
+PREHOOK: query: CREATE TABLE test_stats_2(i int) PARTITIONED BY (j bigint) STORED AS ORC tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_stats_2
+POSTHOOK: query: CREATE TABLE test_stats_2(i int) PARTITIONED BY (j bigint) STORED AS ORC tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_stats_2
+PREHOOK: query: INSERT INTO test_stats VALUES (1, 1), (2, 2), (3, 3), (4, 4), (5, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_stats
+POSTHOOK: query: INSERT INTO test_stats VALUES (1, 1), (2, 2), (3, 3), (4, 4), (5, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_stats
+POSTHOOK: Lineage: test_stats.i SCRIPT []
+POSTHOOK: Lineage: test_stats.j SCRIPT []
+PREHOOK: query: SELECT * FROM test_stats
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_stats
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM test_stats
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_stats
+#### A masked pattern was here ####
+1	1
+2	2
+3	3
+4	4
+5	NULL
+PREHOOK: query: INSERT OVERWRITE TABLE test_stats_2 partition(j) SELECT i, j FROM test_stats WHERE j IS NOT NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_stats
+PREHOOK: Output: default@test_stats_2
+POSTHOOK: query: INSERT OVERWRITE TABLE test_stats_2 partition(j) SELECT i, j FROM test_stats WHERE j IS NOT NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_stats
+POSTHOOK: Output: default@test_stats_2
+POSTHOOK: Output: default@test_stats_2@j=1
+POSTHOOK: Output: default@test_stats_2@j=2
+POSTHOOK: Output: default@test_stats_2@j=3
+POSTHOOK: Output: default@test_stats_2@j=4
+POSTHOOK: Lineage: test_stats_2 PARTITION(j=1).i SIMPLE [(test_stats)test_stats.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test_stats_2 PARTITION(j=2).i SIMPLE [(test_stats)test_stats.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test_stats_2 PARTITION(j=3).i SIMPLE [(test_stats)test_stats.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: test_stats_2 PARTITION(j=4).i SIMPLE [(test_stats)test_stats.FieldSchema(name:i, type:int, comment:null), ]
+PREHOOK: query: INSERT OVERWRITE TABLE test_stats_2 partition(j) SELECT i, j FROM test_stats WHERE j IS NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_stats
+PREHOOK: Output: default@test_stats_2
+POSTHOOK: query: INSERT OVERWRITE TABLE test_stats_2 partition(j) SELECT i, j FROM test_stats WHERE j IS NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_stats
+POSTHOOK: Output: default@test_stats_2
+POSTHOOK: Output: default@test_stats_2@j=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: test_stats_2 PARTITION(j=__HIVE_DEFAULT_PARTITION__).i SIMPLE [(test_stats)test_stats.FieldSchema(name:i, type:int, comment:null), ]
+PREHOOK: query: EXPLAIN SELECT i, count(*) as c FROM test_stats_2 GROUP BY i ORDER BY c DESC LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_stats_2
+PREHOOK: Input: default@test_stats_2@j=1
+PREHOOK: Input: default@test_stats_2@j=2
+PREHOOK: Input: default@test_stats_2@j=3
+PREHOOK: Input: default@test_stats_2@j=4
+PREHOOK: Input: default@test_stats_2@j=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT i, count(*) as c FROM test_stats_2 GROUP BY i ORDER BY c DESC LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_stats_2
+POSTHOOK: Input: default@test_stats_2@j=1
+POSTHOOK: Input: default@test_stats_2@j=2
+POSTHOOK: Input: default@test_stats_2@j=3
+POSTHOOK: Input: default@test_stats_2@j=4
+POSTHOOK: Input: default@test_stats_2@j=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_stats_2
+                  Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: i (type: int)
+                    outputColumnNames: i
+                    Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count()
+                      keys: i (type: int)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
+                Top N Key Operator
+                  sort order: -
+                  keys: _col1 (type: bigint)
+                  null sort order: a
+                  Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
+                  top n: 10
+                  Reduce Output Operator
+                    key expressions: _col1 (type: bigint)
+                    null sort order: a
+                    sort order: -
+                    Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: int)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), KEY.reducesinkkey0 (type: bigint)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+      Processor Tree:
+        ListSink
+

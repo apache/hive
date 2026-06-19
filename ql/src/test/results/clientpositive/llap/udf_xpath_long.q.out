@@ -1,0 +1,87 @@
+PREHOOK: query: DESCRIBE FUNCTION xpath_long
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION xpath_long
+POSTHOOK: type: DESCFUNCTION
+xpath_long(xml, xpath) - Returns a long value that matches the xpath expression
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED xpath_long
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED xpath_long
+POSTHOOK: type: DESCFUNCTION
+xpath_long(xml, xpath) - Returns a long value that matches the xpath expression
+Example:
+  > SELECT xpath_long('<a><b>1</b><b>2</b></a>','sum(a/b)') FROM src LIMIT 1;
+  3
+Function class:org.apache.hadoop.hive.ql.udf.xml.UDFXPathLong
+Function type:BUILTIN
+PREHOOK: query: SELECT xpath_long ('<a>this is not a number</a>', 'a') FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT xpath_long ('<a>this is not a number</a>', 'a') FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0
+PREHOOK: query: SELECT xpath_long ('<a>this 2 is not a number</a>', 'a') FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT xpath_long ('<a>this 2 is not a number</a>', 'a') FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0
+PREHOOK: query: SELECT xpath_long ('<a><b>2000000000</b><c>40000000000</c></a>', 'a/b * a/c') FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT xpath_long ('<a><b>2000000000</b><c>40000000000</c></a>', 'a/b * a/c') FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+9223372036854775807
+PREHOOK: query: SELECT xpath_long ('<a>try a boolean</a>', 'a = 10') FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT xpath_long ('<a>try a boolean</a>', 'a = 10') FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0
+PREHOOK: query: SELECT xpath_long ('<a><b class="odd">1</b><b class="even">2</b><b class="odd">4</b><c>8</c></a>', 'a/b') FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT xpath_long ('<a><b class="odd">1</b><b class="even">2</b><b class="odd">4</b><c>8</c></a>', 'a/b') FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1
+PREHOOK: query: SELECT xpath_long ('<a><b class="odd">1</b><b class="even">2</b><b class="odd">4</b><c>8</c></a>', 'sum(a/*)') FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT xpath_long ('<a><b class="odd">1</b><b class="even">2</b><b class="odd">4</b><c>8</c></a>', 'sum(a/*)') FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+15
+PREHOOK: query: SELECT xpath_long ('<a><b class="odd">1</b><b class="even">2</b><b class="odd">4</b><c>8</c></a>', 'sum(a/b)') FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT xpath_long ('<a><b class="odd">1</b><b class="even">2</b><b class="odd">4</b><c>8</c></a>', 'sum(a/b)') FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+7
+PREHOOK: query: SELECT xpath_long ('<a><b class="odd">1</b><b class="even">2</b><b class="odd">4</b><c>8</c></a>', 'sum(a/b[@class="odd"])') FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT xpath_long ('<a><b class="odd">1</b><b class="even">2</b><b class="odd">4</b><c>8</c></a>', 'sum(a/b[@class="odd"])') FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+5

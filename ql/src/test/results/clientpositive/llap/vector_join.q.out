@@ -1,0 +1,108 @@
+PREHOOK: query: DROP TABLE IF EXISTS test1_vc
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS test1_vc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS test2_vc
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS test2_vc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE test1_vc
+ (
+   id string)
+   PARTITIONED BY (
+  cr_year bigint,
+  cr_month bigint)
+ ROW FORMAT SERDE
+  'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.RCFileInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
+TBLPROPERTIES (
+  'serialization.null.format'='' )
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test1_vc
+POSTHOOK: query: CREATE TABLE test1_vc
+ (
+   id string)
+   PARTITIONED BY (
+  cr_year bigint,
+  cr_month bigint)
+ ROW FORMAT SERDE
+  'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.RCFileInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
+TBLPROPERTIES (
+  'serialization.null.format'='' )
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test1_vc
+PREHOOK: query: CREATE TABLE test2_vc(
+    id string
+  )
+   PARTITIONED BY (
+  cr_year bigint,
+  cr_month bigint)
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.RCFileInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
+TBLPROPERTIES (
+  'serialization.null.format'=''
+ )
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test2_vc
+POSTHOOK: query: CREATE TABLE test2_vc(
+    id string
+  )
+   PARTITIONED BY (
+  cr_year bigint,
+  cr_month bigint)
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+STORED AS INPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.RCFileInputFormat'
+OUTPUTFORMAT
+  'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
+TBLPROPERTIES (
+  'serialization.null.format'=''
+ )
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test2_vc
+PREHOOK: query: SELECT cr.id1 ,
+cr.id2
+FROM
+(SELECT t1.id id1,
+ t2.id id2
+ from
+ (select * from test1_vc ) t1
+ left outer join test2_vc  t2
+ on t1.id=t2.id) cr
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1_vc
+PREHOOK: Input: default@test2_vc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cr.id1 ,
+cr.id2
+FROM
+(SELECT t1.id id1,
+ t2.id id2
+ from
+ (select * from test1_vc ) t1
+ left outer join test2_vc  t2
+ on t1.id=t2.id) cr
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1_vc
+POSTHOOK: Input: default@test2_vc
+#### A masked pattern was here ####

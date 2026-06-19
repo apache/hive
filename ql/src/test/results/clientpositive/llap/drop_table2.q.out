@@ -1,0 +1,72 @@
+PREHOOK: query: create table if not exists temp_n0(col STRING) partitioned by (p STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@temp_n0
+POSTHOOK: query: create table if not exists temp_n0(col STRING) partitioned by (p STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@temp_n0
+PREHOOK: query: alter table temp_n0 add if not exists partition (p ='p1')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@temp_n0
+POSTHOOK: query: alter table temp_n0 add if not exists partition (p ='p1')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@temp_n0
+POSTHOOK: Output: default@temp_n0@p=p1
+PREHOOK: query: alter table temp_n0 add if not exists partition (p ='p2')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@temp_n0
+POSTHOOK: query: alter table temp_n0 add if not exists partition (p ='p2')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@temp_n0
+POSTHOOK: Output: default@temp_n0@p=p2
+PREHOOK: query: alter table temp_n0 add if not exists partition (p ='p3')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@temp_n0
+POSTHOOK: query: alter table temp_n0 add if not exists partition (p ='p3')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@temp_n0
+POSTHOOK: Output: default@temp_n0@p=p3
+PREHOOK: query: show partitions temp_n0
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@temp_n0
+POSTHOOK: query: show partitions temp_n0
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@temp_n0
+p=p1
+p=p2
+p=p3
+PREHOOK: query: drop table temp_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@temp_n0
+PREHOOK: Output: database:default
+PREHOOK: Output: default@temp_n0
+POSTHOOK: query: drop table temp_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@temp_n0
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@temp_n0
+PREHOOK: query: create table if not exists temp_n0(col STRING) partitioned by (p STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@temp_n0
+POSTHOOK: query: create table if not exists temp_n0(col STRING) partitioned by (p STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@temp_n0
+PREHOOK: query: show partitions temp_n0
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@temp_n0
+POSTHOOK: query: show partitions temp_n0
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@temp_n0
+PREHOOK: query: drop table temp_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@temp_n0
+PREHOOK: Output: database:default
+PREHOOK: Output: default@temp_n0
+POSTHOOK: query: drop table temp_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@temp_n0
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@temp_n0

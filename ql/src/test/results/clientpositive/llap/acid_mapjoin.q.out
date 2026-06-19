@@ -1,0 +1,199 @@
+PREHOOK: query: drop table if exists acid1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists acid1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists acid2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists acid2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table acid1 (key int, value string) clustered by (key) into 2 buckets stored as orc tblproperties ("transactional"="true")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid1
+POSTHOOK: query: create table acid1 (key int, value string) clustered by (key) into 2 buckets stored as orc tblproperties ("transactional"="true")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acid1
+PREHOOK: query: create table acid2 (key int, value string) clustered by (key) into 2 buckets stored as orc tblproperties ("transactional"="true")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid2
+POSTHOOK: query: create table acid2 (key int, value string) clustered by (key) into 2 buckets stored as orc tblproperties ("transactional"="true")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acid2
+PREHOOK: query: insert into acid1 values (1, 'a'), (2, 'b'), (3, 'c'), (4, 'd'), (5, 'e'), (6, 'f'), (7, 'g'), (8, 'h')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@acid1
+POSTHOOK: query: insert into acid1 values (1, 'a'), (2, 'b'), (3, 'c'), (4, 'd'), (5, 'e'), (6, 'f'), (7, 'g'), (8, 'h')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@acid1
+POSTHOOK: Lineage: acid1.key SCRIPT []
+POSTHOOK: Lineage: acid1.value SCRIPT []
+PREHOOK: query: insert into acid2 values (1,'a'),(3,'c'),(5,'e'),(7,'g')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@acid2
+POSTHOOK: query: insert into acid2 values (1,'a'),(3,'c'),(5,'e'),(7,'g')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@acid2
+POSTHOOK: Lineage: acid2.key SCRIPT []
+POSTHOOK: Lineage: acid2.value SCRIPT []
+PREHOOK: query: alter table acid2 update statistics set('numRows'='210', 'rawDataSize'='840')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@acid2
+PREHOOK: Output: default@acid2
+POSTHOOK: query: alter table acid2 update statistics set('numRows'='210', 'rawDataSize'='840')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@acid2
+POSTHOOK: Output: default@acid2
+PREHOOK: query: alter table acid1 update statistics set('numRows'='316', 'rawDataSize'='1265')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@acid1
+PREHOOK: Output: default@acid1
+POSTHOOK: query: alter table acid1 update statistics set('numRows'='316', 'rawDataSize'='1265')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@acid1
+POSTHOOK: Output: default@acid1
+PREHOOK: query: explain
+select count(*) from acid1 join acid2 on acid1.key = acid2.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid1
+PREHOOK: Input: default@acid2
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select count(*) from acid1 join acid2 on acid1.key = acid2.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid1
+POSTHOOK: Input: default@acid2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Map 3 (CUSTOM_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: acid1
+                  filterExpr: key is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_29_container, bigKeyColName:key, smallTablePos:1, keyRatio:26.25
+                  Statistics: Num rows: 316 Data size: 1264 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 316 Data size: 1264 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 316 Data size: 1264 Basic stats: COMPLETE Column stats: COMPLETE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+                        input vertices:
+                          1 Map 3
+                        Statistics: Num rows: 8295 Data size: 66360 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          aggregations: count()
+                          minReductionHashAggr: 0.99
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            null sort order: 
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                            value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: acid2
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 210 Data size: 840 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 210 Data size: 840 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 210 Data size: 840 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 210 Data size: 840 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from acid1 join acid2 on acid1.key = acid2.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid1
+PREHOOK: Input: default@acid2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from acid1 join acid2 on acid1.key = acid2.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid1
+POSTHOOK: Input: default@acid2
+#### A masked pattern was here ####
+4
+PREHOOK: query: drop table acid1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@acid1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid1
+POSTHOOK: query: drop table acid1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@acid1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acid1
+PREHOOK: query: drop table acid2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@acid2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid2
+POSTHOOK: query: drop table acid2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@acid2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acid2

@@ -1,0 +1,37 @@
+PREHOOK: query: CREATE TABLE t_test(
+  int_col int,
+  tinyint_col tinyint
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_test
+POSTHOOK: query: CREATE TABLE t_test(
+  int_col int,
+  tinyint_col tinyint
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_test
+PREHOOK: query: insert into t_test values (1, 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_test
+POSTHOOK: query: insert into t_test values (1, 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_test
+POSTHOOK: Lineage: t_test.int_col SCRIPT []
+POSTHOOK: Lineage: t_test.tinyint_col SCRIPT []
+PREHOOK: query: select 
+count(int_col) over (order by tinyint_col)
+from t_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_test
+#### A masked pattern was here ####
+POSTHOOK: query: select 
+count(int_col) over (order by tinyint_col)
+from t_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_test
+#### A masked pattern was here ####
+1

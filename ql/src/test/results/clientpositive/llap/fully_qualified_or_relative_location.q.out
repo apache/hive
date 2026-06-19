@@ -1,0 +1,16 @@
+PREHOOK: query: INSERT OVERWRITE DIRECTORY 'target/data/x/y/z/' SELECT src.* FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: INSERT OVERWRITE DIRECTORY 'target/data/x/y/z/' SELECT src.* FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+PREHOOK: query: INSERT OVERWRITE DIRECTORY 'target/data/x/y/z/' SELECT src.* FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: target/data/x/y/z
+POSTHOOK: query: INSERT OVERWRITE DIRECTORY 'target/data/x/y/z/' SELECT src.* FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: target/data/x/y/z

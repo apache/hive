@@ -1,0 +1,81 @@
+PREHOOK: query: create table hybrid_table (d date)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+COLLECTION ITEMS TERMINATED BY ',' MAP KEYS TERMINATED BY ':'
+stored as avro
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hybrid_table
+POSTHOOK: query: create table hybrid_table (d date)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+COLLECTION ITEMS TERMINATED BY ',' MAP KEYS TERMINATED BY ':'
+stored as avro
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hybrid_table
+PREHOOK: query: INSERT INTO hybrid_table VALUES
+('2012-02-21'),
+('2014-02-11'),
+('1947-02-11'),
+('8200-02-11'),
+('1012-02-21'),
+('1014-02-11'),
+('0947-02-11'),
+('0200-02-11')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hybrid_table
+POSTHOOK: query: INSERT INTO hybrid_table VALUES
+('2012-02-21'),
+('2014-02-11'),
+('1947-02-11'),
+('8200-02-11'),
+('1012-02-21'),
+('1014-02-11'),
+('0947-02-11'),
+('0200-02-11')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hybrid_table
+POSTHOOK: Lineage: hybrid_table.d SCRIPT []
+PREHOOK: query: select * from hybrid_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hybrid_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from hybrid_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hybrid_table
+#### A masked pattern was here ####
+2012-02-21
+2014-02-11
+1947-02-11
+8200-02-11
+1012-02-21
+1014-02-11
+0947-02-11
+0200-02-11
+PREHOOK: query: select * from hybrid_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hybrid_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from hybrid_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hybrid_table
+#### A masked pattern was here ####
+2012-02-21
+2014-02-11
+1947-02-11
+8200-02-11
+1012-02-21
+1014-02-11
+0947-02-11
+0200-02-11
+PREHOOK: query: drop table hybrid_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hybrid_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hybrid_table
+POSTHOOK: query: drop table hybrid_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hybrid_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hybrid_table

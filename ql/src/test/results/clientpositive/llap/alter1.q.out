@@ -1,0 +1,404 @@
+PREHOOK: query: create table alter1(a int, b int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter1
+POSTHOOK: query: create table alter1(a int, b int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter1
+PREHOOK: query: describe extended alter1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter1
+POSTHOOK: query: describe extended alter1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter1
+a                   	int                 	                    
+b                   	int                 	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: alter table alter1 set tblproperties ('a'='1', 'c'='3')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@alter1
+PREHOOK: Output: default@alter1
+POSTHOOK: query: alter table alter1 set tblproperties ('a'='1', 'c'='3')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@alter1
+POSTHOOK: Output: default@alter1
+PREHOOK: query: describe extended alter1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter1
+POSTHOOK: query: describe extended alter1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter1
+a                   	int                 	                    
+b                   	int                 	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: alter table alter1 set tblproperties ('a'='1', 'c'='4', 'd'='3')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@alter1
+PREHOOK: Output: default@alter1
+POSTHOOK: query: alter table alter1 set tblproperties ('a'='1', 'c'='4', 'd'='3')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@alter1
+POSTHOOK: Output: default@alter1
+PREHOOK: query: describe extended alter1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter1
+POSTHOOK: query: describe extended alter1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter1
+a                   	int                 	                    
+b                   	int                 	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: alter table alter1 set tblproperties ('EXTERNAL'='TRUE')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@alter1
+PREHOOK: Output: default@alter1
+POSTHOOK: query: alter table alter1 set tblproperties ('EXTERNAL'='TRUE')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@alter1
+POSTHOOK: Output: default@alter1
+PREHOOK: query: describe extended alter1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter1
+POSTHOOK: query: describe extended alter1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter1
+a                   	int                 	                    
+b                   	int                 	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: alter table alter1 set tblproperties ('EXTERNAL'='FALSE')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@alter1
+PREHOOK: Output: default@alter1
+POSTHOOK: query: alter table alter1 set tblproperties ('EXTERNAL'='FALSE')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@alter1
+POSTHOOK: Output: default@alter1
+PREHOOK: query: describe extended alter1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter1
+POSTHOOK: query: describe extended alter1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter1
+a                   	int                 	                    
+b                   	int                 	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: alter table alter1 set serdeproperties('s1'='9')
+PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
+PREHOOK: Input: default@alter1
+PREHOOK: Output: default@alter1
+POSTHOOK: query: alter table alter1 set serdeproperties('s1'='9')
+POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: Input: default@alter1
+POSTHOOK: Output: default@alter1
+PREHOOK: query: describe extended alter1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter1
+POSTHOOK: query: describe extended alter1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter1
+a                   	int                 	                    
+b                   	int                 	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: alter table alter1 set serdeproperties('s1'='10', 's2' ='20')
+PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
+PREHOOK: Input: default@alter1
+PREHOOK: Output: default@alter1
+POSTHOOK: query: alter table alter1 set serdeproperties('s1'='10', 's2' ='20')
+POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: Input: default@alter1
+POSTHOOK: Output: default@alter1
+PREHOOK: query: describe extended alter1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter1
+POSTHOOK: query: describe extended alter1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter1
+a                   	int                 	                    
+b                   	int                 	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: alter table alter1 set serde 'org.apache.hadoop.hive.serde2.TestSerDe' with serdeproperties('s1'='9')
+PREHOOK: type: ALTERTABLE_SERIALIZER
+PREHOOK: Input: default@alter1
+PREHOOK: Output: default@alter1
+POSTHOOK: query: alter table alter1 set serde 'org.apache.hadoop.hive.serde2.TestSerDe' with serdeproperties('s1'='9')
+POSTHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: Input: default@alter1
+POSTHOOK: Output: default@alter1
+PREHOOK: query: describe extended alter1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter1
+POSTHOOK: query: describe extended alter1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter1
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: alter table alter1 set serde 'org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe'
+PREHOOK: type: ALTERTABLE_SERIALIZER
+PREHOOK: Input: default@alter1
+PREHOOK: Output: default@alter1
+POSTHOOK: query: alter table alter1 set serde 'org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe'
+POSTHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: Input: default@alter1
+POSTHOOK: Output: default@alter1
+PREHOOK: query: describe extended alter1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter1
+POSTHOOK: query: describe extended alter1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter1
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: alter table alter1 replace columns (a int, b int, c string)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@alter1
+PREHOOK: Output: default@alter1
+POSTHOOK: query: alter table alter1 replace columns (a int, b int, c string)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@alter1
+POSTHOOK: Output: default@alter1
+PREHOOK: query: describe alter1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter1
+POSTHOOK: query: describe alter1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter1
+a                   	int                 	                    
+b                   	int                 	                    
+c                   	string              	                    
+PREHOOK: query: DROP TABLE alter1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@alter1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter1
+POSTHOOK: query: DROP TABLE alter1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@alter1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter1
+PREHOOK: query: SHOW TABLES LIKE "alter%"
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
+POSTHOOK: query: SHOW TABLES LIKE "alter%"
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
+PREHOOK: query: CREATE DATABASE alter1_db
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:alter1_db
+POSTHOOK: query: CREATE DATABASE alter1_db
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:alter1_db
+PREHOOK: query: SHOW TABLES alter1_db
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
+POSTHOOK: query: SHOW TABLES alter1_db
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
+PREHOOK: query: CREATE TABLE alter1_db.alter1(a INT, b INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: alter1_db@alter1
+PREHOOK: Output: database:alter1_db
+POSTHOOK: query: CREATE TABLE alter1_db.alter1(a INT, b INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: alter1_db@alter1
+POSTHOOK: Output: database:alter1_db
+PREHOOK: query: DESCRIBE EXTENDED alter1_db.alter1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter1_db@alter1
+POSTHOOK: query: DESCRIBE EXTENDED alter1_db.alter1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter1_db@alter1
+a                   	int                 	                    
+b                   	int                 	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: ALTER TABLE alter1_db.alter1 SET TBLPROPERTIES ('a'='1', 'c'='3')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: alter1_db@alter1
+PREHOOK: Output: alter1_db@alter1
+POSTHOOK: query: ALTER TABLE alter1_db.alter1 SET TBLPROPERTIES ('a'='1', 'c'='3')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: alter1_db@alter1
+POSTHOOK: Output: alter1_db@alter1
+PREHOOK: query: DESCRIBE EXTENDED alter1_db.alter1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter1_db@alter1
+POSTHOOK: query: DESCRIBE EXTENDED alter1_db.alter1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter1_db@alter1
+a                   	int                 	                    
+b                   	int                 	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: ALTER TABLE alter1_db.alter1 SET TBLPROPERTIES ('a'='1', 'c'='4', 'd'='3')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: alter1_db@alter1
+PREHOOK: Output: alter1_db@alter1
+POSTHOOK: query: ALTER TABLE alter1_db.alter1 SET TBLPROPERTIES ('a'='1', 'c'='4', 'd'='3')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: alter1_db@alter1
+POSTHOOK: Output: alter1_db@alter1
+PREHOOK: query: DESCRIBE EXTENDED alter1_db.alter1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter1_db@alter1
+POSTHOOK: query: DESCRIBE EXTENDED alter1_db.alter1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter1_db@alter1
+a                   	int                 	                    
+b                   	int                 	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: ALTER TABLE alter1_db.alter1 SET TBLPROPERTIES ('EXTERNAL'='TRUE')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: alter1_db@alter1
+PREHOOK: Output: alter1_db@alter1
+POSTHOOK: query: ALTER TABLE alter1_db.alter1 SET TBLPROPERTIES ('EXTERNAL'='TRUE')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: alter1_db@alter1
+POSTHOOK: Output: alter1_db@alter1
+PREHOOK: query: DESCRIBE EXTENDED alter1_db.alter1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter1_db@alter1
+POSTHOOK: query: DESCRIBE EXTENDED alter1_db.alter1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter1_db@alter1
+a                   	int                 	                    
+b                   	int                 	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: ALTER TABLE alter1_db.alter1 SET TBLPROPERTIES ('EXTERNAL'='FALSE')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: alter1_db@alter1
+PREHOOK: Output: alter1_db@alter1
+POSTHOOK: query: ALTER TABLE alter1_db.alter1 SET TBLPROPERTIES ('EXTERNAL'='FALSE')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: alter1_db@alter1
+POSTHOOK: Output: alter1_db@alter1
+PREHOOK: query: DESCRIBE EXTENDED alter1_db.alter1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter1_db@alter1
+POSTHOOK: query: DESCRIBE EXTENDED alter1_db.alter1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter1_db@alter1
+a                   	int                 	                    
+b                   	int                 	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: ALTER TABLE alter1_db.alter1 SET SERDEPROPERTIES('s1'='9')
+PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
+PREHOOK: Input: alter1_db@alter1
+PREHOOK: Output: alter1_db@alter1
+POSTHOOK: query: ALTER TABLE alter1_db.alter1 SET SERDEPROPERTIES('s1'='9')
+POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: Input: alter1_db@alter1
+POSTHOOK: Output: alter1_db@alter1
+PREHOOK: query: DESCRIBE EXTENDED alter1_db.alter1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter1_db@alter1
+POSTHOOK: query: DESCRIBE EXTENDED alter1_db.alter1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter1_db@alter1
+a                   	int                 	                    
+b                   	int                 	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: ALTER TABLE alter1_db.alter1 SET SERDEPROPERTIES('s1'='10', 's2' ='20')
+PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
+PREHOOK: Input: alter1_db@alter1
+PREHOOK: Output: alter1_db@alter1
+POSTHOOK: query: ALTER TABLE alter1_db.alter1 SET SERDEPROPERTIES('s1'='10', 's2' ='20')
+POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: Input: alter1_db@alter1
+POSTHOOK: Output: alter1_db@alter1
+PREHOOK: query: DESCRIBE EXTENDED alter1_db.alter1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter1_db@alter1
+POSTHOOK: query: DESCRIBE EXTENDED alter1_db.alter1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter1_db@alter1
+a                   	int                 	                    
+b                   	int                 	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: ALTER TABLE alter1_db.alter1 SET SERDE 'org.apache.hadoop.hive.serde2.TestSerDe' WITH SERDEPROPERTIES ('s1'='9')
+PREHOOK: type: ALTERTABLE_SERIALIZER
+PREHOOK: Input: alter1_db@alter1
+PREHOOK: Output: alter1_db@alter1
+POSTHOOK: query: ALTER TABLE alter1_db.alter1 SET SERDE 'org.apache.hadoop.hive.serde2.TestSerDe' WITH SERDEPROPERTIES ('s1'='9')
+POSTHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: Input: alter1_db@alter1
+POSTHOOK: Output: alter1_db@alter1
+PREHOOK: query: DESCRIBE EXTENDED alter1_db.alter1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter1_db@alter1
+POSTHOOK: query: DESCRIBE EXTENDED alter1_db.alter1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter1_db@alter1
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: ALTER TABLE alter1_db.alter1 SET SERDE 'org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe'
+PREHOOK: type: ALTERTABLE_SERIALIZER
+PREHOOK: Input: alter1_db@alter1
+PREHOOK: Output: alter1_db@alter1
+POSTHOOK: query: ALTER TABLE alter1_db.alter1 SET SERDE 'org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe'
+POSTHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: Input: alter1_db@alter1
+POSTHOOK: Output: alter1_db@alter1
+PREHOOK: query: DESCRIBE EXTENDED alter1_db.alter1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter1_db@alter1
+POSTHOOK: query: DESCRIBE EXTENDED alter1_db.alter1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter1_db@alter1
+a                   	string              	                    
+b                   	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: ALTER TABLE alter1_db.alter1 REPLACE COLUMNS (a int, b int, c string)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: alter1_db@alter1
+PREHOOK: Output: alter1_db@alter1
+POSTHOOK: query: ALTER TABLE alter1_db.alter1 REPLACE COLUMNS (a int, b int, c string)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: alter1_db@alter1
+POSTHOOK: Output: alter1_db@alter1
+PREHOOK: query: DESCRIBE alter1_db.alter1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter1_db@alter1
+POSTHOOK: query: DESCRIBE alter1_db.alter1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter1_db@alter1
+a                   	int                 	                    
+b                   	int                 	                    
+c                   	string              	                    
+PREHOOK: query: DROP TABLE alter1_db.alter1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: alter1_db@alter1
+PREHOOK: Output: alter1_db@alter1
+PREHOOK: Output: database:alter1_db
+POSTHOOK: query: DROP TABLE alter1_db.alter1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: alter1_db@alter1
+POSTHOOK: Output: alter1_db@alter1
+POSTHOOK: Output: database:alter1_db
+PREHOOK: query: DROP DATABASE alter1_db
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:alter1_db
+PREHOOK: Output: database:alter1_db
+POSTHOOK: query: DROP DATABASE alter1_db
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:alter1_db
+POSTHOOK: Output: database:alter1_db

@@ -1,0 +1,183 @@
+PREHOOK: query: create table t1_n121(key string, value string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1_n121
+POSTHOOK: query: create table t1_n121(key string, value string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1_n121
+PREHOOK: query: create table t2_n71(key string, value string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2_n71
+POSTHOOK: query: create table t2_n71(key string, value string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2_n71
+PREHOOK: query: insert overwrite table t1_n121 partition (ds='1')
+select key, value from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t1_n121@ds=1
+POSTHOOK: query: insert overwrite table t1_n121 partition (ds='1')
+select key, value from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t1_n121@ds=1
+POSTHOOK: Lineage: t1_n121 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1_n121 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table t1_n121 partition (ds='2')
+select key, value from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t1_n121@ds=2
+POSTHOOK: query: insert overwrite table t1_n121 partition (ds='2')
+select key, value from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t1_n121@ds=2
+POSTHOOK: Lineage: t1_n121 PARTITION(ds=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1_n121 PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table t2_n71 partition (ds='1')
+select key, value from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t2_n71@ds=1
+POSTHOOK: query: insert overwrite table t2_n71 partition (ds='1')
+select key, value from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t2_n71@ds=1
+POSTHOOK: Lineage: t2_n71 PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t2_n71 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain
+select count(1) from t1_n121 join t2_n71 on t1_n121.key=t2_n71.key where t1_n121.ds='1' and t2_n71.ds='1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n121
+PREHOOK: Input: default@t1_n121@ds=1
+PREHOOK: Input: default@t2_n71
+PREHOOK: Input: default@t2_n71@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select count(1) from t1_n121 join t2_n71 on t1_n121.key=t2_n71.key where t1_n121.ds='1' and t2_n71.ds='1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n121
+POSTHOOK: Input: default@t1_n121@ds=1
+POSTHOOK: Input: default@t2_n71
+POSTHOOK: Input: default@t2_n71@ds=1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: t1_n121
+            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: (((hash(rand(460476415)) & 2147483647) % 32) = 0) (type: boolean)
+              Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
+              Filter Operator
+                predicate: key is not null (type: boolean)
+                Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: key (type: string)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
+          TableScan
+            alias: t2_n71
+            Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: (((hash(rand(460476415)) & 2147483647) % 32) = 0) (type: boolean)
+              Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
+              Filter Operator
+                predicate: key is not null (type: boolean)
+                Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: key (type: string)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          keys:
+            0 _col0 (type: string)
+            1 _col0 (type: string)
+          Statistics: Num rows: 250 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+          Group By Operator
+            aggregations: count()
+            minReductionHashAggr: 0.99
+            mode: hash
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              null sort order: 
+              sort order: 
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+              value expressions: _col0 (type: bigint)
+      Execution mode: vectorized
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(1) from t1_n121 join t2_n71 on t1_n121.key=t2_n71.key where t1_n121.ds='1' and t2_n71.ds='1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n121
+PREHOOK: Input: default@t1_n121@ds=1
+PREHOOK: Input: default@t2_n71
+PREHOOK: Input: default@t2_n71@ds=1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from t1_n121 join t2_n71 on t1_n121.key=t2_n71.key where t1_n121.ds='1' and t2_n71.ds='1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n121
+POSTHOOK: Input: default@t1_n121@ds=1
+POSTHOOK: Input: default@t2_n71
+POSTHOOK: Input: default@t2_n71@ds=1
+#### A masked pattern was here ####
+15
+mapreduce.framework.name=yarn
+mapreduce.jobtracker.address=localhost:58

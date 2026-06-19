@@ -1,0 +1,102 @@
+WARNING: Comparing bigint and double may result in loss of information.
+PREHOOK: query: explain vectorization SELECT AVG(cbigint) FROM alltypesparquet WHERE cbigint < cdouble
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization SELECT AVG(cbigint) FROM alltypesparquet WHERE cbigint < cdouble
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesparquet
+                  filterExpr: (UDFToDouble(cbigint) < cdouble) (type: boolean)
+                  Statistics: Num rows: 12288 Data size: 146792 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (UDFToDouble(cbigint) < cdouble) (type: boolean)
+                    Statistics: Num rows: 4096 Data size: 48944 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: cbigint (type: bigint)
+                      outputColumnNames: cbigint
+                      Statistics: Num rows: 4096 Data size: 48944 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: sum(cbigint), count(cbigint)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint), _col1 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0), count(VALUE._col1)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: (UDFToDouble(_col0) / _col1) (type: double)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+WARNING: Comparing bigint and double may result in loss of information.
+PREHOOK: query: SELECT AVG(cbigint) FROM alltypesparquet WHERE cbigint < cdouble
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT AVG(cbigint) FROM alltypesparquet WHERE cbigint < cdouble
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+-1.4670720493864927E9

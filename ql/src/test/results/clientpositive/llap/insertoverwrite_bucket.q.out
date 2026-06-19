@@ -1,0 +1,397 @@
+PREHOOK: query: CREATE TABLE IF NOT EXISTS bucketinput( 
+data string 
+) 
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@bucketinput
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS bucketinput( 
+data string 
+) 
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@bucketinput
+PREHOOK: query: CREATE TABLE IF NOT EXISTS bucketoutput1( 
+data string 
+)CLUSTERED BY(data) 
+INTO 2 BUCKETS 
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@bucketoutput1
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS bucketoutput1( 
+data string 
+)CLUSTERED BY(data) 
+INTO 2 BUCKETS 
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@bucketoutput1
+PREHOOK: query: CREATE TABLE IF NOT EXISTS bucketoutput2( 
+data string 
+)CLUSTERED BY(data) 
+INTO 2 BUCKETS 
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@bucketoutput2
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS bucketoutput2( 
+data string 
+)CLUSTERED BY(data) 
+INTO 2 BUCKETS 
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@bucketoutput2
+PREHOOK: query: insert into table bucketinput values ("firstinsert1")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@bucketinput
+POSTHOOK: query: insert into table bucketinput values ("firstinsert1")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@bucketinput
+POSTHOOK: Lineage: bucketinput.data SCRIPT []
+PREHOOK: query: insert into table bucketinput values ("firstinsert2")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@bucketinput
+POSTHOOK: query: insert into table bucketinput values ("firstinsert2")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@bucketinput
+POSTHOOK: Lineage: bucketinput.data SCRIPT []
+PREHOOK: query: insert into table bucketinput values ("firstinsert3")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@bucketinput
+POSTHOOK: query: insert into table bucketinput values ("firstinsert3")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@bucketinput
+POSTHOOK: Lineage: bucketinput.data SCRIPT []
+PREHOOK: query: insert overwrite table bucketoutput1 select * from bucketinput where data like 'first%'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucketinput
+PREHOOK: Output: default@bucketoutput1
+POSTHOOK: query: insert overwrite table bucketoutput1 select * from bucketinput where data like 'first%'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucketinput
+POSTHOOK: Output: default@bucketoutput1
+POSTHOOK: Lineage: bucketoutput1.data SIMPLE [(bucketinput)bucketinput.FieldSchema(name:data, type:string, comment:null), ]
+PREHOOK: query: CREATE TABLE temp1
+(
+    change string,
+    num string
+)
+CLUSTERED BY (num) SORTED BY (num) INTO 4 BUCKETS
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@temp1
+POSTHOOK: query: CREATE TABLE temp1
+(
+    change string,
+    num string
+)
+CLUSTERED BY (num) SORTED BY (num) INTO 4 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@temp1
+PREHOOK: query: explain insert overwrite table temp1 select data, data from bucketinput
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucketinput
+PREHOOK: Output: default@temp1
+POSTHOOK: query: explain insert overwrite table temp1 select data, data from bucketinput
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucketinput
+POSTHOOK: Output: default@temp1
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: bucketinput
+                  Statistics: Num rows: 3 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: data (type: string)
+                    outputColumnNames: _col1
+                    Statistics: Num rows: 3 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: string)
+                      null sort order: a
+                      sort order: +
+                      Map-reduce partition columns: _col1 (type: string)
+                      Statistics: Num rows: 3 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 576 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 3 Data size: 576 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.temp1
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string)
+                  outputColumnNames: change, num
+                  Statistics: Num rows: 3 Data size: 576 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: max(length(change)), avg(COALESCE(length(change),0)), count(1), count(change), compute_bit_vector_hll(change), max(length(num)), avg(COALESCE(length(num),0)), count(num), compute_bit_vector_hll(num)
+                    minReductionHashAggr: 0.6666666
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                    Statistics: Num rows: 1 Data size: 472 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 472 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col5,0)) (type: bigint), COALESCE(_col6,0) (type: double), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 532 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 532 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.temp1
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: change, num
+          Column Types: string, string
+          Table: default.temp1
+
+PREHOOK: query: CREATE TABLE temp2
+(
+    create_ts STRING ,
+    change STRING,
+    num STRING
+)
+CLUSTERED BY (create_ts) SORTED BY (num) INTO 4 BUCKETS
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@temp2
+POSTHOOK: query: CREATE TABLE temp2
+(
+    create_ts STRING ,
+    change STRING,
+    num STRING
+)
+CLUSTERED BY (create_ts) SORTED BY (num) INTO 4 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@temp2
+PREHOOK: query: explain
+INSERT OVERWRITE TABLE temp2
+SELECT change, change,num
+FROM temp1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@temp1
+PREHOOK: Output: default@temp2
+POSTHOOK: query: explain
+INSERT OVERWRITE TABLE temp2
+SELECT change, change,num
+FROM temp1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@temp1
+POSTHOOK: Output: default@temp2
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: temp1
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: change (type: string), num (type: string)
+                    outputColumnNames: _col0, _col2
+                    Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col2 (type: string)
+                      null sort order: a
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: string), VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.temp2
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                  outputColumnNames: create_ts, change, num
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: max(length(create_ts)), avg(COALESCE(length(create_ts),0)), count(1), count(create_ts), compute_bit_vector_hll(create_ts), max(length(change)), avg(COALESCE(length(change),0)), count(change), compute_bit_vector_hll(change), max(length(num)), avg(COALESCE(length(num),0)), count(num), compute_bit_vector_hll(num)
+                    minReductionHashAggr: 0.99
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                    Statistics: Num rows: 1 Data size: 1072 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 1072 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary), _col9 (type: int), _col10 (type: struct<count:bigint,sum:double,input:int>), _col11 (type: bigint), _col12 (type: binary)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), max(VALUE._col9), avg(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                Statistics: Num rows: 1 Data size: 1072 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col5,0)) (type: bigint), COALESCE(_col6,0) (type: double), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col9,0)) (type: bigint), COALESCE(_col10,0) (type: double), (_col2 - _col11) (type: bigint), COALESCE(ndv_compute_bit_vector(_col12),0) (type: bigint), _col12 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
+                  Statistics: Num rows: 1 Data size: 1072 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 1072 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.temp2
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: create_ts, change, num
+          Column Types: string, string, string
+          Table: default.temp2
+
+PREHOOK: query: select * from bucketoutput1 a join bucketoutput2 b on (a.data=b.data)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucketoutput1
+PREHOOK: Input: default@bucketoutput2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from bucketoutput1 a join bucketoutput2 b on (a.data=b.data)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucketoutput1
+POSTHOOK: Input: default@bucketoutput2
+#### A masked pattern was here ####
+PREHOOK: query: drop table temp1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@temp1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@temp1
+POSTHOOK: query: drop table temp1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@temp1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@temp1
+PREHOOK: query: drop table temp2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@temp2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@temp2
+POSTHOOK: query: drop table temp2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@temp2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@temp2
+PREHOOK: query: drop table buckettestinput
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table buckettestinput
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table buckettestoutput1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table buckettestoutput1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table buckettestoutput2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table buckettestoutput2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default

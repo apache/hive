@@ -1,0 +1,16 @@
+PREHOOK: query: DESCRIBE FUNCTION pow
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION pow
+POSTHOOK: type: DESCFUNCTION
+pow(x1, x2) - raise x1 to the power of x2
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED pow
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED pow
+POSTHOOK: type: DESCFUNCTION
+pow(x1, x2) - raise x1 to the power of x2
+Synonyms: power
+Example:
+  > SELECT pow(2, 3) FROM src LIMIT 1;
+  8
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFPower
+Function type:BUILTIN

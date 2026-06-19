@@ -1,0 +1,244 @@
+PREHOOK: query: create temporary table ptestfilter_n2_temp (a string, b int) partitioned by (c string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ptestfilter_n2_temp
+POSTHOOK: query: create temporary table ptestfilter_n2_temp (a string, b int) partitioned by (c string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ptestfilter_n2_temp
+PREHOOK: query: INSERT OVERWRITE TABLE ptestfilter_n2_temp PARTITION (c) select 'Col1', 1, null
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ptestfilter_n2_temp
+POSTHOOK: query: INSERT OVERWRITE TABLE ptestfilter_n2_temp PARTITION (c) select 'Col1', 1, null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ptestfilter_n2_temp
+POSTHOOK: Output: default@ptestfilter_n2_temp@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: ptestfilter_n2_temp PARTITION(c=__HIVE_DEFAULT_PARTITION__).a SIMPLE []
+POSTHOOK: Lineage: ptestfilter_n2_temp PARTITION(c=__HIVE_DEFAULT_PARTITION__).b SIMPLE []
+PREHOOK: query: alter table ptestfilter_n2_temp add partition (c=3)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@ptestfilter_n2_temp
+POSTHOOK: query: alter table ptestfilter_n2_temp add partition (c=3)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@ptestfilter_n2_temp
+POSTHOOK: Output: default@ptestfilter_n2_temp@c=3
+PREHOOK: query: alter table ptestfilter_n2_temp add partition (c=5)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@ptestfilter_n2_temp
+POSTHOOK: query: alter table ptestfilter_n2_temp add partition (c=5)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@ptestfilter_n2_temp
+POSTHOOK: Output: default@ptestfilter_n2_temp@c=5
+PREHOOK: query: show partitions ptestfilter_n2_temp
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@ptestfilter_n2_temp
+POSTHOOK: query: show partitions ptestfilter_n2_temp
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@ptestfilter_n2_temp
+c=3
+c=5
+c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: query: alter table ptestfilter_n2_temp drop partition(c = 3)
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@ptestfilter_n2_temp
+PREHOOK: Output: default@ptestfilter_n2_temp@c=3
+POSTHOOK: query: alter table ptestfilter_n2_temp drop partition(c = 3)
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@ptestfilter_n2_temp
+POSTHOOK: Output: default@ptestfilter_n2_temp@c=3
+PREHOOK: query: show partitions ptestfilter_n2_temp
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@ptestfilter_n2_temp
+POSTHOOK: query: show partitions ptestfilter_n2_temp
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@ptestfilter_n2_temp
+c=5
+c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: query: INSERT OVERWRITE TABLE ptestfilter_n2_temp PARTITION (c) select 'Col1', 1, null
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ptestfilter_n2_temp
+POSTHOOK: query: INSERT OVERWRITE TABLE ptestfilter_n2_temp PARTITION (c) select 'Col1', 1, null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ptestfilter_n2_temp
+POSTHOOK: Output: default@ptestfilter_n2_temp@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: ptestfilter_n2_temp PARTITION(c=__HIVE_DEFAULT_PARTITION__).a SIMPLE []
+POSTHOOK: Lineage: ptestfilter_n2_temp PARTITION(c=__HIVE_DEFAULT_PARTITION__).b SIMPLE []
+PREHOOK: query: alter table ptestfilter_n2_temp drop partition(c != '__HIVE_DEFAULT_PARTITION__')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@ptestfilter_n2_temp
+PREHOOK: Output: default@ptestfilter_n2_temp@c=5
+POSTHOOK: query: alter table ptestfilter_n2_temp drop partition(c != '__HIVE_DEFAULT_PARTITION__')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@ptestfilter_n2_temp
+POSTHOOK: Output: default@ptestfilter_n2_temp@c=5
+PREHOOK: query: show partitions ptestfilter_n2_temp
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@ptestfilter_n2_temp
+POSTHOOK: query: show partitions ptestfilter_n2_temp
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@ptestfilter_n2_temp
+c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: query: drop table ptestfilter_n2_temp
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ptestfilter_n2_temp
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ptestfilter_n2_temp
+POSTHOOK: query: drop table ptestfilter_n2_temp
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ptestfilter_n2_temp
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ptestfilter_n2_temp
+PREHOOK: query: create temporary table ptestfilter_n2_temp (a string, b int) partitioned by (c string, d int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ptestfilter_n2_temp
+POSTHOOK: query: create temporary table ptestfilter_n2_temp (a string, b int) partitioned by (c string, d int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ptestfilter_n2_temp
+PREHOOK: query: INSERT OVERWRITE TABLE ptestfilter_n2_temp PARTITION (c,d) select 'Col1', 1, null, null
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ptestfilter_n2_temp
+POSTHOOK: query: INSERT OVERWRITE TABLE ptestfilter_n2_temp PARTITION (c,d) select 'Col1', 1, null, null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ptestfilter_n2_temp
+POSTHOOK: Output: default@ptestfilter_n2_temp@c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: ptestfilter_n2_temp PARTITION(c=__HIVE_DEFAULT_PARTITION__,d=__HIVE_DEFAULT_PARTITION__).a SIMPLE []
+POSTHOOK: Lineage: ptestfilter_n2_temp PARTITION(c=__HIVE_DEFAULT_PARTITION__,d=__HIVE_DEFAULT_PARTITION__).b SIMPLE []
+PREHOOK: query: INSERT OVERWRITE TABLE ptestfilter_n2_temp PARTITION (c,d) select 'Col2', 2, null, 2
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ptestfilter_n2_temp
+POSTHOOK: query: INSERT OVERWRITE TABLE ptestfilter_n2_temp PARTITION (c,d) select 'Col2', 2, null, 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ptestfilter_n2_temp
+POSTHOOK: Output: default@ptestfilter_n2_temp@c=__HIVE_DEFAULT_PARTITION__/d=2
+POSTHOOK: Lineage: ptestfilter_n2_temp PARTITION(c=__HIVE_DEFAULT_PARTITION__,d=2).a SIMPLE []
+POSTHOOK: Lineage: ptestfilter_n2_temp PARTITION(c=__HIVE_DEFAULT_PARTITION__,d=2).b SIMPLE []
+PREHOOK: query: INSERT OVERWRITE TABLE ptestfilter_n2_temp PARTITION (c,d) select 'Col3', 3, 'Uganda', null
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ptestfilter_n2_temp
+POSTHOOK: query: INSERT OVERWRITE TABLE ptestfilter_n2_temp PARTITION (c,d) select 'Col3', 3, 'Uganda', null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ptestfilter_n2_temp
+POSTHOOK: Output: default@ptestfilter_n2_temp@c=Uganda/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: ptestfilter_n2_temp PARTITION(c=Uganda,d=__HIVE_DEFAULT_PARTITION__).a SIMPLE []
+POSTHOOK: Lineage: ptestfilter_n2_temp PARTITION(c=Uganda,d=__HIVE_DEFAULT_PARTITION__).b SIMPLE []
+PREHOOK: query: alter table ptestfilter_n2_temp add partition (c='Germany', d=2)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@ptestfilter_n2_temp
+POSTHOOK: query: alter table ptestfilter_n2_temp add partition (c='Germany', d=2)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@ptestfilter_n2_temp
+POSTHOOK: Output: default@ptestfilter_n2_temp@c=Germany/d=2
+PREHOOK: query: show partitions ptestfilter_n2_temp
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@ptestfilter_n2_temp
+POSTHOOK: query: show partitions ptestfilter_n2_temp
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@ptestfilter_n2_temp
+c=Germany/d=2
+c=Uganda/d=__HIVE_DEFAULT_PARTITION__
+c=__HIVE_DEFAULT_PARTITION__/d=2
+c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+PREHOOK: query: alter table ptestfilter_n2_temp drop partition (c='__HIVE_DEFAULT_PARTITION__')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@ptestfilter_n2_temp
+PREHOOK: Output: default@ptestfilter_n2_temp@c=__HIVE_DEFAULT_PARTITION__/d=2
+PREHOOK: Output: default@ptestfilter_n2_temp@c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: query: alter table ptestfilter_n2_temp drop partition (c='__HIVE_DEFAULT_PARTITION__')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@ptestfilter_n2_temp
+POSTHOOK: Output: default@ptestfilter_n2_temp@c=__HIVE_DEFAULT_PARTITION__/d=2
+POSTHOOK: Output: default@ptestfilter_n2_temp@c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
+PREHOOK: query: alter table ptestfilter_n2_temp drop partition (c='Uganda', d='__HIVE_DEFAULT_PARTITION__')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@ptestfilter_n2_temp
+PREHOOK: Output: default@ptestfilter_n2_temp@c=Uganda/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: query: alter table ptestfilter_n2_temp drop partition (c='Uganda', d='__HIVE_DEFAULT_PARTITION__')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@ptestfilter_n2_temp
+POSTHOOK: Output: default@ptestfilter_n2_temp@c=Uganda/d=__HIVE_DEFAULT_PARTITION__
+PREHOOK: query: alter table ptestfilter_n2_temp drop partition (c='Germany', d=2)
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@ptestfilter_n2_temp
+PREHOOK: Output: default@ptestfilter_n2_temp@c=Germany/d=2
+POSTHOOK: query: alter table ptestfilter_n2_temp drop partition (c='Germany', d=2)
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@ptestfilter_n2_temp
+POSTHOOK: Output: default@ptestfilter_n2_temp@c=Germany/d=2
+PREHOOK: query: show partitions ptestfilter_n2_temp
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@ptestfilter_n2_temp
+POSTHOOK: query: show partitions ptestfilter_n2_temp
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@ptestfilter_n2_temp
+PREHOOK: query: INSERT OVERWRITE TABLE ptestfilter_n2_temp PARTITION (c,d) select 'Col2', 2, null, 2
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ptestfilter_n2_temp
+POSTHOOK: query: INSERT OVERWRITE TABLE ptestfilter_n2_temp PARTITION (c,d) select 'Col2', 2, null, 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ptestfilter_n2_temp
+POSTHOOK: Output: default@ptestfilter_n2_temp@c=__HIVE_DEFAULT_PARTITION__/d=2
+POSTHOOK: Lineage: ptestfilter_n2_temp PARTITION(c=__HIVE_DEFAULT_PARTITION__,d=2).a SIMPLE []
+POSTHOOK: Lineage: ptestfilter_n2_temp PARTITION(c=__HIVE_DEFAULT_PARTITION__,d=2).b SIMPLE []
+PREHOOK: query: INSERT OVERWRITE TABLE ptestfilter_n2_temp PARTITION (c,d) select 'Col2', 2, null, 3
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ptestfilter_n2_temp
+POSTHOOK: query: INSERT OVERWRITE TABLE ptestfilter_n2_temp PARTITION (c,d) select 'Col2', 2, null, 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ptestfilter_n2_temp
+POSTHOOK: Output: default@ptestfilter_n2_temp@c=__HIVE_DEFAULT_PARTITION__/d=3
+POSTHOOK: Lineage: ptestfilter_n2_temp PARTITION(c=__HIVE_DEFAULT_PARTITION__,d=3).a SIMPLE []
+POSTHOOK: Lineage: ptestfilter_n2_temp PARTITION(c=__HIVE_DEFAULT_PARTITION__,d=3).b SIMPLE []
+PREHOOK: query: INSERT OVERWRITE TABLE ptestfilter_n2_temp PARTITION (c,d) select 'Col3', 3, 'Uganda', null
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ptestfilter_n2_temp
+POSTHOOK: query: INSERT OVERWRITE TABLE ptestfilter_n2_temp PARTITION (c,d) select 'Col3', 3, 'Uganda', null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ptestfilter_n2_temp
+POSTHOOK: Output: default@ptestfilter_n2_temp@c=Uganda/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: ptestfilter_n2_temp PARTITION(c=Uganda,d=__HIVE_DEFAULT_PARTITION__).a SIMPLE []
+POSTHOOK: Lineage: ptestfilter_n2_temp PARTITION(c=Uganda,d=__HIVE_DEFAULT_PARTITION__).b SIMPLE []
+PREHOOK: query: alter table ptestfilter_n2_temp drop partition (d != 3)
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@ptestfilter_n2_temp
+PREHOOK: Output: default@ptestfilter_n2_temp@c=Uganda/d=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: default@ptestfilter_n2_temp@c=__HIVE_DEFAULT_PARTITION__/d=2
+POSTHOOK: query: alter table ptestfilter_n2_temp drop partition (d != 3)
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@ptestfilter_n2_temp
+POSTHOOK: Output: default@ptestfilter_n2_temp@c=Uganda/d=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: default@ptestfilter_n2_temp@c=__HIVE_DEFAULT_PARTITION__/d=2
+PREHOOK: query: show partitions ptestfilter_n2_temp
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@ptestfilter_n2_temp
+POSTHOOK: query: show partitions ptestfilter_n2_temp
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@ptestfilter_n2_temp
+c=__HIVE_DEFAULT_PARTITION__/d=3
+PREHOOK: query: drop table ptestfilter_n2_temp
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ptestfilter_n2_temp
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ptestfilter_n2_temp
+POSTHOOK: query: drop table ptestfilter_n2_temp
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ptestfilter_n2_temp
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ptestfilter_n2_temp

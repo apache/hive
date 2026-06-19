@@ -1,0 +1,51 @@
+PREHOOK: query: EXPLAIN SELECT 1 + ASSERT_TRUE(x < 2) FROM src LATERAL VIEW EXPLODE(ARRAY(1, 2)) a AS x LIMIT 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT 1 + ASSERT_TRUE(x < 2) FROM src LATERAL VIEW EXPLODE(ARRAY(1, 2)) a AS x LIMIT 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 2
+      Processor Tree:
+        TableScan
+          alias: src
+          Lateral View Forward
+            Select Operator
+              Lateral View Join Operator
+                outputColumnNames: _col6
+                Limit
+                  Number of rows: 2
+                  Select Operator
+                    expressions: (1 + UDFToInteger(assert_true((_col6 < 2)))) (type: int)
+                    outputColumnNames: _col0
+                    ListSink
+            Select Operator
+              expressions: array(1,2) (type: array<int>)
+              outputColumnNames: _col0
+              UDTF Operator
+                function name: explode
+                Lateral View Join Operator
+                  outputColumnNames: _col6
+                  Limit
+                    Number of rows: 2
+                    Select Operator
+                      expressions: (1 + UDFToInteger(assert_true((_col6 < 2)))) (type: int)
+                      outputColumnNames: _col0
+                      ListSink
+
+PREHOOK: query: SELECT 1 + ASSERT_TRUE(x < 2) FROM src LATERAL VIEW EXPLODE(ARRAY(1, 2)) a AS x LIMIT 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT 1 + ASSERT_TRUE(x < 2) FROM src LATERAL VIEW EXPLODE(ARRAY(1, 2)) a AS x LIMIT 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+Failed with exception org.apache.hadoop.hive.ql.metadata.HiveException:ASSERT_TRUE(): assertion failed.

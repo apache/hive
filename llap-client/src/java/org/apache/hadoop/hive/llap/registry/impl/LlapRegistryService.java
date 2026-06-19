@@ -1,0 +1,203 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.hadoop.hive.llap.registry.impl;
+
+import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
+
+import com.google.common.base.Preconditions;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.registry.LlapServiceInstanceSet;
+import org.apache.hadoop.hive.llap.registry.ServiceRegistry;
+import org.apache.hadoop.hive.llap.registry.impl.LlapZookeeperRegistryImpl.ConfigChangeLockResult;
+import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
+import org.apache.hadoop.registry.client.binding.RegistryUtils;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.service.AbstractService;
+import org.apache.hadoop.yarn.api.records.ApplicationId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class LlapRegistryService extends AbstractService {
+
+  public static final String LLAP_DAEMON_TASK_SCHEDULER_ENABLED_WAIT_QUEUE_SIZE =
+      "hive.llap.daemon.task.scheduler.enabled.wait.queue.size";
+  public static final String LLAP_DAEMON_NUM_ENABLED_EXECUTORS =
+      "hive.llap.daemon.num.enabled.executors";
+
+  private static final Logger LOG = LoggerFactory.getLogger(LlapRegistryService.class);
+
+  private ServiceRegistry<LlapServiceInstance> registry = null;
+  private final boolean isDaemon;
+  private boolean isDynamic = false;
+  private String identity = "(pending)";
+
+  private static final Map<String, LlapRegistryService> yarnRegistries = new HashMap<>();
+
+  public LlapRegistryService(boolean isDaemon) {
+    super("LlapRegistryService");
+    this.isDaemon = isDaemon;
+  }
+
+  /**
+   * Helper method to get a ServiceRegistry instance to read from the registry.
+   * This should not be used by LLAP daemons.
+   *
+   * @param conf {@link Configuration} instance which contains service registry information.
+   * @return
+   */
+  public static synchronized LlapRegistryService getClient(Configuration conf) {
+    String hosts = HiveConf.getTrimmedVar(conf, HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
+    Preconditions.checkNotNull(hosts, ConfVars.LLAP_DAEMON_SERVICE_HOSTS.toString() + " must be defined");
+    LlapRegistryService registry;
+    if (hosts.startsWith("@")) {
+      // Caching instances only in case of the YARN registry. Each host based list will get it's own copy.
+      String appName = hosts.substring(1);
+      String userName = HiveConf.getVar(conf, ConfVars.LLAP_ZK_REGISTRY_USER, currentUser());
+      String key = appName + "-" + userName;
+      registry = yarnRegistries.get(key);
+      if (registry == null || !registry.isInState(STATE.STARTED)) {
+        registry = new LlapRegistryService(false);
+        registry.init(conf);
+        registry.start();
+        yarnRegistries.put(key, registry);
+      }
+    } else {
+      registry = new LlapRegistryService(false);
+      registry.init(conf);
+      registry.start();
+    }
+    LOG.info("Using LLAP registry (client) type: " + registry);
+    return registry;
+  }
+
+  public static String currentUser() {
+    try {
+      return UserGroupInformation.getCurrentUser().getShortUserName();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public void serviceInit(Configuration conf) {
+    String hosts = HiveConf.getTrimmedVar(conf, ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
+    if (hosts.startsWith("@")) {
+      registry = new LlapZookeeperRegistryImpl(hosts.substring(1), conf);
+      this.isDynamic=true;
+    } else {
+      registry = new LlapFixedRegistryImpl(hosts, conf);
+      this.isDynamic=false;
+    }
+    LOG.info("Using LLAP registry type " + registry);
+  }
+
+
+  @Override
+  public void serviceStart() throws Exception {
+    if (this.registry != null) {
+      this.registry.start();
+    }
+    if (isDaemon) {
+      registerWorker();
+    }
+  }
+
+  @Override
+  public void serviceStop() throws Exception {
+    if (isDaemon) {
+      unregisterWorker();
+    }
+    if (this.registry != null) {
+      this.registry.stop();
+    } else {
+      LOG.warn("Stopping non-existent registry service");
+    }
+  }
+
+  private void registerWorker() throws IOException {
+    if (this.registry != null) {
+      this.identity = this.registry.register();
+    }
+  }
+
+  private void unregisterWorker() throws IOException {
+    if (this.registry != null) {
+      this.registry.unregister();
+    }
+  }
+
+  public void updateRegistration(Iterable<Map.Entry<String, String>> attributes) throws IOException {
+    if (isDaemon && this.registry != null) {
+      this.registry.updateRegistration(attributes);
+    }
+  }
+
+  /**
+   * Locks the Llap Cluster for configuration change for the given time window.
+   * @param windowStart The beginning of the time window when no other configuration change is allowed.
+   * @param windowEnd The end of the time window when no other configuration change is allowed.
+   * @return The result of the change (success if the lock is succeeded, and the next possible
+   * configuration change time
+   */
+  public ConfigChangeLockResult lockForConfigChange(long windowStart, long windowEnd) {
+    if (this.registry == null) {
+      throw new IllegalStateException("Not allowed to call lockForConfigChange before serviceInit");
+    }
+    if (isDynamic) {
+      LlapZookeeperRegistryImpl zkRegisty = (LlapZookeeperRegistryImpl)registry;
+      return zkRegisty.lockForConfigChange(windowStart, windowEnd);
+    } else {
+      throw new UnsupportedOperationException("Acquiring config lock is only allowed for dynamic registries");
+    }
+  }
+
+  public LlapServiceInstanceSet getInstances() throws IOException {
+    return getInstances(0);
+  }
+
+  public LlapServiceInstanceSet getInstances(long clusterReadyTimeoutMs) throws IOException {
+    return (LlapServiceInstanceSet) this.registry.getInstances("LLAP", clusterReadyTimeoutMs);
+  }
+
+  public void registerStateChangeListener(
+      ServiceInstanceStateChangeListener<LlapServiceInstance> listener) throws IOException {
+    this.registry.registerStateChangeListener(listener);
+  }
+
+  // is the registry dynamic (i.e refreshes?)
+  public boolean isDynamic() {
+    return isDynamic;
+  }
+
+  // this is only useful for the daemons to know themselves
+  public String getWorkerIdentity() {
+    return identity;
+  }
+
+  public ApplicationId getApplicationId() throws IOException {
+    return registry.getApplicationId();
+  }
+
+}

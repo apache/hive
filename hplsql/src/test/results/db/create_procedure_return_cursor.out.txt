@@ -1,0 +1,135 @@
+Ln:1 CREATE PROCEDURE spResultSet1
+Ln:9 CREATE PROCEDURE spResultSet2
+Ln:20 DECLARE v1 VARCHAR
+Ln:21 DECLARE v2 VARCHAR
+Ln:23 EXEC PROCEDURE spResultSet1
+Ln:4 DECLARE CURSOR cur1
+Ln:6 OPEN
+Ln:6 cur1: SELECT 'A', 'A1' FROM src LIMIT 3
+Ln:24 ALLOCATE CURSOR
+Ln:26 FETCH
+Ln:26 COLUMN: _c0, string
+Ln:26 SET v1 = A
+Ln:26 COLUMN: _c1, string
+Ln:26 SET v2 = A1
+Ln:27 WHILE - ENTERED
+Ln:29 PRINT
+A - A1
+Ln:30 FETCH
+Ln:30 COLUMN: _c0, string
+Ln:30 SET v1 = A
+Ln:30 COLUMN: _c1, string
+Ln:30 SET v2 = A1
+Ln:29 PRINT
+A - A1
+Ln:30 FETCH
+Ln:30 COLUMN: _c0, string
+Ln:30 SET v1 = A
+Ln:30 COLUMN: _c1, string
+Ln:30 SET v2 = A1
+Ln:29 PRINT
+A - A1
+Ln:30 FETCH
+Ln:27 WHILE - LEFT
+Ln:32 CLOSE
+Ln:34 EXEC PROCEDURE spResultSet2
+Ln:12 DECLARE CURSOR cur1
+Ln:14 DECLARE CURSOR cur2
+Ln:16 OPEN
+Ln:16 cur1: SELECT 'B', 'B1' FROM src LIMIT 5
+Ln:17 OPEN
+Ln:17 cur2: SELECT 'C', 'C1' FROM src LIMIT 7
+Ln:35 ALLOCATE CURSOR
+Ln:37 FETCH
+Ln:37 COLUMN: _c0, string
+Ln:37 SET v1 = B
+Ln:37 COLUMN: _c1, string
+Ln:37 SET v2 = B1
+Ln:38 WHILE - ENTERED
+Ln:40 PRINT
+B - B1
+Ln:41 FETCH
+Ln:41 COLUMN: _c0, string
+Ln:41 SET v1 = B
+Ln:41 COLUMN: _c1, string
+Ln:41 SET v2 = B1
+Ln:40 PRINT
+B - B1
+Ln:41 FETCH
+Ln:41 COLUMN: _c0, string
+Ln:41 SET v1 = B
+Ln:41 COLUMN: _c1, string
+Ln:41 SET v2 = B1
+Ln:40 PRINT
+B - B1
+Ln:41 FETCH
+Ln:41 COLUMN: _c0, string
+Ln:41 SET v1 = B
+Ln:41 COLUMN: _c1, string
+Ln:41 SET v2 = B1
+Ln:40 PRINT
+B - B1
+Ln:41 FETCH
+Ln:41 COLUMN: _c0, string
+Ln:41 SET v1 = B
+Ln:41 COLUMN: _c1, string
+Ln:41 SET v2 = B1
+Ln:40 PRINT
+B - B1
+Ln:41 FETCH
+Ln:38 WHILE - LEFT
+Ln:43 CLOSE
+Ln:45 ALLOCATE CURSOR
+Ln:47 FETCH
+Ln:47 COLUMN: _c0, string
+Ln:47 SET v1 = C
+Ln:47 COLUMN: _c1, string
+Ln:47 SET v2 = C1
+Ln:48 WHILE - ENTERED
+Ln:50 PRINT
+C - C1
+Ln:51 FETCH
+Ln:51 COLUMN: _c0, string
+Ln:51 SET v1 = C
+Ln:51 COLUMN: _c1, string
+Ln:51 SET v2 = C1
+Ln:50 PRINT
+C - C1
+Ln:51 FETCH
+Ln:51 COLUMN: _c0, string
+Ln:51 SET v1 = C
+Ln:51 COLUMN: _c1, string
+Ln:51 SET v2 = C1
+Ln:50 PRINT
+C - C1
+Ln:51 FETCH
+Ln:51 COLUMN: _c0, string
+Ln:51 SET v1 = C
+Ln:51 COLUMN: _c1, string
+Ln:51 SET v2 = C1
+Ln:50 PRINT
+C - C1
+Ln:51 FETCH
+Ln:51 COLUMN: _c0, string
+Ln:51 SET v1 = C
+Ln:51 COLUMN: _c1, string
+Ln:51 SET v2 = C1
+Ln:50 PRINT
+C - C1
+Ln:51 FETCH
+Ln:51 COLUMN: _c0, string
+Ln:51 SET v1 = C
+Ln:51 COLUMN: _c1, string
+Ln:51 SET v2 = C1
+Ln:50 PRINT
+C - C1
+Ln:51 FETCH
+Ln:51 COLUMN: _c0, string
+Ln:51 SET v1 = C
+Ln:51 COLUMN: _c1, string
+Ln:51 SET v2 = C1
+Ln:50 PRINT
+C - C1
+Ln:51 FETCH
+Ln:48 WHILE - LEFT
+Ln:53 CLOSE

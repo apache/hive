@@ -1,0 +1,78 @@
+PREHOOK: query: CREATE DATABASE test_db_nocurr
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test_db_nocurr
+POSTHOOK: query: CREATE DATABASE test_db_nocurr
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test_db_nocurr
+PREHOOK: query: CREATE TABLE test_db_nocurr.test_table_for_alter_partition_nocurrentdb (a INT) PARTITIONED BY (ds STRING) STORED AS SEQUENCEFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test_db_nocurr
+PREHOOK: Output: test_db_nocurr@test_table_for_alter_partition_nocurrentdb
+POSTHOOK: query: CREATE TABLE test_db_nocurr.test_table_for_alter_partition_nocurrentdb (a INT) PARTITIONED BY (ds STRING) STORED AS SEQUENCEFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test_db_nocurr
+POSTHOOK: Output: test_db_nocurr@test_table_for_alter_partition_nocurrentdb
+PREHOOK: query: INSERT OVERWRITE TABLE test_db_nocurr.test_table_for_alter_partition_nocurrentdb PARTITION(ds='eleme_haihua') SELECT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: test_db_nocurr@test_table_for_alter_partition_nocurrentdb@ds=eleme_haihua
+POSTHOOK: query: INSERT OVERWRITE TABLE test_db_nocurr.test_table_for_alter_partition_nocurrentdb PARTITION(ds='eleme_haihua') SELECT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: test_db_nocurr@test_table_for_alter_partition_nocurrentdb@ds=eleme_haihua
+POSTHOOK: Lineage: test_table_for_alter_partition_nocurrentdb PARTITION(ds=eleme_haihua).a SIMPLE []
+PREHOOK: query: desc extended test_db_nocurr.test_table_for_alter_partition_nocurrentdb partition(ds='eleme_haihua')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: test_db_nocurr@test_table_for_alter_partition_nocurrentdb
+POSTHOOK: query: desc extended test_db_nocurr.test_table_for_alter_partition_nocurrentdb partition(ds='eleme_haihua')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: test_db_nocurr@test_table_for_alter_partition_nocurrentdb
+a                   	int                 	                    
+ds                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: ALTER TABLE test_db_nocurr.test_table_for_alter_partition_nocurrentdb partition(ds='eleme_haihua') CHANGE COLUMN a a_new BOOLEAN
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: test_db_nocurr@test_table_for_alter_partition_nocurrentdb
+PREHOOK: Output: test_db_nocurr@test_table_for_alter_partition_nocurrentdb@ds=eleme_haihua
+POSTHOOK: query: ALTER TABLE test_db_nocurr.test_table_for_alter_partition_nocurrentdb partition(ds='eleme_haihua') CHANGE COLUMN a a_new BOOLEAN
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: test_db_nocurr@test_table_for_alter_partition_nocurrentdb
+POSTHOOK: Input: test_db_nocurr@test_table_for_alter_partition_nocurrentdb@ds=eleme_haihua
+POSTHOOK: Output: test_db_nocurr@test_table_for_alter_partition_nocurrentdb@ds=eleme_haihua
+PREHOOK: query: desc extended test_db_nocurr.test_table_for_alter_partition_nocurrentdb partition(ds='eleme_haihua')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: test_db_nocurr@test_table_for_alter_partition_nocurrentdb
+POSTHOOK: query: desc extended test_db_nocurr.test_table_for_alter_partition_nocurrentdb partition(ds='eleme_haihua')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: test_db_nocurr@test_table_for_alter_partition_nocurrentdb
+a_new               	boolean             	                    
+ds                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: DROP TABLE test_db_nocurr.test_table_for_alter_partition_nocurrentdb
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: test_db_nocurr@test_table_for_alter_partition_nocurrentdb
+PREHOOK: Output: database:test_db_nocurr
+PREHOOK: Output: test_db_nocurr@test_table_for_alter_partition_nocurrentdb
+POSTHOOK: query: DROP TABLE test_db_nocurr.test_table_for_alter_partition_nocurrentdb
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: test_db_nocurr@test_table_for_alter_partition_nocurrentdb
+POSTHOOK: Output: database:test_db_nocurr
+POSTHOOK: Output: test_db_nocurr@test_table_for_alter_partition_nocurrentdb
+PREHOOK: query: DROP DATABASE test_db_nocurr
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:test_db_nocurr
+PREHOOK: Output: database:test_db_nocurr
+POSTHOOK: query: DROP DATABASE test_db_nocurr
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:test_db_nocurr
+POSTHOOK: Output: database:test_db_nocurr

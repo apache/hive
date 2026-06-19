@@ -1,0 +1,41 @@
+PREHOOK: query: EXPLAIN
+SELECT round(year(to_date(current_date())),-3) as GROUP_BY_FIELD, count (*)  as src_cnt
+from src
+WHERE 1=1
+group by round(year(to_date(current_date())),-3)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT round(year(to_date(current_date())),-3) as GROUP_BY_FIELD, count (*)  as src_cnt
+from src
+WHERE 1=1
+group by round(year(to_date(current_date())),-3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT round(year(to_date(current_date())),-3) as GROUP_BY_FIELD, count (*)  as src_cnt
+from src
+WHERE 1=1
+group by round(year(to_date(current_date())),-3)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT round(year(to_date(current_date())),-3) as GROUP_BY_FIELD, count (*)  as src_cnt
+from src
+WHERE 1=1
+group by round(year(to_date(current_date())),-3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+2000	500

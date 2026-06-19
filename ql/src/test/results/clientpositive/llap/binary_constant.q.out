@@ -1,0 +1,9 @@
+PREHOOK: query: select cast(cast('a' as binary) as string) from src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(cast('a' as binary) as string) from src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+a

@@ -1,0 +1,62 @@
+PREHOOK: query: DROP TABLE ts_pq
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE ts_pq
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE EXTERNAL TABLE ts_pq (ts1 TIMESTAMP)
+    STORED AS PARQUET
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ts_pq
+POSTHOOK: query: CREATE EXTERNAL TABLE ts_pq (ts1 TIMESTAMP)
+    STORED AS PARQUET
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ts_pq
+PREHOOK: query: INSERT INTO ts_pq VALUES ('1998-10-03 09:58:31.231')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ts_pq
+POSTHOOK: query: INSERT INTO ts_pq VALUES ('1998-10-03 09:58:31.231')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ts_pq
+POSTHOOK: Lineage: ts_pq.ts1 SCRIPT []
+PREHOOK: query: SELECT * FROM ts_pq
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ts_pq
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM ts_pq
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ts_pq
+#### A masked pattern was here ####
+1998-10-03 09:58:31.231
+PREHOOK: query: CREATE EXTERNAL TABLE ts_pq_2 (ts2 BIGINT)
+    STORED AS PARQUET
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ts_pq_2
+POSTHOOK: query: CREATE EXTERNAL TABLE ts_pq_2 (ts2 BIGINT)
+    STORED AS PARQUET
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ts_pq_2
+PREHOOK: query: SELECT * FROM ts_pq_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ts_pq_2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM ts_pq_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ts_pq_2
+#### A masked pattern was here ####
+61111231000000
+#### A masked pattern was here ####

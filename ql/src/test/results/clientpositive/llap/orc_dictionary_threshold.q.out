@@ -1,0 +1,131 @@
+PREHOOK: query: CREATE TABLE test_orc_n5 (key STRING)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
+STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_orc_n5
+POSTHOOK: query: CREATE TABLE test_orc_n5 (key STRING)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
+STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_orc_n5
+PREHOOK: query: INSERT OVERWRITE TABLE test_orc_n5 SELECT key FROM src TABLESAMPLE (10 ROWS)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_orc_n5
+POSTHOOK: query: INSERT OVERWRITE TABLE test_orc_n5 SELECT key FROM src TABLESAMPLE (10 ROWS)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_orc_n5
+POSTHOOK: Lineage: test_orc_n5.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: SELECT * FROM test_orc_n5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_orc_n5
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM test_orc_n5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_orc_n5
+#### A masked pattern was here ####
+238
+86
+311
+27
+165
+409
+255
+278
+98
+484
+PREHOOK: query: ALTER TABLE test_orc_n5 SET SERDEPROPERTIES ('orc.stripe.size' = '1')
+PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
+PREHOOK: Input: default@test_orc_n5
+PREHOOK: Output: default@test_orc_n5
+POSTHOOK: query: ALTER TABLE test_orc_n5 SET SERDEPROPERTIES ('orc.stripe.size' = '1')
+POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: Input: default@test_orc_n5
+POSTHOOK: Output: default@test_orc_n5
+PREHOOK: query: CREATE TABLE src_thousand(key STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_thousand
+POSTHOOK: query: CREATE TABLE src_thousand(key STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_thousand
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1kv2.cogroup.txt' 
+     INTO TABLE src_thousand
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@src_thousand
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1kv2.cogroup.txt' 
+     INTO TABLE src_thousand
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@src_thousand
+PREHOOK: query: INSERT OVERWRITE TABLE test_orc_n5
+SELECT key FROM (
+SELECT CONCAT("a", key) AS key FROM src_thousand
+UNION ALL
+SELECT CONCAT("b", key) AS key FROM src_thousand
+UNION ALL
+SELECT CONCAT("c", key) AS key FROM src_thousand
+UNION ALL
+SELECT CONCAT("d", key) AS key FROM src_thousand
+UNION ALL
+SELECT CONCAT("e", key) AS key FROM src_thousand
+UNION ALL
+SELECT CONCAT("f", 1) AS key FROM src_thousand
+UNION ALL
+SELECT CONCAT("g", 1) AS key FROM src_thousand
+UNION ALL
+SELECT CONCAT("h", 1) AS key FROM src_thousand
+UNION ALL
+SELECT CONCAT("i", 1) AS key FROM src_thousand
+UNION ALL
+SELECT CONCAT("j", 1) AS key FROM src_thousand
+UNION ALL
+SELECT CONCAT("k", key) AS key FROM src_thousand
+) a ORDER BY key LIMIT 11000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thousand
+PREHOOK: Output: default@test_orc_n5
+POSTHOOK: query: INSERT OVERWRITE TABLE test_orc_n5
+SELECT key FROM (
+SELECT CONCAT("a", key) AS key FROM src_thousand
+UNION ALL
+SELECT CONCAT("b", key) AS key FROM src_thousand
+UNION ALL
+SELECT CONCAT("c", key) AS key FROM src_thousand
+UNION ALL
+SELECT CONCAT("d", key) AS key FROM src_thousand
+UNION ALL
+SELECT CONCAT("e", key) AS key FROM src_thousand
+UNION ALL
+SELECT CONCAT("f", 1) AS key FROM src_thousand
+UNION ALL
+SELECT CONCAT("g", 1) AS key FROM src_thousand
+UNION ALL
+SELECT CONCAT("h", 1) AS key FROM src_thousand
+UNION ALL
+SELECT CONCAT("i", 1) AS key FROM src_thousand
+UNION ALL
+SELECT CONCAT("j", 1) AS key FROM src_thousand
+UNION ALL
+SELECT CONCAT("k", key) AS key FROM src_thousand
+) a ORDER BY key LIMIT 11000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thousand
+POSTHOOK: Output: default@test_orc_n5
+POSTHOOK: Lineage: test_orc_n5.key EXPRESSION [(src_thousand)src_thousand.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: SELECT SUM(HASH(key)) FROM test_orc_n5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_orc_n5
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(HASH(key)) FROM test_orc_n5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_orc_n5
+#### A masked pattern was here ####
+1082202951192

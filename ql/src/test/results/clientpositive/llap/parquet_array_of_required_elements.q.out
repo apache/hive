@@ -1,0 +1,41 @@
+PREHOOK: query: CREATE TABLE parquet_array_of_required_elements (
+    locations ARRAY<STRUCT<latitude: DOUBLE, longitude: DOUBLE>>
+) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_array_of_required_elements
+POSTHOOK: query: CREATE TABLE parquet_array_of_required_elements (
+    locations ARRAY<STRUCT<latitude: DOUBLE, longitude: DOUBLE>>
+) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_array_of_required_elements
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/NewRequiredGroupInList.parquet'
+OVERWRITE INTO TABLE parquet_array_of_required_elements
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_array_of_required_elements
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/NewRequiredGroupInList.parquet'
+OVERWRITE INTO TABLE parquet_array_of_required_elements
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_array_of_required_elements
+PREHOOK: query: SELECT * FROM parquet_array_of_required_elements
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_array_of_required_elements
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM parquet_array_of_required_elements
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_array_of_required_elements
+#### A masked pattern was here ####
+[{"latitude":0.0,"longitude":180.0},{"latitude":0.0,"longitude":0.0}]
+PREHOOK: query: DROP TABLE parquet_array_of_required_elements
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@parquet_array_of_required_elements
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_array_of_required_elements
+POSTHOOK: query: DROP TABLE parquet_array_of_required_elements
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@parquet_array_of_required_elements
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_array_of_required_elements

@@ -1,0 +1,7 @@
+IDENTITY userId TYPE INT
+SCHEMA TYPE STRING
+FOR SCHEMA 'a'
+    ERASE email
+FOR SCHEMA 'b'
+    ERASE   country
+    REPLACE country = 'UNKNOWN'

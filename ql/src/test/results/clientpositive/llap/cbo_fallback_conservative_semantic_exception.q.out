@@ -1,0 +1,31 @@
+PREHOOK: query: explain select count(*) from src where key <=> 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from src where key <=> 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized, llap
+      File Output Operator [FS_14]
+        Group By Operator [GBY_13] (rows=1 width=8)
+          Output:["_col0"],aggregations:["count(VALUE._col0)"]
+        <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized, llap
+          PARTITION_ONLY_SHUFFLE [RS_12]
+            Group By Operator [GBY_11] (rows=1 width=8)
+              Output:["_col0"],aggregations:["count()"]
+              Select Operator [SEL_10] (rows=250 width=87)
+                Filter Operator [FIL_9] (rows=250 width=87)
+                  predicate:(UDFToDouble(key) IS NOT DISTINCT FROM 100.0D)
+                  TableScan [TS_0] (rows=500 width=87)
+                    default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
+

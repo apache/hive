@@ -1,0 +1,78 @@
+PREHOOK: query: CREATE DATABASE test_db WITH dbproperties ('key1' = 'value1', 'key2' = 'value2')
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test_db
+POSTHOOK: query: CREATE DATABASE test_db WITH dbproperties ('key1' = 'value1', 'key2' = 'value2')
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test_db
+PREHOOK: query: EXPLAIN DESC DATABASE test_db
+PREHOOK: type: DESCDATABASE
+PREHOOK: Input: database:test_db
+POSTHOOK: query: EXPLAIN DESC DATABASE test_db
+POSTHOOK: type: DESCDATABASE
+POSTHOOK: Input: database:test_db
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Describe Database
+      database: test_db
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: DESC DATABASE test_db
+PREHOOK: type: DESCDATABASE
+PREHOOK: Input: database:test_db
+POSTHOOK: query: DESC DATABASE test_db
+POSTHOOK: type: DESCDATABASE
+POSTHOOK: Input: database:test_db
+test_db		location/in/test		hive_test_user	USER		
+PREHOOK: query: EXPLAIN DESC DATABASE EXTENDED test_db
+PREHOOK: type: DESCDATABASE
+PREHOOK: Input: database:test_db
+POSTHOOK: query: EXPLAIN DESC DATABASE EXTENDED test_db
+POSTHOOK: type: DESCDATABASE
+POSTHOOK: Input: database:test_db
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Describe Database
+      database: test_db
+      extended: true
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: DESC DATABASE EXTENDED test_db
+PREHOOK: type: DESCDATABASE
+PREHOOK: Input: database:test_db
+POSTHOOK: query: DESC DATABASE EXTENDED test_db
+POSTHOOK: type: DESCDATABASE
+POSTHOOK: Input: database:test_db
+test_db		location/in/test		hive_test_user	USER			{key1=value1, key2=value2}
+PREHOOK: query: DESC SCHEMA EXTENDED test_db
+PREHOOK: type: DESCDATABASE
+PREHOOK: Input: database:test_db
+POSTHOOK: query: DESC SCHEMA EXTENDED test_db
+POSTHOOK: type: DESCDATABASE
+POSTHOOK: Input: database:test_db
+test_db		location/in/test		hive_test_user	USER			{key1=value1, key2=value2}
+PREHOOK: query: DROP DATABASE test_db
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:test_db
+PREHOOK: Output: database:test_db
+POSTHOOK: query: DROP DATABASE test_db
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:test_db
+POSTHOOK: Output: database:test_db

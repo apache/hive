@@ -1,0 +1,17 @@
+Ln:1 MAP OBJECT s AS default.src
+Ln:2 MAP OBJECT log AS src AT hive2conn
+Ln:4 DECLARE cnt INT = 3
+Ln:5 SELECT
+Ln:5 SELECT count(*) FROM default.src t1 WHERE 1 = 0
+Ln:5 SELECT completed successfully
+Ln:5 SELECT INTO statement executed
+Ln:5 COLUMN: _c0, bigint
+Ln:5 SET cnt = 0
+Ln:6 PRINT
+0
+Ln:7 SET cnt = 5
+Ln:9 SELECT
+Ln:9 SELECT count(*) FROM src WHERE 1 = 0
+Ln:9 SELECT completed successfully
+Ln:9 Standalone SELECT executed: 1 columns in the result set
+0

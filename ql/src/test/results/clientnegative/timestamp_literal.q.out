@@ -1,0 +1,1 @@
+FAILED: SemanticException Unable to convert time literal '2012-12-29 20:01:00 +03:00' to time value.

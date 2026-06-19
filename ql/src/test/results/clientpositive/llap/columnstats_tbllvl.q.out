@@ -1,0 +1,975 @@
+PREHOOK: query: DROP TABLE IF EXISTS UserVisits_web_text_none
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS UserVisits_web_text_none
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE UserVisits_web_text_none (
+  sourceIP string,
+  destURL string,
+  visitDate string,
+  adRevenue float,
+  userAgent string,
+  cCode string,
+  lCode string,
+  sKeyword string,
+  avgTimeOnSite int)
+row format delimited fields terminated by '|'  stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@UserVisits_web_text_none
+POSTHOOK: query: CREATE TABLE UserVisits_web_text_none (
+  sourceIP string,
+  destURL string,
+  visitDate string,
+  adRevenue float,
+  userAgent string,
+  cCode string,
+  lCode string,
+  sKeyword string,
+  avgTimeOnSite int)
+row format delimited fields terminated by '|'  stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@UserVisits_web_text_none
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/UserVisits.dat" INTO TABLE UserVisits_web_text_none
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@uservisits_web_text_none
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/UserVisits.dat" INTO TABLE UserVisits_web_text_none
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@uservisits_web_text_none
+PREHOOK: query: explain 
+analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@uservisits_web_text_none
+PREHOOK: Output: default@uservisits_web_text_none
+#### A masked pattern was here ####
+POSTHOOK: query: explain 
+analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@uservisits_web_text_none
+POSTHOOK: Output: default@uservisits_web_text_none
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: uservisits_web_text_none
+                  Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: sourceip (type: string), adrevenue (type: float), avgtimeonsite (type: int)
+                    outputColumnNames: sourceip, adrevenue, avgtimeonsite
+                    Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: max(length(sourceip)), avg(COALESCE(length(sourceip),0)), count(1), count(sourceip), compute_bit_vector_hll(sourceip), min(avgtimeonsite), max(avgtimeonsite), count(avgtimeonsite), compute_bit_vector_hll(avgtimeonsite), min(adrevenue), max(adrevenue), count(adrevenue), compute_bit_vector_hll(adrevenue)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                      Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary), _col9 (type: float), _col10 (type: float), _col11 (type: bigint), _col12 (type: binary)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), UDFToLong(_col5) (type: bigint), UDFToLong(_col6) (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary), 'DOUBLE' (type: string), UDFToDouble(_col9) (type: double), UDFToDouble(_col10) (type: double), (_col2 - _col11) (type: bigint), COALESCE(ndv_compute_bit_vector(_col12),0) (type: bigint), _col12 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
+                  Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: sourceIP, avgTimeOnSite, adRevenue
+          Column Types: string, int, float
+          Table: default.uservisits_web_text_none
+
+PREHOOK: query: explain extended
+analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@uservisits_web_text_none
+PREHOOK: Output: default@uservisits_web_text_none
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended
+analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@uservisits_web_text_none
+POSTHOOK: Output: default@uservisits_web_text_none
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: uservisits_web_text_none
+                  Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                  Statistics Aggregation Key Prefix: default.uservisits_web_text_none/
+                  GatherStats: true
+                  Select Operator
+                    expressions: sourceip (type: string), adrevenue (type: float), avgtimeonsite (type: int)
+                    outputColumnNames: sourceip, adrevenue, avgtimeonsite
+                    Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: max(length(sourceip)), avg(COALESCE(length(sourceip),0)), count(1), count(sourceip), compute_bit_vector_hll(sourceip), min(avgtimeonsite), max(avgtimeonsite), count(avgtimeonsite), compute_bit_vector_hll(avgtimeonsite), min(adrevenue), max(adrevenue), count(adrevenue), compute_bit_vector_hll(adrevenue)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                      Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        bucketingVersion: 2
+                        null sort order: 
+                        numBuckets: -1
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: NONE
+                        tag: -1
+                        value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary), _col9 (type: float), _col10 (type: float), _col11 (type: bigint), _col12 (type: binary)
+                        auto parallelism: false
+            Execution mode: llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: uservisits_web_text_none
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns sourceip,desturl,visitdate,adrevenue,useragent,ccode,lcode,skeyword,avgtimeonsite
+                    columns.types string:string:string:float:string:string:string:string:int
+                    field.delim |
+#### A masked pattern was here ####
+                    name default.uservisits_web_text_none
+                    serialization.format |
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns sourceip,desturl,visitdate,adrevenue,useragent,ccode,lcode,skeyword,avgtimeonsite
+                      columns.comments 
+                      columns.types string:string:string:float:string:string:string:string:int
+                      field.delim |
+#### A masked pattern was here ####
+                      name default.uservisits_web_text_none
+                      serialization.format |
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.uservisits_web_text_none
+                  name: default.uservisits_web_text_none
+            Truncated Path -> Alias:
+              /uservisits_web_text_none [uservisits_web_text_none]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), UDFToLong(_col5) (type: bigint), UDFToLong(_col6) (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary), 'DOUBLE' (type: string), UDFToDouble(_col9) (type: double), UDFToDouble(_col10) (type: double), (_col2 - _col11) (type: bigint), COALESCE(ndv_compute_bit_vector(_col12),0) (type: bigint), _col12 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
+                  Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    bucketingVersion: 2
+                    compressed: false
+                    GlobalTableId: 0
+#### A masked pattern was here ####
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        properties:
+                          bucketing_version -1
+                          columns _col0,_col1,_col2,_col3,_col4,_col5,_col6,_col7,_col8,_col9,_col10,_col11,_col12,_col13,_col14,_col15,_col16,_col17
+                          columns.types string:bigint:double:bigint:bigint:binary:string:bigint:bigint:bigint:bigint:binary:string:double:double:bigint:bigint:binary
+                          escape.delim \
+                          hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TotalFiles: 1
+                    GatherStats: false
+                    MultiFileSpray: false
+
+  Stage: Stage-2
+    Stats Work
+      Basic Stats Work:
+          Stats Aggregation Key Prefix: default.uservisits_web_text_none/
+      Column Stats Desc:
+          Columns: sourceIP, avgTimeOnSite, adRevenue
+          Column Types: string, int, float
+          Table: default.uservisits_web_text_none
+          Is Table Level Stats: true
+
+PREHOOK: query: analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@uservisits_web_text_none
+PREHOOK: Output: default@uservisits_web_text_none
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@uservisits_web_text_none
+POSTHOOK: Output: default@uservisits_web_text_none
+#### A masked pattern was here ####
+PREHOOK: query: explain 
+analyze table default.UserVisits_web_text_none compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@uservisits_web_text_none
+PREHOOK: Output: default@uservisits_web_text_none
+#### A masked pattern was here ####
+POSTHOOK: query: explain 
+analyze table default.UserVisits_web_text_none compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@uservisits_web_text_none
+POSTHOOK: Output: default@uservisits_web_text_none
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: uservisits_web_text_none
+                  Statistics: Num rows: 55 Data size: 65391 Basic stats: COMPLETE Column stats: PARTIAL
+                  Select Operator
+                    expressions: sourceip (type: string), desturl (type: string), visitdate (type: string), adrevenue (type: float), useragent (type: string), ccode (type: string), lcode (type: string), skeyword (type: string), avgtimeonsite (type: int)
+                    outputColumnNames: sourceip, desturl, visitdate, adrevenue, useragent, ccode, lcode, skeyword, avgtimeonsite
+                    Statistics: Num rows: 55 Data size: 65391 Basic stats: COMPLETE Column stats: PARTIAL
+                    Group By Operator
+                      aggregations: max(length(sourceip)), avg(COALESCE(length(sourceip),0)), count(1), count(sourceip), compute_bit_vector_hll(sourceip), max(length(desturl)), avg(COALESCE(length(desturl),0)), count(desturl), compute_bit_vector_hll(desturl), max(length(visitdate)), avg(COALESCE(length(visitdate),0)), count(visitdate), compute_bit_vector_hll(visitdate), min(adrevenue), max(adrevenue), count(adrevenue), compute_bit_vector_hll(adrevenue), max(length(useragent)), avg(COALESCE(length(useragent),0)), count(useragent), compute_bit_vector_hll(useragent), max(length(ccode)), avg(COALESCE(length(ccode),0)), count(ccode), compute_bit_vector_hll(ccode), max(length(lcode)), avg(COALESCE(length(lcode),0)), count(lcode), compute_bit_vector_hll(lcode), max(length(skeyword)), avg(COALESCE(length(skeyword),0)), count(skeyword), compute_bit_vector_hll(skeyword), min(avgtimeonsite), max(avgtimeonsite), count(avgtimeonsite), compute_bit_vector_hll(avgtimeonsite)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35, _col36
+                      Statistics: Num rows: 1 Data size: 1952 Basic stats: COMPLETE Column stats: PARTIAL
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 1952 Basic stats: COMPLETE Column stats: PARTIAL
+                        value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary), _col9 (type: int), _col10 (type: struct<count:bigint,sum:double,input:int>), _col11 (type: bigint), _col12 (type: binary), _col13 (type: float), _col14 (type: float), _col15 (type: bigint), _col16 (type: binary), _col17 (type: int), _col18 (type: struct<count:bigint,sum:double,input:int>), _col19 (type: bigint), _col20 (type: binary), _col21 (type: int), _col22 (type: struct<count:bigint,sum:double,input:int>), _col23 (type: bigint), _col24 (type: binary), _col25 (type: int), _col26 (type: struct<count:bigint,sum:double,input:int>), _col27 (type: bigint), _col28 (type: binary), _col29 (type: int), _col30 (type: struct<count:bigint,sum:double,input:int>), _col31 (type: bigint), _col32 (type: binary), _col33 (type: int), _col34 (type: int), _col35 (type: bigint), _col36 (type: binary)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), max(VALUE._col9), avg(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector_hll(VALUE._col16), max(VALUE._col17), avg(VALUE._col18), count(VALUE._col19), compute_bit_vector_hll(VALUE._col20), max(VALUE._col21), avg(VALUE._col22), count(VALUE._col23), compute_bit_vector_hll(VALUE._col24), max(VALUE._col25), avg(VALUE._col26), count(VALUE._col27), compute_bit_vector_hll(VALUE._col28), max(VALUE._col29), avg(VALUE._col30), count(VALUE._col31), compute_bit_vector_hll(VALUE._col32), min(VALUE._col33), max(VALUE._col34), count(VALUE._col35), compute_bit_vector_hll(VALUE._col36)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35, _col36
+                Statistics: Num rows: 1 Data size: 1476 Basic stats: COMPLETE Column stats: PARTIAL
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col5,0)) (type: bigint), COALESCE(_col6,0) (type: double), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col9,0)) (type: bigint), COALESCE(_col10,0) (type: double), (_col2 - _col11) (type: bigint), COALESCE(ndv_compute_bit_vector(_col12),0) (type: bigint), _col12 (type: binary), 'DOUBLE' (type: string), UDFToDouble(_col13) (type: double), UDFToDouble(_col14) (type: double), (_col2 - _col15) (type: bigint), COALESCE(ndv_compute_bit_vector(_col16),0) (type: bigint), _col16 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col17,0)) (type: bigint), COALESCE(_col18,0) (type: double), (_col2 - _col19) (type: bigint), COALESCE(ndv_compute_bit_vector(_col20),0) (type: bigint), _col20 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col21,0)) (type: bigint), COALESCE(_col22,0) (type: double), (_col2 - _col23) (type: bigint), COALESCE(ndv_compute_bit_vector(_col24),0) (type: bigint), _col24 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col25,0)) (type: bigint), COALESCE(_col26,0) (type: double), (_col2 - _col27) (type: bigint), COALESCE(ndv_compute_bit_vector(_col28),0) (type: bigint), _col28 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col29,0)) (type: bigint), COALESCE(_col30,0) (type: double), (_col2 - _col31) (type: bigint), COALESCE(ndv_compute_bit_vector(_col32),0) (type: bigint), _col32 (type: binary), 'LONG' (type: string), UDFToLong(_col33) (type: bigint), UDFToLong(_col34) (type: bigint), (_col2 - _col35) (type: bigint), COALESCE(ndv_compute_bit_vector(_col36),0) (type: bigint), _col36 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35, _col36, _col37, _col38, _col39, _col40, _col41, _col42, _col43, _col44, _col45, _col46, _col47, _col48, _col49, _col50, _col51, _col52, _col53
+                  Statistics: Num rows: 1 Data size: 2392 Basic stats: COMPLETE Column stats: PARTIAL
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 2392 Basic stats: COMPLETE Column stats: PARTIAL
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: sourceip, desturl, visitdate, adrevenue, useragent, ccode, lcode, skeyword, avgtimeonsite
+          Column Types: string, string, string, float, string, string, string, string, int
+          Table: default.uservisits_web_text_none
+
+PREHOOK: query: analyze table default.UserVisits_web_text_none compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@uservisits_web_text_none
+PREHOOK: Output: default@uservisits_web_text_none
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table default.UserVisits_web_text_none compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@uservisits_web_text_none
+POSTHOOK: Output: default@uservisits_web_text_none
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted UserVisits_web_text_none destURL
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@uservisits_web_text_none
+POSTHOOK: query: describe formatted UserVisits_web_text_none destURL
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@uservisits_web_text_none
+col_name            	destURL             
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	55                  
+avg_col_len         	48.945454545454545  
+max_col_len         	96                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}
+PREHOOK: query: describe formatted UserVisits_web_text_none adRevenue
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@uservisits_web_text_none
+POSTHOOK: query: describe formatted UserVisits_web_text_none adRevenue
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@uservisits_web_text_none
+col_name            	adRevenue           
+data_type           	float               
+min                 	13.099044799804688  
+max                 	492.98870849609375  
+num_nulls           	0                   
+distinct_count      	55                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}
+PREHOOK: query: describe formatted UserVisits_web_text_none avgTimeOnSite
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@uservisits_web_text_none
+POSTHOOK: query: describe formatted UserVisits_web_text_none avgTimeOnSite
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@uservisits_web_text_none
+col_name            	avgTimeOnSite       
+data_type           	int                 
+min                 	1                   
+max                 	9                   
+num_nulls           	0                   
+distinct_count      	9                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}
+PREHOOK: query: CREATE TABLE empty_tab(
+   a int,
+   b double,
+   c string, 
+   d boolean,
+   e binary)
+row format delimited fields terminated by '|'  stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@empty_tab
+POSTHOOK: query: CREATE TABLE empty_tab(
+   a int,
+   b double,
+   c string, 
+   d boolean,
+   e binary)
+row format delimited fields terminated by '|'  stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@empty_tab
+PREHOOK: query: explain 
+analyze table empty_tab compute statistics for columns a,b,c,d,e
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@empty_tab
+PREHOOK: Output: default@empty_tab
+#### A masked pattern was here ####
+POSTHOOK: query: explain 
+analyze table empty_tab compute statistics for columns a,b,c,d,e
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@empty_tab
+POSTHOOK: Output: default@empty_tab
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: empty_tab
+                  Statistics: Num rows: 1 Data size: 344 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: a (type: int), b (type: double), c (type: string), d (type: boolean), e (type: binary)
+                    outputColumnNames: a, b, c, d, e
+                    Statistics: Num rows: 1 Data size: 344 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: min(a), max(a), count(1), count(a), compute_bit_vector_hll(a), min(b), max(b), count(b), compute_bit_vector_hll(b), max(length(c)), avg(COALESCE(length(c),0)), count(c), compute_bit_vector_hll(c), count(CASE WHEN (d is true) THEN (1) ELSE (null) END), count(CASE WHEN (d is false) THEN (1) ELSE (null) END), count(d), max(length(e)), avg(COALESCE(length(e),0)), count(e)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
+                      Statistics: Num rows: 1 Data size: 1024 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 1024 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: double), _col6 (type: double), _col7 (type: bigint), _col8 (type: binary), _col9 (type: int), _col10 (type: struct<count:bigint,sum:double,input:int>), _col11 (type: bigint), _col12 (type: binary), _col13 (type: bigint), _col14 (type: bigint), _col15 (type: bigint), _col16 (type: int), _col17 (type: struct<count:bigint,sum:double,input:int>), _col18 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), max(VALUE._col9), avg(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12), count(VALUE._col13), count(VALUE._col14), count(VALUE._col15), max(VALUE._col16), avg(VALUE._col17), count(VALUE._col18)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
+                Statistics: Num rows: 1 Data size: 1024 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col0) (type: bigint), UDFToLong(_col1) (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'DOUBLE' (type: string), _col5 (type: double), _col6 (type: double), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col9,0)) (type: bigint), COALESCE(_col10,0) (type: double), (_col2 - _col11) (type: bigint), COALESCE(ndv_compute_bit_vector(_col12),0) (type: bigint), _col12 (type: binary), 'BOOLEAN' (type: string), _col13 (type: bigint), _col14 (type: bigint), (_col2 - _col15) (type: bigint), 'BINARY' (type: string), UDFToLong(COALESCE(_col16,0)) (type: bigint), COALESCE(_col17,0) (type: double), (_col2 - _col18) (type: bigint)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25
+                  Statistics: Num rows: 1 Data size: 1024 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 1024 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: a, b, c, d, e
+          Column Types: int, double, string, boolean, binary
+          Table: default.empty_tab
+
+PREHOOK: query: analyze table empty_tab compute statistics for columns a,b,c,d,e
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@empty_tab
+PREHOOK: Output: default@empty_tab
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table empty_tab compute statistics for columns a,b,c,d,e
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@empty_tab
+POSTHOOK: Output: default@empty_tab
+#### A masked pattern was here ####
+PREHOOK: query: create database if not exists dummydb
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:dummydb
+POSTHOOK: query: create database if not exists dummydb
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:dummydb
+PREHOOK: query: use dummydb
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:dummydb
+POSTHOOK: query: use dummydb
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:dummydb
+PREHOOK: query: analyze table default.UserVisits_web_text_none compute statistics for columns destURL
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@uservisits_web_text_none
+PREHOOK: Output: default@uservisits_web_text_none
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table default.UserVisits_web_text_none compute statistics for columns destURL
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@uservisits_web_text_none
+POSTHOOK: Output: default@uservisits_web_text_none
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted default.UserVisits_web_text_none destURL
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@uservisits_web_text_none
+POSTHOOK: query: describe formatted default.UserVisits_web_text_none destURL
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@uservisits_web_text_none
+col_name            	destURL             
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	55                  
+avg_col_len         	48.945454545454545  
+max_col_len         	96                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}
+PREHOOK: query: CREATE TABLE UserVisits_in_dummy_db (
+  sourceIP string,
+  destURL string,
+  visitDate string,
+  adRevenue float,
+  userAgent string,
+  cCode string,
+  lCode string,
+  sKeyword string,
+  avgTimeOnSite int)
+row format delimited fields terminated by '|'  stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:dummydb
+PREHOOK: Output: dummydb@UserVisits_in_dummy_db
+POSTHOOK: query: CREATE TABLE UserVisits_in_dummy_db (
+  sourceIP string,
+  destURL string,
+  visitDate string,
+  adRevenue float,
+  userAgent string,
+  cCode string,
+  lCode string,
+  sKeyword string,
+  avgTimeOnSite int)
+row format delimited fields terminated by '|'  stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:dummydb
+POSTHOOK: Output: dummydb@UserVisits_in_dummy_db
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/UserVisits.dat" INTO TABLE UserVisits_in_dummy_db
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: dummydb@uservisits_in_dummy_db
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/UserVisits.dat" INTO TABLE UserVisits_in_dummy_db
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: dummydb@uservisits_in_dummy_db
+PREHOOK: query: use default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: use default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: explain 
+analyze table dummydb.UserVisits_in_dummy_db compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: dummydb@uservisits_in_dummy_db
+PREHOOK: Output: dummydb@uservisits_in_dummy_db
+#### A masked pattern was here ####
+POSTHOOK: query: explain 
+analyze table dummydb.UserVisits_in_dummy_db compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: dummydb@uservisits_in_dummy_db
+POSTHOOK: Output: dummydb@uservisits_in_dummy_db
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: uservisits_in_dummy_db
+                  Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: sourceip (type: string), adrevenue (type: float), avgtimeonsite (type: int)
+                    outputColumnNames: sourceip, adrevenue, avgtimeonsite
+                    Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: max(length(sourceip)), avg(COALESCE(length(sourceip),0)), count(1), count(sourceip), compute_bit_vector_hll(sourceip), min(avgtimeonsite), max(avgtimeonsite), count(avgtimeonsite), compute_bit_vector_hll(avgtimeonsite), min(adrevenue), max(adrevenue), count(adrevenue), compute_bit_vector_hll(adrevenue)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                      Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary), _col9 (type: float), _col10 (type: float), _col11 (type: bigint), _col12 (type: binary)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), UDFToLong(_col5) (type: bigint), UDFToLong(_col6) (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary), 'DOUBLE' (type: string), UDFToDouble(_col9) (type: double), UDFToDouble(_col10) (type: double), (_col2 - _col11) (type: bigint), COALESCE(ndv_compute_bit_vector(_col12),0) (type: bigint), _col12 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
+                  Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: sourceIP, avgTimeOnSite, adRevenue
+          Column Types: string, int, float
+          Table: dummydb.uservisits_in_dummy_db
+
+PREHOOK: query: explain extended
+analyze table dummydb.UserVisits_in_dummy_db compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: dummydb@uservisits_in_dummy_db
+PREHOOK: Output: dummydb@uservisits_in_dummy_db
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended
+analyze table dummydb.UserVisits_in_dummy_db compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: dummydb@uservisits_in_dummy_db
+POSTHOOK: Output: dummydb@uservisits_in_dummy_db
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: uservisits_in_dummy_db
+                  Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                  Statistics Aggregation Key Prefix: dummydb.uservisits_in_dummy_db/
+                  GatherStats: true
+                  Select Operator
+                    expressions: sourceip (type: string), adrevenue (type: float), avgtimeonsite (type: int)
+                    outputColumnNames: sourceip, adrevenue, avgtimeonsite
+                    Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: max(length(sourceip)), avg(COALESCE(length(sourceip),0)), count(1), count(sourceip), compute_bit_vector_hll(sourceip), min(avgtimeonsite), max(avgtimeonsite), count(avgtimeonsite), compute_bit_vector_hll(avgtimeonsite), min(adrevenue), max(adrevenue), count(adrevenue), compute_bit_vector_hll(adrevenue)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                      Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        bucketingVersion: 2
+                        null sort order: 
+                        numBuckets: -1
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: NONE
+                        tag: -1
+                        value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary), _col9 (type: float), _col10 (type: float), _col11 (type: bigint), _col12 (type: binary)
+                        auto parallelism: false
+            Execution mode: llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: uservisits_in_dummy_db
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns sourceip,desturl,visitdate,adrevenue,useragent,ccode,lcode,skeyword,avgtimeonsite
+                    columns.types string:string:string:float:string:string:string:string:int
+                    field.delim |
+#### A masked pattern was here ####
+                    name dummydb.uservisits_in_dummy_db
+                    serialization.format |
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns sourceip,desturl,visitdate,adrevenue,useragent,ccode,lcode,skeyword,avgtimeonsite
+                      columns.comments 
+                      columns.types string:string:string:float:string:string:string:string:int
+                      field.delim |
+#### A masked pattern was here ####
+                      name dummydb.uservisits_in_dummy_db
+                      serialization.format |
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: dummydb.uservisits_in_dummy_db
+                  name: dummydb.uservisits_in_dummy_db
+            Truncated Path -> Alias:
+              /dummydb.db/uservisits_in_dummy_db [uservisits_in_dummy_db]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), UDFToLong(_col5) (type: bigint), UDFToLong(_col6) (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary), 'DOUBLE' (type: string), UDFToDouble(_col9) (type: double), UDFToDouble(_col10) (type: double), (_col2 - _col11) (type: bigint), COALESCE(ndv_compute_bit_vector(_col12),0) (type: bigint), _col12 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
+                  Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    bucketingVersion: 2
+                    compressed: false
+                    GlobalTableId: 0
+#### A masked pattern was here ####
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        properties:
+                          bucketing_version -1
+                          columns _col0,_col1,_col2,_col3,_col4,_col5,_col6,_col7,_col8,_col9,_col10,_col11,_col12,_col13,_col14,_col15,_col16,_col17
+                          columns.types string:bigint:double:bigint:bigint:binary:string:bigint:bigint:bigint:bigint:binary:string:double:double:bigint:bigint:binary
+                          escape.delim \
+                          hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TotalFiles: 1
+                    GatherStats: false
+                    MultiFileSpray: false
+
+  Stage: Stage-2
+    Stats Work
+      Basic Stats Work:
+          Stats Aggregation Key Prefix: dummydb.uservisits_in_dummy_db/
+      Column Stats Desc:
+          Columns: sourceIP, avgTimeOnSite, adRevenue
+          Column Types: string, int, float
+          Table: dummydb.uservisits_in_dummy_db
+          Is Table Level Stats: true
+
+PREHOOK: query: analyze table dummydb.UserVisits_in_dummy_db compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: dummydb@uservisits_in_dummy_db
+PREHOOK: Output: dummydb@uservisits_in_dummy_db
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table dummydb.UserVisits_in_dummy_db compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: dummydb@uservisits_in_dummy_db
+POSTHOOK: Output: dummydb@uservisits_in_dummy_db
+#### A masked pattern was here ####
+PREHOOK: query: explain 
+analyze table dummydb.UserVisits_in_dummy_db compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: dummydb@uservisits_in_dummy_db
+PREHOOK: Output: dummydb@uservisits_in_dummy_db
+#### A masked pattern was here ####
+POSTHOOK: query: explain 
+analyze table dummydb.UserVisits_in_dummy_db compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: dummydb@uservisits_in_dummy_db
+POSTHOOK: Output: dummydb@uservisits_in_dummy_db
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: uservisits_in_dummy_db
+                  Statistics: Num rows: 55 Data size: 65391 Basic stats: COMPLETE Column stats: PARTIAL
+                  Select Operator
+                    expressions: sourceip (type: string), desturl (type: string), visitdate (type: string), adrevenue (type: float), useragent (type: string), ccode (type: string), lcode (type: string), skeyword (type: string), avgtimeonsite (type: int)
+                    outputColumnNames: sourceip, desturl, visitdate, adrevenue, useragent, ccode, lcode, skeyword, avgtimeonsite
+                    Statistics: Num rows: 55 Data size: 65391 Basic stats: COMPLETE Column stats: PARTIAL
+                    Group By Operator
+                      aggregations: max(length(sourceip)), avg(COALESCE(length(sourceip),0)), count(1), count(sourceip), compute_bit_vector_hll(sourceip), max(length(desturl)), avg(COALESCE(length(desturl),0)), count(desturl), compute_bit_vector_hll(desturl), max(length(visitdate)), avg(COALESCE(length(visitdate),0)), count(visitdate), compute_bit_vector_hll(visitdate), min(adrevenue), max(adrevenue), count(adrevenue), compute_bit_vector_hll(adrevenue), max(length(useragent)), avg(COALESCE(length(useragent),0)), count(useragent), compute_bit_vector_hll(useragent), max(length(ccode)), avg(COALESCE(length(ccode),0)), count(ccode), compute_bit_vector_hll(ccode), max(length(lcode)), avg(COALESCE(length(lcode),0)), count(lcode), compute_bit_vector_hll(lcode), max(length(skeyword)), avg(COALESCE(length(skeyword),0)), count(skeyword), compute_bit_vector_hll(skeyword), min(avgtimeonsite), max(avgtimeonsite), count(avgtimeonsite), compute_bit_vector_hll(avgtimeonsite)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35, _col36
+                      Statistics: Num rows: 1 Data size: 1952 Basic stats: COMPLETE Column stats: PARTIAL
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 1952 Basic stats: COMPLETE Column stats: PARTIAL
+                        value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary), _col9 (type: int), _col10 (type: struct<count:bigint,sum:double,input:int>), _col11 (type: bigint), _col12 (type: binary), _col13 (type: float), _col14 (type: float), _col15 (type: bigint), _col16 (type: binary), _col17 (type: int), _col18 (type: struct<count:bigint,sum:double,input:int>), _col19 (type: bigint), _col20 (type: binary), _col21 (type: int), _col22 (type: struct<count:bigint,sum:double,input:int>), _col23 (type: bigint), _col24 (type: binary), _col25 (type: int), _col26 (type: struct<count:bigint,sum:double,input:int>), _col27 (type: bigint), _col28 (type: binary), _col29 (type: int), _col30 (type: struct<count:bigint,sum:double,input:int>), _col31 (type: bigint), _col32 (type: binary), _col33 (type: int), _col34 (type: int), _col35 (type: bigint), _col36 (type: binary)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), max(VALUE._col9), avg(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector_hll(VALUE._col16), max(VALUE._col17), avg(VALUE._col18), count(VALUE._col19), compute_bit_vector_hll(VALUE._col20), max(VALUE._col21), avg(VALUE._col22), count(VALUE._col23), compute_bit_vector_hll(VALUE._col24), max(VALUE._col25), avg(VALUE._col26), count(VALUE._col27), compute_bit_vector_hll(VALUE._col28), max(VALUE._col29), avg(VALUE._col30), count(VALUE._col31), compute_bit_vector_hll(VALUE._col32), min(VALUE._col33), max(VALUE._col34), count(VALUE._col35), compute_bit_vector_hll(VALUE._col36)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35, _col36
+                Statistics: Num rows: 1 Data size: 1476 Basic stats: COMPLETE Column stats: PARTIAL
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col5,0)) (type: bigint), COALESCE(_col6,0) (type: double), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col9,0)) (type: bigint), COALESCE(_col10,0) (type: double), (_col2 - _col11) (type: bigint), COALESCE(ndv_compute_bit_vector(_col12),0) (type: bigint), _col12 (type: binary), 'DOUBLE' (type: string), UDFToDouble(_col13) (type: double), UDFToDouble(_col14) (type: double), (_col2 - _col15) (type: bigint), COALESCE(ndv_compute_bit_vector(_col16),0) (type: bigint), _col16 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col17,0)) (type: bigint), COALESCE(_col18,0) (type: double), (_col2 - _col19) (type: bigint), COALESCE(ndv_compute_bit_vector(_col20),0) (type: bigint), _col20 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col21,0)) (type: bigint), COALESCE(_col22,0) (type: double), (_col2 - _col23) (type: bigint), COALESCE(ndv_compute_bit_vector(_col24),0) (type: bigint), _col24 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col25,0)) (type: bigint), COALESCE(_col26,0) (type: double), (_col2 - _col27) (type: bigint), COALESCE(ndv_compute_bit_vector(_col28),0) (type: bigint), _col28 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col29,0)) (type: bigint), COALESCE(_col30,0) (type: double), (_col2 - _col31) (type: bigint), COALESCE(ndv_compute_bit_vector(_col32),0) (type: bigint), _col32 (type: binary), 'LONG' (type: string), UDFToLong(_col33) (type: bigint), UDFToLong(_col34) (type: bigint), (_col2 - _col35) (type: bigint), COALESCE(ndv_compute_bit_vector(_col36),0) (type: bigint), _col36 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35, _col36, _col37, _col38, _col39, _col40, _col41, _col42, _col43, _col44, _col45, _col46, _col47, _col48, _col49, _col50, _col51, _col52, _col53
+                  Statistics: Num rows: 1 Data size: 2392 Basic stats: COMPLETE Column stats: PARTIAL
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 2392 Basic stats: COMPLETE Column stats: PARTIAL
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: sourceip, desturl, visitdate, adrevenue, useragent, ccode, lcode, skeyword, avgtimeonsite
+          Column Types: string, string, string, float, string, string, string, string, int
+          Table: dummydb.uservisits_in_dummy_db
+
+PREHOOK: query: analyze table dummydb.UserVisits_in_dummy_db compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: dummydb@uservisits_in_dummy_db
+PREHOOK: Output: dummydb@uservisits_in_dummy_db
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table dummydb.UserVisits_in_dummy_db compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: dummydb@uservisits_in_dummy_db
+POSTHOOK: Output: dummydb@uservisits_in_dummy_db
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted dummydb.UserVisits_in_dummy_db destURL
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: dummydb@uservisits_in_dummy_db
+POSTHOOK: query: describe formatted dummydb.UserVisits_in_dummy_db destURL
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: dummydb@uservisits_in_dummy_db
+col_name            	destURL             
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	55                  
+avg_col_len         	48.945454545454545  
+max_col_len         	96                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}
+PREHOOK: query: describe formatted dummydb.UserVisits_in_dummy_db adRevenue
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: dummydb@uservisits_in_dummy_db
+POSTHOOK: query: describe formatted dummydb.UserVisits_in_dummy_db adRevenue
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: dummydb@uservisits_in_dummy_db
+col_name            	adRevenue           
+data_type           	float               
+min                 	13.099044799804688  
+max                 	492.98870849609375  
+num_nulls           	0                   
+distinct_count      	55                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}
+PREHOOK: query: describe formatted dummydb.UserVisits_in_dummy_db avgTimeOnSite
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: dummydb@uservisits_in_dummy_db
+POSTHOOK: query: describe formatted dummydb.UserVisits_in_dummy_db avgTimeOnSite
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: dummydb@uservisits_in_dummy_db
+col_name            	avgTimeOnSite       
+data_type           	int                 
+min                 	1                   
+max                 	9                   
+num_nulls           	0                   
+distinct_count      	9                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}
+PREHOOK: query: drop table dummydb.UserVisits_in_dummy_db
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: dummydb@uservisits_in_dummy_db
+PREHOOK: Output: database:dummydb
+PREHOOK: Output: dummydb@uservisits_in_dummy_db
+POSTHOOK: query: drop table dummydb.UserVisits_in_dummy_db
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: dummydb@uservisits_in_dummy_db
+POSTHOOK: Output: database:dummydb
+POSTHOOK: Output: dummydb@uservisits_in_dummy_db
+PREHOOK: query: drop database dummydb
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:dummydb
+PREHOOK: Output: database:dummydb
+POSTHOOK: query: drop database dummydb
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:dummydb
+POSTHOOK: Output: database:dummydb

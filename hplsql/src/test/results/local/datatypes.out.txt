@@ -1,0 +1,27 @@
+Ln:1 DECLARE i1 binary_integer = 1
+Ln:2 DECLARE i2 pls_integer = 3
+Ln:3 DECLARE i3 simple_integer = 5
+Ln:4 PRINT
+1
+Ln:5 PRINT
+3
+Ln:6 PRINT
+5
+Ln:8 DECLARE f1 BINARY_FLOAT = 0.1
+Ln:9 DECLARE f2 BINARY_DOUBLE = 1.1
+Ln:10 DECLARE f3 SIMPLE_FLOAT = 3.1
+Ln:11 DECLARE f4 SIMPLE_DOUBLE = 1.3
+Ln:12 DECLARE f5 real = 1.5
+Ln:13 PRINT
+0.1
+Ln:14 PRINT
+1.1
+Ln:15 PRINT
+3.1
+Ln:16 PRINT
+1.3
+Ln:17 PRINT
+1.5
+Ln:19 DECLARE x1 xml = '<a>abc</a>'
+Ln:20 PRINT
+<a>abc</a>

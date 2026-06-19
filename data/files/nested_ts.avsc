@@ -1,0 +1,27 @@
+{
+  "type": "record",
+  "name": "TableRecord",
+  "namespace": "org.apache.hive",
+  "fields": [
+    {
+      "name": "id",
+      "type": "string"
+    },
+    {
+      "name": "dischargedate",
+      "type": {
+        "name": "DateRecord",
+        "type": "record",
+        "fields": [
+          {
+            "name": "value",
+            "type": {
+              "type": "long",
+              "logicalType": "timestamp-millis"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

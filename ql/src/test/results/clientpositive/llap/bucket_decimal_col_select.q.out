@@ -1,0 +1,27 @@
+PREHOOK: query: create table bucket_table(id decimal(38,0), name string) clustered by(id) into 3 buckets
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@bucket_table
+POSTHOOK: query: create table bucket_table(id decimal(38,0), name string) clustered by(id) into 3 buckets
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@bucket_table
+PREHOOK: query: insert into bucket_table values(5000000000000999640711, 'Cloud')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@bucket_table
+POSTHOOK: query: insert into bucket_table values(5000000000000999640711, 'Cloud')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@bucket_table
+POSTHOOK: Lineage: bucket_table.id SCRIPT []
+POSTHOOK: Lineage: bucket_table.name SCRIPT []
+PREHOOK: query: select * from bucket_table bt where id = 5000000000000999640711
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from bucket_table bt where id = 5000000000000999640711
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket_table
+#### A masked pattern was here ####
+5000000000000999640711	Cloud

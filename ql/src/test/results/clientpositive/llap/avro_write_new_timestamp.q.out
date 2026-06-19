@@ -1,0 +1,84 @@
+PREHOOK: query: CREATE TABLE employee(eid INT,birth TIMESTAMP) STORED AS AVRO
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@employee
+POSTHOOK: query: CREATE TABLE employee(eid INT,birth TIMESTAMP) STORED AS AVRO
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@employee
+PREHOOK: query: INSERT INTO employee VALUES (1, '1220-01-01 00:00:00')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@employee
+POSTHOOK: query: INSERT INTO employee VALUES (1, '1220-01-01 00:00:00')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@employee
+POSTHOOK: Lineage: employee.birth SCRIPT []
+POSTHOOK: Lineage: employee.eid SCRIPT []
+PREHOOK: query: INSERT INTO employee VALUES (2, '1880-01-01 00:00:00')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@employee
+POSTHOOK: query: INSERT INTO employee VALUES (2, '1880-01-01 00:00:00')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@employee
+POSTHOOK: Lineage: employee.birth SCRIPT []
+POSTHOOK: Lineage: employee.eid SCRIPT []
+PREHOOK: query: INSERT INTO employee VALUES (3, '1884-01-01 00:00:00')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@employee
+POSTHOOK: query: INSERT INTO employee VALUES (3, '1884-01-01 00:00:00')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@employee
+POSTHOOK: Lineage: employee.birth SCRIPT []
+POSTHOOK: Lineage: employee.eid SCRIPT []
+PREHOOK: query: INSERT INTO employee VALUES (4, '1990-01-01 00:00:00')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@employee
+POSTHOOK: query: INSERT INTO employee VALUES (4, '1990-01-01 00:00:00')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@employee
+POSTHOOK: Lineage: employee.birth SCRIPT []
+POSTHOOK: Lineage: employee.eid SCRIPT []
+PREHOOK: query: SELECT eid, birth FROM employee ORDER BY eid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@employee
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT eid, birth FROM employee ORDER BY eid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@employee
+#### A masked pattern was here ####
+1	1220-01-01 00:00:00
+2	1880-01-01 00:00:00
+3	1884-01-01 00:00:00
+4	1990-01-01 00:00:00
+PREHOOK: query: SELECT eid, birth FROM employee ORDER BY eid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@employee
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT eid, birth FROM employee ORDER BY eid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@employee
+#### A masked pattern was here ####
+1	1220-01-01 00:00:00
+2	1880-01-01 00:00:00
+3	1884-01-01 00:00:00
+4	1990-01-01 00:00:00
+PREHOOK: query: SELECT eid, birth FROM employee ORDER BY eid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@employee
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT eid, birth FROM employee ORDER BY eid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@employee
+#### A masked pattern was here ####
+1	1220-01-01 00:00:00
+2	1880-01-01 00:00:00
+3	1884-01-01 00:00:00
+4	1990-01-01 00:00:00

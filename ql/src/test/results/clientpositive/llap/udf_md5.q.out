@@ -1,0 +1,65 @@
+PREHOOK: query: DESCRIBE FUNCTION md5
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION md5
+POSTHOOK: type: DESCFUNCTION
+md5(str or bin) - Calculates an MD5 128-bit checksum for the string or binary.
+PREHOOK: query: DESC FUNCTION EXTENDED md5
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESC FUNCTION EXTENDED md5
+POSTHOOK: type: DESCFUNCTION
+md5(str or bin) - Calculates an MD5 128-bit checksum for the string or binary.
+The value is returned as a string of 32 hex digits, or NULL if the argument was NULL.
+Example:
+  > SELECT md5('ABC');
+  '902fbdd2b1df0c4f70b4a5d23525e932'
+  > SELECT md5(binary('ABC'));
+  '902fbdd2b1df0c4f70b4a5d23525e932'
+Function class:org.apache.hadoop.hive.ql.udf.UDFMd5
+Function type:BUILTIN
+PREHOOK: query: explain select md5('ABC')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain select md5('ABC')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: '902fbdd2b1df0c4f70b4a5d23525e932' (type: string)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: select
+md5('ABC'),
+md5(''),
+md5(binary('ABC')),
+md5(binary('')),
+md5(cast(null as string)),
+md5(cast(null as binary)),
+md5(null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select
+md5('ABC'),
+md5(''),
+md5(binary('ABC')),
+md5(binary('')),
+md5(cast(null as string)),
+md5(cast(null as binary)),
+md5(null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+902fbdd2b1df0c4f70b4a5d23525e932	d41d8cd98f00b204e9800998ecf8427e	902fbdd2b1df0c4f70b4a5d23525e932	d41d8cd98f00b204e9800998ecf8427e	NULL	NULL	NULL

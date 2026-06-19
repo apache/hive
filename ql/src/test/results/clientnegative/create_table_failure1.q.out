@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10072]: Database does not exist: table_in_database_creation_not_exist

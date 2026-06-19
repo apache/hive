@@ -1,0 +1,29 @@
+PREHOOK: query: create table transform_acid(a int, b varchar(128)) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@transform_acid
+POSTHOOK: query: create table transform_acid(a int, b varchar(128)) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@transform_acid
+PREHOOK: query: insert into table transform_acid select cint, cast(cstring1 as varchar(128)) from alltypesorc where cint < 0 order by cint limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@transform_acid
+POSTHOOK: query: insert into table transform_acid select cint, cast(cstring1 as varchar(128)) from alltypesorc where cint < 0 order by cint limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@transform_acid
+POSTHOOK: Lineage: transform_acid.a SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: transform_acid.b EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+PREHOOK: query: SELECT transform(*) USING 'transform_acid_grep.sh' AS (col string) FROM transform_acid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@transform_acid
+PREHOOK: Input: transform_acid_grep.sh
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT transform(*) USING 'transform_acid_grep.sh' AS (col string) FROM transform_acid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@transform_acid
+POSTHOOK: Input: transform_acid_grep.sh
+#### A masked pattern was here ####
+a

@@ -1,0 +1,60 @@
+PREHOOK: query: create table employee (eid INT, birth timestamp) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@employee
+POSTHOOK: query: create table employee (eid INT, birth timestamp) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@employee
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/employee_hive_3_1_3_us_pacific.parquet' into table employee
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@employee
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/employee_hive_3_1_3_us_pacific.parquet' into table employee
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@employee
+PREHOOK: query: select * from employee
+PREHOOK: type: QUERY
+PREHOOK: Input: default@employee
+#### A masked pattern was here ####
+POSTHOOK: query: select * from employee
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@employee
+#### A masked pattern was here ####
+1	1880-01-01 00:00:00
+2	1884-01-01 00:00:00
+3	1990-01-01 00:00:00
+PREHOOK: query: select * from employee
+PREHOOK: type: QUERY
+PREHOOK: Input: default@employee
+#### A masked pattern was here ####
+POSTHOOK: query: select * from employee
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@employee
+#### A masked pattern was here ####
+1	1880-01-01 00:00:00
+2	1884-01-01 00:00:00
+3	1990-01-01 00:00:00
+PREHOOK: query: select * from employee
+PREHOOK: type: QUERY
+PREHOOK: Input: default@employee
+#### A masked pattern was here ####
+POSTHOOK: query: select * from employee
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@employee
+#### A masked pattern was here ####
+1	1880-01-01 00:00:00
+2	1884-01-01 00:00:00
+3	1990-01-01 00:00:00
+PREHOOK: query: select * from employee
+PREHOOK: type: QUERY
+PREHOOK: Input: default@employee
+#### A masked pattern was here ####
+POSTHOOK: query: select * from employee
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@employee
+#### A masked pattern was here ####
+1	1880-01-01 00:00:00
+2	1884-01-01 00:00:00
+3	1990-01-01 00:00:00

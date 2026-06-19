@@ -1,0 +1,191 @@
+PREHOOK: query: create table t1(a int, b varchar(128)) stored as orc tblproperties ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1(a int, b varchar(128)) stored as orc tblproperties ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: insert into t1(a,b) values (1, 'one'), (2, 'two')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: insert into t1(a,b) values (1, 'one'), (2, 'two')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.a SCRIPT []
+POSTHOOK: Lineage: t1.b SCRIPT []
+PREHOOK: query: delete from t1 where a = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@t1
+POSTHOOK: query: delete from t1 where a = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@t1
+PREHOOK: query: insert into t1(a,b) values (3, 'three'), (4, 'four'), (4, 'four again'), (5, 'five')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: insert into t1(a,b) values (3, 'three'), (4, 'four'), (4, 'four again'), (5, 'five')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.a SCRIPT []
+POSTHOOK: Lineage: t1.b SCRIPT []
+PREHOOK: query: select t1.ROW__IS__DELETED, * from t1('acid.fetch.deleted.rows'='true') order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: select t1.ROW__IS__DELETED, * from t1('acid.fetch.deleted.rows'='true') order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+true	1	one
+false	2	two
+false	3	three
+false	4	four
+false	4	four again
+false	5	five
+PREHOOK: query: update t1
+set b = 'updated'
+where a = 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@t1
+PREHOOK: Output: default@t1
+POSTHOOK: query: update t1
+set b = 'updated'
+where a = 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@t1
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.a SIMPLE []
+POSTHOOK: Lineage: t1.b EXPRESSION []
+PREHOOK: query: select t1.ROW__IS__DELETED, * from t1('acid.fetch.deleted.rows'='true') order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: select t1.ROW__IS__DELETED, * from t1('acid.fetch.deleted.rows'='true') order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+true	1	one
+false	2	two
+true	3	three
+false	3	updated
+false	4	four
+false	4	four again
+false	5	five
+PREHOOK: query: create table t2(a int, c float) stored as orc tblproperties ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2
+POSTHOOK: query: create table t2(a int, c float) stored as orc tblproperties ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2
+PREHOOK: query: insert into t2(a,c) values (1, 1.0), (2, 2.0), (3, 3.3), (4, 4.4), (4, 4.5), (5, 5.5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t2
+POSTHOOK: query: insert into t2(a,c) values (1, 1.0), (2, 2.0), (3, 3.3), (4, 4.4), (4, 4.5), (5, 5.5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t2
+POSTHOOK: Lineage: t2.a SCRIPT []
+POSTHOOK: Lineage: t2.c SCRIPT []
+PREHOOK: query: select t1.*, t2.* from t1
+join t2 on t1.a = t2.a
+order by t1.a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+POSTHOOK: query: select t1.*, t2.* from t1
+join t2 on t1.a = t2.a
+order by t1.a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
+#### A masked pattern was here ####
+2	two	2	2.0
+3	updated	3	3.3
+4	four	4	4.4
+4	four	4	4.5
+4	four again	4	4.4
+4	four again	4	4.5
+5	five	5	5.5
+PREHOOK: query: select t1.ROW__IS__DELETED, t1.*, t2.ROW__IS__DELETED, t2.* from t1('acid.fetch.deleted.rows'='true')
+join t2('acid.fetch.deleted.rows'='true') on t1.a = t2.a
+order by t1.a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+POSTHOOK: query: select t1.ROW__IS__DELETED, t1.*, t2.ROW__IS__DELETED, t2.* from t1('acid.fetch.deleted.rows'='true')
+join t2('acid.fetch.deleted.rows'='true') on t1.a = t2.a
+order by t1.a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
+#### A masked pattern was here ####
+true	1	one	false	1	1.0
+false	2	two	false	2	2.0
+true	3	three	false	3	3.3
+false	3	updated	false	3	3.3
+false	4	four	false	4	4.4
+false	4	four	false	4	4.5
+false	4	four again	false	4	4.4
+false	4	four again	false	4	4.5
+false	5	five	false	5	5.5
+PREHOOK: query: delete from t2 where a in (1, 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2
+PREHOOK: Output: default@t2
+POSTHOOK: query: delete from t2 where a in (1, 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2
+POSTHOOK: Output: default@t2
+PREHOOK: query: select t1.*, t2.* from t1
+join t2 on t1.a = t2.a
+order by t1.a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+POSTHOOK: query: select t1.*, t2.* from t1
+join t2 on t1.a = t2.a
+order by t1.a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
+#### A masked pattern was here ####
+2	two	2	2.0
+3	updated	3	3.3
+5	five	5	5.5
+PREHOOK: query: select t1.ROW__IS__DELETED, t1.*, t2.ROW__IS__DELETED, t2.* from t1('acid.fetch.deleted.rows'='true')
+join t2('acid.fetch.deleted.rows'='true') on t1.a = t2.a
+order by t1.a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+POSTHOOK: query: select t1.ROW__IS__DELETED, t1.*, t2.ROW__IS__DELETED, t2.* from t1('acid.fetch.deleted.rows'='true')
+join t2('acid.fetch.deleted.rows'='true') on t1.a = t2.a
+order by t1.a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
+#### A masked pattern was here ####
+true	1	one	true	1	1.0
+false	2	two	false	2	2.0
+true	3	three	false	3	3.3
+false	3	updated	false	3	3.3
+false	4	four	true	4	4.4
+false	4	four	true	4	4.5
+false	4	four again	true	4	4.4
+false	4	four again	true	4	4.5
+false	5	five	false	5	5.5

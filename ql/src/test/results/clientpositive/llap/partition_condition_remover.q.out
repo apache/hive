@@ -1,0 +1,88 @@
+PREHOOK: query: drop table foo_n5
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table foo_n5
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table foo_n5 (i int) partitioned by (s string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@foo_n5
+POSTHOOK: query: create table foo_n5 (i int) partitioned by (s string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@foo_n5
+PREHOOK: query: insert overwrite table foo_n5 partition(s='foo_n5') select cint from alltypesorc limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@foo_n5@s=foo_n5
+POSTHOOK: query: insert overwrite table foo_n5 partition(s='foo_n5') select cint from alltypesorc limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@foo_n5@s=foo_n5
+POSTHOOK: Lineage: foo_n5 PARTITION(s=foo_n5).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+PREHOOK: query: insert overwrite table foo_n5 partition(s='bar') select cint from alltypesorc limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@foo_n5@s=bar
+POSTHOOK: query: insert overwrite table foo_n5 partition(s='bar') select cint from alltypesorc limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@foo_n5@s=bar
+POSTHOOK: Lineage: foo_n5 PARTITION(s=bar).i SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+PREHOOK: query: explain select * from foo_n5 where s not in ('bar')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@foo_n5
+PREHOOK: Input: default@foo_n5@s=foo_n5
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from foo_n5 where s not in ('bar')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@foo_n5
+POSTHOOK: Input: default@foo_n5@s=foo_n5
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: foo_n5
+          filterExpr: (s <> 'bar') (type: boolean)
+          Select Operator
+            expressions: i (type: int), s (type: string)
+            outputColumnNames: _col0, _col1
+            ListSink
+
+PREHOOK: query: select * from foo_n5 where s not in ('bar')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@foo_n5
+PREHOOK: Input: default@foo_n5@s=foo_n5
+#### A masked pattern was here ####
+POSTHOOK: query: select * from foo_n5 where s not in ('bar')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@foo_n5
+POSTHOOK: Input: default@foo_n5@s=foo_n5
+#### A masked pattern was here ####
+528534767	foo_n5
+528534767	foo_n5
+528534767	foo_n5
+528534767	foo_n5
+528534767	foo_n5
+528534767	foo_n5
+528534767	foo_n5
+528534767	foo_n5
+528534767	foo_n5
+528534767	foo_n5
+PREHOOK: query: drop table foo_n5
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@foo_n5
+PREHOOK: Output: database:default
+PREHOOK: Output: default@foo_n5
+POSTHOOK: query: drop table foo_n5
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@foo_n5
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@foo_n5

@@ -1,0 +1,77 @@
+PREHOOK: query: DROP TABLE PW18
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE PW18
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE PW18(`USER` STRING, COMPLEXDT UNIONTYPE<INT, DOUBLE>) PARTITIONED BY (YEAR STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe5'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@PW18
+POSTHOOK: query: CREATE TABLE PW18(`USER` STRING, COMPLEXDT UNIONTYPE<INT, DOUBLE>) PARTITIONED BY (YEAR STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe5'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@PW18
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/pw17.txt' INTO TABLE PW18 PARTITION (YEAR='1')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@pw18
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/pw17.txt' INTO TABLE PW18 PARTITION (YEAR='1')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@pw18
+POSTHOOK: Output: default@pw18@year=1
+PREHOOK: query: ALTER TABLE PW18 PARTITION(YEAR='1') SET SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe4'
+PREHOOK: type: ALTERPARTITION_SERIALIZER
+PREHOOK: Input: default@pw18
+PREHOOK: Output: default@pw18@year=1
+POSTHOOK: query: ALTER TABLE PW18 PARTITION(YEAR='1') SET SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe4'
+POSTHOOK: type: ALTERPARTITION_SERIALIZER
+POSTHOOK: Input: default@pw18
+POSTHOOK: Input: default@pw18@year=1
+POSTHOOK: Output: default@pw18@year=1
+PREHOOK: query: SELECT * FROM PW18
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pw18
+PREHOOK: Input: default@pw18@year=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM PW18
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pw18
+POSTHOOK: Input: default@pw18@year=1
+#### A masked pattern was here ####
+NULL	NULL	1
+NULL	NULL	1
+NULL	NULL	1
+NULL	NULL	1
+PREHOOK: query: DROP TABLE PW18_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE PW18_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE PW18_2(`USER` STRING, COMPLEXDT UNIONTYPE<INT, DOUBLE>) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe5'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@PW18_2
+POSTHOOK: query: CREATE TABLE PW18_2(`USER` STRING, COMPLEXDT UNIONTYPE<INT, DOUBLE>) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe5'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@PW18_2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/pw17.txt' INTO TABLE PW18_2
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@pw18_2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/pw17.txt' INTO TABLE PW18_2
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@pw18_2
+PREHOOK: query: SELECT COUNT(*) FROM PW18_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pw18_2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM PW18_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pw18_2
+#### A masked pattern was here ####
+4

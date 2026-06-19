@@ -1,0 +1,270 @@
+PREHOOK: query: create table src_rc_merge_test_stat(key int, value string) stored as rcfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_rc_merge_test_stat
+POSTHOOK: query: create table src_rc_merge_test_stat(key int, value string) stored as rcfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_rc_merge_test_stat
+PREHOOK: query: load data local inpath '../../data/files/smbbucket_1.rc' into table src_rc_merge_test_stat
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@src_rc_merge_test_stat
+POSTHOOK: query: load data local inpath '../../data/files/smbbucket_1.rc' into table src_rc_merge_test_stat
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@src_rc_merge_test_stat
+PREHOOK: query: load data local inpath '../../data/files/smbbucket_2.rc' into table src_rc_merge_test_stat
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@src_rc_merge_test_stat
+POSTHOOK: query: load data local inpath '../../data/files/smbbucket_2.rc' into table src_rc_merge_test_stat
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@src_rc_merge_test_stat
+PREHOOK: query: load data local inpath '../../data/files/smbbucket_3.rc' into table src_rc_merge_test_stat
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@src_rc_merge_test_stat
+POSTHOOK: query: load data local inpath '../../data/files/smbbucket_3.rc' into table src_rc_merge_test_stat
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@src_rc_merge_test_stat
+PREHOOK: query: show table extended like `src_rc_merge_test_stat`
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like `src_rc_merge_test_stat`
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:src_rc_merge_test_stat
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+columns:struct columns { i32 key, string value}
+partitioned:false
+partitionColumns:
+totalNumberFiles:3
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
+#### A masked pattern was here ####
+
+PREHOOK: query: desc extended src_rc_merge_test_stat
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_rc_merge_test_stat
+POSTHOOK: query: desc extended src_rc_merge_test_stat
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_rc_merge_test_stat
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: analyze table src_rc_merge_test_stat compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_rc_merge_test_stat
+PREHOOK: Output: default@src_rc_merge_test_stat
+POSTHOOK: query: analyze table src_rc_merge_test_stat compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_rc_merge_test_stat
+POSTHOOK: Output: default@src_rc_merge_test_stat
+PREHOOK: query: desc extended src_rc_merge_test_stat
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_rc_merge_test_stat
+POSTHOOK: query: desc extended src_rc_merge_test_stat
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_rc_merge_test_stat
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: alter table src_rc_merge_test_stat concatenate
+PREHOOK: type: ALTER_TABLE_MERGE
+PREHOOK: Input: default@src_rc_merge_test_stat
+PREHOOK: Output: default@src_rc_merge_test_stat
+POSTHOOK: query: alter table src_rc_merge_test_stat concatenate
+POSTHOOK: type: ALTER_TABLE_MERGE
+POSTHOOK: Input: default@src_rc_merge_test_stat
+POSTHOOK: Output: default@src_rc_merge_test_stat
+PREHOOK: query: show table extended like `src_rc_merge_test_stat`
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like `src_rc_merge_test_stat`
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:src_rc_merge_test_stat
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+columns:struct columns { i32 key, string value}
+partitioned:false
+partitionColumns:
+totalNumberFiles:1
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
+#### A masked pattern was here ####
+
+PREHOOK: query: desc extended src_rc_merge_test_stat
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_rc_merge_test_stat
+POSTHOOK: query: desc extended src_rc_merge_test_stat
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_rc_merge_test_stat
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: create table src_rc_merge_test_part_stat(key int, value string) partitioned by (ds string) stored as rcfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_rc_merge_test_part_stat
+POSTHOOK: query: create table src_rc_merge_test_part_stat(key int, value string) partitioned by (ds string) stored as rcfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_rc_merge_test_part_stat
+PREHOOK: query: alter table src_rc_merge_test_part_stat add partition (ds='2011')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@src_rc_merge_test_part_stat
+POSTHOOK: query: alter table src_rc_merge_test_part_stat add partition (ds='2011')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@src_rc_merge_test_part_stat
+POSTHOOK: Output: default@src_rc_merge_test_part_stat@ds=2011
+PREHOOK: query: load data local inpath '../../data/files/smbbucket_1.rc' into table src_rc_merge_test_part_stat partition (ds='2011')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@src_rc_merge_test_part_stat@ds=2011
+POSTHOOK: query: load data local inpath '../../data/files/smbbucket_1.rc' into table src_rc_merge_test_part_stat partition (ds='2011')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@src_rc_merge_test_part_stat@ds=2011
+PREHOOK: query: load data local inpath '../../data/files/smbbucket_2.rc' into table src_rc_merge_test_part_stat partition (ds='2011')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@src_rc_merge_test_part_stat@ds=2011
+POSTHOOK: query: load data local inpath '../../data/files/smbbucket_2.rc' into table src_rc_merge_test_part_stat partition (ds='2011')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@src_rc_merge_test_part_stat@ds=2011
+PREHOOK: query: load data local inpath '../../data/files/smbbucket_3.rc' into table src_rc_merge_test_part_stat partition (ds='2011')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@src_rc_merge_test_part_stat@ds=2011
+POSTHOOK: query: load data local inpath '../../data/files/smbbucket_3.rc' into table src_rc_merge_test_part_stat partition (ds='2011')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@src_rc_merge_test_part_stat@ds=2011
+PREHOOK: query: show table extended like `src_rc_merge_test_part_stat` partition (ds='2011')
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like `src_rc_merge_test_part_stat` partition (ds='2011')
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:src_rc_merge_test_part_stat
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+columns:struct columns { i32 key, string value}
+partitioned:true
+partitionColumns:struct partition_columns { string ds}
+totalNumberFiles:3
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
+#### A masked pattern was here ####
+
+PREHOOK: query: desc extended src_rc_merge_test_part_stat
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_rc_merge_test_part_stat
+POSTHOOK: query: desc extended src_rc_merge_test_part_stat
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_rc_merge_test_part_stat
+key                 	int                 	                    
+value               	string              	                    
+ds                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: analyze table src_rc_merge_test_part_stat partition(ds='2011') compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_rc_merge_test_part_stat
+PREHOOK: Input: default@src_rc_merge_test_part_stat@ds=2011
+PREHOOK: Output: default@src_rc_merge_test_part_stat
+PREHOOK: Output: default@src_rc_merge_test_part_stat@ds=2011
+POSTHOOK: query: analyze table src_rc_merge_test_part_stat partition(ds='2011') compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_rc_merge_test_part_stat
+POSTHOOK: Input: default@src_rc_merge_test_part_stat@ds=2011
+POSTHOOK: Output: default@src_rc_merge_test_part_stat
+POSTHOOK: Output: default@src_rc_merge_test_part_stat@ds=2011
+PREHOOK: query: desc extended src_rc_merge_test_part_stat
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_rc_merge_test_part_stat
+POSTHOOK: query: desc extended src_rc_merge_test_part_stat
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_rc_merge_test_part_stat
+key                 	int                 	                    
+value               	string              	                    
+ds                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: alter table src_rc_merge_test_part_stat partition (ds='2011') concatenate
+PREHOOK: type: ALTER_PARTITION_MERGE
+PREHOOK: Input: default@src_rc_merge_test_part_stat
+PREHOOK: Output: default@src_rc_merge_test_part_stat@ds=2011
+POSTHOOK: query: alter table src_rc_merge_test_part_stat partition (ds='2011') concatenate
+POSTHOOK: type: ALTER_PARTITION_MERGE
+POSTHOOK: Input: default@src_rc_merge_test_part_stat
+POSTHOOK: Output: default@src_rc_merge_test_part_stat@ds=2011
+PREHOOK: query: show table extended like `src_rc_merge_test_part_stat` partition (ds='2011')
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like `src_rc_merge_test_part_stat` partition (ds='2011')
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:src_rc_merge_test_part_stat
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+columns:struct columns { i32 key, string value}
+partitioned:true
+partitionColumns:struct partition_columns { string ds}
+totalNumberFiles:1
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
+#### A masked pattern was here ####
+
+PREHOOK: query: desc extended src_rc_merge_test_part_stat
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_rc_merge_test_part_stat
+POSTHOOK: query: desc extended src_rc_merge_test_part_stat
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_rc_merge_test_part_stat
+key                 	int                 	                    
+value               	string              	                    
+ds                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: drop table src_rc_merge_test_stat
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src_rc_merge_test_stat
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_rc_merge_test_stat
+POSTHOOK: query: drop table src_rc_merge_test_stat
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src_rc_merge_test_stat
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_rc_merge_test_stat
+PREHOOK: query: drop table src_rc_merge_test_part_stat
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src_rc_merge_test_part_stat
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_rc_merge_test_part_stat
+POSTHOOK: query: drop table src_rc_merge_test_part_stat
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src_rc_merge_test_part_stat
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_rc_merge_test_part_stat

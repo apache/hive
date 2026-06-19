@@ -1,0 +1,66 @@
+PREHOOK: query: drop table if exists date_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists date_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists date_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists date_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table date_1 (key int, dd date)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@date_1
+POSTHOOK: query: create table date_1 (key int, dd date)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@date_1
+PREHOOK: query: create table date_2 (key int, dd date)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@date_2
+POSTHOOK: query: create table date_2 (key int, dd date)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@date_2
+PREHOOK: query: select d1.key, d2.dd
+  from (select key, dd as start_dd, current_date as end_dd from date_1) d1
+  join date_2 as d2
+    on d1.key = d2.key
+    where d2.dd between start_dd and end_dd
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_1
+PREHOOK: Input: default@date_2
+#### A masked pattern was here ####
+POSTHOOK: query: select d1.key, d2.dd
+  from (select key, dd as start_dd, current_date as end_dd from date_1) d1
+  join date_2 as d2
+    on d1.key = d2.key
+    where d2.dd between start_dd and end_dd
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_1
+POSTHOOK: Input: default@date_2
+#### A masked pattern was here ####
+PREHOOK: query: drop table date_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@date_1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@date_1
+POSTHOOK: query: drop table date_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@date_1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@date_1
+PREHOOK: query: drop table date_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@date_2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@date_2
+POSTHOOK: query: drop table date_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@date_2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@date_2

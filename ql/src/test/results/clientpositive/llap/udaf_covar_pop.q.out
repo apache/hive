@@ -1,0 +1,105 @@
+PREHOOK: query: DROP TABLE covar_tab
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE covar_tab
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE covar_tab (a INT, b INT, c INT)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@covar_tab
+POSTHOOK: query: CREATE TABLE covar_tab (a INT, b INT, c INT)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@covar_tab
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/covar_tab.txt' OVERWRITE
+INTO TABLE covar_tab
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@covar_tab
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/covar_tab.txt' OVERWRITE
+INTO TABLE covar_tab
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@covar_tab
+PREHOOK: query: DESCRIBE FUNCTION covar_pop
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION covar_pop
+POSTHOOK: type: DESCFUNCTION
+covar_pop(x,y) - Returns the population covariance of a set of number pairs
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED covar_pop
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED covar_pop
+POSTHOOK: type: DESCFUNCTION
+covar_pop(x,y) - Returns the population covariance of a set of number pairs
+The function takes as arguments any pair of numeric types and returns a double.
+Any pair with a NULL is ignored. If the function is applied to an empty set, NULL
+will be returned. Otherwise, it computes the following:
+   (SUM(x*y)-SUM(x)*SUM(y)/COUNT(x,y))/COUNT(x,y)
+where neither x nor y is null.
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCovariance
+Function type:BUILTIN
+PREHOOK: query: SELECT covar_pop(b, c) FROM covar_tab WHERE a < 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@covar_tab
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT covar_pop(b, c) FROM covar_tab WHERE a < 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@covar_tab
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT covar_pop(b, c) FROM covar_tab WHERE a < 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@covar_tab
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT covar_pop(b, c) FROM covar_tab WHERE a < 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@covar_tab
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT covar_pop(b, c) FROM covar_tab WHERE a = 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@covar_tab
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT covar_pop(b, c) FROM covar_tab WHERE a = 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@covar_tab
+#### A masked pattern was here ####
+0.0
+PREHOOK: query: SELECT a, covar_pop(b, c) FROM covar_tab GROUP BY a ORDER BY a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@covar_tab
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT a, covar_pop(b, c) FROM covar_tab GROUP BY a ORDER BY a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@covar_tab
+#### A masked pattern was here ####
+1	NULL
+2	NULL
+3	0.0
+4	0.0
+5	0.0
+6	0.0
+PREHOOK: query: SELECT ROUND(covar_pop(b, c), 5) FROM covar_tab
+PREHOOK: type: QUERY
+PREHOOK: Input: default@covar_tab
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT ROUND(covar_pop(b, c), 5) FROM covar_tab
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@covar_tab
+#### A masked pattern was here ####
+3.625
+PREHOOK: query: DROP TABLE covar_tab
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@covar_tab
+PREHOOK: Output: database:default
+PREHOOK: Output: default@covar_tab
+POSTHOOK: query: DROP TABLE covar_tab
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@covar_tab
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@covar_tab

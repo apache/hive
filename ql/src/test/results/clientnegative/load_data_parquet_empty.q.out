@@ -1,0 +1,9 @@
+PREHOOK: query: CREATE TABLE emptyparquet ( i int) PARTITIONED BY (s string) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@emptyparquet
+POSTHOOK: query: CREATE TABLE emptyparquet ( i int) PARTITIONED BY (s string) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@emptyparquet
+#### A masked pattern was here ####

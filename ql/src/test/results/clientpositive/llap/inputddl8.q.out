@@ -1,0 +1,45 @@
+PREHOOK: query: CREATE TABLE INPUTDDL8 COMMENT 'This is a thrift based table'
+    PARTITIONED BY(ds STRING, country STRING)
+    CLUSTERED BY(aint) SORTED BY(lint) INTO 32 BUCKETS
+    ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer'
+    WITH SERDEPROPERTIES ('serialization.class' = 'org.apache.hadoop.hive.serde2.thrift.test.Complex',
+                          'serialization.format' = 'com.facebook.thrift.protocol.TBinaryProtocol')
+    STORED AS SEQUENCEFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@INPUTDDL8
+POSTHOOK: query: CREATE TABLE INPUTDDL8 COMMENT 'This is a thrift based table'
+    PARTITIONED BY(ds STRING, country STRING)
+    CLUSTERED BY(aint) SORTED BY(lint) INTO 32 BUCKETS
+    ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer'
+    WITH SERDEPROPERTIES ('serialization.class' = 'org.apache.hadoop.hive.serde2.thrift.test.Complex',
+                          'serialization.format' = 'com.facebook.thrift.protocol.TBinaryProtocol')
+    STORED AS SEQUENCEFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@INPUTDDL8
+PREHOOK: query: DESCRIBE EXTENDED INPUTDDL8
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@inputddl8
+POSTHOOK: query: DESCRIBE EXTENDED INPUTDDL8
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@inputddl8
+aint                	int                 	from deserializer   
+astring             	string              	from deserializer   
+lint                	array<int>          	from deserializer   
+lstring             	array<string>       	from deserializer   
+lintstring          	array<struct<myint:int,mystring:string,underscore_int:int>>	from deserializer   
+mstringstring       	map<string,string>  	from deserializer   
+attributes          	map<string,map<string,map<string,uniontype<int,bigint,string,double,boolean,array<string>,map<string,string>>>>>	from deserializer   
+unionfield1         	uniontype<int,bigint,string,double,boolean,array<string>,map<string,string>>	from deserializer   
+unionfield2         	uniontype<int,bigint,string,double,boolean,array<string>,map<string,string>>	from deserializer   
+unionfield3         	uniontype<int,bigint,string,double,boolean,array<string>,map<string,string>>	from deserializer   
+ds                  	string              	                    
+country             	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+country             	string              	                    
+	 	 
+#### A masked pattern was here ####

@@ -1,0 +1,111 @@
+PREHOOK: query: CREATE DATABASE tv1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:tv1
+POSTHOOK: query: CREATE DATABASE tv1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:tv1
+PREHOOK: query: CREATE DATABASE tv2
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:tv2
+POSTHOOK: query: CREATE DATABASE tv2
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:tv2
+PREHOOK: query: CREATE TABLE invites_n1 (foo INT, bar STRING) PARTITIONED BY (ds STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@invites_n1
+POSTHOOK: query: CREATE TABLE invites_n1 (foo INT, bar STRING) PARTITIONED BY (ds STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@invites_n1
+PREHOOK: query: CREATE VIEW tv1.view1 as SELECT * FROM invites_n1
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@invites_n1
+PREHOOK: Output: database:tv1
+PREHOOK: Output: tv1@view1
+POSTHOOK: query: CREATE VIEW tv1.view1 as SELECT * FROM invites_n1
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@invites_n1
+POSTHOOK: Output: database:tv1
+POSTHOOK: Output: tv1@view1
+POSTHOOK: Lineage: view1.bar SIMPLE [(invites_n1)invites_n1.FieldSchema(name:bar, type:string, comment:null), ]
+POSTHOOK: Lineage: view1.ds SIMPLE [(invites_n1)invites_n1.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: view1.foo SIMPLE [(invites_n1)invites_n1.FieldSchema(name:foo, type:int, comment:null), ]
+PREHOOK: query: DESCRIBE EXTENDED tv1.view1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: tv1@view1
+POSTHOOK: query: DESCRIBE EXTENDED tv1.view1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: tv1@view1
+foo                 	int                 	                    
+bar                 	string              	                    
+ds                  	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: ALTER VIEW tv1.view1 RENAME TO tv2.view2
+PREHOOK: type: ALTERVIEW_RENAME
+PREHOOK: Input: tv1@view1
+PREHOOK: Output: database:tv2
+PREHOOK: Output: tv1@view1
+PREHOOK: Output: tv2@view2
+POSTHOOK: query: ALTER VIEW tv1.view1 RENAME TO tv2.view2
+POSTHOOK: type: ALTERVIEW_RENAME
+POSTHOOK: Input: tv1@view1
+POSTHOOK: Output: database:tv2
+POSTHOOK: Output: tv1@view1
+POSTHOOK: Output: tv2@view2
+PREHOOK: query: DESCRIBE EXTENDED tv2.view2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: tv2@view2
+POSTHOOK: query: DESCRIBE EXTENDED tv2.view2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: tv2@view2
+foo                 	int                 	                    
+bar                 	string              	                    
+ds                  	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: SELECT * FROM tv2.view2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@invites_n1
+PREHOOK: Input: tv2@view2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM tv2.view2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@invites_n1
+POSTHOOK: Input: tv2@view2
+#### A masked pattern was here ####
+PREHOOK: query: DROP TABLE invites_n1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@invites_n1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@invites_n1
+POSTHOOK: query: DROP TABLE invites_n1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@invites_n1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@invites_n1
+PREHOOK: query: DROP VIEW tv2.view2
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: tv2@view2
+PREHOOK: Output: tv2@view2
+POSTHOOK: query: DROP VIEW tv2.view2
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: tv2@view2
+POSTHOOK: Output: tv2@view2
+PREHOOK: query: DROP DATABASE tv1
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:tv1
+PREHOOK: Output: database:tv1
+POSTHOOK: query: DROP DATABASE tv1
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:tv1
+POSTHOOK: Output: database:tv1
+PREHOOK: query: DROP DATABASE tv2
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:tv2
+PREHOOK: Output: database:tv2
+POSTHOOK: query: DROP DATABASE tv2
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:tv2
+POSTHOOK: Output: database:tv2

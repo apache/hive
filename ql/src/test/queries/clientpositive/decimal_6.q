@@ -1,0 +1,28 @@
+set hive.mapred.mode=nonstrict;
+DROP TABLE IF EXISTS DECIMAL_6_1_n0;
+DROP TABLE IF EXISTS DECIMAL_6_2_n0;
+DROP TABLE IF EXISTS DECIMAL_6_3_n0;
+
+CREATE TABLE DECIMAL_6_1_n0(key decimal(10,5), value int)
+ROW FORMAT DELIMITED
+   FIELDS TERMINATED BY ' '
+STORED AS TEXTFILE;
+
+CREATE TABLE DECIMAL_6_2_n0(key decimal(17,4), value int)
+ROW FORMAT DELIMITED
+   FIELDS TERMINATED BY ' '
+STORED AS TEXTFILE;
+
+LOAD DATA LOCAL INPATH '../../data/files/kv9.txt' INTO TABLE DECIMAL_6_1_n0;
+LOAD DATA LOCAL INPATH '../../data/files/kv9.txt' INTO TABLE DECIMAL_6_2_n0;
+
+SELECT T.key from (
+  SELECT key, value from DECIMAL_6_1_n0
+  UNION ALL
+  SELECT key, value from DECIMAL_6_2_n0
+) T order by T.key;
+
+CREATE TABLE DECIMAL_6_3_n0 AS SELECT key + 5.5 AS k, value * 11 AS v from DECIMAL_6_1_n0 ORDER BY v;
+
+desc DECIMAL_6_3_n0;
+

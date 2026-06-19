@@ -1,0 +1,99 @@
+PREHOOK: query: create table alter_table_not_sorted (a int, b int) clustered by (a) sorted by (a) into 4 buckets
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter_table_not_sorted
+POSTHOOK: query: create table alter_table_not_sorted (a int, b int) clustered by (a) sorted by (a) into 4 buckets
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter_table_not_sorted
+PREHOOK: query: desc formatted alter_table_not_sorted
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_not_sorted
+POSTHOOK: query: desc formatted alter_table_not_sorted
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_not_sorted
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
+	SORTBUCKETCOLSPREFIX	TRUE                
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	4                   	 
+Bucket Columns:     	[a]                 	 
+Sort Columns:       	[Order(col:a, order:1)]	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table alter_table_not_sorted not sorted
+PREHOOK: type: ALTERTABLE_CLUSTER_SORT
+PREHOOK: Input: default@alter_table_not_sorted
+PREHOOK: Output: default@alter_table_not_sorted
+POSTHOOK: query: alter table alter_table_not_sorted not sorted
+POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
+POSTHOOK: Input: default@alter_table_not_sorted
+POSTHOOK: Output: default@alter_table_not_sorted
+PREHOOK: query: desc formatted alter_table_not_sorted
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_table_not_sorted
+POSTHOOK: query: desc formatted alter_table_not_sorted
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_table_not_sorted
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
+	SORTBUCKETCOLSPREFIX	TRUE                
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	4                   	 
+Bucket Columns:     	[a]                 	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table alter_table_not_sorted
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@alter_table_not_sorted
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter_table_not_sorted
+POSTHOOK: query: drop table alter_table_not_sorted
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@alter_table_not_sorted
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter_table_not_sorted

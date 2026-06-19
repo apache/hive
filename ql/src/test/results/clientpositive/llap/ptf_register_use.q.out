@@ -1,0 +1,84 @@
+PREHOOK: query: explain select ptf_register_use_func() over()
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain select ptf_register_use_func() over()
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: _dummy_table
+                  Row Limit Per Split: 1
+                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: 0 (type: int)
+                    null sort order: a
+                    sort order: +
+                    Map-reduce partition columns: 0 (type: int)
+                    Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              PTF Operator
+                Function definitions:
+                    Input definition
+                      input alias: ptf_0
+                      output shape: 
+                      type: WINDOWING
+                    Windowing table definition
+                      input alias: ptf_1
+                      name: windowingtablefunction
+                      order by: 0 ASC NULLS FIRST
+                      partition by: 0
+                      raw input shape:
+                      window functions:
+                          window function definition
+                            alias: ptf_register_use_func_window_0
+                            name: ptf_register_use_func
+                            window function: GenericUDAFRowNumberEvaluator
+                            window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                            isPivotResult: true
+                Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: ptf_register_use_func_window_0 (type: int)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select ptf_register_use_func() over()
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select ptf_register_use_func() over()
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1

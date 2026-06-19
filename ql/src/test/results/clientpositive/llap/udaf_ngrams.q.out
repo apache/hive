@@ -1,0 +1,71 @@
+PREHOOK: query: CREATE TABLE kafka (contents STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@kafka
+POSTHOOK: query: CREATE TABLE kafka (contents STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@kafka
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/text-en.txt' INTO TABLE kafka
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@kafka
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/text-en.txt' INTO TABLE kafka
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@kafka
+PREHOOK: query: SELECT ngrams(sentences(lower(contents)), 1, 100, 1000).estfrequency FROM kafka
+PREHOOK: type: QUERY
+PREHOOK: Input: default@kafka
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT ngrams(sentences(lower(contents)), 1, 100, 1000).estfrequency FROM kafka
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@kafka
+#### A masked pattern was here ####
+[267.0,171.0,164.0,119.0,108.0,106.0,106.0,82.0,79.0,67.0,67.0,46.0,45.0,42.0,42.0,40.0,39.0,37.0,37.0,36.0,34.0,32.0,32.0,30.0,30.0,29.0,28.0,28.0,28.0,28.0,26.0,25.0,24.0,23.0,23.0,22.0,22.0,21.0,20.0,19.0,18.0,18.0,18.0,17.0,17.0,17.0,16.0,16.0,16.0,16.0,15.0,15.0,14.0,14.0,14.0,13.0,13.0,13.0,13.0,13.0,13.0,13.0,12.0,12.0,12.0,12.0,12.0,12.0,12.0,11.0,11.0,11.0,11.0,11.0,11.0,11.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,9.0,9.0,9.0,9.0,9.0,9.0,9.0,9.0,9.0,9.0,9.0,9.0,8.0]
+PREHOOK: query: SELECT ngrams(sentences(lower(contents)), 2, 100, 1000).estfrequency FROM kafka
+PREHOOK: type: QUERY
+PREHOOK: Input: default@kafka
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT ngrams(sentences(lower(contents)), 2, 100, 1000).estfrequency FROM kafka
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@kafka
+#### A masked pattern was here ####
+[23.0,20.0,18.0,17.0,17.0,16.0,16.0,16.0,16.0,15.0,14.0,13.0,12.0,12.0,12.0,11.0,11.0,11.0,10.0,10.0,10.0,10.0,10.0,10.0,9.0,9.0,9.0,8.0,8.0,8.0,8.0,7.0,7.0,7.0,7.0,7.0,7.0,7.0,7.0,6.0,6.0,6.0,6.0,6.0,6.0,6.0,6.0,6.0,6.0,5.0,5.0,5.0,5.0,5.0,5.0,5.0,5.0,5.0,5.0,5.0,5.0,5.0,5.0,5.0,5.0,5.0,5.0,5.0,5.0,5.0,5.0,5.0,5.0,5.0,5.0,5.0,5.0,5.0,4.0,4.0,4.0,4.0,4.0,4.0,4.0,4.0,4.0,4.0,4.0,4.0,4.0,4.0,4.0,4.0,4.0,4.0,4.0,4.0,4.0,4.0]
+PREHOOK: query: SELECT ngrams(sentences(lower(contents)), 3, 100, 1000).estfrequency FROM kafka
+PREHOOK: type: QUERY
+PREHOOK: Input: default@kafka
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT ngrams(sentences(lower(contents)), 3, 100, 1000).estfrequency FROM kafka
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@kafka
+#### A masked pattern was here ####
+[7.0,6.0,6.0,6.0,6.0,5.0,5.0,5.0,5.0,5.0,5.0,4.0,4.0,4.0,4.0,4.0,4.0,4.0,4.0,4.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0]
+PREHOOK: query: SELECT ngrams(sentences(lower(contents)), 4, 100, 1000).estfrequency FROM kafka
+PREHOOK: type: QUERY
+PREHOOK: Input: default@kafka
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT ngrams(sentences(lower(contents)), 4, 100, 1000).estfrequency FROM kafka
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@kafka
+#### A masked pattern was here ####
+[5.0,4.0,4.0,4.0,4.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0]
+PREHOOK: query: SELECT ngrams(sentences(lower(contents)), 5, 100, 1000).estfrequency FROM kafka
+PREHOOK: type: QUERY
+PREHOOK: Input: default@kafka
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT ngrams(sentences(lower(contents)), 5, 100, 1000).estfrequency FROM kafka
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@kafka
+#### A masked pattern was here ####
+[4.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0]
+PREHOOK: query: DROP TABLE kafka
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@kafka
+PREHOOK: Output: database:default
+PREHOOK: Output: default@kafka
+POSTHOOK: query: DROP TABLE kafka
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@kafka
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@kafka

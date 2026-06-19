@@ -1,0 +1,22 @@
+PREHOOK: query: DROP VIEW xxx8
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW xxx8
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: CREATE VIEW xxx8
+PARTITIONED ON (ds,hr)
+AS 
+SELECT key,ds,hr FROM srcpart
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@srcpart
+PREHOOK: Output: database:default
+PREHOOK: Output: default@xxx8
+POSTHOOK: query: CREATE VIEW xxx8
+PARTITIONED ON (ds,hr)
+AS 
+SELECT key,ds,hr FROM srcpart
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@xxx8
+POSTHOOK: Lineage: xxx8.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+FAILED: ValidationFailureSemanticException default.xxx8: partition spec {ds=2011-01-01} doesn't contain all (2) partition columns

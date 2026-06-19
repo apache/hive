@@ -1,0 +1,155 @@
+PREHOOK: query: set role admin
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role admin
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: create role roleA
+PREHOOK: type: CREATEROLE
+POSTHOOK: query: create role roleA
+POSTHOOK: type: CREATEROLE
+PREHOOK: query: create role roleB
+PREHOOK: type: CREATEROLE
+POSTHOOK: query: create role roleB
+POSTHOOK: type: CREATEROLE
+PREHOOK: query: grant role roleA to user userA
+PREHOOK: type: GRANT_ROLE
+POSTHOOK: query: grant role roleA to user userA
+POSTHOOK: type: GRANT_ROLE
+PREHOOK: query: grant role roleB to role roleA
+PREHOOK: type: GRANT_ROLE
+POSTHOOK: query: grant role roleB to role roleA
+POSTHOOK: type: GRANT_ROLE
+PREHOOK: query: create table t1_n15(i int, j int, k int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1_n15
+POSTHOOK: query: create table t1_n15(i int, j int, k int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1_n15
+PREHOOK: query: create table t2_n9(i int, j int, k int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2_n9
+POSTHOOK: query: create table t2_n9(i int, j int, k int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2_n9
+PREHOOK: query: grant select on t1_n15 to role roleA
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@t1_n15
+POSTHOOK: query: grant select on t1_n15 to role roleA
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@t1_n15
+PREHOOK: query: grant insert on t2_n9 to role roleA
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@t2_n9
+POSTHOOK: query: grant insert on t2_n9 to role roleA
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@t2_n9
+PREHOOK: query: grant insert on t2_n9 to role roleB
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@t2_n9
+POSTHOOK: query: grant insert on t2_n9 to role roleB
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@t2_n9
+PREHOOK: query: grant insert,delete on t1_n15 to user userA
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@t1_n15
+POSTHOOK: query: grant insert,delete on t1_n15 to user userA
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@t1_n15
+PREHOOK: query: grant select,insert on t2_n9 to user userA
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@t2_n9
+POSTHOOK: query: grant select,insert on t2_n9 to user userA
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@t2_n9
+PREHOOK: query: set role admin
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role admin
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: show grant user user1 on table t1_n15
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user user1 on table t1_n15
+POSTHOOK: type: SHOW_GRANT
+default	t1_n15			user1	USER	DELETE	true	-1	hive_admin_user
+default	t1_n15			user1	USER	INSERT	true	-1	hive_admin_user
+default	t1_n15			user1	USER	SELECT	true	-1	hive_admin_user
+default	t1_n15			user1	USER	UPDATE	true	-1	hive_admin_user
+PREHOOK: query: show grant user user1
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user user1
+POSTHOOK: type: SHOW_GRANT
+default	t1_n15			user1	USER	DELETE	true	-1	hive_admin_user
+default	t1_n15			user1	USER	INSERT	true	-1	hive_admin_user
+default	t1_n15			user1	USER	SELECT	true	-1	hive_admin_user
+default	t1_n15			user1	USER	UPDATE	true	-1	hive_admin_user
+default	t2_n9			user1	USER	DELETE	true	-1	hive_admin_user
+default	t2_n9			user1	USER	INSERT	true	-1	hive_admin_user
+default	t2_n9			user1	USER	SELECT	true	-1	hive_admin_user
+default	t2_n9			user1	USER	UPDATE	true	-1	hive_admin_user
+PREHOOK: query: show grant role roleA on table t1_n15
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant role roleA on table t1_n15
+POSTHOOK: type: SHOW_GRANT
+default	t1_n15			rolea	ROLE	SELECT	false	-1	user1
+PREHOOK: query: show grant role roleA
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant role roleA
+POSTHOOK: type: SHOW_GRANT
+default	t1_n15			rolea	ROLE	SELECT	false	-1	user1
+default	t2_n9			rolea	ROLE	INSERT	false	-1	user1
+PREHOOK: query: show grant
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant
+POSTHOOK: type: SHOW_GRANT
+default				hive_test_user	USER	DROP	false	-1	hive_test_user
+default	t1_n15			rolea	ROLE	SELECT	false	-1	user1
+default	t1_n15			user1	USER	DELETE	true	-1	hive_admin_user
+default	t1_n15			user1	USER	INSERT	true	-1	hive_admin_user
+default	t1_n15			user1	USER	SELECT	true	-1	hive_admin_user
+default	t1_n15			user1	USER	UPDATE	true	-1	hive_admin_user
+default	t1_n15			userA	USER	DELETE	false	-1	user1
+default	t1_n15			userA	USER	INSERT	false	-1	user1
+default	t2_n9			rolea	ROLE	INSERT	false	-1	user1
+default	t2_n9			roleb	ROLE	INSERT	false	-1	user1
+default	t2_n9			user1	USER	DELETE	true	-1	hive_admin_user
+default	t2_n9			user1	USER	INSERT	true	-1	hive_admin_user
+default	t2_n9			user1	USER	SELECT	true	-1	hive_admin_user
+default	t2_n9			user1	USER	UPDATE	true	-1	hive_admin_user
+default	t2_n9			userA	USER	INSERT	false	-1	user1
+default	t2_n9			userA	USER	SELECT	false	-1	user1
+PREHOOK: query: show grant role roleA on table t1_n15
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant role roleA on table t1_n15
+POSTHOOK: type: SHOW_GRANT
+default	t1_n15			rolea	ROLE	SELECT	false	-1	user1
+PREHOOK: query: show grant role roleA
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant role roleA
+POSTHOOK: type: SHOW_GRANT
+default	t1_n15			rolea	ROLE	SELECT	false	-1	user1
+default	t2_n9			rolea	ROLE	INSERT	false	-1	user1
+PREHOOK: query: show grant role roleB on table t1_n15
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant role roleB on table t1_n15
+POSTHOOK: type: SHOW_GRANT
+PREHOOK: query: show grant role roleB
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant role roleB
+POSTHOOK: type: SHOW_GRANT
+default	t2_n9			roleb	ROLE	INSERT	false	-1	user1
+PREHOOK: query: show grant user userA on table t1_n15
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user userA on table t1_n15
+POSTHOOK: type: SHOW_GRANT
+default	t1_n15			userA	USER	DELETE	false	-1	user1
+default	t1_n15			userA	USER	INSERT	false	-1	user1
+PREHOOK: query: show grant user userA
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user userA
+POSTHOOK: type: SHOW_GRANT
+default	t1_n15			userA	USER	DELETE	false	-1	user1
+default	t1_n15			userA	USER	INSERT	false	-1	user1
+default	t2_n9			userA	USER	INSERT	false	-1	user1
+default	t2_n9			userA	USER	SELECT	false	-1	user1

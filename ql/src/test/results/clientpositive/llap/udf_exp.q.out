@@ -1,0 +1,15 @@
+PREHOOK: query: DESCRIBE FUNCTION exp
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION exp
+POSTHOOK: type: DESCFUNCTION
+exp(x) - Returns e to the power of x
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED exp
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED exp
+POSTHOOK: type: DESCFUNCTION
+exp(x) - Returns e to the power of x
+Example:
+   > SELECT exp(0) FROM src LIMIT 1;
+  1
+Function class:org.apache.hadoop.hive.ql.udf.UDFExp
+Function type:BUILTIN

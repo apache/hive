@@ -1,0 +1,88 @@
+PREHOOK: query: DROP TABLE part_seq
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE part_seq
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE part_seq( 
+    p_partkey INT,
+    p_name STRING,
+    p_mfgr STRING,
+    p_brand STRING,
+    p_type STRING,
+    p_size INT,
+    p_container STRING,
+    p_retailprice DOUBLE,
+    p_comment STRING
+) STORED AS SEQUENCEFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@part_seq
+POSTHOOK: query: CREATE TABLE part_seq( 
+    p_partkey INT,
+    p_name STRING,
+    p_mfgr STRING,
+    p_brand STRING,
+    p_type STRING,
+    p_size INT,
+    p_container STRING,
+    p_retailprice DOUBLE,
+    p_comment STRING
+) STORED AS SEQUENCEFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@part_seq
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part.seq' overwrite into table part_seq
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@part_seq
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part.seq' overwrite into table part_seq
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@part_seq
+PREHOOK: query: select p_mfgr, p_name, p_size, 
+rank() over (partition by p_mfgr order by p_name) as r, 
+dense_rank() over (partition by p_mfgr order by p_name) as dr, 
+sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)  as s1
+from noop(on part_seq 
+partition by p_mfgr 
+order by p_name)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_seq
+#### A masked pattern was here ####
+POSTHOOK: query: select p_mfgr, p_name, p_size, 
+rank() over (partition by p_mfgr order by p_name) as r, 
+dense_rank() over (partition by p_mfgr order by p_name) as dr, 
+sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)  as s1
+from noop(on part_seq 
+partition by p_mfgr 
+order by p_name)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_seq
+#### A masked pattern was here ####
+Manufacturer#1	almond antique burnished rose metallic	2	1	1	1173.15
+Manufacturer#1	almond antique burnished rose metallic	2	1	1	2346.3
+Manufacturer#1	almond antique chartreuse lavender yellow	34	3	2	4100.06
+Manufacturer#1	almond antique salmon chartreuse burlywood	6	4	3	5702.650000000001
+Manufacturer#1	almond aquamarine burnished black steel	28	5	4	7117.070000000001
+Manufacturer#1	almond aquamarine pink moccasin thistle	42	6	5	8749.730000000001
+Manufacturer#2	almond antique violet chocolate turquoise	14	1	1	1690.68
+Manufacturer#2	almond antique violet turquoise frosted	40	2	2	3491.38
+Manufacturer#2	almond aquamarine midnight light salmon	2	3	3	5523.360000000001
+Manufacturer#2	almond aquamarine rose maroon antique	25	4	4	7222.02
+Manufacturer#2	almond aquamarine sandy cyan gainsboro	18	5	5	8923.62
+Manufacturer#3	almond antique chartreuse khaki white	17	1	1	1671.68
+Manufacturer#3	almond antique forest lavender goldenrod	14	2	2	2861.95
+Manufacturer#3	almond antique metallic orange dim	19	3	3	4272.34
+Manufacturer#3	almond antique misty red olive	1	4	4	6195.32
+Manufacturer#3	almond antique olive coral navajo	45	5	5	7532.61
+Manufacturer#4	almond antique gainsboro frosted violet	10	1	1	1620.67
+Manufacturer#4	almond antique violet mint lemon	39	2	2	2996.09
+Manufacturer#4	almond aquamarine floral ivory bisque	27	3	3	4202.35
+Manufacturer#4	almond aquamarine yellow dodger mint	7	4	4	6047.27
+Manufacturer#4	almond azure aquamarine papaya violet	12	5	5	7337.620000000001
+Manufacturer#5	almond antique blue firebrick mint	31	1	1	1789.69
+Manufacturer#5	almond antique medium spring khaki	6	2	2	3401.3500000000004
+Manufacturer#5	almond antique sky peru orange	2	3	3	5190.08
+Manufacturer#5	almond aquamarine dodger light gainsboro	46	4	4	6208.18
+Manufacturer#5	almond azure blanched chiffon midnight	23	5	5	7672.66

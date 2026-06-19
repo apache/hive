@@ -1,0 +1,74 @@
+PREHOOK: query: DESCRIBE FUNCTION tan
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION tan
+POSTHOOK: type: DESCFUNCTION
+tan(x) - returns the tangent of x (x is in radians)
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED tan
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED tan
+POSTHOOK: type: DESCFUNCTION
+tan(x) - returns the tangent of x (x is in radians)
+Example:
+   > SELECT tan(0) FROM src LIMIT 1;
+  1
+Function class:org.apache.hadoop.hive.ql.udf.UDFTan
+Function type:BUILTIN
+PREHOOK: query: SELECT tan(null)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tan(null)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT tan(1), tan(6), tan(-1.0)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tan(1), tan(6), tan(-1.0)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1.5574077246549023	-0.29100619138474915	-1.5574077246549023
+PREHOOK: query: DESCRIBE FUNCTION tan
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION tan
+POSTHOOK: type: DESCFUNCTION
+tan(x) - returns the tangent of x (x is in radians)
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED tan
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED tan
+POSTHOOK: type: DESCFUNCTION
+tan(x) - returns the tangent of x (x is in radians)
+Example:
+   > SELECT tan(0) FROM src LIMIT 1;
+  1
+Function class:org.apache.hadoop.hive.ql.udf.UDFTan
+Function type:BUILTIN
+PREHOOK: query: SELECT tan(null)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tan(null)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT tan(1), tan(6), tan(-1.0)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tan(1), tan(6), tan(-1.0)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1.5574077246549023	-0.29100619138474915	-1.5574077246549023

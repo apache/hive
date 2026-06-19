@@ -1,0 +1,21 @@
+Ln:1 DECLARE v_float float
+Ln:2 DECLARE v_double double
+Ln:3 DECLARE v_double2 double precision
+Ln:5 SELECT
+Ln:5 select
+  cast(1.1 as float), cast(1.1 as double), cast(1.1 as double)
+from src LIMIT 1
+Ln:5 SELECT completed successfully
+Ln:5 SELECT INTO statement executed
+Ln:5 COLUMN: _c0, float
+Ln:5 SET v_float = 1.100000023841858
+Ln:5 COLUMN: _c1, double
+Ln:5 SET v_double = 1.1
+Ln:5 COLUMN: _c2, double
+Ln:5 SET v_double2 = 1.1
+Ln:15 PRINT
+float: 1.100000023841858
+Ln:16 PRINT
+double: 1.1
+Ln:17 PRINT
+double precision: 1.1

@@ -1,0 +1,16 @@
+PREHOOK: query: CREATE TABLE kv_mm(key int, val string) tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@kv_mm
+POSTHOOK: query: CREATE TABLE kv_mm(key int, val string) tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@kv_mm
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE kv_mm
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@kv_mm
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE kv_mm
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@kv_mm

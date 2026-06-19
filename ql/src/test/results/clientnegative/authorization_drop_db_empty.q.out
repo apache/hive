@@ -1,0 +1,46 @@
+PREHOOK: query: create database dba1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:dba1
+POSTHOOK: query: create database dba1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:dba1
+PREHOOK: query: set role ADMIN
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role ADMIN
+POSTHOOK: type: SHOW_ROLES
+#### A masked pattern was here ####
+PREHOOK: type: ALTERDATABASE_OWNER
+PREHOOK: Output: database:dba1
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERDATABASE_OWNER
+POSTHOOK: Output: database:dba1
+PREHOOK: query: show current roles
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: show current roles
+POSTHOOK: type: SHOW_ROLES
+public
+PREHOOK: query: drop database dba1
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:dba1
+PREHOOK: Output: database:dba1
+POSTHOOK: query: drop database dba1
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:dba1
+POSTHOOK: Output: database:dba1
+PREHOOK: query: show current roles
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: show current roles
+POSTHOOK: type: SHOW_ROLES
+public
+PREHOOK: query: create database dba2
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:dba2
+POSTHOOK: query: create database dba2
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:dba2
+PREHOOK: query: show current roles
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: show current roles
+POSTHOOK: type: SHOW_ROLES
+public
+FAILED: HiveAccessControlException Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation DROPDATABASE [[OBJECT OWNERSHIP] on Object [type=DATABASE, name=dba2]]

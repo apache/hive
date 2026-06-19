@@ -1,0 +1,1 @@
+FAILED: ParseException line 2:10 cannot recognize input near 'from' 'test_database' '.' in select clause

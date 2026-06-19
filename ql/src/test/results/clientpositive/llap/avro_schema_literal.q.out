@@ -1,0 +1,89 @@
+PREHOOK: query: CREATE TABLE avro1
+ROW FORMAT
+SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+STORED AS
+INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
+TBLPROPERTIES ('avro.schema.literal'='{
+  "namespace": "org.apache.hive",
+  "name": "big_old_schema",
+  "type": "record",
+  "fields": [
+    { "name":"string1", "type":"string" },
+    { "name":"int1", "type":"int" },
+    { "name":"tinyint1", "type":"int" },
+    { "name":"smallint1", "type":"int" },
+    { "name":"bigint1", "type":"long" },
+    { "name":"boolean1", "type":"boolean" },
+    { "name":"float1", "type":"float" },
+    { "name":"double1", "type":"double" },
+    { "name":"list1", "type":{"type":"array", "items":"string"} },
+    { "name":"map1", "type":{"type":"map", "values":"int"} },
+    { "name":"struct1", "type":{"type":"record", "name":"struct1_name", "fields": [
+          { "name":"sInt", "type":"int" }, { "name":"sBoolean", "type":"boolean" }, { "name":"sString", "type":"string" } ] } },
+    { "name":"union1", "type":["float", "boolean", "string"] },
+    { "name":"enum1", "type":{"type":"enum", "name":"enum1_values", "symbols":["BLUE","RED", "GREEN"]} },
+    { "name":"nullableint", "type":["int", "null"] },
+    { "name":"bytes1", "type":"bytes" },
+    { "name":"fixed1", "type":{"type":"fixed", "name":"threebytes", "size":3} },
+    { "name":"dec1", "type":{"type":"bytes", "logicalType":"decimal", "precision":5, "scale":2} }
+  ] }')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@avro1
+POSTHOOK: query: CREATE TABLE avro1
+ROW FORMAT
+SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+STORED AS
+INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
+TBLPROPERTIES ('avro.schema.literal'='{
+  "namespace": "org.apache.hive",
+  "name": "big_old_schema",
+  "type": "record",
+  "fields": [
+    { "name":"string1", "type":"string" },
+    { "name":"int1", "type":"int" },
+    { "name":"tinyint1", "type":"int" },
+    { "name":"smallint1", "type":"int" },
+    { "name":"bigint1", "type":"long" },
+    { "name":"boolean1", "type":"boolean" },
+    { "name":"float1", "type":"float" },
+    { "name":"double1", "type":"double" },
+    { "name":"list1", "type":{"type":"array", "items":"string"} },
+    { "name":"map1", "type":{"type":"map", "values":"int"} },
+    { "name":"struct1", "type":{"type":"record", "name":"struct1_name", "fields": [
+          { "name":"sInt", "type":"int" }, { "name":"sBoolean", "type":"boolean" }, { "name":"sString", "type":"string" } ] } },
+    { "name":"union1", "type":["float", "boolean", "string"] },
+    { "name":"enum1", "type":{"type":"enum", "name":"enum1_values", "symbols":["BLUE","RED", "GREEN"]} },
+    { "name":"nullableint", "type":["int", "null"] },
+    { "name":"bytes1", "type":"bytes" },
+    { "name":"fixed1", "type":{"type":"fixed", "name":"threebytes", "size":3} },
+    { "name":"dec1", "type":{"type":"bytes", "logicalType":"decimal", "precision":5, "scale":2} }
+  ] }')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@avro1
+PREHOOK: query: DESCRIBE avro1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@avro1
+POSTHOOK: query: DESCRIBE avro1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@avro1
+string1             	string              	                    
+int1                	int                 	                    
+tinyint1            	int                 	                    
+smallint1           	int                 	                    
+bigint1             	bigint              	                    
+boolean1            	boolean             	                    
+float1              	float               	                    
+double1             	double              	                    
+list1               	array<string>       	                    
+map1                	map<string,int>     	                    
+struct1             	struct<sint:int,sboolean:boolean,sstring:string>	                    
+union1              	uniontype<float,boolean,string>	                    
+enum1               	string              	                    
+nullableint         	int                 	                    
+bytes1              	binary              	                    
+fixed1              	binary              	                    
+dec1                	decimal(5,2)        	                    

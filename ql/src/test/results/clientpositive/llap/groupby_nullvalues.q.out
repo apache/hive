@@ -1,0 +1,87 @@
+PREHOOK: query: drop table if exists paqtest
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists paqtest
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE paqtest(
+c1 int,
+s1 string,
+s2 string,
+bn1 bigint)
+ROW FORMAT SERDE
+'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
+STORED AS INPUTFORMAT
+'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
+OUTPUTFORMAT
+'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@paqtest
+POSTHOOK: query: CREATE TABLE paqtest(
+c1 int,
+s1 string,
+s2 string,
+bn1 bigint)
+ROW FORMAT SERDE
+'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
+STORED AS INPUTFORMAT
+'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
+OUTPUTFORMAT
+'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@paqtest
+PREHOOK: query: insert into paqtest values (58, '', 'ABC', 0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@paqtest
+POSTHOOK: query: insert into paqtest values (58, '', 'ABC', 0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@paqtest
+POSTHOOK: Lineage: paqtest.bn1 SCRIPT []
+POSTHOOK: Lineage: paqtest.c1 SCRIPT []
+POSTHOOK: Lineage: paqtest.s1 SCRIPT []
+POSTHOOK: Lineage: paqtest.s2 SCRIPT []
+PREHOOK: query: SELECT
+'PM' AS cy,
+c1,
+NULL AS iused,
+NULL AS itp,
+s2,
+NULL AS cvg,
+NULL AS acavg,
+sum(bn1) AS cca
+FROM paqtest
+WHERE (s1 IS NULL OR length(s1) = 0)
+GROUP BY 'Pricing mismatch', c1, NULL, NULL, s2, NULL, NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: default@paqtest
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+'PM' AS cy,
+c1,
+NULL AS iused,
+NULL AS itp,
+s2,
+NULL AS cvg,
+NULL AS acavg,
+sum(bn1) AS cca
+FROM paqtest
+WHERE (s1 IS NULL OR length(s1) = 0)
+GROUP BY 'Pricing mismatch', c1, NULL, NULL, s2, NULL, NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@paqtest
+#### A masked pattern was here ####
+PM	58	NULL	NULL	ABC	NULL	NULL	0
+PREHOOK: query: drop table paqtest
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@paqtest
+PREHOOK: Output: database:default
+PREHOOK: Output: default@paqtest
+POSTHOOK: query: drop table paqtest
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@paqtest
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@paqtest

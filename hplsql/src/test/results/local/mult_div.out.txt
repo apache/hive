@@ -1,0 +1,7 @@
+Ln:1 DECLARE a int = 8
+Ln:2 DECLARE b int = 4
+Ln:3 DECLARE c int = 2
+Ln:5 PRINT
+1
+Ln:7 SET a = 1
+Ln:8 SET b = 1

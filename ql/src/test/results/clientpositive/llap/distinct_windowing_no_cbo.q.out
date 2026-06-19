@@ -1,0 +1,978 @@
+PREHOOK: query: drop table over10k_n14
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table over10k_n14
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table over10k_n14(
+           t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp,
+           `dec` decimal(4,2),
+           bin binary)
+       row format delimited
+       fields terminated by '|'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@over10k_n14
+POSTHOOK: query: create table over10k_n14(
+           t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp,
+           `dec` decimal(4,2),
+           bin binary)
+       row format delimited
+       fields terminated by '|'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@over10k_n14
+PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n14
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@over10k_n14
+POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k_n14
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@over10k_n14
+PREHOOK: query: EXPLAIN
+  SELECT fv
+    FROM (SELECT distinct first_value(t) OVER ( PARTITION BY si ORDER BY i ) AS fv
+            FROM over10k_n14) sq
+ORDER BY fv
+   LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n14
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+  SELECT fv
+    FROM (SELECT distinct first_value(t) OVER ( PARTITION BY si ORDER BY i ) AS fv
+            FROM over10k_n14) sq
+ORDER BY fv
+   LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n14
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: over10k_n14
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: si (type: smallint), i (type: int)
+                    null sort order: az
+                    sort order: ++
+                    Map-reduce partition columns: si (type: smallint)
+                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: t (type: tinyint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: tinyint), KEY.reducesinkkey0 (type: smallint), KEY.reducesinkkey1 (type: int)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: tinyint, _col1: smallint, _col2: int
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col2 ASC NULLS LAST
+                        partition by: _col1
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: first_value_window_0
+                              arguments: _col0
+                              name: first_value
+                              window function: GenericUDAFFirstValueEvaluator
+                              window frame: RANGE PRECEDING(MAX)~CURRENT
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Top N Key Operator
+                    sort order: +
+                    keys: first_value_window_0 (type: tinyint)
+                    null sort order: z
+                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    top n: 10
+                    Select Operator
+                      expressions: first_value_window_0 (type: tinyint)
+                      outputColumnNames: first_value_window_0
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        keys: first_value_window_0 (type: tinyint)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: tinyint)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: tinyint)
+                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: tinyint)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: tinyint)
+                  null sort order: z
+                  sort order: +
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: tinyint)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT fv
+    FROM (SELECT distinct first_value(t) OVER ( PARTITION BY si ORDER BY i ) AS fv
+            FROM over10k_n14) sq
+ORDER BY fv 
+   LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n14
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT fv
+    FROM (SELECT distinct first_value(t) OVER ( PARTITION BY si ORDER BY i ) AS fv
+            FROM over10k_n14) sq
+ORDER BY fv 
+   LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n14
+#### A masked pattern was here ####
+-2
+-1
+0
+1
+2
+3
+4
+6
+7
+8
+PREHOOK: query: EXPLAIN
+  SELECT lv
+    FROM (SELECT distinct last_value(i) OVER ( PARTITION BY si ORDER BY i ) AS lv
+            FROM over10k_n14) sq
+ORDER BY lv
+   LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n14
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+  SELECT lv
+    FROM (SELECT distinct last_value(i) OVER ( PARTITION BY si ORDER BY i ) AS lv
+            FROM over10k_n14) sq
+ORDER BY lv
+   LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n14
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: over10k_n14
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: si (type: smallint), i (type: int)
+                    null sort order: az
+                    sort order: ++
+                    Map-reduce partition columns: si (type: smallint)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: smallint), KEY.reducesinkkey1 (type: int)
+                outputColumnNames: _col1, _col2
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col1: smallint, _col2: int
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col2 ASC NULLS LAST
+                        partition by: _col1
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: last_value_window_0
+                              arguments: _col2
+                              name: last_value
+                              window function: GenericUDAFLastValueEvaluator
+                              window frame: RANGE PRECEDING(MAX)~CURRENT
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Top N Key Operator
+                    sort order: +
+                    keys: last_value_window_0 (type: int)
+                    null sort order: z
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    top n: 10
+                    Select Operator
+                      expressions: last_value_window_0 (type: int)
+                      outputColumnNames: last_value_window_0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        keys: last_value_window_0 (type: int)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  null sort order: z
+                  sort order: +
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT lv
+    FROM (SELECT distinct last_value(i) OVER ( PARTITION BY si ORDER BY i ) AS lv
+            FROM over10k_n14) sq
+ORDER BY lv
+   LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n14
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT lv
+    FROM (SELECT distinct last_value(i) OVER ( PARTITION BY si ORDER BY i ) AS lv
+            FROM over10k_n14) sq
+ORDER BY lv
+   LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n14
+#### A masked pattern was here ####
+65536
+65537
+65538
+65539
+65540
+65541
+65542
+65543
+65544
+65545
+PREHOOK: query: EXPLAIN
+  SELECT lv, fv
+    FROM (SELECT distinct last_value(i) OVER ( PARTITION BY si ORDER BY i ) AS lv,
+                          first_value(t) OVER ( PARTITION BY si ORDER BY i ) AS fv
+            FROM over10k_n14) sq
+ORDER BY lv, fv
+   LIMIT 50
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n14
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+  SELECT lv, fv
+    FROM (SELECT distinct last_value(i) OVER ( PARTITION BY si ORDER BY i ) AS lv,
+                          first_value(t) OVER ( PARTITION BY si ORDER BY i ) AS fv
+            FROM over10k_n14) sq
+ORDER BY lv, fv
+   LIMIT 50
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n14
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: over10k_n14
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: si (type: smallint), i (type: int)
+                    null sort order: az
+                    sort order: ++
+                    Map-reduce partition columns: si (type: smallint)
+                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: t (type: tinyint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: tinyint), KEY.reducesinkkey0 (type: smallint), KEY.reducesinkkey1 (type: int)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: tinyint, _col1: smallint, _col2: int
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col2 ASC NULLS LAST
+                        partition by: _col1
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: last_value_window_0
+                              arguments: _col2
+                              name: last_value
+                              window function: GenericUDAFLastValueEvaluator
+                              window frame: RANGE PRECEDING(MAX)~CURRENT
+                            window function definition
+                              alias: first_value_window_1
+                              arguments: _col0
+                              name: first_value
+                              window function: GenericUDAFFirstValueEvaluator
+                              window frame: RANGE PRECEDING(MAX)~CURRENT
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Top N Key Operator
+                    sort order: ++
+                    keys: last_value_window_0 (type: int), first_value_window_1 (type: tinyint)
+                    null sort order: zz
+                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    top n: 50
+                    Select Operator
+                      expressions: last_value_window_0 (type: int), first_value_window_1 (type: tinyint)
+                      outputColumnNames: last_value_window_0, first_value_window_1
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        keys: last_value_window_0 (type: int), first_value_window_1 (type: tinyint)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int), _col1 (type: tinyint)
+                          null sort order: zz
+                          sort order: ++
+                          Map-reduce partition columns: _col0 (type: int), _col1 (type: tinyint)
+                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: int), KEY._col1 (type: tinyint)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int), _col1 (type: tinyint)
+                  null sort order: zz
+                  sort order: ++
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: tinyint)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 50
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 50
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT lv, fv 
+    FROM (SELECT distinct last_value(i) OVER ( PARTITION BY si ORDER BY i ) AS lv,
+                          first_value(t) OVER ( PARTITION BY si ORDER BY i ) AS fv
+            FROM over10k_n14) sq
+ORDER BY lv, fv
+   LIMIT 50
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n14
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT lv, fv 
+    FROM (SELECT distinct last_value(i) OVER ( PARTITION BY si ORDER BY i ) AS lv,
+                          first_value(t) OVER ( PARTITION BY si ORDER BY i ) AS fv
+            FROM over10k_n14) sq
+ORDER BY lv, fv
+   LIMIT 50
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n14
+#### A masked pattern was here ####
+65536	-2
+65536	2
+65536	9
+65536	12
+65536	13
+65536	18
+65536	22
+65536	23
+65536	37
+65536	39
+65536	42
+65536	48
+65536	55
+65536	56
+65536	58
+65536	61
+65536	69
+65536	71
+65536	73
+65536	75
+65536	78
+65536	80
+65536	83
+65536	84
+65536	88
+65536	95
+65536	104
+65536	107
+65536	108
+65536	111
+65536	114
+65536	118
+65536	119
+65536	121
+65537	4
+65537	8
+65537	9
+65537	11
+65537	18
+65537	22
+65537	25
+65537	36
+65537	38
+65537	51
+65537	53
+65537	54
+65537	55
+65537	56
+65537	57
+65537	59
+PREHOOK: query: explain
+select si, max(f) mf, rank() over ( partition by si order by mf ) r
+FROM over10k_n14
+GROUP BY si
+HAVING max(f) > 0
+ORDER BY si, r
+limit 50
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n14
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select si, max(f) mf, rank() over ( partition by si order by mf ) r
+FROM over10k_n14
+GROUP BY si
+HAVING max(f) > 0
+ORDER BY si, r
+limit 50
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n14
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: over10k_n14
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: si (type: smallint), f (type: float)
+                    outputColumnNames: si, f
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: max(f)
+                      keys: si (type: smallint)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: smallint)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: smallint)
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: float)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0)
+                keys: KEY._col0 (type: smallint)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: (_col1 > 0.0) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: smallint), _col1 (type: float)
+                    null sort order: az
+                    sort order: ++
+                    Map-reduce partition columns: _col0 (type: smallint)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: smallint), KEY.reducesinkkey1 (type: float)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: smallint, _col1: float
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col1 ASC NULLS LAST
+                        partition by: _col0
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: rank_window_0
+                              arguments: _col1
+                              name: rank
+                              window function: GenericUDAFRankEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Top N Key Operator
+                    sort order: ++
+                    keys: _col0 (type: smallint), rank_window_0 (type: int)
+                    null sort order: zz
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    top n: 50
+                    Select Operator
+                      expressions: _col0 (type: smallint), _col1 (type: float), rank_window_0 (type: int)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: smallint), _col2 (type: int)
+                        null sort order: zz
+                        sort order: ++
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: float)
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: smallint), VALUE._col0 (type: float), KEY.reducesinkkey1 (type: int)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 50
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 50
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select si, max(f) mf, rank() over ( partition by si order by mf ) r
+FROM over10k_n14
+GROUP BY si
+HAVING max(f) > 0
+ORDER BY si, r
+limit 50
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n14
+#### A masked pattern was here ####
+POSTHOOK: query: select si, max(f) mf, rank() over ( partition by si order by mf ) r
+FROM over10k_n14
+GROUP BY si
+HAVING max(f) > 0
+ORDER BY si, r
+limit 50
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n14
+#### A masked pattern was here ####
+256	94.87	1
+257	98.0	1
+258	98.19	1
+259	99.71	1
+260	99.78	1
+261	98.09	1
+262	98.41	1
+263	97.32	1
+264	97.65	1
+265	96.18	1
+266	99.41	1
+267	99.8	1
+268	93.34	1
+269	99.24	1
+270	98.57	1
+271	96.02	1
+272	92.82	1
+273	97.51	1
+274	95.43	1
+275	99.68	1
+276	98.94	1
+277	97.26	1
+278	98.56	1
+279	98.09	1
+280	99.21	1
+281	99.32	1
+282	95.49	1
+283	96.46	1
+284	99.34	1
+285	99.34	1
+286	92.77	1
+287	99.29	1
+288	96.71	1
+289	97.13	1
+290	99.88	1
+291	99.18	1
+292	94.99	1
+293	95.36	1
+294	99.34	1
+295	90.67	1
+296	96.85	1
+297	95.62	1
+298	99.98	1
+299	99.36	1
+300	98.76	1
+301	99.08	1
+302	99.84	1
+303	98.57	1
+304	94.68	1
+305	96.1	1
+PREHOOK: query: explain
+select distinct si, rank() over ( partition by si order by i ) r
+FROM over10k_n14
+ORDER BY si, r
+limit 50
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n14
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select distinct si, rank() over ( partition by si order by i ) r
+FROM over10k_n14
+ORDER BY si, r
+limit 50
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n14
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: over10k_n14
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: si (type: smallint), i (type: int)
+                    null sort order: az
+                    sort order: ++
+                    Map-reduce partition columns: si (type: smallint)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: smallint), KEY.reducesinkkey1 (type: int)
+                outputColumnNames: _col1, _col2
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col1: smallint, _col2: int
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col2 ASC NULLS LAST
+                        partition by: _col1
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: rank_window_0
+                              arguments: _col2
+                              name: rank
+                              window function: GenericUDAFRankEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Top N Key Operator
+                    sort order: ++
+                    keys: _col1 (type: smallint), rank_window_0 (type: int)
+                    null sort order: zz
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    top n: 50
+                    Select Operator
+                      expressions: rank_window_0 (type: int), _col1 (type: smallint)
+                      outputColumnNames: rank_window_0, _col1
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        keys: _col1 (type: smallint), rank_window_0 (type: int)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: smallint), _col1 (type: int)
+                          null sort order: zz
+                          sort order: ++
+                          Map-reduce partition columns: _col0 (type: smallint), _col1 (type: int)
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: smallint), KEY._col1 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: smallint), _col1 (type: int)
+                  null sort order: zz
+                  sort order: ++
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: smallint), KEY.reducesinkkey1 (type: int)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 50
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 50
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select distinct si, rank() over ( partition by si order by i ) r
+FROM over10k_n14
+ORDER BY si, r
+limit 50
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k_n14
+#### A masked pattern was here ####
+POSTHOOK: query: select distinct si, rank() over ( partition by si order by i ) r
+FROM over10k_n14
+ORDER BY si, r
+limit 50
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k_n14
+#### A masked pattern was here ####
+256	1
+256	2
+256	3
+256	4
+256	5
+256	6
+256	7
+256	8
+256	9
+256	10
+256	11
+256	13
+256	14
+256	15
+256	16
+256	17
+256	18
+256	19
+256	20
+256	21
+256	22
+256	23
+256	24
+256	25
+256	26
+256	27
+256	28
+256	29
+256	30
+256	32
+256	33
+256	34
+256	35
+256	37
+257	1
+257	2
+257	3
+257	4
+257	5
+257	6
+257	7
+257	8
+257	9
+257	10
+257	11
+257	12
+257	13
+257	14
+257	16
+257	17

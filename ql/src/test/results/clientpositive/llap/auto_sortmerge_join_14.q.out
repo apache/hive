@@ -1,0 +1,270 @@
+PREHOOK: query: CREATE TABLE tbl1_n7(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl1_n7
+POSTHOOK: query: CREATE TABLE tbl1_n7(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl1_n7
+PREHOOK: query: CREATE TABLE tbl2_n6(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl2_n6
+POSTHOOK: query: CREATE TABLE tbl2_n6(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl2_n6
+PREHOOK: query: insert overwrite table tbl1_n7 select * from src where key < 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tbl1_n7
+POSTHOOK: query: insert overwrite table tbl1_n7 select * from src where key < 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tbl1_n7
+POSTHOOK: Lineage: tbl1_n7.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1_n7.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table tbl2_n6 select * from src where key < 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tbl2_n6
+POSTHOOK: query: insert overwrite table tbl2_n6 select * from src where key < 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tbl2_n6
+POSTHOOK: Lineage: tbl2_n6.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2_n6.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain
+select count(*) FROM tbl1_n7 a LEFT OUTER JOIN tbl2_n6 b ON a.key = b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1_n7
+PREHOOK: Input: default@tbl2_n6
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select count(*) FROM tbl1_n7 a LEFT OUTER JOIN tbl2_n6 b ON a.key = b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1_n7
+POSTHOOK: Input: default@tbl2_n6
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                      Dummy Store
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 20 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 20 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                    Merge Join Operator
+                      condition map:
+                           Left Outer Join 0 to 1
+                      keys:
+                        0 _col0 (type: int)
+                        1 _col0 (type: int)
+                      Statistics: Num rows: 35 Data size: 280 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.9714286
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: llap
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) FROM tbl1_n7 a LEFT OUTER JOIN tbl2_n6 b ON a.key = b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1_n7
+PREHOOK: Input: default@tbl2_n6
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) FROM tbl1_n7 a LEFT OUTER JOIN tbl2_n6 b ON a.key = b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1_n7
+POSTHOOK: Input: default@tbl2_n6
+#### A masked pattern was here ####
+32
+PREHOOK: query: insert overwrite table tbl2_n6 select * from src where key < 200
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tbl2_n6
+POSTHOOK: query: insert overwrite table tbl2_n6 select * from src where key < 200
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tbl2_n6
+POSTHOOK: Lineage: tbl2_n6.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2_n6.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: describe formatted tbl2_n6 key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl2_n6
+POSTHOOK: query: describe formatted tbl2_n6 key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl2_n6
+col_name            	key                 
+data_type           	int                 
+min                 	0                   
+max                 	199                 
+num_nulls           	0                   
+distinct_count      	121                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+PREHOOK: query: select count (distinct key) from tbl2_n6
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl2_n6
+#### A masked pattern was here ####
+POSTHOOK: query: select count (distinct key) from tbl2_n6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl2_n6
+#### A masked pattern was here ####
+121
+PREHOOK: query: explain
+select count(*) FROM tbl1_n7 a RIGHT OUTER JOIN tbl2_n6 b ON a.key = b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1_n7
+PREHOOK: Input: default@tbl2_n6
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select count(*) FROM tbl1_n7 a RIGHT OUTER JOIN tbl2_n6 b ON a.key = b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1_n7
+POSTHOOK: Input: default@tbl2_n6
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 3 <- Map 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 20 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 20 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 20 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                      Dummy Store
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 189 Data size: 756 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 189 Data size: 756 Basic stats: COMPLETE Column stats: COMPLETE
+                    Merge Join Operator
+                      condition map:
+                           Right Outer Join 0 to 1
+                      keys:
+                        0 _col0 (type: int)
+                        1 _col0 (type: int)
+                      Statistics: Num rows: 220 Data size: 1760 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: llap
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) FROM tbl1_n7 a RIGHT OUTER JOIN tbl2_n6 b ON a.key = b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl1_n7
+PREHOOK: Input: default@tbl2_n6
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) FROM tbl1_n7 a RIGHT OUTER JOIN tbl2_n6 b ON a.key = b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl1_n7
+POSTHOOK: Input: default@tbl2_n6
+#### A masked pattern was here ####
+207

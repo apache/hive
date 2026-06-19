@@ -1,0 +1,393 @@
+PREHOOK: query: create table insert_only(col1 Int, col2 String) stored as orc  TBLPROPERTIES ('transactional'='true','transactional_properties'='insert_only')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@insert_only
+POSTHOOK: query: create table insert_only(col1 Int, col2 String) stored as orc  TBLPROPERTIES ('transactional'='true','transactional_properties'='insert_only')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@insert_only
+PREHOOK: query: insert into insert_only values(1,'hi'),(2,'hello')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@insert_only
+POSTHOOK: query: insert into insert_only values(1,'hi'),(2,'hello')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@insert_only
+POSTHOOK: Lineage: insert_only.col1 SCRIPT []
+POSTHOOK: Lineage: insert_only.col2 SCRIPT []
+PREHOOK: query: describe formatted insert_only
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@insert_only
+POSTHOOK: query: describe formatted insert_only
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@insert_only
+# col_name            	data_type           	comment             
+col1                	int                 	                    
+col2                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	2                   
+	rawDataSize         	182                 
+	totalSize           	#Masked#
+	transactional       	true                
+	transactional_properties	insert_only         
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: ALTER TABLE insert_only convert to acid TBLPROPERTIES ('transactional_properties'='default')
+PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: Input: default@insert_only
+POSTHOOK: query: ALTER TABLE insert_only convert to acid TBLPROPERTIES ('transactional_properties'='default')
+POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: Input: default@insert_only
+POSTHOOK: Output: default@insert_only
+PREHOOK: query: describe formatted insert_only
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@insert_only
+POSTHOOK: query: describe formatted insert_only
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@insert_only
+# col_name            	data_type           	comment             
+col1                	int                 	                    
+col2                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numRows             	2                   
+	rawDataSize         	182                 
+	totalSize           	#Masked#
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: insert into insert_only values(1,'hi'),(2,'hello')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@insert_only
+POSTHOOK: query: insert into insert_only values(1,'hi'),(2,'hello')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@insert_only
+POSTHOOK: Lineage: insert_only.col1 SCRIPT []
+POSTHOOK: Lineage: insert_only.col2 SCRIPT []
+PREHOOK: query: select * from insert_only
+PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_only
+#### A masked pattern was here ####
+POSTHOOK: query: select * from insert_only
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_only
+#### A masked pattern was here ####
+1	hi
+2	hello
+1	hi
+2	hello
+PREHOOK: query: create table insert_only_1(col1 Int, col2 String) stored as orc  TBLPROPERTIES ('transactional'='true','transactional_properties'='insert_only')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@insert_only_1
+POSTHOOK: query: create table insert_only_1(col1 Int, col2 String) stored as orc  TBLPROPERTIES ('transactional'='true','transactional_properties'='insert_only')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@insert_only_1
+PREHOOK: query: insert into insert_only_1 values(1,'hi'),(2,'hello')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@insert_only_1
+POSTHOOK: query: insert into insert_only_1 values(1,'hi'),(2,'hello')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@insert_only_1
+POSTHOOK: Lineage: insert_only_1.col1 SCRIPT []
+POSTHOOK: Lineage: insert_only_1.col2 SCRIPT []
+PREHOOK: query: describe formatted insert_only_1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@insert_only_1
+POSTHOOK: query: describe formatted insert_only_1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@insert_only_1
+# col_name            	data_type           	comment             
+col1                	int                 	                    
+col2                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	2                   
+	rawDataSize         	182                 
+	totalSize           	#Masked#
+	transactional       	true                
+	transactional_properties	insert_only         
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: ALTER TABLE insert_only SET TBLPROPERTIES ('transactional_properties'='default')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@insert_only
+PREHOOK: Output: default@insert_only
+POSTHOOK: query: ALTER TABLE insert_only SET TBLPROPERTIES ('transactional_properties'='default')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@insert_only
+POSTHOOK: Output: default@insert_only
+PREHOOK: query: describe formatted insert_only_1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@insert_only_1
+POSTHOOK: query: describe formatted insert_only_1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@insert_only_1
+# col_name            	data_type           	comment             
+col1                	int                 	                    
+col2                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"true\",\"col2\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	1                   
+	numRows             	2                   
+	rawDataSize         	182                 
+	totalSize           	#Masked#
+	transactional       	true                
+	transactional_properties	insert_only         
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: insert into insert_only_1 values(1,'hi'),(2,'hello')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@insert_only_1
+POSTHOOK: query: insert into insert_only_1 values(1,'hi'),(2,'hello')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@insert_only_1
+POSTHOOK: Lineage: insert_only_1.col1 SCRIPT []
+POSTHOOK: Lineage: insert_only_1.col2 SCRIPT []
+PREHOOK: query: select * from insert_only_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_only_1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from insert_only_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_only_1
+#### A masked pattern was here ####
+1	hi
+2	hello
+1	hi
+2	hello
+PREHOOK: query: create table insert_only_part(a INT, b STRING) partitioned by (ds string) CLUSTERED BY(a) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@insert_only_part
+POSTHOOK: query: create table insert_only_part(a INT, b STRING) partitioned by (ds string) CLUSTERED BY(a) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@insert_only_part
+PREHOOK: query: insert into table insert_only_part partition (ds = 'today') select cint, cstring1 from alltypesorc where cint is not null order by cint limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@insert_only_part@ds=today
+POSTHOOK: query: insert into table insert_only_part partition (ds = 'today') select cint, cstring1 from alltypesorc where cint is not null order by cint limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@insert_only_part@ds=today
+POSTHOOK: Lineage: insert_only_part PARTITION(ds=today).a SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: insert_only_part PARTITION(ds=today).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+PREHOOK: query: insert into table insert_only_part partition (ds = 'tomorrow') select cint, cstring1 from alltypesorc where cint is not null order by cint limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@insert_only_part@ds=tomorrow
+POSTHOOK: query: insert into table insert_only_part partition (ds = 'tomorrow') select cint, cstring1 from alltypesorc where cint is not null order by cint limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@insert_only_part@ds=tomorrow
+POSTHOOK: Lineage: insert_only_part PARTITION(ds=tomorrow).a SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: insert_only_part PARTITION(ds=tomorrow).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+PREHOOK: query: describe formatted insert_only_part
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@insert_only_part
+POSTHOOK: query: describe formatted insert_only_part
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@insert_only_part
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	4                   
+	numPartitions       	2                   
+	numRows             	20                  
+	rawDataSize         	2008                
+	totalSize           	#Masked#
+	transactional       	true                
+	transactional_properties	insert_only         
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	2                   	 
+Bucket Columns:     	[a]                 	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: ALTER TABLE insert_only_part SET TBLPROPERTIES ('transactional'='true','transactional_properties'='default')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@insert_only_part
+PREHOOK: Output: default@insert_only_part
+POSTHOOK: query: ALTER TABLE insert_only_part SET TBLPROPERTIES ('transactional'='true','transactional_properties'='default')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@insert_only_part
+POSTHOOK: Output: default@insert_only_part
+PREHOOK: query: describe formatted insert_only_part
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@insert_only_part
+POSTHOOK: query: describe formatted insert_only_part
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@insert_only_part
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	4                   
+	numPartitions       	2                   
+	numRows             	20                  
+	rawDataSize         	2008                
+	totalSize           	#Masked#
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	2                   	 
+Bucket Columns:     	[a]                 	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: select * from insert_only_part order by a, b, ds
+PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_only_part
+PREHOOK: Input: default@insert_only_part@ds=today
+PREHOOK: Input: default@insert_only_part@ds=tomorrow
+#### A masked pattern was here ####
+POSTHOOK: query: select * from insert_only_part order by a, b, ds
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_only_part
+POSTHOOK: Input: default@insert_only_part@ds=today
+POSTHOOK: Input: default@insert_only_part@ds=tomorrow
+#### A masked pattern was here ####
+-1073279343	oj1YrV5Wa	today
+-1073279343	oj1YrV5Wa	tomorrow
+-1073051226	A34p7oRr2WvUJNf	today
+-1073051226	A34p7oRr2WvUJNf	tomorrow
+-1072910839	0iqrc5	today
+-1072910839	0iqrc5	tomorrow
+-1072081801	dPkN74F7	today
+-1072081801	dPkN74F7	tomorrow
+-1072076362	2uLyD28144vklju213J1mr	today
+-1072076362	2uLyD28144vklju213J1mr	tomorrow
+-1071480828	aw724t8c5558x2xneC624	today
+-1071480828	aw724t8c5558x2xneC624	tomorrow
+-1071363017	Anj0oF	today
+-1071363017	Anj0oF	tomorrow
+-1070883071	0ruyd6Y50JpdGRf6HqD	today
+-1070883071	0ruyd6Y50JpdGRf6HqD	tomorrow
+-1070551679	iUR3Q	today
+-1070551679	iUR3Q	tomorrow
+-1069736047	k17Am8uPHWk02cEf1jet	today
+-1069736047	k17Am8uPHWk02cEf1jet	tomorrow

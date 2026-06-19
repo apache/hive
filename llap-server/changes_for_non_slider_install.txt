@@ -1,0 +1,5 @@
+-- Incomplete list of changes required to run LLAP as standalone daemons outside of YARN, instead of as a YARN Service
+hive.llap.daemon.work.dirs - Create dirs on each node, and set to this value.
+hive.llap.daemon.service.hosts - Comma separated list of hosts on which llap will run.
+ApplicationConstants.Environment.CONTAINER_ID should be available in the environment for secure clusters
+

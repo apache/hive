@@ -1,0 +1,21 @@
+PREHOOK: query: CREATE TEMPORARY FUNCTION Pyth as 'Pyth'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: pyth
+POSTHOOK: query: CREATE TEMPORARY FUNCTION Pyth as 'Pyth'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: pyth
+PREHOOK: query: SELECT Pyth(3,4) FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT Pyth(3,4) FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+5.0
+PREHOOK: query: DROP TEMPORARY FUNCTION Pyth
+PREHOOK: type: DROPFUNCTION
+PREHOOK: Output: Pyth
+POSTHOOK: query: DROP TEMPORARY FUNCTION Pyth
+POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Output: Pyth

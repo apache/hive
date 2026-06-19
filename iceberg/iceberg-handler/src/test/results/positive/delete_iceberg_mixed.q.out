@@ -1,0 +1,278 @@
+PREHOOK: query: create table ice01 (id int, name string) Stored by Iceberg stored as ORC
+TBLPROPERTIES('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice01
+POSTHOOK: query: create table ice01 (id int, name string) Stored by Iceberg stored as ORC
+TBLPROPERTIES('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice01
+PREHOOK: query: insert into ice01 values (1, 'ABC'),(2, 'CBS'),(3, null),(4, 'POPI'),(5, 'AQWR'),(6, 'POIU'),(9, null),(8,
+'POIKL'),(10, 'YUIO')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice01
+POSTHOOK: query: insert into ice01 values (1, 'ABC'),(2, 'CBS'),(3, null),(4, 'POPI'),(5, 'AQWR'),(6, 'POIU'),(9, null),(8,
+'POIKL'),(10, 'YUIO')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice01
+PREHOOK: query: delete from ice01 where id>9 OR id=8
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: default@ice01
+POSTHOOK: query: delete from ice01 where id>9 OR id=8
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: default@ice01
+PREHOOK: query: select * from ice01
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice01
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	ABC
+2	CBS
+3	NULL
+4	POPI
+5	AQWR
+6	POIU
+9	NULL
+PREHOOK: query: select summary from default.ice01.snapshots
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select summary from default.ice01.snapshots
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"added-data-files":"1","added-records":"9","added-files-size":"#FileSize#","changed-partition-count":"1","total-records":"9","total-files-size":"#FileSize#","total-data-files":"1","total-delete-files":"0","total-position-deletes":"0","total-equality-deletes":"0","iceberg-version":"#Masked#"}
+{"added-position-delete-files":"1","added-delete-files":"1","added-files-size":"#FileSize#","added-position-deletes":"2","changed-partition-count":"1","total-records":"9","total-files-size":"#FileSize#","total-data-files":"1","total-delete-files":"1","total-position-deletes":"2","total-equality-deletes":"0","iceberg-version":"#Masked#"}
+PREHOOK: query: ALTER TABLE ice01 SET TBLPROPERTIES ('write.delete.mode'='copy-on-write')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@ice01
+PREHOOK: Output: default@ice01
+POSTHOOK: query: ALTER TABLE ice01 SET TBLPROPERTIES ('write.delete.mode'='copy-on-write')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: default@ice01
+PREHOOK: query: explain delete from ice01 where id>4 OR id=2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: default@ice01
+POSTHOOK: query: explain delete from ice01 where id>4 OR id=2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: default@ice01
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE), Union 3 (CONTAINS)
+Reducer 4 <- Map 1 (SIMPLE_EDGE)
+Reducer 5 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
+
+Stage-4
+  Stats Work{}
+    Stage-1
+      Move Operator
+        table:{"name:":"default.ice01"}
+        Stage-3
+          Dependency Collection{}
+            Stage-2
+              Union 3
+              <-Reducer 2 [CONTAINS]
+                File Output Operator [FS_46]
+                  table:{"name:":"default.ice01"}
+                  Select Operator [SEL_44] (rows=7 width=206)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
+                    Merge Join Operator [MERGEJOIN_43] (rows=7 width=206)
+                      Conds:RS_59._col4=RS_65._col0(Left Semi),Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
+                    <-Map 1 [SIMPLE_EDGE] vectorized
+                      SHUFFLE [RS_59]
+                        PartitionCols:_col4
+                        Select Operator [SEL_56] (rows=7 width=188)
+                          Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
+                          Filter Operator [FIL_53] (rows=7 width=188)
+                            predicate:((((id = 2) or (id > 4)) is null or (id < 2) or ((id > 2) and (id <= 4))) and FILE__PATH is not null)
+                            TableScan [TS_0] (rows=7 width=188)
+                              default@ice01,ice01,Tbl:COMPLETE,Col:NONE,Output:["id","name"]
+                    <-Reducer 4 [SIMPLE_EDGE] vectorized
+                      SHUFFLE [RS_65]
+                        PartitionCols:_col0
+                        Group By Operator [GBY_64] (rows=3 width=4)
+                          Output:["_col0"],keys:_col0
+                          Select Operator [SEL_63] (rows=3 width=4)
+                            Output:["_col0"]
+                            Filter Operator [FIL_62] (rows=3 width=4)
+                              predicate:(row_number_window_0 = 1)
+                              PTF Operator [PTF_61] (rows=7 width=4)
+                                Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col4 ASC NULLS FIRST","partition by:":"_col4"}]
+                                Select Operator [SEL_60] (rows=7 width=4)
+                                  Output:["_col4"]
+                                <-Map 1 [SIMPLE_EDGE] vectorized
+                                  SHUFFLE [RS_57]
+                                    PartitionCols:FILE__PATH
+                                    Filter Operator [FIL_54] (rows=7 width=4)
+                                      predicate:(((id = 2) or (id > 4)) and FILE__PATH is not null)
+                                       Please refer to the previous TableScan [TS_0]
+              <-Reducer 5 [CONTAINS] vectorized
+                File Output Operator [FS_70]
+                  table:{"name:":"default.ice01"}
+                  Select Operator [SEL_69] (rows=3 width=188)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6"]
+                    Filter Operator [FIL_68] (rows=3 width=188)
+                      predicate:(row_number_window_0 = 1)
+                      PTF Operator [PTF_67] (rows=7 width=188)
+                        Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col4 ASC NULLS FIRST","partition by:":"_col4"}]
+                        Select Operator [SEL_66] (rows=7 width=188)
+                          Output:["_col0","_col1","_col2","_col3","_col4","_col6"]
+                        <-Map 1 [SIMPLE_EDGE] vectorized
+                          SHUFFLE [RS_58]
+                            PartitionCols:FILE__PATH
+                            Filter Operator [FIL_55] (rows=7 width=188)
+                              predicate:((id = 2) or (id > 4))
+                               Please refer to the previous TableScan [TS_0]
+
+PREHOOK: query: delete from ice01 where id>4 OR id=2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: default@ice01
+POSTHOOK: query: delete from ice01 where id>4 OR id=2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: default@ice01
+PREHOOK: query: select * from ice01
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice01
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	ABC
+3	NULL
+4	POPI
+PREHOOK: query: select summary from default.ice01.snapshots
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select summary from default.ice01.snapshots
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"added-data-files":"1","added-records":"9","added-files-size":"#FileSize#","changed-partition-count":"1","total-records":"9","total-files-size":"#FileSize#","total-data-files":"1","total-delete-files":"0","total-position-deletes":"0","total-equality-deletes":"0","iceberg-version":"#Masked#"}
+{"added-position-delete-files":"1","added-delete-files":"1","added-files-size":"#FileSize#","added-position-deletes":"2","changed-partition-count":"1","total-records":"9","total-files-size":"#FileSize#","total-data-files":"1","total-delete-files":"1","total-position-deletes":"2","total-equality-deletes":"0","iceberg-version":"#Masked#"}
+{"added-data-files":"1","deleted-data-files":"1","added-records":"3","deleted-records":"9","added-files-size":"#FileSize#","removed-files-size":"#FileSize#","changed-partition-count":"1","total-records":"3","total-files-size":"#FileSize#","total-data-files":"1","total-delete-files":"1","total-position-deletes":"2","total-equality-deletes":"0","iceberg-version":"#Masked#"}
+PREHOOK: query: delete from ice01 where null
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@ice01
+PREHOOK: Output: default@ice01
+POSTHOOK: query: delete from ice01 where null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: default@ice01
+PREHOOK: query: select * from ice01
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice01
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	ABC
+3	NULL
+4	POPI
+PREHOOK: query: delete from ice01 where not null
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@ice01
+PREHOOK: Output: default@ice01
+POSTHOOK: query: delete from ice01 where not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: default@ice01
+PREHOOK: query: select * from ice01
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice01
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	ABC
+3	NULL
+4	POPI
+PREHOOK: query: delete from ice01 where name = null
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@ice01
+PREHOOK: Output: default@ice01
+POSTHOOK: query: delete from ice01 where name = null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: default@ice01
+PREHOOK: query: select * from ice01
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice01
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	ABC
+3	NULL
+4	POPI
+PREHOOK: query: delete from ice01 where name != null
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@ice01
+PREHOOK: Output: default@ice01
+POSTHOOK: query: delete from ice01 where name != null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: default@ice01
+PREHOOK: query: select * from ice01
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice01
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	ABC
+3	NULL
+4	POPI
+PREHOOK: query: delete from ice01 where name is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: default@ice01
+POSTHOOK: query: delete from ice01 where name is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: default@ice01
+PREHOOK: query: select * from ice01
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice01
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	ABC
+4	POPI
+PREHOOK: query: drop table if exists ice01
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice01
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice01
+POSTHOOK: query: drop table if exists ice01
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice01

@@ -1,0 +1,635 @@
+PREHOOK: query: CREATE TABLE bucket_n0 (key double, value string) CLUSTERED BY (key) SORTED BY (key DESC)  INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@bucket_n0
+POSTHOOK: query: CREATE TABLE bucket_n0 (key double, value string) CLUSTERED BY (key) SORTED BY (key DESC)  INTO 4 BUCKETS STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@bucket_n0
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_n0
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@bucket_n0
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000000_0' INTO TABLE bucket_n0
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@bucket_n0
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_n0
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@bucket_n0
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000001_0' INTO TABLE bucket_n0
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@bucket_n0
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000002_0' INTO TABLE bucket_n0
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@bucket_n0
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000002_0' INTO TABLE bucket_n0
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@bucket_n0
+PREHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000003_0' INTO TABLE bucket_n0
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@bucket_n0
+POSTHOOK: query: load data local inpath '../../data/files/auto_sortmerge_join/big/000003_0' INTO TABLE bucket_n0
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@bucket_n0
+PREHOOK: query: create table t1_n58 (result double)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1_n58
+POSTHOOK: query: create table t1_n58 (result double)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1_n58
+PREHOOK: query: create table t2_n36 (result double)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2_n36
+POSTHOOK: query: create table t2_n36 (result double)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2_n36
+PREHOOK: query: create table t3_n13 (result double)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t3_n13
+POSTHOOK: query: create table t3_n13 (result double)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t3_n13
+PREHOOK: query: create table t4_n6 (result double)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t4_n6
+POSTHOOK: query: create table t4_n6 (result double)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t4_n6
+PREHOOK: query: create table t5_n2 (result double)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t5_n2
+POSTHOOK: query: create table t5_n2 (result double)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t5_n2
+PREHOOK: query: create table t6_n1 (result double)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t6_n1
+POSTHOOK: query: create table t6_n1 (result double)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t6_n1
+PREHOOK: query: create table t7_n3 (result array<double>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t7_n3
+POSTHOOK: query: create table t7_n3 (result array<double>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t7_n3
+PREHOOK: query: create table t8_n1 (result array<double>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t8_n1
+POSTHOOK: query: create table t8_n1 (result array<double>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t8_n1
+PREHOOK: query: create table t9_n0 (result array<double>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t9_n0
+POSTHOOK: query: create table t9_n0 (result array<double>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t9_n0
+PREHOOK: query: create table t10_n0 (result array<double>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t10_n0
+POSTHOOK: query: create table t10_n0 (result array<double>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t10_n0
+PREHOOK: query: create table t11_n0 (result array<double>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t11_n0
+POSTHOOK: query: create table t11_n0 (result array<double>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t11_n0
+PREHOOK: query: create table t12_n0 (result array<double>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t12_n0
+POSTHOOK: query: create table t12_n0 (result array<double>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t12_n0
+PREHOOK: query: FROM bucket_n0
+insert overwrite table t1_n58 SELECT percentile_approx(cast(key AS double), 0.5)
+insert overwrite table t2_n36 SELECT percentile_approx(cast(key AS double), 0.5, 100)
+insert overwrite table t3_n13 SELECT percentile_approx(cast(key AS double), 0.5, 1000)
+
+insert overwrite table t4_n6 SELECT percentile_approx(cast(key AS int), 0.5)
+insert overwrite table t5_n2 SELECT percentile_approx(cast(key AS int), 0.5, 100)
+insert overwrite table t6_n1 SELECT percentile_approx(cast(key AS int), 0.5, 1000)
+
+insert overwrite table t7_n3 SELECT percentile_approx(cast(key AS double), array(0.05,0.5,0.95,0.98))
+insert overwrite table t8_n1 SELECT percentile_approx(cast(key AS double), array(0.05,0.5,0.95,0.98), 100)
+insert overwrite table t9_n0 SELECT percentile_approx(cast(key AS double), array(0.05,0.5,0.95,0.98), 1000)
+
+insert overwrite table t10_n0 SELECT percentile_approx(cast(key AS int), array(0.05,0.5,0.95,0.98))
+insert overwrite table t11_n0 SELECT percentile_approx(cast(key AS int), array(0.05,0.5,0.95,0.98), 100)
+insert overwrite table t12_n0 SELECT percentile_approx(cast(key AS int), array(0.05,0.5,0.95,0.98), 1000)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_n0
+PREHOOK: Output: default@t10_n0
+PREHOOK: Output: default@t11_n0
+PREHOOK: Output: default@t12_n0
+PREHOOK: Output: default@t1_n58
+PREHOOK: Output: default@t2_n36
+PREHOOK: Output: default@t3_n13
+PREHOOK: Output: default@t4_n6
+PREHOOK: Output: default@t5_n2
+PREHOOK: Output: default@t6_n1
+PREHOOK: Output: default@t7_n3
+PREHOOK: Output: default@t8_n1
+PREHOOK: Output: default@t9_n0
+POSTHOOK: query: FROM bucket_n0
+insert overwrite table t1_n58 SELECT percentile_approx(cast(key AS double), 0.5)
+insert overwrite table t2_n36 SELECT percentile_approx(cast(key AS double), 0.5, 100)
+insert overwrite table t3_n13 SELECT percentile_approx(cast(key AS double), 0.5, 1000)
+
+insert overwrite table t4_n6 SELECT percentile_approx(cast(key AS int), 0.5)
+insert overwrite table t5_n2 SELECT percentile_approx(cast(key AS int), 0.5, 100)
+insert overwrite table t6_n1 SELECT percentile_approx(cast(key AS int), 0.5, 1000)
+
+insert overwrite table t7_n3 SELECT percentile_approx(cast(key AS double), array(0.05,0.5,0.95,0.98))
+insert overwrite table t8_n1 SELECT percentile_approx(cast(key AS double), array(0.05,0.5,0.95,0.98), 100)
+insert overwrite table t9_n0 SELECT percentile_approx(cast(key AS double), array(0.05,0.5,0.95,0.98), 1000)
+
+insert overwrite table t10_n0 SELECT percentile_approx(cast(key AS int), array(0.05,0.5,0.95,0.98))
+insert overwrite table t11_n0 SELECT percentile_approx(cast(key AS int), array(0.05,0.5,0.95,0.98), 100)
+insert overwrite table t12_n0 SELECT percentile_approx(cast(key AS int), array(0.05,0.5,0.95,0.98), 1000)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket_n0
+POSTHOOK: Output: default@t10_n0
+POSTHOOK: Output: default@t11_n0
+POSTHOOK: Output: default@t12_n0
+POSTHOOK: Output: default@t1_n58
+POSTHOOK: Output: default@t2_n36
+POSTHOOK: Output: default@t3_n13
+POSTHOOK: Output: default@t4_n6
+POSTHOOK: Output: default@t5_n2
+POSTHOOK: Output: default@t6_n1
+POSTHOOK: Output: default@t7_n3
+POSTHOOK: Output: default@t8_n1
+POSTHOOK: Output: default@t9_n0
+POSTHOOK: Lineage: t10_n0.result EXPRESSION [(bucket_n0)bucket_n0.FieldSchema(name:key, type:double, comment:null), ]
+POSTHOOK: Lineage: t11_n0.result EXPRESSION [(bucket_n0)bucket_n0.FieldSchema(name:key, type:double, comment:null), ]
+POSTHOOK: Lineage: t12_n0.result EXPRESSION [(bucket_n0)bucket_n0.FieldSchema(name:key, type:double, comment:null), ]
+POSTHOOK: Lineage: t1_n58.result EXPRESSION [(bucket_n0)bucket_n0.FieldSchema(name:key, type:double, comment:null), ]
+POSTHOOK: Lineage: t2_n36.result EXPRESSION [(bucket_n0)bucket_n0.FieldSchema(name:key, type:double, comment:null), ]
+POSTHOOK: Lineage: t3_n13.result EXPRESSION [(bucket_n0)bucket_n0.FieldSchema(name:key, type:double, comment:null), ]
+POSTHOOK: Lineage: t4_n6.result EXPRESSION [(bucket_n0)bucket_n0.FieldSchema(name:key, type:double, comment:null), ]
+POSTHOOK: Lineage: t5_n2.result EXPRESSION [(bucket_n0)bucket_n0.FieldSchema(name:key, type:double, comment:null), ]
+POSTHOOK: Lineage: t6_n1.result EXPRESSION [(bucket_n0)bucket_n0.FieldSchema(name:key, type:double, comment:null), ]
+POSTHOOK: Lineage: t7_n3.result EXPRESSION [(bucket_n0)bucket_n0.FieldSchema(name:key, type:double, comment:null), ]
+POSTHOOK: Lineage: t8_n1.result EXPRESSION [(bucket_n0)bucket_n0.FieldSchema(name:key, type:double, comment:null), ]
+POSTHOOK: Lineage: t9_n0.result EXPRESSION [(bucket_n0)bucket_n0.FieldSchema(name:key, type:double, comment:null), ]
+PREHOOK: query: select * from t1_n58
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n58
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t1_n58
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n58
+#### A masked pattern was here ####
+255.5
+PREHOOK: query: select * from t2_n36
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_n36
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t2_n36
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_n36
+#### A masked pattern was here ####
+254.08333333333334
+PREHOOK: query: select * from t3_n13
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3_n13
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t3_n13
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3_n13
+#### A masked pattern was here ####
+255.5
+PREHOOK: query: select * from t4_n6
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t4_n6
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t4_n6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t4_n6
+#### A masked pattern was here ####
+255.5
+PREHOOK: query: select * from t5_n2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t5_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t5_n2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t5_n2
+#### A masked pattern was here ####
+254.08333333333334
+PREHOOK: query: select * from t6_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t6_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t6_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t6_n1
+#### A masked pattern was here ####
+255.5
+PREHOOK: query: select * from t7_n3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t7_n3
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t7_n3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t7_n3
+#### A masked pattern was here ####
+[26.0,255.5,479.0,491.0]
+PREHOOK: query: select * from t8_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t8_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t8_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t8_n1
+#### A masked pattern was here ####
+[23.355555555555558,254.08333333333334,477.0625,488.38271604938274]
+PREHOOK: query: select * from t9_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t9_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t9_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t9_n0
+#### A masked pattern was here ####
+[26.0,255.5,479.0,491.0]
+PREHOOK: query: select * from t10_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t10_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t10_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t10_n0
+#### A masked pattern was here ####
+[26.0,255.5,479.0,491.0]
+PREHOOK: query: select * from t11_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t11_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t11_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t11_n0
+#### A masked pattern was here ####
+[23.355555555555558,254.08333333333334,477.0625,488.38271604938274]
+PREHOOK: query: select * from t12_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t12_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t12_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t12_n0
+#### A masked pattern was here ####
+[26.0,255.5,479.0,491.0]
+PREHOOK: query: FROM bucket_n0
+insert overwrite table t1_n58 SELECT percentile_approx(cast(key AS double), 0.5)
+insert overwrite table t2_n36 SELECT percentile_approx(cast(key AS double), 0.5, 100)
+insert overwrite table t3_n13 SELECT percentile_approx(cast(key AS double), 0.5, 1000)
+
+insert overwrite table t4_n6 SELECT percentile_approx(cast(key AS int), 0.5)
+insert overwrite table t5_n2 SELECT percentile_approx(cast(key AS int), 0.5, 100)
+insert overwrite table t6_n1 SELECT percentile_approx(cast(key AS int), 0.5, 1000)
+
+insert overwrite table t7_n3 SELECT percentile_approx(cast(key AS double), array(0.05,0.5,0.95,0.98))
+insert overwrite table t8_n1 SELECT percentile_approx(cast(key AS double), array(0.05,0.5,0.95,0.98), 100)
+insert overwrite table t9_n0 SELECT percentile_approx(cast(key AS double), array(0.05,0.5,0.95,0.98), 1000)
+
+insert overwrite table t10_n0 SELECT percentile_approx(cast(key AS int), array(0.05,0.5,0.95,0.98))
+insert overwrite table t11_n0 SELECT percentile_approx(cast(key AS int), array(0.05,0.5,0.95,0.98), 100)
+insert overwrite table t12_n0 SELECT percentile_approx(cast(key AS int), array(0.05,0.5,0.95,0.98), 1000)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_n0
+PREHOOK: Output: default@t10_n0
+PREHOOK: Output: default@t11_n0
+PREHOOK: Output: default@t12_n0
+PREHOOK: Output: default@t1_n58
+PREHOOK: Output: default@t2_n36
+PREHOOK: Output: default@t3_n13
+PREHOOK: Output: default@t4_n6
+PREHOOK: Output: default@t5_n2
+PREHOOK: Output: default@t6_n1
+PREHOOK: Output: default@t7_n3
+PREHOOK: Output: default@t8_n1
+PREHOOK: Output: default@t9_n0
+POSTHOOK: query: FROM bucket_n0
+insert overwrite table t1_n58 SELECT percentile_approx(cast(key AS double), 0.5)
+insert overwrite table t2_n36 SELECT percentile_approx(cast(key AS double), 0.5, 100)
+insert overwrite table t3_n13 SELECT percentile_approx(cast(key AS double), 0.5, 1000)
+
+insert overwrite table t4_n6 SELECT percentile_approx(cast(key AS int), 0.5)
+insert overwrite table t5_n2 SELECT percentile_approx(cast(key AS int), 0.5, 100)
+insert overwrite table t6_n1 SELECT percentile_approx(cast(key AS int), 0.5, 1000)
+
+insert overwrite table t7_n3 SELECT percentile_approx(cast(key AS double), array(0.05,0.5,0.95,0.98))
+insert overwrite table t8_n1 SELECT percentile_approx(cast(key AS double), array(0.05,0.5,0.95,0.98), 100)
+insert overwrite table t9_n0 SELECT percentile_approx(cast(key AS double), array(0.05,0.5,0.95,0.98), 1000)
+
+insert overwrite table t10_n0 SELECT percentile_approx(cast(key AS int), array(0.05,0.5,0.95,0.98))
+insert overwrite table t11_n0 SELECT percentile_approx(cast(key AS int), array(0.05,0.5,0.95,0.98), 100)
+insert overwrite table t12_n0 SELECT percentile_approx(cast(key AS int), array(0.05,0.5,0.95,0.98), 1000)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket_n0
+POSTHOOK: Output: default@t10_n0
+POSTHOOK: Output: default@t11_n0
+POSTHOOK: Output: default@t12_n0
+POSTHOOK: Output: default@t1_n58
+POSTHOOK: Output: default@t2_n36
+POSTHOOK: Output: default@t3_n13
+POSTHOOK: Output: default@t4_n6
+POSTHOOK: Output: default@t5_n2
+POSTHOOK: Output: default@t6_n1
+POSTHOOK: Output: default@t7_n3
+POSTHOOK: Output: default@t8_n1
+POSTHOOK: Output: default@t9_n0
+POSTHOOK: Lineage: t10_n0.result EXPRESSION [(bucket_n0)bucket_n0.FieldSchema(name:key, type:double, comment:null), ]
+POSTHOOK: Lineage: t11_n0.result EXPRESSION [(bucket_n0)bucket_n0.FieldSchema(name:key, type:double, comment:null), ]
+POSTHOOK: Lineage: t12_n0.result EXPRESSION [(bucket_n0)bucket_n0.FieldSchema(name:key, type:double, comment:null), ]
+POSTHOOK: Lineage: t1_n58.result EXPRESSION [(bucket_n0)bucket_n0.FieldSchema(name:key, type:double, comment:null), ]
+POSTHOOK: Lineage: t2_n36.result EXPRESSION [(bucket_n0)bucket_n0.FieldSchema(name:key, type:double, comment:null), ]
+POSTHOOK: Lineage: t3_n13.result EXPRESSION [(bucket_n0)bucket_n0.FieldSchema(name:key, type:double, comment:null), ]
+POSTHOOK: Lineage: t4_n6.result EXPRESSION [(bucket_n0)bucket_n0.FieldSchema(name:key, type:double, comment:null), ]
+POSTHOOK: Lineage: t5_n2.result EXPRESSION [(bucket_n0)bucket_n0.FieldSchema(name:key, type:double, comment:null), ]
+POSTHOOK: Lineage: t6_n1.result EXPRESSION [(bucket_n0)bucket_n0.FieldSchema(name:key, type:double, comment:null), ]
+POSTHOOK: Lineage: t7_n3.result EXPRESSION [(bucket_n0)bucket_n0.FieldSchema(name:key, type:double, comment:null), ]
+POSTHOOK: Lineage: t8_n1.result EXPRESSION [(bucket_n0)bucket_n0.FieldSchema(name:key, type:double, comment:null), ]
+POSTHOOK: Lineage: t9_n0.result EXPRESSION [(bucket_n0)bucket_n0.FieldSchema(name:key, type:double, comment:null), ]
+PREHOOK: query: select * from t1_n58
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n58
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t1_n58
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n58
+#### A masked pattern was here ####
+255.5
+PREHOOK: query: select * from t2_n36
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_n36
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t2_n36
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_n36
+#### A masked pattern was here ####
+254.08333333333334
+PREHOOK: query: select * from t3_n13
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3_n13
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t3_n13
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3_n13
+#### A masked pattern was here ####
+255.5
+PREHOOK: query: select * from t4_n6
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t4_n6
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t4_n6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t4_n6
+#### A masked pattern was here ####
+255.5
+PREHOOK: query: select * from t5_n2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t5_n2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t5_n2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t5_n2
+#### A masked pattern was here ####
+254.08333333333334
+PREHOOK: query: select * from t6_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t6_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t6_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t6_n1
+#### A masked pattern was here ####
+255.5
+PREHOOK: query: select * from t7_n3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t7_n3
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t7_n3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t7_n3
+#### A masked pattern was here ####
+[26.0,255.5,479.0,491.0]
+PREHOOK: query: select * from t8_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t8_n1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t8_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t8_n1
+#### A masked pattern was here ####
+[23.355555555555558,254.08333333333334,477.0625,488.38271604938274]
+PREHOOK: query: select * from t9_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t9_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t9_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t9_n0
+#### A masked pattern was here ####
+[26.0,255.5,479.0,491.0]
+PREHOOK: query: select * from t10_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t10_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t10_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t10_n0
+#### A masked pattern was here ####
+[26.0,255.5,479.0,491.0]
+PREHOOK: query: select * from t11_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t11_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t11_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t11_n0
+#### A masked pattern was here ####
+[23.355555555555558,254.08333333333334,477.0625,488.38271604938274]
+PREHOOK: query: select * from t12_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t12_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t12_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t12_n0
+#### A masked pattern was here ####
+[26.0,255.5,479.0,491.0]
+PREHOOK: query: explain
+select percentile_approx(case when key < 100 then cast('NaN' as double) else key end, 0.5) from bucket_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select percentile_approx(case when key < 100 then cast('NaN' as double) else key end, 0.5) from bucket_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket_n0
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: bucket_n0
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: if((key < 100.0D), NaND, key) (type: double)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: percentile_approx(_col0, 0.5)
+                minReductionHashAggr: 0.99
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: array<double>)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: percentile_approx(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select percentile_approx(case when key < 100 then cast('NaN' as double) else key end, 0.5) between 340.5 and 343.0 from bucket_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select percentile_approx(case when key < 100 then cast('NaN' as double) else key end, 0.5) between 340.5 and 343.0 from bucket_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket_n0
+#### A masked pattern was here ####
+true
+PREHOOK: query: explain
+select percentile_approx(key, 0.5) from bucket_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select percentile_approx(key, 0.5) from bucket_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket_n0
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: bucket_n0
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: double)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: percentile_approx(_col0, 0.5)
+                minReductionHashAggr: 0.99
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: array<double>)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: percentile_approx(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select percentile_approx(key, 0.5) between 255.0 and 257.0 from bucket_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select percentile_approx(key, 0.5) between 255.0 and 257.0 from bucket_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket_n0
+#### A masked pattern was here ####
+true
+PREHOOK: query: select percentile_approx(key, array(0.50, 0.70, 0.90, 0.95, 0.99)) from bucket_n0 where key > 10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select percentile_approx(key, array(0.50, 0.70, 0.90, 0.95, 0.99)) from bucket_n0 where key > 10000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket_n0
+#### A masked pattern was here ####
+NULL

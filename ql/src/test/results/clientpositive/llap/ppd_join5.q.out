@@ -1,0 +1,213 @@
+PREHOOK: query: create table t1_n79 (id1 string, id2 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1_n79
+POSTHOOK: query: create table t1_n79 (id1 string, id2 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1_n79
+PREHOOK: query: create table t2_n48 (id string, d int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2_n48
+POSTHOOK: query: create table t2_n48 (id string, d int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2_n48
+PREHOOK: query: from src tablesample (1 rows)
+  insert into table t1_n79 select 'a','a'
+  insert into table t2_n48 select 'a',2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t1_n79
+PREHOOK: Output: default@t2_n48
+POSTHOOK: query: from src tablesample (1 rows)
+  insert into table t1_n79 select 'a','a'
+  insert into table t2_n48 select 'a',2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t1_n79
+POSTHOOK: Output: default@t2_n48
+POSTHOOK: Lineage: t1_n79.id1 SIMPLE []
+POSTHOOK: Lineage: t1_n79.id2 SIMPLE []
+POSTHOOK: Lineage: t2_n48.d SIMPLE []
+POSTHOOK: Lineage: t2_n48.id SIMPLE []
+Warning: Shuffle Join MERGEJOIN[43][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: explain
+select a.*,b.d d1,c.d d2 from
+  t1_n79 a join t2_n48 b on (a.id1 = b.id)
+       join t2_n48 c on (a.id2 = b.id) where b.d <= 1 and c.d <= 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n79
+PREHOOK: Input: default@t2_n48
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select a.*,b.d d1,c.d d2 from
+  t1_n79 a join t2_n48 b on (a.id1 = b.id)
+       join t2_n48 c on (a.id2 = b.id) where b.d <= 1 and c.d <= 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n79
+POSTHOOK: Input: default@t2_n48
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (XPROD_EDGE), Map 4 (XPROD_EDGE)
+        Reducer 3 <- Map 4 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  filterExpr: (id1 is not null and id2 is not null) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (id1 is not null and id2 is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: id1 (type: string), id2 (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: string), _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: c
+                  filterExpr: ((d <= 1) or ((d <= 1) and id is not null)) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (d <= 1) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: d (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int)
+                  Filter Operator
+                    predicate: ((d <= 1) and id is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: id (type: string), d (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col0 (type: string)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string), _col1 (type: string)
+                  null sort order: zz
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
+                  Statistics: Num rows: 1 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col2 (type: int)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string), _col1 (type: string)
+                  1 _col0 (type: string), _col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col4
+                Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col4 (type: int), _col2 (type: int)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+select * from (
+select a.*,b.d d1,c.d d2 from
+  t1_n79 a join t2_n48 b on (a.id1 = b.id)
+       join t2_n48 c on (a.id2 = b.id) where b.d <= 1 and c.d <= 1
+) z where d1 > 1 or d2 > 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n79
+PREHOOK: Input: default@t2_n48
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select * from (
+select a.*,b.d d1,c.d d2 from
+  t1_n79 a join t2_n48 b on (a.id1 = b.id)
+       join t2_n48 c on (a.id2 = b.id) where b.d <= 1 and c.d <= 1
+) z where d1 > 1 or d2 > 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n79
+POSTHOOK: Input: default@t2_n48
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 0
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select * from (
+select a.*,b.d d1,c.d d2 from
+  t1_n79 a join t2_n48 b on (a.id1 = b.id)
+       join t2_n48 c on (a.id2 = b.id) where b.d <= 1 and c.d <= 1
+) z where d1 > 1 or d2 > 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n79
+PREHOOK: Input: default@t2_n48
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (
+select a.*,b.d d1,c.d d2 from
+  t1_n79 a join t2_n48 b on (a.id1 = b.id)
+       join t2_n48 c on (a.id2 = b.id) where b.d <= 1 and c.d <= 1
+) z where d1 > 1 or d2 > 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n79
+POSTHOOK: Input: default@t2_n48
+#### A masked pattern was here ####

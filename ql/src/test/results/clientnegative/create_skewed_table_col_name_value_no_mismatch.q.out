@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10206]: The number of skewed column names and the number of skewed column values are different: 1 : 2

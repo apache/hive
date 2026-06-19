@@ -1,0 +1,62 @@
+PREHOOK: query: DESCRIBE FUNCTION hex
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION hex
+POSTHOOK: type: DESCFUNCTION
+hex(n, bin, or str) - Convert the argument to hexadecimal 
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED hex
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED hex
+POSTHOOK: type: DESCFUNCTION
+hex(n, bin, or str) - Convert the argument to hexadecimal 
+If the argument is a string, returns two hex digits for each character in the string.
+If the argument is a number or binary, returns the hexadecimal representation.
+Example:
+  > SELECT hex(17) FROM src LIMIT 1;
+  '11'
+  > SELECT hex('Facebook') FROM src LIMIT 1;
+  '46616365626F6F6B'
+Function class:org.apache.hadoop.hive.ql.udf.UDFHex
+Function type:BUILTIN
+PREHOOK: query: SELECT
+  hex('Facebook'),
+  hex('\0'),
+  hex('qwertyuiopasdfghjkl')
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  hex('Facebook'),
+  hex('\0'),
+  hex('qwertyuiopasdfghjkl')
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+46616365626F6F6B	00	71776572747975696F706173646667686A6B6C
+PREHOOK: query: SELECT
+  hex(1),
+  hex(0),
+  hex(4207849477)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  hex(1),
+  hex(0),
+  hex(4207849477)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1	0	FACEB005
+PREHOOK: query: SELECT hex(-5) FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT hex(-5) FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+FFFFFFFFFFFFFFFB

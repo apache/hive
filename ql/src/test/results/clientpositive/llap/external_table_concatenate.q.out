@@ -1,0 +1,26 @@
+PREHOOK: query: create external table test_ext_concat (i int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_ext_concat
+POSTHOOK: query: create external table test_ext_concat (i int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_ext_concat
+PREHOOK: query: alter table test_ext_concat concatenate
+PREHOOK: type: ALTER_TABLE_MERGE
+PREHOOK: Input: default@test_ext_concat
+PREHOOK: Output: default@test_ext_concat
+POSTHOOK: query: alter table test_ext_concat concatenate
+POSTHOOK: type: ALTER_TABLE_MERGE
+POSTHOOK: Input: default@test_ext_concat
+POSTHOOK: Output: default@test_ext_concat
+PREHOOK: query: drop table test_ext_concat
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_ext_concat
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_ext_concat
+POSTHOOK: query: drop table test_ext_concat
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_ext_concat
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_ext_concat

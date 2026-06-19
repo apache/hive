@@ -1,0 +1,55 @@
+PREHOOK: query: DROP VIEW xxx8
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW xxx8
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: DROP VIEW xxx9
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW xxx9
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: CREATE TABLE xxx10 (key int, value int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@xxx10
+POSTHOOK: query: CREATE TABLE xxx10 (key int, value int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@xxx10
+PREHOOK: query: CREATE VIEW xxx9 AS SELECT * FROM xxx10
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@xxx10
+PREHOOK: Output: database:default
+PREHOOK: Output: default@xxx9
+POSTHOOK: query: CREATE VIEW xxx9 AS SELECT * FROM xxx10
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@xxx10
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@xxx9
+POSTHOOK: Lineage: xxx9.key SIMPLE [(xxx10)xxx10.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: xxx9.value SIMPLE [(xxx10)xxx10.FieldSchema(name:value, type:int, comment:null), ]
+PREHOOK: query: CREATE VIEW xxx8 AS SELECT * FROM xxx9 xxx
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@xxx10
+PREHOOK: Input: default@xxx9
+PREHOOK: Output: database:default
+PREHOOK: Output: default@xxx8
+POSTHOOK: query: CREATE VIEW xxx8 AS SELECT * FROM xxx9 xxx
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@xxx10
+POSTHOOK: Input: default@xxx9
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@xxx8
+POSTHOOK: Lineage: xxx8.key SIMPLE [(xxx10)xxx10.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: xxx8.value SIMPLE [(xxx10)xxx10.FieldSchema(name:value, type:int, comment:null), ]
+PREHOOK: query: ALTER TABLE xxx10 REPLACE COLUMNS (key int)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@xxx10
+PREHOOK: Output: default@xxx10
+POSTHOOK: query: ALTER TABLE xxx10 REPLACE COLUMNS (key int)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@xxx10
+POSTHOOK: Output: default@xxx10
+FAILED: SemanticException Line 1:30 Invalid column reference 'value' in definition of VIEW xxx9 [
+SELECT `xxx10`.`key`, `xxx10`.`value` FROM `default`.`xxx10`
+] used as xxx at Line 1:39 in definition of VIEW xxx8 [
+SELECT `xxx`.`key`, `xxx`.`value` FROM `default`.`xxx9` `xxx`
+] used as yyy at Line 2:14

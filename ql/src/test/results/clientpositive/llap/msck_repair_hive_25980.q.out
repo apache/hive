@@ -1,0 +1,88 @@
+PREHOOK: query: DROP TABLE IF EXISTS repairtable_hive_25980
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS repairtable_hive_25980
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE repairtable_hive_25980(id int, name string) partitioned by(year int,month int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repairtable_hive_25980
+POSTHOOK: query: CREATE TABLE repairtable_hive_25980(id int, name string) partitioned by(year int,month int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repairtable_hive_25980
+PREHOOK: query: MSCK REPAIR TABLE repairtable_hive_25980
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_hive_25980
+POSTHOOK: query: MSCK REPAIR TABLE repairtable_hive_25980
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_hive_25980
+PREHOOK: query: SHOW PARTITIONS repairtable_hive_25980
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_hive_25980
+POSTHOOK: query: SHOW PARTITIONS repairtable_hive_25980
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_hive_25980
+PREHOOK: query: MSCK REPAIR TABLE repairtable_hive_25980
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_hive_25980
+POSTHOOK: query: MSCK REPAIR TABLE repairtable_hive_25980
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_hive_25980
+Partitions not in metastore:	repairtable_hive_25980:year=2021/month=1	repairtable_hive_25980:year=2021/month=2	repairtable_hive_25980:year=2021/month=3	repairtable_hive_25980:year=2022/month=1	repairtable_hive_25980:year=2022/month=3	repairtable_hive_25980:year=2022/month=4
+#### A masked pattern was here ####
+PREHOOK: query: SHOW PARTITIONS repairtable_hive_25980
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_hive_25980
+POSTHOOK: query: SHOW PARTITIONS repairtable_hive_25980
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_hive_25980
+year=2021/month=1
+year=2021/month=2
+year=2021/month=3
+year=2022/month=1
+year=2022/month=3
+year=2022/month=4
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+PREHOOK: Output: default@repairtable_hive_25980
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+POSTHOOK: Output: default@repairtable_hive_25980
+POSTHOOK: Output: default@repairtable_hive_25980@year=2022/month=2
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+PREHOOK: Output: default@repairtable_hive_25980
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+#### A masked pattern was here ####
+POSTHOOK: Output: default@repairtable_hive_25980
+POSTHOOK: Output: default@repairtable_hive_25980@year=2021/month=4
+PREHOOK: query: MSCK REPAIR TABLE repairtable_hive_25980 SYNC PARTITIONS
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable_hive_25980
+POSTHOOK: query: MSCK REPAIR TABLE repairtable_hive_25980 SYNC PARTITIONS
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable_hive_25980
+Partitions not in metastore:	repairtable_hive_25980:year=2022/month=12
+Partitions missing from filesystem:	repairtable_hive_25980:year=2021/month=1	repairtable_hive_25980:year=2021/month=2	repairtable_hive_25980:year=2021/month=3
+#### A masked pattern was here ####
+Repair: Dropped partition from metastore hive.default.repairtable_hive_25980:year=2021/month=1
+Repair: Dropped partition from metastore hive.default.repairtable_hive_25980:year=2021/month=2
+Repair: Dropped partition from metastore hive.default.repairtable_hive_25980:year=2021/month=3
+PREHOOK: query: SHOW PARTITIONS repairtable_hive_25980
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@repairtable_hive_25980
+POSTHOOK: query: SHOW PARTITIONS repairtable_hive_25980
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@repairtable_hive_25980
+year=2021/month=4
+year=2022/month=1
+year=2022/month=12
+year=2022/month=2
+year=2022/month=3
+year=2022/month=4

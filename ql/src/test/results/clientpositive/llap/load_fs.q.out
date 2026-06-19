@@ -1,0 +1,158 @@
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@load_overwrite
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@load_overwrite
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@load_overwrite2
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@load_overwrite2
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table load_overwrite
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@load_overwrite
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table load_overwrite
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@load_overwrite
+PREHOOK: query: load data local inpath '../../data/files/kv2.txt' into table load_overwrite
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@load_overwrite
+POSTHOOK: query: load data local inpath '../../data/files/kv2.txt' into table load_overwrite
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@load_overwrite
+PREHOOK: query: load data local inpath '../../data/files/kv3.txt' into table load_overwrite
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@load_overwrite
+POSTHOOK: query: load data local inpath '../../data/files/kv3.txt' into table load_overwrite
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@load_overwrite
+PREHOOK: query: show table extended like load_overwrite
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like load_overwrite
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:load_overwrite
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { string key, string value}
+partitioned:false
+partitionColumns:
+totalNumberFiles:3
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
+#### A masked pattern was here ####
+
+PREHOOK: query: desc extended load_overwrite
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@load_overwrite
+POSTHOOK: query: desc extended load_overwrite
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@load_overwrite
+key                 	string              	                    
+value               	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: select count(*) from load_overwrite
+PREHOOK: type: QUERY
+PREHOOK: Input: default@load_overwrite
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from load_overwrite
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@load_overwrite
+#### A masked pattern was here ####
+1025
+#### A masked pattern was here ####
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@load_overwrite2
+#### A masked pattern was here ####
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@load_overwrite2
+PREHOOK: query: show table extended like load_overwrite2
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like load_overwrite2
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:load_overwrite2
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { string key, string value}
+partitioned:false
+partitionColumns:
+totalNumberFiles:3
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
+#### A masked pattern was here ####
+
+PREHOOK: query: desc extended load_overwrite2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@load_overwrite2
+POSTHOOK: query: desc extended load_overwrite2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@load_overwrite2
+key                 	string              	                    
+value               	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: select count(*) from load_overwrite2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@load_overwrite2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from load_overwrite2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@load_overwrite2
+#### A masked pattern was here ####
+1025
+#### A masked pattern was here ####
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@load_overwrite
+#### A masked pattern was here ####
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@load_overwrite
+PREHOOK: query: show table extended like load_overwrite
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like load_overwrite
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:load_overwrite
+#### A masked pattern was here ####
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { string key, string value}
+partitioned:false
+partitionColumns:
+totalNumberFiles:3
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
+#### A masked pattern was here ####
+
+PREHOOK: query: select count(*) from load_overwrite
+PREHOOK: type: QUERY
+PREHOOK: Input: default@load_overwrite
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from load_overwrite
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@load_overwrite
+#### A masked pattern was here ####
+1025

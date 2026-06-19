@@ -1,0 +1,48 @@
+PREHOOK: query: DROP TABLE IF EXISTS payments
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS payments
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE EXTERNAL TABLE payments (card string) PARTITIONED BY(txn_datetime TIMESTAMP) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@payments
+POSTHOOK: query: CREATE EXTERNAL TABLE payments (card string) PARTITIONED BY(txn_datetime TIMESTAMP) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@payments
+PREHOOK: query: INSERT into payments VALUES('3333-4444-2222-9999', '2023-03-26 02:30:00'), ('3333-4444-2222-9999', '2023-03-26 03:30:00')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@payments
+POSTHOOK: query: INSERT into payments VALUES('3333-4444-2222-9999', '2023-03-26 02:30:00'), ('3333-4444-2222-9999', '2023-03-26 03:30:00')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@payments
+POSTHOOK: Output: default@payments@txn_datetime=2023-03-26 02%3A30%3A00
+POSTHOOK: Output: default@payments@txn_datetime=2023-03-26 03%3A30%3A00
+POSTHOOK: Lineage: payments PARTITION(txn_datetime=2023-03-26 02:30:00).card SCRIPT []
+POSTHOOK: Lineage: payments PARTITION(txn_datetime=2023-03-26 03:30:00).card SCRIPT []
+PREHOOK: query: SELECT * FROM payments WHERE txn_datetime = '2023-03-26 02:30:00'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@payments
+PREHOOK: Input: default@payments@txn_datetime=2023-03-26 02%3A30%3A00
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM payments WHERE txn_datetime = '2023-03-26 02:30:00'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@payments
+POSTHOOK: Input: default@payments@txn_datetime=2023-03-26 02%3A30%3A00
+#### A masked pattern was here ####
+3333-4444-2222-9999	2023-03-26 02:30:00
+PREHOOK: query: SELECT * FROM payments WHERE txn_datetime = '2023-03-26 03:30:00'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@payments
+PREHOOK: Input: default@payments@txn_datetime=2023-03-26 03%3A30%3A00
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM payments WHERE txn_datetime = '2023-03-26 03:30:00'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@payments
+POSTHOOK: Input: default@payments@txn_datetime=2023-03-26 03%3A30%3A00
+#### A masked pattern was here ####
+3333-4444-2222-9999	2023-03-26 03:30:00

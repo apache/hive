@@ -1,0 +1,52 @@
+PREHOOK: query: create table dist_binary (pointa binary,pointb binary)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dist_binary
+POSTHOOK: query: create table dist_binary (pointa binary,pointb binary)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dist_binary
+PREHOOK: query: insert into dist_binary values
+(ST_Point(12.5,16.2),ST_Point(18.7,4.5)),
+(ST_Point(1.5,15.1),ST_Point(1.5,8.7)),
+(ST_Point(0,1),ST_Point(0,1)),
+(ST_Point(0,10),ST_Point(0,12))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@dist_binary
+POSTHOOK: query: insert into dist_binary values
+(ST_Point(12.5,16.2),ST_Point(18.7,4.5)),
+(ST_Point(1.5,15.1),ST_Point(1.5,8.7)),
+(ST_Point(0,1),ST_Point(0,1)),
+(ST_Point(0,10),ST_Point(0,12))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@dist_binary
+POSTHOOK: Lineage: dist_binary.pointa SCRIPT []
+POSTHOOK: Lineage: dist_binary.pointb SCRIPT []
+PREHOOK: query: select ST_AsText(pointa) as First_Point, ST_AsText(pointb) as Second_Point from dist_binary
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dist_binary
+#### A masked pattern was here ####
+POSTHOOK: query: select ST_AsText(pointa) as First_Point, ST_AsText(pointb) as Second_Point from dist_binary
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dist_binary
+#### A masked pattern was here ####
+POINT (12.5 16.2)	POINT (18.7 4.5)
+POINT (1.5 15.1)	POINT (1.5 8.7)
+POINT (0 1)	POINT (0 1)
+POINT (0 10)	POINT (0 12)
+PREHOOK: query: select ST_AsText(pointa) as First_Point, ST_AsText(pointb) as Second_Point,
+       ST_Length(ST_LineString(array(pointa,pointb))) as Distance from dist_binary
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dist_binary
+#### A masked pattern was here ####
+POSTHOOK: query: select ST_AsText(pointa) as First_Point, ST_AsText(pointb) as Second_Point,
+       ST_Length(ST_LineString(array(pointa,pointb))) as Distance from dist_binary
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dist_binary
+#### A masked pattern was here ####
+POINT (12.5 16.2)	POINT (18.7 4.5)	13.241223508422474
+POINT (1.5 15.1)	POINT (1.5 8.7)	6.4
+POINT (0 1)	POINT (0 1)	0.0
+POINT (0 10)	POINT (0 12)	2.0

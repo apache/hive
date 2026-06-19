@@ -1,0 +1,32 @@
+PREHOOK: query: set role ADMIN
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role ADMIN
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: create temporary function temp_fn as 'org.apache.hadoop.hive.ql.udf.UDFAscii'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: temp_fn
+POSTHOOK: query: create temporary function temp_fn as 'org.apache.hadoop.hive.ql.udf.UDFAscii'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: temp_fn
+PREHOOK: query: create function perm_fn as 'org.apache.hadoop.hive.ql.udf.UDFAscii'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Input: database:default
+PREHOOK: Output: default.perm_fn
+POSTHOOK: query: create function perm_fn as 'org.apache.hadoop.hive.ql.udf.UDFAscii'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Input: database:default
+POSTHOOK: Output: default.perm_fn
+PREHOOK: query: drop temporary function temp_fn
+PREHOOK: type: DROPFUNCTION
+PREHOOK: Output: temp_fn
+POSTHOOK: query: drop temporary function temp_fn
+POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Output: temp_fn
+PREHOOK: query: drop function perm_fn
+PREHOOK: type: DROPFUNCTION
+PREHOOK: Input: database:default
+PREHOOK: Output: default.perm_fn
+POSTHOOK: query: drop function perm_fn
+POSTHOOK: type: DROPFUNCTION
+POSTHOOK: Input: database:default
+POSTHOOK: Output: default.perm_fn

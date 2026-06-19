@@ -1,0 +1,180 @@
+PREHOOK: query: CREATE TABLE dest1_n81(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1_n81
+POSTHOOK: query: CREATE TABLE dest1_n81(key INT, value STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest1_n81
+PREHOOK: query: EXPLAIN
+FROM (
+  FROM src_thrift
+  SELECT TRANSFORM(src_thrift.aint + src_thrift.lint[0], src_thrift.lintstring[0])
+         USING 'cat' AS (tkey, tvalue) 
+  CLUSTER BY tkey 
+) tmap
+INSERT OVERWRITE TABLE dest1_n81 SELECT tmap.tkey, tmap.tvalue
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+PREHOOK: Output: default@dest1_n81
+POSTHOOK: query: EXPLAIN
+FROM (
+  FROM src_thrift
+  SELECT TRANSFORM(src_thrift.aint + src_thrift.lint[0], src_thrift.lintstring[0])
+         USING 'cat' AS (tkey, tvalue) 
+  CLUSTER BY tkey 
+) tmap
+INSERT OVERWRITE TABLE dest1_n81 SELECT tmap.tkey, tmap.tvalue
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+POSTHOOK: Output: default@dest1_n81
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src_thrift
+                  Statistics: Num rows: 11 Data size: 29524 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: (aint + lint[0]) (type: int), lintstring[0] (type: struct<myint:int,mystring:string,underscore_int:int>)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 11 Data size: 29524 Basic stats: COMPLETE Column stats: NONE
+                    Transform Operator
+                      command: cat
+                      output info:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      Statistics: Num rows: 11 Data size: 29524 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 11 Data size: 29524 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: string), _col1 (type: string)
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: UDFToInteger(VALUE._col0) (type: int), VALUE._col1 (type: string)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 11 Data size: 29524 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 11 Data size: 29524 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.dest1_n81
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: string)
+                  outputColumnNames: key, value
+                  Statistics: Num rows: 11 Data size: 29524 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    aggregations: min(key), max(key), count(1), count(key), compute_bit_vector_hll(key), max(length(value)), avg(COALESCE(length(value),0)), count(value), compute_bit_vector_hll(value)
+                    minReductionHashAggr: 0.99
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                    Statistics: Num rows: 1 Data size: 3084 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 3084 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 3084 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col0) (type: bigint), UDFToLong(_col1) (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col5,0)) (type: bigint), COALESCE(_col6,0) (type: double), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 3084 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 3084 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest1_n81
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: key, value
+          Column Types: int, string
+          Table: default.dest1_n81
+
+PREHOOK: query: FROM (
+  FROM src_thrift
+  SELECT TRANSFORM(src_thrift.aint + src_thrift.lint[0], src_thrift.lintstring[0])
+         USING 'cat' AS (tkey, tvalue) 
+  CLUSTER BY tkey 
+) tmap
+INSERT OVERWRITE TABLE dest1_n81 SELECT tmap.tkey, tmap.tvalue
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+PREHOOK: Output: default@dest1_n81
+POSTHOOK: query: FROM (
+  FROM src_thrift
+  SELECT TRANSFORM(src_thrift.aint + src_thrift.lint[0], src_thrift.lintstring[0])
+         USING 'cat' AS (tkey, tvalue) 
+  CLUSTER BY tkey 
+) tmap
+INSERT OVERWRITE TABLE dest1_n81 SELECT tmap.tkey, tmap.tvalue
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+POSTHOOK: Output: default@dest1_n81
+POSTHOOK: Lineage: dest1_n81.key SCRIPT [(src_thrift)src_thrift.FieldSchema(name:aint, type:int, comment:from deserializer), (src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), (src_thrift)src_thrift.FieldSchema(name:lintstring, type:array<struct<myint:int,mystring:string,underscore_int:int>>, comment:from deserializer), ]
+POSTHOOK: Lineage: dest1_n81.value SCRIPT [(src_thrift)src_thrift.FieldSchema(name:aint, type:int, comment:from deserializer), (src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), (src_thrift)src_thrift.FieldSchema(name:lintstring, type:array<struct<myint:int,mystring:string,underscore_int:int>>, comment:from deserializer), ]
+PREHOOK: query: SELECT dest1_n81.* FROM dest1_n81
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1_n81
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT dest1_n81.* FROM dest1_n81
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1_n81
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+-1461153966	{"myint":49,"mystring":"343","underscore_int":7}
+-1952710705	{"myint":25,"mystring":"125","underscore_int":5}
+-734328905	{"myint":16,"mystring":"64","underscore_int":4}
+-751827636	{"myint":4,"mystring":"8","underscore_int":2}
+1244525196	{"myint":36,"mystring":"216","underscore_int":6}
+1638581586	{"myint":64,"mystring":"512","underscore_int":8}
+1712634731	{"myint":0,"mystring":"0","underscore_int":0}
+336964422	{"myint":81,"mystring":"729","underscore_int":9}
+465985201	{"myint":1,"mystring":"1","underscore_int":1}
+477111225	{"myint":9,"mystring":"27","underscore_int":3}
+NULL	NULL

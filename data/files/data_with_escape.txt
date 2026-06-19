@@ -1,0 +1,5 @@
+re\|ading|V\|A|100
+writ\|ing|MD|200
+w\|aiting|\|NC|300
+seein\|g|TN\||400
+runn\|ing|WV|500

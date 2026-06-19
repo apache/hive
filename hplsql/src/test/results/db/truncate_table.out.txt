@@ -1,0 +1,4 @@
+Ln:1 TRUNCATE
+Ln:1 TRUNCATE TABLE src_empty
+Ln:2 TRUNCATE
+Ln:2 TRUNCATE TABLE src_empty

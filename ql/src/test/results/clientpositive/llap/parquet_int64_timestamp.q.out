@@ -1,0 +1,205 @@
+PREHOOK: query: create table parquet_timestamp_staging (i int, s string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_timestamp_staging
+POSTHOOK: query: create table parquet_timestamp_staging (i int, s string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_timestamp_staging
+PREHOOK: query: insert into parquet_timestamp_staging
+values
+(0, '0001-01-01'),
+(1, '1677-09-21 00:12:43.145224192'),
+(2, '1969-12-31 23:59:59.99999999999999999'),
+(3, '1970-01-01 00:00:00'),
+(4, '2013-09-27 01:36:18.000000001'),
+(5, '2018-01-02 13:14:15.678999'),
+(6, '2262-04-11 23:47:16.854775807'),
+(7, '9999-12-31 23:59:59.999999999999')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@parquet_timestamp_staging
+POSTHOOK: query: insert into parquet_timestamp_staging
+values
+(0, '0001-01-01'),
+(1, '1677-09-21 00:12:43.145224192'),
+(2, '1969-12-31 23:59:59.99999999999999999'),
+(3, '1970-01-01 00:00:00'),
+(4, '2013-09-27 01:36:18.000000001'),
+(5, '2018-01-02 13:14:15.678999'),
+(6, '2262-04-11 23:47:16.854775807'),
+(7, '9999-12-31 23:59:59.999999999999')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@parquet_timestamp_staging
+POSTHOOK: Lineage: parquet_timestamp_staging.i SCRIPT []
+POSTHOOK: Lineage: parquet_timestamp_staging.s SCRIPT []
+PREHOOK: query: create table parquet_int64_timestamp (i int, ts timestamp) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_int64_timestamp
+POSTHOOK: query: create table parquet_int64_timestamp (i int, ts timestamp) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_int64_timestamp
+PREHOOK: query: insert into parquet_int64_timestamp select i, cast (s as timestamp) from parquet_timestamp_staging
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_timestamp_staging
+PREHOOK: Output: default@parquet_int64_timestamp
+POSTHOOK: query: insert into parquet_int64_timestamp select i, cast (s as timestamp) from parquet_timestamp_staging
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_timestamp_staging
+POSTHOOK: Output: default@parquet_int64_timestamp
+POSTHOOK: Lineage: parquet_int64_timestamp.i SIMPLE [(parquet_timestamp_staging)parquet_timestamp_staging.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_int64_timestamp.ts EXPRESSION [(parquet_timestamp_staging)parquet_timestamp_staging.FieldSchema(name:s, type:string, comment:null), ]
+PREHOOK: query: select * from parquet_int64_timestamp order by i
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_int64_timestamp
+#### A masked pattern was here ####
+POSTHOOK: query: select * from parquet_int64_timestamp order by i
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_int64_timestamp
+#### A masked pattern was here ####
+0	NULL
+1	1677-09-21 00:12:43.145224192
+2	1969-12-31 23:59:59.999999999
+3	1970-01-01 00:00:00
+4	2013-09-27 01:36:18.000000001
+5	2018-01-02 13:14:15.678999
+6	2262-04-11 23:47:16.854775807
+7	NULL
+PREHOOK: query: insert into parquet_int64_timestamp select i + 10, cast (s as timestamp) from parquet_timestamp_staging
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_timestamp_staging
+PREHOOK: Output: default@parquet_int64_timestamp
+POSTHOOK: query: insert into parquet_int64_timestamp select i + 10, cast (s as timestamp) from parquet_timestamp_staging
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_timestamp_staging
+POSTHOOK: Output: default@parquet_int64_timestamp
+POSTHOOK: Lineage: parquet_int64_timestamp.i EXPRESSION [(parquet_timestamp_staging)parquet_timestamp_staging.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_int64_timestamp.ts EXPRESSION [(parquet_timestamp_staging)parquet_timestamp_staging.FieldSchema(name:s, type:string, comment:null), ]
+PREHOOK: query: select * from parquet_int64_timestamp order by i
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_int64_timestamp
+#### A masked pattern was here ####
+POSTHOOK: query: select * from parquet_int64_timestamp order by i
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_int64_timestamp
+#### A masked pattern was here ####
+0	NULL
+1	1677-09-21 00:12:43.145224192
+2	1969-12-31 23:59:59.999999999
+3	1970-01-01 00:00:00
+4	2013-09-27 01:36:18.000000001
+5	2018-01-02 13:14:15.678999
+6	2262-04-11 23:47:16.854775807
+7	NULL
+10	0001-01-01 00:00:00
+11	1677-09-21 00:12:43.145224
+12	1969-12-31 23:59:59.999999
+13	1970-01-01 00:00:00
+14	2013-09-27 01:36:18
+15	2018-01-02 13:14:15.678999
+16	2262-04-11 23:47:16.854775
+17	9999-12-31 23:59:59.999999
+PREHOOK: query: insert into parquet_int64_timestamp select i + 20, cast (s as timestamp) from parquet_timestamp_staging
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_timestamp_staging
+PREHOOK: Output: default@parquet_int64_timestamp
+POSTHOOK: query: insert into parquet_int64_timestamp select i + 20, cast (s as timestamp) from parquet_timestamp_staging
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_timestamp_staging
+POSTHOOK: Output: default@parquet_int64_timestamp
+POSTHOOK: Lineage: parquet_int64_timestamp.i EXPRESSION [(parquet_timestamp_staging)parquet_timestamp_staging.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_int64_timestamp.ts EXPRESSION [(parquet_timestamp_staging)parquet_timestamp_staging.FieldSchema(name:s, type:string, comment:null), ]
+PREHOOK: query: select * from parquet_int64_timestamp order by i
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_int64_timestamp
+#### A masked pattern was here ####
+POSTHOOK: query: select * from parquet_int64_timestamp order by i
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_int64_timestamp
+#### A masked pattern was here ####
+0	NULL
+1	1677-09-21 00:12:43.145224192
+2	1969-12-31 23:59:59.999999999
+3	1970-01-01 00:00:00
+4	2013-09-27 01:36:18.000000001
+5	2018-01-02 13:14:15.678999
+6	2262-04-11 23:47:16.854775807
+7	NULL
+10	0001-01-01 00:00:00
+11	1677-09-21 00:12:43.145224
+12	1969-12-31 23:59:59.999999
+13	1970-01-01 00:00:00
+14	2013-09-27 01:36:18
+15	2018-01-02 13:14:15.678999
+16	2262-04-11 23:47:16.854775
+17	9999-12-31 23:59:59.999999
+20	0001-01-01 00:00:00
+21	1677-09-21 00:12:43.145
+22	1969-12-31 23:59:59.999
+23	1970-01-01 00:00:00
+24	2013-09-27 01:36:18
+25	2018-01-02 13:14:15.678
+26	2262-04-11 23:47:16.854
+27	9999-12-31 23:59:59.999
+PREHOOK: query: select * from parquet_int64_timestamp where ts >  '1969-12-31 23:59:59.9'
+                                            and
+                                            ts <  '1970-01-01 00:00:00.0' order by i
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_int64_timestamp
+#### A masked pattern was here ####
+POSTHOOK: query: select * from parquet_int64_timestamp where ts >  '1969-12-31 23:59:59.9'
+                                            and
+                                            ts <  '1970-01-01 00:00:00.0' order by i
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_int64_timestamp
+#### A masked pattern was here ####
+2	1969-12-31 23:59:59.999999999
+12	1969-12-31 23:59:59.999999
+22	1969-12-31 23:59:59.999
+PREHOOK: query: select * from parquet_int64_timestamp where ts <= '1970-01-01 00:00:00.0'
+                                            and
+                                            ts >= '1970-01-01 00:00:00.0' order by i
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_int64_timestamp
+#### A masked pattern was here ####
+POSTHOOK: query: select * from parquet_int64_timestamp where ts <= '1970-01-01 00:00:00.0'
+                                            and
+                                            ts >= '1970-01-01 00:00:00.0' order by i
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_int64_timestamp
+#### A masked pattern was here ####
+3	1970-01-01 00:00:00
+13	1970-01-01 00:00:00
+23	1970-01-01 00:00:00
+PREHOOK: query: select * from parquet_int64_timestamp where ts =  '1970-01-01 00:00:00.0' order by i
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_int64_timestamp
+#### A masked pattern was here ####
+POSTHOOK: query: select * from parquet_int64_timestamp where ts =  '1970-01-01 00:00:00.0' order by i
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_int64_timestamp
+#### A masked pattern was here ####
+3	1970-01-01 00:00:00
+13	1970-01-01 00:00:00
+23	1970-01-01 00:00:00
+PREHOOK: query: select * from parquet_int64_timestamp where ts between cast ('1969-12-31 23:59:59.9' as timestamp) and
+                                                       cast ('1970-01-01 00:00:00' as timestamp)
+                                      order by i
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_int64_timestamp
+#### A masked pattern was here ####
+POSTHOOK: query: select * from parquet_int64_timestamp where ts between cast ('1969-12-31 23:59:59.9' as timestamp) and
+                                                       cast ('1970-01-01 00:00:00' as timestamp)
+                                      order by i
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_int64_timestamp
+#### A masked pattern was here ####
+2	1969-12-31 23:59:59.999999999
+3	1970-01-01 00:00:00
+12	1969-12-31 23:59:59.999999
+13	1970-01-01 00:00:00
+22	1969-12-31 23:59:59.999
+23	1970-01-01 00:00:00

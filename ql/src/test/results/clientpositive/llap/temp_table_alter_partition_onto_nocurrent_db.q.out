@@ -1,0 +1,85 @@
+PREHOOK: query: CREATE DATABASE test_db_nocurr
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test_db_nocurr
+POSTHOOK: query: CREATE DATABASE test_db_nocurr
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test_db_nocurr
+PREHOOK: query: CREATE TEMPORARY TABLE test_db_nocurr.test_table_for_alter_partition_nocurrentdb_temp (a INT) PARTITIONED BY (ds STRING) STORED AS SEQUENCEFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test_db_nocurr
+PREHOOK: Output: test_db_nocurr@test_table_for_alter_partition_nocurrentdb_temp
+POSTHOOK: query: CREATE TEMPORARY TABLE test_db_nocurr.test_table_for_alter_partition_nocurrentdb_temp (a INT) PARTITIONED BY (ds STRING) STORED AS SEQUENCEFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test_db_nocurr
+POSTHOOK: Output: test_db_nocurr@test_table_for_alter_partition_nocurrentdb_temp
+PREHOOK: query: ALTER TABLE test_db_nocurr.test_table_for_alter_partition_nocurrentdb_temp Add PARTITION(ds='eleme_haihua')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: test_db_nocurr@test_table_for_alter_partition_nocurrentdb_temp
+POSTHOOK: query: ALTER TABLE test_db_nocurr.test_table_for_alter_partition_nocurrentdb_temp Add PARTITION(ds='eleme_haihua')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: test_db_nocurr@test_table_for_alter_partition_nocurrentdb_temp
+POSTHOOK: Output: test_db_nocurr@test_table_for_alter_partition_nocurrentdb_temp@ds=eleme_haihua
+PREHOOK: query: INSERT OVERWRITE TABLE test_db_nocurr.test_table_for_alter_partition_nocurrentdb_temp PARTITION(ds='eleme_haihua') SELECT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: test_db_nocurr@test_table_for_alter_partition_nocurrentdb_temp@ds=eleme_haihua
+POSTHOOK: query: INSERT OVERWRITE TABLE test_db_nocurr.test_table_for_alter_partition_nocurrentdb_temp PARTITION(ds='eleme_haihua') SELECT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: test_db_nocurr@test_table_for_alter_partition_nocurrentdb_temp@ds=eleme_haihua
+POSTHOOK: Lineage: test_table_for_alter_partition_nocurrentdb_temp PARTITION(ds=eleme_haihua).a SIMPLE []
+PREHOOK: query: desc extended test_db_nocurr.test_table_for_alter_partition_nocurrentdb_temp partition(ds='eleme_haihua')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: test_db_nocurr@test_table_for_alter_partition_nocurrentdb_temp
+POSTHOOK: query: desc extended test_db_nocurr.test_table_for_alter_partition_nocurrentdb_temp partition(ds='eleme_haihua')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: test_db_nocurr@test_table_for_alter_partition_nocurrentdb_temp
+a                   	int                 	                    
+ds                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: ALTER TABLE test_db_nocurr.test_table_for_alter_partition_nocurrentdb_temp partition(ds='eleme_haihua') CHANGE COLUMN a a_new BOOLEAN
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: test_db_nocurr@test_table_for_alter_partition_nocurrentdb_temp
+PREHOOK: Output: test_db_nocurr@test_table_for_alter_partition_nocurrentdb_temp@ds=eleme_haihua
+POSTHOOK: query: ALTER TABLE test_db_nocurr.test_table_for_alter_partition_nocurrentdb_temp partition(ds='eleme_haihua') CHANGE COLUMN a a_new BOOLEAN
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: test_db_nocurr@test_table_for_alter_partition_nocurrentdb_temp
+POSTHOOK: Input: test_db_nocurr@test_table_for_alter_partition_nocurrentdb_temp@ds=eleme_haihua
+POSTHOOK: Output: test_db_nocurr@test_table_for_alter_partition_nocurrentdb_temp@ds=eleme_haihua
+PREHOOK: query: desc extended test_db_nocurr.test_table_for_alter_partition_nocurrentdb_temp partition(ds='eleme_haihua')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: test_db_nocurr@test_table_for_alter_partition_nocurrentdb_temp
+POSTHOOK: query: desc extended test_db_nocurr.test_table_for_alter_partition_nocurrentdb_temp partition(ds='eleme_haihua')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: test_db_nocurr@test_table_for_alter_partition_nocurrentdb_temp
+a_new               	boolean             	                    
+ds                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: DROP TABLE test_db_nocurr.test_table_for_alter_partition_nocurrentdb_temp
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: test_db_nocurr@test_table_for_alter_partition_nocurrentdb_temp
+PREHOOK: Output: database:test_db_nocurr
+PREHOOK: Output: test_db_nocurr@test_table_for_alter_partition_nocurrentdb_temp
+POSTHOOK: query: DROP TABLE test_db_nocurr.test_table_for_alter_partition_nocurrentdb_temp
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: test_db_nocurr@test_table_for_alter_partition_nocurrentdb_temp
+POSTHOOK: Output: database:test_db_nocurr
+POSTHOOK: Output: test_db_nocurr@test_table_for_alter_partition_nocurrentdb_temp
+PREHOOK: query: DROP DATABASE test_db_nocurr
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:test_db_nocurr
+PREHOOK: Output: database:test_db_nocurr
+POSTHOOK: query: DROP DATABASE test_db_nocurr
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:test_db_nocurr
+POSTHOOK: Output: database:test_db_nocurr

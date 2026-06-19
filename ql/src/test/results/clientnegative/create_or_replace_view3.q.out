@@ -1,0 +1,2 @@
+FAILED: SemanticException [Error 10218]: Existing table is not a view
+ The following is an existing table, not a view: default.src

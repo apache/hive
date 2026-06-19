@@ -1,0 +1,9 @@
+PREHOOK: query: create table orc_test (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_test
+POSTHOOK: query: create table orc_test (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_test
+FAILED: SemanticException Unable to load data to destination table. Error: The file that you are trying to load does not match the file format of the destination table.

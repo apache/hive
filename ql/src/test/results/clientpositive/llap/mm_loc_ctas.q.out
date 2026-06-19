@@ -1,0 +1,44 @@
+PREHOOK: query: drop table test
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table test(id int, name string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test
+POSTHOOK: query: create table test(id int, name string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test
+PREHOOK: query: insert into test values(1, 'aa'),(2,'bb')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test
+POSTHOOK: query: insert into test values(1, 'aa'),(2,'bb')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test
+POSTHOOK: Lineage: test.id SCRIPT []
+POSTHOOK: Lineage: test.name SCRIPT []
+PREHOOK: query: drop table test3
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table test3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test3
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test3
+POSTHOOK: Lineage: test3.id SIMPLE [(test)test.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: test3.name SIMPLE [(test)test.FieldSchema(name:name, type:string, comment:null), ]

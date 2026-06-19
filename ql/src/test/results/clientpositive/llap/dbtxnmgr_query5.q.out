@@ -1,0 +1,91 @@
+PREHOOK: query: create database foo
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:foo
+POSTHOOK: query: create database foo
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:foo
+PREHOOK: query: use foo
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:foo
+POSTHOOK: query: use foo
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:foo
+PREHOOK: query: create table T1_n40(key string, val string) partitioned by (ds string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:foo
+PREHOOK: Output: foo@T1_n40
+POSTHOOK: query: create table T1_n40(key string, val string) partitioned by (ds string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:foo
+POSTHOOK: Output: foo@T1_n40
+PREHOOK: query: alter table T1_n40 add partition (ds='today')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: foo@t1_n40
+POSTHOOK: query: alter table T1_n40 add partition (ds='today')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: foo@t1_n40
+POSTHOOK: Output: foo@t1_n40@ds=today
+PREHOOK: query: create view V1_n3 as select key from T1_n40
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: foo@t1_n40
+PREHOOK: Output: database:foo
+PREHOOK: Output: foo@V1_n3
+POSTHOOK: query: create view V1_n3 as select key from T1_n40
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: foo@t1_n40
+POSTHOOK: Output: database:foo
+POSTHOOK: Output: foo@V1_n3
+POSTHOOK: Lineage: v1_n3.key SIMPLE [(t1_n40)t1_n40.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: show tables
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:foo
+POSTHOOK: query: show tables
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:foo
+t1_n40
+v1_n3
+PREHOOK: query: describe T1_n40
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: foo@t1_n40
+POSTHOOK: query: describe T1_n40
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: foo@t1_n40
+key                 	string              	                    
+val                 	string              	                    
+ds                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+PREHOOK: query: drop view V1_n3
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: foo@v1_n3
+PREHOOK: Output: foo@v1_n3
+POSTHOOK: query: drop view V1_n3
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: foo@v1_n3
+POSTHOOK: Output: foo@v1_n3
+PREHOOK: query: drop table T1_n40
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: foo@t1_n40
+PREHOOK: Output: database:foo
+PREHOOK: Output: foo@t1_n40
+POSTHOOK: query: drop table T1_n40
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: foo@t1_n40
+POSTHOOK: Output: database:foo
+POSTHOOK: Output: foo@t1_n40
+PREHOOK: query: show databases
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: show databases
+POSTHOOK: type: SHOWDATABASES
+default
+foo
+PREHOOK: query: drop database foo
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:foo
+PREHOOK: Output: database:foo
+POSTHOOK: query: drop database foo
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:foo
+POSTHOOK: Output: database:foo

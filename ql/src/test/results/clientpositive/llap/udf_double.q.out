@@ -1,0 +1,26 @@
+PREHOOK: query: DESCRIBE FUNCTION double
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION double
+POSTHOOK: type: DESCFUNCTION
+double(x) - converts it's parameter to double
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED double
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED double
+POSTHOOK: type: DESCFUNCTION
+double(x) - converts it's parameter to double
+Synonyms: udftodouble
+- x is NULL -> NULL
+- byte, short, integer, long, float, double, decimal, timestamp:
+  x fits into the type double -> x
+  undefined otherwise
+- boolean:
+  true  -> 1.0
+  false -> 0.0
+- string:
+  x is a valid double -> x
+  NULL otherwise
+Example:
+   > SELECT double(true);
+  1
+Function class:org.apache.hadoop.hive.ql.udf.UDFToDouble
+Function type:BUILTIN

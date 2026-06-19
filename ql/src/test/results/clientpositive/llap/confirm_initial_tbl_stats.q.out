@@ -1,0 +1,304 @@
+PREHOOK: query: describe extended src
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src
+POSTHOOK: query: describe extended src
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src
+key                 	string              	default             
+value               	string              	default             
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted src key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src
+POSTHOOK: query: describe formatted src key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src
+col_name            	key                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	316                 
+avg_col_len         	2.812               
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+PREHOOK: query: describe extended src1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src1
+POSTHOOK: query: describe extended src1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src1
+key                 	string              	default             
+value               	string              	default             
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted src1 value
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src1
+POSTHOOK: query: describe formatted src1 value
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src1
+col_name            	value               
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	19                  
+avg_col_len         	4.92                
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+PREHOOK: query: describe extended src_json
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_json
+POSTHOOK: query: describe extended src_json
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_json
+json                	string              	default             
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted src_json json
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_json
+POSTHOOK: query: describe formatted src_json json
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_json
+col_name            	json                
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	644.0               
+max_col_len         	644                 
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"json\":\"true\"}}
+PREHOOK: query: describe extended src_sequencefile
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_sequencefile
+POSTHOOK: query: describe extended src_sequencefile
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_sequencefile
+key                 	string              	default             
+value               	string              	default             
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted src_sequencefile value
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@src_sequencefile
+POSTHOOK: query: describe formatted src_sequencefile value
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src_sequencefile
+col_name            	value               
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	307                 
+avg_col_len         	6.812               
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+PREHOOK: query: describe extended srcbucket
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@srcbucket
+POSTHOOK: query: describe extended srcbucket
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@srcbucket
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted srcbucket value
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@srcbucket
+POSTHOOK: query: describe formatted srcbucket value
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@srcbucket
+col_name            	value               
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	431                 
+avg_col_len         	6.802               
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+PREHOOK: query: describe extended srcbucket2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@srcbucket2
+POSTHOOK: query: describe extended srcbucket2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@srcbucket2
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted srcbucket2 value
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@srcbucket2
+POSTHOOK: query: describe formatted srcbucket2 value
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@srcbucket2
+col_name            	value               
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	307                 
+avg_col_len         	6.812               
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+PREHOOK: query: describe extended srcpart
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@srcpart
+POSTHOOK: query: describe extended srcpart
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@srcpart
+key                 	string              	default             
+value               	string              	default             
+ds                  	string              	                    
+hr                  	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+hr                  	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted srcpart PARTITION (ds="2008-04-09", hr="12") key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@srcpart
+POSTHOOK: query: describe formatted srcpart PARTITION (ds="2008-04-09", hr="12") key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@srcpart
+col_name            	key                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	316                 
+avg_col_len         	2.812               
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+PREHOOK: query: describe extended alltypesorc
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alltypesorc
+POSTHOOK: query: describe extended alltypesorc
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alltypesorc
+ctinyint            	tinyint             	                    
+csmallint           	smallint            	                    
+cint                	int                 	                    
+cbigint             	bigint              	                    
+cfloat              	float               	                    
+cdouble             	double              	                    
+cstring1            	string              	                    
+cstring2            	string              	                    
+ctimestamp1         	timestamp           	                    
+ctimestamp2         	timestamp           	                    
+cboolean1           	boolean             	                    
+cboolean2           	boolean             	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted alltypesorc ctinyint
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alltypesorc
+POSTHOOK: query: describe formatted alltypesorc ctinyint
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alltypesorc
+col_name            	ctinyint            
+data_type           	tinyint             
+min                 	-64                 
+max                 	62                  
+num_nulls           	3115                
+distinct_count      	127                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"cbigint\":\"true\",\"cboolean1\":\"true\",\"cboolean2\":\"true\",\"cdouble\":\"true\",\"cfloat\":\"true\",\"cint\":\"true\",\"csmallint\":\"true\",\"cstring1\":\"true\",\"cstring2\":\"true\",\"ctimestamp1\":\"true\",\"ctimestamp2\":\"true\",\"ctinyint\":\"true\"}}
+PREHOOK: query: describe formatted alltypesorc cfloat
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alltypesorc
+POSTHOOK: query: describe formatted alltypesorc cfloat
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alltypesorc
+col_name            	cfloat              
+data_type           	float               
+min                 	-64.0               
+max                 	79.5530014038086    
+num_nulls           	3115                
+distinct_count      	131                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"cbigint\":\"true\",\"cboolean1\":\"true\",\"cboolean2\":\"true\",\"cdouble\":\"true\",\"cfloat\":\"true\",\"cint\":\"true\",\"csmallint\":\"true\",\"cstring1\":\"true\",\"cstring2\":\"true\",\"ctimestamp1\":\"true\",\"ctimestamp2\":\"true\",\"ctinyint\":\"true\"}}
+PREHOOK: query: describe formatted alltypesorc ctimestamp1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alltypesorc
+POSTHOOK: query: describe formatted alltypesorc ctimestamp1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alltypesorc
+col_name            	ctimestamp1         
+data_type           	timestamp           
+min                 	1969-12-31 15:59:30 
+max                 	1969-12-31 16:00:31 
+num_nulls           	3115                
+distinct_count      	35                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"cbigint\":\"true\",\"cboolean1\":\"true\",\"cboolean2\":\"true\",\"cdouble\":\"true\",\"cfloat\":\"true\",\"cint\":\"true\",\"csmallint\":\"true\",\"cstring1\":\"true\",\"cstring2\":\"true\",\"ctimestamp1\":\"true\",\"ctimestamp2\":\"true\",\"ctinyint\":\"true\"}}
+PREHOOK: query: describe formatted alltypesorc cboolean2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alltypesorc
+POSTHOOK: query: describe formatted alltypesorc cboolean2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alltypesorc
+col_name            	cboolean2           
+data_type           	boolean             
+min                 	                    
+max                 	                    
+num_nulls           	3115                
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	3983                
+num_falses          	5190                
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"cbigint\":\"true\",\"cboolean1\":\"true\",\"cboolean2\":\"true\",\"cdouble\":\"true\",\"cfloat\":\"true\",\"cint\":\"true\",\"csmallint\":\"true\",\"cstring1\":\"true\",\"cstring2\":\"true\",\"ctimestamp1\":\"true\",\"ctimestamp2\":\"true\",\"ctinyint\":\"true\"}}

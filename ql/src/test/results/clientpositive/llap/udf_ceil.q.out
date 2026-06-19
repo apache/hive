@@ -1,0 +1,18 @@
+PREHOOK: query: DESCRIBE FUNCTION ceil
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION ceil
+POSTHOOK: type: DESCFUNCTION
+ceil(x) - Find the smallest integer not smaller than x
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED ceil
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED ceil
+POSTHOOK: type: DESCFUNCTION
+ceil(x) - Find the smallest integer not smaller than x
+Synonyms: ceiling
+Example:
+  > SELECT ceil(-0.1) FROM src LIMIT 1;
+  0
+  > SELECT ceil(5) FROM src LIMIT 1;
+  5
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFCeil
+Function type:BUILTIN

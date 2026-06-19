@@ -1,0 +1,439 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
+import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
+import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationDesc;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+
+/**
+* <ClassName>. Vectorized implementation for MIN/MAX aggregates.
+*/
+@Description(name = "<DescriptionName>",
+    value = "<DescriptionValue>")
+public class <ClassName> extends VectorAggregateExpression {
+
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * class for storing the current aggregate value.
+     */
+    static private final class Aggregation implements AggregationBuffer {
+
+      private static final long serialVersionUID = 1L;
+
+      private final static int MIN_BUFFER_SIZE = 16;
+      transient private byte[] bytes = new byte[MIN_BUFFER_SIZE];
+      transient private int length;
+
+      /**
+      * Value is explicitly (re)initialized in reset()
+      */
+      transient private boolean isNull = true;
+
+      public void minmaxValue(byte[] bytes, int start, int length) {
+        if (isNull) {
+          isNull = false;
+          assign(bytes, start, length);
+        } else if (StringExpr.compare(
+                bytes, start, length,
+                this.bytes, 0, this.length) <OperatorSymbol> 0) {
+          assign(bytes, start, length);
+        }
+      }
+
+      public void assign(byte[] bytes, int start, int length) {
+        // Avoid new allocation if possible
+        if (this.bytes.length < length) {
+          this.bytes = new byte[length];
+        }
+        System.arraycopy(bytes, start, this.bytes, 0, length);
+        this.length = length;
+      }
+      @Override
+      public int getVariableSize() {
+        JavaDataModel model = JavaDataModel.get();
+        return (int) model.lengthForByteArrayOfSize(bytes.length);
+      }
+
+      @Override
+      public void reset () {
+        isNull = true;
+        length = 0;
+      }
+
+    }
+
+  // This constructor is used to momentarily create the object so match can be called.
+  public <ClassName>() {
+    super();
+  }
+
+  public <ClassName>(VectorAggregationDesc vecAggrDesc) {
+    super(vecAggrDesc);
+    init();
+  }
+
+    private void init() {
+    }
+
+    private Aggregation getCurrentAggregationBuffer(
+        VectorAggregationBufferRow[] aggregationBufferSets,
+        int aggregateIndex,
+        int row) {
+      VectorAggregationBufferRow mySet = aggregationBufferSets[row];
+      Aggregation myagg = (Aggregation) mySet.getAggregationBuffer(aggregateIndex);
+      return myagg;
+    }
+
+    @Override
+    public void aggregateInputSelection(
+      VectorAggregationBufferRow[] aggregationBufferSets,
+      int aggregateIndex,
+      VectorizedRowBatch batch) throws HiveException {
+
+      int batchSize = batch.size;
+
+      if (batchSize == 0) {
+        return;
+      }
+
+      inputExpression.evaluate(batch);
+
+      BytesColumnVector inputColumn =
+          (BytesColumnVector) batch.cols[
+              this.inputExpression.getOutputColumnNum()];
+
+      if (inputColumn.noNulls) {
+        if (inputColumn.isRepeating) {
+          iterateNoNullsRepeatingWithAggregationSelection(
+            aggregationBufferSets, aggregateIndex,
+            inputColumn, batchSize);
+        } else {
+          if (batch.selectedInUse) {
+            iterateNoNullsSelectionWithAggregationSelection(
+              aggregationBufferSets, aggregateIndex,
+              inputColumn, batch.selected, batchSize);
+          } else {
+            iterateNoNullsWithAggregationSelection(
+              aggregationBufferSets, aggregateIndex,
+              inputColumn, batchSize);
+          }
+        }
+      } else {
+        if (inputColumn.isRepeating) {
+          iterateHasNullsRepeatingWithAggregationSelection(
+            aggregationBufferSets, aggregateIndex,
+            inputColumn, batchSize, inputColumn.isNull);
+        } else {
+          if (batch.selectedInUse) {
+            iterateHasNullsSelectionWithAggregationSelection(
+              aggregationBufferSets, aggregateIndex,
+              inputColumn, batchSize, batch.selected);
+          } else {
+            iterateHasNullsWithAggregationSelection(
+              aggregationBufferSets, aggregateIndex,
+              inputColumn, batchSize);
+          }
+        }
+      }
+    }
+
+    private void iterateNoNullsRepeatingWithAggregationSelection(
+      VectorAggregationBufferRow[] aggregationBufferSets,
+      int aggregateIndex,
+      BytesColumnVector inputColumn,
+      int batchSize) {
+
+      byte[] bytes = inputColumn.vector[0];
+      int start = inputColumn.start[0];
+      int length = inputColumn.length[0];
+      for (int i=0; i < batchSize; ++i) {
+        Aggregation myagg = getCurrentAggregationBuffer(
+          aggregationBufferSets,
+          aggregateIndex,
+          i);
+        myagg.minmaxValue(bytes, start, length);
+      }
+    }
+
+    private void iterateNoNullsSelectionWithAggregationSelection(
+      VectorAggregationBufferRow[] aggregationBufferSets,
+      int aggregateIndex,
+      BytesColumnVector inputColumn,
+      int[] selection,
+      int batchSize) {
+
+      for (int i=0; i < batchSize; ++i) {
+        int row = selection[i];
+        Aggregation myagg = getCurrentAggregationBuffer(
+          aggregationBufferSets,
+          aggregateIndex,
+          i);
+        myagg.minmaxValue(inputColumn.vector[row],
+          inputColumn.start[row],
+          inputColumn.length[row]);
+      }
+    }
+
+    private void iterateNoNullsWithAggregationSelection(
+      VectorAggregationBufferRow[] aggregationBufferSets,
+      int aggregateIndex,
+      BytesColumnVector inputColumn,
+      int batchSize) {
+      for (int i=0; i < batchSize; ++i) {
+        Aggregation myagg = getCurrentAggregationBuffer(
+          aggregationBufferSets,
+          aggregateIndex,
+          i);
+        myagg.minmaxValue(inputColumn.vector[i],
+          inputColumn.start[i],
+          inputColumn.length[i]);
+      }
+    }
+
+    private void iterateHasNullsRepeatingWithAggregationSelection(
+      VectorAggregationBufferRow[] aggregationBufferSets,
+      int aggregateIndex,
+      BytesColumnVector inputColumn,
+      int batchSize,
+      boolean[] isNull) {
+
+      if (isNull[0]) {
+        return;
+      }
+
+      for (int i=0; i < batchSize; ++i) {
+        Aggregation myagg = getCurrentAggregationBuffer(
+          aggregationBufferSets,
+          aggregateIndex,
+          i);
+        // Repeating use index 0.
+        myagg.minmaxValue(inputColumn.vector[0],
+            inputColumn.start[0],
+            inputColumn.length[0]);
+      }
+
+    }
+
+    private void iterateHasNullsSelectionWithAggregationSelection(
+      VectorAggregationBufferRow[] aggregationBufferSets,
+      int aggregateIndex,
+      BytesColumnVector inputColumn,
+      int batchSize,
+      int[] selection) {
+
+      for (int i=0; i < batchSize; ++i) {
+        int row = selection[i];
+        if (!inputColumn.isNull[row]) {
+          Aggregation myagg = getCurrentAggregationBuffer(
+            aggregationBufferSets,
+            aggregateIndex,
+            i);
+          myagg.minmaxValue(inputColumn.vector[row],
+            inputColumn.start[row],
+            inputColumn.length[row]);
+        }
+      }
+   }
+
+    private void iterateHasNullsWithAggregationSelection(
+      VectorAggregationBufferRow[] aggregationBufferSets,
+      int aggregateIndex,
+      BytesColumnVector inputColumn,
+      int batchSize) {
+
+      for (int i=0; i < batchSize; ++i) {
+        if (!inputColumn.isNull[i]) {
+          Aggregation myagg = getCurrentAggregationBuffer(
+            aggregationBufferSets,
+            aggregateIndex,
+            i);
+          myagg.minmaxValue(inputColumn.vector[i],
+            inputColumn.start[i],
+            inputColumn.length[i]);
+        }
+      }
+   }
+
+    @Override
+    public void aggregateInput(AggregationBuffer agg, VectorizedRowBatch batch)
+      throws HiveException {
+
+        inputExpression.evaluate(batch);
+
+        BytesColumnVector inputColumn =
+            (BytesColumnVector) batch.cols[
+                this.inputExpression.getOutputColumnNum()];
+
+        int batchSize = batch.size;
+
+        if (batchSize == 0) {
+          return;
+        }
+
+        Aggregation myagg = (Aggregation)agg;
+
+        if (inputColumn.isRepeating) {
+          if (inputColumn.noNulls || !inputColumn.isNull[0]) {
+            myagg.minmaxValue(inputColumn.vector[0],
+              inputColumn.start[0],
+              inputColumn.length[0]);
+          }
+          return;
+        }
+
+        if (!batch.selectedInUse && inputColumn.noNulls) {
+          iterateNoSelectionNoNulls(myagg, inputColumn, batchSize);
+        }
+        else if (!batch.selectedInUse) {
+          iterateNoSelectionHasNulls(myagg, inputColumn, batchSize);
+        }
+        else if (inputColumn.noNulls){
+          iterateSelectionNoNulls(myagg, inputColumn, batchSize, batch.selected);
+        }
+        else {
+          iterateSelectionHasNulls(myagg, inputColumn, batchSize, batch.selected);
+        }
+    }
+
+    private void iterateSelectionHasNulls(
+        Aggregation myagg,
+        BytesColumnVector inputColumn,
+        int batchSize,
+        int[] selected) {
+
+      for (int j=0; j< batchSize; ++j) {
+        int i = selected[j];
+        if (!inputColumn.isNull[i]) {
+          myagg.minmaxValue(inputColumn.vector[i],
+            inputColumn.start[i],
+            inputColumn.length[i]);
+        }
+      }
+    }
+
+    private void iterateSelectionNoNulls(
+        Aggregation myagg,
+        BytesColumnVector inputColumn,
+        int batchSize,
+        int[] selected) {
+
+      for (int j=0; j< batchSize; ++j) {
+        int i = selected[j];
+        myagg.minmaxValue(inputColumn.vector[i],
+          inputColumn.start[i],
+          inputColumn.length[i]);
+      }
+    }
+
+    private void iterateNoSelectionHasNulls(
+        Aggregation myagg,
+        BytesColumnVector inputColumn,
+        int batchSize) {
+
+      for (int i=0; i< batchSize; ++i) {
+        if (!inputColumn.isNull[i]) {
+          myagg.minmaxValue(inputColumn.vector[i],
+            inputColumn.start[i],
+            inputColumn.length[i]);
+        }
+      }
+    }
+
+    private void iterateNoSelectionNoNulls(
+        Aggregation myagg,
+        BytesColumnVector inputColumn,
+        int batchSize) {
+      for (int i=0; i< batchSize; ++i) {
+        myagg.minmaxValue(inputColumn.vector[i],
+          inputColumn.start[i],
+          inputColumn.length[i]);
+      }
+    }
+
+    @Override
+    public AggregationBuffer getNewAggregationBuffer() throws HiveException {
+      return new Aggregation();
+    }
+
+    @Override
+    public void reset(AggregationBuffer agg) throws HiveException {
+      Aggregation myAgg = (Aggregation) agg;
+      myAgg.reset();
+    }
+
+    @Override
+    public long getAggregationBufferFixedSize() {
+      JavaDataModel model = JavaDataModel.get();
+      return JavaDataModel.alignUp(
+        model.object() +
+        model.ref()+
+        model.primitive1()*2,
+        model.memoryAlign());
+    }
+
+    @Override
+    public boolean hasVariableSize() {
+      return true;
+    }
+
+  @Override
+  public boolean matches(String name, ColumnVector.Type inputColVectorType,
+      ColumnVector.Type outputColVectorType, Mode mode) {
+
+    /*
+     * Min/max input and output is BYTES.
+     *
+     * Any mode (PARTIAL1, PARTIAL2, FINAL, COMPLETE).
+     */
+    return
+        name.equals("<DescriptionName>") &&
+        inputColVectorType == ColumnVector.Type.BYTES &&
+        outputColVectorType == ColumnVector.Type.BYTES;
+  }
+
+  @Override
+  public void assignRowColumn(VectorizedRowBatch batch, int batchIndex, int columnNum,
+      AggregationBuffer agg) throws HiveException {
+
+    BytesColumnVector outputColVector = (BytesColumnVector) batch.cols[columnNum];
+    Aggregation myagg = (Aggregation) agg;
+       if (myagg.isNull) {
+      outputColVector.noNulls = false;
+      outputColVector.isNull[batchIndex] = true;
+      return;
+    }
+    outputColVector.isNull[batchIndex] = false;
+    outputColVector.setVal(batchIndex, myagg.bytes, 0, myagg.length);
+  }
+}

@@ -1,0 +1,40 @@
+PREHOOK: query: create table t_exppath ( dep_id int) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_exppath
+POSTHOOK: query: create table t_exppath ( dep_id int) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_exppath
+PREHOOK: query: load data local inpath "../../data/files/test.dat" into table t_exppath
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@t_exppath
+POSTHOOK: query: load data local inpath "../../data/files/test.dat" into table t_exppath
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@t_exppath
+#### A masked pattern was here ####
+PREHOOK: query: GRANT ALL on TABLE t_exppath to ROLE public
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@t_exppath
+POSTHOOK: query: GRANT ALL on TABLE t_exppath to ROLE public
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@t_exppath
+#### A masked pattern was here ####
+PREHOOK: type: EXPORT
+PREHOOK: Input: default@t_exppath
+#### A masked pattern was here ####
+POSTHOOK: type: EXPORT
+POSTHOOK: Input: default@t_exppath
+#### A masked pattern was here ####
+PREHOOK: query: drop table t_exppath
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t_exppath
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_exppath
+POSTHOOK: query: drop table t_exppath
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t_exppath
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_exppath

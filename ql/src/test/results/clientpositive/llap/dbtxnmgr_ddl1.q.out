@@ -1,0 +1,276 @@
+PREHOOK: query: create database D1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:D1
+POSTHOOK: query: create database D1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:D1
+PREHOOK: query: alter database D1 set dbproperties('test'='yesthisis')
+PREHOOK: type: ALTERDATABASE
+PREHOOK: Output: database:d1
+POSTHOOK: query: alter database D1 set dbproperties('test'='yesthisis')
+POSTHOOK: type: ALTERDATABASE
+POSTHOOK: Output: database:d1
+PREHOOK: query: drop database D1
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:d1
+PREHOOK: Output: database:d1
+POSTHOOK: query: drop database D1
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:d1
+POSTHOOK: Output: database:d1
+PREHOOK: query: create table T1_n50(key string, val string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T1_n50
+POSTHOOK: query: create table T1_n50(key string, val string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T1_n50
+PREHOOK: query: create table T2_n31 like T1_n50
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T2_n31
+POSTHOOK: query: create table T2_n31 like T1_n50
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T2_n31
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n50
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@t1_n50
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1_n50
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@t1_n50
+PREHOOK: query: select * from T1_n50
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n50
+#### A masked pattern was here ####
+POSTHOOK: query: select * from T1_n50
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n50
+#### A masked pattern was here ####
+1	11
+2	12
+3	13
+7	17
+8	18
+8	28
+PREHOOK: query: create table T3_n11 as select * from T1_n50
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@t1_n50
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T3_n11
+POSTHOOK: query: create table T3_n11 as select * from T1_n50
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@t1_n50
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T3_n11
+POSTHOOK: Lineage: t3_n11.key SIMPLE [(t1_n50)t1_n50.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t3_n11.val SIMPLE [(t1_n50)t1_n50.FieldSchema(name:val, type:string, comment:null), ]
+PREHOOK: query: create table T4_n4 (key char(10), val decimal(5,2), b int)
+    partitioned by (ds string)
+    clustered by (b) into 10 buckets
+    stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T4_n4
+POSTHOOK: query: create table T4_n4 (key char(10), val decimal(5,2), b int)
+    partitioned by (ds string)
+    clustered by (b) into 10 buckets
+    stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T4_n4
+PREHOOK: query: alter table T3_n11 rename to newT3_n11
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: default@t3_n11
+PREHOOK: Output: database:default
+PREHOOK: Output: default@newT3_n11
+PREHOOK: Output: default@t3_n11
+POSTHOOK: query: alter table T3_n11 rename to newT3_n11
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: default@t3_n11
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@newT3_n11
+POSTHOOK: Output: default@t3_n11
+PREHOOK: query: alter table T2_n31 set tblproperties ('test'='thisisatest')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@t2_n31
+PREHOOK: Output: default@t2_n31
+POSTHOOK: query: alter table T2_n31 set tblproperties ('test'='thisisatest')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@t2_n31
+POSTHOOK: Output: default@t2_n31
+PREHOOK: query: alter table T2_n31 set serde 'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+PREHOOK: type: ALTERTABLE_SERIALIZER
+PREHOOK: Input: default@t2_n31
+PREHOOK: Output: default@t2_n31
+POSTHOOK: query: alter table T2_n31 set serde 'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+POSTHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: Input: default@t2_n31
+POSTHOOK: Output: default@t2_n31
+PREHOOK: query: alter table T2_n31 set serdeproperties ('test'='thisisatest')
+PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
+PREHOOK: Input: default@t2_n31
+PREHOOK: Output: default@t2_n31
+POSTHOOK: query: alter table T2_n31 set serdeproperties ('test'='thisisatest')
+POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: Input: default@t2_n31
+POSTHOOK: Output: default@t2_n31
+PREHOOK: query: alter table T2_n31 clustered by (key) into 32 buckets
+PREHOOK: type: ALTERTABLE_CLUSTER_SORT
+PREHOOK: Input: default@t2_n31
+PREHOOK: Output: default@t2_n31
+POSTHOOK: query: alter table T2_n31 clustered by (key) into 32 buckets
+POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
+POSTHOOK: Input: default@t2_n31
+POSTHOOK: Output: default@t2_n31
+PREHOOK: query: alter table T4_n4 add partition (ds='today')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@t4_n4
+POSTHOOK: query: alter table T4_n4 add partition (ds='today')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@t4_n4
+POSTHOOK: Output: default@t4_n4@ds=today
+PREHOOK: query: alter table T4_n4 partition (ds='today') rename to partition(ds='yesterday')
+PREHOOK: type: ALTERTABLE_RENAMEPART
+PREHOOK: Input: default@t4_n4
+PREHOOK: Output: default@t4_n4@ds=today
+POSTHOOK: query: alter table T4_n4 partition (ds='today') rename to partition(ds='yesterday')
+POSTHOOK: type: ALTERTABLE_RENAMEPART
+POSTHOOK: Input: default@t4_n4
+POSTHOOK: Input: default@t4_n4@ds=today
+POSTHOOK: Output: default@t4_n4@ds=today
+POSTHOOK: Output: default@t4_n4@ds=yesterday
+PREHOOK: query: alter table T4_n4 drop partition (ds='yesterday')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@t4_n4
+PREHOOK: Output: default@t4_n4@ds=yesterday
+POSTHOOK: query: alter table T4_n4 drop partition (ds='yesterday')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@t4_n4
+POSTHOOK: Output: default@t4_n4@ds=yesterday
+PREHOOK: query: alter table T4_n4 add partition (ds='tomorrow')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@t4_n4
+POSTHOOK: query: alter table T4_n4 add partition (ds='tomorrow')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@t4_n4
+POSTHOOK: Output: default@t4_n4@ds=tomorrow
+PREHOOK: query: create table T5_n1 (a string, b int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T5_n1
+POSTHOOK: query: create table T5_n1 (a string, b int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T5_n1
+PREHOOK: query: alter table T5_n1 set fileformat orc
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@t5_n1
+PREHOOK: Output: default@t5_n1
+POSTHOOK: query: alter table T5_n1 set fileformat orc
+POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: Input: default@t5_n1
+POSTHOOK: Output: default@t5_n1
+PREHOOK: query: create table T7_n2 (a string, b int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T7_n2
+POSTHOOK: query: create table T7_n2 (a string, b int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T7_n2
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTABLE_LOCATION
+PREHOOK: Input: default@t7_n2
+PREHOOK: Output: default@t7_n2
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTABLE_LOCATION
+POSTHOOK: Input: default@t7_n2
+POSTHOOK: Output: default@t7_n2
+#### A masked pattern was here ####
+PREHOOK: type: ALTERPARTITION_LOCATION
+PREHOOK: Input: default@t4_n4
+PREHOOK: Output: default@t4_n4@ds=tomorrow
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERPARTITION_LOCATION
+POSTHOOK: Input: default@t4_n4
+POSTHOOK: Input: default@t4_n4@ds=tomorrow
+POSTHOOK: Output: default@t4_n4@ds=tomorrow
+#### A masked pattern was here ####
+PREHOOK: query: alter table T2_n31 touch
+PREHOOK: type: ALTERTABLE_TOUCH
+PREHOOK: Input: default@t2_n31
+PREHOOK: Output: default@t2_n31
+POSTHOOK: query: alter table T2_n31 touch
+POSTHOOK: type: ALTERTABLE_TOUCH
+POSTHOOK: Input: default@t2_n31
+POSTHOOK: Output: default@t2_n31
+PREHOOK: query: alter table T4_n4 touch partition (ds='tomorrow')
+PREHOOK: type: ALTERTABLE_TOUCH
+PREHOOK: Input: default@t4_n4
+PREHOOK: Output: default@t4_n4@ds=tomorrow
+POSTHOOK: query: alter table T4_n4 touch partition (ds='tomorrow')
+POSTHOOK: type: ALTERTABLE_TOUCH
+POSTHOOK: Input: default@t4_n4
+POSTHOOK: Input: default@t4_n4@ds=tomorrow
+POSTHOOK: Output: default@t4_n4@ds=tomorrow
+PREHOOK: query: create view V1_n5 as select key from T1_n50
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@t1_n50
+PREHOOK: Output: database:default
+PREHOOK: Output: default@V1_n5
+POSTHOOK: query: create view V1_n5 as select key from T1_n50
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@t1_n50
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@V1_n5
+POSTHOOK: Lineage: v1_n5.key SIMPLE [(t1_n50)t1_n50.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: alter view V1_n5 set tblproperties ('test'='thisisatest')
+PREHOOK: type: ALTERVIEW_PROPERTIES
+PREHOOK: Input: default@v1_n5
+PREHOOK: Output: default@v1_n5
+POSTHOOK: query: alter view V1_n5 set tblproperties ('test'='thisisatest')
+POSTHOOK: type: ALTERVIEW_PROPERTIES
+POSTHOOK: Input: default@v1_n5
+POSTHOOK: Output: default@v1_n5
+PREHOOK: query: drop view V1_n5
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@v1_n5
+PREHOOK: Output: default@v1_n5
+POSTHOOK: query: drop view V1_n5
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@v1_n5
+POSTHOOK: Output: default@v1_n5
+PREHOOK: query: drop table T1_n50
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t1_n50
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1_n50
+POSTHOOK: query: drop table T1_n50
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t1_n50
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1_n50
+PREHOOK: query: drop table T2_n31
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t2_n31
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2_n31
+POSTHOOK: query: drop table T2_n31
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t2_n31
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2_n31
+PREHOOK: query: drop table newT3_n11
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@newt3_n11
+PREHOOK: Output: database:default
+PREHOOK: Output: default@newt3_n11
+POSTHOOK: query: drop table newT3_n11
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@newt3_n11
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@newt3_n11

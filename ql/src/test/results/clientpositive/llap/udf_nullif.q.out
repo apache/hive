@@ -1,0 +1,271 @@
+PREHOOK: query: DESCRIBE FUNCTION nullif
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION nullif
+POSTHOOK: type: DESCFUNCTION
+nullif(a1, a2) - shorthand for: case when a1 = a2 then null else a1
+PREHOOK: query: DESC FUNCTION EXTENDED nullif
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESC FUNCTION EXTENDED nullif
+POSTHOOK: type: DESCFUNCTION
+nullif(a1, a2) - shorthand for: case when a1 = a2 then null else a1
+Example:
+ SELECT nullif(1,1),nullif(1,2)
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFNullif
+Function type:BUILTIN
+PREHOOK: query: explain select nullif(1,2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain select nullif(1,2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: 1 (type: int)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: explain select nullif(1.0,2.0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain select nullif(1.0,2.0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: 1 (type: decimal(1,0))
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: explain select nullif('y','x')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain select nullif('y','x')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: 'y' (type: string)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: select	nullif(1,1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select	nullif(1,1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select	nullif(2,1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select	nullif(2,1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2
+PREHOOK: query: select	nullif('','x')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select	nullif('','x')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+
+PREHOOK: query: select	nullif('x','x')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select	nullif('x','x')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select	nullif('x','')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select	nullif('x','')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+x
+PREHOOK: query: select	nullif(1.0,2.0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select	nullif(1.0,2.0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1
+PREHOOK: query: select	nullif(date('2011-11-11'),date('2011-11-11'))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select	nullif(date('2011-11-11'),date('2011-11-11'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: select	nullif(date('2011-11-11'),date('2011-11-22'))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select	nullif(date('2011-11-11'),date('2011-11-22'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+2011-11-11
+PREHOOK: query: select	nullif(1,null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select	nullif(1,null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1
+PREHOOK: query: select	nullif(1.0,1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select	nullif(1.0,1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: drop table if exists t0
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists t0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table t0(a int,b int,c float,d double precision)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t0
+POSTHOOK: query: create table t0(a int,b int,c float,d double precision)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t0
+PREHOOK: query: insert into t0 values(1,2,3.1,4.1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t0
+POSTHOOK: query: insert into t0 values(1,2,3.1,4.1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t0
+POSTHOOK: Lineage: t0.a SCRIPT []
+POSTHOOK: Lineage: t0.b SCRIPT []
+POSTHOOK: Lineage: t0.c SCRIPT []
+POSTHOOK: Lineage: t0.d SCRIPT []
+PREHOOK: query: select	nullif(a,b),
+	nullif(b,c),
+	nullif(c,d),
+	nullif(d,a) from t0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t0
+#### A masked pattern was here ####
+POSTHOOK: query: select	nullif(a,b),
+	nullif(b,c),
+	nullif(c,d),
+	nullif(d,a) from t0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t0
+#### A masked pattern was here ####
+1	2	3.1	4.1
+PREHOOK: query: SELECT assert_true(NULLIF(array(1,2,3),array(1,2,3)) is null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT assert_true(NULLIF(array(1,2,3),array(1,2,3)) is null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT assert_true(NULLIF(array(1,2,3),array(3,2,1)) is not null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT assert_true(NULLIF(array(1,2,3),array(3,2,1)) is not null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT assert_true(NULLIF(named_struct("c", 1),named_struct("c", 1)) is null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT assert_true(NULLIF(named_struct("c", 1),named_struct("c", 1)) is null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT assert_true(NULLIF(named_struct("c", 1),named_struct("c", 2)) is not null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT assert_true(NULLIF(named_struct("c", 1),named_struct("c", 2)) is not null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT assert_true(NULLIF(map('a',1,'b',2),map('a',1,'b',2)) is null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT assert_true(NULLIF(map('a',1,'b',2),map('a',1,'b',2)) is null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT assert_true(NULLIF(map('a',1,'b',2),map('a',1,'b',3)) is not null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT assert_true(NULLIF(map('a',1,'b',2),map('a',1,'b',3)) is not null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL

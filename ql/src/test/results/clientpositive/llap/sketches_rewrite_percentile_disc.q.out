@@ -1,0 +1,114 @@
+PREHOOK: query: create table sketch_input (id int, category char(1))
+STORED AS ORC
+TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sketch_input
+POSTHOOK: query: create table sketch_input (id int, category char(1))
+STORED AS ORC
+TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sketch_input
+PREHOOK: query: insert into table sketch_input values
+  (1,'a'),(1, 'a'), (2, 'a'), (3, 'a'), (4, 'a'), (5, 'a'), (6, 'a'), (7, 'a'), (8, 'a'), (9, 'a'), (10, 'a'),
+  (6,'b'),(6, 'b'), (7, 'b'), (8, 'b'), (9, 'b'), (10, 'b'), (11, 'b'), (12, 'b'), (13, 'b'), (14, 'b'), (15, 'b')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@sketch_input
+POSTHOOK: query: insert into table sketch_input values
+  (1,'a'),(1, 'a'), (2, 'a'), (3, 'a'), (4, 'a'), (5, 'a'), (6, 'a'), (7, 'a'), (8, 'a'), (9, 'a'), (10, 'a'),
+  (6,'b'),(6, 'b'), (7, 'b'), (8, 'b'), (9, 'b'), (10, 'b'), (11, 'b'), (12, 'b'), (13, 'b'), (14, 'b'), (15, 'b')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@sketch_input
+POSTHOOK: Lineage: sketch_input.category SCRIPT []
+POSTHOOK: Lineage: sketch_input.id SCRIPT []
+PREHOOK: query: select percentile_disc(0.3) within group(order by id) from sketch_input
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sketch_input
+#### A masked pattern was here ####
+POSTHOOK: query: select percentile_disc(0.3) within group(order by id) from sketch_input
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sketch_input
+#### A masked pattern was here ####
+6.0
+PREHOOK: query: explain
+select percentile_disc(0.3) within group(order by id) from sketch_input
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sketch_input
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select percentile_disc(0.3) within group(order by id) from sketch_input
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sketch_input
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: sketch_input
+                  Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: UDFToFloat(id) (type: float)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: ds_kll_sketch(_col0)
+                      minReductionHashAggr: 0.95454544
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: binary)
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: ds_kll_sketch(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: UDFToDouble(ds_kll_quantile(_col0, 0.3)) (type: double)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select percentile_disc(0.3) within group(order by id) from sketch_input
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sketch_input
+#### A masked pattern was here ####
+POSTHOOK: query: select percentile_disc(0.3) within group(order by id) from sketch_input
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sketch_input
+#### A masked pattern was here ####
+6.0

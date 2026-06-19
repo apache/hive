@@ -1,0 +1,141 @@
+--! qt:dataset:src
+
+set hive.vectorized.execution.enabled=false;
+set hive.mapred.mode=nonstrict;
+
+-- SORT_QUERY_RESULTS
+
+DROP TABLE orc_create;
+DROP TABLE orc_create_complex_n1;
+DROP TABLE orc_create_staging_n1;
+DROP TABLE orc_create_people_staging;
+DROP TABLE orc_create_people;
+DROP TABLE if exists orc_create_cprl;
+
+CREATE TABLE orc_create_staging_n1 (
+  str STRING,
+  mp  MAP<STRING,STRING>,
+  lst ARRAY<STRING>,
+  strct STRUCT<A:STRING,B:STRING>
+) ROW FORMAT DELIMITED
+    FIELDS TERMINATED BY '|'
+    COLLECTION ITEMS TERMINATED BY ','
+    MAP KEYS TERMINATED BY ':';
+
+DESCRIBE FORMATTED orc_create_staging_n1;
+
+CREATE TABLE orc_create (key INT, value STRING)
+   PARTITIONED BY (ds string)
+   STORED AS ORC;
+
+DESCRIBE FORMATTED orc_create;
+
+DROP TABLE orc_create;
+
+CREATE TABLE orc_create (key INT, value STRING)
+   PARTITIONED BY (ds string);
+
+DESCRIBE FORMATTED orc_create;
+
+ALTER TABLE orc_create SET FILEFORMAT ORC;
+
+DESCRIBE FORMATTED orc_create;
+
+DROP TABLE orc_create;
+
+set hive.default.fileformat=orc;
+
+CREATE TABLE orc_create (key INT, value STRING)
+   PARTITIONED BY (ds string);
+
+set hive.default.fileformat=TextFile;
+
+DESCRIBE FORMATTED orc_create;
+
+CREATE TABLE orc_create_complex_n1 (
+  str STRING,
+  mp  MAP<STRING,STRING>,
+  lst ARRAY<STRING>,
+  strct STRUCT<A:STRING,B:STRING>
+) STORED AS ORC;
+
+DESCRIBE FORMATTED orc_create_complex_n1;
+
+LOAD DATA LOCAL INPATH '../../data/files/orc_create.txt' OVERWRITE INTO TABLE orc_create_staging_n1;
+
+SELECT * from orc_create_staging_n1;
+
+INSERT OVERWRITE TABLE orc_create_complex_n1 SELECT * FROM orc_create_staging_n1;
+
+SELECT * from orc_create_complex_n1;
+SELECT str from orc_create_complex_n1;
+SELECT mp from orc_create_complex_n1;
+SELECT lst from orc_create_complex_n1;
+SELECT strct from orc_create_complex_n1;
+
+CREATE TABLE orc_create_people_staging (
+  id int,
+  first_name string,
+  last_name string,
+  address string,
+  salary decimal(38,0),
+  start_date timestamp,
+  state string);
+
+LOAD DATA LOCAL INPATH '../../data/files/orc_create_people.txt'
+  OVERWRITE INTO TABLE orc_create_people_staging;
+
+CREATE TABLE orc_create_people (
+  id int,
+  first_name string,
+  last_name string,
+  address string,
+  salary decimal(38,0),
+  start_date timestamp)
+PARTITIONED BY (state string)
+STORED AS orc;
+
+
+INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
+  SELECT * FROM orc_create_people_staging;
+
+SET hive.optimize.index.filter=true;
+-- test predicate push down with partition pruning
+SELECT COUNT(*) FROM orc_create_people where id < 10 and state = 'Ca';
+
+-- test predicate push down
+SELECT COUNT(*) FROM orc_create_people where id = 50;
+SELECT COUNT(*) FROM orc_create_people where id between 10 and 20;
+SELECT COUNT(*) FROM orc_create_people where id > 10 and id < 100;
+SELECT COUNT(*) FROM orc_create_people where (id + 1) = 20;
+SELECT COUNT(*) FROM orc_create_people where (id + 10) < 200;
+SELECT COUNT(*) FROM orc_create_people where id < 30  or first_name = "Rafael";
+SELECT COUNT(*) FROM orc_create_people 
+   where length(substr(first_name, 1, 2)) <= 2 and last_name like '%';
+SELECT COUNT(*) FROM orc_create_people where salary = 200.00;
+SELECT COUNT(*) FROM orc_create_people WHERE start_date IS NULL;
+SELECT COUNT(*) FROM orc_create_people WHERE YEAR(start_date) = 2014;
+
+-- test predicate push down with partition pruning
+SELECT COUNT(*) FROM orc_create_people where salary = 200.00 and state = 'Ca';
+
+-- test predicate push down with no column projection
+SELECT id, first_name, last_name, address
+  FROM orc_create_people WHERE id > 90;
+
+-- test create with lower case compression method.
+CREATE TABLE orc_create_cprl (id int)
+PARTITIONED BY (cdate date)
+STORED AS ORC
+TBLPROPERTIES (
+'orc.compress'='snappy');
+INSERT OVERWRITE table orc_create_cprl PARTITION (cdate = '2015-02-03')
+SELECT 1 from src limit 1;
+SELECT * from orc_create_cprl;
+
+DROP TABLE orc_create;
+DROP TABLE orc_create_complex_n1;
+DROP TABLE orc_create_staging_n1;
+DROP TABLE orc_create_people_staging;
+DROP TABLE orc_create_people;
+DROP TABLE orc_create_cprl;

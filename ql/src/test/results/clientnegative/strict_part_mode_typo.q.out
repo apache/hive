@@ -1,0 +1,1 @@
+Query returned non-zero code: 1, cause: 'SET hive.exec.dynamic.partition.mode=nostrict' FAILED in validation : Invalid value.. expects one of [strict, nonstrict].

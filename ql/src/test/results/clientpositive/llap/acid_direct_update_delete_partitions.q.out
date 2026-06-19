@@ -1,0 +1,506 @@
+PREHOOK: query: DROP TABLE IF EXISTS test_update_part_text
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS test_update_part_text
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS test_update_part
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS test_update_part
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS test_delete_part
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS test_delete_part
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE EXTERNAL TABLE test_update_part_text (a int, b int, c int) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_update_part_text
+POSTHOOK: query: CREATE EXTERNAL TABLE test_update_part_text (a int, b int, c int) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_update_part_text
+PREHOOK: query: INSERT INTO test_update_part_text VALUES (11, 1, 11), (12, 2, 11), (13, 3, 11), (14, 4, 11), (14, 5, NULL), (15, 6, NULL), (16, 7, NULL), (14, 8, 22), (17, 8, 22), (18, 9, 22), (19, 10, 33), (20, 11, 33), (21, 12, 33)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_update_part_text
+POSTHOOK: query: INSERT INTO test_update_part_text VALUES (11, 1, 11), (12, 2, 11), (13, 3, 11), (14, 4, 11), (14, 5, NULL), (15, 6, NULL), (16, 7, NULL), (14, 8, 22), (17, 8, 22), (18, 9, 22), (19, 10, 33), (20, 11, 33), (21, 12, 33)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_update_part_text
+POSTHOOK: Lineage: test_update_part_text.a SCRIPT []
+POSTHOOK: Lineage: test_update_part_text.b SCRIPT []
+POSTHOOK: Lineage: test_update_part_text.c SCRIPT []
+PREHOOK: query: CREATE TABLE test_update_part (a int, b int) PARTITIONED BY (c int) CLUSTERED BY(a) INTO 4 BUCKETS STORED AS ORC TBLPROPERTIES('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_update_part
+POSTHOOK: query: CREATE TABLE test_update_part (a int, b int) PARTITIONED BY (c int) CLUSTERED BY(a) INTO 4 BUCKETS STORED AS ORC TBLPROPERTIES('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_update_part
+PREHOOK: query: INSERT OVERWRITE TABLE test_update_part SELECT a, b, c FROM test_update_part_text
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_update_part_text
+PREHOOK: Output: default@test_update_part
+POSTHOOK: query: INSERT OVERWRITE TABLE test_update_part SELECT a, b, c FROM test_update_part_text
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_update_part_text
+POSTHOOK: Output: default@test_update_part
+POSTHOOK: Output: default@test_update_part@c=11
+POSTHOOK: Output: default@test_update_part@c=22
+POSTHOOK: Output: default@test_update_part@c=33
+POSTHOOK: Output: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: test_update_part PARTITION(c=11).a SIMPLE [(test_update_part_text)test_update_part_text.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: test_update_part PARTITION(c=11).b SIMPLE [(test_update_part_text)test_update_part_text.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: test_update_part PARTITION(c=22).a SIMPLE [(test_update_part_text)test_update_part_text.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: test_update_part PARTITION(c=22).b SIMPLE [(test_update_part_text)test_update_part_text.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: test_update_part PARTITION(c=33).a SIMPLE [(test_update_part_text)test_update_part_text.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: test_update_part PARTITION(c=33).b SIMPLE [(test_update_part_text)test_update_part_text.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: test_update_part PARTITION(c=__HIVE_DEFAULT_PARTITION__).a SIMPLE [(test_update_part_text)test_update_part_text.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: test_update_part PARTITION(c=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(test_update_part_text)test_update_part_text.FieldSchema(name:b, type:int, comment:null), ]
+PREHOOK: query: SELECT * FROM test_update_part ORDER BY c, b, a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_update_part
+PREHOOK: Input: default@test_update_part@c=11
+PREHOOK: Input: default@test_update_part@c=22
+PREHOOK: Input: default@test_update_part@c=33
+PREHOOK: Input: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM test_update_part ORDER BY c, b, a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_update_part
+POSTHOOK: Input: default@test_update_part@c=11
+POSTHOOK: Input: default@test_update_part@c=22
+POSTHOOK: Input: default@test_update_part@c=33
+POSTHOOK: Input: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+11	1	11
+12	2	11
+13	3	11
+14	4	11
+14	8	22
+17	8	22
+18	9	22
+19	10	33
+20	11	33
+21	12	33
+14	5	NULL
+15	6	NULL
+16	7	NULL
+PREHOOK: query: UPDATE test_update_part SET b=1111 WHERE b=8
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_update_part
+PREHOOK: Input: default@test_update_part@c=11
+PREHOOK: Input: default@test_update_part@c=22
+PREHOOK: Input: default@test_update_part@c=33
+PREHOOK: Input: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: default@test_update_part
+PREHOOK: Output: default@test_update_part@c=11
+PREHOOK: Output: default@test_update_part@c=22
+PREHOOK: Output: default@test_update_part@c=33
+PREHOOK: Output: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: query: UPDATE test_update_part SET b=1111 WHERE b=8
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_update_part
+POSTHOOK: Input: default@test_update_part@c=11
+POSTHOOK: Input: default@test_update_part@c=22
+POSTHOOK: Input: default@test_update_part@c=33
+POSTHOOK: Input: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: default@test_update_part
+POSTHOOK: Output: default@test_update_part@c=11
+POSTHOOK: Output: default@test_update_part@c=22
+POSTHOOK: Output: default@test_update_part@c=22
+POSTHOOK: Output: default@test_update_part@c=33
+POSTHOOK: Output: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: test_update_part PARTITION(c=22).a SIMPLE [(test_update_part)test_update_part.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: test_update_part PARTITION(c=22).b SIMPLE []
+PREHOOK: query: UPDATE test_update_part SET b=2222 WHERE a=8
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_update_part
+PREHOOK: Input: default@test_update_part@c=11
+PREHOOK: Input: default@test_update_part@c=22
+PREHOOK: Input: default@test_update_part@c=33
+PREHOOK: Input: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: default@test_update_part
+PREHOOK: Output: default@test_update_part@c=11
+PREHOOK: Output: default@test_update_part@c=22
+PREHOOK: Output: default@test_update_part@c=33
+PREHOOK: Output: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: query: UPDATE test_update_part SET b=2222 WHERE a=8
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_update_part
+POSTHOOK: Input: default@test_update_part@c=11
+POSTHOOK: Input: default@test_update_part@c=22
+POSTHOOK: Input: default@test_update_part@c=33
+POSTHOOK: Input: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: default@test_update_part
+POSTHOOK: Output: default@test_update_part@c=11
+POSTHOOK: Output: default@test_update_part@c=22
+POSTHOOK: Output: default@test_update_part@c=33
+POSTHOOK: Output: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: query: UPDATE test_update_part SET b=3333 WHERE a=14
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_update_part
+PREHOOK: Input: default@test_update_part@c=11
+PREHOOK: Input: default@test_update_part@c=22
+PREHOOK: Input: default@test_update_part@c=33
+PREHOOK: Input: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: default@test_update_part
+PREHOOK: Output: default@test_update_part@c=11
+PREHOOK: Output: default@test_update_part@c=22
+PREHOOK: Output: default@test_update_part@c=33
+PREHOOK: Output: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: query: UPDATE test_update_part SET b=3333 WHERE a=14
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_update_part
+POSTHOOK: Input: default@test_update_part@c=11
+POSTHOOK: Input: default@test_update_part@c=22
+POSTHOOK: Input: default@test_update_part@c=33
+POSTHOOK: Input: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: default@test_update_part
+POSTHOOK: Output: default@test_update_part@c=11
+POSTHOOK: Output: default@test_update_part@c=11
+POSTHOOK: Output: default@test_update_part@c=22
+POSTHOOK: Output: default@test_update_part@c=22
+POSTHOOK: Output: default@test_update_part@c=33
+POSTHOOK: Output: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: test_update_part PARTITION(c=11).a SIMPLE []
+POSTHOOK: Lineage: test_update_part PARTITION(c=11).b SIMPLE []
+POSTHOOK: Lineage: test_update_part PARTITION(c=22).a SIMPLE []
+POSTHOOK: Lineage: test_update_part PARTITION(c=22).b SIMPLE []
+POSTHOOK: Lineage: test_update_part PARTITION(c=__HIVE_DEFAULT_PARTITION__).a SIMPLE []
+POSTHOOK: Lineage: test_update_part PARTITION(c=__HIVE_DEFAULT_PARTITION__).b SIMPLE []
+PREHOOK: query: UPDATE test_update_part SET b=4444 WHERE c is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_update_part
+PREHOOK: Input: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: default@test_update_part
+PREHOOK: Output: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: query: UPDATE test_update_part SET b=4444 WHERE c is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_update_part
+POSTHOOK: Input: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: default@test_update_part
+POSTHOOK: Output: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: test_update_part PARTITION(c=__HIVE_DEFAULT_PARTITION__).a SIMPLE [(test_update_part)test_update_part.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: test_update_part PARTITION(c=__HIVE_DEFAULT_PARTITION__).b SIMPLE []
+PREHOOK: query: UPDATE test_update_part SET b=5555 WHERE c=33
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_update_part
+PREHOOK: Input: default@test_update_part@c=33
+PREHOOK: Output: default@test_update_part
+PREHOOK: Output: default@test_update_part@c=33
+POSTHOOK: query: UPDATE test_update_part SET b=5555 WHERE c=33
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_update_part
+POSTHOOK: Input: default@test_update_part@c=33
+POSTHOOK: Output: default@test_update_part
+POSTHOOK: Output: default@test_update_part@c=33
+POSTHOOK: Output: default@test_update_part@c=33
+POSTHOOK: Lineage: test_update_part PARTITION(c=33).a SIMPLE [(test_update_part)test_update_part.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: test_update_part PARTITION(c=33).b SIMPLE []
+PREHOOK: query: UPDATE test_update_part SET b=6666 WHERE a IN (SELECT a FROM test_update_part_text WHERE (c=11 and b=2) or c=33)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_update_part
+PREHOOK: Input: default@test_update_part@c=11
+PREHOOK: Input: default@test_update_part@c=22
+PREHOOK: Input: default@test_update_part@c=33
+PREHOOK: Input: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Input: default@test_update_part_text
+PREHOOK: Output: default@test_update_part
+PREHOOK: Output: default@test_update_part@c=11
+PREHOOK: Output: default@test_update_part@c=22
+PREHOOK: Output: default@test_update_part@c=33
+PREHOOK: Output: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: query: UPDATE test_update_part SET b=6666 WHERE a IN (SELECT a FROM test_update_part_text WHERE (c=11 and b=2) or c=33)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_update_part
+POSTHOOK: Input: default@test_update_part@c=11
+POSTHOOK: Input: default@test_update_part@c=22
+POSTHOOK: Input: default@test_update_part@c=33
+POSTHOOK: Input: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Input: default@test_update_part_text
+POSTHOOK: Output: default@test_update_part
+POSTHOOK: Output: default@test_update_part@c=11
+POSTHOOK: Output: default@test_update_part@c=11
+POSTHOOK: Output: default@test_update_part@c=22
+POSTHOOK: Output: default@test_update_part@c=33
+POSTHOOK: Output: default@test_update_part@c=33
+POSTHOOK: Output: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: test_update_part PARTITION(c=11).a SIMPLE [(test_update_part)test_update_part.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: test_update_part PARTITION(c=11).b SIMPLE []
+POSTHOOK: Lineage: test_update_part PARTITION(c=33).a SIMPLE [(test_update_part)test_update_part.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: test_update_part PARTITION(c=33).b SIMPLE []
+PREHOOK: query: SELECT * FROM test_update_part ORDER BY c, b, a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_update_part
+PREHOOK: Input: default@test_update_part@c=11
+PREHOOK: Input: default@test_update_part@c=22
+PREHOOK: Input: default@test_update_part@c=33
+PREHOOK: Input: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM test_update_part ORDER BY c, b, a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_update_part
+POSTHOOK: Input: default@test_update_part@c=11
+POSTHOOK: Input: default@test_update_part@c=22
+POSTHOOK: Input: default@test_update_part@c=33
+POSTHOOK: Input: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+11	1	11
+13	3	11
+14	3333	11
+12	6666	11
+18	9	22
+17	1111	22
+14	3333	22
+19	6666	33
+20	6666	33
+21	6666	33
+14	4444	NULL
+15	4444	NULL
+16	4444	NULL
+PREHOOK: query: CREATE TABLE test_delete_part (a int, b int) PARTITIONED BY (c int) STORED AS ORC TBLPROPERTIES('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_delete_part
+POSTHOOK: query: CREATE TABLE test_delete_part (a int, b int) PARTITIONED BY (c int) STORED AS ORC TBLPROPERTIES('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_delete_part
+PREHOOK: query: INSERT OVERWRITE TABLE test_delete_part SELECT a, b, c FROM test_update_part_text
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_update_part_text
+PREHOOK: Output: default@test_delete_part
+POSTHOOK: query: INSERT OVERWRITE TABLE test_delete_part SELECT a, b, c FROM test_update_part_text
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_update_part_text
+POSTHOOK: Output: default@test_delete_part
+POSTHOOK: Output: default@test_delete_part@c=11
+POSTHOOK: Output: default@test_delete_part@c=22
+POSTHOOK: Output: default@test_delete_part@c=33
+POSTHOOK: Output: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: test_delete_part PARTITION(c=11).a SIMPLE [(test_update_part_text)test_update_part_text.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: test_delete_part PARTITION(c=11).b SIMPLE [(test_update_part_text)test_update_part_text.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: test_delete_part PARTITION(c=22).a SIMPLE [(test_update_part_text)test_update_part_text.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: test_delete_part PARTITION(c=22).b SIMPLE [(test_update_part_text)test_update_part_text.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: test_delete_part PARTITION(c=33).a SIMPLE [(test_update_part_text)test_update_part_text.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: test_delete_part PARTITION(c=33).b SIMPLE [(test_update_part_text)test_update_part_text.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: test_delete_part PARTITION(c=__HIVE_DEFAULT_PARTITION__).a SIMPLE [(test_update_part_text)test_update_part_text.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: test_delete_part PARTITION(c=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(test_update_part_text)test_update_part_text.FieldSchema(name:b, type:int, comment:null), ]
+PREHOOK: query: SELECT * FROM test_delete_part order by c, b, a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_delete_part
+PREHOOK: Input: default@test_delete_part@c=11
+PREHOOK: Input: default@test_delete_part@c=22
+PREHOOK: Input: default@test_delete_part@c=33
+PREHOOK: Input: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM test_delete_part order by c, b, a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_delete_part
+POSTHOOK: Input: default@test_delete_part@c=11
+POSTHOOK: Input: default@test_delete_part@c=22
+POSTHOOK: Input: default@test_delete_part@c=33
+POSTHOOK: Input: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+11	1	11
+12	2	11
+13	3	11
+14	4	11
+14	8	22
+17	8	22
+18	9	22
+19	10	33
+20	11	33
+21	12	33
+14	5	NULL
+15	6	NULL
+16	7	NULL
+PREHOOK: query: DELETE FROM test_delete_part WHERE b=8
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_delete_part
+PREHOOK: Input: default@test_delete_part@c=11
+PREHOOK: Input: default@test_delete_part@c=22
+PREHOOK: Input: default@test_delete_part@c=33
+PREHOOK: Input: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: default@test_delete_part@c=11
+PREHOOK: Output: default@test_delete_part@c=22
+PREHOOK: Output: default@test_delete_part@c=33
+PREHOOK: Output: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: query: DELETE FROM test_delete_part WHERE b=8
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_delete_part
+POSTHOOK: Input: default@test_delete_part@c=11
+POSTHOOK: Input: default@test_delete_part@c=22
+POSTHOOK: Input: default@test_delete_part@c=33
+POSTHOOK: Input: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: default@test_delete_part@c=11
+POSTHOOK: Output: default@test_delete_part@c=22
+POSTHOOK: Output: default@test_delete_part@c=33
+POSTHOOK: Output: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: query: DELETE FROM test_delete_part WHERE a=8
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_delete_part
+PREHOOK: Input: default@test_delete_part@c=11
+PREHOOK: Input: default@test_delete_part@c=22
+PREHOOK: Input: default@test_delete_part@c=33
+PREHOOK: Input: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: default@test_delete_part@c=11
+PREHOOK: Output: default@test_delete_part@c=22
+PREHOOK: Output: default@test_delete_part@c=33
+PREHOOK: Output: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: query: DELETE FROM test_delete_part WHERE a=8
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_delete_part
+POSTHOOK: Input: default@test_delete_part@c=11
+POSTHOOK: Input: default@test_delete_part@c=22
+POSTHOOK: Input: default@test_delete_part@c=33
+POSTHOOK: Input: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: default@test_delete_part@c=11
+POSTHOOK: Output: default@test_delete_part@c=22
+POSTHOOK: Output: default@test_delete_part@c=33
+POSTHOOK: Output: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: query: DELETE FROM test_delete_part WHERE b=8
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_delete_part
+PREHOOK: Input: default@test_delete_part@c=11
+PREHOOK: Input: default@test_delete_part@c=22
+PREHOOK: Input: default@test_delete_part@c=33
+PREHOOK: Input: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: default@test_delete_part@c=11
+PREHOOK: Output: default@test_delete_part@c=22
+PREHOOK: Output: default@test_delete_part@c=33
+PREHOOK: Output: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: query: DELETE FROM test_delete_part WHERE b=8
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_delete_part
+POSTHOOK: Input: default@test_delete_part@c=11
+POSTHOOK: Input: default@test_delete_part@c=22
+POSTHOOK: Input: default@test_delete_part@c=33
+POSTHOOK: Input: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: default@test_delete_part@c=11
+POSTHOOK: Output: default@test_delete_part@c=22
+POSTHOOK: Output: default@test_delete_part@c=33
+POSTHOOK: Output: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: query: DELETE FROM test_delete_part WHERE a=14
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_delete_part
+PREHOOK: Input: default@test_delete_part@c=11
+PREHOOK: Input: default@test_delete_part@c=22
+PREHOOK: Input: default@test_delete_part@c=33
+PREHOOK: Input: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: default@test_delete_part@c=11
+PREHOOK: Output: default@test_delete_part@c=22
+PREHOOK: Output: default@test_delete_part@c=33
+PREHOOK: Output: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: query: DELETE FROM test_delete_part WHERE a=14
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_delete_part
+POSTHOOK: Input: default@test_delete_part@c=11
+POSTHOOK: Input: default@test_delete_part@c=22
+POSTHOOK: Input: default@test_delete_part@c=33
+POSTHOOK: Input: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: default@test_delete_part@c=11
+POSTHOOK: Output: default@test_delete_part@c=22
+POSTHOOK: Output: default@test_delete_part@c=33
+POSTHOOK: Output: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: query: DELETE FROM test_delete_part WHERE c is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_delete_part
+PREHOOK: Input: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: query: DELETE FROM test_delete_part WHERE c is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_delete_part
+POSTHOOK: Input: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: query: DELETE FROM test_delete_part WHERE c=33
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_delete_part
+PREHOOK: Input: default@test_delete_part@c=33
+PREHOOK: Output: default@test_delete_part@c=33
+POSTHOOK: query: DELETE FROM test_delete_part WHERE c=33
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_delete_part
+POSTHOOK: Input: default@test_delete_part@c=33
+POSTHOOK: Output: default@test_delete_part@c=33
+PREHOOK: query: DELETE FROM test_delete_part WHERE a in (SELECT a FROM test_update_part_text WHERE (c=11 and b=2) or c=22)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_delete_part
+PREHOOK: Input: default@test_delete_part@c=11
+PREHOOK: Input: default@test_delete_part@c=22
+PREHOOK: Input: default@test_delete_part@c=33
+PREHOOK: Input: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Input: default@test_update_part_text
+PREHOOK: Output: default@test_delete_part@c=11
+PREHOOK: Output: default@test_delete_part@c=22
+PREHOOK: Output: default@test_delete_part@c=33
+PREHOOK: Output: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: query: DELETE FROM test_delete_part WHERE a in (SELECT a FROM test_update_part_text WHERE (c=11 and b=2) or c=22)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_delete_part
+POSTHOOK: Input: default@test_delete_part@c=11
+POSTHOOK: Input: default@test_delete_part@c=22
+POSTHOOK: Input: default@test_delete_part@c=33
+POSTHOOK: Input: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Input: default@test_update_part_text
+POSTHOOK: Output: default@test_delete_part@c=11
+POSTHOOK: Output: default@test_delete_part@c=22
+POSTHOOK: Output: default@test_delete_part@c=33
+POSTHOOK: Output: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: query: SELECT * FROM test_delete_part order by c, b, a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_delete_part
+PREHOOK: Input: default@test_delete_part@c=11
+PREHOOK: Input: default@test_delete_part@c=22
+PREHOOK: Input: default@test_delete_part@c=33
+PREHOOK: Input: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM test_delete_part order by c, b, a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_delete_part
+POSTHOOK: Input: default@test_delete_part@c=11
+POSTHOOK: Input: default@test_delete_part@c=22
+POSTHOOK: Input: default@test_delete_part@c=33
+POSTHOOK: Input: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+11	1	11
+13	3	11
+PREHOOK: query: DROP TABLE IF EXISTS test_update_part_text
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_update_part_text
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_update_part_text
+POSTHOOK: query: DROP TABLE IF EXISTS test_update_part_text
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_update_part_text
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_update_part_text
+PREHOOK: query: DROP TABLE IF EXISTS test_update_part
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_update_part
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_update_part
+POSTHOOK: query: DROP TABLE IF EXISTS test_update_part
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_update_part
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_update_part
+PREHOOK: query: DROP TABLE IF EXISTS test_delete_part
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_delete_part
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_delete_part
+POSTHOOK: query: DROP TABLE IF EXISTS test_delete_part
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_delete_part
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_delete_part

@@ -1,0 +1,60 @@
+PREHOOK: query: CREATE TABLE acid_vectorized_part(a INT, b STRING) partitioned by (ds string) CLUSTERED BY(a) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid_vectorized_part
+POSTHOOK: query: CREATE TABLE acid_vectorized_part(a INT, b STRING) partitioned by (ds string) CLUSTERED BY(a) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acid_vectorized_part
+PREHOOK: query: insert into table acid_vectorized_part partition (ds = 'today') select cint, cstring1 from alltypesorc where cint is not null order by cint limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@acid_vectorized_part@ds=today
+POSTHOOK: query: insert into table acid_vectorized_part partition (ds = 'today') select cint, cstring1 from alltypesorc where cint is not null order by cint limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@acid_vectorized_part@ds=today
+POSTHOOK: Lineage: acid_vectorized_part PARTITION(ds=today).a SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_vectorized_part PARTITION(ds=today).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+PREHOOK: query: insert into table acid_vectorized_part partition (ds = 'tomorrow') select cint, cstring1 from alltypesorc where cint is not null order by cint limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@acid_vectorized_part@ds=tomorrow
+POSTHOOK: query: insert into table acid_vectorized_part partition (ds = 'tomorrow') select cint, cstring1 from alltypesorc where cint is not null order by cint limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@acid_vectorized_part@ds=tomorrow
+POSTHOOK: Lineage: acid_vectorized_part PARTITION(ds=tomorrow).a SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: acid_vectorized_part PARTITION(ds=tomorrow).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+PREHOOK: query: select * from acid_vectorized_part order by a, b, ds
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acid_vectorized_part
+PREHOOK: Input: default@acid_vectorized_part@ds=today
+PREHOOK: Input: default@acid_vectorized_part@ds=tomorrow
+#### A masked pattern was here ####
+POSTHOOK: query: select * from acid_vectorized_part order by a, b, ds
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acid_vectorized_part
+POSTHOOK: Input: default@acid_vectorized_part@ds=today
+POSTHOOK: Input: default@acid_vectorized_part@ds=tomorrow
+#### A masked pattern was here ####
+-1073279343	oj1YrV5Wa	today
+-1073279343	oj1YrV5Wa	tomorrow
+-1073051226	A34p7oRr2WvUJNf	today
+-1073051226	A34p7oRr2WvUJNf	tomorrow
+-1072910839	0iqrc5	today
+-1072910839	0iqrc5	tomorrow
+-1072081801	dPkN74F7	today
+-1072081801	dPkN74F7	tomorrow
+-1072076362	2uLyD28144vklju213J1mr	today
+-1072076362	2uLyD28144vklju213J1mr	tomorrow
+-1071480828	aw724t8c5558x2xneC624	today
+-1071480828	aw724t8c5558x2xneC624	tomorrow
+-1071363017	Anj0oF	today
+-1071363017	Anj0oF	tomorrow
+-1070883071	0ruyd6Y50JpdGRf6HqD	today
+-1070883071	0ruyd6Y50JpdGRf6HqD	tomorrow
+-1070551679	iUR3Q	today
+-1070551679	iUR3Q	tomorrow
+-1069736047	k17Am8uPHWk02cEf1jet	today
+-1069736047	k17Am8uPHWk02cEf1jet	tomorrow

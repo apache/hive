@@ -1,0 +1,15 @@
+PREHOOK: query: DESCRIBE FUNCTION &
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION &
+POSTHOOK: type: DESCFUNCTION
+a & b - Bitwise and
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED &
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED &
+POSTHOOK: type: DESCFUNCTION
+a & b - Bitwise and
+Example:
+  > SELECT 3 & 5 FROM src LIMIT 1;
+  1
+Function class:org.apache.hadoop.hive.ql.udf.UDFOPBitAnd
+Function type:BUILTIN

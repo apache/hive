@@ -1,0 +1,455 @@
+<!--
+ Licensed to the Apache Software Foundation (ASF) under one
+ or more contributor license agreements.  See the NOTICE file
+ distributed with this work for additional information
+ regarding copyright ownership.  The ASF licenses this file
+ to you under the Apache License, Version 2.0 (the
+ "License"); you may not use this file except in compliance
+ with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an
+ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ KIND, either express or implied.  See the License for the
+ specific language governing permissions and limitations
+ under the License.
+-->
+
+<assembly
+  xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+
+  <id>bin</id>
+
+  <formats>
+    <format>dir</format>
+    <format>tar.gz</format>
+  </formats>
+
+  <baseDirectory>apache-hive-${project.version}-bin</baseDirectory>
+
+  <dependencySets>
+    <dependencySet>
+      <outputDirectory>lib</outputDirectory>
+      <unpack>false</unpack>
+      <useProjectArtifact>false</useProjectArtifact>
+      <useStrictFiltering>false</useStrictFiltering>
+      <useTransitiveFiltering>true</useTransitiveFiltering>
+      <excludes>
+        <exclude>org.apache.calcite:*</exclude>
+        <exclude>org.apache.hadoop:*</exclude>
+        <exclude>org.apache.hive.hcatalog:*</exclude>
+        <exclude>org.slf4j:*</exclude>
+        <exclude>log4j:*</exclude>
+        <exclude>ch.qos.reload4j:*</exclude>
+        <exclude>junit:*</exclude>
+        <exclude>commons-configuration:commons-configuration</exclude>
+        <exclude>org.apache.hive:hive-jdbc:*:standalone</exclude>
+        <exclude>org.apache.hive:hive-contrib</exclude>
+        <exclude>*:*:tests</exclude>
+      </excludes>
+    </dependencySet>
+    <dependencySet>
+      <outputDirectory>jdbc/</outputDirectory>
+      <unpack>false</unpack>
+      <useProjectArtifact>false</useProjectArtifact>
+      <useStrictFiltering>true</useStrictFiltering>
+      <includes>
+        <include>org.apache.hive:hive-jdbc:*:standalone</include>
+      </includes>
+    </dependencySet>
+    <dependencySet>
+      <outputDirectory>contrib/</outputDirectory>
+      <unpack>false</unpack>
+      <useProjectArtifact>false</useProjectArtifact>
+      <useStrictFiltering>true</useStrictFiltering>
+      <includes>
+        <include>org.apache.hive:hive-contrib</include>
+      </includes>
+    </dependencySet>
+    <dependencySet>
+      <outputDirectory>lib</outputDirectory>
+      <unpack>false</unpack>
+      <useProjectArtifact>false</useProjectArtifact>
+      <useStrictFiltering>true</useStrictFiltering>
+      <includes>
+        <include>org.apache.hive.hcatalog:hive-hcatalog-core</include>
+        <include>org.apache.hive.hcatalog:hive-hcatalog-server-extensions</include>
+        <include>javax.ws.rs:javax.ws.rs-api</include>
+      </includes>
+    </dependencySet>
+    <dependencySet>
+      <outputDirectory>hcatalog/share/hcatalog</outputDirectory>
+      <unpack>false</unpack>
+      <useProjectArtifact>false</useProjectArtifact>
+      <useStrictFiltering>true</useStrictFiltering>
+      <includes>
+        <include>org.apache.hive.hcatalog:hive-hcatalog-core</include>
+        <include>org.apache.hive.hcatalog:hive-hcatalog-pig-adapter</include>
+        <include>org.apache.hive.hcatalog:hive-hcatalog-server-extensions</include>
+      </includes>
+    </dependencySet>
+    <!-- TODO 0.12 release the webhcat server lib directory had all transitive jars
+         while this lib directory only has explicit dependencies
+    -->
+    <dependencySet>
+      <outputDirectory>hcatalog/share/webhcat/svr/lib</outputDirectory>
+      <unpack>false</unpack>
+      <useProjectArtifact>false</useProjectArtifact>
+      <useStrictFiltering>false</useStrictFiltering>
+      <useTransitiveFiltering>true</useTransitiveFiltering>
+      <excludes>
+        <exclude>org.apache.hadoop:*</exclude>
+        <exclude>org.apache.hive:hive-jdbc:jar:standalone</exclude>
+        <exclude>org.apache.httpcomponents:*</exclude>
+      </excludes>
+      <includes>
+        <include>org.apache.hive.hcatalog:hive-webhcat:*</include>
+        <include>org.apache.hive:hive-jdbc:jar</include>
+      </includes>
+    </dependencySet>
+    <dependencySet>
+      <outputDirectory>hcatalog/share/webhcat/java-client</outputDirectory>
+      <unpack>false</unpack>
+      <useProjectArtifact>false</useProjectArtifact>
+      <useStrictFiltering>true</useStrictFiltering>
+      <includes>
+        <include>org.apache.hive.hcatalog:hive-webhcat-java-client</include>
+      </includes>
+    </dependencySet>
+  </dependencySets>
+
+  <fileSets>
+    <fileSet>
+      <directory>${project.parent.basedir}</directory>
+      <excludes>
+        <exclude>**/target/**</exclude>
+        <exclude>**/.classpath</exclude>
+        <exclude>**/.project</exclude>
+        <exclude>**/.settings/**</exclude>
+        <exclude>lib/**</exclude>
+        <exclude>itests/thirdparty/**</exclude>
+      </excludes>
+
+      <includes>
+        <include>DEVNOTES</include>
+        <include>README.txt</include>
+        <include>NOTICE</include>
+        <include>CHANGELOG</include>
+        <include>RELEASE_NOTES.txt</include>
+      </includes>
+      <outputDirectory>/</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>${project.build.directory}/generated-resources</directory>
+      <includes>
+        <include>/LICENSE</include>
+        <include>/licenses.xml</include>
+      </includes>
+      <outputDirectory>/</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>${project.build.directory}/generated-resources/licenses</directory>
+      <includes>
+        <include>/*</include>
+      </includes>
+      <outputDirectory>licenses</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/data/files</directory>
+      <includes>
+        <include>/*.*</include>
+      </includes>
+      <excludes>
+        <exclude>/*.jar</exclude>
+      </excludes>
+      <outputDirectory>examples/files</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/ql/src/test/queries/positive</directory>
+      <includes>
+        <include>*.q</include>
+      </includes>
+      <outputDirectory>examples/queries</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <fileMode>755</fileMode>
+      <directory>${project.parent.basedir}/bin</directory>
+      <includes>
+        <include>hive</include>
+        <include>llap/**/*</include>
+        <include>metatool</include>
+        <include>hplsql</include>
+        <include>schematool</include>
+        <include>beeline</include>
+        <include>hiveserver2</include>
+        <include>hive-config.sh</include>
+        <include>init-hive-dfs.sh</include>
+        <include>hive-config.cmd</include>
+        <include>hive.cmd</include>
+        <include>hplsql.cmd</include>
+        <include>beeline.cmd</include>
+        <include>ext/**/*</include>
+        <include>replstats.sh</include>
+      </includes>
+      <outputDirectory>bin</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <fileMode>755</fileMode>
+      <directory>${project.parent.basedir}/llap-server/bin</directory>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>scripts/llap/bin</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <fileMode>666</fileMode>
+      <directory>${project.parent.basedir}/llap-server/scripts</directory>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>scripts/llap/sql/</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/llap-server/src/main/resources/</directory>
+      <includes>
+        <include>**/*.py</include>
+        <include>**/*.xml</include>
+      </includes>
+      <outputDirectory>scripts/llap/yarn</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/standalone-metastore/metastore-server/src/main/sql</directory>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>scripts/metastore/upgrade</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/conf</directory>
+      <includes>
+        <include>*.template</include>
+        <include>ivysettings.xml</include>
+      </includes>
+      <outputDirectory>conf</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/service/lib/php</directory>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>lib/php</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/serde/src/gen/thrift/gen-php</directory>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>lib/php/packages/serde</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/metastore/src/gen/thrift/gen-php</directory>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>lib/php/packages/hive_metastore</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/service/src/gen/thrift/gen-php</directory>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>lib/php/packages/hive_service</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/ql/src/gen/thrift/gen-php</directory>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>lib/php/packages/queryplan</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/service/lib/py</directory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>lib/py</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/serde/src/gen/thrift/gen-py/org_apache_hadoop_hive_serde</directory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>lib/py/hive_serde</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/metastore/src/gen/thrift/gen-py/hive_metastore</directory>
+      <fileMode>755</fileMode>
+       <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>lib/py/hive_metastore</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/service/src/gen/thrift/gen-py/TCLIService</directory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>lib/py/TCLIService</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/service/src/gen/thrift/gen-py/hive_service</directory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>lib/py/hive_service</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/ql/src/gen/thrift/gen-py/queryplan</directory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>lib/py/queryplan</outputDirectory>
+    </fileSet>
+
+    <!-- hcatalog bin -->
+    <fileSet>
+      <directory>${project.parent.basedir}/hcatalog/bin</directory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>hcat</include>
+        <include>hcatcfg.py</include>
+        <include>hcat.py</include>
+        <include>templeton.cmd</include>
+        <include>common.sh</include>
+      </includes>
+      <outputDirectory>hcatalog/bin</outputDirectory>
+    </fileSet>
+
+    <!-- hcatalog etc -->
+    <fileSet>
+      <directory>${project.parent.basedir}/hcatalog/conf</directory>
+      <fileMode>644</fileMode>
+      <includes>
+        <include>jndi.properties</include>
+        <include>proto-hive-site.xml</include>
+      </includes>
+      <outputDirectory>hcatalog/etc/hcatalog</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>${project.parent.basedir}/hcatalog/webhcat/svr/src/main/config</directory>
+      <fileMode>644</fileMode>
+      <includes>
+        <include>webhcat-default.xml</include>
+        <include>webhcat-log4j2.properties</include>
+      </includes>
+      <filtered>true</filtered>
+      <outputDirectory>hcatalog/etc/webhcat</outputDirectory>
+    </fileSet>
+
+    <!-- hcatalog libexec -->
+    <fileSet>
+      <directory>${project.parent.basedir}/hcatalog/bin</directory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>hcat-config.sh</include>
+      </includes>
+      <outputDirectory>hcatalog/libexec</outputDirectory>
+    </fileSet>
+
+    <!-- hcatalog sbin -->
+    <fileSet>
+      <directory>${project.parent.basedir}/hcatalog/bin</directory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>hcatcfg.py</include>
+        <include>hcat_server.py</include>
+        <include>hcat_server.sh</include>
+      </includes>
+      <outputDirectory>hcatalog/sbin</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>${project.parent.basedir}/hcatalog/src/packages</directory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>update-hcatalog-env.sh</include>
+      </includes>
+      <outputDirectory>hcatalog/sbin</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>${project.parent.basedir}/hcatalog/webhcat/svr/src/main/bin</directory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>webhcat_config.sh</include>
+        <include>webhcat_server.sh</include>
+      </includes>
+      <outputDirectory>hcatalog/sbin</outputDirectory>
+    </fileSet>
+  </fileSets>
+
+  <files>
+    <file>
+      <source>${project.parent.basedir}/common/src/main/resources/hive-log4j2.properties</source>
+      <outputDirectory>conf</outputDirectory>
+      <destName>hive-log4j2.properties.template</destName>
+    </file>
+    <file>
+      <source>${project.parent.basedir}/ql/src/main/resources/hive-exec-log4j2.properties</source>
+      <outputDirectory>conf</outputDirectory>
+      <destName>hive-exec-log4j2.properties.template</destName>
+    </file>
+    <file>
+      <source>${project.parent.basedir}/beeline/src/main/resources/beeline-log4j2.properties</source>
+      <outputDirectory>conf</outputDirectory>
+      <destName>beeline-log4j2.properties.template</destName>
+    </file>
+    <file>
+      <source>${project.parent.basedir}/llap-server/src/main/resources/llap-daemon-log4j2.properties</source>
+      <outputDirectory>conf</outputDirectory>
+      <destName>llap-daemon-log4j2.properties.template</destName>
+    </file>
+    <file>
+      <source>${project.parent.basedir}/llap-server/src/main/resources/llap-cli-log4j2.properties</source>
+      <outputDirectory>conf</outputDirectory>
+      <destName>llap-cli-log4j2.properties.template</destName>
+    </file>
+    <file>
+      <source>${project.parent.basedir}/common/src/main/resources/parquet-logging.properties</source>
+      <outputDirectory>conf</outputDirectory>
+      <destName>parquet-logging.properties</destName>
+    </file>
+    <file>
+      <source>${project.parent.basedir}/hcatalog/README.txt</source>
+      <outputDirectory>hcatalog/share/doc/hcatalog</outputDirectory>
+    </file>
+  </files>
+
+</assembly>
+

@@ -1,0 +1,330 @@
+PREHOOK: query: CREATE TABLE t1_multi_delimit(colA int,
+  colB tinyint,
+  colC timestamp,
+  colD smallint,
+  colE smallint)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.MultiDelimitSerDe'
+WITH SERDEPROPERTIES ("field.delim"="^,")STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1_multi_delimit
+POSTHOOK: query: CREATE TABLE t1_multi_delimit(colA int,
+  colB tinyint,
+  colC timestamp,
+  colD smallint,
+  colE smallint)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.MultiDelimitSerDe'
+WITH SERDEPROPERTIES ("field.delim"="^,")STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1_multi_delimit
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/t1_multi_delimit.csv" INTO TABLE t1_multi_delimit
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@t1_multi_delimit
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/t1_multi_delimit.csv" INTO TABLE t1_multi_delimit
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@t1_multi_delimit
+PREHOOK: query: SELECT * FROM t1_multi_delimit
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_multi_delimit
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t1_multi_delimit
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_multi_delimit
+#### A masked pattern was here ####
+1	1	NULL	0	0
+2	1	NULL	0	1
+3	1	NULL	0	0
+4	1	NULL	0	1
+5	5	NULL	NULL	NULL
+NULL	NULL	NULL	NULL	NULL
+7777	NULL	NULL	NULL	NULL
+8	8	NULL	8	8
+9	9	NULL	9	9
+10101010	NULL	NULL	NULL	NULL
+PREHOOK: query: CREATE TABLE t11_csv_serde(colA int,
+  colB tinyint,
+  colC timestamp,
+  colD smallint,
+  colE smallint)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+WITH SERDEPROPERTIES ("separatorChar" = ",")STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t11_csv_serde
+POSTHOOK: query: CREATE TABLE t11_csv_serde(colA int,
+  colB tinyint,
+  colC timestamp,
+  colD smallint,
+  colE smallint)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+WITH SERDEPROPERTIES ("separatorChar" = ",")STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t11_csv_serde
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/t11_csv_serde.csv" INTO TABLE t11_csv_serde
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@t11_csv_serde
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/t11_csv_serde.csv" INTO TABLE t11_csv_serde
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@t11_csv_serde
+PREHOOK: query: SELECT * FROM t11_csv_serde
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t11_csv_serde
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t11_csv_serde
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t11_csv_serde
+#### A masked pattern was here ####
+1	1		0	0
+2	1		0	1
+3	1		0	0
+4	1		0	1
+5	5	NULL	NULL	NULL
+NULL	NULL	NULL	NULL	NULL
+7777	NULL	NULL	NULL	NULL
+8	8		8	8
+9	9		9	9
+10101010	NULL	NULL	NULL	NULL
+Warning: Shuffle Join MERGEJOIN[34][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: SELECT EXISTS (
+SELECT colA, colB, colC, colD, colE FROM t1_multi_delimit
+MINUS
+SELECT cast(colA as int), cast(colB as tinyint), cast(colC as timestamp), cast(colD as smallint), cast(colE as smallint) FROM t11_csv_serde
+)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@t11_csv_serde
+PREHOOK: Input: default@t1_multi_delimit
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT EXISTS (
+SELECT colA, colB, colC, colD, colE FROM t1_multi_delimit
+MINUS
+SELECT cast(colA as int), cast(colB as tinyint), cast(colC as timestamp), cast(colD as smallint), cast(colE as smallint) FROM t11_csv_serde
+)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@t11_csv_serde
+POSTHOOK: Input: default@t1_multi_delimit
+#### A masked pattern was here ####
+false
+PREHOOK: query: CREATE TABLE t2_multi_delimit(colA int,
+  colB tinyint,
+  colC timestamp,
+  colD smallint,
+  colE smallint)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.MultiDelimitSerDe'
+WITH SERDEPROPERTIES ("field.delim"="^,")STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2_multi_delimit
+POSTHOOK: query: CREATE TABLE t2_multi_delimit(colA int,
+  colB tinyint,
+  colC timestamp,
+  colD smallint,
+  colE smallint)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.MultiDelimitSerDe'
+WITH SERDEPROPERTIES ("field.delim"="^,")STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2_multi_delimit
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/t2_multi_delimit.csv" INTO TABLE t2_multi_delimit
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@t2_multi_delimit
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/t2_multi_delimit.csv" INTO TABLE t2_multi_delimit
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@t2_multi_delimit
+PREHOOK: query: SELECT * FROM t2_multi_delimit
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2_multi_delimit
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t2_multi_delimit
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2_multi_delimit
+#### A masked pattern was here ####
+1	1	NULL	0	0
+2	1	NULL	0	1
+3	1	NULL	0	0
+4	1	NULL	0	1
+PREHOOK: query: CREATE TABLE t3_multi_delimit(colA int,
+  colB tinyint,
+  colC timestamp,
+  colD smallint,
+  colE smallint)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.MultiDelimitSerDe'
+WITH SERDEPROPERTIES ("field.delim"="^^^^^")STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t3_multi_delimit
+POSTHOOK: query: CREATE TABLE t3_multi_delimit(colA int,
+  colB tinyint,
+  colC timestamp,
+  colD smallint,
+  colE smallint)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.MultiDelimitSerDe'
+WITH SERDEPROPERTIES ("field.delim"="^^^^^")STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t3_multi_delimit
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/t3_multi_delimit.csv" INTO TABLE t3_multi_delimit
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@t3_multi_delimit
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/t3_multi_delimit.csv" INTO TABLE t3_multi_delimit
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@t3_multi_delimit
+PREHOOK: query: SELECT * FROM t3_multi_delimit
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3_multi_delimit
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t3_multi_delimit
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3_multi_delimit
+#### A masked pattern was here ####
+1	1	NULL	0	0
+2	1	NULL	0	1
+3	1	NULL	0	0
+4	1	NULL	0	1
+5	5	NULL	NULL	NULL
+NULL	NULL	NULL	NULL	NULL
+7777	NULL	NULL	NULL	NULL
+8	8	NULL	8	8
+9	9	NULL	9	9
+10101010	NULL	NULL	NULL	NULL
+PREHOOK: query: CREATE TABLE t4_multi_delimit(colA string,
+  colB string,
+  colC string)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.MultiDelimitSerDe'
+WITH SERDEPROPERTIES ("field.delim"="^,")STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t4_multi_delimit
+POSTHOOK: query: CREATE TABLE t4_multi_delimit(colA string,
+  colB string,
+  colC string)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.MultiDelimitSerDe'
+WITH SERDEPROPERTIES ("field.delim"="^,")STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t4_multi_delimit
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/t4_multi_delimit.csv" INTO TABLE t4_multi_delimit
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@t4_multi_delimit
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/t4_multi_delimit.csv" INTO TABLE t4_multi_delimit
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@t4_multi_delimit
+PREHOOK: query: SELECT * FROM t4_multi_delimit
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t4_multi_delimit
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t4_multi_delimit
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t4_multi_delimit
+#### A masked pattern was here ####
+Ð¡Ð¾Ðº	dsadsa	NULL
+ááé		üóüóüóüóüó
+		
+áűáűáűáű		
+űűű	ááá	óóó
+PREHOOK: query: create table test_multidelim(col string)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.MultiDelimitSerDe'
+with serdeproperties('field.delim'='!^') STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_multidelim
+POSTHOOK: query: create table test_multidelim(col string)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.MultiDelimitSerDe'
+with serdeproperties('field.delim'='!^') STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_multidelim
+PREHOOK: query: insert into test_multidelim values('aa'),('bb'),('cc'),('dd')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_multidelim
+POSTHOOK: query: insert into test_multidelim values('aa'),('bb'),('cc'),('dd')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_multidelim
+POSTHOOK: Lineage: test_multidelim.col SCRIPT []
+PREHOOK: query: select * from test_multidelim
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_multidelim
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_multidelim
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_multidelim
+#### A masked pattern was here ####
+aa
+bb
+cc
+dd
+PREHOOK: query: DROP TABLE test_multidelim
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_multidelim
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_multidelim
+POSTHOOK: query: DROP TABLE test_multidelim
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_multidelim
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_multidelim
+PREHOOK: query: DROP TABLE t1_multi_delimit
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t1_multi_delimit
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1_multi_delimit
+POSTHOOK: query: DROP TABLE t1_multi_delimit
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t1_multi_delimit
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1_multi_delimit
+PREHOOK: query: DROP TABLE t11_csv_serde
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t11_csv_serde
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t11_csv_serde
+POSTHOOK: query: DROP TABLE t11_csv_serde
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t11_csv_serde
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t11_csv_serde
+PREHOOK: query: DROP TABLE t2_multi_delimit
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t2_multi_delimit
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2_multi_delimit
+POSTHOOK: query: DROP TABLE t2_multi_delimit
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t2_multi_delimit
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2_multi_delimit
+PREHOOK: query: DROP TABLE t3_multi_delimit
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t3_multi_delimit
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t3_multi_delimit
+POSTHOOK: query: DROP TABLE t3_multi_delimit
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t3_multi_delimit
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t3_multi_delimit
+PREHOOK: query: DROP TABLE t4_multi_delimit
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t4_multi_delimit
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t4_multi_delimit
+POSTHOOK: query: DROP TABLE t4_multi_delimit
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t4_multi_delimit
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t4_multi_delimit

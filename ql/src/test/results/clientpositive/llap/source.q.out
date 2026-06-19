@@ -1,0 +1,36 @@
+PREHOOK: query: SELECT 'Executed SQL query 1 using SOURCE command'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT 'Executed SQL query 1 using SOURCE command'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+Executed SQL query 1 using SOURCE command
+PREHOOK: query: SELECT 'Executed SQL query 2 using SOURCE command'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT 'Executed SQL query 2 using SOURCE command'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+Executed SQL query 2 using SOURCE command
+PREHOOK: query: SELECT 'Executed SQL query 1 using SOURCE command'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT 'Executed SQL query 1 using SOURCE command'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+Executed SQL query 1 using SOURCE command
+PREHOOK: query: SELECT 'Executed SQL query 2 using SOURCE command'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT 'Executed SQL query 2 using SOURCE command'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+Executed SQL query 2 using SOURCE command

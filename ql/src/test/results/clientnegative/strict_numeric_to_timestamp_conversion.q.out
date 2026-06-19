@@ -1,0 +1,19 @@
+PREHOOK: query: create table test_num_ts_input_n(begin string, ts string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_num_ts_input_n
+POSTHOOK: query: create table test_num_ts_input_n(begin string, ts string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_num_ts_input_n
+PREHOOK: query: insert into test_num_ts_input_n values('1653209895687','2022-05-22T15:58:15.931+07:00'),('1653209938316','2022-05-22T15:58:58.490+07:00'),('1653209962021','2022-05-22T15:59:22.191+07:00'),('1653210021993','2022-05-22T16:00:22.174+07:00')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_num_ts_input_n
+POSTHOOK: query: insert into test_num_ts_input_n values('1653209895687','2022-05-22T15:58:15.931+07:00'),('1653209938316','2022-05-22T15:58:58.490+07:00'),('1653209962021','2022-05-22T15:59:22.191+07:00'),('1653210021993','2022-05-22T16:00:22.174+07:00')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_num_ts_input_n
+POSTHOOK: Lineage: test_num_ts_input_n.begin SCRIPT []
+POSTHOOK: Lineage: test_num_ts_input_n.ts SCRIPT []
+FAILED: SemanticException Line 0:-1 Wrong arguments '1000': Casting NUMERIC types to TIMESTAMP is prohibited (hive.strict.timestamp.conversion)

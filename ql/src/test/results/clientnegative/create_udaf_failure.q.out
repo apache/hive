@@ -1,0 +1,7 @@
+PREHOOK: query: CREATE TEMPORARY FUNCTION test_udaf AS 'org.apache.hadoop.hive.ql.udf.UDAFWrongArgLengthForTestCase'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: test_udaf
+POSTHOOK: query: CREATE TEMPORARY FUNCTION test_udaf AS 'org.apache.hadoop.hive.ql.udf.UDAFWrongArgLengthForTestCase'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: test_udaf
+FAILED: SemanticException org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException: public boolean org.apache.hadoop.hive.ql.udf.UDAFWrongArgLengthForTestCase$UDAFWrongArgLengthForTestCaseEvaluator.merge() requires 0 arguments but 1 are passed in.

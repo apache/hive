@@ -1,0 +1,52 @@
+PREHOOK: query: CREATE TABLE acidtest1(c1 INT, c2 STRING)
+CLUSTERED BY (c1) INTO 3 BUCKETS
+STORED AS ORC
+TBLPROPERTIES ("transactional"="true")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acidtest1
+POSTHOOK: query: CREATE TABLE acidtest1(c1 INT, c2 STRING)
+CLUSTERED BY (c1) INTO 3 BUCKETS
+STORED AS ORC
+TBLPROPERTIES ("transactional"="true")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acidtest1
+PREHOOK: query: insert into table acidtest1 select cint, cstring1 from alltypesorc where cint is not null order by cint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@acidtest1
+POSTHOOK: query: insert into table acidtest1 select cint, cstring1 from alltypesorc where cint is not null order by cint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@acidtest1
+POSTHOOK: Lineage: acidtest1.c1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: acidtest1.c2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
+PREHOOK: query: select cast (c1 as string) from acidtest1 order by c1 limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@acidtest1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast (c1 as string) from acidtest1 order by c1 limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@acidtest1
+#### A masked pattern was here ####
+-1000318990
+-1000804087
+-1000977746
+-1001217298
+-1001446082
+-1001487162
+-1001510525
+-1002045753
+-1002277189
+-1002350795
+PREHOOK: query: drop table acidtest1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@acidtest1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acidtest1
+POSTHOOK: query: drop table acidtest1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@acidtest1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acidtest1

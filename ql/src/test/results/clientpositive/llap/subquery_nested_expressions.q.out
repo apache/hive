@@ -1,0 +1,36 @@
+PREHOOK: query: CREATE TABLE t0 (`title` string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t0
+POSTHOOK: query: CREATE TABLE t0 (`title` string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t0
+PREHOOK: query: explain cbo
+SELECT x4 from
+    (SELECT concat_ws('L4',x3, x3, x3, x3) as x4 from
+        (SELECT concat_ws('L3',x2, x2, x2, x2) as x3 from
+            (SELECT concat_ws('L2',x1, x1, x1, x1) as x2 from
+                (SELECT concat_ws('L1',x0, x0, x0, x0) as x1 from
+                    (SELECT concat_ws('L0',title, title, title, title) as x0 from t0) t1) t2) t3) t4) t
+WHERE x4 = 'Something'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t0
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+SELECT x4 from
+    (SELECT concat_ws('L4',x3, x3, x3, x3) as x4 from
+        (SELECT concat_ws('L3',x2, x2, x2, x2) as x3 from
+            (SELECT concat_ws('L2',x1, x1, x1, x1) as x2 from
+                (SELECT concat_ws('L1',x0, x0, x0, x0) as x1 from
+                    (SELECT concat_ws('L0',title, title, title, title) as x0 from t0) t1) t2) t3) t4) t
+WHERE x4 = 'Something'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t0
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(x4=[CAST(_UTF-16LE'Something':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+  HiveFilter(condition=[=(concat_ws(_UTF-16LE'L4':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", concat_ws(_UTF-16LE'L3':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", concat_ws(_UTF-16LE'L2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0, $0, $0, $0), concat_ws(_UTF-16LE'L2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0, $0, $0, $0), concat_ws(_UTF-16LE'L2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0, $0, $0, $0), concat_ws(_UTF-16LE'L2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0, $0, $0, $0)), concat_ws(_UTF-16LE'L3':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", concat_ws(_UTF-16LE'L2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0, $0, $0, $0), concat_ws(_UTF-16LE'L2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0, $0, $0, $0), concat_ws(_UTF-16LE'L2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0, $0, $0, $0), concat_ws(_UTF-16LE'L2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0, $0, $0, $0)), concat_ws(_UTF-16LE'L3':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", concat_ws(_UTF-16LE'L2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0, $0, $0, $0), concat_ws(_UTF-16LE'L2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0, $0, $0, $0), concat_ws(_UTF-16LE'L2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0, $0, $0, $0), concat_ws(_UTF-16LE'L2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0, $0, $0, $0)), concat_ws(_UTF-16LE'L3':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", concat_ws(_UTF-16LE'L2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0, $0, $0, $0), concat_ws(_UTF-16LE'L2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0, $0, $0, $0), concat_ws(_UTF-16LE'L2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0, $0, $0, $0), concat_ws(_UTF-16LE'L2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0, $0, $0, $0))), _UTF-16LE'Something')])
+    HiveProject(x1=[concat_ws(_UTF-16LE'L1':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", concat_ws(_UTF-16LE'L0':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0, $0, $0, $0), concat_ws(_UTF-16LE'L0':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0, $0, $0, $0), concat_ws(_UTF-16LE'L0':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0, $0, $0, $0), concat_ws(_UTF-16LE'L0':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0, $0, $0, $0))])
+      HiveTableScan(table=[[default, t0]], table:alias=[t0])
+

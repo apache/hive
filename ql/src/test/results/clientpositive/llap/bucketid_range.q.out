@@ -1,0 +1,50 @@
+PREHOOK: query: CREATE EXTERNAL TABLE integer_sequence_ext(int_field int)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+STORED AS TEXTFILE
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@integer_sequence_ext
+POSTHOOK: query: CREATE EXTERNAL TABLE integer_sequence_ext(int_field int)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+STORED AS TEXTFILE
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@integer_sequence_ext
+PREHOOK: query: CREATE TABLE integer_sequence (int_field int)
+CLUSTERED BY (int_field) INTO 4100 BUCKETS
+STORED AS ORC TBLPROPERTIES ('transactional' = 'true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@integer_sequence
+POSTHOOK: query: CREATE TABLE integer_sequence (int_field int)
+CLUSTERED BY (int_field) INTO 4100 BUCKETS
+STORED AS ORC TBLPROPERTIES ('transactional' = 'true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@integer_sequence
+PREHOOK: query: INSERT INTO integer_sequence SELECT int_field FROM integer_sequence_ext where int_field > 4000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@integer_sequence_ext
+PREHOOK: Output: default@integer_sequence
+POSTHOOK: query: INSERT INTO integer_sequence SELECT int_field FROM integer_sequence_ext where int_field > 4000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@integer_sequence_ext
+POSTHOOK: Output: default@integer_sequence
+POSTHOOK: Lineage: integer_sequence.int_field SIMPLE [(integer_sequence_ext)integer_sequence_ext.FieldSchema(name:int_field, type:int, comment:null), ]
+PREHOOK: query: select count(*) from integer_sequence
+PREHOOK: type: QUERY
+PREHOOK: Input: default@integer_sequence
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from integer_sequence
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@integer_sequence
+#### A masked pattern was here ####
+999

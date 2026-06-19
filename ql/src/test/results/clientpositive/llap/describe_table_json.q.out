@@ -1,0 +1,52 @@
+PREHOOK: query: CREATE TABLE IF NOT EXISTS jsontable (key INT, value STRING) COMMENT 'json table' STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@jsontable
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS jsontable (key INT, value STRING) COMMENT 'json table' STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@jsontable
+PREHOOK: query: SHOW TABLES LIKE 'jsontab%'
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
+POSTHOOK: query: SHOW TABLES LIKE 'jsontab%'
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
+{"tables":["jsontable"]}
+PREHOOK: query: SHOW TABLE EXTENDED LIKE 'jsontab%'
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: SHOW TABLE EXTENDED LIKE 'jsontab%'
+POSTHOOK: type: SHOW_TABLESTATUS
+#### A masked pattern was here ####
+PREHOOK: query: ALTER TABLE jsontable SET TBLPROPERTIES ('id' = 'jsontable')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@jsontable
+PREHOOK: Output: default@jsontable
+POSTHOOK: query: ALTER TABLE jsontable SET TBLPROPERTIES ('id' = 'jsontable')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@jsontable
+POSTHOOK: Output: default@jsontable
+PREHOOK: query: DESCRIBE jsontable
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@jsontable
+POSTHOOK: query: DESCRIBE jsontable
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@jsontable
+{"columns":[{"name":"key","type":"int"},{"name":"value","type":"string"}]}
+PREHOOK: query: DESCRIBE extended jsontable
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@jsontable
+POSTHOOK: query: DESCRIBE extended jsontable
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@jsontable
+#### A masked pattern was here ####
+PREHOOK: query: DROP TABLE jsontable
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@jsontable
+PREHOOK: Output: database:default
+PREHOOK: Output: default@jsontable
+POSTHOOK: query: DROP TABLE jsontable
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@jsontable
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@jsontable

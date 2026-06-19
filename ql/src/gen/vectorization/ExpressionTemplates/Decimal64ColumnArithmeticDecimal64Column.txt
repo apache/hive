@@ -1,0 +1,185 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
+
+import org.apache.hadoop.hive.ql.exec.vector.Decimal64ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.Decimal64Util;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+
+/**
+ * Generated from template Decimal64ColumnArithmeticDecimal64Column.txt, which covers
+ * decimal64 arithmetic expressions between columns.
+ */
+public class <ClassName> extends VectorExpression {
+
+  private static final long serialVersionUID = 1L;
+
+  public <ClassName>(int colNum1, int colNum2, int outputColumnNum) {
+    super(colNum1, colNum2, outputColumnNum);
+  }
+
+  public <ClassName>() {
+    super();
+  }
+
+  @Override
+  public void evaluate(VectorizedRowBatch batch) throws HiveException {
+
+    // return immediately if batch is empty
+    final int n = batch.size;
+    if (n == 0) {
+      return;
+    }
+
+    if (childExpressions != null) {
+      super.evaluateChildren(batch);
+    }
+
+    Decimal64ColumnVector inputColVector1 = (Decimal64ColumnVector) batch.cols[inputColumnNum[0]];
+    Decimal64ColumnVector inputColVector2 = (Decimal64ColumnVector) batch.cols[inputColumnNum[1]];
+    Decimal64ColumnVector outputColVector = (Decimal64ColumnVector) batch.cols[outputColumnNum];
+    int[] sel = batch.selected;
+
+    long[] vector1 = inputColVector1.vector;
+    long[] vector2 = inputColVector2.vector;
+    long[] outputVector = outputColVector.vector;
+    boolean[] outputIsNull = outputColVector.isNull;
+
+    final long outputDecimal64AbsMax =
+        HiveDecimalWritable.getDecimal64AbsMax(outputColVector.precision);
+
+    /*
+     * Propagate null values for a two-input operator and set isRepeating and noNulls appropriately.
+     */
+    NullUtil.propagateNullsColCol(
+        inputColVector1, inputColVector2, outputColVector, sel, n, batch.selectedInUse);
+
+    /*
+     * Disregard nulls for processing. In other words,
+     * the arithmetic operation is performed even if one or
+     * more inputs are null. This is to improve speed by avoiding
+     * conditional checks in the inner loop.
+     */
+    if (inputColVector1.isRepeating && inputColVector2.isRepeating) {
+      final long result = vector1[0] <OperatorSymbol> vector2[0];
+      outputVector[0] = result;
+      if (Math.abs(result) > outputDecimal64AbsMax) {
+        outputColVector.noNulls = false;
+        outputIsNull[0] = true;
+      }
+    } else if (inputColVector1.isRepeating) {
+      final long repeatedValue1 = vector1[0];
+      if (batch.selectedInUse) {
+        for(int j = 0; j != n; j++) {
+          int i = sel[j];
+          final long result = repeatedValue1 <OperatorSymbol> vector2[i];
+          outputVector[i] = result;
+          if (Math.abs(result) > outputDecimal64AbsMax) {
+            outputColVector.noNulls = false;
+            outputIsNull[i] = true;
+          }
+        }
+      } else {
+        for(int i = 0; i != n; i++) {
+          final long result = repeatedValue1 <OperatorSymbol> vector2[i];
+          outputVector[i] = result;
+          if (Math.abs(result) > outputDecimal64AbsMax) {
+            outputColVector.noNulls = false;
+            outputIsNull[i] = true;
+          }
+        }
+      }
+    } else if (inputColVector2.isRepeating) {
+      final long repeatedValue2 = vector2[0];
+      if (batch.selectedInUse) {
+        for(int j = 0; j != n; j++) {
+          int i = sel[j];
+          final long result = vector1[i] <OperatorSymbol> repeatedValue2;
+          outputVector[i] = result;
+          if (Math.abs(result) > outputDecimal64AbsMax) {
+            outputColVector.noNulls = false;
+            outputIsNull[i] = true;
+          }
+        }
+      } else {
+        for(int i = 0; i != n; i++) {
+          final long result = vector1[i] <OperatorSymbol> repeatedValue2;
+          outputVector[i] = result;
+          if (Math.abs(result) > outputDecimal64AbsMax) {
+            outputColVector.noNulls = false;
+            outputIsNull[i] = true;
+          }
+        }
+      }
+    } else {
+      if (batch.selectedInUse) {
+        for(int j = 0; j != n; j++) {
+          int i = sel[j];
+          final long result = vector1[i] <OperatorSymbol> vector2[i];
+          outputVector[i] = result;
+          if (Math.abs(result) > outputDecimal64AbsMax) {
+            outputColVector.noNulls = false;
+            outputIsNull[i] = true;
+          }
+        }
+      } else {
+        for(int i = 0; i != n; i++) {
+          final long result = vector1[i] <OperatorSymbol> vector2[i];
+          outputVector[i] = result;
+          if (Math.abs(result) > outputDecimal64AbsMax) {
+            outputColVector.noNulls = false;
+            outputIsNull[i] = true;
+          }
+        }
+      }
+    }
+
+    // Currently, we defer division, etc to regular HiveDecimal so we don't do any null
+    // default value setting here.
+  }
+
+  @Override
+  public String vectorExpressionParameters() {
+    return getColumnParamString(0, inputColumnNum[0]) + ", " + getColumnParamString(1, inputColumnNum[1]);
+  }
+
+  @Override
+  public VectorExpressionDescriptor.Descriptor getDescriptor() {
+    return (new VectorExpressionDescriptor.Builder())
+        .setMode(
+            VectorExpressionDescriptor.Mode.PROJECTION)
+        .setNumArguments(2)
+        .setArgumentTypes(
+            VectorExpressionDescriptor.ArgumentType.DECIMAL_64,
+            VectorExpressionDescriptor.ArgumentType.DECIMAL_64)
+        .setInputExpressionTypes(
+            VectorExpressionDescriptor.InputExpressionType.COLUMN,
+            VectorExpressionDescriptor.InputExpressionType.COLUMN).build();
+  }
+
+  @Override
+  public boolean shouldConvertDecimal64ToDecimal() {
+    return false;
+  }
+}

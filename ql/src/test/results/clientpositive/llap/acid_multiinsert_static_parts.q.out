@@ -1,0 +1,126 @@
+PREHOOK: query: drop table if exists multi_test_text
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists multi_test_text
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists multi_test_acid
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists multi_test_acid
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create external table multi_test_text (a int, b int, c int) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multi_test_text
+POSTHOOK: query: create external table multi_test_text (a int, b int, c int) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multi_test_text
+PREHOOK: query: insert into multi_test_text values (1111, 11, 1111), (2222, 22, 1111), (3333, 33, 2222), (4444, 44, NULL), (5555, 55, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@multi_test_text
+POSTHOOK: query: insert into multi_test_text values (1111, 11, 1111), (2222, 22, 1111), (3333, 33, 2222), (4444, 44, NULL), (5555, 55, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@multi_test_text
+POSTHOOK: Lineage: multi_test_text.a SCRIPT []
+POSTHOOK: Lineage: multi_test_text.b SCRIPT []
+POSTHOOK: Lineage: multi_test_text.c SCRIPT []
+PREHOOK: query: create table multi_test_acid (a int, b int) partitioned by (c int) stored as orc tblproperties('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multi_test_acid
+POSTHOOK: query: create table multi_test_acid (a int, b int) partitioned by (c int) stored as orc tblproperties('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multi_test_acid
+PREHOOK: query: from multi_test_text a
+insert overwrite table multi_test_acid partition (c=66)
+select
+ a.a,
+ a.b
+ where a.c is not null
+insert overwrite table multi_test_acid partition (c=77)
+select
+ a.a,
+ a.b
+where a.c=1
+insert overwrite table multi_test_acid partition (c=88)
+select
+ a.a,
+ a.b
+where a.c is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multi_test_text
+PREHOOK: Output: default@multi_test_acid@c=66
+PREHOOK: Output: default@multi_test_acid@c=77
+PREHOOK: Output: default@multi_test_acid@c=88
+POSTHOOK: query: from multi_test_text a
+insert overwrite table multi_test_acid partition (c=66)
+select
+ a.a,
+ a.b
+ where a.c is not null
+insert overwrite table multi_test_acid partition (c=77)
+select
+ a.a,
+ a.b
+where a.c=1
+insert overwrite table multi_test_acid partition (c=88)
+select
+ a.a,
+ a.b
+where a.c is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multi_test_text
+POSTHOOK: Output: default@multi_test_acid@c=66
+POSTHOOK: Output: default@multi_test_acid@c=77
+POSTHOOK: Output: default@multi_test_acid@c=88
+POSTHOOK: Lineage: multi_test_acid PARTITION(c=66).a SIMPLE [(multi_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: multi_test_acid PARTITION(c=66).b SIMPLE [(multi_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: multi_test_acid PARTITION(c=77).a SIMPLE [(multi_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: multi_test_acid PARTITION(c=77).b SIMPLE [(multi_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
+POSTHOOK: Lineage: multi_test_acid PARTITION(c=88).a SIMPLE [(multi_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: multi_test_acid PARTITION(c=88).b SIMPLE [(multi_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
+PREHOOK: query: select * from multi_test_acid order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multi_test_acid
+PREHOOK: Input: default@multi_test_acid@c=66
+PREHOOK: Input: default@multi_test_acid@c=77
+PREHOOK: Input: default@multi_test_acid@c=88
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from multi_test_acid order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multi_test_acid
+POSTHOOK: Input: default@multi_test_acid@c=66
+POSTHOOK: Input: default@multi_test_acid@c=77
+POSTHOOK: Input: default@multi_test_acid@c=88
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1111	11	66
+2222	22	66
+3333	33	66
+4444	44	88
+5555	55	88
+PREHOOK: query: drop table if exists multi_test_text
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@multi_test_text
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multi_test_text
+POSTHOOK: query: drop table if exists multi_test_text
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@multi_test_text
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multi_test_text
+PREHOOK: query: drop table if exists multi_test_acid
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@multi_test_acid
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multi_test_acid
+POSTHOOK: query: drop table if exists multi_test_acid
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@multi_test_acid
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multi_test_acid

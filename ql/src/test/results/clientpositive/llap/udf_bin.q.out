@@ -1,0 +1,42 @@
+PREHOOK: query: DESCRIBE FUNCTION bin
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION bin
+POSTHOOK: type: DESCFUNCTION
+bin(n) - returns n in binary
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED bin
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED bin
+POSTHOOK: type: DESCFUNCTION
+bin(n) - returns n in binary
+n is a BIGINT. Returns NULL if n is NULL.
+Example:
+  > SELECT bin(13) FROM src LIMIT 1
+  '1101'
+Function class:org.apache.hadoop.hive.ql.udf.UDFBin
+Function type:BUILTIN
+PREHOOK: query: SELECT
+  bin(1),
+  bin(0),
+  bin(99992421)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  bin(1),
+  bin(0),
+  bin(99992421)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1	0	101111101011100001101100101
+PREHOOK: query: SELECT bin(-5) FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT bin(-5) FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1111111111111111111111111111111111111111111111111111111111111011

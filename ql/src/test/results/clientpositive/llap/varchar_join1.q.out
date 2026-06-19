@@ -1,0 +1,151 @@
+PREHOOK: query: drop table varchar_join1_vc1_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table varchar_join1_vc1_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table varchar_join1_vc2_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table varchar_join1_vc2_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table varchar_join1_str_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table varchar_join1_str_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table  varchar_join1_vc1_n0 (
+  c1 int,
+  c2 varchar(10)
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_join1_vc1_n0
+POSTHOOK: query: create table  varchar_join1_vc1_n0 (
+  c1 int,
+  c2 varchar(10)
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@varchar_join1_vc1_n0
+PREHOOK: query: create table  varchar_join1_vc2_n0 (
+  c1 int,
+  c2 varchar(20)
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_join1_vc2_n0
+POSTHOOK: query: create table  varchar_join1_vc2_n0 (
+  c1 int,
+  c2 varchar(20)
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@varchar_join1_vc2_n0
+PREHOOK: query: create table  varchar_join1_str_n0 (
+  c1 int,
+  c2 string
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_join1_str_n0
+POSTHOOK: query: create table  varchar_join1_str_n0 (
+  c1 int,
+  c2 string
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@varchar_join1_str_n0
+PREHOOK: query: load data local inpath '../../data/files/vc1.txt' into table varchar_join1_vc1_n0
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@varchar_join1_vc1_n0
+POSTHOOK: query: load data local inpath '../../data/files/vc1.txt' into table varchar_join1_vc1_n0
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@varchar_join1_vc1_n0
+PREHOOK: query: load data local inpath '../../data/files/vc1.txt' into table varchar_join1_vc2_n0
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@varchar_join1_vc2_n0
+POSTHOOK: query: load data local inpath '../../data/files/vc1.txt' into table varchar_join1_vc2_n0
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@varchar_join1_vc2_n0
+PREHOOK: query: load data local inpath '../../data/files/vc1.txt' into table varchar_join1_str_n0
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@varchar_join1_str_n0
+POSTHOOK: query: load data local inpath '../../data/files/vc1.txt' into table varchar_join1_str_n0
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@varchar_join1_str_n0
+PREHOOK: query: select * from varchar_join1_vc1_n0 a join varchar_join1_vc1_n0 b on (a.c2 = b.c2) order by a.c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@varchar_join1_vc1_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select * from varchar_join1_vc1_n0 a join varchar_join1_vc1_n0 b on (a.c2 = b.c2) order by a.c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchar_join1_vc1_n0
+#### A masked pattern was here ####
+1	abc	1	abc
+2	abc 	2	abc 
+3	 abc	3	 abc
+PREHOOK: query: select * from varchar_join1_vc1_n0 a join varchar_join1_vc2_n0 b on (a.c2 = b.c2) order by a.c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@varchar_join1_vc1_n0
+PREHOOK: Input: default@varchar_join1_vc2_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select * from varchar_join1_vc1_n0 a join varchar_join1_vc2_n0 b on (a.c2 = b.c2) order by a.c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchar_join1_vc1_n0
+POSTHOOK: Input: default@varchar_join1_vc2_n0
+#### A masked pattern was here ####
+1	abc	1	abc
+2	abc 	2	abc 
+3	 abc	3	 abc
+PREHOOK: query: select * from varchar_join1_vc1_n0 a join varchar_join1_str_n0 b on (a.c2 = b.c2) order by a.c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@varchar_join1_str_n0
+PREHOOK: Input: default@varchar_join1_vc1_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select * from varchar_join1_vc1_n0 a join varchar_join1_str_n0 b on (a.c2 = b.c2) order by a.c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchar_join1_str_n0
+POSTHOOK: Input: default@varchar_join1_vc1_n0
+#### A masked pattern was here ####
+1	abc	1	abc
+2	abc 	2	abc 
+3	 abc	3	 abc
+PREHOOK: query: drop table varchar_join1_vc1_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@varchar_join1_vc1_n0
+PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_join1_vc1_n0
+POSTHOOK: query: drop table varchar_join1_vc1_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@varchar_join1_vc1_n0
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@varchar_join1_vc1_n0
+PREHOOK: query: drop table varchar_join1_vc2_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@varchar_join1_vc2_n0
+PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_join1_vc2_n0
+POSTHOOK: query: drop table varchar_join1_vc2_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@varchar_join1_vc2_n0
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@varchar_join1_vc2_n0
+PREHOOK: query: drop table varchar_join1_str_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@varchar_join1_str_n0
+PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_join1_str_n0
+POSTHOOK: query: drop table varchar_join1_str_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@varchar_join1_str_n0
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@varchar_join1_str_n0

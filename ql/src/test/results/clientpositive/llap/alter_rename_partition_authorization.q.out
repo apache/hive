@@ -1,0 +1,109 @@
+PREHOOK: query: create table src_auth_tmp_n1 as select * from src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_auth_tmp_n1
+POSTHOOK: query: create table src_auth_tmp_n1 as select * from src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_auth_tmp_n1
+POSTHOOK: Lineage: src_auth_tmp_n1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_auth_tmp_n1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table authorization_part_n1 (key int, value string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@authorization_part_n1
+POSTHOOK: query: create table authorization_part_n1 (key int, value string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@authorization_part_n1
+PREHOOK: query: ALTER TABLE authorization_part_n1 SET TBLPROPERTIES ("PARTITION_LEVEL_PRIVILEGE"="TRUE")
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@authorization_part_n1
+PREHOOK: Output: default@authorization_part_n1
+POSTHOOK: query: ALTER TABLE authorization_part_n1 SET TBLPROPERTIES ("PARTITION_LEVEL_PRIVILEGE"="TRUE")
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@authorization_part_n1
+POSTHOOK: Output: default@authorization_part_n1
+PREHOOK: query: grant select on table src_auth_tmp_n1 to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@src_auth_tmp_n1
+POSTHOOK: query: grant select on table src_auth_tmp_n1 to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@src_auth_tmp_n1
+PREHOOK: query: grant Create on table authorization_part_n1 to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@authorization_part_n1
+POSTHOOK: query: grant Create on table authorization_part_n1 to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@authorization_part_n1
+PREHOOK: query: grant Update on table authorization_part_n1 to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@authorization_part_n1
+POSTHOOK: query: grant Update on table authorization_part_n1 to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@authorization_part_n1
+PREHOOK: query: grant Drop on table authorization_part_n1 to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@authorization_part_n1
+POSTHOOK: query: grant Drop on table authorization_part_n1 to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@authorization_part_n1
+PREHOOK: query: GRANT drop ON DATABASE default TO USER hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: query: GRANT drop ON DATABASE default TO USER hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+PREHOOK: query: show grant user hive_test_user on table authorization_part_n1
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on table authorization_part_n1
+POSTHOOK: type: SHOW_GRANT
+default	authorization_part_n1			hive_test_user	USER	CREATE	false	-1	hive_test_user
+default	authorization_part_n1			hive_test_user	USER	DROP	false	-1	hive_test_user
+default	authorization_part_n1			hive_test_user	USER	UPDATE	false	-1	hive_test_user
+PREHOOK: query: grant select(key) on table authorization_part_n1 to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@authorization_part_n1
+POSTHOOK: query: grant select(key) on table authorization_part_n1 to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@authorization_part_n1
+PREHOOK: query: insert overwrite table authorization_part_n1 partition (ds='2010') select key, value from src_auth_tmp_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_auth_tmp_n1
+PREHOOK: Output: default@authorization_part_n1@ds=2010
+POSTHOOK: query: insert overwrite table authorization_part_n1 partition (ds='2010') select key, value from src_auth_tmp_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_auth_tmp_n1
+POSTHOOK: Output: default@authorization_part_n1@ds=2010
+POSTHOOK: Lineage: authorization_part_n1 PARTITION(ds=2010).key EXPRESSION [(src_auth_tmp_n1)src_auth_tmp_n1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: authorization_part_n1 PARTITION(ds=2010).value SIMPLE [(src_auth_tmp_n1)src_auth_tmp_n1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: show grant user hive_test_user on table authorization_part_n1(key) partition (ds='2010')
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on table authorization_part_n1(key) partition (ds='2010')
+POSTHOOK: type: SHOW_GRANT
+default	authorization_part_n1	[2010]	[key]	hive_test_user	USER	SELECT	false	-1	hive_test_user
+PREHOOK: query: alter table authorization_part_n1 partition (ds='2010') rename to partition (ds='2010_tmp')
+PREHOOK: type: ALTERTABLE_RENAMEPART
+PREHOOK: Input: default@authorization_part_n1
+PREHOOK: Output: default@authorization_part_n1@ds=2010
+POSTHOOK: query: alter table authorization_part_n1 partition (ds='2010') rename to partition (ds='2010_tmp')
+POSTHOOK: type: ALTERTABLE_RENAMEPART
+POSTHOOK: Input: default@authorization_part_n1
+POSTHOOK: Input: default@authorization_part_n1@ds=2010
+POSTHOOK: Output: default@authorization_part_n1@ds=2010
+POSTHOOK: Output: default@authorization_part_n1@ds=2010_tmp
+PREHOOK: query: show grant user hive_test_user on table authorization_part_n1(key) partition (ds='2010_tmp')
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on table authorization_part_n1(key) partition (ds='2010_tmp')
+POSTHOOK: type: SHOW_GRANT
+default	authorization_part_n1	[2010_tmp]	[key]	hive_test_user	USER	SELECT	false	-1	hive_test_user
+PREHOOK: query: drop table authorization_part_n1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@authorization_part_n1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@authorization_part_n1
+POSTHOOK: query: drop table authorization_part_n1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@authorization_part_n1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@authorization_part_n1

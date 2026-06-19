@@ -1,0 +1,29 @@
+PREHOOK: query: DESCRIBE FUNCTION regexp
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION regexp
+POSTHOOK: type: DESCFUNCTION
+str regexp regexp - Returns true if str matches regexp and false otherwise
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED regexp
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED regexp
+POSTHOOK: type: DESCFUNCTION
+str regexp regexp - Returns true if str matches regexp and false otherwise
+Synonyms: rlike
+Example:
+  > SELECT 'fb' regexp '.*' FROM src LIMIT 1;
+  true
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFRegExp
+Function type:BUILTIN
+PREHOOK: query: SELECT 'fofo' REGEXP '^fo', 'fo\no' REGEXP '^fo\no$', 'Bn' REGEXP '^Ba*n', 'afofo' REGEXP 'fo',
+'afofo' REGEXP '^fo', 'Baan' REGEXP '^Ba?n', 'axe' REGEXP 'pi|apa', 'pip' REGEXP '^(pi)*$'
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT 'fofo' REGEXP '^fo', 'fo\no' REGEXP '^fo\no$', 'Bn' REGEXP '^Ba*n', 'afofo' REGEXP 'fo',
+'afofo' REGEXP '^fo', 'Baan' REGEXP '^Ba?n', 'axe' REGEXP 'pi|apa', 'pip' REGEXP '^(pi)*$'
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+true	true	true	true	false	false	false	false

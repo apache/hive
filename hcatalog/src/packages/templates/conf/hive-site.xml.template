@@ -1,0 +1,100 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+<configuration>
+
+<property>
+  <name>hive.metastore.local</name>
+  <value>false</value>
+  <description>controls whether to connect to remove metastore server or open a new metastore server in Hive Client JVM</description>
+</property>
+
+<property>
+  <name>javax.jdo.option.ConnectionURL</name>
+  <value>jdbc:${DBPROTO}://${DBHOST}/${DBNAME}?createDatabaseIfNotExist=true</value>
+  <description>JDBC connect string for a JDBC metastore</description>
+</property>
+
+<property>
+  <name>javax.jdo.option.ConnectionDriverName</name>
+  <value>${DBDRIVER}</value>
+  <description>Driver class name for a JDBC metastore</description>
+</property>
+
+<property>
+  <name>javax.jdo.option.ConnectionUserName</name>
+  <value>${DBUSER}</value>
+  <description>username to use against metastore database</description>
+</property>
+
+<property>
+  <name>javax.jdo.option.ConnectionPassword</name>
+  <value>${DBPASSWD}</value>
+  <description>password to use against metastore database</description>
+</property>
+
+<property>
+  <name>hive.metastore.warehouse.dir</name>
+  <value>${WHDIR}</value>
+  <description>location of default database for the warehouse</description>
+</property>
+
+<property>
+  <name>hive.metastore.sasl.enabled</name>
+    <value>${SASL_ENABLED}</value>
+    <description>If true, the metastore thrift interface will be secured with SASL. Clients must authenticate with Kerberos.</description>
+</property>
+
+<property>
+  <name>hive.metastore.kerberos.keytab.file</name>
+  <value>${KEYTAB_PATH}</value>
+  <description>The path to the Kerberos Keytab file containing the metastore thrift server's service principal.</description>
+</property>
+
+<property>
+  <name>hive.metastore.kerberos.principal</name>
+  <value>${KERBEROS_PRINCIPAL}</value>
+  <description>The service principal for the metastore thrift server. The special string _HOST will be replaced automatically with the correct host name.</description>
+</property>
+
+<property>
+  <name>hive.metastore.cache.pinobjtypes</name>
+  <value>Table,Database,Type,FieldSchema,Order</value>
+  <description>List of comma separated metastore object types that should be pinned in the cache</description>
+</property>
+
+<property>
+  <name>hive.metastore.uris</name>
+  <value>thrift://${METASTORE_SERVER}:${METASTORE_PORT}</value>
+  <description>URI for client to contact metastore server</description>
+</property>
+
+<property>
+  <name>hive.semantic.analyzer.factory.impl</name>
+  <value>org.apache.hive.hcatalog.cli.HCatSemanticAnalyzerFactory</value>
+  <description>controls which SemanticAnalyzerFactory implementation class is used by CLI</description>
+</property>
+
+<property>
+  <name>hive.metastore.client.socket.timeout</name>
+  <value>60</value>
+  <description>MetaStore Client socket timeout in seconds</description>
+</property>
+
+</configuration>

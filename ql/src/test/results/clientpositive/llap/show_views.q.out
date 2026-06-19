@@ -1,0 +1,433 @@
+PREHOOK: query: CREATE DATABASE test1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test1
+POSTHOOK: query: CREATE DATABASE test1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test1
+PREHOOK: query: CREATE DATABASE test2
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test2
+POSTHOOK: query: CREATE DATABASE test2
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test2
+PREHOOK: query: USE test1
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:test1
+POSTHOOK: query: USE test1
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:test1
+PREHOOK: query: CREATE TABLE shtb_test1_n1(KEY INT, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test1
+PREHOOK: Output: test1@shtb_test1_n1
+POSTHOOK: query: CREATE TABLE shtb_test1_n1(KEY INT, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test1
+POSTHOOK: Output: test1@shtb_test1_n1
+PREHOOK: query: CREATE VIEW shtb_test1_view1_n0 AS SELECT * FROM shtb_test1_n1 where KEY > 1000 and KEY < 2000
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: test1@shtb_test1_n1
+PREHOOK: Output: database:test1
+PREHOOK: Output: test1@shtb_test1_view1_n0
+POSTHOOK: query: CREATE VIEW shtb_test1_view1_n0 AS SELECT * FROM shtb_test1_n1 where KEY > 1000 and KEY < 2000
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: test1@shtb_test1_n1
+POSTHOOK: Output: database:test1
+POSTHOOK: Output: test1@shtb_test1_view1_n0
+POSTHOOK: Lineage: shtb_test1_view1_n0.ds SIMPLE [(shtb_test1_n1)shtb_test1_n1.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: shtb_test1_view1_n0.key SIMPLE [(shtb_test1_n1)shtb_test1_n1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: shtb_test1_view1_n0.value SIMPLE [(shtb_test1_n1)shtb_test1_n1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE VIEW shtb_test1_view2_n0 AS SELECT * FROM shtb_test1_n1 where KEY > 100 and KEY < 200
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: test1@shtb_test1_n1
+PREHOOK: Output: database:test1
+PREHOOK: Output: test1@shtb_test1_view2_n0
+POSTHOOK: query: CREATE VIEW shtb_test1_view2_n0 AS SELECT * FROM shtb_test1_n1 where KEY > 100 and KEY < 200
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: test1@shtb_test1_n1
+POSTHOOK: Output: database:test1
+POSTHOOK: Output: test1@shtb_test1_view2_n0
+POSTHOOK: Lineage: shtb_test1_view2_n0.ds SIMPLE [(shtb_test1_n1)shtb_test1_n1.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: shtb_test1_view2_n0.key SIMPLE [(shtb_test1_n1)shtb_test1_n1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: shtb_test1_view2_n0.value SIMPLE [(shtb_test1_n1)shtb_test1_n1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE VIEW shtb_full_view2_n0 AS SELECT * FROM shtb_test1_n1
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: test1@shtb_test1_n1
+PREHOOK: Output: database:test1
+PREHOOK: Output: test1@shtb_full_view2_n0
+POSTHOOK: query: CREATE VIEW shtb_full_view2_n0 AS SELECT * FROM shtb_test1_n1
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: test1@shtb_test1_n1
+POSTHOOK: Output: database:test1
+POSTHOOK: Output: test1@shtb_full_view2_n0
+POSTHOOK: Lineage: shtb_full_view2_n0.ds SIMPLE [(shtb_test1_n1)shtb_test1_n1.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: shtb_full_view2_n0.key SIMPLE [(shtb_test1_n1)shtb_test1_n1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: shtb_full_view2_n0.value SIMPLE [(shtb_test1_n1)shtb_test1_n1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: USE test2
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:test2
+POSTHOOK: query: USE test2
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:test2
+PREHOOK: query: CREATE TABLE shtb_test1_n1(KEY INT, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test2
+PREHOOK: Output: test2@shtb_test1_n1
+POSTHOOK: query: CREATE TABLE shtb_test1_n1(KEY INT, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test2
+POSTHOOK: Output: test2@shtb_test1_n1
+PREHOOK: query: CREATE TABLE shtb_test2_n1(KEY INT, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test2
+PREHOOK: Output: test2@shtb_test2_n1
+POSTHOOK: query: CREATE TABLE shtb_test2_n1(KEY INT, VALUE STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test2
+POSTHOOK: Output: test2@shtb_test2_n1
+PREHOOK: query: CREATE VIEW shtb_test1_view1_n0 AS SELECT * FROM shtb_test1_n1 where KEY > 1000 and KEY < 2000
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: test2@shtb_test1_n1
+PREHOOK: Output: database:test2
+PREHOOK: Output: test2@shtb_test1_view1_n0
+POSTHOOK: query: CREATE VIEW shtb_test1_view1_n0 AS SELECT * FROM shtb_test1_n1 where KEY > 1000 and KEY < 2000
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: test2@shtb_test1_n1
+POSTHOOK: Output: database:test2
+POSTHOOK: Output: test2@shtb_test1_view1_n0
+POSTHOOK: Lineage: shtb_test1_view1_n0.ds SIMPLE [(shtb_test1_n1)shtb_test1_n1.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: shtb_test1_view1_n0.key SIMPLE [(shtb_test1_n1)shtb_test1_n1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: shtb_test1_view1_n0.value SIMPLE [(shtb_test1_n1)shtb_test1_n1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE VIEW shtb_test2_view2_n0 AS SELECT * FROM shtb_test2_n1 where KEY > 100 and KEY < 200
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: test2@shtb_test2_n1
+PREHOOK: Output: database:test2
+PREHOOK: Output: test2@shtb_test2_view2_n0
+POSTHOOK: query: CREATE VIEW shtb_test2_view2_n0 AS SELECT * FROM shtb_test2_n1 where KEY > 100 and KEY < 200
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: test2@shtb_test2_n1
+POSTHOOK: Output: database:test2
+POSTHOOK: Output: test2@shtb_test2_view2_n0
+POSTHOOK: Lineage: shtb_test2_view2_n0.ds SIMPLE [(shtb_test2_n1)shtb_test2_n1.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: shtb_test2_view2_n0.key SIMPLE [(shtb_test2_n1)shtb_test2_n1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: shtb_test2_view2_n0.value SIMPLE [(shtb_test2_n1)shtb_test2_n1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: USE test1
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:test1
+POSTHOOK: query: USE test1
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:test1
+PREHOOK: query: EXPLAIN SHOW VIEWS
+PREHOOK: type: SHOWVIEWS
+POSTHOOK: query: EXPLAIN SHOW VIEWS
+POSTHOOK: type: SHOWVIEWS
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Views
+      database name: test1
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SHOW VIEWS
+PREHOOK: type: SHOWVIEWS
+POSTHOOK: query: SHOW VIEWS
+POSTHOOK: type: SHOWVIEWS
+shtb_full_view2_n0
+shtb_test1_view1_n0
+shtb_test1_view2_n0
+PREHOOK: query: EXPLAIN SHOW VIEWS 'test_%'
+PREHOOK: type: SHOWVIEWS
+POSTHOOK: query: EXPLAIN SHOW VIEWS 'test_%'
+POSTHOOK: type: SHOWVIEWS
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Views
+      database name: test1
+      pattern: test_%
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SHOW VIEWS 'test_%'
+PREHOOK: type: SHOWVIEWS
+POSTHOOK: query: SHOW VIEWS 'test_%'
+POSTHOOK: type: SHOWVIEWS
+PREHOOK: query: SHOW VIEWS '%view2'
+PREHOOK: type: SHOWVIEWS
+POSTHOOK: query: SHOW VIEWS '%view2'
+POSTHOOK: type: SHOWVIEWS
+PREHOOK: query: USE test2
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:test2
+POSTHOOK: query: USE test2
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:test2
+PREHOOK: query: SHOW VIEWS 'shtb_%'
+PREHOOK: type: SHOWVIEWS
+POSTHOOK: query: SHOW VIEWS 'shtb_%'
+POSTHOOK: type: SHOWVIEWS
+shtb_test1_view1_n0
+shtb_test2_view2_n0
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: EXPLAIN SHOW VIEWS FROM test1
+PREHOOK: type: SHOWVIEWS
+POSTHOOK: query: EXPLAIN SHOW VIEWS FROM test1
+POSTHOOK: type: SHOWVIEWS
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Views
+      database name: test1
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SHOW VIEWS FROM test1
+PREHOOK: type: SHOWVIEWS
+POSTHOOK: query: SHOW VIEWS FROM test1
+POSTHOOK: type: SHOWVIEWS
+shtb_full_view2_n0
+shtb_test1_view1_n0
+shtb_test1_view2_n0
+PREHOOK: query: SHOW VIEWS FROM test2
+PREHOOK: type: SHOWVIEWS
+POSTHOOK: query: SHOW VIEWS FROM test2
+POSTHOOK: type: SHOWVIEWS
+shtb_test1_view1_n0
+shtb_test2_view2_n0
+PREHOOK: query: EXPLAIN SHOW VIEWS IN test1
+PREHOOK: type: SHOWVIEWS
+POSTHOOK: query: EXPLAIN SHOW VIEWS IN test1
+POSTHOOK: type: SHOWVIEWS
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Views
+      database name: test1
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SHOW VIEWS IN test1
+PREHOOK: type: SHOWVIEWS
+POSTHOOK: query: SHOW VIEWS IN test1
+POSTHOOK: type: SHOWVIEWS
+shtb_full_view2_n0
+shtb_test1_view1_n0
+shtb_test1_view2_n0
+PREHOOK: query: SHOW VIEWS IN default
+PREHOOK: type: SHOWVIEWS
+POSTHOOK: query: SHOW VIEWS IN default
+POSTHOOK: type: SHOWVIEWS
+PREHOOK: query: EXPLAIN SHOW VIEWS IN test1 "shtb_test_%"
+PREHOOK: type: SHOWVIEWS
+POSTHOOK: query: EXPLAIN SHOW VIEWS IN test1 "shtb_test_%"
+POSTHOOK: type: SHOWVIEWS
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Views
+      database name: test1
+      pattern: shtb_test_%
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SHOW VIEWS IN test1 "shtb_test_%"
+PREHOOK: type: SHOWVIEWS
+POSTHOOK: query: SHOW VIEWS IN test1 "shtb_test_%"
+POSTHOOK: type: SHOWVIEWS
+shtb_test1_view1_n0
+shtb_test1_view2_n0
+PREHOOK: query: SHOW VIEWS IN test2 LIKE "nomatch"
+PREHOOK: type: SHOWVIEWS
+POSTHOOK: query: SHOW VIEWS IN test2 LIKE "nomatch"
+POSTHOOK: type: SHOWVIEWS
+PREHOOK: query: CREATE DATABASE `database`
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:database
+POSTHOOK: query: CREATE DATABASE `database`
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:database
+PREHOOK: query: USE `database`
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:database
+POSTHOOK: query: USE `database`
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:database
+PREHOOK: query: CREATE TABLE foo_n8(a INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:database
+PREHOOK: Output: database@foo_n8
+POSTHOOK: query: CREATE TABLE foo_n8(a INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:database
+POSTHOOK: Output: database@foo_n8
+PREHOOK: query: CREATE VIEW fooview_n0 AS SELECT * FROM foo_n8
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: database@foo_n8
+PREHOOK: Output: database:database
+PREHOOK: Output: database@fooview_n0
+POSTHOOK: query: CREATE VIEW fooview_n0 AS SELECT * FROM foo_n8
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: database@foo_n8
+POSTHOOK: Output: database:database
+POSTHOOK: Output: database@fooview_n0
+POSTHOOK: Lineage: fooview_n0.a SIMPLE [(foo_n8)foo_n8.FieldSchema(name:a, type:int, comment:null), ]
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: SHOW VIEWS FROM `database` LIKE "fooview_n0"
+PREHOOK: type: SHOWVIEWS
+POSTHOOK: query: SHOW VIEWS FROM `database` LIKE "fooview_n0"
+POSTHOOK: type: SHOWVIEWS
+fooview_n0
+PREHOOK: query: DROP VIEW fooview_n0
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW fooview_n0
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: DROP TABLE foo_n8
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE foo_n8
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: USE test1
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:test1
+POSTHOOK: query: USE test1
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:test1
+PREHOOK: query: DROP VIEW shtb_test1_view1_n0
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: test1@shtb_test1_view1_n0
+PREHOOK: Output: test1@shtb_test1_view1_n0
+POSTHOOK: query: DROP VIEW shtb_test1_view1_n0
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: test1@shtb_test1_view1_n0
+POSTHOOK: Output: test1@shtb_test1_view1_n0
+PREHOOK: query: DROP VIEW shtb_test1_view2_n0
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: test1@shtb_test1_view2_n0
+PREHOOK: Output: test1@shtb_test1_view2_n0
+POSTHOOK: query: DROP VIEW shtb_test1_view2_n0
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: test1@shtb_test1_view2_n0
+POSTHOOK: Output: test1@shtb_test1_view2_n0
+PREHOOK: query: DROP VIEW shtb_full_view2_n0
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: test1@shtb_full_view2_n0
+PREHOOK: Output: test1@shtb_full_view2_n0
+POSTHOOK: query: DROP VIEW shtb_full_view2_n0
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: test1@shtb_full_view2_n0
+POSTHOOK: Output: test1@shtb_full_view2_n0
+PREHOOK: query: DROP TABLE shtb_test1_n1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: test1@shtb_test1_n1
+PREHOOK: Output: database:test1
+PREHOOK: Output: test1@shtb_test1_n1
+POSTHOOK: query: DROP TABLE shtb_test1_n1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: test1@shtb_test1_n1
+POSTHOOK: Output: database:test1
+POSTHOOK: Output: test1@shtb_test1_n1
+PREHOOK: query: DROP DATABASE test1
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:test1
+PREHOOK: Output: database:test1
+POSTHOOK: query: DROP DATABASE test1
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:test1
+POSTHOOK: Output: database:test1
+PREHOOK: query: USE test2
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:test2
+POSTHOOK: query: USE test2
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:test2
+PREHOOK: query: DROP VIEW shtb_test1_view1_n0
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: test2@shtb_test1_view1_n0
+PREHOOK: Output: test2@shtb_test1_view1_n0
+POSTHOOK: query: DROP VIEW shtb_test1_view1_n0
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: test2@shtb_test1_view1_n0
+POSTHOOK: Output: test2@shtb_test1_view1_n0
+PREHOOK: query: DROP VIEW shtb_test2_view2_n0
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: test2@shtb_test2_view2_n0
+PREHOOK: Output: test2@shtb_test2_view2_n0
+POSTHOOK: query: DROP VIEW shtb_test2_view2_n0
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: test2@shtb_test2_view2_n0
+POSTHOOK: Output: test2@shtb_test2_view2_n0
+PREHOOK: query: DROP TABLE shtb_test1_n1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: test2@shtb_test1_n1
+PREHOOK: Output: database:test2
+PREHOOK: Output: test2@shtb_test1_n1
+POSTHOOK: query: DROP TABLE shtb_test1_n1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: test2@shtb_test1_n1
+POSTHOOK: Output: database:test2
+POSTHOOK: Output: test2@shtb_test1_n1
+PREHOOK: query: DROP TABLE shtb_test2_n1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: test2@shtb_test2_n1
+PREHOOK: Output: database:test2
+PREHOOK: Output: test2@shtb_test2_n1
+POSTHOOK: query: DROP TABLE shtb_test2_n1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: test2@shtb_test2_n1
+POSTHOOK: Output: database:test2
+POSTHOOK: Output: test2@shtb_test2_n1
+PREHOOK: query: DROP DATABASE test2
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:test2
+PREHOOK: Output: database:test2
+POSTHOOK: query: DROP DATABASE test2
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:test2
+POSTHOOK: Output: database:test2

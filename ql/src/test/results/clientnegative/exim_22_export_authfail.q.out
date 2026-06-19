@@ -1,0 +1,10 @@
+PREHOOK: query: create table exim_department ( dep_id int) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@exim_department
+POSTHOOK: query: create table exim_department ( dep_id int) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@exim_department
+#### A masked pattern was here ####
+Authorization failed:No privilege 'Select' found for inputs { database:default, table:exim_department}. Use SHOW GRANT to get more details.

@@ -1,0 +1,3 @@
+PREHOOK: query: set role nosuchroleexists
+PREHOOK: type: SHOW_ROLES
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. hive_test_user doesn't belong to role nosuchroleexists

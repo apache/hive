@@ -1,0 +1,157 @@
+PREHOOK: query: create table t_n3(a int, b int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_n3
+POSTHOOK: query: create table t_n3(a int, b int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_n3
+PREHOOK: query: insert into t_n3 values (1,2),(1,2),(1,3),(2,4),(20,-100),(-1000,100),(4,5),(3,7),(8,9)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t_n3
+POSTHOOK: query: insert into t_n3 values (1,2),(1,2),(1,3),(2,4),(20,-100),(-1000,100),(4,5),(3,7),(8,9)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t_n3
+POSTHOOK: Lineage: t_n3.a SCRIPT []
+POSTHOOK: Lineage: t_n3.b SCRIPT []
+PREHOOK: query: select * from t_n3 order by 2, 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n3
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t_n3 order by 2, 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n3
+#### A masked pattern was here ####
+20	-100
+1	2
+1	2
+1	3
+2	4
+4	5
+3	7
+8	9
+-1000	100
+PREHOOK: query: select * from t_n3 order by 1, 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n3
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t_n3 order by 1, 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n3
+#### A masked pattern was here ####
+-1000	100
+1	2
+1	2
+1	3
+2	4
+3	7
+4	5
+8	9
+20	-100
+PREHOOK: query: select * from t_n3 union select * from t_n3 order by 1, 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n3
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t_n3 union select * from t_n3 order by 1, 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n3
+#### A masked pattern was here ####
+-1000	100
+1	2
+1	3
+2	4
+3	7
+4	5
+8	9
+20	-100
+PREHOOK: query: select * from t_n3 union select * from t_n3 order by 2, 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n3
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t_n3 union select * from t_n3 order by 2, 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n3
+#### A masked pattern was here ####
+20	-100
+1	2
+1	3
+2	4
+4	5
+3	7
+8	9
+-1000	100
+PREHOOK: query: select * from t_n3 union select * from t_n3 order by 1, 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n3
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t_n3 union select * from t_n3 order by 1, 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n3
+#### A masked pattern was here ####
+-1000	100
+1	2
+1	3
+2	4
+3	7
+4	5
+8	9
+20	-100
+PREHOOK: query: select * from (select a, count(a) from t_n3 group by a)subq order by 2, 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n3
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select a, count(a) from t_n3 group by a)subq order by 2, 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n3
+#### A masked pattern was here ####
+-1000	1
+2	1
+3	1
+4	1
+8	1
+20	1
+1	3
+PREHOOK: query: select * from (select a,b, count(*) from t_n3 group by a, b)subq order by 3, 2 desc, 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n3
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select a,b, count(*) from t_n3 group by a, b)subq order by 3, 2 desc, 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n3
+#### A masked pattern was here ####
+-1000	100	1
+8	9	1
+3	7	1
+4	5	1
+2	4	1
+1	3	1
+20	-100	1
+1	2	2
+PREHOOK: query: values(1+1, 2, 5.0, 'a'), (-12, 2, 5.0, 'a'), (100, 2, 5.0, 'a') order by 1 limit 2
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: values(1+1, 2, 5.0, 'a'), (-12, 2, 5.0, 'a'), (100, 2, 5.0, 'a') order by 1 limit 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+-12	2	5	a
+2	2	5	a
+PREHOOK: query: select distinct a, b from t_n3 order by 2, 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_n3
+#### A masked pattern was here ####
+POSTHOOK: query: select distinct a, b from t_n3 order by 2, 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_n3
+#### A masked pattern was here ####
+20	-100
+1	2
+1	3
+2	4
+4	5
+3	7
+8	9
+-1000	100

@@ -1,0 +1,5 @@
+IDENTITY userId TYPE INT
+SCHEMA TYPE STRING
+FOR SCHEMA 'a'
+    ERASE   xs[country='DE']:y
+    REPLACE xs[country='DE']:y = 'x'

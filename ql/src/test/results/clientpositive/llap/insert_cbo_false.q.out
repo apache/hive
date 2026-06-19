@@ -1,0 +1,133 @@
+PREHOOK: query: CREATE TABLE students (name VARCHAR(64), age INT, gpa DECIMAL(3,2))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@students
+POSTHOOK: query: CREATE TABLE students (name VARCHAR(64), age INT, gpa DECIMAL(3,2))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@students
+PREHOOK: query: INSERT INTO TABLE students VALUES ('s1', 1, 1.23)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@students
+POSTHOOK: query: INSERT INTO TABLE students VALUES ('s1', 1, 1.23)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@students
+POSTHOOK: Lineage: students.age SCRIPT []
+POSTHOOK: Lineage: students.gpa SCRIPT []
+POSTHOOK: Lineage: students.name SCRIPT []
+PREHOOK: query: INSERT INTO TABLE students(name, age, gpa) VALUES('s2', 2, 2.34)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@students
+POSTHOOK: query: INSERT INTO TABLE students(name, age, gpa) VALUES('s2', 2, 2.34)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@students
+POSTHOOK: Lineage: students.name EXPRESSION []
+PREHOOK: query: SELECT * FROM students
+PREHOOK: type: QUERY
+PREHOOK: Input: default@students
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM students
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@students
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+s1	1	1.23
+s2	2	2.34
+PREHOOK: query: CREATE TABLE people (id int, name string, age int) PARTITIONED BY (country string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@people
+POSTHOOK: query: CREATE TABLE people (id int, name string, age int) PARTITIONED BY (country string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@people
+PREHOOK: query: INSERT INTO people PARTITION (country="Cuba") VALUES (1, "abc", 23)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@people@country=Cuba
+POSTHOOK: query: INSERT INTO people PARTITION (country="Cuba") VALUES (1, "abc", 23)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@people@country=Cuba
+POSTHOOK: Lineage: people PARTITION(country=Cuba).age SCRIPT []
+POSTHOOK: Lineage: people PARTITION(country=Cuba).id SCRIPT []
+POSTHOOK: Lineage: people PARTITION(country=Cuba).name SCRIPT []
+PREHOOK: query: INSERT INTO people PARTITION (country="Denmark") (id, name, age)  VALUES (2, "bcd", 34)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@people@country=Denmark
+POSTHOOK: query: INSERT INTO people PARTITION (country="Denmark") (id, name, age)  VALUES (2, "bcd", 34)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@people@country=Denmark
+PREHOOK: query: INSERT INTO people PARTITION (country) VALUES (3, "cde", 45, "Egypt")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@people
+POSTHOOK: query: INSERT INTO people PARTITION (country) VALUES (3, "cde", 45, "Egypt")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@people
+POSTHOOK: Output: default@people@country=Egypt
+POSTHOOK: Lineage: people PARTITION(country=Egypt).age SCRIPT []
+POSTHOOK: Lineage: people PARTITION(country=Egypt).id SCRIPT []
+POSTHOOK: Lineage: people PARTITION(country=Egypt).name SCRIPT []
+PREHOOK: query: INSERT INTO people PARTITION (country) (id, name, age, country)  VALUES (4, "def", 56, "Finland")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@people
+POSTHOOK: query: INSERT INTO people PARTITION (country) (id, name, age, country)  VALUES (4, "def", 56, "Finland")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@people
+POSTHOOK: Output: default@people@country=Finland
+PREHOOK: query: INSERT INTO people VALUES (5, "efg", 67, "Ghana")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@people
+POSTHOOK: query: INSERT INTO people VALUES (5, "efg", 67, "Ghana")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@people
+POSTHOOK: Output: default@people@country=Ghana
+POSTHOOK: Lineage: people PARTITION(country=Ghana).age SCRIPT []
+POSTHOOK: Lineage: people PARTITION(country=Ghana).id SCRIPT []
+POSTHOOK: Lineage: people PARTITION(country=Ghana).name SCRIPT []
+PREHOOK: query: INSERT INTO people (id, name, age, country) VALUES (6, "fgh", 78, "Hungary")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@people
+POSTHOOK: query: INSERT INTO people (id, name, age, country) VALUES (6, "fgh", 78, "Hungary")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@people
+POSTHOOK: Output: default@people@country=Hungary
+PREHOOK: query: SELECT * FROM people
+PREHOOK: type: QUERY
+PREHOOK: Input: default@people
+PREHOOK: Input: default@people@country=Cuba
+PREHOOK: Input: default@people@country=Denmark
+PREHOOK: Input: default@people@country=Egypt
+PREHOOK: Input: default@people@country=Finland
+PREHOOK: Input: default@people@country=Ghana
+PREHOOK: Input: default@people@country=Hungary
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM people
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@people
+POSTHOOK: Input: default@people@country=Cuba
+POSTHOOK: Input: default@people@country=Denmark
+POSTHOOK: Input: default@people@country=Egypt
+POSTHOOK: Input: default@people@country=Finland
+POSTHOOK: Input: default@people@country=Ghana
+POSTHOOK: Input: default@people@country=Hungary
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	abc	23	Cuba
+2	bcd	34	Denmark
+3	cde	45	Egypt
+4	def	56	Finland
+5	efg	67	Ghana
+6	fgh	78	Hungary

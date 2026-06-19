@@ -1,0 +1,184 @@
+PREHOOK: query: explain
+SELECT sum(hash(src1.c1, src2.c4)) 
+FROM
+(SELECT src.key as c1, src.value as c2 from src) src1
+JOIN
+(SELECT src.key as c3, src.value as c4 from src) src2
+ON src1.c1 = src2.c3 AND src1.c1 < 100
+JOIN
+(SELECT src.key as c5, src.value as c6 from src) src3
+ON src1.c1 + src2.c3 = src3.c5 AND src3.c5 < 200
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+SELECT sum(hash(src1.c1, src2.c4)) 
+FROM
+(SELECT src.key as c1, src.value as c2 from src) src1
+JOIN
+(SELECT src.key as c3, src.value as c4 from src) src2
+ON src1.c1 = src2.c3 AND src1.c1 < 100
+JOIN
+(SELECT src.key as c5, src.value as c6 from src) src3
+ON src1.c1 + src2.c3 = src3.c5 AND src3.c5 < 200
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Map 3 (BROADCAST_EDGE), Reducer 4 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+        Reducer 4 <- Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  filterExpr: (UDFToDouble(key) < 100.0D) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_42_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.332
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (UDFToDouble(key) < 100.0D) (type: boolean)
+                    Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: string)
+                          1 _col0 (type: string)
+                        outputColumnNames: _col0, _col1, _col2
+                        input vertices:
+                          1 Reducer 4
+                        Statistics: Num rows: 166 Data size: 43990 Basic stats: COMPLETE Column stats: COMPLETE
+                        Map Join Operator
+                          condition map:
+                               Inner Join 0 to 1
+                          keys:
+                            0 (UDFToDouble(_col2) + UDFToDouble(_col0)) (type: double)
+                            1 _col0 (type: double)
+                          outputColumnNames: _col1, _col2
+                          input vertices:
+                            1 Map 3
+                          Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+                          Select Operator
+                            expressions: hash(_col2,_col1) (type: int)
+                            outputColumnNames: _col0
+                            Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
+                            Group By Operator
+                              aggregations: sum(_col0)
+                              minReductionHashAggr: 0.99
+                              mode: hash
+                              outputColumnNames: _col0
+                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                              Reduce Output Operator
+                                null sort order: 
+                                sort order: 
+                                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                                value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  filterExpr: ((UDFToDouble(key) < 100.0D) or (UDFToDouble(key) < 200.0D)) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (UDFToDouble(key) < 100.0D) (type: boolean)
+                    Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (UDFToDouble(key) < 200.0D) (type: boolean)
+                    Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: UDFToDouble(key) (type: double)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 166 Data size: 1328 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: double)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: double)
+                        Statistics: Num rows: 166 Data size: 1328 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT sum(hash(src1.c1, src2.c4)) 
+FROM
+(SELECT src.key as c1, src.value as c2 from src) src1
+JOIN
+(SELECT src.key as c3, src.value as c4 from src) src2
+ON src1.c1 = src2.c3 AND src1.c1 < 100
+JOIN
+(SELECT src.key as c5, src.value as c6 from src) src3
+ON src1.c1 + src2.c3 = src3.c5 AND src3.c5 < 200
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sum(hash(src1.c1, src2.c4)) 
+FROM
+(SELECT src.key as c1, src.value as c2 from src) src1
+JOIN
+(SELECT src.key as c3, src.value as c4 from src) src2
+ON src1.c1 = src2.c3 AND src1.c1 < 100
+JOIN
+(SELECT src.key as c5, src.value as c6 from src) src3
+ON src1.c1 + src2.c3 = src3.c5 AND src3.c5 < 200
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+-97670109576

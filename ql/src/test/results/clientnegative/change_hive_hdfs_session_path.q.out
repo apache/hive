@@ -1,0 +1,2 @@
+#### A masked pattern was here ####
+Query returned non-zero code: 1, cause: Cannot modify _hive.hdfs.session.path at runtime. It is in the list of parameters that can't be modified at runtime or is prefixed by a restricted variable

@@ -1,0 +1,79 @@
+PREHOOK: query: CREATE VIEW testViewPart PARTITIONED ON (value)
+AS
+SELECT key, value
+FROM src
+WHERE key=86
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testViewPart
+POSTHOOK: query: CREATE VIEW testViewPart PARTITIONED ON (value)
+AS
+SELECT key, value
+FROM src
+WHERE key=86
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testViewPart
+POSTHOOK: Lineage: testviewpart.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: ALTER VIEW testViewPart 
+ADD PARTITION (value='val_86') PARTITION (value='val_xyz')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@src
+PREHOOK: Input: default@testviewpart
+PREHOOK: Output: default@testviewpart
+POSTHOOK: query: ALTER VIEW testViewPart 
+ADD PARTITION (value='val_86') PARTITION (value='val_xyz')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@testviewpart
+POSTHOOK: Output: default@testviewpart
+POSTHOOK: Output: default@testviewpart@value=val_86
+POSTHOOK: Output: default@testviewpart@value=val_xyz
+PREHOOK: query: DESCRIBE FORMATTED testViewPart
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@testviewpart
+POSTHOOK: query: DESCRIBE FORMATTED testViewPart
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@testviewpart
+# col_name            	data_type           	comment             
+key                 	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numPartitions       	2                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+Original Query:     	SELECT key, value   	 
+	                    	FROM src            
+	                    	WHERE key=86        
+Expanded Query:     	SELECT `src`.`key`, `src`.`value`	 
+	                    	FROM `default`.`src`
+	                    	WHERE `src`.`key`=86
+FAILED: SemanticException [Error 10217]: Cannot replace a view with CREATE VIEW or REPLACE VIEW or ALTER VIEW AS SELECT if the view has partitions
+ The following view has partition, it could not be replaced: default.testViewPart

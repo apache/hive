@@ -1,0 +1,102 @@
+PREHOOK: query: drop table target_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table target_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table temp
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table temp
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@target_n0
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@target_n0
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@temp
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@temp
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table temp
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@temp
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table temp
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@temp
+#### A masked pattern was here ####
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@target_n0
+#### A masked pattern was here ####
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@target_n0
+PREHOOK: query: select count(*) from target_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@target_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from target_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@target_n0
+#### A masked pattern was here ####
+500
+PREHOOK: query: load data local inpath '../../data/files/kv2.txt' into table temp
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@temp
+POSTHOOK: query: load data local inpath '../../data/files/kv2.txt' into table temp
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@temp
+#### A masked pattern was here ####
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@target_n0
+#### A masked pattern was here ####
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@target_n0
+PREHOOK: query: select count(*) from target_n0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@target_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from target_n0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@target_n0
+#### A masked pattern was here ####
+500
+PREHOOK: query: drop table target_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@target_n0
+PREHOOK: Output: database:default
+PREHOOK: Output: default@target_n0
+POSTHOOK: query: drop table target_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@target_n0
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@target_n0
+PREHOOK: query: drop table temp
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@temp
+PREHOOK: Output: database:default
+PREHOOK: Output: default@temp
+POSTHOOK: query: drop table temp
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@temp
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@temp

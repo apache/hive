@@ -1,0 +1,72 @@
+PREHOOK: query: explain rewrite
+select * 
+from src b 
+where exists 
+  (select a.key 
+  from src a 
+  where b.value = a.value  and a.key = b.key and a.value > 'val_9'
+  )
+PREHOOK: type: QUERY
+POSTHOOK: query: explain rewrite
+select * 
+from src b 
+where exists 
+  (select a.key 
+  from src a 
+  where b.value = a.value  and a.key = b.key and a.value > 'val_9'
+  )
+POSTHOOK: type: QUERY
+
+Where Clause  Rewritten SubQuery:
+(select a.key, a.value as sq_corr_0, a.key as sq_corr_1 
+  from src a 
+  where a.value > 'val_9'
+  ) sq_1
+
+Where Clause  SubQuery Joining Condition:
+ on b.value = sq_1.sq_corr_0 and sq_1.sq_corr_1 = b.key
+
+Rewritten Query:
+select * 
+from src b  left semi join (select a.key, a.value as sq_corr_0, a.key as sq_corr_1 
+  from src a 
+  where a.value > 'val_9'
+  ) sq_1  on b.value = sq_1.sq_corr_0 and sq_1.sq_corr_1 = b.key 
+where 1 = 1
+PREHOOK: query: explain rewrite
+select * 
+from (select * 
+      from src b 
+      where exists 
+          (select a.key 
+          from src a 
+          where b.value = a.value  and a.key = b.key and a.value > 'val_9')
+     ) a
+PREHOOK: type: QUERY
+POSTHOOK: query: explain rewrite
+select * 
+from (select * 
+      from src b 
+      where exists 
+          (select a.key 
+          from src a 
+          where b.value = a.value  and a.key = b.key and a.value > 'val_9')
+     ) a
+POSTHOOK: type: QUERY
+
+Where Clause for Query Block 'a'  Rewritten SubQuery:
+(select a.key, a.value as sq_corr_0, a.key as sq_corr_1 
+          from src a 
+          where a.value > 'val_9') sq_1
+
+Where Clause for Query Block 'a'  SubQuery Joining Condition:
+ on b.value = sq_1.sq_corr_0 and sq_1.sq_corr_1 = b.key
+
+Rewritten Query:
+select * 
+from (select * 
+      from src b  left semi join (select a.key, a.value as sq_corr_0, a.key as sq_corr_1 
+          from src a 
+          where a.value > 'val_9') sq_1  on b.value = sq_1.sq_corr_0 and sq_1.sq_corr_1 = b.key 
+      where 1 = 1
+     ) a

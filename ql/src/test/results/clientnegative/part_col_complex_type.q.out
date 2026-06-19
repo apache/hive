@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10126]: Partition column must be of primitive type. Found b of type: map<string,string>

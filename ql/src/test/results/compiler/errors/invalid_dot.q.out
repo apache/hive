@@ -1,0 +1,2 @@
+Semantic Exception: 
+Line 3:36 . Operator is only supported on struct or list of struct types 'member'

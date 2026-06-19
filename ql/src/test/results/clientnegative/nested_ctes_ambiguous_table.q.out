@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10008]: Line 8:12 Ambiguous table alias 't1'

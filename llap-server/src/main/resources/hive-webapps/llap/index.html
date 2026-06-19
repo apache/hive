@@ -1,0 +1,170 @@
+<!--
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+-->
+<?xml version="1.0" encoding="UTF-8" ?>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>LLAP Monitor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/bootstrap-theme.min.css" rel="stylesheet">
+    <link href="css/hive.css" rel="stylesheet">
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/jquery.sparkline.min.js"></script>
+    <script type="text/javascript" src="js/metrics.js"></script>
+  </head>
+
+  <body>
+    <div class="navbar  navbar-fixed-top navbar-default">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#"><img src="images/hive_logo.jpeg" alt="Hive Logo"/></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="row inner_header">
+        <div class="page-header">
+          <h1>LLAP Monitor</h1>
+        </div>
+        <h2 id="hostname"></h2> 
+      </div>
+
+      <div class="row">
+        <section id="heap">
+          <h2>Heap Metrics</h2>
+          <table id="heap_metrics_table" class="table table-striped table">
+            <thead>
+              <tr>
+                <th>Used(MB)</th>
+                <th>Max(MB)</th>
+                <th>Use Rate(%)</th>
+                <th>GC time (seconds) </th>
+              </tr>
+            </thead>
+            <tbody id="heap_body">
+               <tr>
+                  <td> <span id="heap-used" /> </td>
+                  <td> <span id="heap-max" /> </td>
+                  <td> <span id="heap-rate"> </span> <span id="heap-trend" /></td>
+                  <td> <span id="heap-gc"> </span> <span id="heap-gc-trend" /></td>
+               </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="cache">
+          <h2>Cache Metrics</h2>
+          <table id="cache_metrics_table" class="table table-striped">
+            <thead>
+              <tr>
+                <th>Used(MB)</th>
+                <th>Max(MB)</th>
+                <th>Use Rate(%)</th>
+                <th>Request Count</th>
+                <th>Hit Rate(%)</th>
+              </tr>
+            </thead>
+            <tbody id="cache_body">
+               <tr>
+                  <td> <span id="cache-used" /> </td>
+                  <td> <span id="cache-max" /> </td>
+                  <td> <span id="cache-fill-rate" /> <span id="cache-fill-trend"/></td>
+                  <td> <span id="cache-requests" /> </td>
+                  <td> <span id="cache-hits"> </span> <span id="cache-hits-trend"/></td>
+               </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="executors">
+          <h2>Executors</h2>
+          <table id="executor_metrics_table" class="table table-striped">
+            <thead>
+              <tr>
+                <th>Used</th>
+                <th>Num Executors</th>
+                <th>Use Rate(%)</th>
+                <th>Queue</th>
+                <th>Executing+Queuing Tasks</th>
+              </tr>
+            </thead>
+            <tbody id="executors_body">
+               <tr>
+                  <td> <span id="executors-used" /> </td>
+                  <td> <span id="executors-max" /> </td>
+                  <td> <span id="executors-rate"> </span> <span id="executors-trend"/></td>
+                  <td> <span id="executors-queue" /> </td>
+                  <td> <span id="executors-pending" > </span> <span id="executors-pending-trend"/></td>
+               </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="Fragments">
+          <h2>Fragments</h2>
+          <table id="fragment_metrics_table" class="table table-striped">
+            <thead>
+              <tr>
+                <th>Total Fragments</th>
+                <th>Failed Fragments</th>
+                <th>Preempted Fragments</th>
+                <th>Preemption Time Lost(s)</th>
+              </tr>
+            </thead>
+            <tbody id="fragments_body">
+               <tr>
+                  <td> <span id="fragments-total" /> </td>
+                  <td> <span id="fragments-failed" /> </td>
+                  <td> <span id="fragments-preempted"> </span> </td>
+                  <td> <span id="fragments-preemption-time" /> </td>
+               </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="system">
+          <h2>System metrics</h2>
+          <table id="system_metrics_table" class="table table-striped">
+            <thead>
+              <tr>
+                <th>CPU (%)</th>
+                <th>Load Average (<span id="proc-cores"></span> cores)</th>
+                <th>System Used RAM (%)</th>
+                <th>LLAP Open File #</th>
+              </tr>
+            </thead>
+            <tbody id="executors_body">
+               <tr>
+                  <td> <span id="proc-cpu"> </span> <span id="proc-cpu-trend">&nbsp;</span> </td>
+                  <td> <span id="system-loadavg"> </span> <span id="system-loadavg-trend">&nbsp;</span> </td>
+                  <td> <span id="system-ram"> </span> <span id="system-ram-trend"> &nbsp; </span> </td>
+                  <td> <span id="proc-fds"> </span> <span id="proc-fds-trend">&nbsp; </span> </td>
+               </tr>
+            </tbody>
+          </table>
+        </section>
+      </div>
+    </div>
+  </body>
+</html>

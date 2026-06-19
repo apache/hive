@@ -1,0 +1,28 @@
+PREHOOK: query: create table insert_values_nonascii(t1 char(32), t2 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@insert_values_nonascii
+POSTHOOK: query: create table insert_values_nonascii(t1 char(32), t2 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@insert_values_nonascii
+PREHOOK: query: insert into insert_values_nonascii values("Абвгде Garçu 谢谢",  "Kôkaku ありがとう"), ("ございます", "kidôtai한국어")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@insert_values_nonascii
+POSTHOOK: query: insert into insert_values_nonascii values("Абвгде Garçu 谢谢",  "Kôkaku ありがとう"), ("ございます", "kidôtai한국어")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@insert_values_nonascii
+POSTHOOK: Lineage: insert_values_nonascii.t1 SCRIPT []
+POSTHOOK: Lineage: insert_values_nonascii.t2 SCRIPT []
+PREHOOK: query: select * from insert_values_nonascii
+PREHOOK: type: QUERY
+PREHOOK: Input: default@insert_values_nonascii
+#### A masked pattern was here ####
+POSTHOOK: query: select * from insert_values_nonascii
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert_values_nonascii
+#### A masked pattern was here ####
+Абвгде Garçu 谢谢                 	Kôkaku ありがとう
+ございます                           	kidôtai한국어

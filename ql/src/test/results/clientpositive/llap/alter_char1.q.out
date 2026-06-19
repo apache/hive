@@ -1,0 +1,168 @@
+PREHOOK: query: create database ac
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:ac
+POSTHOOK: query: create database ac
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:ac
+PREHOOK: query: create table ac.alter_char_1 (key string, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: ac@alter_char_1
+PREHOOK: Output: database:ac
+POSTHOOK: query: create table ac.alter_char_1 (key string, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: ac@alter_char_1
+POSTHOOK: Output: database:ac
+PREHOOK: query: insert overwrite table ac.alter_char_1
+  select key, value from src order by key limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: ac@alter_char_1
+POSTHOOK: query: insert overwrite table ac.alter_char_1
+  select key, value from src order by key limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: ac@alter_char_1
+POSTHOOK: Lineage: alter_char_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: alter_char_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from ac.alter_char_1
+PREHOOK: type: QUERY
+PREHOOK: Input: ac@alter_char_1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ac.alter_char_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: ac@alter_char_1
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+10	val_10
+100	val_100
+PREHOOK: query: alter table ac.alter_char_1 change column value value char(20)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: ac@alter_char_1
+PREHOOK: Output: ac@alter_char_1
+POSTHOOK: query: alter table ac.alter_char_1 change column value value char(20)
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: ac@alter_char_1
+POSTHOOK: Output: ac@alter_char_1
+PREHOOK: query: select * from ac.alter_char_1
+PREHOOK: type: QUERY
+PREHOOK: Input: ac@alter_char_1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ac.alter_char_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: ac@alter_char_1
+#### A masked pattern was here ####
+0	val_0               
+0	val_0               
+0	val_0               
+10	val_10              
+100	val_100             
+PREHOOK: query: alter table ac.alter_char_1 change column value value char(3)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: ac@alter_char_1
+PREHOOK: Output: ac@alter_char_1
+POSTHOOK: query: alter table ac.alter_char_1 change column value value char(3)
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: ac@alter_char_1
+POSTHOOK: Output: ac@alter_char_1
+PREHOOK: query: select * from ac.alter_char_1
+PREHOOK: type: QUERY
+PREHOOK: Input: ac@alter_char_1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ac.alter_char_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: ac@alter_char_1
+#### A masked pattern was here ####
+0	val
+0	val
+0	val
+10	val
+100	val
+PREHOOK: query: alter table ac.alter_char_1 change column value value char(20)
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: ac@alter_char_1
+PREHOOK: Output: ac@alter_char_1
+POSTHOOK: query: alter table ac.alter_char_1 change column value value char(20)
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: ac@alter_char_1
+POSTHOOK: Output: ac@alter_char_1
+PREHOOK: query: select * from ac.alter_char_1
+PREHOOK: type: QUERY
+PREHOOK: Input: ac@alter_char_1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ac.alter_char_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: ac@alter_char_1
+#### A masked pattern was here ####
+0	val_0               
+0	val_0               
+0	val_0               
+10	val_10              
+100	val_100             
+PREHOOK: query: alter table ac.alter_char_1 add columns (key2 int, value2 char(10))
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: ac@alter_char_1
+PREHOOK: Output: ac@alter_char_1
+POSTHOOK: query: alter table ac.alter_char_1 add columns (key2 int, value2 char(10))
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: ac@alter_char_1
+POSTHOOK: Output: ac@alter_char_1
+PREHOOK: query: select * from ac.alter_char_1
+PREHOOK: type: QUERY
+PREHOOK: Input: ac@alter_char_1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ac.alter_char_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: ac@alter_char_1
+#### A masked pattern was here ####
+0	val_0               	NULL	NULL
+0	val_0               	NULL	NULL
+0	val_0               	NULL	NULL
+10	val_10              	NULL	NULL
+100	val_100             	NULL	NULL
+PREHOOK: query: insert overwrite table ac.alter_char_1
+  select key, value, key, value from src order by key limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: ac@alter_char_1
+POSTHOOK: query: insert overwrite table ac.alter_char_1
+  select key, value, key, value from src order by key limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: ac@alter_char_1
+POSTHOOK: Lineage: alter_char_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: alter_char_1.key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: alter_char_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: alter_char_1.value2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from ac.alter_char_1
+PREHOOK: type: QUERY
+PREHOOK: Input: ac@alter_char_1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ac.alter_char_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: ac@alter_char_1
+#### A masked pattern was here ####
+0	val_0               	0	val_0     
+0	val_0               	0	val_0     
+0	val_0               	0	val_0     
+10	val_10              	10	val_10    
+100	val_100             	100	val_100   
+PREHOOK: query: drop table ac.alter_char_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: ac@alter_char_1
+PREHOOK: Output: ac@alter_char_1
+PREHOOK: Output: database:ac
+POSTHOOK: query: drop table ac.alter_char_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: ac@alter_char_1
+POSTHOOK: Output: ac@alter_char_1
+POSTHOOK: Output: database:ac
+PREHOOK: query: drop database ac
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:ac
+PREHOOK: Output: database:ac
+POSTHOOK: query: drop database ac
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:ac
+POSTHOOK: Output: database:ac

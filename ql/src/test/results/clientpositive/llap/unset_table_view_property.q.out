@@ -1,0 +1,375 @@
+PREHOOK: query: CREATE DATABASE vt
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:vt
+POSTHOOK: query: CREATE DATABASE vt
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:vt
+PREHOOK: query: CREATE TABLE vt.testTable(col1 INT, col2 INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:vt
+PREHOOK: Output: vt@testTable
+POSTHOOK: query: CREATE TABLE vt.testTable(col1 INT, col2 INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:vt
+POSTHOOK: Output: vt@testTable
+PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
+POSTHOOK: type: SHOW_TBLPROPERTIES
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"col1":"true","col2":"true"}}
+bucketing_version	2
+numFiles	0
+numFilesErasureCoded	0
+numRows	0
+rawDataSize	0
+totalSize	#Masked#
+#### A masked pattern was here ####
+PREHOOK: query: ALTER TABLE vt.testTable SET TBLPROPERTIES ('a'='1', 'c'='3')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: vt@testtable
+PREHOOK: Output: vt@testtable
+POSTHOOK: query: ALTER TABLE vt.testTable SET TBLPROPERTIES ('a'='1', 'c'='3')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: vt@testtable
+POSTHOOK: Output: vt@testtable
+PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
+POSTHOOK: type: SHOW_TBLPROPERTIES
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"col1":"true","col2":"true"}}
+a	1
+bucketing_version	2
+c	3
+#### A masked pattern was here ####
+numFiles	0
+numFilesErasureCoded	0
+numRows	0
+rawDataSize	0
+totalSize	#Masked#
+#### A masked pattern was here ####
+PREHOOK: query: ALTER TABLE vt.testTable UNSET TBLPROPERTIES ('a', 'c')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: vt@testtable
+PREHOOK: Output: vt@testtable
+POSTHOOK: query: ALTER TABLE vt.testTable UNSET TBLPROPERTIES ('a', 'c')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: vt@testtable
+POSTHOOK: Output: vt@testtable
+PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
+POSTHOOK: type: SHOW_TBLPROPERTIES
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"col1":"true","col2":"true"}}
+bucketing_version	2
+#### A masked pattern was here ####
+numFiles	0
+numFilesErasureCoded	0
+numRows	0
+rawDataSize	0
+totalSize	#Masked#
+#### A masked pattern was here ####
+PREHOOK: query: ALTER TABLE vt.testTable SET TBLPROPERTIES ('a'='1', 'c'='3', 'd'='4')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: vt@testtable
+PREHOOK: Output: vt@testtable
+POSTHOOK: query: ALTER TABLE vt.testTable SET TBLPROPERTIES ('a'='1', 'c'='3', 'd'='4')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: vt@testtable
+POSTHOOK: Output: vt@testtable
+PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
+POSTHOOK: type: SHOW_TBLPROPERTIES
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"col1":"true","col2":"true"}}
+a	1
+bucketing_version	2
+c	3
+d	4
+#### A masked pattern was here ####
+numFiles	0
+numFilesErasureCoded	0
+numRows	0
+rawDataSize	0
+totalSize	#Masked#
+#### A masked pattern was here ####
+PREHOOK: query: ALTER TABLE vt.testTable UNSET TBLPROPERTIES ('a', 'd')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: vt@testtable
+PREHOOK: Output: vt@testtable
+POSTHOOK: query: ALTER TABLE vt.testTable UNSET TBLPROPERTIES ('a', 'd')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: vt@testtable
+POSTHOOK: Output: vt@testtable
+PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
+POSTHOOK: type: SHOW_TBLPROPERTIES
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"col1":"true","col2":"true"}}
+bucketing_version	2
+c	3
+#### A masked pattern was here ####
+numFiles	0
+numFilesErasureCoded	0
+numRows	0
+rawDataSize	0
+totalSize	#Masked#
+#### A masked pattern was here ####
+PREHOOK: query: ALTER TABLE vt.testTable UNSET TBLPROPERTIES ('c', 'c', 'c')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: vt@testtable
+PREHOOK: Output: vt@testtable
+POSTHOOK: query: ALTER TABLE vt.testTable UNSET TBLPROPERTIES ('c', 'c', 'c')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: vt@testtable
+POSTHOOK: Output: vt@testtable
+PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
+POSTHOOK: type: SHOW_TBLPROPERTIES
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"col1":"true","col2":"true"}}
+bucketing_version	2
+#### A masked pattern was here ####
+numFiles	0
+numFilesErasureCoded	0
+numRows	0
+rawDataSize	0
+totalSize	#Masked#
+#### A masked pattern was here ####
+PREHOOK: query: ALTER TABLE vt.testTable SET TBLPROPERTIES ('a'='1', 'b' = '2', 'c'='3', 'd'='4')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: vt@testtable
+PREHOOK: Output: vt@testtable
+POSTHOOK: query: ALTER TABLE vt.testTable SET TBLPROPERTIES ('a'='1', 'b' = '2', 'c'='3', 'd'='4')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: vt@testtable
+POSTHOOK: Output: vt@testtable
+PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
+POSTHOOK: type: SHOW_TBLPROPERTIES
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"col1":"true","col2":"true"}}
+a	1
+b	2
+bucketing_version	2
+c	3
+d	4
+#### A masked pattern was here ####
+numFiles	0
+numFilesErasureCoded	0
+numRows	0
+rawDataSize	0
+totalSize	#Masked#
+#### A masked pattern was here ####
+PREHOOK: query: ALTER TABLE vt.testTable UNSET TBLPROPERTIES IF EXISTS ('b', 'd', 'b', 'f')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: vt@testtable
+PREHOOK: Output: vt@testtable
+POSTHOOK: query: ALTER TABLE vt.testTable UNSET TBLPROPERTIES IF EXISTS ('b', 'd', 'b', 'f')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: vt@testtable
+POSTHOOK: Output: vt@testtable
+PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
+POSTHOOK: type: SHOW_TBLPROPERTIES
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"col1":"true","col2":"true"}}
+a	1
+bucketing_version	2
+c	3
+#### A masked pattern was here ####
+numFiles	0
+numFilesErasureCoded	0
+numRows	0
+rawDataSize	0
+totalSize	#Masked#
+#### A masked pattern was here ####
+PREHOOK: query: ALTER TABLE vt.testTable UNSET TBLPROPERTIES IF EXISTS ('b', 'd', 'c', 'f', 'x', 'y', 'z')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: vt@testtable
+PREHOOK: Output: vt@testtable
+POSTHOOK: query: ALTER TABLE vt.testTable UNSET TBLPROPERTIES IF EXISTS ('b', 'd', 'c', 'f', 'x', 'y', 'z')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: vt@testtable
+POSTHOOK: Output: vt@testtable
+PREHOOK: query: SHOW TBLPROPERTIES vt.testTable
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES vt.testTable
+POSTHOOK: type: SHOW_TBLPROPERTIES
+COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"col1":"true","col2":"true"}}
+a	1
+bucketing_version	2
+#### A masked pattern was here ####
+numFiles	0
+numFilesErasureCoded	0
+numRows	0
+rawDataSize	0
+totalSize	#Masked#
+#### A masked pattern was here ####
+PREHOOK: query: DROP TABLE vt.testTable
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: vt@testtable
+PREHOOK: Output: database:vt
+PREHOOK: Output: vt@testtable
+POSTHOOK: query: DROP TABLE vt.testTable
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: vt@testtable
+POSTHOOK: Output: database:vt
+POSTHOOK: Output: vt@testtable
+PREHOOK: query: CREATE VIEW vt.testView AS SELECT value FROM src WHERE key=86
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:vt
+PREHOOK: Output: vt@testView
+POSTHOOK: query: CREATE VIEW vt.testView AS SELECT value FROM src WHERE key=86
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:vt
+POSTHOOK: Output: vt@testView
+POSTHOOK: Lineage: testview.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: ALTER VIEW vt.testView SET TBLPROPERTIES ('propA'='100', 'propB'='200')
+PREHOOK: type: ALTERVIEW_PROPERTIES
+PREHOOK: Input: vt@testview
+PREHOOK: Output: vt@testview
+POSTHOOK: query: ALTER VIEW vt.testView SET TBLPROPERTIES ('propA'='100', 'propB'='200')
+POSTHOOK: type: ALTERVIEW_PROPERTIES
+POSTHOOK: Input: vt@testview
+POSTHOOK: Output: vt@testview
+PREHOOK: query: SHOW TBLPROPERTIES vt.testView
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES vt.testView
+POSTHOOK: type: SHOW_TBLPROPERTIES
+bucketing_version	2
+#### A masked pattern was here ####
+propA	100
+propB	200
+#### A masked pattern was here ####
+PREHOOK: query: ALTER VIEW vt.testView UNSET TBLPROPERTIES ('propA', 'propB')
+PREHOOK: type: ALTERVIEW_PROPERTIES
+PREHOOK: Input: vt@testview
+PREHOOK: Output: vt@testview
+POSTHOOK: query: ALTER VIEW vt.testView UNSET TBLPROPERTIES ('propA', 'propB')
+POSTHOOK: type: ALTERVIEW_PROPERTIES
+POSTHOOK: Input: vt@testview
+POSTHOOK: Output: vt@testview
+PREHOOK: query: SHOW TBLPROPERTIES vt.testView
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES vt.testView
+POSTHOOK: type: SHOW_TBLPROPERTIES
+bucketing_version	2
+#### A masked pattern was here ####
+PREHOOK: query: ALTER VIEW vt.testView SET TBLPROPERTIES ('propA'='100', 'propC'='300', 'propD'='400')
+PREHOOK: type: ALTERVIEW_PROPERTIES
+PREHOOK: Input: vt@testview
+PREHOOK: Output: vt@testview
+POSTHOOK: query: ALTER VIEW vt.testView SET TBLPROPERTIES ('propA'='100', 'propC'='300', 'propD'='400')
+POSTHOOK: type: ALTERVIEW_PROPERTIES
+POSTHOOK: Input: vt@testview
+POSTHOOK: Output: vt@testview
+PREHOOK: query: SHOW TBLPROPERTIES vt.testView
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES vt.testView
+POSTHOOK: type: SHOW_TBLPROPERTIES
+bucketing_version	2
+#### A masked pattern was here ####
+propA	100
+propC	300
+propD	400
+#### A masked pattern was here ####
+PREHOOK: query: ALTER VIEW vt.testView UNSET TBLPROPERTIES ('propA', 'propC')
+PREHOOK: type: ALTERVIEW_PROPERTIES
+PREHOOK: Input: vt@testview
+PREHOOK: Output: vt@testview
+POSTHOOK: query: ALTER VIEW vt.testView UNSET TBLPROPERTIES ('propA', 'propC')
+POSTHOOK: type: ALTERVIEW_PROPERTIES
+POSTHOOK: Input: vt@testview
+POSTHOOK: Output: vt@testview
+PREHOOK: query: SHOW TBLPROPERTIES vt.testView
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES vt.testView
+POSTHOOK: type: SHOW_TBLPROPERTIES
+bucketing_version	2
+#### A masked pattern was here ####
+propD	400
+#### A masked pattern was here ####
+PREHOOK: query: ALTER VIEW vt.testView UNSET TBLPROPERTIES ('propD', 'propD', 'propD')
+PREHOOK: type: ALTERVIEW_PROPERTIES
+PREHOOK: Input: vt@testview
+PREHOOK: Output: vt@testview
+POSTHOOK: query: ALTER VIEW vt.testView UNSET TBLPROPERTIES ('propD', 'propD', 'propD')
+POSTHOOK: type: ALTERVIEW_PROPERTIES
+POSTHOOK: Input: vt@testview
+POSTHOOK: Output: vt@testview
+PREHOOK: query: SHOW TBLPROPERTIES vt.testView
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES vt.testView
+POSTHOOK: type: SHOW_TBLPROPERTIES
+bucketing_version	2
+#### A masked pattern was here ####
+PREHOOK: query: ALTER VIEW vt.testView SET TBLPROPERTIES ('propA'='100', 'propB' = '200', 'propC'='300', 'propD'='400')
+PREHOOK: type: ALTERVIEW_PROPERTIES
+PREHOOK: Input: vt@testview
+PREHOOK: Output: vt@testview
+POSTHOOK: query: ALTER VIEW vt.testView SET TBLPROPERTIES ('propA'='100', 'propB' = '200', 'propC'='300', 'propD'='400')
+POSTHOOK: type: ALTERVIEW_PROPERTIES
+POSTHOOK: Input: vt@testview
+POSTHOOK: Output: vt@testview
+PREHOOK: query: SHOW TBLPROPERTIES vt.testView
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES vt.testView
+POSTHOOK: type: SHOW_TBLPROPERTIES
+bucketing_version	2
+#### A masked pattern was here ####
+propA	100
+propB	200
+propC	300
+propD	400
+#### A masked pattern was here ####
+PREHOOK: query: ALTER VIEW vt.testView UNSET TBLPROPERTIES IF EXISTS ('propC', 'propD', 'propD', 'propC', 'propZ')
+PREHOOK: type: ALTERVIEW_PROPERTIES
+PREHOOK: Input: vt@testview
+PREHOOK: Output: vt@testview
+POSTHOOK: query: ALTER VIEW vt.testView UNSET TBLPROPERTIES IF EXISTS ('propC', 'propD', 'propD', 'propC', 'propZ')
+POSTHOOK: type: ALTERVIEW_PROPERTIES
+POSTHOOK: Input: vt@testview
+POSTHOOK: Output: vt@testview
+PREHOOK: query: SHOW TBLPROPERTIES vt.testView
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES vt.testView
+POSTHOOK: type: SHOW_TBLPROPERTIES
+bucketing_version	2
+#### A masked pattern was here ####
+propA	100
+propB	200
+#### A masked pattern was here ####
+PREHOOK: query: ALTER VIEW vt.testView UNSET TBLPROPERTIES IF EXISTS ('propB', 'propC', 'propD', 'propF')
+PREHOOK: type: ALTERVIEW_PROPERTIES
+PREHOOK: Input: vt@testview
+PREHOOK: Output: vt@testview
+POSTHOOK: query: ALTER VIEW vt.testView UNSET TBLPROPERTIES IF EXISTS ('propB', 'propC', 'propD', 'propF')
+POSTHOOK: type: ALTERVIEW_PROPERTIES
+POSTHOOK: Input: vt@testview
+POSTHOOK: Output: vt@testview
+PREHOOK: query: SHOW TBLPROPERTIES vt.testView
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: SHOW TBLPROPERTIES vt.testView
+POSTHOOK: type: SHOW_TBLPROPERTIES
+bucketing_version	2
+#### A masked pattern was here ####
+propA	100
+#### A masked pattern was here ####
+PREHOOK: query: DROP VIEW vt.testView
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: vt@testview
+PREHOOK: Output: vt@testview
+POSTHOOK: query: DROP VIEW vt.testView
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: vt@testview
+POSTHOOK: Output: vt@testview
+PREHOOK: query: DROP DATABASE vt
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:vt
+PREHOOK: Output: database:vt
+POSTHOOK: query: DROP DATABASE vt
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:vt
+POSTHOOK: Output: database:vt

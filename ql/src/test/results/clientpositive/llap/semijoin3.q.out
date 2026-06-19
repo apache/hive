@@ -1,0 +1,177 @@
+PREHOOK: query: create table t1_n59 as select cast(key as int) key, value from src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1_n59
+POSTHOOK: query: create table t1_n59 as select cast(key as int) key, value from src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1_n59
+POSTHOOK: Lineage: t1_n59.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1_n59.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table t2_n37 as select cast(key as int) key, value from src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2_n37
+POSTHOOK: query: create table t2_n37 as select cast(key as int) key, value from src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2_n37
+POSTHOOK: Lineage: t2_n37.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t2_n37.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain
+select count(1)
+from
+  (select key
+  from t1_n59
+  where key = 0) t1_n59
+left semi join
+  (select key
+  from t2_n37
+  where key = 0) t2_n37
+on 1 = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n59
+PREHOOK: Input: default@t2_n37
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select count(1)
+from
+  (select key
+  from t1_n59
+  where key = 0) t1_n59
+left semi join
+  (select key
+  from t2_n37
+  where key = 0) t2_n37
+on 1 = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n59
+POSTHOOK: Input: default@t2_n37
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1_n59
+                  filterExpr: (key = 0) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (key = 0) (type: boolean)
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: 1 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: 1 (type: int)
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: t2_n37
+                  filterExpr: (key = 0) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (key = 0) (type: boolean)
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: 1 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: 1 (type: int)
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Semi Join 0 to 1
+                keys:
+                  0 1 (type: int)
+                  1 1 (type: int)
+                Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: count(1)
+                  minReductionHashAggr: 0.5
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    null sort order: 
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(1)
+from
+  (select key
+  from t1_n59
+  where key = 0) t1_n59
+left semi join
+  (select key
+  from t2_n37
+  where key = 0) t2_n37
+on 1 = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n59
+PREHOOK: Input: default@t2_n37
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1)
+from
+  (select key
+  from t1_n59
+  where key = 0) t1_n59
+left semi join
+  (select key
+  from t2_n37
+  where key = 0) t2_n37
+on 1 = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n59
+POSTHOOK: Input: default@t2_n37
+#### A masked pattern was here ####
+3

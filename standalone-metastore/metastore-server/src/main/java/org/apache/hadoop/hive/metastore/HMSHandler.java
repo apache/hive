@@ -1,0 +1,5017 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.hadoop.hive.metastore;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Lists;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.repl.ReplConst;
+import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.api.Package;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.dataconnector.DataConnectorProviderFactory;
+import org.apache.hadoop.hive.metastore.events.*;
+import org.apache.hadoop.hive.metastore.handler.AbstractRequestHandler;
+import org.apache.hadoop.hive.metastore.handler.AddPartitionsHandler;
+import org.apache.hadoop.hive.metastore.handler.AppendPartitionHandler;
+import org.apache.hadoop.hive.metastore.handler.BaseHandler;
+import org.apache.hadoop.hive.metastore.handler.DropPartitionsHandler;
+import org.apache.hadoop.hive.metastore.handler.GetPartitionsHandler;
+import org.apache.hadoop.hive.metastore.handler.GetTableHandler;
+import org.apache.hadoop.hive.metastore.handler.PrivilegeHandler;
+import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
+import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
+import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.properties.PropertyException;
+import org.apache.hadoop.hive.metastore.properties.PropertyManager;
+import org.apache.hadoop.hive.metastore.properties.PropertyMap;
+import org.apache.hadoop.hive.metastore.properties.PropertyStore;
+import org.apache.hadoop.hive.metastore.txn.*;
+import org.apache.hadoop.hive.metastore.utils.FilterUtils;
+import org.apache.hadoop.hive.metastore.utils.JavaUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
+import org.apache.thrift.TException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import static org.apache.commons.lang3.StringUtils.join;
+
+import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_RESUME_STARTED_AFTER_FAILOVER;
+import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_TARGET_DATABASE_PROPERTY;
+import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.RENAME_PARTITION_MAKE_COPY;
+import static org.apache.hadoop.hive.metastore.ExceptionHandler.handleException;
+import static org.apache.hadoop.hive.metastore.ExceptionHandler.newMetaException;
+import static org.apache.hadoop.hive.metastore.ExceptionHandler.rethrowException;
+import static org.apache.hadoop.hive.metastore.ExceptionHandler.throwMetaException;
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartValsFromName;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isDbReplicationTarget;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.CAT_NAME;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.DB_NAME;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.parseDbName;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependNotNullCatToDbName;
+import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
+
+/**
+ * Default handler for all Hive Metastore methods. Implements methods defined in hive_metastore.thrift.
+ */
+public class HMSHandler extends PrivilegeHandler {
+  public static final Logger LOG = LoggerFactory.getLogger(HMSHandler.class);
+  private StorageSchemaReader storageSchemaReader;
+
+  public static final String PARTITION_NUMBER_EXCEED_LIMIT_MSG =
+      "Number of partitions scanned (=%d) on table '%s' exceeds limit (=%d). This is controlled on the metastore server by %s.";
+
+  private static final String AVRO_SERDE_CLASS = "org.apache.hadoop.hive.serde2.avro.AvroSerDe";
+
+  public static RawStore getRawStore() {
+    return HMSHandlerContext.getRawStore().orElse(null);
+  }
+
+  static void cleanupHandlerContext() {
+    AtomicBoolean cleanedRawStore = new AtomicBoolean(false);
+    try {
+      HMSHandlerContext.getRawStore().ifPresent(rs -> {
+        logAndAudit("Cleaning up thread local RawStore...");
+        rs.shutdown();
+        cleanedRawStore.set(true);
+      });
+    } finally {
+      HMSHandlerContext.getHMSHandler().ifPresent(BaseHandler::notifyMetaListenersOnShutDown);
+      if (cleanedRawStore.get()) {
+        logAndAudit("Done cleaning up thread local RawStore");
+      }
+      HMSHandlerContext.clear();
+    }
+  }
+
+  public static String getIPAddress() {
+    if (HiveMetaStore.useSasl) {
+      if (HiveMetaStore.saslServer != null && HiveMetaStore.saslServer.getRemoteAddress() != null) {
+        return HiveMetaStore.saslServer.getRemoteAddress().getHostAddress();
+      }
+    } else {
+      // if kerberos is not enabled
+      return getThreadLocalIpAddress();
+    }
+    return null;
+  }
+
+  public HMSHandler(String name, Configuration conf) {
+    super(name, conf);
+  }
+
+  @Override
+  public void init() throws MetaException {
+    super.init();
+    DataConnectorProviderFactory.getInstance(this);
+  }
+
+  /**
+   * Get a cached RawStore.
+   *
+   * @return the cached RawStore
+   * @throws MetaException
+   */
+  @Override
+  public RawStore getMS() throws MetaException {
+    Configuration conf = getConf();
+    return getMSForConf(conf);
+  }
+
+  public static RawStore getMSForConf(Configuration conf) throws MetaException {
+    RawStore ms = getRawStore();
+    if (ms == null) {
+      ms = newRawStoreForConf(conf);
+      try {
+        ms.verifySchema();
+      } catch (MetaException e) {
+        ms.shutdown();
+        throw e;
+      }
+      HMSHandlerContext.setRawStore(ms);
+      LOG.info("Created RawStore: {}", ms);
+    }
+    return ms;
+  }
+
+  static RawStore newRawStoreForConf(Configuration conf) throws MetaException {
+    Configuration newConf = new Configuration(conf);
+    String rawStoreClassName = MetastoreConf.getVar(newConf, ConfVars.RAW_STORE_IMPL);
+    LOG.info("Opening raw store with implementation class: {}", rawStoreClassName);
+    return RawStoreProxy.getProxy(newConf, conf, rawStoreClassName);
+  }
+
+  @VisibleForTesting
+  public static void createDefaultCatalog(RawStore ms, Warehouse wh) throws MetaException,
+      InvalidOperationException {
+    try {
+      Catalog defaultCat = ms.getCatalog(DEFAULT_CATALOG_NAME);
+      // Null check because in some test cases we get a null from ms.getCatalog.
+      if (defaultCat !=null && defaultCat.getLocationUri().equals("TBD")) {
+        // One time update issue.  When the new 'hive' catalog is created in an upgrade the
+        // script does not know the location of the warehouse.  So we need to update it.
+        LOG.info("Setting location of default catalog, as it hasn't been done after upgrade");
+        defaultCat.setLocationUri(wh.getWhRoot().toString());
+        ms.alterCatalog(defaultCat.getName(), defaultCat);
+      }
+
+    } catch (NoSuchObjectException e) {
+      Catalog cat = new Catalog(DEFAULT_CATALOG_NAME, wh.getWhRoot().toString());
+      long time = System.currentTimeMillis() / 1000;
+      cat.setCreateTime((int) time);
+      cat.setDescription(Warehouse.DEFAULT_CATALOG_COMMENT);
+      ms.createCatalog(cat);
+    }
+  }
+
+  @Override
+  public void shutdown() {
+    cleanupHandlerContext();
+    PerfLogger.getPerfLogger(false).cleanupPerfLogMetrics();
+  }
+
+  @Override
+  public void create_catalog(CreateCatalogRequest rqst)
+      throws AlreadyExistsException, InvalidObjectException, MetaException {
+    Catalog catalog = rqst.getCatalog();
+    startFunction("create_catalog", ": " + catalog.toString());
+    boolean success = false;
+    Exception ex = null;
+    try {
+      try {
+        getMS().getCatalog(catalog.getName());
+        throw new AlreadyExistsException("Catalog " + catalog.getName() + " already exists");
+      } catch (NoSuchObjectException e) {
+        // expected
+      }
+
+      if (!MetaStoreUtils.validateName(catalog.getName(), null)) {
+        throw new InvalidObjectException(catalog.getName() + " is not a valid catalog name");
+      }
+
+      if (catalog.getLocationUri() == null) {
+        throw new InvalidObjectException("You must specify a path for the catalog");
+      }
+
+      RawStore ms = getMS();
+      Path catPath = new Path(catalog.getLocationUri());
+      boolean madeDir = false;
+      Map<String, String> transactionalListenersResponses = Collections.emptyMap();
+      try {
+        firePreEvent(new PreCreateCatalogEvent(this, catalog));
+        if (!wh.isDir(catPath)) {
+          if (!wh.mkdirs(catPath)) {
+            throw new MetaException("Unable to create catalog path " + catPath +
+                ", failed to create catalog " + catalog.getName());
+          }
+          madeDir = true;
+        }
+        // set the create time of catalog
+        long time = System.currentTimeMillis() / 1000;
+        catalog.setCreateTime((int) time);
+        ms.openTransaction();
+        ms.createCatalog(catalog);
+
+        // Create a default database inside the catalog
+        CreateDatabaseRequest cdr = new CreateDatabaseRequest(DEFAULT_DATABASE_NAME);
+        cdr.setCatalogName(catalog.getName());
+        cdr.setLocationUri(catalog.getLocationUri());
+        cdr.setParameters(Collections.emptyMap());
+        cdr.setDescription("Default database for catalog " + catalog.getName());
+        AbstractRequestHandler.offer(this, cdr).getResult();
+
+        if (!transactionalListeners.isEmpty()) {
+          transactionalListenersResponses =
+              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventType.CREATE_CATALOG,
+                  new CreateCatalogEvent(true, this, catalog));
+        }
+
+        success = ms.commitTransaction();
+      } finally {
+        if (!success) {
+          ms.rollbackTransaction();
+          if (madeDir) {
+            wh.deleteDir(catPath, false, false);
+          }
+        }
+
+        if (!listeners.isEmpty()) {
+          MetaStoreListenerNotifier.notifyEvent(listeners,
+              EventType.CREATE_CATALOG,
+              new CreateCatalogEvent(success, this, catalog),
+              null,
+              transactionalListenersResponses, ms);
+        }
+      }
+      success = true;
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e)
+          .throwIfInstance(AlreadyExistsException.class, InvalidObjectException.class, MetaException.class)
+          .defaultMetaException();
+    } finally {
+      endFunction("create_catalog", success, ex);
+    }
+  }
+
+  @Override
+  public void alter_catalog(AlterCatalogRequest rqst) throws TException {
+    startFunction("alter_catalog " + rqst.getName());
+    boolean success = false;
+    Exception ex = null;
+    RawStore ms = getMS();
+    Map<String, String> transactionalListenersResponses = Collections.emptyMap();
+    GetCatalogResponse oldCat = null;
+
+    try {
+      oldCat = get_catalog(new GetCatalogRequest(rqst.getName()));
+      // Above should have thrown NoSuchObjectException if there is no such catalog
+      assert oldCat != null && oldCat.getCatalog() != null;
+      firePreEvent(new PreAlterCatalogEvent(oldCat.getCatalog(), rqst.getNewCat(), this));
+
+      ms.openTransaction();
+      ms.alterCatalog(rqst.getName(), rqst.getNewCat());
+
+      if (!transactionalListeners.isEmpty()) {
+        transactionalListenersResponses =
+            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                EventType.ALTER_CATALOG,
+                new AlterCatalogEvent(oldCat.getCatalog(), rqst.getNewCat(), true, this));
+      }
+
+      success = ms.commitTransaction();
+    } catch (MetaException|NoSuchObjectException e) {
+      ex = e;
+      throw e;
+    } finally {
+      if (!success) {
+        ms.rollbackTransaction();
+      }
+
+      if ((null != oldCat) && (!listeners.isEmpty())) {
+        MetaStoreListenerNotifier.notifyEvent(listeners,
+            EventType.ALTER_CATALOG,
+            new AlterCatalogEvent(oldCat.getCatalog(), rqst.getNewCat(), success, this),
+            null, transactionalListenersResponses, ms);
+      }
+      endFunction("alter_catalog", success, ex);
+    }
+
+  }
+
+  @Override
+  public GetCatalogResponse get_catalog(GetCatalogRequest rqst)
+      throws NoSuchObjectException, TException {
+    String catName = rqst.getName();
+    startFunction("get_catalog", ": " + catName);
+    Catalog cat = null;
+    Exception ex = null;
+    try {
+      cat = getMS().getCatalog(catName);
+      firePreEvent(new PreReadCatalogEvent(this, cat));
+      return new GetCatalogResponse(cat);
+    } catch (MetaException|NoSuchObjectException e) {
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("get_catalog", cat != null, ex);
+    }
+  }
+
+  @Override
+  public GetCatalogsResponse get_catalogs() throws MetaException {
+    startFunction("get_catalogs");
+
+    List<String> ret = null;
+    Exception ex = null;
+    try {
+      ret = getMS().getCatalogs();
+    } catch (Exception e) {
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("get_catalog", ret != null, ex);
+    }
+    return new GetCatalogsResponse(ret == null ? Collections.emptyList() : ret);
+
+  }
+
+  @Override
+  public void drop_catalog(DropCatalogRequest rqst)
+      throws NoSuchObjectException, InvalidOperationException, MetaException {
+    String catName = rqst.getName();
+    boolean ifExists = rqst.isIfExists();
+    startFunction("drop_catalog", ": " + catName);
+    if (DEFAULT_CATALOG_NAME.equalsIgnoreCase(catName)) {
+      endFunction("drop_catalog", false, null);
+      throw new MetaException("Can not drop " + DEFAULT_CATALOG_NAME + " catalog");
+    }
+
+    boolean success = false;
+    Exception ex = null;
+    try {
+      dropCatalogCore(catName, ifExists);
+      success = true;
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e)
+          .throwIfInstance(NoSuchObjectException.class, InvalidOperationException.class, MetaException.class)
+          .defaultMetaException();
+    } finally {
+      endFunction("drop_catalog", success, ex);
+    }
+
+  }
+
+  private void dropCatalogCore(String catName, boolean ifExists)
+      throws MetaException, NoSuchObjectException, InvalidOperationException {
+    boolean success = false;
+    Catalog cat = null;
+    Map<String, String> transactionalListenerResponses = Collections.emptyMap();
+    RawStore ms = getMS();
+    try {
+      ms.openTransaction();
+      cat = ms.getCatalog(catName);
+
+      firePreEvent(new PreDropCatalogEvent(this, cat));
+
+      List<String> allDbs = get_databases(prependNotNullCatToDbName(catName, null));
+      if (allDbs != null && !allDbs.isEmpty()) {
+        // It might just be the default, in which case we can drop that one if it's empty
+        if (allDbs.size() == 1 && allDbs.get(0).equals(DEFAULT_DATABASE_NAME)) {
+          try {
+            DropDatabaseRequest req = new DropDatabaseRequest();
+            req.setName(DEFAULT_DATABASE_NAME);
+            req.setCatalogName(catName);
+            req.setDeleteData(true);
+            req.setCascade(false);
+            drop_database_req(req);
+          } catch (InvalidOperationException e) {
+            // This means there are tables of something in the database
+            throw new InvalidOperationException("There are still objects in the default " +
+                "database for catalog " + catName);
+          }
+        } else {
+          throw new InvalidOperationException("There are non-default databases in the catalog " +
+              catName + " so it cannot be dropped.");
+        }
+      }
+
+      ms.dropCatalog(catName);
+      if (!transactionalListeners.isEmpty()) {
+        transactionalListenerResponses =
+            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                EventType.DROP_CATALOG,
+                new DropCatalogEvent(true, this, cat));
+      }
+
+      success = ms.commitTransaction();
+    } catch (NoSuchObjectException e) {
+      if (!ifExists) {
+        throw new NoSuchObjectException(e.getMessage());
+      } else {
+        ms.rollbackTransaction();
+      }
+    } finally {
+      if (success) {
+        wh.deleteDir(wh.getDnsPath(new Path(cat.getLocationUri())), false, false);
+      } else {
+        ms.rollbackTransaction();
+      }
+
+      if (!listeners.isEmpty()) {
+        MetaStoreListenerNotifier.notifyEvent(listeners,
+            EventType.DROP_CATALOG,
+            new DropCatalogEvent(success, this, cat),
+            null,
+            transactionalListenerResponses, ms);
+      }
+    }
+  }
+
+  @Override
+  public void create_database_req(final CreateDatabaseRequest createDatabaseRequest)
+          throws AlreadyExistsException, InvalidObjectException, MetaException {
+    startFunction("create_database_req", ": " + createDatabaseRequest.getDatabaseName());
+    boolean success = false;
+    Exception ex = null;
+    if (!createDatabaseRequest.isSetCatalogName()) {
+      createDatabaseRequest.setCatalogName(getDefaultCatalog(conf));
+    }
+
+    try {
+      try {
+        if (null != get_database_core(createDatabaseRequest.getCatalogName(), createDatabaseRequest.getDatabaseName())) {
+          throw new AlreadyExistsException("Database " + createDatabaseRequest.getDatabaseName() + " already exists");
+        }
+      } catch (NoSuchObjectException e) {
+        // expected
+      }
+      success = AbstractRequestHandler.offer(this, createDatabaseRequest).success();
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e)
+          .throwIfInstance(MetaException.class, InvalidObjectException.class, AlreadyExistsException.class)
+          .defaultMetaException();
+    } finally {
+      endFunction("create_database_req", success, ex);
+    }
+  }
+
+  @Override
+  public Database get_database_core(String catName, final String name) throws NoSuchObjectException, MetaException {
+    Database db = null;
+    if (name == null) {
+      throw new MetaException("Database name cannot be null.");
+    }
+    try {
+      db = getMS().getDatabase(catName, name);
+    } catch (Exception e) {
+      throw handleException(e).throwIfInstance(MetaException.class, NoSuchObjectException.class)
+          .defaultRuntimeException();
+    }
+    return db;
+  }
+
+  @Override
+  public Database get_database_req(GetDatabaseRequest request) throws NoSuchObjectException, MetaException {
+    startFunction("get_database", ": " + request.getName());
+    Database db = null;
+    Exception ex = null;
+    if (request.getName() == null) {
+      throw new MetaException("Database name cannot be null.");
+    }
+    List<String> processorCapabilities = request.getProcessorCapabilities();
+    String processorId = request.getProcessorIdentifier();
+    try {
+      db = getMS().getDatabase(request.getCatalogName(), request.getName());
+      firePreEvent(new PreReadDatabaseEvent(db, this));
+      if (transformer != null) {
+        db = transformer.transformDatabase(db, processorCapabilities, processorId);
+      }
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e).throwIfInstance(MetaException.class, NoSuchObjectException.class)
+          .defaultRuntimeException();
+    } finally {
+      endFunction("get_database", db != null, ex);
+    }
+    return db;
+  }
+
+  @Override
+  public void alter_database_req(final AlterDatabaseRequest alterDbReq) throws TException {
+    startFunction("alter_database_req " + alterDbReq.getOldDbName());
+    boolean success = false;
+    Exception ex = null;
+    RawStore ms = getMS();
+    Database oldDB = null;
+    Database newDB = alterDbReq.getNewDb();
+    String dbName = alterDbReq.getOldDbName();
+    Map<String, String> transactionalListenersResponses = Collections.emptyMap();
+
+    // Perform the same URI normalization as create_database_core.
+    if (newDB.getLocationUri() != null) {
+      newDB.setLocationUri(wh.getDnsPath(new Path(newDB.getLocationUri())).toString());
+    }
+
+    String[] parsedDbName = parseDbName(dbName, conf);
+
+    // We can replicate into an empty database, in which case newDB will have indication that
+    // it's target of replication but not oldDB. But replication flow will never alter a
+    // database so that oldDB indicates that it's target or replication but not the newDB. So,
+    // relying solely on newDB to check whether the database is target of replication works.
+    boolean isReplicated = isDbReplicationTarget(newDB);
+    try {
+      oldDB = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
+      if (oldDB == null) {
+        throw new MetaException("Could not alter database \"" + parsedDbName[DB_NAME] +
+            "\". Could not retrieve old definition.");
+      }
+
+      // Add replication target event id.
+      if (isReplicationEventIdUpdate(oldDB, newDB)) {
+        Map<String, String> oldParams = new LinkedHashMap<>(newDB.getParameters());
+        String currentNotificationLogID = Long.toString(ms.getCurrentNotificationEventId().getEventId());
+        oldParams.put(REPL_TARGET_DATABASE_PROPERTY, currentNotificationLogID);
+        LOG.debug("Adding the {} property for database {} with event id {}", REPL_TARGET_DATABASE_PROPERTY,
+            newDB.getName(), currentNotificationLogID);
+        newDB.setParameters(oldParams);
+      }
+      firePreEvent(new PreAlterDatabaseEvent(oldDB, newDB, this));
+
+      ms.openTransaction();
+      ms.alterDatabase(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], newDB);
+
+      if (!transactionalListeners.isEmpty()) {
+        AlterDatabaseEvent event = new AlterDatabaseEvent(oldDB, newDB, true, this, isReplicated);
+        if (!event.shouldSkipCapturing()) {
+          transactionalListenersResponses =
+                  MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventType.ALTER_DATABASE, event);
+        }
+      }
+
+      success = ms.commitTransaction();
+    } catch (MetaException|NoSuchObjectException e) {
+      ex = e;
+      throw e;
+    } finally {
+      if (!success) {
+        ms.rollbackTransaction();
+      }
+
+      if ((null != oldDB) && (!listeners.isEmpty())) {
+        AlterDatabaseEvent event = new AlterDatabaseEvent(oldDB, newDB, success, this, isReplicated);
+        if (!event.shouldSkipCapturing()) {
+          MetaStoreListenerNotifier.notifyEvent(listeners,
+                  EventType.ALTER_DATABASE, event, null, transactionalListenersResponses, ms);
+        }
+      }
+      endFunction("alter_database_req", success, ex);
+    }
+  }
+
+  /**
+   * Checks whether the repl.last.id is being updated.
+   * @param oldDb the old db object
+   * @param newDb the new db object
+   * @return true if repl.last.id is being changed.
+   */
+  private boolean isReplicationEventIdUpdate(Database oldDb, Database newDb) {
+    Map<String, String> oldDbProp = oldDb.getParameters();
+    Map<String, String> newDbProp = newDb.getParameters();
+    if (newDbProp == null || newDbProp.isEmpty() ||
+      Boolean.parseBoolean(newDbProp.get(REPL_RESUME_STARTED_AFTER_FAILOVER))) {
+      return false;
+    }
+    String newReplId = newDbProp.get(ReplConst.REPL_TARGET_TABLE_PROPERTY);
+    String oldReplId = oldDbProp != null ? oldDbProp.get(ReplConst.REPL_TARGET_TABLE_PROPERTY) : null;
+    return newReplId != null && !newReplId.equalsIgnoreCase(oldReplId);
+  }
+
+  @Override
+  public AsyncOperationResp drop_database_req(final DropDatabaseRequest req)
+      throws NoSuchObjectException, InvalidOperationException, MetaException {
+    logAndAudit("drop_database: " + req.getName() + ", async: " + req.isAsyncDrop() + ", id: " + req.getId());
+
+    if (DEFAULT_CATALOG_NAME.equalsIgnoreCase(req.getCatalogName())
+          && DEFAULT_DATABASE_NAME.equalsIgnoreCase(req.getName())) {
+      throw new MetaException("Can not drop " + DEFAULT_DATABASE_NAME + " database in catalog "
+        + DEFAULT_CATALOG_NAME);
+    }
+    Exception ex = null;
+    try {
+      return AbstractRequestHandler.offer(this, req).getRequestStatus().toAsyncOperationResp();
+    } catch (Exception e) {
+      ex = e;
+      // Reset the id of the request in case of RetryingHMSHandler retries
+      if (req.getId() != null && req.isAsyncDrop() && !req.isCancel()) {
+        req.setId(null);
+      }
+      throw handleException(e)
+          .throwIfInstance(NoSuchObjectException.class, InvalidOperationException.class, MetaException.class)
+          .defaultMetaException();
+    } finally {
+      for (MetaStoreEndFunctionListener listener : endFunctionListeners) {
+        listener.onEndFunction("drop_database_req", new MetaStoreEndFunctionContext(ex == null, ex, null));
+      }
+    }
+  }
+
+  @Override
+  public List<String> get_databases(final String pattern) throws MetaException {
+    startFunction("get_databases", ": " + pattern);
+
+    String[] parsedDbNamed = parseDbName(pattern, conf);
+    List<String> ret = null;
+    Exception ex = null;
+    try {
+      GetDatabaseObjectsRequest req = new GetDatabaseObjectsRequest();
+      req.setCatalogName(parsedDbNamed[CAT_NAME]);
+      if (parsedDbNamed[DB_NAME] != null) {
+        req.setPattern(parsedDbNamed[DB_NAME]);
+      }
+
+      GetDatabaseObjectsResponse response = get_databases_req(req);
+      ret = response.getDatabases().stream()
+          .map(Database::getName)
+          .collect(Collectors.toList());
+    } catch (Exception e) {
+      ex = e;
+      throw newMetaException(e);
+    } finally {
+      endFunction("get_databases", ret != null, ex);
+    }
+    return ret;
+  }
+
+  @Override
+  public List<String> get_all_databases() throws MetaException {
+    // get_databases filters results already. No need to filter here
+    return get_databases(MetaStoreUtils.prependCatalogToDbName(null, null, conf));
+  }
+
+  @Override
+  public GetDatabaseObjectsResponse get_databases_req(GetDatabaseObjectsRequest request)
+      throws MetaException {
+    String pattern = request.isSetPattern() ? request.getPattern() : null;
+    String catName = request.isSetCatalogName() ? request.getCatalogName() : getDefaultCatalog(conf);
+
+    startFunction("get_databases_req", ": catalogName=" + catName + " pattern=" + pattern);
+
+    GetDatabaseObjectsResponse response = new GetDatabaseObjectsResponse();
+    List<Database> dbs = null;
+    Exception ex = null;
+
+    try {
+      dbs = getMS().getDatabaseObjects(catName, pattern);
+      dbs = FilterUtils.filterDatabaseObjectsIfEnabled(isServerFilterEnabled, filterHook, dbs);
+      response.setDatabases(dbs);
+    } catch (Exception e) {
+      ex = e;
+      throw newMetaException(e);
+    } finally {
+      endFunction("get_databases_req", dbs != null, ex);
+    }
+
+    return response;
+  }
+
+  private void create_dataconnector_core(RawStore ms, final DataConnector connector)
+      throws AlreadyExistsException, InvalidObjectException, MetaException {
+    if (!MetaStoreUtils.validateName(connector.getName(), conf)) {
+      throw new InvalidObjectException(connector.getName() + " is not a valid dataconnector name");
+    }
+
+    if (connector.getOwnerName() == null){
+      try {
+        connector.setOwnerName(SecurityUtils.getUGI().getShortUserName());
+      }catch (Exception e){
+        LOG.warn("Failed to get owner name for create dataconnector operation.", e);
+      }
+    }
+    long time = System.currentTimeMillis()/1000;
+    connector.setCreateTime((int) time);
+    boolean success = false;
+    Map<String, String> transactionalListenersResponses = Collections.emptyMap();
+    try {
+      firePreEvent(new PreCreateDataConnectorEvent(connector, this));
+
+      ms.openTransaction();
+      ms.createDataConnector(connector);
+
+      if (!transactionalListeners.isEmpty()) {
+        transactionalListenersResponses =
+            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                EventType.CREATE_DATACONNECTOR,
+                new CreateDataConnectorEvent(connector, true, this));
+      }
+
+      success = ms.commitTransaction();
+    } finally {
+      if (!success) {
+        ms.rollbackTransaction();
+      }
+
+      if (!listeners.isEmpty()) {
+        MetaStoreListenerNotifier.notifyEvent(listeners,
+            EventType.CREATE_DATACONNECTOR,
+            new CreateDataConnectorEvent(connector, success, this),
+            null,
+            transactionalListenersResponses, ms);
+      }
+    }
+  }
+
+  @Override
+  public void create_dataconnector_req(final CreateDataConnectorRequest connectorReq)
+      throws AlreadyExistsException, InvalidObjectException, MetaException {
+    startFunction("create_dataconnector_req", ": " + connectorReq.toString());
+    boolean success = false;
+    Exception ex = null;
+    try {
+      DataConnector connector = connectorReq.getConnector();
+      try {
+        if (null != get_dataconnector_core(connector.getName())) {
+          throw new AlreadyExistsException("DataConnector " + connector.getName() + " already exists");
+        }
+      } catch (NoSuchObjectException e) {
+        // expected
+      }
+      create_dataconnector_core(getMS(), connector);
+      success = true;
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e)
+          .throwIfInstance(MetaException.class, InvalidObjectException.class, AlreadyExistsException.class)
+          .defaultMetaException();
+    } finally {
+      endFunction("create_dataconnector_req", success, ex);
+    }
+  }
+
+  @Override
+  public DataConnector get_dataconnector_core(final String name) throws NoSuchObjectException, MetaException {
+    DataConnector connector = null;
+    if (name == null) {
+      throw new MetaException("Data connector name cannot be null.");
+    }
+    try {
+      connector = getMS().getDataConnector(name);
+    } catch (Exception e) {
+      throw handleException(e).throwIfInstance(MetaException.class, NoSuchObjectException.class)
+          .defaultRuntimeException();
+    }
+    return connector;
+  }
+
+  @Override
+  public DataConnector get_dataconnector_req(GetDataConnectorRequest request) throws NoSuchObjectException, MetaException {
+    startFunction("get_dataconnector", ": " + request.getConnectorName());
+    DataConnector connector = null;
+    Exception ex = null;
+    try {
+      connector = get_dataconnector_core(request.getConnectorName());
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e).throwIfInstance(MetaException.class, NoSuchObjectException.class)
+          .defaultRuntimeException();
+    } finally {
+      endFunction("get_dataconnector", connector != null, ex);
+    }
+    return connector;
+  }
+
+  @Override
+  public void alter_dataconnector_req(final AlterDataConnectorRequest alterReq) throws TException {
+    boolean success = false;
+    Exception ex = null;
+    RawStore ms = getMS();
+    DataConnector oldDC = null;
+    Map<String, String> transactionalListenersResponses = Collections.emptyMap();
+    String dcName = alterReq.getConnectorName();
+    DataConnector newDC = alterReq.getNewConnector();
+    startFunction("alter_dataconnector " + dcName);
+    try {
+      oldDC = get_dataconnector_core(dcName);
+      if (oldDC == null) {
+        throw new MetaException("Could not alter dataconnector \"" + dcName +
+            "\". Could not retrieve old definition.");
+      }
+      firePreEvent(new PreAlterDataConnectorEvent(oldDC, newDC, this));
+
+      ms.openTransaction();
+      ms.alterDataConnector(dcName, newDC);
+      DataConnectorProviderFactory.invalidateDataConnectorFromCache(dcName);
+
+        /*
+        if (!transactionalListeners.isEmpty()) {
+          transactionalListenersResponses =
+              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventType.ALTER_DATACONNECTOR,
+                  new AlterDataConnectorEvent(oldDC, newDC, true, this));
+        }
+         */
+
+      success = ms.commitTransaction();
+    } catch (MetaException|NoSuchObjectException e) {
+      ex = e;
+      throw e;
+    } finally {
+      if (!success) {
+        ms.rollbackTransaction();
+      }
+/*
+        if ((null != oldDC) && (!listeners.isEmpty())) {
+          MetaStoreListenerNotifier.notifyEvent(listeners,
+              EventType.ALTER_DATACONNECTOR,
+              new AlterDataConnectorEvent(oldDC, newDC, success, this),
+              null,
+              transactionalListenersResponses, ms);
+        }
+ */
+      endFunction("alter_database", success, ex);
+    }
+  }
+
+  @Override
+  public List<String> get_dataconnectors() throws MetaException {
+    startFunction("get_dataconnectors");
+
+    List<String> ret = null;
+    Exception ex = null;
+    try {
+      ret = getMS().getAllDataConnectorNames();
+      ret = FilterUtils.filterDataConnectorsIfEnabled(isServerFilterEnabled, filterHook, ret);
+    } catch (Exception e) {
+      ex = e;
+      throw newMetaException(e);
+    } finally {
+      endFunction("get_dataconnectors", ret != null, ex);
+    }
+    return ret;
+  }
+
+  @Override
+  public void drop_dataconnector_req(final DropDataConnectorRequest dropDcReq) throws NoSuchObjectException, InvalidOperationException, MetaException {
+    boolean success = false;
+    DataConnector connector = null;
+    Exception ex = null;
+    RawStore ms = getMS();
+    String dcName = dropDcReq.getConnectorName();
+    boolean ifNotExists = dropDcReq.isIfNotExists();
+    boolean checkReferences = dropDcReq.isCheckReferences();
+    startFunction("drop_dataconnector_req", ": " + dcName);
+    try {
+      connector = getMS().getDataConnector(dcName);
+      DataConnectorProviderFactory.invalidateDataConnectorFromCache(dcName);
+    } catch (NoSuchObjectException e) {
+      if (!ifNotExists) {
+        throw new NoSuchObjectException("DataConnector " + dcName + " doesn't exist");
+      } else {
+        return;
+      }
+    }
+    try {
+      ms.openTransaction();
+      // TODO find DBs with references to this connector
+      // if any existing references and checkReferences=true, do not drop
+
+      firePreEvent(new PreDropDataConnectorEvent(connector, this));
+
+      if (!ms.dropDataConnector(dcName)) {
+        throw new MetaException("Unable to drop dataconnector " + dcName);
+      } else {
+/*
+          // TODO
+          if (!transactionalListeners.isEmpty()) {
+            transactionalListenerResponses =
+                MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                    EventType.DROP_TABLE,
+                    new DropTableEvent(tbl, true, deleteData,
+                        this, isReplicated),
+                    envContext);
+          }
+ */
+        success = ms.commitTransaction();
+      }
+    } finally {
+      if (!success) {
+        ms.rollbackTransaction();
+      }
+/*
+        if (!listeners.isEmpty()) {
+          MetaStoreListenerNotifier.notifyEvent(listeners,
+              EventType.DROP_TABLE,
+              new DropTableEvent(tbl, success, deleteData, this, isReplicated),
+              envContext,
+              transactionalListenerResponses, ms);
+        }
+ */
+      endFunction("drop_dataconnector", success, ex);
+    }
+  }
+
+  private void create_type_core(final RawStore ms, final Type type)
+      throws AlreadyExistsException, MetaException, InvalidObjectException {
+    if (!MetaStoreUtils.validateName(type.getName(), null)) {
+      throw new InvalidObjectException("Invalid type name");
+    }
+
+    boolean success = false;
+    try {
+      ms.openTransaction();
+      if (is_type_exists(ms, type.getName())) {
+        throw new AlreadyExistsException("Type " + type.getName() + " already exists");
+      }
+      ms.createType(type);
+      success = ms.commitTransaction();
+    } finally {
+      if (!success) {
+        ms.rollbackTransaction();
+      }
+    }
+  }
+
+  @Override
+  public boolean create_type(final Type type) throws AlreadyExistsException,
+      MetaException, InvalidObjectException {
+    startFunction("create_type", ": " + type.toString());
+    boolean success = false;
+    Exception ex = null;
+    try {
+      create_type_core(getMS(), type);
+      success = true;
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e)
+          .throwIfInstance(MetaException.class, InvalidObjectException.class, AlreadyExistsException.class)
+          .defaultMetaException();
+    } finally {
+      endFunction("create_type", success, ex);
+    }
+
+    return success;
+  }
+
+  @Override
+  public Type get_type(final String name) throws MetaException, NoSuchObjectException {
+    startFunction("get_type", ": " + name);
+
+    Type ret = null;
+    Exception ex = null;
+    try {
+      ret = getMS().getType(name);
+      if (null == ret) {
+        throw new NoSuchObjectException("Type \"" + name + "\" not found.");
+      }
+    } catch (Exception e) {
+      ex = e;
+      throwMetaException(e);
+    } finally {
+      endFunction("get_type", ret != null, ex);
+    }
+    return ret;
+  }
+
+  private boolean is_type_exists(RawStore ms, String typeName)
+      throws MetaException {
+    return (ms.getType(typeName) != null);
+  }
+
+  @Override
+  public boolean drop_type(final String name) throws MetaException, NoSuchObjectException {
+    startFunction("drop_type", ": " + name);
+
+    boolean success = false;
+    Exception ex = null;
+    try {
+      // TODO:pc validate that there are no types that refer to this
+      success = getMS().dropType(name);
+    } catch (Exception e) {
+      ex = e;
+      throwMetaException(e);
+    } finally {
+      endFunction("drop_type", success, ex);
+    }
+    return success;
+  }
+
+  @Override
+  public Table translate_table_dryrun(final CreateTableRequest req) throws AlreadyExistsException,
+          MetaException, InvalidObjectException, InvalidInputException {
+    Table transformedTbl = null;
+    Table tbl = req.getTable();
+    List<String> processorCapabilities = req.getProcessorCapabilities();
+    String processorId = req.getProcessorIdentifier();
+    if (!tbl.isSetCatName()) {
+      tbl.setCatName(getDefaultCatalog(conf));
+    }
+    if (transformer != null) {
+      transformedTbl = transformer.transformCreateTable(tbl, processorCapabilities, processorId);
+    }
+    return transformedTbl != null ? transformedTbl : tbl;
+  }
+
+  @Override
+  public void create_table_req(final CreateTableRequest req)
+      throws AlreadyExistsException, MetaException, InvalidObjectException,
+      InvalidInputException {
+    Table tbl = req.getTable();
+    startFunction("create_table_req", ": " + tbl.toString());
+    boolean success = false;
+    Exception ex = null;
+    try {
+      success = AbstractRequestHandler.offer(this, req).success();
+    } catch (Exception e) {
+      LOG.warn("create_table_req got ", e);
+      ex = e;
+      throw handleException(e).throwIfInstance(MetaException.class, InvalidObjectException.class)
+          .throwIfInstance(AlreadyExistsException.class, InvalidInputException.class)
+          .convertIfInstance(NoSuchObjectException.class, InvalidObjectException.class)
+          .defaultMetaException();
+    } finally {
+      endFunction("create_table_req", success, ex, tbl.getTableName());
+    }
+  }
+
+  @Override
+  public void drop_constraint(DropConstraintRequest req)
+      throws MetaException, InvalidObjectException {
+    String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
+    String dbName = req.getDbname();
+    String tableName = req.getTablename();
+    String constraintName = req.getConstraintname();
+    startFunction("drop_constraint", ": " + constraintName);
+    boolean success = false;
+    Exception ex = null;
+    RawStore ms = getMS();
+    try {
+      ms.openTransaction();
+      ms.dropConstraint(catName, dbName, tableName, constraintName);
+      if (transactionalListeners.size() > 0) {
+        DropConstraintEvent dropConstraintEvent = new DropConstraintEvent(catName, dbName,
+            tableName, constraintName, true, this);
+        for (MetaStoreEventListener transactionalListener : transactionalListeners) {
+          transactionalListener.onDropConstraint(dropConstraintEvent);
+        }
+      }
+      success = ms.commitTransaction();
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e).throwIfInstance(MetaException.class)
+          .convertIfInstance(NoSuchObjectException.class, InvalidObjectException.class)
+          .defaultMetaException();
+    } finally {
+      if (!success) {
+        ms.rollbackTransaction();
+      } else {
+        for (MetaStoreEventListener listener : listeners) {
+          DropConstraintEvent dropConstraintEvent = new DropConstraintEvent(catName, dbName,
+              tableName, constraintName, true, this);
+          listener.onDropConstraint(dropConstraintEvent);
+        }
+      }
+      endFunction("drop_constraint", success, ex, constraintName);
+    }
+  }
+
+  @Override
+  public void add_primary_key(AddPrimaryKeyRequest req)
+      throws MetaException, InvalidObjectException {
+    List<SQLPrimaryKey> primaryKeyCols = req.getPrimaryKeyCols();
+    String constraintName = (CollectionUtils.isNotEmpty(primaryKeyCols)) ?
+        primaryKeyCols.get(0).getPk_name() : "null";
+    startFunction("add_primary_key", ": " + constraintName);
+    boolean success = false;
+    Exception ex = null;
+    if (CollectionUtils.isNotEmpty(primaryKeyCols) && !primaryKeyCols.get(0).isSetCatName()) {
+      String defaultCat = getDefaultCatalog(conf);
+      primaryKeyCols.forEach(pk -> pk.setCatName(defaultCat));
+    }
+    RawStore ms = getMS();
+    try {
+      ms.openTransaction();
+      List<SQLPrimaryKey> primaryKeys = ms.addPrimaryKeys(primaryKeyCols);
+      if (transactionalListeners.size() > 0) {
+        if (CollectionUtils.isNotEmpty(primaryKeys)) {
+          AddPrimaryKeyEvent addPrimaryKeyEvent = new AddPrimaryKeyEvent(primaryKeys, true, this);
+          for (MetaStoreEventListener transactionalListener : transactionalListeners) {
+            transactionalListener.onAddPrimaryKey(addPrimaryKeyEvent);
+          }
+        }
+      }
+      success = ms.commitTransaction();
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e).throwIfInstance(MetaException.class, InvalidObjectException.class)
+          .defaultMetaException();
+    } finally {
+      if (!success) {
+        ms.rollbackTransaction();
+      } else if (primaryKeyCols != null && primaryKeyCols.size() > 0) {
+        for (MetaStoreEventListener listener : listeners) {
+          AddPrimaryKeyEvent addPrimaryKeyEvent = new AddPrimaryKeyEvent(primaryKeyCols, true, this);
+          listener.onAddPrimaryKey(addPrimaryKeyEvent);
+        }
+      }
+      endFunction("add_primary_key", success, ex, constraintName);
+    }
+  }
+
+  @Override
+  public void add_foreign_key(AddForeignKeyRequest req)
+      throws MetaException, InvalidObjectException {
+    List<SQLForeignKey> foreignKeys = req.getForeignKeyCols();
+    String constraintName = CollectionUtils.isNotEmpty(foreignKeys) ?
+        foreignKeys.get(0).getFk_name() : "null";
+    startFunction("add_foreign_key", ": " + constraintName);
+    boolean success = false;
+    Exception ex = null;
+    if (CollectionUtils.isNotEmpty(foreignKeys) && !foreignKeys.get(0).isSetCatName()) {
+      String defaultCat = getDefaultCatalog(conf);
+      foreignKeys.forEach(pk -> pk.setCatName(defaultCat));
+    }
+    RawStore ms = getMS();
+    try {
+      ms.openTransaction();
+      foreignKeys = ms.addForeignKeys(foreignKeys);
+      if (transactionalListeners.size() > 0) {
+        if (CollectionUtils.isNotEmpty(foreignKeys)) {
+          AddForeignKeyEvent addForeignKeyEvent = new AddForeignKeyEvent(foreignKeys, true, this);
+          for (MetaStoreEventListener transactionalListener : transactionalListeners) {
+            transactionalListener.onAddForeignKey(addForeignKeyEvent);
+          }
+        }
+      }
+      success = ms.commitTransaction();
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e).throwIfInstance(MetaException.class, InvalidObjectException.class)
+          .defaultMetaException();
+    } finally {
+      if (!success) {
+        ms.rollbackTransaction();
+      } else if (CollectionUtils.isNotEmpty(foreignKeys)) {
+        for (MetaStoreEventListener listener : listeners) {
+          AddForeignKeyEvent addForeignKeyEvent = new AddForeignKeyEvent(foreignKeys, true, this);
+          listener.onAddForeignKey(addForeignKeyEvent);
+        }
+      }
+      endFunction("add_foreign_key", success, ex, constraintName);
+    }
+  }
+
+  @Override
+  public void add_unique_constraint(AddUniqueConstraintRequest req)
+      throws MetaException, InvalidObjectException {
+    List<SQLUniqueConstraint> uniqueConstraints = req.getUniqueConstraintCols();
+    String constraintName = (uniqueConstraints != null && uniqueConstraints.size() > 0) ?
+        uniqueConstraints.get(0).getUk_name() : "null";
+    startFunction("add_unique_constraint", ": " + constraintName);
+    boolean success = false;
+    Exception ex = null;
+    if (!uniqueConstraints.isEmpty() && !uniqueConstraints.get(0).isSetCatName()) {
+      String defaultCat = getDefaultCatalog(conf);
+      uniqueConstraints.forEach(pk -> pk.setCatName(defaultCat));
+    }
+    RawStore ms = getMS();
+    try {
+      ms.openTransaction();
+      uniqueConstraints = ms.addUniqueConstraints(uniqueConstraints);
+      if (transactionalListeners.size() > 0) {
+        if (CollectionUtils.isNotEmpty(uniqueConstraints)) {
+          AddUniqueConstraintEvent addUniqueConstraintEvent = new AddUniqueConstraintEvent(uniqueConstraints, true, this);
+          for (MetaStoreEventListener transactionalListener : transactionalListeners) {
+            transactionalListener.onAddUniqueConstraint(addUniqueConstraintEvent);
+          }
+        }
+      }
+      success = ms.commitTransaction();
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e).throwIfInstance(MetaException.class, InvalidObjectException.class)
+          .defaultMetaException();
+    } finally {
+      if (!success) {
+        ms.rollbackTransaction();
+      } else if (CollectionUtils.isNotEmpty(uniqueConstraints)) {
+        for (MetaStoreEventListener listener : listeners) {
+          AddUniqueConstraintEvent addUniqueConstraintEvent = new AddUniqueConstraintEvent(uniqueConstraints, true, this);
+          listener.onAddUniqueConstraint(addUniqueConstraintEvent);
+        }
+      }
+      endFunction("add_unique_constraint", success, ex, constraintName);
+    }
+  }
+
+  @Override
+  public void add_not_null_constraint(AddNotNullConstraintRequest req)
+      throws MetaException, InvalidObjectException {
+    List<SQLNotNullConstraint> notNullConstraints = req.getNotNullConstraintCols();
+    String constraintName = (notNullConstraints != null && notNullConstraints.size() > 0) ?
+        notNullConstraints.get(0).getNn_name() : "null";
+    startFunction("add_not_null_constraint", ": " + constraintName);
+    boolean success = false;
+    Exception ex = null;
+    if (!notNullConstraints.isEmpty() && !notNullConstraints.get(0).isSetCatName()) {
+      String defaultCat = getDefaultCatalog(conf);
+      notNullConstraints.forEach(pk -> pk.setCatName(defaultCat));
+    }
+    RawStore ms = getMS();
+    try {
+      ms.openTransaction();
+      notNullConstraints = ms.addNotNullConstraints(notNullConstraints);
+
+      if (transactionalListeners.size() > 0) {
+        if (CollectionUtils.isNotEmpty(notNullConstraints)) {
+          AddNotNullConstraintEvent addNotNullConstraintEvent = new AddNotNullConstraintEvent(notNullConstraints, true, this);
+          for (MetaStoreEventListener transactionalListener : transactionalListeners) {
+            transactionalListener.onAddNotNullConstraint(addNotNullConstraintEvent);
+          }
+        }
+      }
+      success = ms.commitTransaction();
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e).throwIfInstance(MetaException.class, InvalidObjectException.class).defaultMetaException();
+    } finally {
+      if (!success) {
+        ms.rollbackTransaction();
+      } else if (CollectionUtils.isNotEmpty(notNullConstraints)) {
+        for (MetaStoreEventListener listener : listeners) {
+          AddNotNullConstraintEvent addNotNullConstraintEvent = new AddNotNullConstraintEvent(notNullConstraints, true, this);
+          listener.onAddNotNullConstraint(addNotNullConstraintEvent);
+        }
+      }
+      endFunction("add_not_null_constraint", success, ex, constraintName);
+    }
+  }
+
+  @Override
+  public void add_default_constraint(AddDefaultConstraintRequest req) throws MetaException, InvalidObjectException {
+    List<SQLDefaultConstraint> defaultConstraints = req.getDefaultConstraintCols();
+    String constraintName =
+        CollectionUtils.isNotEmpty(defaultConstraints) ? defaultConstraints.get(0).getDc_name() : "null";
+    startFunction("add_default_constraint", ": " + constraintName);
+    boolean success = false;
+    Exception ex = null;
+    if (!defaultConstraints.isEmpty() && !defaultConstraints.get(0).isSetCatName()) {
+      String defaultCat = getDefaultCatalog(conf);
+      defaultConstraints.forEach(pk -> pk.setCatName(defaultCat));
+    }
+    RawStore ms = getMS();
+    try {
+      ms.openTransaction();
+      defaultConstraints = ms.addDefaultConstraints(defaultConstraints);
+      if (transactionalListeners.size() > 0) {
+        if (CollectionUtils.isNotEmpty(defaultConstraints)) {
+          AddDefaultConstraintEvent addDefaultConstraintEvent =
+              new AddDefaultConstraintEvent(defaultConstraints, true, this);
+          for (MetaStoreEventListener transactionalListener : transactionalListeners) {
+            transactionalListener.onAddDefaultConstraint(addDefaultConstraintEvent);
+          }
+        }
+      }
+      success = ms.commitTransaction();
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e).throwIfInstance(MetaException.class, InvalidObjectException.class).defaultMetaException();
+    } finally {
+      if (!success) {
+        ms.rollbackTransaction();
+      } else if (CollectionUtils.isNotEmpty(defaultConstraints)) {
+        for (MetaStoreEventListener listener : listeners) {
+          AddDefaultConstraintEvent addDefaultConstraintEvent =
+              new AddDefaultConstraintEvent(defaultConstraints, true, this);
+          listener.onAddDefaultConstraint(addDefaultConstraintEvent);
+        }
+      }
+      endFunction("add_default_constraint", success, ex, constraintName);
+    }
+  }
+
+  @Override
+  public void add_check_constraint(AddCheckConstraintRequest req)
+      throws MetaException, InvalidObjectException {
+    List<SQLCheckConstraint> checkConstraints= req.getCheckConstraintCols();
+    String constraintName = CollectionUtils.isNotEmpty(checkConstraints) ?
+        checkConstraints.get(0).getDc_name() : "null";
+    startFunction("add_check_constraint", ": " + constraintName);
+    boolean success = false;
+    Exception ex = null;
+    if (!checkConstraints.isEmpty() && !checkConstraints.get(0).isSetCatName()) {
+      String defaultCat = getDefaultCatalog(conf);
+      checkConstraints.forEach(pk -> pk.setCatName(defaultCat));
+    }
+    RawStore ms = getMS();
+    try {
+      ms.openTransaction();
+      checkConstraints = ms.addCheckConstraints(checkConstraints);
+      if (transactionalListeners.size() > 0) {
+        if (CollectionUtils.isNotEmpty(checkConstraints)) {
+          AddCheckConstraintEvent addcheckConstraintEvent = new AddCheckConstraintEvent(checkConstraints, true, this);
+          for (MetaStoreEventListener transactionalListener : transactionalListeners) {
+            transactionalListener.onAddCheckConstraint(addcheckConstraintEvent);
+          }
+        }
+      }
+      success = ms.commitTransaction();
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e).throwIfInstance(MetaException.class, InvalidObjectException.class).defaultMetaException();
+    } finally {
+      if (!success) {
+        ms.rollbackTransaction();
+      } else if (CollectionUtils.isNotEmpty(checkConstraints)) {
+        for (MetaStoreEventListener listener : listeners) {
+          AddCheckConstraintEvent addCheckConstraintEvent = new AddCheckConstraintEvent(checkConstraints, true, this);
+          listener.onAddCheckConstraint(addCheckConstraintEvent);
+        }
+      }
+      endFunction("add_check_constraint", success, ex, constraintName);
+    }
+  }
+
+  @Override
+  public AsyncOperationResp drop_table_req(DropTableRequest dropReq)
+      throws MetaException, NoSuchObjectException {
+    logAndAudit("drop_table_req: " + dropReq.getTableName() +
+        ", async: " + dropReq.isAsyncDrop() + ", id: " + dropReq.getId());
+    Exception ex = null;
+    try {
+      return AbstractRequestHandler.offer(this, dropReq).getRequestStatus().toAsyncOperationResp();
+    } catch (Exception e) {
+      ex = e;
+      // Here we get an exception, the RetryingHMSHandler might retry the call,
+      // need to clear the id from the request, so AbstractRequestHandler can
+      // start a new execution other than reuse the cached failed handler.
+      if (dropReq.getId() != null && dropReq.isAsyncDrop() && !dropReq.isCancel()) {
+        dropReq.setId(null);
+      }
+      throw handleException(e).throwIfInstance(MetaException.class, NoSuchObjectException.class)
+              .convertIfInstance(IOException.class, MetaException.class).defaultMetaException();
+    } finally {
+      for (MetaStoreEndFunctionListener listener : endFunctionListeners) {
+        listener.onEndFunction("drop_table_req", new MetaStoreEndFunctionContext(ex == null, ex,
+            TableName.getQualified(dropReq.getCatalogName(), dropReq.getDbName(), dropReq.getTableName())));
+      }
+    }
+  }
+
+  @Override
+  public TruncateTableResponse truncate_table_req(TruncateTableRequest req)
+      throws NoSuchObjectException, MetaException {
+    String[] parsedDbName = parseDbName(req.getDbName(), getConf());
+    startFunction("truncate_table_req",
+        ": db=" + parsedDbName[DB_NAME] + " tab=" + req.getTableName());
+    Exception ex = null;
+    boolean success = false;
+    try {
+      success = AbstractRequestHandler.offer(this, req).success();
+      return new TruncateTableResponse();
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e).throwIfInstance(MetaException.class, NoSuchObjectException.class)
+          .convertIfInstance(IOException.class, MetaException.class)
+          .defaultMetaException();
+    } finally {
+      endFunction("truncate_table_req", success, ex,
+          TableName.getQualified(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], req.getTableName()));
+    }
+  }
+
+  @Override
+  public List<ExtendedTableInfo> get_tables_ext(final GetTablesExtRequest req) throws TException {
+    req.setCatalog(req.isSetCatalog() ? req.getCatalog() : getDefaultCatalog(conf));
+    return GetTableHandler.getTables(
+        () -> startTableFunction("get_tables_ext", req.getCatalog(), req.getDatabase(), req.getTableNamePattern()),
+        this, req,
+        t -> endFunction("get_tables_ext", t.getLeft() != null, t.getRight()));
+  }
+
+  @Override
+  public GetTableResult get_table_req(GetTableRequest req) throws MetaException,
+      NoSuchObjectException {
+    req.setCatName(req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf));
+    return new GetTableResult(GetTableHandler.getTable(
+        () -> startTableFunction("get_table", req.getCatName(), req.getDbName(), req.getTblName()),
+        this, req, false,
+        t -> endFunction("get_table", t.getLeft() != null, t.getRight(), req.getTblName())));
+  }
+
+  @Override
+  public List<TableMeta> get_table_meta(String dbnames, String tblNames, List<String> tblTypes)
+      throws TException {
+    String[] parsedDbName = parseDbName(dbnames, conf);
+    return GetTableHandler.getTables(
+        () -> startTableFunction("get_table_metas", parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tblNames),
+        this,
+        GetTableHandler.GetTableNamesRequest.forTableMeta(dbnames, conf)
+            .byType(tblTypes != null && !tblTypes.isEmpty()? String.join(",", tblTypes) : null, tblNames),
+        t -> endFunction("get_table_metas", t.getLeft() != null, t.getRight(), join(t.getLeft(), ",")));
+  }
+
+  /**
+   * This function retrieves table from metastore. If getColumnStats flag is true,
+   * then engine should be specified so the table is retrieve with the column stats
+   * for that engine.
+   */
+  @Override
+  public Table get_table_core(GetTableRequest getTableRequest) throws MetaException, NoSuchObjectException {
+    return GetTableHandler.getTable(null, this, getTableRequest, true, null);
+  }
+
+  /**
+   * Gets multiple tables from the hive metastore.
+   *
+   * @param req
+   *          The GetTablesRequest object.
+   * @return A list of tables whose names are in the the list "names" and
+   *         are retrievable from the database specified by "dbnames."
+   *         There is no guarantee of the order of the returned tables.
+   *         If there are duplicate names, only one instance of the table will be returned.
+   * @throws TException
+   */
+  @Override
+  public GetTablesResult get_table_objects_by_name_req(GetTablesRequest req) throws TException {
+    List<Table> tables = GetTableHandler.getTables(
+        () -> startMultiTableFunction("get_multi_table", req.getDbName(), req.getTblNames()),
+        this, req,
+        t -> endFunction("get_multi_table", t.getLeft() != null, t.getRight(), join(req.getTblNames(), ",")));
+    return new GetTablesResult(tables);
+  }
+
+  @Override
+  public void update_creation_metadata(String catName, final String dbName, final String tableName, CreationMetadata cm) throws MetaException {
+    getMS().updateCreationMetadata(catName, dbName, tableName, cm);
+  }
+
+  @Override
+  public List<String> get_table_names_by_filter(
+      final String dbName, final String filter, final short maxTables)
+      throws TException {
+    return GetTableHandler.getTables(
+        () -> startFunction("get_table_names_by_filter", ": db = " + dbName + ", filter = " + filter),
+        this, GetTableHandler.GetTableNamesRequest.fromDatabase(dbName, conf).byFilter(filter, maxTables),
+        t -> endFunction("get_table_names_by_filter", t.getLeft() != null, t.getRight(), join(t.getLeft(), ",")));
+  }
+
+  @Override
+  public Partition append_partition_req(final AppendPartitionsRequest appendPartitionsReq)
+      throws InvalidObjectException, AlreadyExistsException, MetaException {
+    String dbName = appendPartitionsReq.getDbName();
+    String catName = appendPartitionsReq.isSetCatalogName() ?
+        appendPartitionsReq.getCatalogName() : getDefaultCatalog(conf);
+    String tableName = appendPartitionsReq.getTableName();
+    startTableFunction("append_partition_req", catName, dbName, tableName);
+    Exception ex = null;
+    try {
+      AppendPartitionHandler appendPartition = AbstractRequestHandler.offer(this, appendPartitionsReq);
+      return appendPartition.getResult().partition();
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e)
+          .throwIfInstance(MetaException.class, InvalidObjectException.class, AlreadyExistsException.class)
+          .defaultMetaException();
+    } finally {
+      endFunction("append_partition_req", ex == null, ex, tableName);
+    }
+  }
+
+  @Override
+  public AddPartitionsResult add_partitions_req(AddPartitionsRequest request)
+      throws TException {
+    startFunction("add_partitions_req",
+        ": db=" + request.getDbName() + " tab=" + request.getTblName());
+    AddPartitionsResult result = new AddPartitionsResult();
+    if (request.getParts().isEmpty()) {
+      return result;
+    }
+    String catName = request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf);
+    String dbName = request.getDbName();
+    String tblName = request.getTblName();
+    startTableFunction("add_partitions_req", catName, dbName, tblName);
+
+    Exception ex = null;
+    try {
+      // Make sure all the partitions have the catalog set as well
+      AddPartitionsHandler addPartsOp = AbstractRequestHandler.offer(this, request);
+      if (addPartsOp.success() && request.isNeedResult()) {
+        AddPartitionsHandler.AddPartitionsResult addPartsResult = addPartsOp.getResult();
+        if (request.isSkipColumnSchemaForPartition()) {
+          if (addPartsResult.newParts() != null && !addPartsResult.newParts().isEmpty()) {
+            StorageDescriptor sd = addPartsResult.newParts().getFirst().getSd().deepCopy();
+            result.setPartitionColSchema(sd.getCols());
+            addPartsResult.newParts().forEach(partition -> partition.getSd().getCols().clear());
+          }
+        }
+        result.setPartitions(addPartsResult.newParts());
+      }
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e).defaultTException();
+    } finally {
+      endFunction("add_partitions_req", ex == null, ex, tblName);
+    }
+
+    if (!result.isSetPartitions() && request.isNeedResult()) {
+      // This is mainly for backwards compatibility,
+      // old client may ask for the added partitions even if it fails.
+      result.setPartitions(request.getParts());
+    }
+    return result;
+  }
+
+  @Override
+  public int add_partitions_pspec(final List<PartitionSpec> partSpecs)
+      throws TException {
+    if (partSpecs.isEmpty()) {
+      return 0;
+    }
+
+    String catName = partSpecs.get(0).isSetCatName() ? partSpecs.get(0).getCatName() : getDefaultCatalog(conf);
+    String dbName = partSpecs.get(0).getDbName();
+    String tableName = partSpecs.get(0).getTableName();
+    startTableFunction("add_partitions_pspec", catName, dbName, tableName);
+
+    Integer ret = null;
+    Exception ex = null;
+    try {
+      // If the catalog name isn't set, we need to go through and set it.
+      if (!partSpecs.get(0).isSetCatName()) {
+        partSpecs.forEach(ps -> ps.setCatName(catName));
+      }
+      dbName = normalizeIdentifier(dbName);
+      tableName = normalizeIdentifier(tableName);
+
+      PartitionSpecProxy partitionSpecProxy = PartitionSpecProxy.Factory.get(partSpecs);
+      final PartitionSpecProxy.PartitionIterator partitionIterator = partitionSpecProxy
+              .getPartitionIterator();
+      List<Partition> partitionsToAdd = new ArrayList<>(partitionSpecProxy.size());
+      while (partitionIterator.hasNext()) {
+        final Partition part = partitionIterator.getCurrent();
+        // Normalize dbName and tblName of each part
+        // to follow the case-insensitive behavior of replaced add_partitions_pspec_core
+        part.setDbName(normalizeIdentifier(part.getDbName()));
+        part.setTableName(normalizeIdentifier(part.getTableName()));
+
+        partitionsToAdd.add(part);
+        partitionIterator.next();
+      }
+      AddPartitionsRequest request = new AddPartitionsRequest(dbName, tableName, partitionsToAdd, false);
+      request.setCatName(catName);
+      return add_partitions_req(request).getPartitionsSize();
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e)
+          .throwIfInstance(MetaException.class, InvalidObjectException.class, AlreadyExistsException.class)
+          .defaultMetaException();
+    } finally {
+      endFunction("add_partitions_pspec", ret != null, ex, tableName);
+    }
+  }
+
+  @Override
+  public Partition exchange_partition(Map<String, String> partitionSpecs,
+                                      String sourceDbName, String sourceTableName, String destDbName,
+                                      String destTableName) throws TException {
+    exchange_partitions(partitionSpecs, sourceDbName, sourceTableName, destDbName, destTableName);
+    // Wouldn't it make more sense to return the first element of the list returned by the
+    // previous call?
+    return new Partition();
+  }
+
+  @Override
+  public List<Partition> exchange_partitions(Map<String, String> partitionSpecs,
+                                             String sourceDbName, String sourceTableName, String destDbName,
+                                             String destTableName) throws TException {
+    String[] parsedDestDbName = parseDbName(destDbName, conf);
+    String[] parsedSourceDbName = parseDbName(sourceDbName, conf);
+    // No need to check catalog for null as parseDbName() will never return null for the catalog.
+    if (partitionSpecs == null || parsedSourceDbName[DB_NAME] == null || sourceTableName == null
+        || parsedDestDbName[DB_NAME] == null || destTableName == null) {
+      throw new MetaException("The DB and table name for the source and destination tables,"
+          + " and the partition specs must not be null.");
+    }
+    if (!parsedDestDbName[CAT_NAME].equals(parsedSourceDbName[CAT_NAME])) {
+      throw new MetaException("You cannot move a partition across catalogs");
+    }
+
+    boolean success = false;
+    boolean pathCreated = false;
+    RawStore ms = getMS();
+    ms.openTransaction();
+
+    Table destinationTable =
+        ms.getTable(
+            parsedDestDbName[CAT_NAME], parsedDestDbName[DB_NAME], destTableName, null);
+    if (destinationTable == null) {
+      throw new MetaException( "The destination table " +
+          TableName.getQualified(parsedDestDbName[CAT_NAME],
+              parsedDestDbName[DB_NAME], destTableName) + " not found");
+    }
+    Table sourceTable =
+        ms.getTable(
+            parsedSourceDbName[CAT_NAME], parsedSourceDbName[DB_NAME], sourceTableName, null);
+    if (sourceTable == null) {
+      throw new MetaException("The source table " +
+          TableName.getQualified(parsedSourceDbName[CAT_NAME],
+              parsedSourceDbName[DB_NAME], sourceTableName) + " not found");
+    }
+
+    List<String> partVals = MetaStoreUtils.getPvals(sourceTable.getPartitionKeys(),
+        partitionSpecs);
+    List<String> partValsPresent = new ArrayList<> ();
+    List<FieldSchema> partitionKeysPresent = new ArrayList<> ();
+    int i = 0;
+    for (FieldSchema fs: sourceTable.getPartitionKeys()) {
+      String partVal = partVals.get(i);
+      if (partVal != null && !partVal.equals("")) {
+        partValsPresent.add(partVal);
+        partitionKeysPresent.add(fs);
+      }
+      i++;
+    }
+    // Passed the unparsed DB name here, as get_partitions_ps expects to parse it
+    List<Partition> partitionsToExchange = get_partitions_ps(sourceDbName, sourceTableName,
+        partVals, (short)-1);
+    if (partitionsToExchange == null || partitionsToExchange.isEmpty()) {
+      throw new MetaException("No partition is found with the values " + partitionSpecs
+          + " for the table " + sourceTableName);
+    }
+    boolean sameColumns = MetaStoreUtils.compareFieldColumns(
+        sourceTable.getSd().getCols(), destinationTable.getSd().getCols());
+    boolean samePartitions = MetaStoreUtils.compareFieldColumns(
+        sourceTable.getPartitionKeys(), destinationTable.getPartitionKeys());
+    if (!sameColumns || !samePartitions) {
+      throw new MetaException("The tables have different schemas." +
+          " Their partitions cannot be exchanged.");
+    }
+    Path sourcePath = new Path(sourceTable.getSd().getLocation(),
+        Warehouse.makePartName(partitionKeysPresent, partValsPresent));
+    Path destPath = new Path(destinationTable.getSd().getLocation(),
+        Warehouse.makePartName(partitionKeysPresent, partValsPresent));
+    List<Partition> destPartitions = new ArrayList<>();
+
+    Map<String, String> transactionalListenerResponsesForAddPartition = Collections.emptyMap();
+    List<Map<String, String>> transactionalListenerResponsesForDropPartition =
+        Lists.newArrayListWithCapacity(partitionsToExchange.size());
+
+    // Check if any of the partitions already exists in destTable.
+    List<String> destPartitionNames = ms.listPartitionNames(parsedDestDbName[CAT_NAME],
+        parsedDestDbName[DB_NAME], destTableName, (short) -1);
+    if (destPartitionNames != null && !destPartitionNames.isEmpty()) {
+      for (Partition partition : partitionsToExchange) {
+        String partToExchangeName =
+            Warehouse.makePartName(destinationTable.getPartitionKeys(), partition.getValues());
+        if (destPartitionNames.contains(partToExchangeName)) {
+          throw new MetaException("The partition " + partToExchangeName
+              + " already exists in the table " + destTableName);
+        }
+      }
+    }
+
+    Database srcDb = ms.getDatabase(parsedSourceDbName[CAT_NAME], parsedSourceDbName[DB_NAME]);
+    Database destDb = ms.getDatabase(parsedDestDbName[CAT_NAME], parsedDestDbName[DB_NAME]);
+    if (!HiveMetaStore.isRenameAllowed(srcDb, destDb)) {
+      throw new MetaException("Exchange partition not allowed for " +
+          TableName.getQualified(parsedSourceDbName[CAT_NAME],
+              parsedSourceDbName[DB_NAME], sourceTableName) + " Dest db : " + destDbName);
+    }
+    try {
+      for (Partition partition: partitionsToExchange) {
+        Partition destPartition = new Partition(partition);
+        destPartition.setDbName(parsedDestDbName[DB_NAME]);
+        destPartition.setTableName(destinationTable.getTableName());
+        Path destPartitionPath = new Path(destinationTable.getSd().getLocation(),
+            Warehouse.makePartName(destinationTable.getPartitionKeys(), partition.getValues()));
+        destPartition.getSd().setLocation(destPartitionPath.toString());
+        ms.addPartition(destPartition);
+        destPartitions.add(destPartition);
+        ms.dropPartition(parsedSourceDbName[CAT_NAME], partition.getDbName(), sourceTable.getTableName(),
+            Warehouse.makePartName(sourceTable.getPartitionKeys(), partition.getValues()));
+      }
+      Path destParentPath = destPath.getParent();
+      if (!wh.isDir(destParentPath)) {
+        if (!wh.mkdirs(destParentPath)) {
+          throw new MetaException("Unable to create path " + destParentPath);
+        }
+      }
+      /*
+       * TODO: Use the hard link feature of hdfs
+       * once https://issues.apache.org/jira/browse/HDFS-3370 is done
+       */
+      pathCreated = wh.renameDir(sourcePath, destPath, false);
+
+      // Setting success to false to make sure that if the listener fails, rollback happens.
+      success = false;
+
+      if (!transactionalListeners.isEmpty()) {
+        transactionalListenerResponsesForAddPartition =
+            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                EventType.ADD_PARTITION,
+                new AddPartitionEvent(destinationTable, destPartitions, true, this));
+
+        for (Partition partition : partitionsToExchange) {
+          DropPartitionEvent dropPartitionEvent =
+              new DropPartitionEvent(sourceTable, partition, true, true, this);
+          transactionalListenerResponsesForDropPartition.add(
+              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventType.DROP_PARTITION,
+                  dropPartitionEvent));
+        }
+      }
+
+      success = ms.commitTransaction();
+      return destPartitions;
+    } finally {
+      if (!success || !pathCreated) {
+        ms.rollbackTransaction();
+        if (pathCreated) {
+          wh.renameDir(destPath, sourcePath, false);
+        }
+      }
+
+      if (!listeners.isEmpty()) {
+        AddPartitionEvent addPartitionEvent = new AddPartitionEvent(destinationTable, destPartitions, success, this);
+        MetaStoreListenerNotifier.notifyEvent(listeners,
+            EventType.ADD_PARTITION,
+            addPartitionEvent,
+            null,
+            transactionalListenerResponsesForAddPartition, ms);
+
+        i = 0;
+        for (Partition partition : partitionsToExchange) {
+          DropPartitionEvent dropPartitionEvent =
+              new DropPartitionEvent(sourceTable, partition, success, true, this);
+          Map<String, String> parameters =
+              (transactionalListenerResponsesForDropPartition.size() > i)
+                  ? transactionalListenerResponsesForDropPartition.get(i)
+                  : null;
+
+          MetaStoreListenerNotifier.notifyEvent(listeners,
+              EventType.DROP_PARTITION,
+              dropPartitionEvent,
+              null,
+              parameters, ms);
+          i++;
+        }
+      }
+    }
+  }
+
+  @Override
+  public DropPartitionsResult drop_partitions_req(
+      DropPartitionsRequest request) throws TException {
+    startFunction("drop_partitions_req",
+        ": db=" + request.getDbName() + " tab=" + request.getTblName());
+    Exception ex = null;
+    try {
+      DropPartitionsResult resp = new DropPartitionsResult();
+      DropPartitionsHandler dropPartsOp = AbstractRequestHandler.offer(this, request);
+      if (dropPartsOp.success() && request.isNeedResult()) {
+        resp.setPartitions(dropPartsOp.getResult().getPartitions());
+      }
+      return resp;
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e).defaultTException();
+    } finally {
+      endFunction("drop_partition_req", ex == null, ex,
+          TableName.getQualified(request.getCatName(), request.getDbName(), request.getTblName()));
+    }
+  }
+
+  @Override
+  public boolean drop_partition_req(final DropPartitionRequest dropPartitionReq) throws TException {
+    String dbName = dropPartitionReq.getDbName();
+    String catName = dropPartitionReq.isSetCatName() ? dropPartitionReq.getCatName() : getDefaultCatalog(conf);
+    String tbl_name = dropPartitionReq.getTblName();
+    List<String> part_vals = dropPartitionReq.getPartVals();
+    try {
+      Table t = getMS().getTable(catName, dbName, tbl_name, null);
+      if (t == null) {
+        throw new NoSuchObjectException(dbName + "." + tbl_name + " table not found");
+      }
+      List<String> partNames = new ArrayList<>();
+      if (part_vals == null || part_vals.isEmpty()) {
+        part_vals = getPartValsFromName(t, dropPartitionReq.getPartName());
+      }
+      partNames.add(Warehouse.makePartName(t.getPartitionKeys(), part_vals));
+      LOG.info("drop_partition_req partition values: {}, table: {}", part_vals,
+          new TableName(catName, dbName, tbl_name));
+      RequestPartsSpec requestPartsSpec = RequestPartsSpec.names(partNames);
+      DropPartitionsRequest request = new DropPartitionsRequest(dbName, tbl_name, requestPartsSpec);
+      request.setCatName(catName);
+      request.setIfExists(false);
+      request.setNeedResult(false);
+      request.setDeleteData(dropPartitionReq.isDeleteData());
+      request.setEnvironmentContext(dropPartitionReq.getEnvironmentContext());
+      drop_partitions_req(request);
+    } catch (Exception e) {
+      handleException(e).convertIfInstance(InvalidObjectException.class, NoSuchObjectException.class)
+          .rethrowException(e);
+    }
+    return true;
+  }
+
+  @Override
+  public GetPartitionResponse get_partition_req(GetPartitionRequest req)
+      throws MetaException, NoSuchObjectException, TException {
+    String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
+    TableName tableName = new TableName(catName, req.getDbName(), req.getTblName());
+    String partName = GetPartitionsHandler.validatePartVals(this, tableName, req.getPartVals());
+    GetPartitionsByNamesRequest gpnr = new GetPartitionsByNamesRequest(tableName.getDb(), tableName.getTable());
+    gpnr.setNames(List.of(partName));
+    List<Partition> partitions = GetPartitionsHandler.getPartitions(
+        t -> startTableFunction("get_partition_req", catName, t.getDb(), t.getTable()),
+        rex -> endFunction("get_partition_req",
+            rex.getLeft() != null && rex.getLeft().success(), rex.getRight(), tableName.toString()),
+        this, tableName, gpnr, true);
+    return new GetPartitionResponse(partitions.getFirst());
+  }
+
+  @Override
+  public PartitionsResponse get_partitions_req(PartitionsRequest req)
+      throws NoSuchObjectException, MetaException, TException {
+    String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
+    TableName tableName = new TableName(catName, req.getDbName(), req.getTblName());
+    List<Partition> partitions = GetPartitionsHandler.getPartitions(
+        t -> startTableFunction("get_partitions_req", catName, req.getDbName(), req.getTblName()),
+        rex ->  endFunction("get_partitions_req",
+            rex.getLeft() != null && rex.getLeft().success(), rex.getRight(),
+            TableName.getQualified(catName, req.getDbName(), req.getTblName())),
+        this, tableName, req, false);
+    return new PartitionsResponse(partitions);
+  }
+
+  @Override
+  public GetPartitionsResponse get_partitions_with_specs(GetPartitionsRequest request)
+      throws MetaException, TException {
+    String catName = null;
+    if (request.isSetCatName()) {
+      catName = request.getCatName();
+    }
+    String[] parsedDbName = parseDbName(request.getDbName(), conf);
+    String tableName = request.getTblName();
+    if (catName == null) {
+      // if catName is not provided in the request use the catName parsed from the dbName
+      catName = parsedDbName[CAT_NAME];
+    }
+    startTableFunction("get_partitions_with_specs", catName, parsedDbName[DB_NAME],
+        tableName);
+    GetPartitionsResponse response = null;
+    Exception ex = null;
+    try {
+      GetTableRequest getTableRequest = new GetTableRequest(parsedDbName[DB_NAME], tableName);
+      getTableRequest.setCatName(catName);
+      Table table = get_table_core(getTableRequest);
+      List<Partition> partitions = getMS()
+          .getPartitionSpecsByFilterAndProjection(table, request.getProjectionSpec(),
+              request.getFilterSpec());
+      List<String> processorCapabilities = request.getProcessorCapabilities();
+      String processorId = request.getProcessorIdentifier();
+      if (processorCapabilities == null || processorCapabilities.size() == 0 ||
+          processorCapabilities.contains("MANAGERAWMETADATA")) {
+        LOG.info("Skipping translation for processor with " + processorId);
+      } else {
+        if (transformer != null) {
+          partitions = transformer.transformPartitions(partitions, table, processorCapabilities, processorId);
+        }
+      }
+      List<PartitionSpec> partitionSpecs =
+          MetaStoreServerUtils.getPartitionspecsGroupedByStorageDescriptor(table, partitions);
+      response = new GetPartitionsResponse();
+      response.setPartitionSpec(partitionSpecs);
+    } catch (Exception e) {
+      ex = e;
+      rethrowException(e);
+    } finally {
+      endFunction("get_partitions_with_specs", response != null, ex, tableName);
+    }
+    return response;
+  }
+
+  @Override
+  public List<String> fetch_partition_names_req(final PartitionsRequest req)
+      throws NoSuchObjectException, MetaException {
+    String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
+    String dbName = req.getDbName(), tblName = req.getTblName();
+    TableName tableName = new TableName(catName, dbName, tblName);
+    try {
+      return GetPartitionsHandler.getPartitionNames(
+          t -> startTableFunction("fetch_partition_names_req", catName, dbName, tblName),
+          rex -> endFunction("fetch_partition_names_req",
+              rex.getLeft() != null && rex.getLeft().success(), rex.getRight(), tableName.toString()),
+          this, tableName, req).result();
+    } catch (TException ex) {
+      if (ex instanceof NoSuchObjectException e) {
+        // Keep it here just because some tests in TestListPartitions assume NoSuchObjectException
+        // if the input is invalid at first sight.
+        if (StringUtils.isBlank(dbName) || StringUtils.isBlank(tableName.getTable())) {
+          throw e;
+        }
+        return Collections.emptyList();
+      }
+      throw handleException(ex).defaultMetaException();
+    }
+  }
+
+  @Override
+  public PartitionValuesResponse get_partition_values(PartitionValuesRequest request)
+      throws MetaException {
+    String catName = request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf);
+    TableName tableName = new TableName(catName, request.getDbName(), request.getTblName());
+    long maxParts = request.getMaxParts();
+    String filter = request.isSetFilter() ? request.getFilter() : "";
+    GetPartitionsHandler.GetPartitionsRequest<PartitionValuesRequest> getPartitionsRequest =
+        new GetPartitionsHandler.GetPartitionsRequest<>(request, tableName);
+    startPartitionFunction("get_partition_values", catName, tableName.getDb(), tableName.getTable(),
+        (int) maxParts, filter);
+    Exception ex = null;
+    try {
+      GetPartitionsHandler<PartitionValuesRequest, PartitionValuesResponse> getPartitionsHandler =
+          AbstractRequestHandler.offer(this, getPartitionsRequest);
+      List<PartitionValuesResponse> resps = getPartitionsHandler.getResult().result();
+      if (resps == null || resps.isEmpty()) {
+        throw new MetaException(String.format("Unable to get partition for %s", tableName.toString()));
+      }
+      return resps.getFirst();
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e).defaultMetaException();
+    } finally {
+      endFunction("get_partition_values", ex == null, ex, tableName.toString());
+    }
+  }
+
+  @Override
+  public RenamePartitionResponse rename_partition_req(RenamePartitionRequest req) throws TException {
+    EnvironmentContext context = new EnvironmentContext();
+    context.putToProperties(RENAME_PARTITION_MAKE_COPY, String.valueOf(req.isClonePart()));
+    context.putToProperties(hive_metastoreConstants.TXN_ID, String.valueOf(req.getTxnId()));
+    
+    alter_partition_core(req.getCatName(), req.getDbName(), req.getTableName(), req.getPartVals(),
+        req.getNewPart(), context, req.getValidWriteIdList());
+    return new RenamePartitionResponse();
+  };
+
+  @Override
+  public AlterPartitionsResponse alter_partitions_req(AlterPartitionsRequest req) throws TException {
+    alter_partitions_with_environment_context(req.getCatName(),
+        req.getDbName(), req.getTableName(), req.getPartitions(), req.getEnvironmentContext(),
+        req.isSetValidWriteIdList() ? req.getValidWriteIdList() : null,
+        req.isSetWriteId() ? req.getWriteId() : -1);
+    return new AlterPartitionsResponse();
+  }
+
+  private void alter_partitions_with_environment_context(String catName, String db_name, final String tbl_name,
+      final List<Partition> new_parts, EnvironmentContext environmentContext,
+      String writeIdList, long writeId)
+      throws TException {
+    if (environmentContext == null) {
+      environmentContext = new EnvironmentContext();
+    }
+    if (catName == null) {
+      catName = getDefaultCatalog(conf);
+    }
+
+    startTableFunction("alter_partitions", catName, db_name, tbl_name);
+
+    if (LOG.isInfoEnabled()) {
+      for (Partition tmpPart : new_parts) {
+        LOG.info("New partition values: catalog: {} database: {} table: {} partition: {}",
+                catName, db_name, tbl_name, tmpPart.getValues());
+      }
+    }
+    // all partitions are altered atomically
+    // all prehooks are fired together followed by all post hooks
+    List<Partition> oldParts = null;
+    Exception ex = null;
+    Lock tableLock = getTableLockFor(db_name, tbl_name);
+    tableLock.lock();
+    try {
+
+      Table table = null;
+      table = getMS().getTable(catName, db_name, tbl_name,  null);
+
+      for (Partition tmpPart : new_parts) {
+        // Make sure the catalog name is set in the new partition
+        if (!tmpPart.isSetCatName()) {
+          tmpPart.setCatName(getDefaultCatalog(conf));
+        }
+        if (tmpPart.getSd() != null && tmpPart.getSd().getCols() != null && tmpPart.getSd().getCols().isEmpty()) {
+          tmpPart.getSd().setCols(table.getSd().getCols());
+        }
+        // old part values are same as new partition values here
+        firePreEvent(new PreAlterPartitionEvent(db_name, tbl_name, table, tmpPart.getValues(), tmpPart, this));
+      }
+      oldParts = alterHandler.alterPartitions(getMS(), wh, catName, db_name, tbl_name, new_parts,
+          environmentContext, writeIdList, writeId, this);
+      Iterator<Partition> olditr = oldParts.iterator();
+
+      for (Partition tmpPart : new_parts) {
+        Partition oldTmpPart;
+        if (olditr.hasNext()) {
+          oldTmpPart = olditr.next();
+        }
+        else {
+          throw new InvalidOperationException("failed to alterpartitions");
+        }
+
+        if (!listeners.isEmpty()) {
+          MetaStoreListenerNotifier.notifyEvent(listeners,
+              EventType.ALTER_PARTITION,
+              new AlterPartitionEvent(oldTmpPart, tmpPart, table, false,
+                  true, writeId, this));
+        }
+      }
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e).throwIfInstance(MetaException.class, InvalidOperationException.class)
+          .convertIfInstance(InvalidObjectException.class, InvalidOperationException.class)
+          .convertIfInstance(AlreadyExistsException.class, InvalidOperationException.class)
+          .defaultMetaException();
+    } finally {
+      tableLock.unlock();
+      endFunction("alter_partitions", oldParts != null, ex, tbl_name);
+    }
+  }
+
+  @Override
+  public AlterTableResponse alter_table_req(AlterTableRequest req)
+      throws InvalidOperationException, MetaException {
+    alter_table_core(req.getCatName(), req.getDbName(), req.getTableName(),
+        req.getTable(), req.getEnvironmentContext(), req.getValidWriteIdList(),
+        req.getProcessorCapabilities(), req.getProcessorIdentifier(),
+        req.getExpectedParameterKey(), req.getExpectedParameterValue());
+    return new AlterTableResponse();
+  }
+
+  private void alter_table_core(String catName, String dbname, String name, Table newTable,
+                                EnvironmentContext envContext, String validWriteIdList, List<String> processorCapabilities,
+                                String processorId, String expectedPropertyKey, String expectedPropertyValue)
+          throws InvalidOperationException, MetaException {
+    startFunction("alter_table", ": " + TableName.getQualified(catName, dbname, name)
+        + " newtbl=" + newTable.getTableName());
+    if (envContext == null) {
+      envContext = new EnvironmentContext();
+    }
+    // Set the values to the envContext, so we do not have to change the HiveAlterHandler API
+    if (expectedPropertyKey != null) {
+      envContext.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_KEY, expectedPropertyKey);
+    }
+    if (expectedPropertyValue != null) {
+      envContext.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_VALUE, expectedPropertyValue);
+    }
+
+    if (catName == null) {
+      catName = getDefaultCatalog(conf);
+    }
+
+    // HIVE-25282: Drop/Alter table in REMOTE db should fail
+    try {
+      Database db = get_database_core(catName, dbname);
+      if (MetaStoreUtils.isDatabaseRemote(db)) {
+        throw new MetaException("Alter table in REMOTE database " + db.getName() + " is not allowed");
+      }
+    } catch (NoSuchObjectException e) {
+      throw new InvalidOperationException("Alter table in REMOTE database is not allowed");
+    }
+
+    // Update the time if it hasn't been specified.
+    if (newTable.getParameters() == null ||
+        newTable.getParameters().get(hive_metastoreConstants.DDL_TIME) == null) {
+      newTable.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(System
+          .currentTimeMillis() / 1000));
+    }
+
+    // Adds the missing scheme/authority for the new table location
+    if (newTable.getSd() != null) {
+      String newLocation = newTable.getSd().getLocation();
+      if (org.apache.commons.lang3.StringUtils.isNotEmpty(newLocation)) {
+        Path tblPath = wh.getDnsPath(new Path(newLocation));
+        newTable.getSd().setLocation(tblPath.toString());
+      }
+    }
+    // Set the catalog name if it hasn't been set in the new table
+    if (!newTable.isSetCatName()) {
+      newTable.setCatName(catName);
+    }
+
+    boolean success = false;
+    Exception ex = null;
+    try {
+      GetTableRequest request = new GetTableRequest(dbname, name);
+      request.setCatName(catName);
+      Table oldt = get_table_core(request);
+      if (transformer != null) {
+        newTable = transformer.transformAlterTable(oldt, newTable, processorCapabilities, processorId);
+      }
+      firePreEvent(new PreAlterTableEvent(oldt, newTable, this));
+      alterHandler.alterTable(getMS(), wh, catName, dbname, name, newTable,
+          envContext, this, validWriteIdList);
+      success = true;
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e).throwIfInstance(MetaException.class, InvalidOperationException.class)
+          .convertIfInstance(NoSuchObjectException.class, InvalidOperationException.class)
+          .defaultMetaException();
+    } finally {
+      endFunction("alter_table", success, ex, name);
+    }
+  }
+
+  @Override
+  public List<String> get_tables(final String dbname, final String pattern)
+      throws TException {
+    return GetTableHandler.getTables(() -> startFunction("get_tables", ": db=" + dbname + " pat=" + pattern),
+        this, GetTableHandler.GetTableNamesRequest.fromDatabase(dbname, conf).byPattern(pattern),
+        t -> endFunction("get_tables", t.getLeft() != null, t.getRight()));
+  }
+
+  @Override
+  public List<String> get_tables_by_type(final String dbname, final String pattern, final String tableType)
+      throws TException {
+    return GetTableHandler.getTables(
+        () -> startFunction("get_tables_by_type", ": db=" + dbname + " pat=" + pattern + ",type=" + tableType),
+        this, GetTableHandler.GetTableNamesRequest.fromDatabase(dbname, conf).byType(tableType, pattern),
+        t ->  endFunction("get_tables_by_type", t.getLeft() != null, t.getRight()));
+  }
+
+  @Override
+  public List<Table> get_all_materialized_view_objects_for_rewriting()
+      throws MetaException {
+    startFunction("get_all_materialized_view_objects_for_rewriting");
+
+    List<Table> ret = null;
+    Exception ex = null;
+    try {
+      ret = getMS().getAllMaterializedViewObjectsForRewriting(DEFAULT_CATALOG_NAME);
+    } catch (Exception e) {
+      ex = e;
+      throw newMetaException(e);
+    } finally {
+      endFunction("get_all_materialized_view_objects_for_rewriting", ret != null, ex);
+    }
+    return ret;
+  }
+
+  @Override
+  public List<String> get_materialized_views_for_rewriting(final String dbname)
+      throws MetaException {
+    startFunction("get_materialized_views_for_rewriting", ": db=" + dbname);
+
+    List<String> ret = null;
+    Exception ex = null;
+    String[] parsedDbName = parseDbName(dbname, conf);
+    try {
+      ret = getMS().getMaterializedViewsForRewriting(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
+    } catch (Exception e) {
+      ex = e;
+      throw newMetaException(e);
+    } finally {
+      endFunction("get_materialized_views_for_rewriting", ret != null, ex);
+    }
+    return ret;
+  }
+
+  @Override
+  public List<String> get_all_tables(final String dbname) throws TException {
+    try {
+      return GetTableHandler.getTables(() -> startFunction("get_all_tables", ": db=" + dbname), this,
+          GetTableHandler.GetTableNamesRequest.fromDatabase(dbname, conf),
+          t -> endFunction("get_all_tables", t.getLeft() != null, t.getRight()));
+    } catch (UnknownDBException ude) {
+      String[] parsedDbName = parseDbName(dbname, conf);
+      if (StringUtils.isEmpty(parsedDbName[DB_NAME])) {
+        throw new MetaException(ude.getMessage());
+      }
+      // should throw the exception instead? in our tests we return an empty list if dbName is valid
+      return Collections.emptyList();
+    }
+  }
+
+  private List<FieldSchema> get_fields_with_environment_context_core(String db, String tableName, final EnvironmentContext envContext)
+          throws MetaException, UnknownTableException, UnknownDBException {
+    startFunction("get_fields_with_environment_context_core", ": db=" + db + "tbl=" + tableName);
+    String[] names = tableName.split("\\.");
+    String base_table_name = names[0];
+    String[] parsedDbName = parseDbName(db, conf);
+
+    List<FieldSchema> ret = null;
+    Exception ex = null;
+    try {
+      GetTableRequest getTableRequest = new GetTableRequest(parsedDbName[DB_NAME], base_table_name);
+      getTableRequest.setCatName(parsedDbName[CAT_NAME]);
+      Table tbl = get_table_core(getTableRequest);
+      firePreEvent(new PreReadTableEvent(tbl, this));
+      String serdeLib = tbl.getSd().getSerdeInfo().getSerializationLib();
+      if (serdeLib == null ||
+              MetastoreConf.getStringCollection(conf,
+                      ConfVars.SERDES_USING_METASTORE_FOR_SCHEMA).contains(serdeLib)) {
+        ret = tbl.getSd().getCols();
+      } else {
+        ret = getFieldsUsingSchemaReader(tbl, db, tableName, serdeLib, envContext);
+      }
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e).convertIfInstance(NoSuchObjectException.class, UnknownTableException.class)
+          .defaultMetaException();
+    } finally {
+      endFunction("get_fields_with_environment_context_core", ret != null, ex, tableName);
+    }
+    return ret;
+  }
+
+  private List<FieldSchema> getFieldsUsingSchemaReader(Table tbl, String db, String tableName, String serdeLib,
+      EnvironmentContext envContext) throws MetaException {
+    try {
+      StorageSchemaReader schemaReader = getStorageSchemaReader();
+      return schemaReader.readSchema(tbl, envContext, getConf());
+    } catch (UnsupportedOperationException e) {
+      // Fallback to metastore for Avro Schema
+      if (AVRO_SERDE_CLASS.equals(serdeLib)) {
+        LOG.warn(
+            "Unable to read schema from storage for AvroSerDe table '{}.{}'. Returning metastore SD columns " + 
+                "as fallback; schema may be stale.",
+            db, tableName, e);
+        return tbl.getSd().getCols();
+      }
+      throw e;
+    }
+  }
+  
+  @Override
+  public GetFieldsResponse get_fields_req(GetFieldsRequest req)
+      throws MetaException, UnknownTableException, UnknownDBException {
+    String dbName = MetaStoreUtils.prependCatalogToDbName(req.getCatName(), req.getDbName(), conf);
+    List<FieldSchema> fields = get_fields_with_environment_context_core(
+        dbName, req.getTblName(), req.getEnvContext());
+    GetFieldsResponse res = new GetFieldsResponse();
+    res.setFields(fields);
+    return res;
+  }
+
+  private StorageSchemaReader getStorageSchemaReader() throws MetaException {
+    if (storageSchemaReader == null) {
+      String className =
+          MetastoreConf.getVar(conf, MetastoreConf.ConfVars.STORAGE_SCHEMA_READER_IMPL);
+      Class<? extends StorageSchemaReader> readerClass =
+          JavaUtils.getClass(className, StorageSchemaReader.class);
+      try {
+        storageSchemaReader = readerClass.newInstance();
+      } catch (InstantiationException|IllegalAccessException e) {
+        LOG.error("Unable to instantiate class " + className, e);
+        throw new MetaException(e.getMessage());
+      }
+    }
+    return storageSchemaReader;
+  }
+
+  @Override
+  public GetSchemaResponse get_schema_req(GetSchemaRequest req)
+      throws MetaException, UnknownTableException, UnknownDBException {
+    String dbName = MetaStoreUtils.prependCatalogToDbName(req.getCatName(), req.getDbName(), conf);
+    List<FieldSchema> fields = get_schema_with_environment_context_core(
+        dbName, req.getTblName(), req.getEnvContext());
+    GetSchemaResponse res = new GetSchemaResponse();
+    res.setFields(fields);
+    return res;
+  }
+
+  private List<FieldSchema> get_schema_with_environment_context_core(String db, String tableName, final EnvironmentContext envContext)
+      throws MetaException, UnknownTableException, UnknownDBException {
+    startFunction("get_schema_with_environment_context_core", ": db=" + db + "tbl=" + tableName);
+    boolean success = false;
+    Exception ex = null;
+    try {
+      String[] names = tableName.split("\\.");
+      String base_table_name = names[0];
+      String[] parsedDbName = parseDbName(db, conf);
+
+      Table tbl;
+      try {
+        GetTableRequest getTableRequest = new GetTableRequest(parsedDbName[DB_NAME], base_table_name);
+        getTableRequest.setCatName(parsedDbName[CAT_NAME]);
+        tbl = get_table_core(getTableRequest);
+      } catch (NoSuchObjectException e) {
+        throw new UnknownTableException(e.getMessage());
+      }
+      // Pass unparsed db name here
+      List<FieldSchema> fieldSchemas = get_fields_with_environment_context_core(db, base_table_name,
+          envContext);
+
+      if (tbl == null || fieldSchemas == null) {
+        throw new UnknownTableException(tableName + " doesn't exist");
+      }
+
+      if (tbl.getPartitionKeys() != null) {
+        // Combine the column field schemas and the partition keys to create the
+        // whole schema
+        fieldSchemas.addAll(tbl.getPartitionKeys());
+      }
+      success = true;
+      return fieldSchemas;
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e)
+          .throwIfInstance(UnknownDBException.class, UnknownTableException.class, MetaException.class)
+          .defaultMetaException();
+    } finally {
+      endFunction("get_schema_with_environment_context_core", success, ex, tableName);
+    }
+  }
+
+  @Override
+  public GetPartitionsPsWithAuthResponse get_partitions_ps_with_auth_req(GetPartitionsPsWithAuthRequest req)
+      throws MetaException, NoSuchObjectException, TException {
+    String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
+    TableName tableName = new TableName(catName, req.getDbName(), req.getTblName());
+    List<Partition> partitions = GetPartitionsHandler.getPartitionsResult(
+        t ->  startTableFunction("get_partitions_ps_with_auth_req", catName, t.getDb(), t.getTable()),
+        rex -> endFunction("get_partitions_ps_with_auth_req",
+            rex.getLeft() != null && rex.getLeft().success(), rex.getRight(), tableName.toString()),
+        this, tableName, req).result();
+    return new GetPartitionsPsWithAuthResponse(partitions);
+  }
+
+  @Override
+  public GetPartitionNamesPsResponse get_partition_names_ps_req(GetPartitionNamesPsRequest req)
+      throws MetaException, NoSuchObjectException, TException {
+    if (req.getPartValues() == null) {
+      throw new MetaException("The partValues in GetPartitionNamesPsRequest is null");
+    }
+    String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
+    String dbName = req.getDbName(), tblName = req.getTblName();
+    TableName tableName = new TableName(catName, dbName, tblName);
+    GetPartitionsPsWithAuthRequest gpar = new GetPartitionsPsWithAuthRequest(tableName.getDb(), tableName.getTable());
+    gpar.setMaxParts(req.getMaxParts());
+    gpar.setPartVals(req.getPartValues());
+    List<String> names = GetPartitionsHandler.getPartitionNames(
+        t -> startTableFunction("get_partition_names_ps_req", catName, dbName, tblName),
+        rex -> endFunction("get_partition_names_ps_req",
+            rex.getLeft() != null && rex.getLeft().success(), rex.getRight(), tableName.toString()),
+        this, tableName, gpar).result();
+    GetPartitionNamesPsResponse res = new GetPartitionNamesPsResponse();
+    res.setNames(names);
+    return res;
+  }
+
+  @Override
+  public List<String> get_partition_names_req(PartitionsByExprRequest req)
+      throws MetaException, NoSuchObjectException, TException {
+    String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
+    String dbName = req.getDbName(), tblName = req.getTblName();
+    TableName tableName = new TableName(catName, dbName, tblName);
+    return GetPartitionsHandler.getPartitionNames(
+        t -> startTableFunction("get_partition_names_req", catName, dbName, tblName),
+        rex -> endFunction("get_partition_names_req",
+            rex.getLeft() != null && rex.getLeft().success(), rex.getRight(), tableName.toString()),
+        this, tableName, req).result();
+  }
+
+  @Override
+  public TableStatsResult get_table_statistics_req(TableStatsRequest request) throws TException {
+    String catName = request.isSetCatName() ? request.getCatName().toLowerCase() :
+        getDefaultCatalog(conf);
+    String dbName = request.getDbName().toLowerCase();
+    String tblName = request.getTblName().toLowerCase();
+    startFunction("get_table_statistics_req", ": table=" +
+        TableName.getQualified(catName, dbName, tblName));
+    TableStatsResult result = null;
+    List<String> lowerCaseColNames = new ArrayList<>(request.getColNames().size());
+    for (String colName : request.getColNames()) {
+      lowerCaseColNames.add(colName.toLowerCase());
+    }
+    try {
+      ColumnStatistics cs = getMS().getTableColumnStatistics(
+          catName, dbName, tblName, lowerCaseColNames,
+          request.getEngine(), request.getValidWriteIdList());
+      // Note: stats compliance is not propagated to the client; instead, we just return nothing
+      //       if stats are not compliant for now. This won't work for stats merging, but that
+      //       is currently only done on metastore size (see set_aggr...).
+      //       For some optimizations we might make use of incorrect stats that are "better than
+      //       nothing", so this may change in future.
+      result = new TableStatsResult((cs == null || cs.getStatsObj() == null
+          || (cs.isSetIsStatsCompliant() && !cs.isIsStatsCompliant()))
+          ? Lists.newArrayList() : cs.getStatsObj());
+    } finally {
+      endFunction("get_table_statistics_req", result == null, null, tblName);
+    }
+    return result;
+  }
+
+  @Override
+  public PartitionsStatsResult get_partitions_statistics_req(PartitionsStatsRequest request)
+      throws TException {
+    String catName = request.isSetCatName() ? request.getCatName().toLowerCase() : getDefaultCatalog(conf);
+    String dbName = request.getDbName().toLowerCase();
+    String tblName = request.getTblName().toLowerCase();
+    startPartitionFunction("get_partitions_statistics_req", catName, dbName, tblName, request.getPartNames());
+
+    PartitionsStatsResult result = null;
+    List<String> lowerCaseColNames = new ArrayList<>(request.getColNames().size());
+    for (String colName : request.getColNames()) {
+      lowerCaseColNames.add(colName.toLowerCase());
+    }
+    try {
+      List<ColumnStatistics> stats = getMS().getPartitionColumnStatistics(
+          catName, dbName, tblName, request.getPartNames(), lowerCaseColNames,
+          request.getEngine(), request.isSetValidWriteIdList() ? request.getValidWriteIdList() : null);
+      Map<String, List<ColumnStatisticsObj>> map = new HashMap<>();
+      if (stats != null) {
+        for (ColumnStatistics stat : stats) {
+          // Note: stats compliance is not propagated to the client; instead, we just return nothing
+          //       if stats are not compliant for now. This won't work for stats merging, but that
+          //       is currently only done on metastore size (see set_aggr...).
+          //       For some optimizations we might make use of incorrect stats that are "better than
+          //       nothing", so this may change in future.
+          if (stat.isSetIsStatsCompliant() && !stat.isIsStatsCompliant()) {
+            continue;
+          }
+          map.put(stat.getStatsDesc().getPartName(), stat.getStatsObj());
+        }
+      }
+      result = new PartitionsStatsResult(map);
+    } finally {
+      endFunction("get_partitions_statistics_req", result == null, null, tblName);
+    }
+    return result;
+  }
+
+  @Override
+  public boolean update_table_column_statistics(ColumnStatistics colStats) throws TException {
+    // Deprecated API, won't work for transactional tables
+    colStats.getStatsDesc().setIsTblLevel(true);
+    SetPartitionsStatsRequest setStatsRequest =
+        new SetPartitionsStatsRequest(List.of(colStats));
+    setStatsRequest.setWriteId(-1);
+    setStatsRequest.setValidWriteIdList(null);
+    setStatsRequest.setNeedMerge(false);
+    return set_aggr_stats_for(setStatsRequest);
+  }
+
+  @Override
+  public SetPartitionsStatsResponse update_table_column_statistics_req(
+      SetPartitionsStatsRequest req) throws NoSuchObjectException,
+      InvalidObjectException, MetaException, InvalidInputException,
+      TException {
+    if (req.getColStatsSize() != 1) {
+      throw new InvalidInputException("Only one stats object expected");
+    }
+    if (req.isNeedMerge()) {
+      throw new InvalidInputException("Merge is not supported for non-aggregate stats");
+    }
+    req.getColStats().getFirst().getStatsDesc().setIsTblLevel(true);
+    SetPartitionsStatsRequest setStatsRequest = new SetPartitionsStatsRequest(req.getColStats());
+    setStatsRequest.setWriteId(req.getWriteId());
+    setStatsRequest.setValidWriteIdList(req.getValidWriteIdList());
+    setStatsRequest.setNeedMerge(false);
+    setStatsRequest.setEngine(req.getEngine());
+    boolean ret = set_aggr_stats_for(setStatsRequest);
+    return new SetPartitionsStatsResponse(ret);
+  }
+
+  @Override
+  public boolean update_partition_column_statistics(ColumnStatistics colStats) throws TException {
+    // Deprecated API.
+    SetPartitionsStatsRequest setStatsRequest =
+        new SetPartitionsStatsRequest(Arrays.asList(colStats));
+    setStatsRequest.setWriteId(-1);
+    setStatsRequest.setValidWriteIdList(null);
+    setStatsRequest.setNeedMerge(false);
+    return set_aggr_stats_for(setStatsRequest);
+  }
+
+  @Override
+  public SetPartitionsStatsResponse update_partition_column_statistics_req(
+      SetPartitionsStatsRequest req) throws NoSuchObjectException,
+      InvalidObjectException, MetaException, InvalidInputException,
+      TException {
+    if (req.getColStatsSize() != 1) {
+      throw new InvalidInputException("Only one stats object expected");
+    }
+    if (req.isNeedMerge()) {
+      throw new InvalidInputException("Merge is not supported for non-aggregate stats");
+    }
+    SetPartitionsStatsRequest setStatsRequest = new SetPartitionsStatsRequest(req.getColStats());
+    setStatsRequest.setWriteId(req.getWriteId());
+    setStatsRequest.setValidWriteIdList(req.getValidWriteIdList());
+    setStatsRequest.setNeedMerge(false);
+    setStatsRequest.setEngine(req.getEngine());
+    boolean ret = set_aggr_stats_for(setStatsRequest);
+    return new SetPartitionsStatsResponse(ret);
+  }
+
+  @Override
+  public boolean delete_column_statistics_req(DeleteColumnStatisticsRequest req) throws TException {
+    String dbName = normalizeIdentifier(req.getDb_name());
+    String tableName = normalizeIdentifier(req.getTbl_name());
+    List<String> colNames = req.getCol_names();
+    String engine = req.getEngine();
+    String[] parsedDbName = parseDbName(dbName, conf);
+    if (req.getCat_name() != null) {
+      parsedDbName[CAT_NAME] = normalizeIdentifier(req.getCat_name());
+    }
+    startFunction("delete_column_statistics_req", ": table=" +
+        TableName.getQualified(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName) +
+        " partitions=" + req.getPart_names() + " column=" + colNames + " engine=" + engine);
+    boolean ret = false, committed = false;
+    List<ListenerEvent> events = new ArrayList<>();
+    EventType eventType = null;
+    final RawStore rawStore = getMS();
+    rawStore.openTransaction();
+    try {
+      Table table = rawStore.getTable(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
+      boolean isPartitioned = table.getPartitionKeysSize() > 0;
+      if (TxnUtils.isTransactionalTable(table)) {
+        throw new MetaException("Cannot delete stats via this API for a transactional table");
+      }
+      if (!isPartitioned || req.isTableLevel()) {
+        ret = rawStore.deleteTableColumnStatistics(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, colNames, engine);
+        if (ret) {
+          eventType = EventType.DELETE_TABLE_COLUMN_STAT;
+          for (String colName : colNames == null || colNames.isEmpty() ?
+              table.getSd().getCols().stream().map(FieldSchema::getName).toList() : colNames) {
+            if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
+              MetaStoreListenerNotifier.notifyEvent(transactionalListeners, eventType,
+                  new DeleteTableColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, colName, engine, this));
+            }
+            events.add(new DeleteTableColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, colName, engine, this));
+          }
+        }
+      } else {
+        List<String> partNames = new ArrayList<>();
+        if (req.getPart_namesSize() > 0) {
+          partNames.addAll(req.getPart_names());
+        } else {
+          partNames.addAll(rawStore.listPartitionNames(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, (short) -1));
+        }
+        if (partNames.isEmpty()) {
+          // no partition found, bail out early
+          return true;
+        }
+        ret = rawStore.deletePartitionColumnStatistics(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
+                partNames, colNames, engine);
+        if (ret) {
+          eventType = EventType.DELETE_PARTITION_COLUMN_STAT;
+          for (String colName : colNames == null || colNames.isEmpty() ?
+              table.getSd().getCols().stream().map(FieldSchema::getName).toList() : colNames) {
+            for (String partName : partNames) {
+              List<String> partVals = getPartValsFromName(table, partName);
+              if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
+                MetaStoreListenerNotifier.notifyEvent(transactionalListeners, eventType,
+                    new DeletePartitionColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
+                        partName, partVals, colName, engine, this));
+              }
+              events.add(new DeletePartitionColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
+                  partName, partVals, colName, engine, this));
+            }
+          }
+        }
+      }
+      committed = rawStore.commitTransaction();
+    } finally {
+      if (!committed) {
+        rawStore.rollbackTransaction();
+      }
+      if (!listeners.isEmpty()) {
+        for (ListenerEvent event : events) {
+          MetaStoreListenerNotifier.notifyEvent(transactionalListeners, eventType, event);
+        }
+      }
+      endFunction("delete_column_statistics_req", ret, null, tableName);
+    }
+    return ret;
+  }
+
+  @Override
+  public List<Partition> get_partitions_by_filter_req(GetPartitionsByFilterRequest req) throws TException {
+    String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
+    TableName tableName = new TableName(catName, req.getDbName(), req.getTblName());
+    return GetPartitionsHandler.getPartitionsResult(
+        t -> startTableFunction("get_partitions_by_filter", catName, t.getDb(), t.getTable()),
+        rex -> endFunction("get_partitions_by_filter",
+            rex.getLeft() != null && rex.getLeft().success(), rex.getRight(), tableName.toString()),
+        this, tableName, req).result();
+  }
+
+  @Override
+  public PartitionsSpecByExprResult get_partitions_spec_by_expr(
+      PartitionsByExprRequest req) throws TException {
+    String dbName = req.getDbName(), tblName = req.getTblName();
+    String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
+    TableName tableName = new TableName(catName, dbName, tblName);
+    GetPartitionsHandler.GetPartitionsResult<Partition> result =
+        GetPartitionsHandler.getPartitionsResult(
+            t -> startTableFunction("get_partitions_spec_by_expr", catName, dbName, req.getTblName()),
+            rex ->  endFunction("get_partitions_spec_by_expr",
+                rex.getLeft() != null && rex.getLeft().success(), rex.getRight(),
+                TableName.getQualified(catName, req.getDbName(), req.getTblName())),
+            this, tableName, req);
+    GetTableRequest getTableRequest = new GetTableRequest(dbName, tblName);
+    getTableRequest.setCatName(catName);
+    Table table = get_table_core(getTableRequest);
+    List<PartitionSpec> partitionSpecs =
+        MetaStoreServerUtils.getPartitionspecsGroupedByStorageDescriptor(table, result.result());
+    return new PartitionsSpecByExprResult(partitionSpecs, result.hasUnknownPartitions());
+  }
+
+  @Override
+  public PartitionsByExprResult get_partitions_by_expr(
+      PartitionsByExprRequest req) throws TException {
+    String dbName = req.getDbName(), tblName = req.getTblName();
+    String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
+    TableName tableName = new TableName(catName, dbName, tblName);
+    GetPartitionsHandler.GetPartitionsResult<Partition> result =
+        GetPartitionsHandler.getPartitionsResult(
+            t -> startTableFunction("get_partitions_by_expr", catName, dbName, req.getTblName()),
+            rex ->  endFunction("get_partitions_by_expr",
+                rex.getLeft() != null && rex.getLeft().success(), rex.getRight(),
+                TableName.getQualified(catName, req.getDbName(), req.getTblName())),
+            this, tableName, req);
+    return new PartitionsByExprResult(result.result(), result.hasUnknownPartitions());
+  }
+
+  @Override
+  public GetPartitionsByNamesResult get_partitions_by_names_req(GetPartitionsByNamesRequest gpbnr)
+      throws TException {
+    if (gpbnr.getNames() == null) {
+      throw new MetaException("The names in GetPartitionsByNamesRequest is null");
+    }
+    String[] dbNameParts = parseDbName(gpbnr.getDb_name(), conf);
+    TableName tableName = new TableName(dbNameParts[CAT_NAME], dbNameParts[DB_NAME], gpbnr.getTbl_name());
+    List<Partition> partitions = GetPartitionsHandler.getPartitionsResult(
+        t ->  startTableFunction("get_partitions_by_names", tableName.getCat(), tableName.getDb(), tableName.getTable()),
+        rex ->  endFunction("get_partitions_by_names",
+            rex.getLeft() != null && rex.getLeft().success(), rex.getRight(), tableName.toString()),
+        this, tableName, gpbnr).result();
+    return new GetPartitionsByNamesResult(partitions);
+  }
+
+  /**
+   * Creates an instance of property manager based on the (declared) namespace.
+   * @param ns the namespace
+   * @return the manager instance
+   * @throws TException
+   */
+  private PropertyManager getPropertyManager(String ns) throws MetaException, NoSuchObjectException {
+    PropertyStore propertyStore = getMS().getPropertyStore();
+    PropertyManager mgr = PropertyManager.create(ns, propertyStore);
+    return mgr;
+  }
+  @Override
+  public PropertyGetResponse get_properties(PropertyGetRequest req) throws TException {
+    try {
+      PropertyManager mgr = getPropertyManager(req.getNameSpace());
+      Map<String, PropertyMap> selected = mgr.selectProperties(req.getMapPrefix(), req.getMapPredicate(), req.getMapSelection());
+      PropertyGetResponse response = new PropertyGetResponse();
+      Map<String, Map<String, String>> returned = new TreeMap<>();
+      selected.forEach((k, v) -> {
+        returned.put(k, v.export());
+      });
+      response.setProperties(returned);
+      return response;
+    } catch(PropertyException exception) {
+      throw ExceptionHandler.newMetaException(exception);
+    }
+  }
+
+  @Override
+  public boolean set_properties(PropertySetRequest req) throws TException {
+    try {
+      PropertyManager mgr = getPropertyManager(req.getNameSpace());
+      mgr.setProperties((Map<String, Object>) (Map<?, ?>) req.getPropertyMap());
+      mgr.commit();
+      return true;
+    } catch(PropertyException exception) {
+      throw ExceptionHandler.newMetaException(exception);
+    }
+  }
+
+  @Override
+  public void markPartitionForEvent(final String db_name, final String tbl_name,
+                                    final Map<String, String> partName, final PartitionEventType evtType) throws TException {
+
+    Table tbl = null;
+    Exception ex = null;
+    RawStore ms  = getMS();
+    boolean success = false;
+    try {
+      String[] parsedDbName = parseDbName(db_name, conf);
+      ms.openTransaction();
+      startPartitionFunction("markPartitionForEvent", parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
+          tbl_name, partName);
+      firePreEvent(new PreLoadPartitionDoneEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
+          tbl_name, partName, this));
+      tbl = ms.markPartitionForEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name,
+          partName, evtType);
+      if (null == tbl) {
+        throw new UnknownTableException("Table: " + tbl_name + " not found.");
+      }
+
+      if (transactionalListeners.size() > 0) {
+        LoadPartitionDoneEvent lpde = new LoadPartitionDoneEvent(true, tbl, partName, this);
+        for (MetaStoreEventListener transactionalListener : transactionalListeners) {
+          transactionalListener.onLoadPartitionDone(lpde);
+        }
+      }
+
+      success = ms.commitTransaction();
+      for (MetaStoreEventListener listener : listeners) {
+        listener.onLoadPartitionDone(new LoadPartitionDoneEvent(true, tbl, partName, this));
+      }
+    } catch (Exception original) {
+      ex = original;
+      LOG.error("Exception caught in mark partition event ", original);
+      throw handleException(original)
+          .throwIfInstance(UnknownTableException.class, InvalidPartitionException.class, MetaException.class)
+          .defaultMetaException();
+    } finally {
+      if (!success) {
+        ms.rollbackTransaction();
+      }
+
+      endFunction("markPartitionForEvent", tbl != null, ex, tbl_name);
+    }
+  }
+
+  @Override
+  public boolean isPartitionMarkedForEvent(final String db_name, final String tbl_name,
+                                           final Map<String, String> partName, final PartitionEventType evtType) throws TException {
+
+    String[] parsedDbName = parseDbName(db_name, conf);
+    startPartitionFunction("isPartitionMarkedForEvent", parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
+        tbl_name, partName);
+    Boolean ret = null;
+    Exception ex = null;
+    try {
+      ret = getMS().isPartitionMarkedForEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
+          tbl_name, partName, evtType);
+    } catch (Exception original) {
+      LOG.error("Exception caught for isPartitionMarkedForEvent ", original);
+      ex = original;
+      throw handleException(original).throwIfInstance(UnknownTableException.class, InvalidPartitionException.class)
+          .throwIfInstance(UnknownPartitionException.class,  MetaException.class)
+          .defaultMetaException();
+    } finally {
+      endFunction("isPartitionMarkedForEvent", ret != null, ex, tbl_name);
+    }
+
+    return ret;
+  }
+
+  @Override
+  public void cancel_delegation_token(String token_str_form) throws TException {
+    startFunction("cancel_delegation_token");
+    boolean success = false;
+    Exception ex = null;
+    try {
+      HiveMetaStore.cancelDelegationToken(token_str_form);
+      success = true;
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e).convertIfInstance(IOException.class, MetaException.class).defaultMetaException();
+    } finally {
+      endFunction("cancel_delegation_token", success, ex);
+    }
+  }
+
+  @Override
+  public long renew_delegation_token(String token_str_form) throws TException {
+    startFunction("renew_delegation_token");
+    Long ret = null;
+    Exception ex = null;
+    try {
+      ret = HiveMetaStore.renewDelegationToken(token_str_form);
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e).convertIfInstance(IOException.class, MetaException.class).defaultMetaException();
+    } finally {
+      endFunction("renew_delegation_token", ret != null, ex);
+    }
+    return ret;
+  }
+
+  @Override
+  public String get_delegation_token(String token_owner, String renewer_kerberos_principal_name)
+      throws TException {
+    startFunction("get_delegation_token");
+    String ret = null;
+    Exception ex = null;
+    try {
+      ret =
+          HiveMetaStore.getDelegationToken(token_owner,
+              renewer_kerberos_principal_name, getIPAddress());
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e).convertIfInstance(IOException.class, MetaException.class)
+          .convertIfInstance(InterruptedException.class, MetaException.class)
+          .defaultMetaException();
+    } finally {
+      endFunction("get_delegation_token", ret != null, ex);
+    }
+    return ret;
+  }
+
+  @Override
+  public boolean add_token(String token_identifier, String delegation_token) throws TException {
+    startFunction("add_token", ": " + token_identifier);
+    boolean ret = false;
+    Exception ex = null;
+    try {
+      ret = getMS().addToken(token_identifier, delegation_token);
+    } catch (Exception e) {
+      ex = e;
+      throw newMetaException(e);
+    } finally {
+      endFunction("add_token", ret == true, ex);
+    }
+    return ret;
+  }
+
+  @Override
+  public boolean remove_token(String token_identifier) throws TException {
+    startFunction("remove_token", ": " + token_identifier);
+    boolean ret = false;
+    Exception ex = null;
+    try {
+      ret = getMS().removeToken(token_identifier);
+    } catch (Exception e) {
+      ex = e;
+      throw newMetaException(e);
+    } finally {
+      endFunction("remove_token", ret == true, ex);
+    }
+    return ret;
+  }
+
+  @Override
+  public String get_token(String token_identifier) throws TException {
+    startFunction("get_token for", ": " + token_identifier);
+    String ret = null;
+    Exception ex = null;
+    try {
+      ret = getMS().getToken(token_identifier);
+    } catch (Exception e) {
+      ex = e;
+      throw newMetaException(e);
+    } finally {
+      endFunction("get_token", ret != null, ex);
+    }
+    //Thrift cannot return null result
+    return ret == null ? "" : ret;
+  }
+
+  @Override
+  public List<String> get_all_token_identifiers() throws TException {
+    startFunction("get_all_token_identifiers.");
+    List<String> ret;
+    Exception ex = null;
+    try {
+      ret = getMS().getAllTokenIdentifiers();
+    } catch (Exception e) {
+      ex = e;
+      throw newMetaException(e);
+    } finally {
+      endFunction("get_all_token_identifiers.", ex == null, ex);
+    }
+    return ret;
+  }
+
+  @Override
+  public int add_master_key(String key) throws TException {
+    startFunction("add_master_key.");
+    int ret;
+    Exception ex = null;
+    try {
+      ret = getMS().addMasterKey(key);
+    } catch (Exception e) {
+      ex = e;
+      throw newMetaException(e);
+    } finally {
+      endFunction("add_master_key.", ex == null, ex);
+    }
+    return ret;
+  }
+
+  @Override
+  public void update_master_key(int seq_number, String key) throws TException {
+    startFunction("update_master_key.");
+    Exception ex = null;
+    try {
+      getMS().updateMasterKey(seq_number, key);
+    } catch (Exception e) {
+      ex = e;
+      throw newMetaException(e);
+    } finally {
+      endFunction("update_master_key.", ex == null, ex);
+    }
+  }
+
+  @Override
+  public boolean remove_master_key(int key_seq) throws TException {
+    startFunction("remove_master_key.");
+    Exception ex = null;
+    boolean ret;
+    try {
+      ret = getMS().removeMasterKey(key_seq);
+    } catch (Exception e) {
+      ex = e;
+      throw newMetaException(e);
+    } finally {
+      endFunction("remove_master_key.", ex == null, ex);
+    }
+    return ret;
+  }
+
+  @Override
+  public List<String> get_master_keys() throws TException {
+    startFunction("get_master_keys.");
+    Exception ex = null;
+    String [] ret = null;
+    try {
+      ret = getMS().getMasterKeys();
+    } catch (Exception e) {
+      ex = e;
+      throw newMetaException(e);
+    } finally {
+      endFunction("get_master_keys.", ret != null, ex);
+    }
+    return Arrays.asList(ret);
+  }
+
+  private void validateFunctionInfo(Function func) throws InvalidObjectException, MetaException {
+    if (func == null) {
+      throw new MetaException("Function cannot be null.");
+    }
+    if (func.getFunctionName() == null) {
+      throw new MetaException("Function name cannot be null.");
+    }
+    if (func.getDbName() == null) {
+      throw new MetaException("Database name in Function cannot be null.");
+    }
+    if (!MetaStoreUtils.validateName(func.getFunctionName(), null)) {
+      throw new InvalidObjectException(func.getFunctionName() + " is not a valid object name");
+    }
+    String className = func.getClassName();
+    if (className == null) {
+      throw new InvalidObjectException("Function class name cannot be null");
+    }
+    if (func.getOwnerType() == null) {
+      throw new MetaException("Function owner type cannot be null.");
+    }
+    if (func.getFunctionType() == null) {
+      throw new MetaException("Function type cannot be null.");
+    }
+  }
+
+  @Override
+  public void create_function(Function func) throws TException {
+    validateFunctionInfo(func);
+    boolean success = false;
+    RawStore ms = getMS();
+    Map<String, String> transactionalListenerResponses = Collections.emptyMap();
+    try {
+      String catName = func.isSetCatName() ? func.getCatName() : getDefaultCatalog(conf);
+      if (!func.isSetOwnerName()) {
+        try {
+          func.setOwnerName(SecurityUtils.getUGI().getShortUserName());
+        } catch (Exception ex) {
+          LOG.error("Cannot obtain username from the session to create a function", ex);
+          throw new TException(ex);
+        }
+      }
+      ms.openTransaction();
+      Database db = ms.getDatabase(catName, func.getDbName());
+      if (db == null) {
+        throw new NoSuchObjectException("The database " + func.getDbName() + " does not exist");
+      }
+
+      if (MetaStoreUtils.isDatabaseRemote(db)) {
+        throw new MetaException("Operation create_function not support for REMOTE database");
+      }
+
+      Function existingFunc = ms.getFunction(catName, func.getDbName(), func.getFunctionName());
+      if (existingFunc != null) {
+        throw new AlreadyExistsException(
+            "Function " + func.getFunctionName() + " already exists");
+      }
+      firePreEvent(new PreCreateFunctionEvent(func, this));
+      long time = System.currentTimeMillis() / 1000;
+      func.setCreateTime((int) time);
+      ms.createFunction(func);
+      if (!transactionalListeners.isEmpty()) {
+        transactionalListenerResponses =
+            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                EventType.CREATE_FUNCTION,
+                new CreateFunctionEvent(func, true, this));
+      }
+
+      success = ms.commitTransaction();
+    } finally {
+      if (!success) {
+        ms.rollbackTransaction();
+      }
+
+      if (!listeners.isEmpty()) {
+        MetaStoreListenerNotifier.notifyEvent(listeners,
+            EventType.CREATE_FUNCTION,
+            new CreateFunctionEvent(func, success, this),
+            null,
+            transactionalListenerResponses, ms);
+      }
+    }
+  }
+
+  @Override
+  public void drop_function(String dbName, String funcName)
+      throws NoSuchObjectException, MetaException,
+      InvalidObjectException, InvalidInputException {
+    if (funcName == null) {
+      throw new MetaException("Function name cannot be null.");
+    }
+    boolean success = false;
+    Function func = null;
+    RawStore ms = getMS();
+    Map<String, String> transactionalListenerResponses = Collections.emptyMap();
+    String[] parsedDbName = parseDbName(dbName, conf);
+    if (parsedDbName[DB_NAME] == null) {
+      throw new MetaException("Database name cannot be null.");
+    }
+    try {
+      ms.openTransaction();
+      func = ms.getFunction(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], funcName);
+      if (func == null) {
+        throw new NoSuchObjectException("Function " + funcName + " does not exist");
+      }
+      Boolean needsCm =
+          ReplChangeManager.isSourceOfReplication(get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]));
+
+      // if copy of jar to change management fails we fail the metastore transaction, since the
+      // user might delete the jars on HDFS externally after dropping the function, hence having
+      // a copy is required to allow incremental replication to work correctly.
+      if (func.getResourceUris() != null && !func.getResourceUris().isEmpty()) {
+        for (ResourceUri uri : func.getResourceUris()) {
+          if (uri.getUri().toLowerCase().startsWith("hdfs:") && needsCm) {
+            wh.addToChangeManagement(new Path(uri.getUri()));
+          }
+        }
+      }
+      firePreEvent(new PreDropFunctionEvent(func, this));
+
+      // if the operation on metastore fails, we don't do anything in change management, but fail
+      // the metastore transaction, as having a copy of the jar in change management is not going
+      // to cause any problem, the cleaner thread will remove this when this jar expires.
+      ms.dropFunction(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], funcName);
+      if (transactionalListeners.size() > 0) {
+        transactionalListenerResponses =
+            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                EventType.DROP_FUNCTION,
+                new DropFunctionEvent(func, true, this));
+      }
+      success = ms.commitTransaction();
+    } finally {
+      if (!success) {
+        ms.rollbackTransaction();
+      }
+
+      if (listeners.size() > 0) {
+        MetaStoreListenerNotifier.notifyEvent(listeners,
+            EventType.DROP_FUNCTION,
+            new DropFunctionEvent(func, success, this),
+            null,
+            transactionalListenerResponses, ms);
+      }
+    }
+  }
+
+  @Override
+  public void alter_function(String dbName, String funcName, Function newFunc) throws TException {
+    String[] parsedDbName = parseDbName(dbName, conf);
+    validateForAlterFunction(parsedDbName[DB_NAME], funcName, newFunc);
+    boolean success = false;
+    RawStore ms = getMS();
+    try {
+      firePreEvent(new PreCreateFunctionEvent(newFunc, this));
+      ms.openTransaction();
+      ms.alterFunction(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], funcName, newFunc);
+      success = ms.commitTransaction();
+    } catch (InvalidObjectException e) {
+      // Throwing MetaException instead of InvalidObjectException as the InvalidObjectException
+      // is not defined for the alter_function method in the Thrift interface.
+      throwMetaException(e);
+    } finally {
+      if (!success) {
+        ms.rollbackTransaction();
+      }
+    }
+  }
+
+  private void validateForAlterFunction(String dbName, String funcName, Function newFunc)
+      throws MetaException {
+    if (dbName == null || funcName == null) {
+      throw new MetaException("Database and function name cannot be null.");
+    }
+    try {
+      validateFunctionInfo(newFunc);
+    } catch (InvalidObjectException e) {
+      // The validateFunctionInfo method is used by the create and alter function methods as well
+      // and it can throw InvalidObjectException. But the InvalidObjectException is not defined
+      // for the alter_function method in the Thrift interface, therefore a TApplicationException
+      // will occur at the caller side. Re-throwing the InvalidObjectException as MetaException
+      // would eliminate the TApplicationException at caller side.
+      throw newMetaException(e);
+    }
+  }
+
+  @Override
+  public List<String> get_functions(String dbName, String pattern)
+      throws MetaException {
+    String[] parsedDbName = parseDbName(dbName, conf);
+    GetFunctionsRequest request = new GetFunctionsRequest(parsedDbName[DB_NAME]);
+    request.setCatalogName(parsedDbName[CAT_NAME]);
+    request.setPattern(pattern);
+    request.setReturnNames(true);
+    GetFunctionsResponse resp = get_functions_req(request);
+    return resp.getFunction_names();
+  }
+
+  @Override
+  public GetFunctionsResponse get_functions_req(GetFunctionsRequest req)
+      throws MetaException {
+    startFunction("get_functions_req", ": db=" + req.getDbName()
+        + " pat=" + req.getPattern());
+
+    RawStore ms = getMS();
+    Exception ex = null;
+    GetFunctionsResponse response = new GetFunctionsResponse();
+    String catName = req.isSetCatalogName() ? req.getCatalogName() : getDefaultCatalog(conf);
+    try {
+      List result = ms.getFunctionsRequest(catName, req.getDbName(),
+          req.getPattern(), req.isReturnNames());
+      if (req.isReturnNames()) {
+        response.setFunction_names(result);
+      } else {
+        response.setFunctions(result);
+      }
+    } catch (Exception e) {
+      ex = e;
+      throw newMetaException(e);
+    } finally {
+      endFunction("get_functions", ex == null, ex);
+    }
+    return response;
+  }
+
+  @Override
+  public GetAllFunctionsResponse get_all_functions()
+      throws MetaException {
+    GetAllFunctionsResponse response = new GetAllFunctionsResponse();
+    startFunction("get_all_functions");
+    RawStore ms = getMS();
+    List<Function> allFunctions = null;
+    Exception ex = null;
+    try {
+      // Leaving this as the 'hive' catalog (rather than choosing the default from the
+      // configuration) because all the default UDFs are in that catalog, and I think that's
+      // would people really want here.
+      allFunctions = ms.getAllFunctions(DEFAULT_CATALOG_NAME);
+    } catch (Exception e) {
+      ex = e;
+      throw newMetaException(e);
+    } finally {
+      endFunction("get_all_functions", allFunctions != null, ex);
+    }
+    response.setFunctions(allFunctions);
+    return response;
+  }
+
+  @Override
+  public Function get_function(String dbName, String funcName) throws TException {
+    if (dbName == null || funcName == null) {
+      throw new MetaException("Database and function name cannot be null.");
+    }
+    startFunction("get_function", ": " + dbName + "." + funcName);
+
+    RawStore ms = getMS();
+    Function func = null;
+    Exception ex = null;
+    String[] parsedDbName = parseDbName(dbName, conf);
+
+    try {
+      func = ms.getFunction(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], funcName);
+      if (func == null) {
+        throw new NoSuchObjectException(
+            "Function " + dbName + "." + funcName + " does not exist");
+      }
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e).throwIfInstance(NoSuchObjectException.class).defaultMetaException();
+    } finally {
+      endFunction("get_function", func != null, ex);
+    }
+
+    return func;
+  }
+
+  @Override
+  public void update_table_params(List<TableParamsUpdate> updates) throws TException {
+    for (TableParamsUpdate update : updates) {
+      if (!update.isSetCat_name()) {
+        update.setCat_name(getDefaultCatalog(conf));
+      }
+    }
+    getMS().updateTableParams(updates);
+  }
+
+  public AggrStats get_aggr_stats_for(PartitionsStatsRequest request) throws TException {
+    String catName = request.isSetCatName() ? request.getCatName().toLowerCase() :
+        getDefaultCatalog(conf);
+    String dbName = request.getDbName().toLowerCase();
+    String tblName = request.getTblName().toLowerCase();
+    startFunction("get_aggr_stats_for", ": table=" +
+        TableName.getQualified(catName, dbName, tblName));
+
+    List<String> lowerCaseColNames = new ArrayList<>(request.getColNames().size());
+    for (String colName : request.getColNames()) {
+      lowerCaseColNames.add(colName.toLowerCase());
+    }
+    AggrStats aggrStats = null;
+
+    try {
+      aggrStats = getMS().get_aggr_stats_for(catName, dbName, tblName,
+          request.getPartNames(), lowerCaseColNames, request.getEngine(), request.getValidWriteIdList());
+      return aggrStats;
+    } finally {
+      endFunction("get_aggr_stats_for", aggrStats == null, null, request.getTblName());
+    }
+
+  }
+
+  @Override
+  public boolean set_aggr_stats_for(SetPartitionsStatsRequest req) throws TException {
+    List<ColumnStatistics> columnStatisticsList = req.getColStats();
+    if (columnStatisticsList == null || columnStatisticsList.isEmpty()) {
+      return true;
+    }
+    ColumnStatisticsDesc statsDesc = columnStatisticsList.getFirst().getStatsDesc();
+    String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
+    String dbName = statsDesc.getDbName();
+    String tableName = statsDesc.getTableName();
+    startFunction("set_aggr_stats_for",
+        ": db=" + dbName + " tab=" + tableName + " needMerge=" + req.isNeedMerge() +
+            " isTblLevel=" + statsDesc.isIsTblLevel());
+    Exception ex = null;
+    boolean success = false;
+    try {
+      success = AbstractRequestHandler.offer(this, req).success();
+      return success;
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e).throwIfInstance(MetaException.class, NoSuchObjectException.class)
+          .convertIfInstance(IOException.class, MetaException.class)
+          .defaultMetaException();
+    } finally {
+      endFunction("set_aggr_stats_for", success, ex,
+          TableName.getQualified(catName, dbName, tableName));
+    }
+  }
+
+  @Override
+  public FireEventResponse fire_listener_event(FireEventRequest rqst) throws TException {
+    switch (rqst.getData().getSetField()) {
+    case INSERT_DATA:
+    case INSERT_DATAS:
+      String catName =
+          rqst.isSetCatName() ? rqst.getCatName() : getDefaultCatalog(conf);
+      String dbName = rqst.getDbName();
+      String tblName = rqst.getTableName();
+      boolean isSuccessful = rqst.isSuccessful();
+      List<InsertEvent> events = new ArrayList<>();
+      if (rqst.getData().isSetInsertData()) {
+        events.add(new InsertEvent(catName, dbName, tblName,
+            rqst.getPartitionVals(),
+            rqst.getData().getInsertData(), isSuccessful, this));
+      } else {
+        // this is a bulk fire insert event operation
+        // we use the partition values field from the InsertEventRequestData object
+        // instead of the FireEventRequest object
+        for (InsertEventRequestData insertData : rqst.getData().getInsertDatas()) {
+          if (!insertData.isSetPartitionVal()) {
+            throw new MetaException(
+                "Partition values must be set when firing multiple insert events");
+          }
+          events.add(new InsertEvent(catName, dbName, tblName,
+              insertData.getPartitionVal(),
+              insertData, isSuccessful, this));
+        }
+      }
+      FireEventResponse response = new FireEventResponse();
+      for (InsertEvent event : events) {
+        /*
+         * The transactional listener response will be set already on the event, so there is not need
+         * to pass the response to the non-transactional listener.
+         */
+        MetaStoreListenerNotifier
+            .notifyEvent(transactionalListeners, EventType.INSERT, event);
+        MetaStoreListenerNotifier.notifyEvent(listeners, EventType.INSERT, event);
+        if (event.getParameters() != null && event.getParameters()
+            .containsKey(
+                MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME)) {
+          response.addToEventIds(Long.valueOf(event.getParameters()
+              .get(MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME)));
+        } else {
+          String msg = "Insert event id not generated for ";
+          if (event.getPartitionObj() != null) {
+            msg += "partition " + Arrays
+                .toString(event.getPartitionObj().getValues().toArray()) + " of ";
+          }
+          msg +=
+              " of table " + event.getTableObj().getDbName() + "." + event.getTableObj()
+                  .getTableName();
+          LOG.warn(msg);
+        }
+      }
+      return response;
+    case REFRESH_EVENT:
+      response = new FireEventResponse();
+      catName = rqst.isSetCatName() ? rqst.getCatName() : getDefaultCatalog(conf);
+      dbName = rqst.getDbName();
+      tblName = rqst.getTableName();
+      List<List<String>> partitionVals;
+      if (rqst.getPartitionVals() != null && !rqst.getPartitionVals().isEmpty()) {
+        partitionVals = Arrays.asList(rqst.getPartitionVals());
+      } else {
+        partitionVals = rqst.getBatchPartitionValsForRefresh();
+      }
+      Map<String, String> tableParams = rqst.getTblParams();
+      ReloadEvent event = new ReloadEvent(catName, dbName, tblName, partitionVals, rqst.isSuccessful(),
+              rqst.getData().getRefreshEvent(), tableParams, this);
+      MetaStoreListenerNotifier
+              .notifyEvent(transactionalListeners, EventType.RELOAD, event);
+      MetaStoreListenerNotifier.notifyEvent(listeners, EventType.RELOAD, event);
+      if (event.getParameters() != null && event.getParameters()
+              .containsKey(
+                      MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME)) {
+        response.addToEventIds(Long.valueOf(event.getParameters()
+                .get(MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME)));
+      } else {
+        String msg = "Reload event id not generated for ";
+        if (event.getPartitions() != null) {
+          msg += "partition(s) " + Arrays
+                  .toString(event.getPartitions().toArray()) + " of ";
+        }
+        msg +=
+                " of table " + event.getTableObj().getDbName() + "." + event.getTableObj()
+                        .getTableName();
+        LOG.warn(msg);
+      }
+      return response;
+    default:
+      throw new TException("Event type " + rqst.getData().getSetField().toString()
+          + " not currently supported.");
+    }
+
+  }
+
+  @Override
+  public PrimaryKeysResponse get_primary_keys(PrimaryKeysRequest request) throws TException {
+    request.setCatName(request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf));
+    startTableFunction("get_primary_keys", request.getCatName(), request.getDb_name(), request.getTbl_name());
+    List<SQLPrimaryKey> ret = null;
+    Exception ex = null;
+    try {
+      ret = getMS().getPrimaryKeys(request);
+    } catch (Exception e) {
+      ex = e;
+      throwMetaException(e);
+    } finally {
+      endFunction("get_primary_keys", ret != null, ex, request.getTbl_name());
+    }
+    return new PrimaryKeysResponse(ret);
+  }
+
+  @Override
+  public ForeignKeysResponse get_foreign_keys(ForeignKeysRequest request) throws TException {
+    request.setCatName(request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf));
+    startFunction("get_foreign_keys",
+        " : parentdb=" + request.getParent_db_name() + " parenttbl=" + request.getParent_tbl_name() + " foreigndb="
+            + request.getForeign_db_name() + " foreigntbl=" + request.getForeign_tbl_name());
+    List<SQLForeignKey> ret = null;
+    Exception ex = null;
+    try {
+      ret = getMS().getForeignKeys(request);
+    } catch (Exception e) {
+      ex = e;
+      throwMetaException(e);
+    } finally {
+      endFunction("get_foreign_keys", ret != null, ex, request.getForeign_tbl_name());
+    }
+    return new ForeignKeysResponse(ret);
+  }
+
+  @Override
+  public UniqueConstraintsResponse get_unique_constraints(UniqueConstraintsRequest request) throws TException {
+    request.setCatName(request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf));
+    startTableFunction("get_unique_constraints", request.getCatName(), request.getDb_name(), request.getTbl_name());
+    List<SQLUniqueConstraint> ret = null;
+    Exception ex = null;
+    try {
+      ret = getMS().getUniqueConstraints(request);
+    } catch (Exception e) {
+      ex = e;
+      throw newMetaException(e);
+    } finally {
+      endFunction("get_unique_constraints", ret != null, ex, request.getTbl_name());
+    }
+    return new UniqueConstraintsResponse(ret);
+  }
+
+  @Override
+  public NotNullConstraintsResponse get_not_null_constraints(NotNullConstraintsRequest request) throws TException {
+    request.setCatName(request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf));
+    startTableFunction("get_not_null_constraints", request.getCatName(), request.getDb_name(), request.getTbl_name());
+    List<SQLNotNullConstraint> ret = null;
+    Exception ex = null;
+    try {
+      ret = getMS().getNotNullConstraints(request);
+    } catch (Exception e) {
+      ex = e;
+      throw newMetaException(e);
+    } finally {
+      endFunction("get_not_null_constraints", ret != null, ex, request.getTbl_name());
+    }
+    return new NotNullConstraintsResponse(ret);
+  }
+
+  @Override
+  public DefaultConstraintsResponse get_default_constraints(DefaultConstraintsRequest request) throws TException {
+    request.setCatName(request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf));
+    startTableFunction("get_default_constraints", request.getCatName(), request.getDb_name(), request.getTbl_name());
+    List<SQLDefaultConstraint> ret = null;
+    Exception ex = null;
+    try {
+      ret = getMS().getDefaultConstraints(request);
+    } catch (Exception e) {
+      ex = e;
+      throw newMetaException(e);
+    } finally {
+      endFunction("get_default_constraints", ret != null, ex, request.getTbl_name());
+    }
+    return new DefaultConstraintsResponse(ret);
+  }
+
+  @Override
+  public CheckConstraintsResponse get_check_constraints(CheckConstraintsRequest request) throws TException {
+    request.setCatName(request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf));
+    startTableFunction("get_check_constraints", request.getCatName(), request.getDb_name(), request.getTbl_name());
+    List<SQLCheckConstraint> ret = null;
+    Exception ex = null;
+    try {
+      ret = getMS().getCheckConstraints(request);
+    } catch (Exception e) {
+      ex = e;
+      throw newMetaException(e);
+    } finally {
+      endFunction("get_check_constraints", ret != null, ex, request.getTbl_name());
+    }
+    return new CheckConstraintsResponse(ret);
+  }
+
+  /**
+   * Api to fetch all table constraints at once.
+   * @param request it consist of catalog name, database name and table name to identify the table in metastore
+   * @return all constraints attached to given table
+   * @throws TException
+   */
+  @Override
+  public AllTableConstraintsResponse get_all_table_constraints(AllTableConstraintsRequest request)
+      throws TException, MetaException, NoSuchObjectException {
+    request.setCatName(request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf));
+    startTableFunction("get_all_table_constraints", request.getCatName(), request.getDbName(), request.getTblName());
+    SQLAllTableConstraints ret = null;
+    Exception ex = null;
+    try {
+      ret = getMS().getAllTableConstraints(request);
+    } catch (Exception e) {
+      ex = e;
+      throwMetaException(e);
+    } finally {
+      endFunction("get_all_table_constraints", ret != null, ex, request.getTblName());
+    }
+    return new AllTableConstraintsResponse(ret);
+  }
+
+  @Override
+  public WMCreateResourcePlanResponse create_resource_plan(WMCreateResourcePlanRequest request)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
+    int defaultPoolSize = MetastoreConf.getIntVar(
+        conf, MetastoreConf.ConfVars.WM_DEFAULT_POOL_SIZE);
+    WMResourcePlan plan = request.getResourcePlan();
+    if (defaultPoolSize > 0 && plan.isSetQueryParallelism()) {
+      // If the default pool is not disabled, override the size with the specified parallelism.
+      defaultPoolSize = plan.getQueryParallelism();
+    }
+    try {
+      getMS().createResourcePlan(plan, request.getCopyFrom(), defaultPoolSize);
+      return new WMCreateResourcePlanResponse();
+    } catch (MetaException e) {
+      LOG.error("Exception while trying to persist resource plan", e);
+      throw e;
+    }
+  }
+
+  @Override
+  public WMGetResourcePlanResponse get_resource_plan(WMGetResourcePlanRequest request)
+      throws NoSuchObjectException, MetaException, TException {
+    try {
+      WMFullResourcePlan rp = getMS().getResourcePlan(request.getResourcePlanName(), request.getNs());
+      WMGetResourcePlanResponse resp = new WMGetResourcePlanResponse();
+      resp.setResourcePlan(rp);
+      return resp;
+    } catch (MetaException e) {
+      LOG.error("Exception while trying to retrieve resource plan", e);
+      throw e;
+    }
+  }
+
+  @Override
+  public WMGetAllResourcePlanResponse get_all_resource_plans(WMGetAllResourcePlanRequest request)
+      throws MetaException, TException {
+    try {
+      WMGetAllResourcePlanResponse resp = new WMGetAllResourcePlanResponse();
+      resp.setResourcePlans(getMS().getAllResourcePlans(request.getNs()));
+      return resp;
+    } catch (MetaException e) {
+      LOG.error("Exception while trying to retrieve resource plans", e);
+      throw e;
+    }
+  }
+
+  @Override
+  public WMAlterResourcePlanResponse alter_resource_plan(WMAlterResourcePlanRequest request)
+      throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
+    try {
+      if (((request.isIsEnableAndActivate() ? 1 : 0) + (request.isIsReplace() ? 1 : 0)
+          + (request.isIsForceDeactivate() ? 1 : 0)) > 1) {
+        throw new MetaException("Invalid request; multiple flags are set");
+      }
+      WMAlterResourcePlanResponse response = new WMAlterResourcePlanResponse();
+      // This method will only return full resource plan when activating one,
+      // to give the caller the result atomically with the activation.
+      WMFullResourcePlan fullPlanAfterAlter = getMS().alterResourcePlan(
+          request.getResourcePlanName(), request.getNs(), request.getResourcePlan(),
+          request.isIsEnableAndActivate(), request.isIsForceDeactivate(), request.isIsReplace());
+      if (fullPlanAfterAlter != null) {
+        response.setFullResourcePlan(fullPlanAfterAlter);
+      }
+      return response;
+    } catch (MetaException e) {
+      LOG.error("Exception while trying to alter resource plan", e);
+      throw e;
+    }
+  }
+
+  @Override
+  public WMGetActiveResourcePlanResponse get_active_resource_plan(
+      WMGetActiveResourcePlanRequest request) throws MetaException, TException {
+    try {
+      WMGetActiveResourcePlanResponse response = new WMGetActiveResourcePlanResponse();
+      response.setResourcePlan(getMS().getActiveResourcePlan(request.getNs()));
+      return response;
+    } catch (MetaException e) {
+      LOG.error("Exception while trying to get active resource plan", e);
+      throw e;
+    }
+  }
+
+  @Override
+  public WMValidateResourcePlanResponse validate_resource_plan(WMValidateResourcePlanRequest request)
+      throws NoSuchObjectException, MetaException, TException {
+    try {
+      return getMS().validateResourcePlan(request.getResourcePlanName(), request.getNs());
+    } catch (MetaException e) {
+      LOG.error("Exception while trying to validate resource plan", e);
+      throw e;
+    }
+  }
+
+  @Override
+  public WMDropResourcePlanResponse drop_resource_plan(WMDropResourcePlanRequest request)
+      throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
+    try {
+      getMS().dropResourcePlan(request.getResourcePlanName(), request.getNs());
+      return new WMDropResourcePlanResponse();
+    } catch (MetaException e) {
+      LOG.error("Exception while trying to drop resource plan", e);
+      throw e;
+    }
+  }
+
+  @Override
+  public WMCreateTriggerResponse create_wm_trigger(WMCreateTriggerRequest request)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
+    try {
+      getMS().createWMTrigger(request.getTrigger());
+      return new WMCreateTriggerResponse();
+    } catch (MetaException e) {
+      LOG.error("Exception while trying to create trigger", e);
+      throw e;
+    }
+  }
+
+  @Override
+  public WMAlterTriggerResponse alter_wm_trigger(WMAlterTriggerRequest request)
+      throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
+    try {
+      getMS().alterWMTrigger(request.getTrigger());
+      return new WMAlterTriggerResponse();
+    } catch (MetaException e) {
+      LOG.error("Exception while trying to alter trigger", e);
+      throw e;
+    }
+  }
+
+  @Override
+  public WMDropTriggerResponse drop_wm_trigger(WMDropTriggerRequest request)
+      throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
+    try {
+      getMS().dropWMTrigger(request.getResourcePlanName(), request.getTriggerName(), request.getNs());
+      return new WMDropTriggerResponse();
+    } catch (MetaException e) {
+      LOG.error("Exception while trying to drop trigger.", e);
+      throw e;
+    }
+  }
+
+  @Override
+  public WMGetTriggersForResourePlanResponse get_triggers_for_resourceplan(
+      WMGetTriggersForResourePlanRequest request)
+      throws NoSuchObjectException, MetaException, TException {
+    try {
+      List<WMTrigger> triggers =
+          getMS().getTriggersForResourcePlan(request.getResourcePlanName(), request.getNs());
+      WMGetTriggersForResourePlanResponse response = new WMGetTriggersForResourePlanResponse();
+      response.setTriggers(triggers);
+      return response;
+    } catch (MetaException e) {
+      LOG.error("Exception while trying to retrieve triggers plans", e);
+      throw e;
+    }
+  }
+
+  @Override
+  public WMAlterPoolResponse alter_wm_pool(WMAlterPoolRequest request)
+      throws AlreadyExistsException, NoSuchObjectException, InvalidObjectException, MetaException,
+      TException {
+    try {
+      getMS().alterPool(request.getPool(), request.getPoolPath());
+      return new WMAlterPoolResponse();
+    } catch (MetaException e) {
+      LOG.error("Exception while trying to alter WMPool", e);
+      throw e;
+    }
+  }
+
+  @Override
+  public WMCreatePoolResponse create_wm_pool(WMCreatePoolRequest request)
+      throws AlreadyExistsException, NoSuchObjectException, InvalidObjectException, MetaException,
+      TException {
+    try {
+      getMS().createPool(request.getPool());
+      return new WMCreatePoolResponse();
+    } catch (MetaException e) {
+      LOG.error("Exception while trying to create WMPool", e);
+      throw e;
+    }
+  }
+
+  @Override
+  public WMDropPoolResponse drop_wm_pool(WMDropPoolRequest request)
+      throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
+    try {
+      getMS().dropWMPool(request.getResourcePlanName(), request.getPoolPath(), request.getNs());
+      return new WMDropPoolResponse();
+    } catch (MetaException e) {
+      LOG.error("Exception while trying to drop WMPool", e);
+      throw e;
+    }
+  }
+
+  @Override
+  public WMCreateOrUpdateMappingResponse create_or_update_wm_mapping(
+      WMCreateOrUpdateMappingRequest request) throws AlreadyExistsException,
+      NoSuchObjectException, InvalidObjectException, MetaException, TException {
+    try {
+      getMS().createOrUpdateWMMapping(request.getMapping(), request.isUpdate());
+      return new WMCreateOrUpdateMappingResponse();
+    } catch (MetaException e) {
+      LOG.error("Exception while trying to create or update WMMapping", e);
+      throw e;
+    }
+  }
+
+  @Override
+  public WMDropMappingResponse drop_wm_mapping(WMDropMappingRequest request)
+      throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
+    try {
+      getMS().dropWMMapping(request.getMapping());
+      return new WMDropMappingResponse();
+    } catch (MetaException e) {
+      LOG.error("Exception while trying to drop WMMapping", e);
+      throw e;
+    }
+  }
+
+  @Override
+  public WMCreateOrDropTriggerToPoolMappingResponse create_or_drop_wm_trigger_to_pool_mapping(
+      WMCreateOrDropTriggerToPoolMappingRequest request) throws AlreadyExistsException,
+      NoSuchObjectException, InvalidObjectException, MetaException, TException {
+    try {
+      if (request.isDrop()) {
+        getMS().dropWMTriggerToPoolMapping(request.getResourcePlanName(),
+            request.getTriggerName(), request.getPoolPath(), request.getNs());
+      } else {
+        getMS().createWMTriggerToPoolMapping(request.getResourcePlanName(),
+            request.getTriggerName(), request.getPoolPath(), request.getNs());
+      }
+      return new WMCreateOrDropTriggerToPoolMappingResponse();
+    } catch (MetaException e) {
+      LOG.error("Exception while trying to create or drop pool mappings", e);
+      throw e;
+    }
+  }
+
+  @Override
+  public void create_ischema(ISchema schema) throws TException {
+    startFunction("create_ischema", ": " + schema.getName());
+    boolean success = false;
+    Exception ex = null;
+    RawStore ms = getMS();
+    try {
+      firePreEvent(new PreCreateISchemaEvent(this, schema));
+      Map<String, String> transactionalListenersResponses = Collections.emptyMap();
+      ms.openTransaction();
+      try {
+        ms.createISchema(schema);
+
+        if (!transactionalListeners.isEmpty()) {
+          transactionalListenersResponses =
+              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventType.CREATE_ISCHEMA, new CreateISchemaEvent(true, this, schema));
+        }
+        success = ms.commitTransaction();
+      } finally {
+        if (!success) {
+          ms.rollbackTransaction();
+        }
+        if (!listeners.isEmpty()) {
+          MetaStoreListenerNotifier.notifyEvent(listeners, EventType.CREATE_ISCHEMA,
+              new CreateISchemaEvent(success, this, schema), null,
+              transactionalListenersResponses, ms);
+        }
+      }
+    } catch (MetaException|AlreadyExistsException e) {
+      LOG.error("Caught exception creating schema", e);
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("create_ischema", success, ex);
+    }
+  }
+
+  @Override
+  public void alter_ischema(AlterISchemaRequest rqst) throws TException {
+    startFunction("alter_ischema", ": " + rqst);
+    boolean success = false;
+    Exception ex = null;
+    RawStore ms = getMS();
+    try {
+      ISchema oldSchema = ms.getISchema(rqst.getName());
+      if (oldSchema == null) {
+        throw new NoSuchObjectException("Could not find schema " + rqst.getName());
+      }
+      firePreEvent(new PreAlterISchemaEvent(this, oldSchema, rqst.getNewSchema()));
+      Map<String, String> transactionalListenersResponses = Collections.emptyMap();
+      ms.openTransaction();
+      try {
+        ms.alterISchema(rqst.getName(), rqst.getNewSchema());
+        if (!transactionalListeners.isEmpty()) {
+          transactionalListenersResponses =
+              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventType.ALTER_ISCHEMA, new AlterISchemaEvent(true, this, oldSchema, rqst.getNewSchema()));
+        }
+        success = ms.commitTransaction();
+      } finally {
+        if (!success) {
+          ms.rollbackTransaction();
+        }
+        if (!listeners.isEmpty()) {
+          MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ALTER_ISCHEMA,
+              new AlterISchemaEvent(success, this, oldSchema, rqst.getNewSchema()), null,
+              transactionalListenersResponses, ms);
+        }
+      }
+    } catch (MetaException|NoSuchObjectException e) {
+      LOG.error("Caught exception altering schema", e);
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("alter_ischema", success, ex);
+    }
+  }
+
+  @Override
+  public ISchema get_ischema(ISchemaName schemaName) throws TException {
+    startFunction("get_ischema", ": " + schemaName);
+    Exception ex = null;
+    ISchema schema = null;
+    try {
+      schema = getMS().getISchema(schemaName);
+      if (schema == null) {
+        throw new NoSuchObjectException("No schema named " + schemaName + " exists");
+      }
+      firePreEvent(new PreReadISchemaEvent(this, schema));
+      return schema;
+    } catch (MetaException e) {
+      LOG.error("Caught exception getting schema", e);
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("get_ischema", schema != null, ex);
+    }
+  }
+
+  @Override
+  public void drop_ischema(ISchemaName schemaName) throws TException {
+    startFunction("drop_ischema", ": " + schemaName);
+    Exception ex = null;
+    boolean success = false;
+    RawStore ms = getMS();
+    try {
+      // look for any valid versions.  This will also throw NoSuchObjectException if the schema
+      // itself doesn't exist, which is what we want.
+      SchemaVersion latest = ms.getLatestSchemaVersion(schemaName);
+      if (latest != null) {
+        ex = new InvalidOperationException("Schema " + schemaName + " cannot be dropped, it has" +
+            " at least one valid version");
+        throw (InvalidObjectException)ex;
+      }
+      ISchema schema = ms.getISchema(schemaName);
+      firePreEvent(new PreDropISchemaEvent(this, schema));
+      Map<String, String> transactionalListenersResponses = Collections.emptyMap();
+      ms.openTransaction();
+      try {
+        ms.dropISchema(schemaName);
+        if (!transactionalListeners.isEmpty()) {
+          transactionalListenersResponses =
+              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventType.DROP_ISCHEMA, new DropISchemaEvent(true, this, schema));
+        }
+        success = ms.commitTransaction();
+      } finally {
+        if (!success) {
+          ms.rollbackTransaction();
+        }
+        if (!listeners.isEmpty()) {
+          MetaStoreListenerNotifier.notifyEvent(listeners, EventType.DROP_ISCHEMA,
+              new DropISchemaEvent(success, this, schema), null,
+              transactionalListenersResponses, ms);
+        }
+      }
+    } catch (MetaException|NoSuchObjectException e) {
+      LOG.error("Caught exception dropping schema", e);
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("drop_ischema", success, ex);
+    }
+  }
+
+  @Override
+  public void add_schema_version(SchemaVersion schemaVersion) throws TException {
+    startFunction("add_schema_version", ": " + schemaVersion);
+    boolean success = false;
+    Exception ex = null;
+    RawStore ms = getMS();
+    try {
+      // Make sure the referenced schema exists
+      if (ms.getISchema(schemaVersion.getSchema()) == null) {
+        throw new NoSuchObjectException("No schema named " + schemaVersion.getSchema());
+      }
+      firePreEvent(new PreAddSchemaVersionEvent(this, schemaVersion));
+      Map<String, String> transactionalListenersResponses = Collections.emptyMap();
+      ms.openTransaction();
+      try {
+        ms.addSchemaVersion(schemaVersion);
+
+        if (!transactionalListeners.isEmpty()) {
+          transactionalListenersResponses =
+              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventType.ADD_SCHEMA_VERSION, new AddSchemaVersionEvent(true, this, schemaVersion));
+        }
+        success = ms.commitTransaction();
+      } finally {
+        if (!success) {
+          ms.rollbackTransaction();
+        }
+        if (!listeners.isEmpty()) {
+          MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ADD_SCHEMA_VERSION,
+              new AddSchemaVersionEvent(success, this, schemaVersion), null,
+              transactionalListenersResponses, ms);
+        }
+      }
+    } catch (MetaException|AlreadyExistsException e) {
+      LOG.error("Caught exception adding schema version", e);
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("add_schema_version", success, ex);
+    }
+  }
+
+  @Override
+  public SchemaVersion get_schema_version(SchemaVersionDescriptor version) throws TException {
+    startFunction("get_schema_version", ": " + version);
+    Exception ex = null;
+    SchemaVersion schemaVersion = null;
+    try {
+      schemaVersion = getMS().getSchemaVersion(version);
+      if (schemaVersion == null) {
+        throw new NoSuchObjectException("No schema version " + version + "exists");
+      }
+      firePreEvent(new PreReadhSchemaVersionEvent(this, Collections.singletonList(schemaVersion)));
+      return schemaVersion;
+    } catch (MetaException e) {
+      LOG.error("Caught exception getting schema version", e);
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("get_schema_version", schemaVersion != null, ex);
+    }
+  }
+
+  @Override
+  public SchemaVersion get_schema_latest_version(ISchemaName schemaName) throws TException {
+    startFunction("get_latest_schema_version", ": " + schemaName);
+    Exception ex = null;
+    SchemaVersion schemaVersion = null;
+    try {
+      schemaVersion = getMS().getLatestSchemaVersion(schemaName);
+      if (schemaVersion == null) {
+        throw new NoSuchObjectException("No versions of schema " + schemaName + "exist");
+      }
+      firePreEvent(new PreReadhSchemaVersionEvent(this, Collections.singletonList(schemaVersion)));
+      return schemaVersion;
+    } catch (MetaException e) {
+      LOG.error("Caught exception getting latest schema version", e);
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("get_latest_schema_version", schemaVersion != null, ex);
+    }
+  }
+
+  @Override
+  public List<SchemaVersion> get_schema_all_versions(ISchemaName schemaName) throws TException {
+    startFunction("get_all_schema_versions", ": " + schemaName);
+    Exception ex = null;
+    List<SchemaVersion> schemaVersions = null;
+    try {
+      schemaVersions = getMS().getAllSchemaVersion(schemaName);
+      if (schemaVersions == null) {
+        throw new NoSuchObjectException("No versions of schema " + schemaName + "exist");
+      }
+      firePreEvent(new PreReadhSchemaVersionEvent(this, schemaVersions));
+      return schemaVersions;
+    } catch (MetaException e) {
+      LOG.error("Caught exception getting all schema versions", e);
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("get_all_schema_versions", schemaVersions != null, ex);
+    }
+  }
+
+  @Override
+  public void drop_schema_version(SchemaVersionDescriptor version) throws TException {
+    startFunction("drop_schema_version", ": " + version);
+    Exception ex = null;
+    boolean success = false;
+    RawStore ms = getMS();
+    try {
+      SchemaVersion schemaVersion = ms.getSchemaVersion(version);
+      if (schemaVersion == null) {
+        throw new NoSuchObjectException("No schema version " + version);
+      }
+      firePreEvent(new PreDropSchemaVersionEvent(this, schemaVersion));
+      Map<String, String> transactionalListenersResponses = Collections.emptyMap();
+      ms.openTransaction();
+      try {
+        ms.dropSchemaVersion(version);
+        if (!transactionalListeners.isEmpty()) {
+          transactionalListenersResponses =
+              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventType.DROP_SCHEMA_VERSION, new DropSchemaVersionEvent(true, this, schemaVersion));
+        }
+        success = ms.commitTransaction();
+      } finally {
+        if (!success) {
+          ms.rollbackTransaction();
+        }
+        if (!listeners.isEmpty()) {
+          MetaStoreListenerNotifier.notifyEvent(listeners, EventType.DROP_SCHEMA_VERSION,
+              new DropSchemaVersionEvent(success, this, schemaVersion), null,
+              transactionalListenersResponses, ms);
+        }
+      }
+    } catch (MetaException|NoSuchObjectException e) {
+      LOG.error("Caught exception dropping schema version", e);
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("drop_schema_version", success, ex);
+    }
+  }
+
+  @Override
+  public FindSchemasByColsResp get_schemas_by_cols(FindSchemasByColsRqst rqst) throws TException {
+    startFunction("get_schemas_by_cols");
+    Exception ex = null;
+    List<SchemaVersion> schemaVersions = Collections.emptyList();
+    try {
+      schemaVersions = getMS().getSchemaVersionsByColumns(rqst.getColName(),
+          rqst.getColNamespace(), rqst.getType());
+      firePreEvent(new PreReadhSchemaVersionEvent(this, schemaVersions));
+      final List<SchemaVersionDescriptor> entries = new ArrayList<>(schemaVersions.size());
+      schemaVersions.forEach(schemaVersion -> entries.add(
+          new SchemaVersionDescriptor(schemaVersion.getSchema(), schemaVersion.getVersion())));
+      return new FindSchemasByColsResp(entries);
+    } catch (MetaException e) {
+      LOG.error("Caught exception doing schema version query", e);
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("get_schemas_by_cols", !schemaVersions.isEmpty(), ex);
+    }
+  }
+
+  @Override
+  public void map_schema_version_to_serde(MapSchemaVersionToSerdeRequest rqst)
+      throws TException {
+    startFunction("map_schema_version_to_serde, :" + rqst);
+    boolean success = false;
+    Exception ex = null;
+    RawStore ms = getMS();
+    try {
+      SchemaVersion oldSchemaVersion = ms.getSchemaVersion(rqst.getSchemaVersion());
+      if (oldSchemaVersion == null) {
+        throw new NoSuchObjectException("No schema version " + rqst.getSchemaVersion());
+      }
+      SerDeInfo serde = ms.getSerDeInfo(rqst.getSerdeName());
+      if (serde == null) {
+        throw new NoSuchObjectException("No SerDe named " + rqst.getSerdeName());
+      }
+      SchemaVersion newSchemaVersion = new SchemaVersion(oldSchemaVersion);
+      newSchemaVersion.setSerDe(serde);
+      firePreEvent(new PreAlterSchemaVersionEvent(this, oldSchemaVersion, newSchemaVersion));
+      Map<String, String> transactionalListenersResponses = Collections.emptyMap();
+      ms.openTransaction();
+      try {
+        ms.alterSchemaVersion(rqst.getSchemaVersion(), newSchemaVersion);
+        if (!transactionalListeners.isEmpty()) {
+          transactionalListenersResponses =
+              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventType.ALTER_SCHEMA_VERSION, new AlterSchemaVersionEvent(true, this,
+                      oldSchemaVersion, newSchemaVersion));
+        }
+        success = ms.commitTransaction();
+      } finally {
+        if (!success) {
+          ms.rollbackTransaction();
+        }
+        if (!listeners.isEmpty()) {
+          MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ALTER_SCHEMA_VERSION,
+              new AlterSchemaVersionEvent(success, this, oldSchemaVersion, newSchemaVersion), null,
+              transactionalListenersResponses, ms);
+        }
+      }
+    } catch (MetaException|NoSuchObjectException e) {
+      LOG.error("Caught exception mapping schema version to serde", e);
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("map_schema_version_to_serde", success, ex);
+    }
+  }
+
+  @Override
+  public void set_schema_version_state(SetSchemaVersionStateRequest rqst) throws TException {
+    startFunction("set_schema_version_state, :" + rqst);
+    boolean success = false;
+    Exception ex = null;
+    RawStore ms = getMS();
+    try {
+      SchemaVersion oldSchemaVersion = ms.getSchemaVersion(rqst.getSchemaVersion());
+      if (oldSchemaVersion == null) {
+        throw new NoSuchObjectException("No schema version " + rqst.getSchemaVersion());
+      }
+      SchemaVersion newSchemaVersion = new SchemaVersion(oldSchemaVersion);
+      newSchemaVersion.setState(rqst.getState());
+      firePreEvent(new PreAlterSchemaVersionEvent(this, oldSchemaVersion, newSchemaVersion));
+      Map<String, String> transactionalListenersResponses = Collections.emptyMap();
+      ms.openTransaction();
+      try {
+        ms.alterSchemaVersion(rqst.getSchemaVersion(), newSchemaVersion);
+        if (!transactionalListeners.isEmpty()) {
+          transactionalListenersResponses =
+              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventType.ALTER_SCHEMA_VERSION, new AlterSchemaVersionEvent(true, this,
+                      oldSchemaVersion, newSchemaVersion));
+        }
+        success = ms.commitTransaction();
+      } finally {
+        if (!success) {
+          ms.rollbackTransaction();
+        }
+        if (!listeners.isEmpty()) {
+          MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ALTER_SCHEMA_VERSION,
+              new AlterSchemaVersionEvent(success, this, oldSchemaVersion, newSchemaVersion), null,
+              transactionalListenersResponses, ms);
+        }
+      }
+    } catch (MetaException|NoSuchObjectException e) {
+      LOG.error("Caught exception changing schema version state", e);
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("set_schema_version_state", success, ex);
+    }
+  }
+
+  @Override
+  public void add_serde(SerDeInfo serde) throws TException {
+    startFunction("create_serde", ": " + serde.getName());
+    Exception ex = null;
+    boolean success = false;
+    RawStore ms = getMS();
+    try {
+      ms.openTransaction();
+      ms.addSerde(serde);
+      success = ms.commitTransaction();
+    } catch (MetaException|AlreadyExistsException e) {
+      LOG.error("Caught exception creating serde", e);
+      ex = e;
+      throw e;
+    } finally {
+      if (!success) {
+        ms.rollbackTransaction();
+      }
+      endFunction("create_serde", success, ex);
+    }
+  }
+
+  @Override
+  public SerDeInfo get_serde(GetSerdeRequest rqst) throws TException {
+    startFunction("get_serde", ": " + rqst);
+    Exception ex = null;
+    SerDeInfo serde = null;
+    try {
+      serde = getMS().getSerDeInfo(rqst.getSerdeName());
+      if (serde == null) {
+        throw new NoSuchObjectException("No serde named " + rqst.getSerdeName() + " exists");
+      }
+      return serde;
+    } catch (MetaException e) {
+      LOG.error("Caught exception getting serde", e);
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("get_serde", serde != null, ex);
+    }
+  }
+
+  public void add_runtime_stats(RuntimeStat stat) throws TException {
+    startFunction("store_runtime_stats");
+    Exception ex = null;
+    boolean success = false;
+    RawStore ms = getMS();
+    try {
+      ms.openTransaction();
+      ms.addRuntimeStat(stat);
+      success = ms.commitTransaction();
+    } catch (Exception e) {
+      LOG.error("Caught exception", e);
+      ex = e;
+      throw e;
+    } finally {
+      if (!success) {
+        ms.rollbackTransaction();
+      }
+      endFunction("store_runtime_stats", success, ex);
+    }
+  }
+
+  @Override
+  public List<RuntimeStat> get_runtime_stats(GetRuntimeStatsRequest rqst) throws TException {
+    startFunction("get_runtime_stats");
+    Exception ex = null;
+    try {
+      List<RuntimeStat> res = getMS().getRuntimeStats(rqst.getMaxWeight(), rqst.getMaxCreateTime());
+      return res;
+    } catch (MetaException e) {
+      LOG.error("Caught exception", e);
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("get_runtime_stats", ex == null, ex);
+    }
+  }
+
+  @Override
+  public ScheduledQueryPollResponse scheduled_query_poll(ScheduledQueryPollRequest request)
+      throws MetaException, TException {
+    startFunction("scheduled_query_poll");
+    Exception ex = null;
+    try {
+      RawStore ms = getMS();
+      return ms.scheduledQueryPoll(request);
+    } catch (Exception e) {
+      LOG.error("Caught exception", e);
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("scheduled_query_poll", ex == null, ex);
+    }
+  }
+
+  @Override
+  public void scheduled_query_maintenance(ScheduledQueryMaintenanceRequest request) throws MetaException, TException {
+    startFunction("scheduled_query_poll");
+    Exception ex = null;
+    try {
+      String query = request.getScheduledQuery().getQuery();
+      ScheduledQueryMaintenanceRequestType requestType = request.getType();
+      RawStore ms = getMS();
+      ms.scheduledQueryMaintenance(request);
+      if (requestType == ScheduledQueryMaintenanceRequestType.DROP) {
+        abortReplCreatedOpenTxnsForDatabase(query);
+      }
+    } catch (Exception e) {
+      LOG.error("Caught exception", e);
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("scheduled_query_poll", ex == null, ex);
+    }
+  }
+
+  private void abortReplCreatedOpenTxnsForDatabase(String query) throws TException {
+    List<Long> toBeAbortedTxns = null;
+    List<TxnType> txnListExcludingReplCreated = new ArrayList<>();
+    String pattern = "(?<=REPL LOAD )\\w+(?= INTO \\w+)";
+    Pattern regex = Pattern.compile(pattern);
+    Matcher matcher = regex.matcher(query);
+    String dbName;
+    if (matcher.find()) {
+      dbName = matcher.group();
+      String replPolicy = dbName + ".*";
+      for (TxnType type : TxnType.values()) {
+        // exclude REPL_CREATED txn
+        if (type != TxnType.REPL_CREATED) {
+          txnListExcludingReplCreated.add(type);
+        }
+      }
+      List<Long> openTxnList = null;
+      GetOpenTxnsResponse openTxnsResponse = null;
+      try {
+        openTxnsResponse = getTxnHandler()
+                .getOpenTxns(txnListExcludingReplCreated);
+      } catch (Exception e) {
+        LOG.error("Got an error : " + e);
+      }
+      if (openTxnsResponse != null) {
+        openTxnList = openTxnsResponse.getOpen_txns();
+        if (openTxnList != null) {
+          toBeAbortedTxns = getTxnHandler()
+                  .getOpenTxnForPolicy(openTxnList, replPolicy);
+          if (!toBeAbortedTxns.isEmpty()) {
+            LOG.info("Aborting Repl created open transactions");
+            abort_txns(new AbortTxnsRequest(toBeAbortedTxns));
+          }
+        }
+      }
+    }
+  }
+
+  @Override
+  public void scheduled_query_progress(ScheduledQueryProgressInfo info) throws MetaException, TException {
+    startFunction("scheduled_query_poll");
+    Exception ex = null;
+    try {
+      RawStore ms = getMS();
+      ms.scheduledQueryProgress(info);
+    } catch (Exception e) {
+      LOG.error("Caught exception", e);
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("scheduled_query_poll", ex == null, ex);
+    }
+  }
+
+  @Override
+  public ScheduledQuery get_scheduled_query(ScheduledQueryKey scheduleKey) throws TException {
+    startFunction("get_scheduled_query");
+    Exception ex = null;
+    try {
+      return getMS().getScheduledQuery(scheduleKey);
+    } catch (Exception e) {
+      LOG.error("Caught exception", e);
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("get_scheduled_query", ex == null, ex);
+    }
+  }
+
+  @Override
+  public void add_replication_metrics(ReplicationMetricList replicationMetricList) throws MetaException{
+    startFunction("add_replication_metrics");
+    Exception ex = null;
+    try {
+      getMS().addReplicationMetrics(replicationMetricList);
+    } catch (Exception e) {
+      LOG.error("Caught exception", e);
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("add_replication_metrics", ex == null, ex);
+    }
+  }
+
+  @Override
+  public ReplicationMetricList get_replication_metrics(GetReplicationMetricsRequest
+                                                           getReplicationMetricsRequest) throws MetaException{
+    startFunction("get_replication_metrics");
+    Exception ex = null;
+    try {
+      return getMS().getReplicationMetrics(getReplicationMetricsRequest);
+    } catch (Exception e) {
+      LOG.error("Caught exception", e);
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("get_replication_metrics", ex == null, ex);
+    }
+  }
+
+  @Override
+  public void create_stored_procedure(StoredProcedure proc) throws NoSuchObjectException, MetaException {
+    startFunction("create_stored_procedure");
+    Exception ex = null;
+
+    throwUnsupportedExceptionIfRemoteDB(proc.getDbName(), "create_stored_procedure");
+    try {
+      getMS().createOrUpdateStoredProcedure(proc);
+    } catch (Exception e) {
+      LOG.error("Caught exception", e);
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("create_stored_procedure", ex == null, ex);
+    }
+  }
+
+  public StoredProcedure get_stored_procedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException {
+    startFunction("get_stored_procedure");
+    Exception ex = null;
+    try {
+      StoredProcedure proc = getMS().getStoredProcedure(request.getCatName(), request.getDbName(), request.getProcName());
+        if (proc == null) {
+          throw new NoSuchObjectException(
+                  "HPL/SQL StoredProcedure " + request.getDbName() + "." + request.getProcName() + " does not exist");
+        }
+        return proc;
+    } catch (Exception e) {
+      if (!(e instanceof NoSuchObjectException)) {
+        LOG.error("Caught exception", e);
+      }
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("get_stored_procedure", ex == null, ex);
+    }
+  }
+
+  @Override
+  public void drop_stored_procedure(StoredProcedureRequest request) throws MetaException {
+    startFunction("drop_stored_procedure");
+    Exception ex = null;
+    try {
+      getMS().dropStoredProcedure(request.getCatName(), request.getDbName(), request.getProcName());
+    } catch (Exception e) {
+      LOG.error("Caught exception", e);
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("drop_stored_procedure", ex == null, ex);
+    }
+  }
+
+  @Override
+  public List<String> get_all_stored_procedures(ListStoredProcedureRequest request) throws MetaException {
+    startFunction("get_all_stored_procedures");
+    Exception ex = null;
+    try {
+      return getMS().getAllStoredProcedures(request);
+    } catch (Exception e) {
+      LOG.error("Caught exception", e);
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("get_all_stored_procedures", ex == null, ex);
+    }
+  }
+
+public Package find_package(GetPackageRequest request) throws MetaException, NoSuchObjectException {
+    startFunction("find_package");
+    Exception ex = null;
+    try {
+      Package pkg = getMS().findPackage(request);
+      if (pkg == null) {
+        throw new NoSuchObjectException(
+                "HPL/SQL package " + request.getDbName() + "." + request.getPackageName() + " does not exist");
+      }
+      return pkg;
+    } catch (Exception e) {
+      if (!(e instanceof NoSuchObjectException)) {
+        LOG.error("Caught exception", e);
+      }
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("find_package", ex == null, ex);
+    }
+  }
+
+  public void add_package(AddPackageRequest request) throws MetaException, NoSuchObjectException {
+    startFunction("add_package");
+    Exception ex = null;
+    try {
+      getMS().addPackage(request);
+    } catch (Exception e) {
+      LOG.error("Caught exception", e);
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("add_package", ex == null, ex);
+    }
+  }
+
+  public List<String> get_all_packages(ListPackageRequest request) throws MetaException {
+    startFunction("get_all_packages");
+    Exception ex = null;
+    try {
+      return getMS().listPackages(request);
+    } catch (Exception e) {
+      LOG.error("Caught exception", e);
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("get_all_packages", ex == null, ex);
+    }
+  }
+
+  public void drop_package(DropPackageRequest request) throws MetaException {
+    startFunction("drop_package");
+    Exception ex = null;
+    try {
+      getMS().dropPackage(request);
+    } catch (Exception e) {
+      LOG.error("Caught exception", e);
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("drop_package", ex == null, ex);
+    }
+  }
+
+  @Override
+  public List<WriteEventInfo> get_all_write_event_info(GetAllWriteEventInfoRequest request)
+      throws MetaException {
+    startFunction("get_all_write_event_info");
+    Exception ex = null;
+    try {
+      List<WriteEventInfo> writeEventInfoList =
+          getMS().getAllWriteEventInfo(request.getTxnId(), request.getDbName(), request.getTableName());
+      return writeEventInfoList == null ? Collections.emptyList() : writeEventInfoList;
+    } catch (Exception e) {
+      LOG.error("Caught exception", e);
+      ex = e;
+      throw e;
+    } finally {
+      endFunction("get_all_write_event_info", ex == null, ex);
+    }
+  }
+
+  /* anonymization extensions */
+
+  @Override
+  public void create_erasure_policy(ErasurePolicy erasurePolicy) throws AlreadyExistsException, TException {
+    RawStore rs = getMS();
+    ErasurePolicy tmpPolicy = rs.getErasurePolicy(erasurePolicy.getPolicyName());
+    if(tmpPolicy != null){
+      throw new AlreadyExistsException("policy " + erasurePolicy.getPolicyName() + " already exists.");
+    }
+    rs.createErasurePolicy(erasurePolicy);
+  }
+
+  @Override
+  public void drop_erasure_policy(String policyName, boolean ifExists) throws TException {
+    getMS().dropErasurePolicy(policyName, ifExists);
+  }
+
+  @Override
+  public void add_index(final Index newIndex, final Table indexTable) throws TException {
+    startFunction("add_index", ": " + newIndex.toString() + " " + indexTable.toString());
+    Index ret = null;
+    Exception ex = null;
+    try {
+      ret = add_index_core(getMS(), newIndex, indexTable);
+    } catch (Exception e) {
+      rethrowException(e);
+    } finally {
+      String tableName = indexTable != null ? indexTable.getTableName() : null;
+      endFunction("add_index", ret != null, ex, tableName);
+    }
+  }
+
+  private Index add_index_core(final RawStore ms, final Index index, final Table indexTable)
+    throws InvalidObjectException, AlreadyExistsException, MetaException, InvalidInputException, TException {
+    boolean success = false, indexTableCreated = false;
+    //String[] qualified = MetaStoreUtils.getQualifiedName(index.getDbName(), index.getIndexTableName());
+    String[] parsedDbName = parseDbName(index.getDbName(), conf);
+    String catName = parsedDbName[CAT_NAME];
+    String dbName = parsedDbName[DB_NAME];
+    //Map<String, String> transactionalListenerResponses = Collections.emptyMap();
+    try {
+      ms.openTransaction();
+//      firePreEvent(new PreAddIndexEvent(index, this));
+      Index old_index = null;
+      try {
+        old_index = get_index_by_name(index.getDbName(), index.getOrigTableName(), index.getIndexName());
+      } catch (Exception e) {
+      }
+      if (old_index != null) {
+        throw new AlreadyExistsException("Index already exists:" + index);
+      }
+
+      Table origTbl = ms.getTable(catName, dbName, index.getOrigTableName());
+      if (origTbl == null) {
+        throw new InvalidObjectException("Unable to add index because database or the original table do not exist");
+      }
+
+      Table indexTbl = indexTable;
+      if (indexTbl != null) {
+        try {
+          indexTbl = ms.getTable(catName, dbName, index.getIndexTableName());
+        } catch (Exception e) {
+        }
+        if (indexTbl != null) {
+          throw new InvalidObjectException("Unable to add index because index table already exists");
+        }
+        this.create_table(indexTable);
+        indexTableCreated = true;
+      }
+
+      ms.addIndex(index);
+
+      success = ms.commitTransaction();
+      return index;
+    } finally {
+      if (!success) {
+        if (indexTableCreated) {
+          try {
+            drop_table(dbName, index.getIndexTableName(), false);
+          } catch (Exception e) {
+          }
+        }
+        ms.rollbackTransaction();
+      }
+    }
+  }
+
+  @Override
+  public Index get_index_by_name(final String dbName, final String tblName, final String indexName) throws MetaException, NoSuchObjectException, TException {
+//    startFunction("get_index_by_name", ": db=" + dbName + " tbl=" + tblName + " index=" + indexName);
+    Index ret = null;
+    Exception ex = null;
+    try {
+      ret = get_index_by_name_core(getMS(), dbName, tblName, indexName);
+    } catch (Exception e) {
+      ex = e;
+      rethrowException(e);
+    } finally {
+//      endFunction("get_index_by_name", ret != null, ex, tblName);
+    }
+    return ret;
+  }
+
+  private Index get_index_by_name_core(final RawStore ms, final String db_name, final String tbl_name, final String index_name) throws MetaException, NoSuchObjectException, TException {
+    Index index = ms.getIndex(db_name, tbl_name, index_name);
+    if (index == null) {
+      throw new NoSuchObjectException(db_name + "." + tbl_name + " index=" + index_name + " not found");
+    }
+    return index;
+  }
+
+  @Override
+  public void drop_anon_index(final String indexName) throws TException {
+    getMS().dropAnonIndex(indexName);
+  }
+
+  @Override
+  public ErasurePolicy get_erasure_policy(final String policyName) throws TException {
+    ErasurePolicy policy = getMS().getErasurePolicy(policyName);
+    if (policy == null) {
+      throw new NoSuchObjectException("policy not found: " + policyName);
+    }
+    return policy;
+  }
+
+  /* erasure policy governance: versioning, binding, lifecycle audit, run audit, priv grants */
+
+  @Override
+  public ErasurePolicyVersion add_erasure_policy_version(ErasurePolicyVersion version)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
+    return getMS().addErasurePolicyVersion(version);
+  }
+
+  @Override
+  public ErasurePolicyVersion get_erasure_policy_version(String policyName, String versionLabel)
+      throws NoSuchObjectException, MetaException, TException {
+    return getMS().getErasurePolicyVersion(policyName, versionLabel);
+  }
+
+  @Override
+  public List<ErasurePolicyVersion> list_erasure_policy_versions(String policyName)
+      throws NoSuchObjectException, MetaException, TException {
+    return getMS().listErasurePolicyVersions(policyName);
+  }
+
+  @Override
+  public void update_erasure_policy_version_status(long versionId, PolicyVersionStatus newStatus,
+      String principal)
+      throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
+    getMS().updateErasurePolicyVersionStatus(versionId, newStatus, principal);
+  }
+
+  @Override
+  public ErasurePolicyVersion get_active_erasure_policy_version(String policyName)
+      throws NoSuchObjectException, MetaException, TException {
+    return getMS().getActiveErasurePolicyVersion(policyName);
+  }
+
+  @Override
+  public List<ErasurePolicyStatement> get_erasure_policy_statements(long versionId)
+      throws NoSuchObjectException, MetaException, TException {
+    return getMS().getErasurePolicyStatements(versionId);
+  }
+
+  @Override
+  public List<ErasurePolicyRule> get_erasure_policy_rules(long statementId)
+      throws NoSuchObjectException, MetaException, TException {
+    return getMS().getErasurePolicyRules(statementId);
+  }
+
+  @Override
+  public ErasurePolicyBinding add_erasure_policy_binding(ErasurePolicyBinding binding)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
+    return getMS().addErasurePolicyBinding(binding);
+  }
+
+  @Override
+  public ErasurePolicyBinding get_erasure_policy_binding(long tblId, String columnName)
+      throws NoSuchObjectException, MetaException, TException {
+    return getMS().getErasurePolicyBinding(tblId, columnName);
+  }
+
+  @Override
+  public void drop_erasure_policy_binding(long bindingId)
+      throws NoSuchObjectException, MetaException, TException {
+    getMS().dropErasurePolicyBinding(bindingId);
+  }
+
+  @Override
+  public void update_erasure_policy_binding_settings(long bindingId,
+      PolicyResolutionMode resolutionMode, ColumnInternalFormat columnFormat)
+      throws NoSuchObjectException, MetaException, TException {
+    getMS().updateErasurePolicyBindingSettings(bindingId, resolutionMode, columnFormat);
+  }
+
+  @Override
+  public void attach_policy_to_binding(long bindingId, long policyId, int ordinal)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
+    getMS().attachPolicyToBinding(bindingId, policyId, ordinal);
+  }
+
+  @Override
+  public void detach_policy_from_binding(long bindingId, long policyId)
+      throws NoSuchObjectException, MetaException, TException {
+    getMS().detachPolicyFromBinding(bindingId, policyId);
+  }
+
+  @Override
+  public List<ErasurePolicyBindingMember> get_binding_members(long bindingId)
+      throws NoSuchObjectException, MetaException, TException {
+    return getMS().getBindingMembers(bindingId);
+  }
+
+  @Override
+  public void replace_binding_resolved_rules(long bindingId,
+      List<ErasurePolicyBindingResolved> resolved)
+      throws NoSuchObjectException, MetaException, TException {
+    getMS().replaceBindingResolvedRules(bindingId, resolved);
+  }
+
+  @Override
+  public List<ErasurePolicyBindingResolved> get_binding_resolved_rules(long bindingId)
+      throws NoSuchObjectException, MetaException, TException {
+    return getMS().getBindingResolvedRules(bindingId);
+  }
+
+  @Override
+  public void record_lifecycle_event(ErasurePolicyLifecycleEvent evt)
+      throws MetaException, TException {
+    getMS().recordLifecycleEvent(evt);
+  }
+
+  @Override
+  public List<ErasurePolicyLifecycleEvent> get_lifecycle_events_for_policy(String policyName,
+      long fromTs, long untilTs) throws NoSuchObjectException, MetaException, TException {
+    return getMS().getLifecycleEventsForPolicy(policyName, fromTs, untilTs);
+  }
+
+  @Override
+  public List<ErasurePolicyLifecycleEvent> get_lifecycle_events_for_binding(long bindingId,
+      long fromTs, long untilTs) throws NoSuchObjectException, MetaException, TException {
+    return getMS().getLifecycleEventsForBinding(bindingId, fromTs, untilTs);
+  }
+
+  @Override
+  public List<ErasurePolicyLifecycleEvent> get_attach_rejected_events(long fromTs, long untilTs)
+      throws MetaException, TException {
+    return getMS().getAttachRejectedEvents(fromTs, untilTs);
+  }
+
+  @Override
+  public void record_erasure_run(ErasureRunAudit run) throws MetaException, TException {
+    getMS().recordErasureRun(run);
+  }
+
+  @Override
+  public List<ErasureRunAudit> get_erasure_runs_for_table(long tblId, long fromTs, long untilTs,
+      String byUser, String forIdentity) throws MetaException, TException {
+    return getMS().getErasureRunsForTable(tblId, fromTs, untilTs, byUser, forIdentity);
+  }
+
+  @Override
+  public void update_erasure_run_completion(long tblId, long startedTs, long completedTs,
+      ErasureRunStatus status, long matchesInspected, long matchesRedacted, long matchesFlagged)
+      throws NoSuchObjectException, MetaException, TException {
+    getMS().updateErasureRunCompletion(tblId, startedTs, completedTs, status,
+        matchesInspected, matchesRedacted, matchesFlagged);
+  }
+
+  // -----------------------------------------------------------------------
+  // ERASE FROM TABLE per-table run-lock service handlers.
+  // -----------------------------------------------------------------------
+
+  @Override
+  public ErasureRunLock acquire_erasure_run_lock(long tblId, long runId, String principal)
+      throws MetaException, TException {
+    return toThriftRunLock(getMS().acquireErasureRunLock(tblId, runId, principal));
+  }
+
+  @Override
+  public ErasureRunLock get_erasure_run_lock(long tblId) throws MetaException, TException {
+    return toThriftRunLock(getMS().getErasureRunLock(tblId));
+  }
+
+  @Override
+  public boolean complete_erasure_run_lock(long tblId, long runId)
+      throws MetaException, TException {
+    return getMS().completeErasureRunLock(tblId, runId);
+  }
+
+  @Override
+  public ErasureRunLock manually_release_erasure_run_lock(long tblId, String releasedBy,
+      String releaseReason, boolean force)
+      throws NoSuchObjectException, MetaException, TException {
+    return toThriftRunLock(
+        getMS().manuallyReleaseErasureRunLock(tblId, releasedBy, releaseReason, force));
+  }
+
+  @Override
+  public java.util.List<ErasureRunLock> list_erasure_run_locks()
+      throws MetaException, TException {
+    java.util.List<org.apache.hadoop.hive.metastore.model.MErasureRunLock> rows =
+        getMS().listErasureRunLocks();
+    java.util.List<ErasureRunLock> out = new java.util.ArrayList<>(rows.size());
+    for (org.apache.hadoop.hive.metastore.model.MErasureRunLock m : rows) {
+      out.add(toThriftRunLock(m));
+    }
+    return out;
+  }
+
+  /**
+   * Convert a JDO {@link org.apache.hadoop.hive.metastore.model.MErasureRunLock}
+   * to the thrift wire struct, mapping the status string back to the
+   * {@link ErasureRunLockStatus} enum.
+   */
+  private static ErasureRunLock toThriftRunLock(
+      org.apache.hadoop.hive.metastore.model.MErasureRunLock m) {
+    if (m == null) {
+      return null;
+    }
+    ErasureRunLock out = new ErasureRunLock();
+    out.setTblId(m.getTblId());
+    out.setRunId(m.getRunId());
+    out.setPrincipal(m.getPrincipal());
+    out.setStartedTs(m.getStartedTs());
+    if (m.getCompletedTs() != null) out.setCompletedTs(m.getCompletedTs());
+    if (m.getReleasedBy() != null) out.setReleasedBy(m.getReleasedBy());
+    if (m.getReleasedTs() != null) out.setReleasedTs(m.getReleasedTs());
+    if (m.getReleaseReason() != null) out.setReleaseReason(m.getReleaseReason());
+    if (m.getStatus() != null) {
+      out.setStatus(ErasureRunLockStatus.valueOf(m.getStatus()));
+    }
+    return out;
+  }
+
+  @Override
+  public void grant_policy_priv(PolicyPriv priv)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
+    getMS().grantPolicyPriv(priv);
+  }
+
+  @Override
+  public void revoke_policy_priv(long policyPrivId)
+      throws NoSuchObjectException, MetaException, TException {
+    getMS().revokePolicyPriv(policyPrivId);
+  }
+
+  @Override
+  public List<PolicyPriv> list_policy_privs(long policyId, String principalName)
+      throws MetaException, TException {
+    return getMS().listPolicyPrivs(policyId, principalName);
+  }
+
+  @Override
+  public boolean drop_index_by_name(final String dbName, final String tblName, final String indexName, final boolean deleteData, final boolean ifExist) throws NoSuchObjectException, MetaException, TException {
+    startFunction("drop_index_by_name", ": db=" + dbName + " tbl=" + tblName + " index=" + indexName);
+
+    boolean ret = false;
+    Exception ex = null;
+    try {
+      ret = drop_index_by_name_core(getMS(), dbName, tblName, indexName, deleteData);
+    } catch (IOException e) {
+      ex = e;
+      throw new MetaException(e.getMessage());
+    } catch (Exception e) {
+      ex = e;
+      rethrowException(e);
+    } finally {
+      endFunction("drop_index_by_name", ret, ex, tblName);
+    }
+
+    return ret;
+  }
+
+  private boolean drop_index_by_name_core(final RawStore ms, final String dbName, final String tblName, final String indexName, final boolean deleteData)
+    throws NoSuchObjectException, MetaException, TException, IOException, InvalidObjectException, InvalidInputException {
+    boolean success = false;
+    Index index = null;
+    Path tblPath = null;
+    List<Path> partPaths = null;
+    Map<String, String> transactionalListenerResponses = Collections.emptyMap();
+    try {
+      ms.openTransaction();
+      // drop the underlying index table
+      index = get_index_by_name(dbName, tblName, indexName);  // throws exception if not exists
+//      firePreEvent(new PreDropIndexEvent(index, this));
+      ms.dropIndex(dbName, tblName, indexName);
+      String idxTblName = index.getIndexTableName();
+      if (idxTblName != null) {
+
+        String[] parsedDbName = parseDbName(index.getDbName(), conf);
+        String catName = parsedDbName[CAT_NAME];
+
+//        String[] qualified = MetaStoreUtils.getQualifiedName(index.getDbName(), idxTblName);
+        GetTableRequest idxTableReq = new GetTableRequest(dbName, idxTblName);
+        idxTableReq.setCatName(catName);
+        Table tbl = get_table_core(idxTableReq); //WIP
+        if (tbl.getSd() == null) {
+          throw new MetaException("Table metadata is corrupted");
+        }
+
+        if (tbl.getSd().getLocation() != null) {
+          tblPath = new Path(tbl.getSd().getLocation());
+          if (!wh.isWritable(tblPath.getParent())) {
+            throw new MetaException("Index table metadata not deleted since " + tblPath.getParent() + " is not writable");
+          }
+        }
+
+        // Drop the partitions and get a list of partition locations which need to be deleted
+        TableName idxTableName = new TableName(catName, dbName, idxTblName);
+        List<String> idxPartLocations = ms.dropAllPartitionsAndGetLocations(idxTableName,
+            tblPath != null ? wh.getDnsPath(tblPath).toString() : null,
+            new AtomicReference<>("Dropping index table " + idxTableName)); //WIP
+        partPaths = idxPartLocations.stream().map(Path::new).collect(Collectors.toList());
+        if (!ms.dropTable(catName, dbName, idxTblName)) {
+          throw new MetaException("Unable to drop underlying data table " + dbName + "." + idxTblName + " for index " + indexName);
+        }
+      }
+
+      success = ms.commitTransaction();
+    } finally {
+      if (!success) {
+        ms.rollbackTransaction();
+      } else if (deleteData && tblPath != null) {
+        // ok even if the data is not deleted
+        List<Path> pathsToDelete = new ArrayList<>();
+        if (partPaths != null) {
+          pathsToDelete.addAll(partPaths);
+        }
+        pathsToDelete.add(tblPath);
+        for (Path path : pathsToDelete) {
+          try {
+            wh.deleteDir(path, true, true); //WIP
+          } catch (Exception e) {
+            LOG.error("Failed to delete directory: {}", path, e);
+          }
+        }
+      }
+    }
+    return success;
+  }
+
+  @Override
+  public List<Index> get_indexes(String dbName, String tblName, short maxIndexes) throws TException {
+    List<Index> ret = null;
+    Exception ex = null;
+    try {
+      ret = getMS().getIndexes(dbName, tblName, maxIndexes);
+    } catch (Exception e) {
+      ex = e;
+      rethrowException(e);
+    } finally {
+
+    }
+    return ret;
+  }
+
+  @Override
+  public List<PolicyInfo> get_all_erasure_policies() throws TException {
+    return getMS().getAllErasurePolicies();
+  }
+}

@@ -1,0 +1,383 @@
+PREHOOK: query: EXPLAIN SELECT trunc(1234567891.1234567891,4), trunc(1234567891.1234567891,-4), trunc(1234567891.1234567891,0), trunc(1234567891.1234567891) FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT trunc(1234567891.1234567891,4), trunc(1234567891.1234567891,-4), trunc(1234567891.1234567891,0), trunc(1234567891.1234567891) FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: 1234567891.1234 (type: decimal(14,4)), 1234560000 (type: decimal(10,0)), 1234567891 (type: decimal(10,0)), 1234567891 (type: decimal(10,0))
+            outputColumnNames: _col0, _col1, _col2, _col3
+            ListSink
+
+PREHOOK: query: SELECT trunc(1234567891.1234567891,4), trunc(1234567891.1234567891,-4), trunc(1234567891.1234567891,0), trunc(1234567891.1234567891) FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT trunc(1234567891.1234567891,4), trunc(1234567891.1234567891,-4), trunc(1234567891.1234567891,0), trunc(1234567891.1234567891) FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1234567891.1234	1234560000	1234567891	1234567891
+PREHOOK: query: SELECT trunc(12.123891,4), trunc(12,-4) FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT trunc(12.123891,4), trunc(12,-4) FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+12.1238	0
+PREHOOK: query: DROP TABLE sampletable
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE sampletable
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE sampletable(c DOUBLE, d INT)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sampletable
+POSTHOOK: query: CREATE TABLE sampletable(c DOUBLE, d INT)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sampletable
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/trunc_number.txt' INTO TABLE sampletable
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@sampletable
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/trunc_number.txt' INTO TABLE sampletable
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@sampletable
+PREHOOK: query: EXPLAIN select trunc (c,d) from sampletable
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sampletable
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN select trunc (c,d) from sampletable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sampletable
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: sampletable
+          Select Operator
+            expressions: trunc(c, d) (type: double)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: select trunc (c,d) from sampletable
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sampletable
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc (c,d) from sampletable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sampletable
+#### A masked pattern was here ####
+12345.123
+10000.0
+12345.0
+12345.0
+PREHOOK: query: CREATE TABLE sampletable1(c FLOAT, d SMALLINT)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sampletable1
+POSTHOOK: query: CREATE TABLE sampletable1(c FLOAT, d SMALLINT)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sampletable1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/trunc_number.txt' INTO TABLE sampletable1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@sampletable1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/trunc_number.txt' INTO TABLE sampletable1
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@sampletable1
+PREHOOK: query: EXPLAIN select trunc (c,d) from sampletable1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sampletable1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN select trunc (c,d) from sampletable1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sampletable1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: sampletable1
+          Select Operator
+            expressions: trunc(c, d) (type: float)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: select trunc (c,d) from sampletable1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sampletable1
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc (c,d) from sampletable1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sampletable1
+#### A masked pattern was here ####
+12345.123
+10000.0
+12345.0
+12345.0
+PREHOOK: query: CREATE TABLE sampletable2(c DOUBLE, d BIGINT)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sampletable2
+POSTHOOK: query: CREATE TABLE sampletable2(c DOUBLE, d BIGINT)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sampletable2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/trunc_number.txt' INTO TABLE sampletable2
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@sampletable2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/trunc_number.txt' INTO TABLE sampletable2
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@sampletable2
+PREHOOK: query: EXPLAIN select trunc (c,d) from sampletable2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sampletable2
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN select trunc (c,d) from sampletable2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sampletable2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: sampletable2
+          Select Operator
+            expressions: trunc(c, d) (type: double)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: select trunc (c,d) from sampletable2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sampletable2
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc (c,d) from sampletable2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sampletable2
+#### A masked pattern was here ####
+12345.123
+10000.0
+12345.0
+12345.0
+PREHOOK: query: CREATE TABLE sampletable3(c BIGINT, d SMALLINT)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sampletable3
+POSTHOOK: query: CREATE TABLE sampletable3(c BIGINT, d SMALLINT)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sampletable3
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/trunc_number1.txt' INTO TABLE sampletable3
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@sampletable3
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/trunc_number1.txt' INTO TABLE sampletable3
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@sampletable3
+PREHOOK: query: EXPLAIN select trunc (c,d) from sampletable3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sampletable3
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN select trunc (c,d) from sampletable3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sampletable3
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: sampletable3
+          Select Operator
+            expressions: trunc(c, d) (type: bigint)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: select trunc (c,d) from sampletable3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sampletable3
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc (c,d) from sampletable3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sampletable3
+#### A masked pattern was here ####
+12345
+10000
+12345
+12345
+PREHOOK: query: CREATE TABLE sampletable4(c INT, d INT)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sampletable4
+POSTHOOK: query: CREATE TABLE sampletable4(c INT, d INT)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sampletable4
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/trunc_number1.txt' INTO TABLE sampletable4
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@sampletable4
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/trunc_number1.txt' INTO TABLE sampletable4
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@sampletable4
+PREHOOK: query: EXPLAIN select trunc (c,d) from sampletable4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sampletable4
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN select trunc (c,d) from sampletable4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sampletable4
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: sampletable4
+          Select Operator
+            expressions: trunc(c, d) (type: int)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: select trunc (c,d) from sampletable4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sampletable4
+#### A masked pattern was here ####
+POSTHOOK: query: select trunc (c,d) from sampletable4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sampletable4
+#### A masked pattern was here ####
+12345
+10000
+12345
+12345
+PREHOOK: query: DROP TABLE sampletable
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@sampletable
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sampletable
+POSTHOOK: query: DROP TABLE sampletable
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@sampletable
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sampletable
+PREHOOK: query: DROP TABLE sampletable1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@sampletable1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sampletable1
+POSTHOOK: query: DROP TABLE sampletable1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@sampletable1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sampletable1
+PREHOOK: query: DROP TABLE sampletable2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@sampletable2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sampletable2
+POSTHOOK: query: DROP TABLE sampletable2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@sampletable2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sampletable2
+PREHOOK: query: DROP TABLE sampletable3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@sampletable3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sampletable3
+POSTHOOK: query: DROP TABLE sampletable3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@sampletable3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sampletable3
+PREHOOK: query: DROP TABLE sampletable4
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@sampletable4
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sampletable4
+POSTHOOK: query: DROP TABLE sampletable4
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@sampletable4
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sampletable4

@@ -1,0 +1,370 @@
+PREHOOK: query: create table alter3_src ( col1 string ) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter3_src
+POSTHOOK: query: create table alter3_src ( col1 string ) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter3_src
+PREHOOK: query: load data local inpath '../../data/files/test.dat' overwrite into table alter3_src
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@alter3_src
+POSTHOOK: query: load data local inpath '../../data/files/test.dat' overwrite into table alter3_src
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@alter3_src
+PREHOOK: query: create table alter3 ( col1 string ) partitioned by (pcol1 string , pcol2 string) stored as sequencefile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter3
+POSTHOOK: query: create table alter3 ( col1 string ) partitioned by (pcol1 string , pcol2 string) stored as sequencefile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter3
+PREHOOK: query: create table alter3_like like alter3
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter3_like
+POSTHOOK: query: create table alter3_like like alter3
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter3_like
+PREHOOK: query: insert overwrite table alter3 partition (pCol1='test_part:', pcol2='test_part:') select col1 from alter3_src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter3_src
+PREHOOK: Output: default@alter3@pcol1=test_part%3A/pcol2=test_part%3A
+POSTHOOK: query: insert overwrite table alter3 partition (pCol1='test_part:', pcol2='test_part:') select col1 from alter3_src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter3_src
+POSTHOOK: Output: default@alter3@pcol1=test_part%3A/pcol2=test_part%3A
+POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
+PREHOOK: query: select * from alter3 where pcol1='test_part:' and pcol2='test_part:'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter3
+PREHOOK: Input: default@alter3@pcol1=test_part%3A/pcol2=test_part%3A
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter3 where pcol1='test_part:' and pcol2='test_part:'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter3
+POSTHOOK: Input: default@alter3@pcol1=test_part%3A/pcol2=test_part%3A
+#### A masked pattern was here ####
+1	test_part:	test_part:
+2	test_part:	test_part:
+3	test_part:	test_part:
+4	test_part:	test_part:
+5	test_part:	test_part:
+6	test_part:	test_part:
+PREHOOK: query: alter table alter3 rename to alter3_renamed
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: default@alter3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter3
+PREHOOK: Output: default@alter3_renamed
+POSTHOOK: query: alter table alter3 rename to alter3_renamed
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: default@alter3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter3
+POSTHOOK: Output: default@alter3_renamed
+PREHOOK: query: describe extended alter3_renamed
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter3_renamed
+POSTHOOK: query: describe extended alter3_renamed
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter3_renamed
+col1                	string              	                    
+pcol1               	string              	                    
+pcol2               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+pcol1               	string              	                    
+pcol2               	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: describe extended alter3_renamed partition (pCol1='test_part:', pcol2='test_part:')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter3_renamed
+POSTHOOK: query: describe extended alter3_renamed partition (pCol1='test_part:', pcol2='test_part:')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter3_renamed
+col1                	string              	                    
+pcol1               	string              	                    
+pcol2               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+pcol1               	string              	                    
+pcol2               	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: select * from alter3_renamed where pcol1='test_part:' and pcol2='test_part:'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter3_renamed
+PREHOOK: Input: default@alter3_renamed@pcol1=test_part%3A/pcol2=test_part%3A
+#### A masked pattern was here ####
+POSTHOOK: query: select * from alter3_renamed where pcol1='test_part:' and pcol2='test_part:'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter3_renamed
+POSTHOOK: Input: default@alter3_renamed@pcol1=test_part%3A/pcol2=test_part%3A
+#### A masked pattern was here ####
+1	test_part:	test_part:
+2	test_part:	test_part:
+3	test_part:	test_part:
+4	test_part:	test_part:
+5	test_part:	test_part:
+6	test_part:	test_part:
+PREHOOK: query: insert overwrite table alter3_like
+partition (pCol1='test_part:', pcol2='test_part:')
+select col1 from alter3_src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter3_src
+PREHOOK: Output: default@alter3_like@pcol1=test_part%3A/pcol2=test_part%3A
+POSTHOOK: query: insert overwrite table alter3_like
+partition (pCol1='test_part:', pcol2='test_part:')
+select col1 from alter3_src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter3_src
+POSTHOOK: Output: default@alter3_like@pcol1=test_part%3A/pcol2=test_part%3A
+POSTHOOK: Lineage: alter3_like PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
+PREHOOK: query: alter table alter3_like rename to alter3_like_renamed
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: default@alter3_like
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter3_like
+PREHOOK: Output: default@alter3_like_renamed
+POSTHOOK: query: alter table alter3_like rename to alter3_like_renamed
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: default@alter3_like
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter3_like
+POSTHOOK: Output: default@alter3_like_renamed
+PREHOOK: query: describe extended alter3_like_renamed
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter3_like_renamed
+POSTHOOK: query: describe extended alter3_like_renamed
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter3_like_renamed
+col1                	string              	                    
+pcol1               	string              	                    
+pcol2               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+pcol1               	string              	                    
+pcol2               	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: DROP TABLE alter3_src
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@alter3_src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter3_src
+POSTHOOK: query: DROP TABLE alter3_src
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@alter3_src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter3_src
+PREHOOK: query: DROP TABLE alter3_renamed
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@alter3_renamed
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter3_renamed
+POSTHOOK: query: DROP TABLE alter3_renamed
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@alter3_renamed
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter3_renamed
+PREHOOK: query: DROP TABLE alter3_like_renamed
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@alter3_like_renamed
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter3_like_renamed
+POSTHOOK: query: DROP TABLE alter3_like_renamed
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@alter3_like_renamed
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter3_like_renamed
+PREHOOK: query: SHOW TABLES LIKE "alter3_%"
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
+POSTHOOK: query: SHOW TABLES LIKE "alter3_%"
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
+PREHOOK: query: CREATE DATABASE alter3_db
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:alter3_db
+POSTHOOK: query: CREATE DATABASE alter3_db
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:alter3_db
+PREHOOK: query: USE alter3_db
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:alter3_db
+POSTHOOK: query: USE alter3_db
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:alter3_db
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:alter3_db
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:alter3_db
+PREHOOK: query: CREATE TABLE alter3_src (col1 STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: alter3_db@alter3_src
+PREHOOK: Output: database:alter3_db
+POSTHOOK: query: CREATE TABLE alter3_src (col1 STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: alter3_db@alter3_src
+POSTHOOK: Output: database:alter3_db
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/test.dat' OVERWRITE INTO TABLE alter3_src
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: alter3_db@alter3_src
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/test.dat' OVERWRITE INTO TABLE alter3_src
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: alter3_db@alter3_src
+PREHOOK: query: CREATE TABLE alter3 (col1 STRING) PARTITIONED BY (pcol1 STRING, pcol2 STRING) STORED AS SEQUENCEFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: alter3_db@alter3
+PREHOOK: Output: database:alter3_db
+POSTHOOK: query: CREATE TABLE alter3 (col1 STRING) PARTITIONED BY (pcol1 STRING, pcol2 STRING) STORED AS SEQUENCEFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: alter3_db@alter3
+POSTHOOK: Output: database:alter3_db
+PREHOOK: query: CREATE TABLE alter3_like LIKE alter3
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: alter3_db@alter3_like
+PREHOOK: Output: database:alter3_db
+POSTHOOK: query: CREATE TABLE alter3_like LIKE alter3
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: alter3_db@alter3_like
+POSTHOOK: Output: database:alter3_db
+PREHOOK: query: INSERT OVERWRITE TABLE alter3 PARTITION (pCol1='test_part:', pcol2='test_part:') SELECT col1 FROM alter3_src
+PREHOOK: type: QUERY
+PREHOOK: Input: alter3_db@alter3_src
+PREHOOK: Output: alter3_db@alter3@pcol1=test_part%3A/pcol2=test_part%3A
+POSTHOOK: query: INSERT OVERWRITE TABLE alter3 PARTITION (pCol1='test_part:', pcol2='test_part:') SELECT col1 FROM alter3_src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: alter3_db@alter3_src
+POSTHOOK: Output: alter3_db@alter3@pcol1=test_part%3A/pcol2=test_part%3A
+POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM alter3 WHERE pcol1='test_part:' AND pcol2='test_part:'
+PREHOOK: type: QUERY
+PREHOOK: Input: alter3_db@alter3
+PREHOOK: Input: alter3_db@alter3@pcol1=test_part%3A/pcol2=test_part%3A
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM alter3 WHERE pcol1='test_part:' AND pcol2='test_part:'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: alter3_db@alter3
+POSTHOOK: Input: alter3_db@alter3@pcol1=test_part%3A/pcol2=test_part%3A
+#### A masked pattern was here ####
+1	test_part:	test_part:
+2	test_part:	test_part:
+3	test_part:	test_part:
+4	test_part:	test_part:
+5	test_part:	test_part:
+6	test_part:	test_part:
+PREHOOK: query: ALTER TABLE alter3 RENAME TO alter3_renamed
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: alter3_db@alter3
+PREHOOK: Output: alter3_db@alter3
+PREHOOK: Output: alter3_db@alter3_renamed
+PREHOOK: Output: database:alter3_db
+POSTHOOK: query: ALTER TABLE alter3 RENAME TO alter3_renamed
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: alter3_db@alter3
+POSTHOOK: Output: alter3_db@alter3
+POSTHOOK: Output: alter3_db@alter3_renamed
+POSTHOOK: Output: database:alter3_db
+PREHOOK: query: DESCRIBE EXTENDED alter3_renamed
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter3_db@alter3_renamed
+POSTHOOK: query: DESCRIBE EXTENDED alter3_renamed
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter3_db@alter3_renamed
+col1                	string              	                    
+pcol1               	string              	                    
+pcol2               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+pcol1               	string              	                    
+pcol2               	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: DESCRIBE EXTENDED alter3_renamed PARTITION (pCol1='test_part:', pcol2='test_part:')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter3_db@alter3_renamed
+POSTHOOK: query: DESCRIBE EXTENDED alter3_renamed PARTITION (pCol1='test_part:', pcol2='test_part:')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter3_db@alter3_renamed
+col1                	string              	                    
+pcol1               	string              	                    
+pcol2               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+pcol1               	string              	                    
+pcol2               	string              	                    
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: SELECT * FROM alter3_renamed WHERE pcol1='test_part:' AND pcol2='test_part:'
+PREHOOK: type: QUERY
+PREHOOK: Input: alter3_db@alter3_renamed
+PREHOOK: Input: alter3_db@alter3_renamed@pcol1=test_part%3A/pcol2=test_part%3A
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM alter3_renamed WHERE pcol1='test_part:' AND pcol2='test_part:'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: alter3_db@alter3_renamed
+POSTHOOK: Input: alter3_db@alter3_renamed@pcol1=test_part%3A/pcol2=test_part%3A
+#### A masked pattern was here ####
+1	test_part:	test_part:
+2	test_part:	test_part:
+3	test_part:	test_part:
+4	test_part:	test_part:
+5	test_part:	test_part:
+6	test_part:	test_part:
+PREHOOK: query: INSERT OVERWRITE TABLE alter3_like
+PARTITION (pCol1='test_part:', pcol2='test_part:')
+SELECT col1 FROM alter3_src
+PREHOOK: type: QUERY
+PREHOOK: Input: alter3_db@alter3_src
+PREHOOK: Output: alter3_db@alter3_like@pcol1=test_part%3A/pcol2=test_part%3A
+POSTHOOK: query: INSERT OVERWRITE TABLE alter3_like
+PARTITION (pCol1='test_part:', pcol2='test_part:')
+SELECT col1 FROM alter3_src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: alter3_db@alter3_src
+POSTHOOK: Output: alter3_db@alter3_like@pcol1=test_part%3A/pcol2=test_part%3A
+POSTHOOK: Lineage: alter3_like PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
+PREHOOK: query: ALTER TABLE alter3_like RENAME TO alter3_like_renamed
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: alter3_db@alter3_like
+PREHOOK: Output: alter3_db@alter3_like
+PREHOOK: Output: alter3_db@alter3_like_renamed
+PREHOOK: Output: database:alter3_db
+POSTHOOK: query: ALTER TABLE alter3_like RENAME TO alter3_like_renamed
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: alter3_db@alter3_like
+POSTHOOK: Output: alter3_db@alter3_like
+POSTHOOK: Output: alter3_db@alter3_like_renamed
+POSTHOOK: Output: database:alter3_db
+PREHOOK: query: DESCRIBE EXTENDED alter3_like_renamed
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: alter3_db@alter3_like_renamed
+POSTHOOK: query: DESCRIBE EXTENDED alter3_like_renamed
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: alter3_db@alter3_like_renamed
+col1                	string              	                    
+pcol1               	string              	                    
+pcol2               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+pcol1               	string              	                    
+pcol2               	string              	                    
+	 	 
+#### A masked pattern was here ####

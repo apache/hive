@@ -1,0 +1,164 @@
+PREHOOK: query: CREATE DATABASE tv
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:tv
+POSTHOOK: query: CREATE DATABASE tv
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:tv
+PREHOOK: query: CREATE VIEW tv.testView as SELECT * FROM srcpart
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@srcpart
+PREHOOK: Output: database:tv
+PREHOOK: Output: tv@testView
+POSTHOOK: query: CREATE VIEW tv.testView as SELECT * FROM srcpart
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Output: database:tv
+POSTHOOK: Output: tv@testView
+POSTHOOK: Lineage: testview.ds SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: testview.hr SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: testview.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: testview.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DESCRIBE FORMATTED tv.testView
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: tv@testview
+POSTHOOK: query: DESCRIBE FORMATTED tv.testView
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: tv@testview
+# col_name            	data_type           	comment             
+key                 	string              	                    
+value               	string              	                    
+ds                  	string              	                    
+hr                  	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	tv                  	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+Original Query:     	SELECT * FROM srcpart	 
+Expanded Query:     	SELECT `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` FROM `default`.`srcpart`	 
+PREHOOK: query: ALTER VIEW tv.testView AS SELECT value FROM src WHERE key=86
+PREHOOK: type: ALTERVIEW_AS
+PREHOOK: Input: default@src
+PREHOOK: Output: database:tv
+PREHOOK: Output: tv@testView
+POSTHOOK: query: ALTER VIEW tv.testView AS SELECT value FROM src WHERE key=86
+POSTHOOK: type: ALTERVIEW_AS
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:tv
+POSTHOOK: Output: tv@testView
+PREHOOK: query: DESCRIBE FORMATTED tv.testView
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: tv@testview
+POSTHOOK: query: DESCRIBE FORMATTED tv.testView
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: tv@testview
+# col_name            	data_type           	comment             
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	tv                  	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+Original Query:     	SELECT value FROM src WHERE key=86	 
+Expanded Query:     	SELECT `src`.`value` FROM `default`.`src` WHERE `src`.`key`=86	 
+PREHOOK: query: ALTER VIEW tv.testView AS
+SELECT * FROM src
+WHERE key > 80 AND key < 100
+ORDER BY key, value
+LIMIT 10
+PREHOOK: type: ALTERVIEW_AS
+PREHOOK: Input: default@src
+PREHOOK: Output: database:tv
+PREHOOK: Output: tv@testView
+POSTHOOK: query: ALTER VIEW tv.testView AS
+SELECT * FROM src
+WHERE key > 80 AND key < 100
+ORDER BY key, value
+LIMIT 10
+POSTHOOK: type: ALTERVIEW_AS
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:tv
+POSTHOOK: Output: tv@testView
+PREHOOK: query: DESCRIBE FORMATTED tv.testView
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: tv@testview
+POSTHOOK: query: DESCRIBE FORMATTED tv.testView
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: tv@testview
+# col_name            	data_type           	comment             
+key                 	string              	                    
+value               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	tv                  	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+Original Query:     	SELECT * FROM src   	 
+	                    	WHERE key > 80 AND key < 100
+	                    	ORDER BY key, value 
+	                    	LIMIT 10            
+Expanded Query:     	SELECT `src`.`key`, `src`.`value` FROM `default`.`src`	 
+	                    	WHERE `src`.`key` > 80 AND `src`.`key` < 100
+	                    	ORDER BY `src`.`key`, `src`.`value`
+	                    	LIMIT 10            
+PREHOOK: query: DROP VIEW tv.testView
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: tv@testview
+PREHOOK: Output: tv@testview
+POSTHOOK: query: DROP VIEW tv.testView
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: tv@testview
+POSTHOOK: Output: tv@testview
+PREHOOK: query: DROP DATABASE tv
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:tv
+PREHOOK: Output: database:tv
+POSTHOOK: query: DROP DATABASE tv
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:tv
+POSTHOOK: Output: database:tv

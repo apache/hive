@@ -1,0 +1,94 @@
+PREHOOK: query: create temporary table sc_n0_temp as select *
+                      from (select '2011-01-11', '2011-01-11+14:18:26' from src tablesample (1 rows)
+                      union all
+                      select '2011-01-11', '2011-01-11+15:18:26' from src tablesample (1 rows)
+                      union all
+                      select '2011-01-11', '2011-01-11+16:18:26' from src tablesample (1 rows) ) s
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sc_n0_temp
+POSTHOOK: query: create temporary table sc_n0_temp as select *
+                      from (select '2011-01-11', '2011-01-11+14:18:26' from src tablesample (1 rows)
+                      union all
+                      select '2011-01-11', '2011-01-11+15:18:26' from src tablesample (1 rows)
+                      union all
+                      select '2011-01-11', '2011-01-11+16:18:26' from src tablesample (1 rows) ) s
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sc_n0_temp
+POSTHOOK: Lineage: sc_n0_temp._c0 EXPRESSION []
+POSTHOOK: Lineage: sc_n0_temp._c1 EXPRESSION []
+PREHOOK: query: create table sc_part_n0_temp (key string) partitioned by (ts string) stored as rcfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sc_part_n0_temp
+POSTHOOK: query: create table sc_part_n0_temp (key string) partitioned by (ts string) stored as rcfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sc_part_n0_temp
+PREHOOK: query: insert overwrite table sc_part_n0_temp partition(ts) select * from sc_n0_temp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sc_n0_temp
+PREHOOK: Output: default@sc_part_n0_temp
+POSTHOOK: query: insert overwrite table sc_part_n0_temp partition(ts) select * from sc_n0_temp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sc_n0_temp
+POSTHOOK: Output: default@sc_part_n0_temp
+POSTHOOK: Output: default@sc_part_n0_temp@ts=2011-01-11+14%3A18%3A26
+POSTHOOK: Output: default@sc_part_n0_temp@ts=2011-01-11+15%3A18%3A26
+POSTHOOK: Output: default@sc_part_n0_temp@ts=2011-01-11+16%3A18%3A26
+POSTHOOK: Lineage: sc_part_n0_temp PARTITION(ts=2011-01-11+14:18:26).key SIMPLE [(sc_n0_temp)sc_n0_temp.FieldSchema(name:_c0, type:string, comment:null), ]
+POSTHOOK: Lineage: sc_part_n0_temp PARTITION(ts=2011-01-11+15:18:26).key SIMPLE [(sc_n0_temp)sc_n0_temp.FieldSchema(name:_c0, type:string, comment:null), ]
+POSTHOOK: Lineage: sc_part_n0_temp PARTITION(ts=2011-01-11+16:18:26).key SIMPLE [(sc_n0_temp)sc_n0_temp.FieldSchema(name:_c0, type:string, comment:null), ]
+PREHOOK: query: show partitions sc_part_n0_temp
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@sc_part_n0_temp
+POSTHOOK: query: show partitions sc_part_n0_temp
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@sc_part_n0_temp
+ts=2011-01-11+14%3A18%3A26
+ts=2011-01-11+15%3A18%3A26
+ts=2011-01-11+16%3A18%3A26
+PREHOOK: query: select count(*) from sc_part_n0_temp where ts is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sc_part_n0_temp
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from sc_part_n0_temp where ts is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sc_part_n0_temp
+#### A masked pattern was here ####
+3
+PREHOOK: query: insert overwrite table sc_part_n0_temp partition(ts) select * from sc_n0_temp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sc_n0_temp
+PREHOOK: Output: default@sc_part_n0_temp
+POSTHOOK: query: insert overwrite table sc_part_n0_temp partition(ts) select * from sc_n0_temp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sc_n0_temp
+POSTHOOK: Output: default@sc_part_n0_temp
+POSTHOOK: Output: default@sc_part_n0_temp@ts=2011-01-11+14%3A18%3A26
+POSTHOOK: Output: default@sc_part_n0_temp@ts=2011-01-11+15%3A18%3A26
+POSTHOOK: Output: default@sc_part_n0_temp@ts=2011-01-11+16%3A18%3A26
+POSTHOOK: Lineage: sc_part_n0_temp PARTITION(ts=2011-01-11+14:18:26).key SIMPLE [(sc_n0_temp)sc_n0_temp.FieldSchema(name:_c0, type:string, comment:null), ]
+POSTHOOK: Lineage: sc_part_n0_temp PARTITION(ts=2011-01-11+15:18:26).key SIMPLE [(sc_n0_temp)sc_n0_temp.FieldSchema(name:_c0, type:string, comment:null), ]
+POSTHOOK: Lineage: sc_part_n0_temp PARTITION(ts=2011-01-11+16:18:26).key SIMPLE [(sc_n0_temp)sc_n0_temp.FieldSchema(name:_c0, type:string, comment:null), ]
+PREHOOK: query: show partitions sc_part_n0_temp
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@sc_part_n0_temp
+POSTHOOK: query: show partitions sc_part_n0_temp
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@sc_part_n0_temp
+ts=2011-01-11+14:18:26
+ts=2011-01-11+15:18:26
+ts=2011-01-11+16:18:26
+PREHOOK: query: select count(*) from sc_part_n0_temp where ts is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sc_part_n0_temp
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from sc_part_n0_temp where ts is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sc_part_n0_temp
+#### A masked pattern was here ####
+3

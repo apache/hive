@@ -1,0 +1,188 @@
+PREHOOK: query: create table t1_n60 (int1_n60 int, int2 int, str1 string, str2 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1_n60
+POSTHOOK: query: create table t1_n60 (int1_n60 int, int2 int, str1 string, str2 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1_n60
+PREHOOK: query: insert into table t1_n60 select cast(key as int), cast(key as int), value, value from src where key < 6
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t1_n60
+POSTHOOK: query: insert into table t1_n60 select cast(key as int), cast(key as int), value, value from src where key < 6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t1_n60
+POSTHOOK: Lineage: t1_n60.int1_n60 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1_n60.int2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: t1_n60.str1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: t1_n60.str2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain select Q1.int1_n60, sum(distinct Q1.int1_n60) from (select * from t1_n60 order by int1_n60) Q1 group by Q1.int1_n60
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n60
+#### A masked pattern was here ####
+POSTHOOK: query: explain select Q1.int1_n60, sum(distinct Q1.int1_n60) from (select * from t1_n60 order by int1_n60) Q1 group by Q1.int1_n60
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n60
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1_n60
+                  Statistics: Num rows: 8 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: int1_n60 (type: int)
+                    outputColumnNames: int1_n60
+                    Statistics: Num rows: 8 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: sum(DISTINCT int1_n60)
+                      keys: int1_n60 (type: int)
+                      minReductionHashAggr: 0.5
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(DISTINCT KEY._col1:0._col0)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select int1_n60, sum(distinct int1_n60) from t1_n60 group by int1_n60
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n60
+#### A masked pattern was here ####
+POSTHOOK: query: explain select int1_n60, sum(distinct int1_n60) from t1_n60 group by int1_n60
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n60
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1_n60
+                  Statistics: Num rows: 8 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: int1_n60 (type: int)
+                    outputColumnNames: int1_n60
+                    Statistics: Num rows: 8 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: sum(DISTINCT int1_n60)
+                      keys: int1_n60 (type: int)
+                      minReductionHashAggr: 0.5
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(DISTINCT KEY._col1:0._col0)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 4 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select Q1.int1_n60, sum(distinct Q1.int1_n60) from (select * from t1_n60 order by int1_n60) Q1 group by Q1.int1_n60
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n60
+#### A masked pattern was here ####
+POSTHOOK: query: select Q1.int1_n60, sum(distinct Q1.int1_n60) from (select * from t1_n60 order by int1_n60) Q1 group by Q1.int1_n60
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n60
+#### A masked pattern was here ####
+0	0
+2	2
+4	4
+5	5
+PREHOOK: query: select int1_n60, sum(distinct int1_n60) from t1_n60 group by int1_n60
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n60
+#### A masked pattern was here ####
+POSTHOOK: query: select int1_n60, sum(distinct int1_n60) from t1_n60 group by int1_n60
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n60
+#### A masked pattern was here ####
+0	0
+2	2
+4	4
+5	5
+PREHOOK: query: drop table t1_n60
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t1_n60
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1_n60
+POSTHOOK: query: drop table t1_n60
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t1_n60
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1_n60

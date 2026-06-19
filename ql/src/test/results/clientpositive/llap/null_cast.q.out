@@ -1,0 +1,49 @@
+PREHOOK: query: EXPLAIN SELECT ARRAY(NULL, 0), 
+               ARRAY(NULL, ARRAY()),
+               ARRAY(NULL, MAP()),
+               ARRAY(NULL, STRUCT(0))
+        FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT ARRAY(NULL, 0), 
+               ARRAY(NULL, ARRAY()),
+               ARRAY(NULL, MAP()),
+               ARRAY(NULL, STRUCT(0))
+        FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: array(null,0) (type: array<int>), array(null,array()) (type: array<array<string>>), array(null,map()) (type: array<map<string,string>>), array(null,const struct(0)) (type: array<struct<col1:int>>)
+            outputColumnNames: _col0, _col1, _col2, _col3
+            ListSink
+
+PREHOOK: query: SELECT ARRAY(NULL, 0), 
+       ARRAY(NULL, ARRAY()),
+       ARRAY(NULL, MAP()),
+       ARRAY(NULL, STRUCT(0))
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT ARRAY(NULL, 0), 
+       ARRAY(NULL, ARRAY()),
+       ARRAY(NULL, MAP()),
+       ARRAY(NULL, STRUCT(0))
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+[null,0]	[null,[]]	[null,{}]	[null,{"col1":0}]

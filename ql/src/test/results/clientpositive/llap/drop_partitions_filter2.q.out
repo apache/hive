@@ -1,0 +1,142 @@
+PREHOOK: query: create table ptestfilter_n0 (a string, b int) partitioned by (c int, d int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ptestfilter_n0
+POSTHOOK: query: create table ptestfilter_n0 (a string, b int) partitioned by (c int, d int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ptestfilter_n0
+PREHOOK: query: describe ptestfilter_n0
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ptestfilter_n0
+POSTHOOK: query: describe ptestfilter_n0
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ptestfilter_n0
+a                   	string              	                    
+b                   	int                 	                    
+c                   	int                 	                    
+d                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+c                   	int                 	                    
+d                   	int                 	                    
+PREHOOK: query: alter table ptestfilter_n0 add partition (c=1, d=1)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@ptestfilter_n0
+POSTHOOK: query: alter table ptestfilter_n0 add partition (c=1, d=1)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@ptestfilter_n0
+POSTHOOK: Output: default@ptestfilter_n0@c=1/d=1
+PREHOOK: query: alter table ptestfilter_n0 add partition (c=1, d=2)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@ptestfilter_n0
+POSTHOOK: query: alter table ptestfilter_n0 add partition (c=1, d=2)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@ptestfilter_n0
+POSTHOOK: Output: default@ptestfilter_n0@c=1/d=2
+PREHOOK: query: alter table ptestFilter_n0 add partition (c=2, d=1)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@ptestfilter_n0
+POSTHOOK: query: alter table ptestFilter_n0 add partition (c=2, d=1)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@ptestfilter_n0
+POSTHOOK: Output: default@ptestfilter_n0@c=2/d=1
+PREHOOK: query: alter table ptestfilter_n0 add partition (c=2, d=2)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@ptestfilter_n0
+POSTHOOK: query: alter table ptestfilter_n0 add partition (c=2, d=2)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@ptestfilter_n0
+POSTHOOK: Output: default@ptestfilter_n0@c=2/d=2
+PREHOOK: query: alter table ptestfilter_n0 add partition (c=3, d=1)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@ptestfilter_n0
+POSTHOOK: query: alter table ptestfilter_n0 add partition (c=3, d=1)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@ptestfilter_n0
+POSTHOOK: Output: default@ptestfilter_n0@c=3/d=1
+PREHOOK: query: alter table ptestfilter_n0 add partition (c=30, d=2)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@ptestfilter_n0
+POSTHOOK: query: alter table ptestfilter_n0 add partition (c=30, d=2)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@ptestfilter_n0
+POSTHOOK: Output: default@ptestfilter_n0@c=30/d=2
+PREHOOK: query: show partitions ptestfilter_n0
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@ptestfilter_n0
+POSTHOOK: query: show partitions ptestfilter_n0
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@ptestfilter_n0
+c=1/d=1
+c=1/d=2
+c=2/d=1
+c=2/d=2
+c=3/d=1
+c=30/d=2
+PREHOOK: query: alter table ptestfilter_n0 drop partition (c=1, d=1)
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@ptestfilter_n0
+PREHOOK: Output: default@ptestfilter_n0@c=1/d=1
+POSTHOOK: query: alter table ptestfilter_n0 drop partition (c=1, d=1)
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@ptestfilter_n0
+POSTHOOK: Output: default@ptestfilter_n0@c=1/d=1
+PREHOOK: query: show partitions ptestfilter_n0
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@ptestfilter_n0
+POSTHOOK: query: show partitions ptestfilter_n0
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@ptestfilter_n0
+c=1/d=2
+c=2/d=1
+c=2/d=2
+c=3/d=1
+c=30/d=2
+PREHOOK: query: alter table ptestfilter_n0 drop partition (c=2)
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@ptestfilter_n0
+PREHOOK: Output: default@ptestfilter_n0@c=2/d=1
+PREHOOK: Output: default@ptestfilter_n0@c=2/d=2
+POSTHOOK: query: alter table ptestfilter_n0 drop partition (c=2)
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@ptestfilter_n0
+POSTHOOK: Output: default@ptestfilter_n0@c=2/d=1
+POSTHOOK: Output: default@ptestfilter_n0@c=2/d=2
+PREHOOK: query: show partitions ptestfilter_n0
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@ptestfilter_n0
+POSTHOOK: query: show partitions ptestfilter_n0
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@ptestfilter_n0
+c=1/d=2
+c=3/d=1
+c=30/d=2
+PREHOOK: query: alter table ptestfilter_n0 drop partition (c<4)
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@ptestfilter_n0
+PREHOOK: Output: default@ptestfilter_n0@c=1/d=2
+PREHOOK: Output: default@ptestfilter_n0@c=3/d=1
+POSTHOOK: query: alter table ptestfilter_n0 drop partition (c<4)
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@ptestfilter_n0
+POSTHOOK: Output: default@ptestfilter_n0@c=1/d=2
+POSTHOOK: Output: default@ptestfilter_n0@c=3/d=1
+PREHOOK: query: show partitions ptestfilter_n0
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@ptestfilter_n0
+POSTHOOK: query: show partitions ptestfilter_n0
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@ptestfilter_n0
+c=30/d=2
+PREHOOK: query: drop table ptestfilter_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ptestfilter_n0
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ptestfilter_n0
+POSTHOOK: query: drop table ptestfilter_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ptestfilter_n0
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ptestfilter_n0

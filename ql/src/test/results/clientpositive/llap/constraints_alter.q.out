@@ -1,0 +1,275 @@
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `COLUMNS_V2` (
+  `CD_ID` bigint,
+  `COMMENT` string,
+  `COLUMN_NAME` string,
+  `TYPE_NAME` string,
+  `INTEGER_IDX` int,
+  CONSTRAINT `SYS_PK_COLUMN_V2` PRIMARY KEY (`CD_ID`,`COLUMN_NAME`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"CD_ID\",
+  \"COMMENT\",
+  \"COLUMN_NAME\",
+  \"TYPE_NAME\",
+  \"INTEGER_IDX\"
+FROM
+  \"COLUMNS_V2\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@COLUMNS_V2
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `COLUMNS_V2` (
+  `CD_ID` bigint,
+  `COMMENT` string,
+  `COLUMN_NAME` string,
+  `TYPE_NAME` string,
+  `INTEGER_IDX` int,
+  CONSTRAINT `SYS_PK_COLUMN_V2` PRIMARY KEY (`CD_ID`,`COLUMN_NAME`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"CD_ID\",
+  \"COMMENT\",
+  \"COLUMN_NAME\",
+  \"TYPE_NAME\",
+  \"INTEGER_IDX\"
+FROM
+  \"COLUMNS_V2\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@COLUMNS_V2
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `KEY_CONSTRAINTS`
+(
+  `CHILD_CD_ID` bigint,
+  `CHILD_INTEGER_IDX` int,
+  `CHILD_TBL_ID` bigint,
+  `PARENT_CD_ID` bigint,
+  `PARENT_INTEGER_IDX` int,
+  `PARENT_TBL_ID` bigint,
+  `POSITION` bigint,
+  `CONSTRAINT_NAME` string,
+  `CONSTRAINT_TYPE` string,
+  `UPDATE_RULE` string,
+  `DELETE_RULE` string,
+  `ENABLE_VALIDATE_RELY` int,
+  `DEFAULT_VALUE` string,
+  CONSTRAINT `SYS_PK_KEY_CONSTRAINTS` PRIMARY KEY (`CONSTRAINT_NAME`, `POSITION`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"CHILD_CD_ID\",
+  \"CHILD_INTEGER_IDX\",
+  \"CHILD_TBL_ID\",
+  \"PARENT_CD_ID\",
+  \"PARENT_INTEGER_IDX\",
+  \"PARENT_TBL_ID\",
+  \"POSITION\",
+  \"CONSTRAINT_NAME\",
+  \"CONSTRAINT_TYPE\",
+  \"UPDATE_RULE\",
+  \"DELETE_RULE\",
+  \"ENABLE_VALIDATE_RELY\",
+  \"DEFAULT_VALUE\"
+FROM
+  \"KEY_CONSTRAINTS\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@KEY_CONSTRAINTS
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS `KEY_CONSTRAINTS`
+(
+  `CHILD_CD_ID` bigint,
+  `CHILD_INTEGER_IDX` int,
+  `CHILD_TBL_ID` bigint,
+  `PARENT_CD_ID` bigint,
+  `PARENT_INTEGER_IDX` int,
+  `PARENT_TBL_ID` bigint,
+  `POSITION` bigint,
+  `CONSTRAINT_NAME` string,
+  `CONSTRAINT_TYPE` string,
+  `UPDATE_RULE` string,
+  `DELETE_RULE` string,
+  `ENABLE_VALIDATE_RELY` int,
+  `DEFAULT_VALUE` string,
+  CONSTRAINT `SYS_PK_KEY_CONSTRAINTS` PRIMARY KEY (`CONSTRAINT_NAME`, `POSITION`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"CHILD_CD_ID\",
+  \"CHILD_INTEGER_IDX\",
+  \"CHILD_TBL_ID\",
+  \"PARENT_CD_ID\",
+  \"PARENT_INTEGER_IDX\",
+  \"PARENT_TBL_ID\",
+  \"POSITION\",
+  \"CONSTRAINT_NAME\",
+  \"CONSTRAINT_TYPE\",
+  \"UPDATE_RULE\",
+  \"DELETE_RULE\",
+  \"ENABLE_VALIDATE_RELY\",
+  \"DEFAULT_VALUE\"
+FROM
+  \"KEY_CONSTRAINTS\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@KEY_CONSTRAINTS
+PREHOOK: query: create table t1_n2939 (a_n2939 integer, b_n2939 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1_n2939
+POSTHOOK: query: create table t1_n2939 (a_n2939 integer, b_n2939 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1_n2939
+PREHOOK: query: insert into table t1_n2939 values (1, '1'), (2, '2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1_n2939
+POSTHOOK: query: insert into table t1_n2939 values (1, '1'), (2, '2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1_n2939
+POSTHOOK: Lineage: t1_n2939.a_n2939 SCRIPT []
+POSTHOOK: Lineage: t1_n2939.b_n2939 SCRIPT []
+PREHOOK: query: select COLUMN_NAME from columns_v2 where column_name = 'a_n2939' or column_name = 'b_n2939' or column_name = 'c_n2939'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@columns_v2
+#### A masked pattern was here ####
+POSTHOOK: query: select COLUMN_NAME from columns_v2 where column_name = 'a_n2939' or column_name = 'b_n2939' or column_name = 'c_n2939'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@columns_v2
+#### A masked pattern was here ####
+a_n2939
+b_n2939
+PREHOOK: query: select CONSTRAINT_NAME from key_constraints where constraint_name = 't1_n2939_pk' or constraint_name = 't1_n2939_nn' or constraint_name = 't1_n2939_nn_2'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@key_constraints
+#### A masked pattern was here ####
+POSTHOOK: query: select CONSTRAINT_NAME from key_constraints where constraint_name = 't1_n2939_pk' or constraint_name = 't1_n2939_nn' or constraint_name = 't1_n2939_nn_2'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@key_constraints
+#### A masked pattern was here ####
+PREHOOK: query: alter table t1_n2939 add constraint t1_n2939_pk primary key (a_n2939) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@t1_n2939
+PREHOOK: Output: default@t1_n2939
+POSTHOOK: query: alter table t1_n2939 add constraint t1_n2939_pk primary key (a_n2939) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@t1_n2939
+POSTHOOK: Output: default@t1_n2939
+PREHOOK: query: select COLUMN_NAME from columns_v2 where column_name = 'a_n2939' or column_name = 'b_n2939' or column_name = 'c_n2939'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@columns_v2
+#### A masked pattern was here ####
+POSTHOOK: query: select COLUMN_NAME from columns_v2 where column_name = 'a_n2939' or column_name = 'b_n2939' or column_name = 'c_n2939'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@columns_v2
+#### A masked pattern was here ####
+a_n2939
+b_n2939
+PREHOOK: query: select CONSTRAINT_NAME from key_constraints where constraint_name = 't1_n2939_pk' or constraint_name = 't1_n2939_nn' or constraint_name = 't1_n2939_nn_2'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@key_constraints
+#### A masked pattern was here ####
+POSTHOOK: query: select CONSTRAINT_NAME from key_constraints where constraint_name = 't1_n2939_pk' or constraint_name = 't1_n2939_nn' or constraint_name = 't1_n2939_nn_2'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@key_constraints
+#### A masked pattern was here ####
+t1_n2939_pk
+PREHOOK: query: alter table t1_n2939 change column b_n2939 b_n2939 string constraint t1_n2939_nn not null disable novalidate rely
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@t1_n2939
+PREHOOK: Output: default@t1_n2939
+POSTHOOK: query: alter table t1_n2939 change column b_n2939 b_n2939 string constraint t1_n2939_nn not null disable novalidate rely
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@t1_n2939
+POSTHOOK: Output: default@t1_n2939
+PREHOOK: query: select COLUMN_NAME from columns_v2 where column_name = 'a_n2939' or column_name = 'b_n2939' or column_name = 'c_n2939'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@columns_v2
+#### A masked pattern was here ####
+POSTHOOK: query: select COLUMN_NAME from columns_v2 where column_name = 'a_n2939' or column_name = 'b_n2939' or column_name = 'c_n2939'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@columns_v2
+#### A masked pattern was here ####
+a_n2939
+b_n2939
+PREHOOK: query: select CONSTRAINT_NAME from key_constraints where constraint_name = 't1_n2939_pk' or constraint_name = 't1_n2939_nn' or constraint_name = 't1_n2939_nn_2'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@key_constraints
+#### A masked pattern was here ####
+POSTHOOK: query: select CONSTRAINT_NAME from key_constraints where constraint_name = 't1_n2939_pk' or constraint_name = 't1_n2939_nn' or constraint_name = 't1_n2939_nn_2'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@key_constraints
+#### A masked pattern was here ####
+t1_n2939_pk
+t1_n2939_nn
+PREHOOK: query: alter table t1_n2939 change column b_n2939 c_n2939 string constraint t1_n2939_nn_2 not null disable novalidate rely
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@t1_n2939
+PREHOOK: Output: default@t1_n2939
+POSTHOOK: query: alter table t1_n2939 change column b_n2939 c_n2939 string constraint t1_n2939_nn_2 not null disable novalidate rely
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@t1_n2939
+POSTHOOK: Output: default@t1_n2939
+PREHOOK: query: select COLUMN_NAME from columns_v2 where column_name = 'a_n2939' or column_name = 'b_n2939' or column_name = 'c_n2939'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@columns_v2
+#### A masked pattern was here ####
+POSTHOOK: query: select COLUMN_NAME from columns_v2 where column_name = 'a_n2939' or column_name = 'b_n2939' or column_name = 'c_n2939'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@columns_v2
+#### A masked pattern was here ####
+a_n2939
+c_n2939
+PREHOOK: query: select CONSTRAINT_NAME from key_constraints where constraint_name = 't1_n2939_pk' or constraint_name = 't1_n2939_nn' or constraint_name = 't1_n2939_nn_2'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@key_constraints
+#### A masked pattern was here ####
+POSTHOOK: query: select CONSTRAINT_NAME from key_constraints where constraint_name = 't1_n2939_pk' or constraint_name = 't1_n2939_nn' or constraint_name = 't1_n2939_nn_2'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@key_constraints
+#### A masked pattern was here ####
+t1_n2939_pk
+t1_n2939_nn_2
+PREHOOK: query: drop table t1_n2939
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t1_n2939
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1_n2939
+POSTHOOK: query: drop table t1_n2939
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t1_n2939
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1_n2939
+PREHOOK: query: select COLUMN_NAME from columns_v2 where column_name = 'a_n2939' or column_name = 'b_n2939' or column_name = 'c_n2939'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@columns_v2
+#### A masked pattern was here ####
+POSTHOOK: query: select COLUMN_NAME from columns_v2 where column_name = 'a_n2939' or column_name = 'b_n2939' or column_name = 'c_n2939'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@columns_v2
+#### A masked pattern was here ####
+PREHOOK: query: select CONSTRAINT_NAME from key_constraints where constraint_name = 't1_n2939_pk' or constraint_name = 't1_n2939_nn' or constraint_name = 't1_n2939_nn_2'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@key_constraints
+#### A masked pattern was here ####
+POSTHOOK: query: select CONSTRAINT_NAME from key_constraints where constraint_name = 't1_n2939_pk' or constraint_name = 't1_n2939_nn' or constraint_name = 't1_n2939_nn_2'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@key_constraints
+#### A masked pattern was here ####

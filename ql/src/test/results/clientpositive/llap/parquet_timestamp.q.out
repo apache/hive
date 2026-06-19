@@ -1,0 +1,80 @@
+PREHOOK: query: create table legacy_table_parq1 (date_test timestamp)
+stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@legacy_table_parq1
+POSTHOOK: query: create table legacy_table_parq1 (date_test timestamp)
+stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@legacy_table_parq1
+PREHOOK: query: load data local inpath '../../data/files/tbl_parq1/' into table legacy_table_parq1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@legacy_table_parq1
+POSTHOOK: query: load data local inpath '../../data/files/tbl_parq1/' into table legacy_table_parq1
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@legacy_table_parq1
+PREHOOK: query: select * from legacy_table_parq1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@legacy_table_parq1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from legacy_table_parq1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@legacy_table_parq1
+#### A masked pattern was here ####
+2020-04-08 13:17:05.215
+1900-01-01 00:00:00
+1900-01-01 00:00:00
+2020-04-08 13:17:05.215
+1899-12-31 22:55:25
+PREHOOK: query: select * from legacy_table_parq1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@legacy_table_parq1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from legacy_table_parq1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@legacy_table_parq1
+#### A masked pattern was here ####
+2020-04-08 13:17:05.215
+1899-12-31 22:55:25
+1900-01-01 00:00:00
+2020-04-08 13:17:05.215
+1899-12-31 22:55:25
+PREHOOK: query: select * from legacy_table_parq1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@legacy_table_parq1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from legacy_table_parq1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@legacy_table_parq1
+#### A masked pattern was here ####
+2020-04-08 13:17:05.215
+1900-01-01 00:00:00
+1900-01-01 00:00:00
+2020-04-08 13:17:05.215
+1899-12-31 22:55:25
+PREHOOK: query: select * from legacy_table_parq1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@legacy_table_parq1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from legacy_table_parq1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@legacy_table_parq1
+#### A masked pattern was here ####
+2020-04-08 13:17:05.215
+1899-12-31 22:55:25
+1900-01-01 00:00:00
+2020-04-08 13:17:05.215
+1899-12-31 22:55:25
+PREHOOK: query: drop table legacy_table_parq1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@legacy_table_parq1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@legacy_table_parq1
+POSTHOOK: query: drop table legacy_table_parq1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@legacy_table_parq1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@legacy_table_parq1

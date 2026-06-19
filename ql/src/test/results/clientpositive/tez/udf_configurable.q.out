@@ -1,0 +1,116 @@
+PREHOOK: query: CREATE TABLE test_udf_configurable (cint1 INT, cint2 INT, ctimestamp TIMESTAMP, text_timestamp STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_udf_configurable
+POSTHOOK: query: CREATE TABLE test_udf_configurable (cint1 INT, cint2 INT, ctimestamp TIMESTAMP, text_timestamp STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_udf_configurable
+PREHOOK: query: INSERT INTO test_udf_configurable VALUES
+  (10000, 3, CAST('1970-01-01 01:02:03' AS TIMESTAMP), '1970-01-01 01:02:03 4'),
+  (20000, 5, CAST('1970-01-02 04:05:06' AS TIMESTAMP), '1970-01-02 04:05:06 5'),
+  (30000, 7, CAST('1970-01-03 07:08:09' AS TIMESTAMP), '1970-01-03 07:08:09 6')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_udf_configurable
+POSTHOOK: query: INSERT INTO test_udf_configurable VALUES
+  (10000, 3, CAST('1970-01-01 01:02:03' AS TIMESTAMP), '1970-01-01 01:02:03 4'),
+  (20000, 5, CAST('1970-01-02 04:05:06' AS TIMESTAMP), '1970-01-02 04:05:06 5'),
+  (30000, 7, CAST('1970-01-03 07:08:09' AS TIMESTAMP), '1970-01-03 07:08:09 6')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_udf_configurable
+POSTHOOK: Lineage: test_udf_configurable.cint1 SCRIPT []
+POSTHOOK: Lineage: test_udf_configurable.cint2 SCRIPT []
+POSTHOOK: Lineage: test_udf_configurable.ctimestamp SCRIPT []
+POSTHOOK: Lineage: test_udf_configurable.text_timestamp SCRIPT []
+PREHOOK: query: SELECT
+  -- DECIMAL because of hive.compat=latest
+  cint1 / cint2,
+  -- Allowed by hive.strict.timestamp.conversion=false
+  cint1 = ctimestamp,
+  -- Allowed by hive.strict.timestamp.conversion=false
+  -- Interpreted as seconds because of hive.int.timestamp.conversion.in.seconds=true
+  CAST(cint1 AS TIMESTAMP),
+  -- The semantics of "u" is different between SimpleDateFormat and DateTimeFormatter
+  DATE_FORMAT(ctimestamp, 'yyyy-MM-dd HH:mm:ss u'),
+  FROM_UNIXTIME(cint1, 'yyyy-MM-dd HH:mm:ss u'),
+  TO_UNIX_TIMESTAMP(text_timestamp, 'yyyy-MM-dd HH:mm:ss u'),
+  UNIX_TIMESTAMP(text_timestamp, 'yyyy-MM-dd HH:mm:ss u'),
+  -- SHA512 is used
+  MASK_HASH(text_timestamp),
+  -- Java's Pattern doesn't support it, then it fails with hive.use.googleregex.engine=false
+  text_timestamp RLIKE '\\p{Katakana}+'
+FROM test_udf_configurable
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_udf_configurable
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT
+  -- DECIMAL because of hive.compat=latest
+  cint1 / cint2,
+  -- Allowed by hive.strict.timestamp.conversion=false
+  cint1 = ctimestamp,
+  -- Allowed by hive.strict.timestamp.conversion=false
+  -- Interpreted as seconds because of hive.int.timestamp.conversion.in.seconds=true
+  CAST(cint1 AS TIMESTAMP),
+  -- The semantics of "u" is different between SimpleDateFormat and DateTimeFormatter
+  DATE_FORMAT(ctimestamp, 'yyyy-MM-dd HH:mm:ss u'),
+  FROM_UNIXTIME(cint1, 'yyyy-MM-dd HH:mm:ss u'),
+  TO_UNIX_TIMESTAMP(text_timestamp, 'yyyy-MM-dd HH:mm:ss u'),
+  UNIX_TIMESTAMP(text_timestamp, 'yyyy-MM-dd HH:mm:ss u'),
+  -- SHA512 is used
+  MASK_HASH(text_timestamp),
+  -- Java's Pattern doesn't support it, then it fails with hive.use.googleregex.engine=false
+  text_timestamp RLIKE '\\p{Katakana}+'
+FROM test_udf_configurable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_udf_configurable
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3333.33333333333	false	1970-01-01 02:46:40	1970-01-01 01:02:03 4	1970-01-01 09:46:40 4	-21477	-21477	ca764b57c635a893c91b0edaea84bca142e065990e1a66b9c60cf855777af51070444210d30e359fa81e5a77c68a073224e0c7343d957f556816618a10baa37c	false
+4000.00000000000	false	1970-01-01 05:33:20	1970-01-02 04:05:06 5	1970-01-01 12:33:20 4	75906	75906	7882085a4ed36e7c675fcd12083eefa9a208f1fdcfba10b3a986bb5b1d43e23da3ba87b3933feebfed80ba9e05e4e73f72231cb8022453e562e034e8b5c603b9	false
+4285.71428571429	false	1970-01-01 08:20:00	1970-01-03 07:08:09 6	1970-01-01 15:20:00 4	173289	173289	d9899e12fce35a4f65cd63aee1e953dacd9e91229d52dd17ddad8e44c17d2d081c0a5519a96637663bc6baa2d7c96d6f1a9d6944ac7668c7926ebc10c9f3b81b	false
+PREHOOK: query: SELECT
+  -- DECIMAL because of hive.compat=latest
+  cint1 / cint2,
+  -- Allowed by hive.strict.timestamp.conversion=false
+  cint1 = ctimestamp,
+  -- Allowed by hive.strict.timestamp.conversion=false
+  -- Interpreted as seconds because of hive.int.timestamp.conversion.in.seconds=true
+  CAST(cint1 AS TIMESTAMP),
+  -- formatter
+  DATE_FORMAT(ctimestamp, 'yyyy-MM-dd HH:mm:ss u'),
+  FROM_UNIXTIME(cint1, 'yyyy-MM-dd HH:mm:ss u'),
+  TO_UNIX_TIMESTAMP(text_timestamp, 'yyyy-MM-dd HH:mm:ss u'),
+  UNIX_TIMESTAMP(text_timestamp, 'yyyy-MM-dd HH:mm:ss u'),
+  -- SHA512 is used
+  MASK_HASH(text_timestamp),
+  -- Java's Pattern doesn't support it, then it fails with hive.use.googleregex.engine=false
+  text_timestamp RLIKE '\\p{Katakana}+'
+FROM test_udf_configurable
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_udf_configurable
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT
+  -- DECIMAL because of hive.compat=latest
+  cint1 / cint2,
+  -- Allowed by hive.strict.timestamp.conversion=false
+  cint1 = ctimestamp,
+  -- Allowed by hive.strict.timestamp.conversion=false
+  -- Interpreted as seconds because of hive.int.timestamp.conversion.in.seconds=true
+  CAST(cint1 AS TIMESTAMP),
+  -- formatter
+  DATE_FORMAT(ctimestamp, 'yyyy-MM-dd HH:mm:ss u'),
+  FROM_UNIXTIME(cint1, 'yyyy-MM-dd HH:mm:ss u'),
+  TO_UNIX_TIMESTAMP(text_timestamp, 'yyyy-MM-dd HH:mm:ss u'),
+  UNIX_TIMESTAMP(text_timestamp, 'yyyy-MM-dd HH:mm:ss u'),
+  -- SHA512 is used
+  MASK_HASH(text_timestamp),
+  -- Java's Pattern doesn't support it, then it fails with hive.use.googleregex.engine=false
+  text_timestamp RLIKE '\\p{Katakana}+'
+FROM test_udf_configurable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_udf_configurable
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3333.33333333333	false	1970-01-01 02:46:40	1970-01-01 01:02:03 4	1970-01-01 09:46:40 4	-21477	-21477	ca764b57c635a893c91b0edaea84bca142e065990e1a66b9c60cf855777af51070444210d30e359fa81e5a77c68a073224e0c7343d957f556816618a10baa37c	false
+4000.00000000000	false	1970-01-01 05:33:20	1970-01-02 04:05:06 5	1970-01-01 12:33:20 4	75906	75906	7882085a4ed36e7c675fcd12083eefa9a208f1fdcfba10b3a986bb5b1d43e23da3ba87b3933feebfed80ba9e05e4e73f72231cb8022453e562e034e8b5c603b9	false
+4285.71428571429	false	1970-01-01 08:20:00	1970-01-03 07:08:09 6	1970-01-01 15:20:00 4	173289	173289	d9899e12fce35a4f65cd63aee1e953dacd9e91229d52dd17ddad8e44c17d2d081c0a5519a96637663bc6baa2d7c96d6f1a9d6944ac7668c7926ebc10c9f3b81b	false

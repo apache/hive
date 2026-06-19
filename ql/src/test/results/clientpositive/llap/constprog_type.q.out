@@ -1,0 +1,201 @@
+PREHOOK: query: CREATE TABLE dest1_n26(d date, t timestamp)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1_n26
+POSTHOOK: query: CREATE TABLE dest1_n26(d date, t timestamp)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest1_n26
+PREHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE dest1_n26
+SELECT cast('2013-11-17' as date), cast(cast('1.3041352164485E9' as double) as timestamp)
+       FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n26
+POSTHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE dest1_n26
+SELECT cast('2013-11-17' as date), cast(cast('1.3041352164485E9' as double) as timestamp)
+       FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n26
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Row Limit Per Split: 1
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: DATE'2013-11-17' (type: date), TIMESTAMP'2011-04-30 03:46:56.4485' (type: timestamp)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 48000 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 500 Data size: 48000 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.dest1_n26
+                    Select Operator
+                      expressions: DATE'2013-11-17' (type: date), TIMESTAMP'2011-04-30 03:46:56.4485' (type: timestamp)
+                      outputColumnNames: d, t
+                      Statistics: Num rows: 500 Data size: 48000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: min(d), max(d), count(1), count(d), compute_bit_vector_hll(d), min(t), max(t), count(t), compute_bit_vector_hll(t)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                        Statistics: Num rows: 1 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: date), _col1 (type: date), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: timestamp), _col6 (type: timestamp), _col7 (type: bigint), _col8 (type: binary)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+                Statistics: Num rows: 1 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'DATE' (type: string), _col0 (type: date), _col1 (type: date), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'TIMESTAMP' (type: string), _col5 (type: timestamp), _col6 (type: timestamp), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                  Statistics: Num rows: 1 Data size: 693 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 693 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest1_n26
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: d, t
+          Column Types: date, timestamp
+          Table: default.dest1_n26
+
+PREHOOK: query: INSERT OVERWRITE TABLE dest1_n26
+SELECT cast('2013-11-17' as date), cast(cast('1.3041352164485E9' as double) as timestamp)
+       FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1_n26
+POSTHOOK: query: INSERT OVERWRITE TABLE dest1_n26
+SELECT cast('2013-11-17' as date), cast(cast('1.3041352164485E9' as double) as timestamp)
+       FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1_n26
+POSTHOOK: Lineage: dest1_n26.d EXPRESSION []
+POSTHOOK: Lineage: dest1_n26.t EXPRESSION []
+PREHOOK: query: SELECT * FROM dest1_n26
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1_n26
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM dest1_n26
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1_n26
+#### A masked pattern was here ####
+2013-11-17	2011-04-30 03:46:56.4485
+PREHOOK: query: SELECT key, value FROM src WHERE key = cast(86 as double)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, value FROM src WHERE key = cast(86 as double)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+86	val_86
+PREHOOK: query: CREATE TABLE primitives1 (
+  id INT  ,
+  bool_col BOOLEAN  ,
+  tinyint_col TINYINT  ,
+  smallint_col SMALLINT  ,
+  int_col INT  ,
+  bigint_col BIGINT  ,
+  float_col FLOAT  ,
+  double_col DOUBLE  ,
+  date_string_col STRING  ,
+  string_col STRING  ,
+  timestamp_col TIMESTAMP  )
+ROW FORMAT DELIMITED
+  FIELDS TERMINATED BY ','
+  ESCAPED BY '\\'
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@primitives1
+POSTHOOK: query: CREATE TABLE primitives1 (
+  id INT  ,
+  bool_col BOOLEAN  ,
+  tinyint_col TINYINT  ,
+  smallint_col SMALLINT  ,
+  int_col INT  ,
+  bigint_col BIGINT  ,
+  float_col FLOAT  ,
+  double_col DOUBLE  ,
+  date_string_col STRING  ,
+  string_col STRING  ,
+  timestamp_col TIMESTAMP  )
+ROW FORMAT DELIMITED
+  FIELDS TERMINATED BY ','
+  ESCAPED BY '\\'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@primitives1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/types/primitives/090101.txt'
+OVERWRITE INTO TABLE primitives1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@primitives1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/types/primitives/090101.txt'
+OVERWRITE INTO TABLE primitives1
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@primitives1
+PREHOOK: query: select id,bool_col,tinyint_col,smallint_col,int_col,bigint_col,float_col,double_col from primitives1 where id = cast (0 as float) and bool_col = cast('true' as boolean) and tinyint_col = cast(0 as double) and smallint_col = cast(0 as bigint) and int_col = cast (0 as double) and bigint_col = cast(0 as tinyint) and float_col = cast(0.0 as string) and  double_col = cast (0.0 as float)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@primitives1
+#### A masked pattern was here ####
+POSTHOOK: query: select id,bool_col,tinyint_col,smallint_col,int_col,bigint_col,float_col,double_col from primitives1 where id = cast (0 as float) and bool_col = cast('true' as boolean) and tinyint_col = cast(0 as double) and smallint_col = cast(0 as bigint) and int_col = cast (0 as double) and bigint_col = cast(0 as tinyint) and float_col = cast(0.0 as string) and  double_col = cast (0.0 as float)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@primitives1
+#### A masked pattern was here ####
+0	true	0	0	0	0	0.0	0.0

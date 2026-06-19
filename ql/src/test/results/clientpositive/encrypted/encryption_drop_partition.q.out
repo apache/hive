@@ -1,0 +1,176 @@
+PREHOOK: query: DROP TABLE IF EXISTS encrypted_table_dp
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS encrypted_table_dp
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: hdfs://### HDFS PATH ###
+PREHOOK: Output: database:default
+PREHOOK: Output: default@encrypted_table_dp
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: hdfs://### HDFS PATH ###
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@encrypted_table_dp
+Encryption key created: 'key_128'
+Encryption zone created: '/build/ql/test/data/warehouse/default/encrypted_table_dp' using key: 'key_128'
+PREHOOK: query: INSERT INTO encrypted_table_dp PARTITION(p)(p,key,value) values('2014-09-23', 1, 'foo'),('2014-09-24', 2, 'bar')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@encrypted_table_dp
+POSTHOOK: query: INSERT INTO encrypted_table_dp PARTITION(p)(p,key,value) values('2014-09-23', 1, 'foo'),('2014-09-24', 2, 'bar')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@encrypted_table_dp
+POSTHOOK: Output: default@encrypted_table_dp@p=2014-09-23
+POSTHOOK: Output: default@encrypted_table_dp@p=2014-09-24
+POSTHOOK: Lineage: encrypted_table_dp PARTITION(p=2014-09-23).key SCRIPT []
+POSTHOOK: Lineage: encrypted_table_dp PARTITION(p=2014-09-23).value SCRIPT []
+POSTHOOK: Lineage: encrypted_table_dp PARTITION(p=2014-09-24).key SCRIPT []
+POSTHOOK: Lineage: encrypted_table_dp PARTITION(p=2014-09-24).value SCRIPT []
+PREHOOK: query: SELECT * FROM encrypted_table_dp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@encrypted_table_dp
+PREHOOK: Input: default@encrypted_table_dp@p=2014-09-23
+PREHOOK: Input: default@encrypted_table_dp@p=2014-09-24
+#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table_dp/.hive-staging
+POSTHOOK: query: SELECT * FROM encrypted_table_dp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@encrypted_table_dp
+POSTHOOK: Input: default@encrypted_table_dp@p=2014-09-23
+POSTHOOK: Input: default@encrypted_table_dp@p=2014-09-24
+#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table_dp/.hive-staging
+1	foo	2014-09-23
+2	bar	2014-09-24
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: hdfs://### HDFS PATH ###
+PREHOOK: Output: database:default
+PREHOOK: Output: default@encrypted_ext_table_dp
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: hdfs://### HDFS PATH ###
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@encrypted_ext_table_dp
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: hdfs://### HDFS PATH ###
+PREHOOK: Output: default@encrypted_ext_table_dp
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: hdfs://### HDFS PATH ###
+POSTHOOK: Output: default@encrypted_ext_table_dp
+POSTHOOK: Output: default@encrypted_ext_table_dp@p=2014-09-23
+PREHOOK: query: SELECT * FROM encrypted_ext_table_dp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@encrypted_ext_table_dp
+PREHOOK: Input: default@encrypted_ext_table_dp@p=2014-09-23
+#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table_dp/.hive-staging
+POSTHOOK: query: SELECT * FROM encrypted_ext_table_dp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@encrypted_ext_table_dp
+POSTHOOK: Input: default@encrypted_ext_table_dp@p=2014-09-23
+#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table_dp/.hive-staging
+1	foo	2014-09-23
+PREHOOK: query: ALTER TABLE encrypted_ext_table_dp DROP PARTITION (p='2014-09-23')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@encrypted_ext_table_dp
+PREHOOK: Output: default@encrypted_ext_table_dp@p=2014-09-23
+POSTHOOK: query: ALTER TABLE encrypted_ext_table_dp DROP PARTITION (p='2014-09-23')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@encrypted_ext_table_dp
+POSTHOOK: Output: default@encrypted_ext_table_dp@p=2014-09-23
+PREHOOK: query: SELECT * FROM encrypted_ext_table_dp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@encrypted_ext_table_dp
+#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table_dp/.hive-staging
+POSTHOOK: query: SELECT * FROM encrypted_ext_table_dp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@encrypted_ext_table_dp
+#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table_dp/.hive-staging
+PREHOOK: query: DROP TABLE encrypted_ext_table_dp
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@encrypted_ext_table_dp
+PREHOOK: Output: database:default
+PREHOOK: Output: default@encrypted_ext_table_dp
+POSTHOOK: query: DROP TABLE encrypted_ext_table_dp
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@encrypted_ext_table_dp
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@encrypted_ext_table_dp
+PREHOOK: query: SELECT * FROM encrypted_table_dp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@encrypted_table_dp
+PREHOOK: Input: default@encrypted_table_dp@p=2014-09-23
+PREHOOK: Input: default@encrypted_table_dp@p=2014-09-24
+#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table_dp/.hive-staging
+POSTHOOK: query: SELECT * FROM encrypted_table_dp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@encrypted_table_dp
+POSTHOOK: Input: default@encrypted_table_dp@p=2014-09-23
+POSTHOOK: Input: default@encrypted_table_dp@p=2014-09-24
+#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table_dp/.hive-staging
+1	foo	2014-09-23
+2	bar	2014-09-24
+PREHOOK: query: ALTER TABLE encrypted_table_dp DROP PARTITION (p='2014-09-23')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@encrypted_table_dp
+PREHOOK: Output: default@encrypted_table_dp@p=2014-09-23
+POSTHOOK: query: ALTER TABLE encrypted_table_dp DROP PARTITION (p='2014-09-23')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@encrypted_table_dp
+POSTHOOK: Output: default@encrypted_table_dp@p=2014-09-23
+PREHOOK: query: SELECT * FROM encrypted_table_dp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@encrypted_table_dp
+PREHOOK: Input: default@encrypted_table_dp@p=2014-09-24
+#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table_dp/.hive-staging
+POSTHOOK: query: SELECT * FROM encrypted_table_dp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@encrypted_table_dp
+POSTHOOK: Input: default@encrypted_table_dp@p=2014-09-24
+#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table_dp/.hive-staging
+2	bar	2014-09-24
+PREHOOK: query: TRUNCATE TABLE encrypted_table_dp PARTITION (p='2014-09-24')
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@encrypted_table_dp@p=2014-09-24
+POSTHOOK: query: TRUNCATE TABLE encrypted_table_dp PARTITION (p='2014-09-24')
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@encrypted_table_dp@p=2014-09-24
+PREHOOK: query: SHOW PARTITIONS encrypted_table_dp
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@encrypted_table_dp
+POSTHOOK: query: SHOW PARTITIONS encrypted_table_dp
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@encrypted_table_dp
+p=2014-09-24
+PREHOOK: query: SELECT * FROM encrypted_table_dp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@encrypted_table_dp
+PREHOOK: Input: default@encrypted_table_dp@p=2014-09-24
+#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table_dp/.hive-staging
+POSTHOOK: query: SELECT * FROM encrypted_table_dp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@encrypted_table_dp
+POSTHOOK: Input: default@encrypted_table_dp@p=2014-09-24
+#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table_dp/.hive-staging
+PREHOOK: query: ALTER TABLE encrypted_table_dp DROP PARTITION (p='2014-09-24')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@encrypted_table_dp
+PREHOOK: Output: default@encrypted_table_dp@p=2014-09-24
+POSTHOOK: query: ALTER TABLE encrypted_table_dp DROP PARTITION (p='2014-09-24')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@encrypted_table_dp
+POSTHOOK: Output: default@encrypted_table_dp@p=2014-09-24
+PREHOOK: query: DROP TABLE encrypted_table_dp
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@encrypted_table_dp
+PREHOOK: Output: database:default
+PREHOOK: Output: default@encrypted_table_dp
+POSTHOOK: query: DROP TABLE encrypted_table_dp
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@encrypted_table_dp
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@encrypted_table_dp

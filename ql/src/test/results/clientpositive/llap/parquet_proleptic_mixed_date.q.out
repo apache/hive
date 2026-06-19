@@ -1,0 +1,77 @@
+PREHOOK: query: create table proleptic_table (d date)
+stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@proleptic_table
+POSTHOOK: query: create table proleptic_table (d date)
+stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@proleptic_table
+PREHOOK: query: INSERT INTO proleptic_table VALUES
+('2012-02-21'),
+('2014-02-11'),
+('1947-02-11'),
+('8200-02-11'),
+('1012-02-21'),
+('1014-02-11'),
+('0947-02-11'),
+('0200-02-11')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@proleptic_table
+POSTHOOK: query: INSERT INTO proleptic_table VALUES
+('2012-02-21'),
+('2014-02-11'),
+('1947-02-11'),
+('8200-02-11'),
+('1012-02-21'),
+('1014-02-11'),
+('0947-02-11'),
+('0200-02-11')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@proleptic_table
+POSTHOOK: Lineage: proleptic_table.d SCRIPT []
+PREHOOK: query: select * from proleptic_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@proleptic_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from proleptic_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@proleptic_table
+#### A masked pattern was here ####
+2012-02-21
+2014-02-11
+1947-02-11
+8200-02-11
+1012-02-21
+1014-02-11
+0947-02-11
+0200-02-11
+PREHOOK: query: select * from proleptic_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@proleptic_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from proleptic_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@proleptic_table
+#### A masked pattern was here ####
+2012-02-21
+2014-02-11
+1947-02-11
+8200-02-11
+1012-02-21
+1014-02-11
+0947-02-11
+0200-02-11
+PREHOOK: query: drop table proleptic_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@proleptic_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@proleptic_table
+POSTHOOK: query: drop table proleptic_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@proleptic_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@proleptic_table

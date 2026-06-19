@@ -1,0 +1,72 @@
+PREHOOK: query: CREATE EXTERNAL TABLE exttable (b INT) PARTITIONED BY (a INT) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@exttable
+POSTHOOK: query: CREATE EXTERNAL TABLE exttable (b INT) PARTITIONED BY (a INT) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@exttable
+PREHOOK: query: INSERT INTO TABLE exttable PARTITION (a) VALUES (1,2), (2,3), (3,4), (4,5), (5,6)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@exttable
+POSTHOOK: query: INSERT INTO TABLE exttable PARTITION (a) VALUES (1,2), (2,3), (3,4), (4,5), (5,6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@exttable
+POSTHOOK: Output: default@exttable@a=2
+POSTHOOK: Output: default@exttable@a=3
+POSTHOOK: Output: default@exttable@a=4
+POSTHOOK: Output: default@exttable@a=5
+POSTHOOK: Output: default@exttable@a=6
+POSTHOOK: Lineage: exttable PARTITION(a=2).b SCRIPT []
+POSTHOOK: Lineage: exttable PARTITION(a=3).b SCRIPT []
+POSTHOOK: Lineage: exttable PARTITION(a=4).b SCRIPT []
+POSTHOOK: Lineage: exttable PARTITION(a=5).b SCRIPT []
+POSTHOOK: Lineage: exttable PARTITION(a=6).b SCRIPT []
+PREHOOK: query: SELECT COUNT(*) FROM sys.notification_log WHERE tbl_name='exttable' AND event_type='INSERT'
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@notification_log
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT COUNT(*) FROM sys.notification_log WHERE tbl_name='exttable' AND event_type='INSERT'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@notification_log
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
+PREHOOK: query: INSERT INTO TABLE exttable PARTITION (a) VALUES (1,2), (2,3), (3,4), (4,5), (5,6)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@exttable
+POSTHOOK: query: INSERT INTO TABLE exttable PARTITION (a) VALUES (1,2), (2,3), (3,4), (4,5), (5,6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@exttable
+POSTHOOK: Output: default@exttable@a=2
+POSTHOOK: Output: default@exttable@a=3
+POSTHOOK: Output: default@exttable@a=4
+POSTHOOK: Output: default@exttable@a=5
+POSTHOOK: Output: default@exttable@a=6
+POSTHOOK: Lineage: exttable PARTITION(a=2).b SCRIPT []
+POSTHOOK: Lineage: exttable PARTITION(a=3).b SCRIPT []
+POSTHOOK: Lineage: exttable PARTITION(a=4).b SCRIPT []
+POSTHOOK: Lineage: exttable PARTITION(a=5).b SCRIPT []
+POSTHOOK: Lineage: exttable PARTITION(a=6).b SCRIPT []
+PREHOOK: query: SELECT COUNT(*) FROM sys.notification_log WHERE tbl_name='exttable' AND event_type='INSERT'
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@notification_log
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT COUNT(*) FROM sys.notification_log WHERE tbl_name='exttable' AND event_type='INSERT'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@notification_log
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+5
+PREHOOK: query: DROP TABLE exttable
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@exttable
+PREHOOK: Output: database:default
+PREHOOK: Output: default@exttable
+POSTHOOK: query: DROP TABLE exttable
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@exttable
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@exttable

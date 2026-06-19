@@ -1,0 +1,71 @@
+PREHOOK: query: CREATE TABLE avro2
+ROW FORMAT
+SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+STORED AS
+INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
+TBLPROPERTIES ('avro.schema.literal'='{ "namespace": "org.apache.hive",
+  "name": "first_schema",
+  "type": "record",
+  "fields": [
+    { "name":"string1", "type":"string" },
+    { "name":"string2", "type":"string" }
+  ] }')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@avro2
+POSTHOOK: query: CREATE TABLE avro2
+ROW FORMAT
+SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+STORED AS
+INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
+TBLPROPERTIES ('avro.schema.literal'='{ "namespace": "org.apache.hive",
+  "name": "first_schema",
+  "type": "record",
+  "fields": [
+    { "name":"string1", "type":"string" },
+    { "name":"string2", "type":"string" }
+  ] }')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@avro2
+PREHOOK: query: DESCRIBE avro2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@avro2
+POSTHOOK: query: DESCRIBE avro2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@avro2
+string1             	string              	                    
+string2             	string              	                    
+PREHOOK: query: ALTER TABLE avro2 SET TBLPROPERTIES ('avro.schema.literal'='{ "namespace": "org.apache.hive",
+  "name": "second_schema",
+  "type": "record",
+  "fields": [
+    { "name":"int1", "type":"int" },
+    { "name":"float1", "type":"float" },
+  { "name":"double1", "type":"double" }
+  ] }')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@avro2
+PREHOOK: Output: default@avro2
+POSTHOOK: query: ALTER TABLE avro2 SET TBLPROPERTIES ('avro.schema.literal'='{ "namespace": "org.apache.hive",
+  "name": "second_schema",
+  "type": "record",
+  "fields": [
+    { "name":"int1", "type":"int" },
+    { "name":"float1", "type":"float" },
+  { "name":"double1", "type":"double" }
+  ] }')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@avro2
+POSTHOOK: Output: default@avro2
+PREHOOK: query: DESCRIBE avro2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@avro2
+POSTHOOK: query: DESCRIBE avro2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@avro2
+int1                	int                 	                    
+float1              	float               	                    
+double1             	double              	                    

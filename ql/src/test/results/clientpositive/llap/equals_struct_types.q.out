@@ -1,0 +1,363 @@
+PREHOOK: query: create table table_struct_types (id int, c1 struct<f1: int,f2: int>, c2 struct<f1: int,f2: int>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_struct_types
+POSTHOOK: query: create table table_struct_types (id int, c1 struct<f1: int,f2: int>, c2 struct<f1: int,f2: int>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_struct_types
+PREHOOK: query: insert into table_struct_types VALUES (1, named_struct("f1",1,"f2",1), named_struct("f1",2,"f2",1))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table_struct_types
+POSTHOOK: query: insert into table_struct_types VALUES (1, named_struct("f1",1,"f2",1), named_struct("f1",2,"f2",1))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table_struct_types
+POSTHOOK: Lineage: table_struct_types.c1 SCRIPT []
+POSTHOOK: Lineage: table_struct_types.c2 SCRIPT []
+POSTHOOK: Lineage: table_struct_types.id SCRIPT []
+PREHOOK: query: insert into table_struct_types VALUES (2, named_struct("f1",1,"f2",2), named_struct("f1",2,"f2",2))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table_struct_types
+POSTHOOK: query: insert into table_struct_types VALUES (2, named_struct("f1",1,"f2",2), named_struct("f1",2,"f2",2))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table_struct_types
+POSTHOOK: Lineage: table_struct_types.c1 SCRIPT []
+POSTHOOK: Lineage: table_struct_types.c2 SCRIPT []
+POSTHOOK: Lineage: table_struct_types.id SCRIPT []
+PREHOOK: query: insert into table_struct_types VALUES (3, named_struct("f1",1,"f2",3), named_struct("f1",2,"f2",3))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table_struct_types
+POSTHOOK: query: insert into table_struct_types VALUES (3, named_struct("f1",1,"f2",3), named_struct("f1",2,"f2",3))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table_struct_types
+POSTHOOK: Lineage: table_struct_types.c1 SCRIPT []
+POSTHOOK: Lineage: table_struct_types.c2 SCRIPT []
+POSTHOOK: Lineage: table_struct_types.id SCRIPT []
+PREHOOK: query: insert into table_struct_types VALUES (4, named_struct("f1",1,"f2",4), named_struct("f1",1,"f2",4))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table_struct_types
+POSTHOOK: query: insert into table_struct_types VALUES (4, named_struct("f1",1,"f2",4), named_struct("f1",1,"f2",4))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table_struct_types
+POSTHOOK: Lineage: table_struct_types.c1 SCRIPT []
+POSTHOOK: Lineage: table_struct_types.c2 SCRIPT []
+POSTHOOK: Lineage: table_struct_types.id SCRIPT []
+PREHOOK: query: select id from table_struct_types where c1 IN (c1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+POSTHOOK: query: select id from table_struct_types where c1 IN (c1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+1
+2
+3
+4
+PREHOOK: query: select id from table_struct_types where c1 IN (c2)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+POSTHOOK: query: select id from table_struct_types where c1 IN (c2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+4
+PREHOOK: query: select id from table_struct_types where c1 IN (named_struct("f1",1,"f2",1))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+POSTHOOK: query: select id from table_struct_types where c1 IN (named_struct("f1",1,"f2",1))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+1
+PREHOOK: query: select id from table_struct_types where named_struct("f1",1,"f2",1) IN (c1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+POSTHOOK: query: select id from table_struct_types where named_struct("f1",1,"f2",1) IN (c1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+1
+PREHOOK: query: select id from table_struct_types where c1 IN (named_struct("f1",1,"f2",1), named_struct("f1",1,"f2",2), named_struct("f1",1,"f2",3))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+POSTHOOK: query: select id from table_struct_types where c1 IN (named_struct("f1",1,"f2",1), named_struct("f1",1,"f2",2), named_struct("f1",1,"f2",3))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+1
+2
+3
+PREHOOK: query: select id from table_struct_types where c1 IN (c2, named_struct("f1",1,"f2",1), named_struct("f1",1,"f2",2), named_struct("f1",1,"f2",3))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+POSTHOOK: query: select id from table_struct_types where c1 IN (c2, named_struct("f1",1,"f2",1), named_struct("f1",1,"f2",2), named_struct("f1",1,"f2",3))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+1
+2
+3
+4
+PREHOOK: query: select id from table_struct_types where named_struct("f1",1,"f2",1) IN (c1, c2)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+POSTHOOK: query: select id from table_struct_types where named_struct("f1",1,"f2",1) IN (c1, c2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+1
+PREHOOK: query: select id from table_struct_types where c1 = c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+POSTHOOK: query: select id from table_struct_types where c1 = c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+1
+2
+3
+4
+PREHOOK: query: select id from table_struct_types where c1 = c2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+POSTHOOK: query: select id from table_struct_types where c1 = c2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+4
+PREHOOK: query: select id from table_struct_types where c1 = named_struct("f1",1,"f2",1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+POSTHOOK: query: select id from table_struct_types where c1 = named_struct("f1",1,"f2",1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+1
+PREHOOK: query: select id from table_struct_types where named_struct("f1",1,"f2",1) = c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+POSTHOOK: query: select id from table_struct_types where named_struct("f1",1,"f2",1) = c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+1
+PREHOOK: query: select id from table_struct_types where named_struct("f1",1,"f2",1) = named_struct("f1",1,"f2",1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+POSTHOOK: query: select id from table_struct_types where named_struct("f1",1,"f2",1) = named_struct("f1",1,"f2",1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+1
+2
+3
+4
+PREHOOK: query: select id from table_struct_types where named_struct("f1",1,"f2",1) = named_struct("f1",1,"f2",2)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+POSTHOOK: query: select id from table_struct_types where named_struct("f1",1,"f2",1) = named_struct("f1",1,"f2",2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+PREHOOK: query: select id from table_struct_types where c1 <> c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+POSTHOOK: query: select id from table_struct_types where c1 <> c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+PREHOOK: query: select id from table_struct_types where c1 <> c2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+POSTHOOK: query: select id from table_struct_types where c1 <> c2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+1
+2
+3
+PREHOOK: query: select id from table_struct_types where c1 <> named_struct("f1",1,"f2",1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+POSTHOOK: query: select id from table_struct_types where c1 <> named_struct("f1",1,"f2",1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+2
+3
+4
+PREHOOK: query: select id from table_struct_types where named_struct("f1",1,"f2",1) <> c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+POSTHOOK: query: select id from table_struct_types where named_struct("f1",1,"f2",1) <> c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+2
+3
+4
+PREHOOK: query: select id from table_struct_types where named_struct("f1",1,"f2",1) <> named_struct("f1",1,"f2",1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+POSTHOOK: query: select id from table_struct_types where named_struct("f1",1,"f2",1) <> named_struct("f1",1,"f2",1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+PREHOOK: query: select id from table_struct_types where named_struct("f1",1,"f2",1) <> named_struct("f1",1,"f2",2)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+POSTHOOK: query: select id from table_struct_types where named_struct("f1",1,"f2",1) <> named_struct("f1",1,"f2",2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+1
+2
+3
+4
+PREHOOK: query: select id from table_struct_types where c1 IS DISTINCT FROM c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+POSTHOOK: query: select id from table_struct_types where c1 IS DISTINCT FROM c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+PREHOOK: query: select id from table_struct_types where c1 IS DISTINCT FROM c2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+POSTHOOK: query: select id from table_struct_types where c1 IS DISTINCT FROM c2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+1
+2
+3
+PREHOOK: query: select id from table_struct_types where c1 IS DISTINCT FROM named_struct("f1",1,"f2",1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+POSTHOOK: query: select id from table_struct_types where c1 IS DISTINCT FROM named_struct("f1",1,"f2",1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+2
+3
+4
+PREHOOK: query: select id from table_struct_types where named_struct("f1",1,"f2",1) IS DISTINCT FROM c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+POSTHOOK: query: select id from table_struct_types where named_struct("f1",1,"f2",1) IS DISTINCT FROM c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+2
+3
+4
+PREHOOK: query: select id from table_struct_types where named_struct("f1",1,"f2",1) IS DISTINCT FROM named_struct("f1",1,"f2",1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+POSTHOOK: query: select id from table_struct_types where named_struct("f1",1,"f2",1) IS DISTINCT FROM named_struct("f1",1,"f2",1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+PREHOOK: query: select id from table_struct_types where named_struct("f1",1,"f2",1) IS DISTINCT FROM named_struct("f1",1,"f2",2)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+POSTHOOK: query: select id from table_struct_types where named_struct("f1",1,"f2",1) IS DISTINCT FROM named_struct("f1",1,"f2",2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+1
+2
+3
+4
+PREHOOK: query: select id from table_struct_types where c1 IS NOT DISTINCT FROM c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+POSTHOOK: query: select id from table_struct_types where c1 IS NOT DISTINCT FROM c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+1
+2
+3
+4
+PREHOOK: query: select id from table_struct_types where c1 IS NOT DISTINCT FROM c2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+POSTHOOK: query: select id from table_struct_types where c1 IS NOT DISTINCT FROM c2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+4
+PREHOOK: query: select id from table_struct_types where c1 IS NOT DISTINCT FROM named_struct("f1",1,"f2",1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+POSTHOOK: query: select id from table_struct_types where c1 IS NOT DISTINCT FROM named_struct("f1",1,"f2",1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+1
+PREHOOK: query: select id from table_struct_types where named_struct("f1",1,"f2",1) IS NOT DISTINCT FROM c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+POSTHOOK: query: select id from table_struct_types where named_struct("f1",1,"f2",1) IS NOT DISTINCT FROM c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+1
+PREHOOK: query: select id from table_struct_types where named_struct("f1",1,"f2",1) IS NOT DISTINCT FROM named_struct("f1",1,"f2",1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+POSTHOOK: query: select id from table_struct_types where named_struct("f1",1,"f2",1) IS NOT DISTINCT FROM named_struct("f1",1,"f2",1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+1
+2
+3
+4
+PREHOOK: query: select id from table_struct_types where named_struct("f1",1,"f2",1) IS NOT DISTINCT FROM named_struct("f1",1,"f2",2)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####
+POSTHOOK: query: select id from table_struct_types where named_struct("f1",1,"f2",1) IS NOT DISTINCT FROM named_struct("f1",1,"f2",2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_struct_types
+#### A masked pattern was here ####

@@ -1,0 +1,169 @@
+PREHOOK: query: drop table invites
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table invites
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table invites2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table invites2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table invites (foo int, bar string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@invites
+POSTHOOK: query: create table invites (foo int, bar string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@invites
+PREHOOK: query: create table invites2 (foo int, bar string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@invites2
+POSTHOOK: query: create table invites2 (foo int, bar string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@invites2
+PREHOOK: query: create view v as select invites.bar, invites2.foo, invites2.ds from invites join invites2 on invites.ds=invites2.ds
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@invites
+PREHOOK: Input: default@invites2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v
+POSTHOOK: query: create view v as select invites.bar, invites2.foo, invites2.ds from invites join invites2 on invites.ds=invites2.ds
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@invites
+POSTHOOK: Input: default@invites2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v
+POSTHOOK: Lineage: v.bar SIMPLE [(invites)invites.FieldSchema(name:bar, type:string, comment:null), ]
+POSTHOOK: Lineage: v.ds SIMPLE [(invites2)invites2.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: v.foo SIMPLE [(invites2)invites2.FieldSchema(name:foo, type:int, comment:null), ]
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: explain select * from v where ds='2011-09-01'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@invites
+PREHOOK: Input: default@invites2
+PREHOOK: Input: default@v
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from v where ds='2011-09-01'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@invites
+POSTHOOK: Input: default@invites2
+POSTHOOK: Input: default@v
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (XPROD_EDGE), Map 3 (XPROD_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: invites
+                  filterExpr: (ds = '2011-09-01') (type: boolean)
+                  properties:
+                    insideView TRUE
+                  Statistics: Num rows: 1 Data size: 268 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (ds = '2011-09-01') (type: boolean)
+                    Statistics: Num rows: 1 Data size: 268 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: bar (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: unknown
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: invites2
+                  filterExpr: (ds = '2011-09-01') (type: boolean)
+                  properties:
+                    insideView TRUE
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (ds = '2011-09-01') (type: boolean)
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: foo (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                        value expressions: _col0 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: unknown
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 85 Basic stats: PARTIAL Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: int), '2011-09-01' (type: string)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 1 Data size: 85 Basic stats: PARTIAL Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 85 Basic stats: PARTIAL Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: drop view v
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@v
+PREHOOK: Output: default@v
+POSTHOOK: query: drop view v
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@v
+POSTHOOK: Output: default@v
+PREHOOK: query: drop table invites
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@invites
+PREHOOK: Output: database:default
+PREHOOK: Output: default@invites
+POSTHOOK: query: drop table invites
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@invites
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@invites
+PREHOOK: query: drop table invites2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@invites2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@invites2
+POSTHOOK: query: drop table invites2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@invites2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@invites2

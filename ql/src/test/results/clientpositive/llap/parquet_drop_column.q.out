@@ -1,0 +1,489 @@
+PREHOOK: query: drop table if exists tbl_parq
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists tbl_parq
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create external table tbl_parq(a int, b string, c int) partitioned by (d string) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_parq
+POSTHOOK: query: create external table tbl_parq(a int, b string, c int) partitioned by (d string) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_parq
+PREHOOK: query: desc formatted tbl_parq
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_parq
+POSTHOOK: query: desc formatted tbl_parq
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_parq
+col_name	data_type	comment
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	string              	                    
+c                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+d                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: insert into table tbl_parq partition (d='one') values (1, "ab", 1), (2, "bc", 3), (3, "cd", 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parq@d=one
+POSTHOOK: query: insert into table tbl_parq partition (d='one') values (1, "ab", 1), (2, "bc", 3), (3, "cd", 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parq@d=one
+POSTHOOK: Lineage: tbl_parq PARTITION(d=one).a SCRIPT []
+POSTHOOK: Lineage: tbl_parq PARTITION(d=one).b SCRIPT []
+POSTHOOK: Lineage: tbl_parq PARTITION(d=one).c SCRIPT []
+col1	col2	col3
+PREHOOK: query: insert into table tbl_parq partition (d='two') values (4, "bc", 6), (5, "cd", 5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parq@d=two
+POSTHOOK: query: insert into table tbl_parq partition (d='two') values (4, "bc", 6), (5, "cd", 5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parq@d=two
+POSTHOOK: Lineage: tbl_parq PARTITION(d=two).a SCRIPT []
+POSTHOOK: Lineage: tbl_parq PARTITION(d=two).b SCRIPT []
+POSTHOOK: Lineage: tbl_parq PARTITION(d=two).c SCRIPT []
+col1	col2	col3
+PREHOOK: query: insert into table tbl_parq partition (d='three') values (6, "ab", 7), (7, "bc", 8), (8, "cd", 9)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parq@d=three
+POSTHOOK: query: insert into table tbl_parq partition (d='three') values (6, "ab", 7), (7, "bc", 8), (8, "cd", 9)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parq@d=three
+POSTHOOK: Lineage: tbl_parq PARTITION(d=three).a SCRIPT []
+POSTHOOK: Lineage: tbl_parq PARTITION(d=three).b SCRIPT []
+POSTHOOK: Lineage: tbl_parq PARTITION(d=three).c SCRIPT []
+col1	col2	col3
+PREHOOK: query: insert into table tbl_parq partition (d='four') values (9, "ab", 10)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parq@d=four
+POSTHOOK: query: insert into table tbl_parq partition (d='four') values (9, "ab", 10)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parq@d=four
+POSTHOOK: Lineage: tbl_parq PARTITION(d=four).a SCRIPT []
+POSTHOOK: Lineage: tbl_parq PARTITION(d=four).b SCRIPT []
+POSTHOOK: Lineage: tbl_parq PARTITION(d=four).c SCRIPT []
+col1	col2	col3
+PREHOOK: query: show partitions tbl_parq
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@tbl_parq
+POSTHOOK: query: show partitions tbl_parq
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@tbl_parq
+partition
+d=four
+d=one
+d=three
+d=two
+PREHOOK: query: show columns in tbl_parq
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: default@tbl_parq
+POSTHOOK: query: show columns in tbl_parq
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: default@tbl_parq
+field
+a                   
+b                   
+c                   
+d                   
+PREHOOK: query: select * from tbl_parq
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parq
+PREHOOK: Input: default@tbl_parq@d=four
+PREHOOK: Input: default@tbl_parq@d=one
+PREHOOK: Input: default@tbl_parq@d=three
+PREHOOK: Input: default@tbl_parq@d=two
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tbl_parq
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parq
+POSTHOOK: Input: default@tbl_parq@d=four
+POSTHOOK: Input: default@tbl_parq@d=one
+POSTHOOK: Input: default@tbl_parq@d=three
+POSTHOOK: Input: default@tbl_parq@d=two
+#### A masked pattern was here ####
+tbl_parq.a	tbl_parq.b	tbl_parq.c	tbl_parq.d
+1	ab	1	one
+2	bc	3	one
+3	cd	4	one
+4	bc	6	two
+5	cd	5	two
+6	ab	7	three
+7	bc	8	three
+8	cd	9	three
+9	ab	10	four
+PREHOOK: query: explain alter table tbl_parq drop column if exists c cascade
+PREHOOK: type: ALTERTABLE_DROPCOL
+PREHOOK: Input: default@tbl_parq
+PREHOOK: Output: default@tbl_parq
+PREHOOK: Output: default@tbl_parq@d=four
+PREHOOK: Output: default@tbl_parq@d=one
+PREHOOK: Output: default@tbl_parq@d=three
+PREHOOK: Output: default@tbl_parq@d=two
+POSTHOOK: query: explain alter table tbl_parq drop column if exists c cascade
+POSTHOOK: type: ALTERTABLE_DROPCOL
+POSTHOOK: Input: default@tbl_parq
+POSTHOOK: Output: default@tbl_parq
+POSTHOOK: Output: default@tbl_parq@d=four
+POSTHOOK: Output: default@tbl_parq@d=one
+POSTHOOK: Output: default@tbl_parq@d=three
+POSTHOOK: Output: default@tbl_parq@d=two
+Explain
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Drop Column
+      column name: c
+      table name: default.tbl_parq
+      cascade: true
+
+PREHOOK: query: alter table tbl_parq drop column if exists c cascade
+PREHOOK: type: ALTERTABLE_DROPCOL
+PREHOOK: Input: default@tbl_parq
+PREHOOK: Output: default@tbl_parq
+PREHOOK: Output: default@tbl_parq@d=four
+PREHOOK: Output: default@tbl_parq@d=one
+PREHOOK: Output: default@tbl_parq@d=three
+PREHOOK: Output: default@tbl_parq@d=two
+POSTHOOK: query: alter table tbl_parq drop column if exists c cascade
+POSTHOOK: type: ALTERTABLE_DROPCOL
+POSTHOOK: Input: default@tbl_parq
+POSTHOOK: Output: default@tbl_parq
+POSTHOOK: Output: default@tbl_parq@d=four
+POSTHOOK: Output: default@tbl_parq@d=one
+POSTHOOK: Output: default@tbl_parq@d=three
+POSTHOOK: Output: default@tbl_parq@d=two
+PREHOOK: query: alter table tbl_parq drop column if exists c cascade
+PREHOOK: type: ALTERTABLE_DROPCOL
+PREHOOK: Input: default@tbl_parq
+PREHOOK: Output: default@tbl_parq
+PREHOOK: Output: default@tbl_parq@d=four
+PREHOOK: Output: default@tbl_parq@d=one
+PREHOOK: Output: default@tbl_parq@d=three
+PREHOOK: Output: default@tbl_parq@d=two
+POSTHOOK: query: alter table tbl_parq drop column if exists c cascade
+POSTHOOK: type: ALTERTABLE_DROPCOL
+POSTHOOK: Input: default@tbl_parq
+POSTHOOK: Output: default@tbl_parq
+POSTHOOK: Output: default@tbl_parq@d=four
+POSTHOOK: Output: default@tbl_parq@d=one
+POSTHOOK: Output: default@tbl_parq@d=three
+POSTHOOK: Output: default@tbl_parq@d=two
+PREHOOK: query: desc formatted tbl_parq
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_parq
+POSTHOOK: query: desc formatted tbl_parq
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_parq
+col_name	data_type	comment
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+d                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	4                   
+	numPartitions       	4                   
+	numRows             	9                   
+	rawDataSize         	473                 
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: desc formatted tbl_parq partition (d='one')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_parq
+POSTHOOK: query: desc formatted tbl_parq partition (d='one')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_parq
+col_name	data_type	comment
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+d                   	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[one]               	 
+Database:           	default             	 
+Table:              	tbl_parq            	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
+	numFiles            	1                   
+	numRows             	3                   
+	rawDataSize         	128                 
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: show columns in tbl_parq
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: default@tbl_parq
+POSTHOOK: query: show columns in tbl_parq
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: default@tbl_parq
+field
+a                   
+b                   
+d                   
+PREHOOK: query: select * from tbl_parq
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parq
+PREHOOK: Input: default@tbl_parq@d=four
+PREHOOK: Input: default@tbl_parq@d=one
+PREHOOK: Input: default@tbl_parq@d=three
+PREHOOK: Input: default@tbl_parq@d=two
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tbl_parq
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parq
+POSTHOOK: Input: default@tbl_parq@d=four
+POSTHOOK: Input: default@tbl_parq@d=one
+POSTHOOK: Input: default@tbl_parq@d=three
+POSTHOOK: Input: default@tbl_parq@d=two
+#### A masked pattern was here ####
+tbl_parq.a	tbl_parq.b	tbl_parq.d
+1	ab	one
+2	bc	one
+3	cd	one
+4	bc	two
+5	cd	two
+6	ab	three
+7	bc	three
+8	cd	three
+9	ab	four
+PREHOOK: query: create external table tbl_parq2(a int, b string) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_parq2
+POSTHOOK: query: create external table tbl_parq2(a int, b string) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_parq2
+PREHOOK: query: desc formatted tbl_parq2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_parq2
+POSTHOOK: query: desc formatted tbl_parq2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_parq2
+col_name	data_type	comment
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: insert into table tbl_parq2 values (1, "ab"), (2, "bc"), (3, "cd")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parq2
+POSTHOOK: query: insert into table tbl_parq2 values (1, "ab"), (2, "bc"), (3, "cd")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parq2
+POSTHOOK: Lineage: tbl_parq2.a SCRIPT []
+POSTHOOK: Lineage: tbl_parq2.b SCRIPT []
+col1	col2
+PREHOOK: query: show columns in tbl_parq2
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: default@tbl_parq2
+POSTHOOK: query: show columns in tbl_parq2
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: default@tbl_parq2
+field
+a                   
+b                   
+PREHOOK: query: select * from tbl_parq2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parq2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tbl_parq2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parq2
+#### A masked pattern was here ####
+tbl_parq2.a	tbl_parq2.b
+1	ab
+2	bc
+3	cd
+PREHOOK: query: explain alter table tbl_parq2 drop column b
+PREHOOK: type: ALTERTABLE_DROPCOL
+PREHOOK: Input: default@tbl_parq2
+PREHOOK: Output: default@tbl_parq2
+POSTHOOK: query: explain alter table tbl_parq2 drop column b
+POSTHOOK: type: ALTERTABLE_DROPCOL
+POSTHOOK: Input: default@tbl_parq2
+POSTHOOK: Output: default@tbl_parq2
+Explain
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Drop Column
+      column name: b
+      table name: default.tbl_parq2
+
+PREHOOK: query: alter table tbl_parq2 drop column b
+PREHOOK: type: ALTERTABLE_DROPCOL
+PREHOOK: Input: default@tbl_parq2
+PREHOOK: Output: default@tbl_parq2
+POSTHOOK: query: alter table tbl_parq2 drop column b
+POSTHOOK: type: ALTERTABLE_DROPCOL
+POSTHOOK: Input: default@tbl_parq2
+POSTHOOK: Output: default@tbl_parq2
+PREHOOK: query: desc formatted tbl_parq2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_parq2
+POSTHOOK: query: desc formatted tbl_parq2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_parq2
+col_name	data_type	comment
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numRows             	3                   
+	rawDataSize         	88                  
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: show columns in tbl_parq2
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: default@tbl_parq2
+POSTHOOK: query: show columns in tbl_parq2
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: default@tbl_parq2
+field
+a                   
+PREHOOK: query: select * from tbl_parq2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parq2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tbl_parq2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parq2
+#### A masked pattern was here ####
+tbl_parq2.a
+1
+2
+3

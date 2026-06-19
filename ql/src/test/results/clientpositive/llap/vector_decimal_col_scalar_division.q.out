@@ -1,0 +1,166 @@
+PREHOOK: query: CREATE temporary TABLE `catalog_Sales`(
+  `cs_quantity` int,
+  `cs_wholesale_cost` decimal(7,2),
+  `cs_list_price` decimal(7,2),
+  `cs_sales_price` decimal(7,2),
+  `cs_ext_discount_amt` decimal(7,2),
+  `cs_ext_sales_price` decimal(7,2),
+  `cs_ext_wholesale_cost` decimal(7,2),
+  `cs_ext_list_price` decimal(7,2),
+  `cs_ext_tax` decimal(7,2),
+  `cs_coupon_amt` decimal(7,2),
+  `cs_ext_ship_cost` decimal(7,2),
+  `cs_net_paid` decimal(7,2),
+  `cs_net_paid_inc_tax` decimal(7,2),
+  `cs_net_paid_inc_ship` decimal(7,2),
+  `cs_net_paid_inc_ship_tax` decimal(7,2),
+  `cs_net_profit` decimal(7,2))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@catalog_Sales
+POSTHOOK: query: CREATE temporary TABLE `catalog_Sales`(
+  `cs_quantity` int,
+  `cs_wholesale_cost` decimal(7,2),
+  `cs_list_price` decimal(7,2),
+  `cs_sales_price` decimal(7,2),
+  `cs_ext_discount_amt` decimal(7,2),
+  `cs_ext_sales_price` decimal(7,2),
+  `cs_ext_wholesale_cost` decimal(7,2),
+  `cs_ext_list_price` decimal(7,2),
+  `cs_ext_tax` decimal(7,2),
+  `cs_coupon_amt` decimal(7,2),
+  `cs_ext_ship_cost` decimal(7,2),
+  `cs_net_paid` decimal(7,2),
+  `cs_net_paid_inc_tax` decimal(7,2),
+  `cs_net_paid_inc_ship` decimal(7,2),
+  `cs_net_paid_inc_ship_tax` decimal(7,2),
+  `cs_net_profit` decimal(7,2))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@catalog_Sales
+PREHOOK: query: explain vectorization detail select max((((cs_ext_list_price - cs_ext_wholesale_cost) - cs_ext_discount_amt) + cs_ext_sales_price) / 2) from catalog_sales
+PREHOOK: type: QUERY
+PREHOOK: Input: default@catalog_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization detail select max((((cs_ext_list_price - cs_ext_wholesale_cost) - cs_ext_discount_amt) + cs_ext_sales_price) / 2) from catalog_sales
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@catalog_sales
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: catalog_sales
+                  Statistics: Num rows: 1 Data size: 448 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:cs_quantity:int, 1:cs_wholesale_cost:decimal(7,2)/DECIMAL_64, 2:cs_list_price:decimal(7,2)/DECIMAL_64, 3:cs_sales_price:decimal(7,2)/DECIMAL_64, 4:cs_ext_discount_amt:decimal(7,2)/DECIMAL_64, 5:cs_ext_sales_price:decimal(7,2)/DECIMAL_64, 6:cs_ext_wholesale_cost:decimal(7,2)/DECIMAL_64, 7:cs_ext_list_price:decimal(7,2)/DECIMAL_64, 8:cs_ext_tax:decimal(7,2)/DECIMAL_64, 9:cs_coupon_amt:decimal(7,2)/DECIMAL_64, 10:cs_ext_ship_cost:decimal(7,2)/DECIMAL_64, 11:cs_net_paid:decimal(7,2)/DECIMAL_64, 12:cs_net_paid_inc_tax:decimal(7,2)/DECIMAL_64, 13:cs_net_paid_inc_ship:decimal(7,2)/DECIMAL_64, 14:cs_net_paid_inc_ship_tax:decimal(7,2)/DECIMAL_64, 15:cs_net_profit:decimal(7,2)/DECIMAL_64, 16:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 17:ROW__IS__DELETED:boolean]
+                  Select Operator
+                    expressions: ((((cs_ext_list_price - cs_ext_wholesale_cost) - cs_ext_discount_amt) + cs_ext_sales_price) / 2) (type: decimal(14,6))
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [21]
+                        selectExpressions: Decimal64ColDivideDecimal64Scalar(col 20:decimal(10,2)/DECIMAL_64, decimal64Val 200, decimalVal 2)(children: Decimal64ColAddDecimal64Column(col 19:decimal(9,2)/DECIMAL_64, col 5:decimal(7,2)/DECIMAL_64)(children: Decimal64ColSubtractDecimal64Column(col 18:decimal(8,2)/DECIMAL_64, col 4:decimal(7,2)/DECIMAL_64)(children: Decimal64ColSubtractDecimal64Column(col 7:decimal(7,2)/DECIMAL_64, col 6:decimal(7,2)/DECIMAL_64) -> 18:decimal(8,2)/DECIMAL_64) -> 19:decimal(9,2)/DECIMAL_64) -> 20:decimal(10,2)/DECIMAL_64) -> 21:decimal(14,6)/DECIMAL_64
+                    Statistics: Num rows: 1 Data size: 448 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: max(_col0)
+                      Group By Vectorization:
+                          aggregators: VectorUDAFMaxDecimal64(col 21:decimal(14,6)/DECIMAL_64) -> decimal(14,6)/DECIMAL_64
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: [0]
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkEmptyKeyOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumns: 0:decimal(14,6)
+                        Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: decimal(14,6))
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 16
+                    includeColumns: [4, 5, 6, 7]
+                    dataColumns: cs_quantity:int, cs_wholesale_cost:decimal(7,2)/DECIMAL_64, cs_list_price:decimal(7,2)/DECIMAL_64, cs_sales_price:decimal(7,2)/DECIMAL_64, cs_ext_discount_amt:decimal(7,2)/DECIMAL_64, cs_ext_sales_price:decimal(7,2)/DECIMAL_64, cs_ext_wholesale_cost:decimal(7,2)/DECIMAL_64, cs_ext_list_price:decimal(7,2)/DECIMAL_64, cs_ext_tax:decimal(7,2)/DECIMAL_64, cs_coupon_amt:decimal(7,2)/DECIMAL_64, cs_ext_ship_cost:decimal(7,2)/DECIMAL_64, cs_net_paid:decimal(7,2)/DECIMAL_64, cs_net_paid_inc_tax:decimal(7,2)/DECIMAL_64, cs_net_paid_inc_ship:decimal(7,2)/DECIMAL_64, cs_net_paid_inc_ship_tax:decimal(7,2)/DECIMAL_64, cs_net_profit:decimal(7,2)/DECIMAL_64
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [decimal(8,2)/DECIMAL_64, decimal(9,2)/DECIMAL_64, decimal(10,2)/DECIMAL_64, decimal(14,6)/DECIMAL_64]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                reduceColumnNullOrder: 
+                reduceColumnSortOrder: 
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    dataColumns: VALUE._col0:decimal(14,6)/DECIMAL_64
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFMaxDecimal64(col 0:decimal(14,6)/DECIMAL_64) -> decimal(14,6)/DECIMAL_64
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    native: false
+                    vectorProcessingMode: GLOBAL
+                    projectedOutputColumnNums: [0]
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

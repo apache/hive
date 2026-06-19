@@ -1,0 +1,43 @@
+PREHOOK: query: CREATE TABLE IF NOT EXISTS jsontable_n0 (key INT, value STRING) COMMENT 'json table' STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@jsontable_n0
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS jsontable_n0 (key INT, value STRING) COMMENT 'json table' STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@jsontable_n0
+PREHOOK: query: ALTER TABLE jsontable_n0 ADD COLUMNS (name STRING COMMENT 'a new column')
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@jsontable_n0
+PREHOOK: Output: default@jsontable_n0
+POSTHOOK: query: ALTER TABLE jsontable_n0 ADD COLUMNS (name STRING COMMENT 'a new column')
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@jsontable_n0
+POSTHOOK: Output: default@jsontable_n0
+PREHOOK: query: ALTER TABLE jsontable_n0 RENAME TO jsontable2
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: default@jsontable_n0
+PREHOOK: Output: database:default
+PREHOOK: Output: default@jsontable2
+PREHOOK: Output: default@jsontable_n0
+POSTHOOK: query: ALTER TABLE jsontable_n0 RENAME TO jsontable2
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: default@jsontable_n0
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@jsontable2
+POSTHOOK: Output: default@jsontable_n0
+PREHOOK: query: SHOW TABLE EXTENDED LIKE jsontable2
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: SHOW TABLE EXTENDED LIKE jsontable2
+POSTHOOK: type: SHOW_TABLESTATUS
+#### A masked pattern was here ####
+PREHOOK: query: DROP TABLE jsontable2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@jsontable2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@jsontable2
+POSTHOOK: query: DROP TABLE jsontable2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@jsontable2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@jsontable2

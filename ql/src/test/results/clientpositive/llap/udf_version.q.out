@@ -1,0 +1,9 @@
+PREHOOK: query: SELECT regexp_replace(version(), '.+ r\\w+', 'VERSION rGITHASH')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT regexp_replace(version(), '.+ r\\w+', 'VERSION rGITHASH')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+VERSION rGITHASH

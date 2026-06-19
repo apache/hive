@@ -1,0 +1,24 @@
+# Auto detect text files and perform LF normalization
+*        text=auto
+
+*.cs     text diff=csharp
+*.java   text diff=java
+*.html   text diff=html
+*.py     text diff=python
+*.pl     text diff=perl
+*.pm     text diff=perl
+*.css    text
+*.js     text
+*.sql    text
+*.q      text
+*.q.out  text diff
+
+*.sh     text eol=lf
+
+#test files, use lf so that size is same on windows as well
+data/files/*.dat    text eol=lf
+
+*.bat    text eol=crlf
+*.cmd    text eol=crlf
+*.csproj text merge=union eol=crlf
+*.sln    text merge=union eol=crlf

@@ -1,0 +1,81 @@
+PREHOOK: query: CREATE TABLE  table_priv1(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_priv1
+POSTHOOK: query: CREATE TABLE  table_priv1(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_priv1
+PREHOOK: query: GRANT INSERT ON table_priv1 TO USER user2
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@table_priv1
+POSTHOOK: query: GRANT INSERT ON table_priv1 TO USER user2
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@table_priv1
+PREHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv1
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv1
+POSTHOOK: type: SHOW_GRANT
+default	table_priv1			user2	USER	INSERT	false	-1	user1
+PREHOOK: query: GRANT SELECT ON table_priv1 TO USER user2 with grant option
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@table_priv1
+POSTHOOK: query: GRANT SELECT ON table_priv1 TO USER user2 with grant option
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@table_priv1
+PREHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv1
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT USER user2 ON TABLE table_priv1
+POSTHOOK: type: SHOW_GRANT
+default	table_priv1			user2	USER	INSERT	false	-1	user1
+default	table_priv1			user2	USER	SELECT	true	-1	user1
+PREHOOK: query: GRANT SELECT ON table_priv1 TO USER user3 with grant option
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@table_priv1
+POSTHOOK: query: GRANT SELECT ON table_priv1 TO USER user3 with grant option
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@table_priv1
+PREHOOK: query: SHOW GRANT USER user3 ON TABLE table_priv1
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT USER user3 ON TABLE table_priv1
+POSTHOOK: type: SHOW_GRANT
+default	table_priv1			user3	USER	SELECT	true	-1	user2
+PREHOOK: query: GRANT SELECT ON table_priv1 TO USER user4 with grant option
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@table_priv1
+POSTHOOK: query: GRANT SELECT ON table_priv1 TO USER user4 with grant option
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@table_priv1
+PREHOOK: query: SHOW GRANT USER user4 ON TABLE table_priv1
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT USER user4 ON TABLE table_priv1
+POSTHOOK: type: SHOW_GRANT
+default	table_priv1			user4	USER	SELECT	true	-1	user3
+PREHOOK: query: GRANT ALL ON table_priv1 TO USER user22 with grant option
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@table_priv1
+POSTHOOK: query: GRANT ALL ON table_priv1 TO USER user22 with grant option
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@table_priv1
+PREHOOK: query: SHOW GRANT USER user22 ON TABLE table_priv1
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT USER user22 ON TABLE table_priv1
+POSTHOOK: type: SHOW_GRANT
+default	table_priv1			user22	USER	DELETE	true	-1	user1
+default	table_priv1			user22	USER	INSERT	true	-1	user1
+default	table_priv1			user22	USER	SELECT	true	-1	user1
+default	table_priv1			user22	USER	UPDATE	true	-1	user1
+PREHOOK: query: GRANT ALL ON table_priv1 TO USER user33 with grant option
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@table_priv1
+POSTHOOK: query: GRANT ALL ON table_priv1 TO USER user33 with grant option
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@table_priv1
+PREHOOK: query: SHOW GRANT USER user33 ON TABLE table_priv1
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT USER user33 ON TABLE table_priv1
+POSTHOOK: type: SHOW_GRANT
+default	table_priv1			user33	USER	DELETE	true	-1	user22
+default	table_priv1			user33	USER	INSERT	true	-1	user22
+default	table_priv1			user33	USER	SELECT	true	-1	user22
+default	table_priv1			user33	USER	UPDATE	true	-1	user22

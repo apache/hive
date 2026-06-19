@@ -1,0 +1,148 @@
+PREHOOK: query: DESCRIBE FUNCTION translate
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION translate
+POSTHOOK: type: DESCFUNCTION
+translate(input, from, to) - translates the input string by replacing the characters present in the from string with the corresponding characters in the to string
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED translate
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED translate
+POSTHOOK: type: DESCFUNCTION
+translate(input, from, to) - translates the input string by replacing the characters present in the from string with the corresponding characters in the to string
+translate(string input, string from, string to) is an equivalent function to translate in PostGreSQL. It works on a character by character basis on the input string (first parameter). A character in the input is checked for presence in the from string (second parameter). If a match happens, the character from to string (third parameter) which appears at the same index as the character in from string is obtained. This character is emitted in the output string  instead of the original character from the input string. If the to string is shorter than the from string, there may not be a character present at the same index in the to string. In such a case, nothing is emitted for the original character and it's deleted from the output string.
+For example,
+
+translate('abcdef', 'adc', '19') returns '1b9ef' replacing 'a' with '1', 'd' with '9' and removing 'c' from the input string
+
+translate('a b c d', ' ', '') return 'abcd' removing all spaces from the input string
+
+If the same character is present multiple times in the input string, the first occurence of the character is the one that's considered for matching. However, it is not recommended to have the same character more than once in the from string since it's not required and adds to confusion.
+
+For example,
+
+translate('abcdef', 'ada', '192') returns '1bc9ef' replaces 'a' with '1' and 'd' with '9' ignoring the second occurence of 'a' in the from string mapping it to '2'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFTranslate
+Function type:BUILTIN
+PREHOOK: query: CREATE TABLE table_input(input STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_input
+POSTHOOK: query: CREATE TABLE table_input(input STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_input
+PREHOOK: query: CREATE TABLE table_translate(input_string STRING, from_string STRING, to_string STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_translate
+POSTHOOK: query: CREATE TABLE table_translate(input_string STRING, from_string STRING, to_string STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_translate
+PREHOOK: query: FROM src INSERT OVERWRITE TABLE table_input SELECT 'abcd' WHERE src.key = 86
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@table_input
+POSTHOOK: query: FROM src INSERT OVERWRITE TABLE table_input SELECT 'abcd' WHERE src.key = 86
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@table_input
+POSTHOOK: Lineage: table_input.input SIMPLE []
+PREHOOK: query: FROM src INSERT OVERWRITE TABLE table_translate SELECT 'abcd', 'ahd', '12' WHERE src.key = 86
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@table_translate
+POSTHOOK: query: FROM src INSERT OVERWRITE TABLE table_translate SELECT 'abcd', 'ahd', '12' WHERE src.key = 86
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@table_translate
+POSTHOOK: Lineage: table_translate.from_string SIMPLE []
+POSTHOOK: Lineage: table_translate.input_string SIMPLE []
+POSTHOOK: Lineage: table_translate.to_string SIMPLE []
+PREHOOK: query: SELECT  translate('abcd', 'ab', '12'),
+        translate('abcd', 'abc', '12') FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT  translate('abcd', 'ab', '12'),
+        translate('abcd', 'abc', '12') FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+12cd	12d
+PREHOOK: query: SELECT translate(table_input.input, 'ab', '12'),
+       translate(table_input.input, 'abc', '12') FROM table_input tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_input
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT translate(table_input.input, 'ab', '12'),
+       translate(table_input.input, 'abc', '12') FROM table_input tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_input
+#### A masked pattern was here ####
+12cd	12d
+PREHOOK: query: SELECT translate(input_string, from_string, to_string) FROM table_translate tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_translate
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT translate(input_string, from_string, to_string) FROM table_translate tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_translate
+#### A masked pattern was here ####
+1bc
+PREHOOK: query: SELECT translate(NULL, 'ab', '12'),
+       translate('abcd', NULL, '12'),
+       translate('abcd', 'ab', NULL),
+       translate(NULL, NULL, NULL) FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT translate(NULL, 'ab', '12'),
+       translate('abcd', NULL, '12'),
+       translate('abcd', 'ab', NULL),
+       translate(NULL, NULL, NULL) FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT translate('abcd', 'aba', '123'),
+       translate('abcd', 'aba', '12') FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT translate('abcd', 'aba', '123'),
+       translate('abcd', 'aba', '12') FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+12cd	12cd
+PREHOOK: query: SELECT translate('abcd', 'abc', '1234') FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT translate('abcd', 'abc', '1234') FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+123d
+PREHOOK: query: SELECT translate('Àbcd', 'À', 'Ã') FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT translate('Àbcd', 'À', 'Ã') FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+Ãbcd
+PREHOOK: query: SELECT translate(CAST('abcd' AS CHAR(5)), CAST('aba' AS VARCHAR(5)), CAST('123' AS CHAR(5))),
+       translate(CAST('abcd' AS VARCHAR(9)), CAST('aba' AS CHAR(9)), CAST('12' AS VARCHAR(9)))
+       FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT translate(CAST('abcd' AS CHAR(5)), CAST('aba' AS VARCHAR(5)), CAST('123' AS CHAR(5))),
+       translate(CAST('abcd' AS VARCHAR(9)), CAST('aba' AS CHAR(9)), CAST('12' AS VARCHAR(9)))
+       FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+12cd	12cd

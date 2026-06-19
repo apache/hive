@@ -1,0 +1,61 @@
+PREHOOK: query: DESCRIBE FUNCTION asin
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION asin
+POSTHOOK: type: DESCFUNCTION
+asin(x) - returns the arc sine of x if -1<=x<=1 or NULL otherwise
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED asin
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED asin
+POSTHOOK: type: DESCFUNCTION
+asin(x) - returns the arc sine of x if -1<=x<=1 or NULL otherwise
+Example:
+  > SELECT asin(0) FROM src LIMIT 1;
+  0
+  > SELECT asin(2) FROM src LIMIT 1;
+  NULL
+Function class:org.apache.hadoop.hive.ql.udf.UDFAsin
+Function type:BUILTIN
+PREHOOK: query: SELECT asin(null)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT asin(null)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT asin(0)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT asin(0)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0.0
+PREHOOK: query: SELECT asin(-0.5), asin(0.66)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT asin(-0.5), asin(0.66)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+-0.5235987755982989	0.7208187608700897
+PREHOOK: query: SELECT asin(2)
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT asin(2)
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL

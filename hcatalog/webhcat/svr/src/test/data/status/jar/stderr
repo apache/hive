@@ -1,0 +1,58 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+13/05/09 09:56:05 INFO input.FileInputFormat: Total input paths to process : 1
+13/05/09 09:56:05 WARN util.NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+13/05/09 09:56:05 WARN snappy.LoadSnappy: Snappy native library not loaded
+13/05/09 09:56:05 INFO mapred.JobClient: Running job: job_201305090950_0004
+13/05/09 09:56:06 INFO mapred.JobClient:  map 0% reduce 0%
+13/05/09 09:56:19 INFO mapred.JobClient:  map 100% reduce 0%
+13/05/09 09:56:31 INFO mapred.JobClient:  map 100% reduce 100%
+13/05/09 09:56:36 INFO mapred.JobClient: Job complete: job_201305090950_0004
+13/05/09 09:56:36 INFO mapred.JobClient: Counters: 26
+13/05/09 09:56:36 INFO mapred.JobClient:   Job Counters 
+13/05/09 09:56:36 INFO mapred.JobClient:     Launched reduce tasks=1
+13/05/09 09:56:36 INFO mapred.JobClient:     SLOTS_MILLIS_MAPS=12660
+13/05/09 09:56:36 INFO mapred.JobClient:     Total time spent by all reduces waiting after reserving slots (ms)=0
+13/05/09 09:56:36 INFO mapred.JobClient:     Total time spent by all maps waiting after reserving slots (ms)=0
+13/05/09 09:56:36 INFO mapred.JobClient:     Launched map tasks=1
+13/05/09 09:56:36 INFO mapred.JobClient:     Data-local map tasks=1
+13/05/09 09:56:36 INFO mapred.JobClient:     SLOTS_MILLIS_REDUCES=10247
+13/05/09 09:56:36 INFO mapred.JobClient:   File Output Format Counters 
+13/05/09 09:56:36 INFO mapred.JobClient:     Bytes Written=16
+13/05/09 09:56:36 INFO mapred.JobClient:   FileSystemCounters
+13/05/09 09:56:36 INFO mapred.JobClient:     FILE_BYTES_READ=38
+13/05/09 09:56:36 INFO mapred.JobClient:     HDFS_BYTES_READ=127
+13/05/09 09:56:36 INFO mapred.JobClient:     FILE_BYTES_WRITTEN=45519
+13/05/09 09:56:36 INFO mapred.JobClient:     HDFS_BYTES_WRITTEN=16
+13/05/09 09:56:36 INFO mapred.JobClient:   File Input Format Counters 
+13/05/09 09:56:36 INFO mapred.JobClient:     Bytes Read=8
+13/05/09 09:56:36 INFO mapred.JobClient:   Map-Reduce Framework
+13/05/09 09:56:36 INFO mapred.JobClient:     Map output materialized bytes=38
+13/05/09 09:56:36 INFO mapred.JobClient:     Map input records=2
+13/05/09 09:56:36 INFO mapred.JobClient:     Reduce shuffle bytes=0
+13/05/09 09:56:36 INFO mapred.JobClient:     Spilled Records=8
+13/05/09 09:56:36 INFO mapred.JobClient:     Map output bytes=24
+13/05/09 09:56:36 INFO mapred.JobClient:     Total committed heap usage (bytes)=269619200
+13/05/09 09:56:36 INFO mapred.JobClient:     Combine input records=4
+13/05/09 09:56:36 INFO mapred.JobClient:     SPLIT_RAW_BYTES=119
+13/05/09 09:56:36 INFO mapred.JobClient:     Reduce input records=4
+13/05/09 09:56:36 INFO mapred.JobClient:     Reduce input groups=4
+13/05/09 09:56:36 INFO mapred.JobClient:     Combine output records=4
+13/05/09 09:56:36 INFO mapred.JobClient:     Reduce output records=4
+13/05/09 09:56:36 INFO mapred.JobClient:     Map output records=4

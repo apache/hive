@@ -1,0 +1,60 @@
+PREHOOK: query: drop database if exists srcnotification cascade
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: drop database if exists srcnotification cascade
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: create database srcnotification
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:srcnotification
+POSTHOOK: query: create database srcnotification
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:srcnotification
+PREHOOK: query: use srcnotification
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:srcnotification
+POSTHOOK: query: use srcnotification
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:srcnotification
+PREHOOK: query: create table emp01 (id int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:srcnotification
+PREHOOK: Output: srcnotification@emp01
+POSTHOOK: query: create table emp01 (id int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:srcnotification
+POSTHOOK: Output: srcnotification@emp01
+PREHOOK: query: create table emp02 (id int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:srcnotification
+PREHOOK: Output: srcnotification@emp02
+POSTHOOK: query: create table emp02 (id int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:srcnotification
+POSTHOOK: Output: srcnotification@emp02
+PREHOOK: query: select count(*) from sys.notification_log where db_name='srcnotification' AND event_type='CREATE_TABLE'
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@notification_log
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from sys.notification_log where db_name='srcnotification' AND event_type='CREATE_TABLE'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@notification_log
+#### A masked pattern was here ####
+2
+PREHOOK: query: drop table emp02
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: srcnotification@emp02
+PREHOOK: Output: database:srcnotification
+PREHOOK: Output: srcnotification@emp02
+POSTHOOK: query: drop table emp02
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: srcnotification@emp02
+POSTHOOK: Output: database:srcnotification
+POSTHOOK: Output: srcnotification@emp02
+PREHOOK: query: select tbl_name from sys.notification_log where db_name='srcnotification' AND event_type='DROP_TABLE'
+PREHOOK: type: QUERY
+PREHOOK: Input: sys@notification_log
+#### A masked pattern was here ####
+POSTHOOK: query: select tbl_name from sys.notification_log where db_name='srcnotification' AND event_type='DROP_TABLE'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: sys@notification_log
+#### A masked pattern was here ####
+emp02

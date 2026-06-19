@@ -1,0 +1,2 @@
+hive.metastore.server.min.threads=101
+hive.metastore.server.min.threads=200

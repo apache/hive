@@ -1,0 +1,11 @@
+Ln:1 USE
+Ln:1 SQL statement: USE `mic.gr`
+Ln:14 CREATE TABLE
+Ln:14 CREATE TABLE `downloads`(
+	`id` int,
+	`fileName` char(255),
+	`fileType` char(10),
+	`downloads` int,
+	`fromDate` char(40),
+	`untilDate` char(40)
+)

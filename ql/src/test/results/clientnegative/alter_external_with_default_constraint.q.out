@@ -1,0 +1,9 @@
+PREHOOK: query: CREATE external TABLE table1 (a STRING, b STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table1
+POSTHOOK: query: CREATE external TABLE table1 (a STRING, b STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table1
+FAILED: SemanticException [Error 10326]: Invalid Constraint syntax Constraints are disallowed with External tables. Only RELY is allowed.

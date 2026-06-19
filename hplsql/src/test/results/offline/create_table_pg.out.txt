@@ -1,0 +1,6 @@
+Ln:1 CREATE TABLE
+Ln:1 create table i1 (
+  c1 SMALLINT,
+  c2 INT,
+  c3 BIGINT
+)

@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+
+<!-- The default settings for Templeton. -->
+<!-- Edit templeton-site.xml to change settings for your local -->
+<!-- install. -->
+
+<configuration>
+
+  <property>
+    <name>templeton.port</name>
+    <value>50111</value>
+    <description>The HTTP port for the main server.</description>
+  </property>
+
+  <property>
+    <name>templeton.jetty.configuration</name>
+    <value></value>
+    <description>The embedded jetty configuration file.</description>
+  </property>
+
+  <property>
+    <name>templeton.hadoop.conf.dir</name>
+    <value>${env.HADOOP_CONF_DIR}</value>
+    <description>The path to the Hadoop configuration.</description>
+  </property>
+
+  <property>
+    <name>templeton.libjars</name>
+    <value>${env.TEMPLETON_HOME}/../lib/zookeeper-${zookeeper.version}.jar,${env.TEMPLETON_HOME}/../lib/hive-common-${project.version}.jar</value>
+    <description>Jars to add to the classpath.</description>
+  </property>
+
+  <property>
+    <name>templeton.override.jars</name>
+    <value>hdfs:///user/templeton/ugi.jar</value>
+    <description>
+        Jars to add the the HADOOP_CLASSPATH for all Map Reduce jobs.
+        This is a list of jars that must exist on hdfs that are added
+        to the Distributed Cache.
+    </description>
+  </property>
+
+  <property>
+    <name>templeton.override.enabled</name>
+    <value>false</value>
+    <description>
+      Enable the override path in templeton.override.jars
+    </description>
+  </property>
+
+  <property>
+    <name>templeton.streaming.jar</name>
+    <value>hdfs:///user/templeton/hadoop-streaming.jar</value>
+    <description>The hdfs path to the Hadoop streaming jar file.</description>
+  </property>
+
+  <property>
+    <name>templeton.hadoop</name>
+    <value>${env.HADOOP_PREFIX}/bin/hadoop</value>
+    <description>The path to the Hadoop executable.</description>
+  </property>
+
+  <property>
+    <name>templeton.python</name>
+    <value>${env.PYTHON_CMD}</value>
+    <description>The path to the python executable.</description>
+  </property>
+
+  <property>
+    <name>templeton.pig.archive</name>
+    <value></value>
+    <description>The path to the Pig archive.</description>
+  </property>
+
+  <property>
+    <name>templeton.pig.path</name>
+    <value>pig-${pig.version}.tar.gz/pig-${pig.version}/bin/pig</value>
+    <description>The path to the Pig executable.</description>
+  </property>
+
+  <property>
+    <name>templeton.hcat</name>
+    <value>${env.HCAT_PREFIX}/bin/hcat.py</value>
+    <description>The path to the hcatalog executable.</description>
+  </property>
+
+  <property>
+    <name>templeton.hive.archive</name>
+    <value></value>
+    <description>The path to the Hive archive.</description>
+  </property>
+
+  <property>
+    <name>templeton.hive.path</name>
+    <value>hive-${project.version}.tar.gz/hive-${project.version}/bin/hive</value>
+    <description>The path to the Hive executable.  Applies only if templeton.hive.archive is defined.</description>
+  </property>
+
+  <property>
+    <name>templeton.hive.extra.files</name>
+    <value></value>
+    <description>The resources in this list will be localized to the node running LaunchMapper and added to HADOOP_CLASSPTH
+      before launching 'hive' command.  If the path /foo/bar is a directory, the contents of the the entire dir will be localized
+      and ./bar/* will be added to HADOOP_CLASSPATH.  Note that since classpath path processing does not recurse into subdirectories,
+      the paths in this property may be overlapping.  For example, to run Hive on Tez jobs, 3 items need to be localized:
+      /tez-client/conf/tez-site.xml,/tez-client/,/tez-client/lib.  In this example, "./tez-site.xml:./tez-client/*:./lib/*" will be added to
+      HADOOP_CLASSPATH.
+      This can be used to specify config files, Tez artifacts, etc.  This will be sent -files option of hadoop jar command thus
+      each path is interpreted by Generic Option Parser.  It can be local or hdfs path.
+    </description>
+  </property>
+
+  <property>
+    <name>templeton.hive.home</name>
+    <value>hive-${project.version}-bin.tar.gz/hive-${project.version}-bin</value>
+    <description>
+      The path to the Hive home within the tar.  This is needed if Hive is not installed on all
+      nodes in the cluster and needs to be shipped to the target node in the cluster to execute Pig
+      job which uses HCat, Hive query, etc.  Has no effect if templeton.hive.archive is not set.
+    </description>
+  </property>
+  <property>
+    <name>templeton.hcat.home</name>
+    <value>hive-${project.version}-bin.tar.gz/hive-${project.version}-bin/hcatalog</value>
+    <description>
+      The path to the HCat home within the tar.  This is needed if Hive is not installed on all
+      nodes in the cluster and needs to be shipped to the target node in the cluster to execute Pig
+      job which uses HCat, Hive query, etc.  Has no effect if templeton.hive.archive is not set.
+    </description>
+  </property>
+
+  <property>
+    <name>templeton.hive.properties</name>
+    <value>hive.metastore.uris=thrift://localhost:9933,hive.metastore.sasl.enabled=false</value>
+    <description>Properties to set when running hive (during job sumission).  This is expected to
+        be a comma-separated prop=value list.  If some value is itself a comma-separated list the
+        escape character is '\'</description>
+  </property>
+
+  <property>
+    <name>templeton.sqoop.path</name>
+    <value>${env.SQOOP_HOME}/bin/sqoop.cmd</value>
+    <description>The path to the Sqoop executable.</description>
+  </property>
+
+  <property>
+    <name>templeton.exec.encoding</name>
+    <value>UTF-8</value>
+    <description>The encoding of the stdout and stderr data.</description>
+  </property>
+
+  <property>
+    <name>templeton.exec.timeout</name>
+    <value>10000</value>
+    <description>
+      How long in milliseconds a program is allowed to run on the
+      Templeton box.
+    </description>
+  </property>
+
+  <property>
+    <name>templeton.exec.max-procs</name>
+    <value>16</value>
+    <description>The maximum number of processes allowed to run at once.</description>
+  </property>
+
+  <property>
+    <name>templeton.exec.max-output-bytes</name>
+    <value>1048576</value>
+    <description>
+      The maximum number of bytes from stdout or stderr stored in ram.
+    </description>
+  </property>
+
+  <property>
+    <name>templeton.controller.mr.child.opts</name>
+    <value>-server -Xmx256m</value>
+    <description>Java options to be passed to templeton controller map task.
+        The default value of mapreduce child "-Xmx" (heap memory limit)
+        might be close to what is allowed for a map task.
+        Even if templeton  controller map task does not need much 
+        memory, the jvm (with -server option?)
+        allocates the max memory when it starts. This along with the 
+        memory used by pig/hive client it starts can end up exceeding
+        the max memory configured to be allowed for a map task
+        Use this option to set -Xmx to lower value
+    </description>
+  </property>
+
+  <property>
+    <name>templeton.mapper.memory.mb</name>
+    <value></value>
+    <description>Templeton controller job's Launch mapper's memory limit in
+        megabytes. When submitting controller job, Templeton will overwrite
+        mapreduce.map.memory.mb with this value. If empty, Templeton will
+        not set mapreduce.map.memory.mb when submitting the controller job,
+        therefore the configuration in mapred-site.xml will be used.
+    </description>
+  </property>
+
+  <!--
+  <property>
+    <name>templeton.controller.mr.am.java.opts</name>
+    <value></value>
+    <description>Java options to be set for the templeton controller job's
+        MapReduce application master. When submitting the controller job,
+        Templeton will override yarn.app.mapreduce.am.command-opts with
+        this value.  If this is not specified, Templeton will not set the
+        property and therefore the value will be picked up from
+        mapred-site.xml.
+    </description>
+  </property>
+
+  <property>
+    <name>templeton.mr.am.memory.mb</name>
+    <value></value>
+    <description>Templeton controller job's Application Master's memory
+        limit in MB. When submitting controller job, Templeton will
+        overwrite yarn.app.mapreduce.am.resource.mb with this value. If
+        empty, Templeton will not set yarn.app.mapreduce.am.resource.mb
+        when submitting the controller job, therefore the configuration
+        in mapred-site.xml will be used.
+    </description>
+  </property>
+  -->
+
+  <property>
+    <name>templeton.exec.envs</name>
+    <value>HADOOP_PREFIX,HADOOP_HOME,JAVA_HOME,HIVE_HOME</value>
+    <description>The environment variables passed through to exec.</description>
+  </property>
+
+  <property>
+    <name>templeton.zookeeper.hosts</name>
+    <value>127.0.0.1:2181</value>
+    <description>ZooKeeper servers, as comma separated host:port pairs</description>
+  </property>
+
+  <property>
+    <name>templeton.zookeeper.session-timeout</name>
+    <value>30000</value>
+    <description>ZooKeeper session timeout in milliseconds</description>
+  </property>
+
+  <property>
+    <name>templeton.callback.retry.interval</name>
+    <value>10000</value>
+    <description>How long to wait between callback retry attempts in milliseconds</description>
+  </property>
+
+  <property>
+    <name>templeton.callback.retry.attempts</name>
+    <value>5</value>
+    <description>How many times to retry the callback</description>
+  </property>
+
+  <property>
+    <name>templeton.storage.class</name>
+    <value>org.apache.hive.hcatalog.templeton.tool.HDFSStorage</value>
+    <description>The class to use as storage</description>
+  </property>
+
+  <property>
+    <name>templeton.storage.root</name>
+    <value>/templeton-hadoop</value>
+    <description>The path to the directory to use for storage</description>
+  </property>
+
+  <property>
+    <name>templeton.hdfs.cleanup.interval</name>
+    <value>43200000</value>
+    <description>The maximum delay between a thread's cleanup checks</description>
+  </property>
+
+  <property>
+    <name>templeton.hdfs.cleanup.maxage</name>
+    <value>604800000</value>
+    <description>The maximum age of a templeton job</description>
+  </property>
+
+  <property>
+    <name>templeton.zookeeper.cleanup.interval</name>
+    <value>43200000</value>
+    <description>The maximum delay between a thread's cleanup checks</description>
+  </property>
+
+  <property>
+    <name>templeton.zookeeper.cleanup.maxage</name>
+    <value>604800000</value>
+    <description>The maximum age of a templeton job</description>
+  </property>
+
+  <property>
+    <name>templeton.hadoop.queue.name</name>
+    <value>default</value>
+    <description>
+    MapReduce queue name where WebHCat map-only jobs will be
+    submitted to. Can be used to avoid a deadlock where all map slots
+    in the cluster are taken over by Templeton launcher tasks.
+    </description>
+  </property>
+  <!--
+  <property>
+    <name>webhcat.proxyuser.#USER#.hosts</name>
+    <value>www.example.com,host2</value>
+    <description>
+      List of client hosts from which the '#USER#' user is allowed to perform 
+      'doAs' operations.
+
+      The '#USER#' must be replaced with the username of the user who is
+      allowed to perform 'doAs' operations.
+
+      The value can be the '*' wildcard, which means every host is allowed,
+      or a comma-separated list of hostnames.
+   
+      If value is a blank string or webhcat.proxyuser.#USER#.hosts is missing,
+      no hosts will be allowed.  
+
+      For multiple users copy this property and replace the user name
+      in the property name.
+    </description>
+  </property>
+  <property>
+    <name>webhcat.proxyuser.#USER#.groups</name>
+    <value>group1, group2</value>
+    <description>
+      List of groups the '#USER#' user is allowed to impersonate users
+      from to perform 'doAs' operations.
+
+      The '#USER#' must be replaced with the username of the user who is
+      allowed to perform 'doAs' operations.
+
+      The value can be the '*' wildcard, which means any doAs value is
+      allowed, or a comma-separated list of groups.
+
+      If value is an empty list or webhcat.proxyuser.#USER#.groups is missing,
+      every doAs call value will fail.
+
+      For multiple users copy this property and replace the user name
+      in the property name.
+      
+      The username->usergroup mapping is performed using Hadoop API which is 
+      controlled by hadoop.security.group.mapping property.
+    </description>
+  </property>
+-->
+  <property>
+    <name>templeton.xsrf.filter.enabled</name>
+    <value>false</value>
+    <description>
+        Enable XSRF protection - looks for the presence of a X-XSRF-HEADER header
+        in all PUT/POST requests, and rejects requests that do not have these.
+    </description>
+  </property>
+    <property>
+    <name>templeton.frame.options.filter</name>
+    <value>DENY</value>
+    <description>
+        X-Frame-Options is added in HTTP response header with this value to prevent
+        clickjacking attacks. Possible values are DENY, SAMEORIGIN, ALLOW-FROM uri.
+    </description>
+  </property>
+</configuration>

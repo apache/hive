@@ -1,0 +1,135 @@
+PREHOOK: query: CREATE TABLE tab1_n3 (id1 int,id2 string) PARTITIONED BY(month string,day string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tab1_n3
+POSTHOOK: query: CREATE TABLE tab1_n3 (id1 int,id2 string) PARTITIONED BY(month string,day string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tab1_n3
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' overwrite into table tab1_n3 PARTITION(month='June', day=2)
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@tab1_n3
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' overwrite into table tab1_n3 PARTITION(month='June', day=2)
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@tab1_n3
+POSTHOOK: Output: default@tab1_n3@month=June/day=2
+PREHOOK: query: select * from tab1_n3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab1_n3
+PREHOOK: Input: default@tab1_n3@month=June/day=2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tab1_n3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab1_n3
+POSTHOOK: Input: default@tab1_n3@month=June/day=2
+#### A masked pattern was here ####
+1	11	June	2
+2	12	June	2
+3	13	June	2
+7	17	June	2
+8	18	June	2
+8	28	June	2
+PREHOOK: query: drop table tab1_n3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tab1_n3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tab1_n3
+POSTHOOK: query: drop table tab1_n3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tab1_n3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tab1_n3
+PREHOOK: query: CREATE TABLE tab1_n3 (id1 int,id2 string) PARTITIONED BY(month string,day int) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tab1_n3
+POSTHOOK: query: CREATE TABLE tab1_n3 (id1 int,id2 string) PARTITIONED BY(month string,day int) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tab1_n3
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' overwrite into table tab1_n3 PARTITION(month='June', day='2')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@tab1_n3
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' overwrite into table tab1_n3 PARTITION(month='June', day='2')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@tab1_n3
+POSTHOOK: Output: default@tab1_n3@month=June/day=2
+PREHOOK: query: select * from tab1_n3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab1_n3
+PREHOOK: Input: default@tab1_n3@month=June/day=2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tab1_n3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab1_n3
+POSTHOOK: Input: default@tab1_n3@month=June/day=2
+#### A masked pattern was here ####
+1	11	June	2
+2	12	June	2
+3	13	June	2
+7	17	June	2
+8	18	June	2
+8	28	June	2
+PREHOOK: query: drop table tab1_n3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tab1_n3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tab1_n3
+POSTHOOK: query: drop table tab1_n3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tab1_n3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tab1_n3
+PREHOOK: query: create table tab1_n3 (id1 int, id2 string) PARTITIONED BY(month string,day date) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tab1_n3
+POSTHOOK: query: create table tab1_n3 (id1 int, id2 string) PARTITIONED BY(month string,day date) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tab1_n3
+PREHOOK: query: alter table tab1_n3 add partition (month='June', day='2008-01-01')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@tab1_n3
+POSTHOOK: query: alter table tab1_n3 add partition (month='June', day='2008-01-01')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@tab1_n3
+POSTHOOK: Output: default@tab1_n3@month=June/day=2008-01-01
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' overwrite into table tab1_n3 PARTITION(month='June', day='2008-01-01')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@tab1_n3@month=June/day=2008-01-01
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' overwrite into table tab1_n3 PARTITION(month='June', day='2008-01-01')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@tab1_n3@month=June/day=2008-01-01
+PREHOOK: query: select id1, id2, day from tab1_n3 where day='2008-01-01'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab1_n3
+PREHOOK: Input: default@tab1_n3@month=June/day=2008-01-01
+#### A masked pattern was here ####
+POSTHOOK: query: select id1, id2, day from tab1_n3 where day='2008-01-01'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab1_n3
+POSTHOOK: Input: default@tab1_n3@month=June/day=2008-01-01
+#### A masked pattern was here ####
+1	11	2008-01-01
+2	12	2008-01-01
+3	13	2008-01-01
+7	17	2008-01-01
+8	18	2008-01-01
+8	28	2008-01-01
+PREHOOK: query: drop table tab1_n3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tab1_n3
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tab1_n3
+POSTHOOK: query: drop table tab1_n3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tab1_n3
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tab1_n3

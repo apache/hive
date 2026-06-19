@@ -1,0 +1,56 @@
+PREHOOK: query: create table distances (alongitude double, alatitude double, blongitude double, blatitude double)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@distances
+POSTHOOK: query: create table distances (alongitude double, alatitude double, blongitude double, blatitude double)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@distances
+PREHOOK: query: insert into distances values
+(cast(12.5 as double),cast(16.2 as double),cast(18.7 as double),cast(4.5 as double)),
+(cast(1.5 as double),cast(15.1 as double),cast(1.5 as double),cast(8.7 as double)),
+(cast(0 as double),cast(1 as double),cast(0 as double),cast(1 as double)),
+(cast(0 as double),cast(10 as double),cast(0 as double),cast(12 as double))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@distances
+POSTHOOK: query: insert into distances values
+(cast(12.5 as double),cast(16.2 as double),cast(18.7 as double),cast(4.5 as double)),
+(cast(1.5 as double),cast(15.1 as double),cast(1.5 as double),cast(8.7 as double)),
+(cast(0 as double),cast(1 as double),cast(0 as double),cast(1 as double)),
+(cast(0 as double),cast(10 as double),cast(0 as double),cast(12 as double))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@distances
+POSTHOOK: Lineage: distances.alatitude SCRIPT []
+POSTHOOK: Lineage: distances.alongitude SCRIPT []
+POSTHOOK: Lineage: distances.blatitude SCRIPT []
+POSTHOOK: Lineage: distances.blongitude SCRIPT []
+PREHOOK: query: select * from distances
+PREHOOK: type: QUERY
+PREHOOK: Input: default@distances
+#### A masked pattern was here ####
+POSTHOOK: query: select * from distances
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@distances
+#### A masked pattern was here ####
+12.5	16.2	18.7	4.5
+1.5	15.1	1.5	8.7
+0.0	1.0	0.0	1.0
+0.0	10.0	0.0	12.0
+PREHOOK: query: select distances.alongitude,distances.alatitude,distances.blongitude,distances.blatitude,
+       ST_Length(ST_LineString(distances.alongitude,distances.alatitude,distances.blongitude,distances.blatitude)) AS distance
+from distances
+PREHOOK: type: QUERY
+PREHOOK: Input: default@distances
+#### A masked pattern was here ####
+POSTHOOK: query: select distances.alongitude,distances.alatitude,distances.blongitude,distances.blatitude,
+       ST_Length(ST_LineString(distances.alongitude,distances.alatitude,distances.blongitude,distances.blatitude)) AS distance
+from distances
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@distances
+#### A masked pattern was here ####
+12.5	16.2	18.7	4.5	13.241223508422474
+1.5	15.1	1.5	8.7	6.4
+0.0	1.0	0.0	1.0	0.0
+0.0	10.0	0.0	12.0	2.0

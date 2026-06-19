@@ -1,0 +1,18 @@
+PREHOOK: query: create table except_nocbo(id int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@except_nocbo
+POSTHOOK: query: create table except_nocbo(id int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@except_nocbo
+PREHOOK: query: insert into table except_nocbo values(1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@except_nocbo
+POSTHOOK: query: insert into table except_nocbo values(1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@except_nocbo
+POSTHOOK: Lineage: except_nocbo.id SCRIPT []
+FAILED: SemanticException EXCEPT and INTERSECT operations are only supported with Cost Based Optimizations enabled. Please set 'hive.cbo.enable' to true!

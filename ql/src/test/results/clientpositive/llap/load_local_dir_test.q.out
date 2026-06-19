@@ -1,0 +1,30 @@
+PREHOOK: query: create table load_local (id INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@load_local
+POSTHOOK: query: create table load_local (id INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@load_local
+PREHOOK: query: load data local inpath '../../data/files/ext_test/' into table load_local
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@load_local
+POSTHOOK: query: load data local inpath '../../data/files/ext_test/' into table load_local
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@load_local
+PREHOOK: query: select * from load_local
+PREHOOK: type: QUERY
+PREHOOK: Input: default@load_local
+#### A masked pattern was here ####
+POSTHOOK: query: select * from load_local
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@load_local
+#### A masked pattern was here ####
+1
+2
+3
+4
+5
+6

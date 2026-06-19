@@ -1,0 +1,46 @@
+PREHOOK: query: explain select key from (select cast(key as int) from src )t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain select key from (select cast(key as int) from src )t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          Select Operator
+            expressions: UDFToInteger(key) (type: int)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: explain select key2 from (select cast(key as int) key2 from src )t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain select key2 from (select cast(key as int) key2 from src )t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          Select Operator
+            expressions: UDFToInteger(key) (type: int)
+            outputColumnNames: _col0
+            ListSink
+

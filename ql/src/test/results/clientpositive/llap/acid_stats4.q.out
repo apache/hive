@@ -1,0 +1,1043 @@
+PREHOOK: query: create table stats_nonpart(key int,value string) tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@stats_nonpart
+POSTHOOK: query: create table stats_nonpart(key int,value string) tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@stats_nonpart
+PREHOOK: query: insert into table stats_nonpart values (1, "foo")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@stats_nonpart
+POSTHOOK: query: insert into table stats_nonpart values (1, "foo")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@stats_nonpart
+POSTHOOK: Lineage: stats_nonpart.key SCRIPT []
+POSTHOOK: Lineage: stats_nonpart.value SCRIPT []
+PREHOOK: query: explain select count(key) from stats_nonpart
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_nonpart
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(key) from stats_nonpart
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_nonpart
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: ALTER TABLE stats_nonpart CHANGE COLUMN key key2 int
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@stats_nonpart
+PREHOOK: Output: default@stats_nonpart
+POSTHOOK: query: ALTER TABLE stats_nonpart CHANGE COLUMN key key2 int
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@stats_nonpart
+POSTHOOK: Output: default@stats_nonpart
+PREHOOK: query: explain select count(key2) from stats_nonpart
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_nonpart
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(key2) from stats_nonpart
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_nonpart
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: stats_nonpart
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key2 (type: int)
+                    outputColumnNames: key2
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(key2)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select count(value) from stats_nonpart
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_nonpart
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(value) from stats_nonpart
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_nonpart
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: analyze table stats_nonpart compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@stats_nonpart
+PREHOOK: Output: default@stats_nonpart
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table stats_nonpart compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@stats_nonpart
+POSTHOOK: Output: default@stats_nonpart
+#### A masked pattern was here ####
+PREHOOK: query: explain select count(key2) from stats_nonpart
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_nonpart
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(key2) from stats_nonpart
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_nonpart
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: alter table stats_nonpart rename to stats_nonpart2
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: default@stats_nonpart
+PREHOOK: Output: database:default
+PREHOOK: Output: default@stats_nonpart
+PREHOOK: Output: default@stats_nonpart2
+POSTHOOK: query: alter table stats_nonpart rename to stats_nonpart2
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: default@stats_nonpart
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@stats_nonpart
+POSTHOOK: Output: default@stats_nonpart2
+PREHOOK: query: explain select count(key2) from stats_nonpart2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_nonpart2
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(key2) from stats_nonpart2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_nonpart2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: analyze table stats_nonpart2 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@stats_nonpart2
+PREHOOK: Output: default@stats_nonpart2
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table stats_nonpart2 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@stats_nonpart2
+POSTHOOK: Output: default@stats_nonpart2
+#### A masked pattern was here ####
+PREHOOK: query: explain select count(key2) from stats_nonpart2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_nonpart2
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(key2) from stats_nonpart2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_nonpart2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: alter table stats_nonpart2 set serde 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+PREHOOK: type: ALTERTABLE_SERIALIZER
+PREHOOK: Input: default@stats_nonpart2
+PREHOOK: Output: default@stats_nonpart2
+POSTHOOK: query: alter table stats_nonpart2 set serde 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+POSTHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: Input: default@stats_nonpart2
+POSTHOOK: Output: default@stats_nonpart2
+PREHOOK: query: alter table stats_nonpart2 set serdeproperties ("foo"="bar")
+PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
+PREHOOK: Input: default@stats_nonpart2
+PREHOOK: Output: default@stats_nonpart2
+POSTHOOK: query: alter table stats_nonpart2 set serdeproperties ("foo"="bar")
+POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: Input: default@stats_nonpart2
+POSTHOOK: Output: default@stats_nonpart2
+PREHOOK: query: alter table stats_nonpart2 set fileformat rcfile
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@stats_nonpart2
+PREHOOK: Output: default@stats_nonpart2
+POSTHOOK: query: alter table stats_nonpart2 set fileformat rcfile
+POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: Input: default@stats_nonpart2
+POSTHOOK: Output: default@stats_nonpart2
+PREHOOK: query: explain select count(key2) from stats_nonpart2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_nonpart2
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(key2) from stats_nonpart2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_nonpart2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTABLE_LOCATION
+PREHOOK: Input: default@stats_nonpart2
+PREHOOK: Output: default@stats_nonpart2
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTABLE_LOCATION
+POSTHOOK: Input: default@stats_nonpart2
+POSTHOOK: Output: default@stats_nonpart2
+#### A masked pattern was here ####
+PREHOOK: query: explain select count(key2) from stats_nonpart2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_nonpart2
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(key2) from stats_nonpart2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_nonpart2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: stats_nonpart2
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key2 (type: int)
+                    outputColumnNames: key2
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count(key2)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: insert overwrite table stats_nonpart2 values (1, "foo")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@stats_nonpart2
+POSTHOOK: query: insert overwrite table stats_nonpart2 values (1, "foo")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@stats_nonpart2
+POSTHOOK: Lineage: stats_nonpart2.key2 SCRIPT []
+POSTHOOK: Lineage: stats_nonpart2.value SCRIPT []
+PREHOOK: query: explain select count(key2) from stats_nonpart2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_nonpart2
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(key2) from stats_nonpart2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_nonpart2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: alter table stats_nonpart2 add constraint primary_key primary key (key2) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@stats_nonpart2
+PREHOOK: Output: default@stats_nonpart2
+POSTHOOK: query: alter table stats_nonpart2 add constraint primary_key primary key (key2) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@stats_nonpart2
+POSTHOOK: Output: default@stats_nonpart2
+PREHOOK: query: alter table stats_nonpart2 drop constraint primary_key
+PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
+PREHOOK: Input: default@stats_nonpart2
+PREHOOK: Output: default@stats_nonpart2
+POSTHOOK: query: alter table stats_nonpart2 drop constraint primary_key
+POSTHOOK: type: ALTERTABLE_DROPCONSTRAINT
+POSTHOOK: Input: default@stats_nonpart2
+POSTHOOK: Output: default@stats_nonpart2
+PREHOOK: query: explain select count(key2) from stats_nonpart2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_nonpart2
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(key2) from stats_nonpart2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_nonpart2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: alter table stats_nonpart2 clustered by (key2) INTO 2 BUCKETS
+PREHOOK: type: ALTERTABLE_CLUSTER_SORT
+PREHOOK: Input: default@stats_nonpart2
+PREHOOK: Output: default@stats_nonpart2
+POSTHOOK: query: alter table stats_nonpart2 clustered by (key2) INTO 2 BUCKETS
+POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
+POSTHOOK: Input: default@stats_nonpart2
+POSTHOOK: Output: default@stats_nonpart2
+PREHOOK: query: explain select count(key2) from stats_nonpart2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_nonpart2
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(key2) from stats_nonpart2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_nonpart2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: insert into table stats_nonpart2 values (2, "foo")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@stats_nonpart2
+POSTHOOK: query: insert into table stats_nonpart2 values (2, "foo")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@stats_nonpart2
+POSTHOOK: Lineage: stats_nonpart2.key2 SCRIPT []
+POSTHOOK: Lineage: stats_nonpart2.value SCRIPT []
+PREHOOK: query: explain select count(key2) from stats_nonpart2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_nonpart2
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(key2) from stats_nonpart2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_nonpart2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: drop table stats_nonpart2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@stats_nonpart2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@stats_nonpart2
+POSTHOOK: query: drop table stats_nonpart2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@stats_nonpart2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@stats_nonpart2
+PREHOOK: query: create table stats_part(key int,value string) partitioned by (p int) tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@stats_part
+POSTHOOK: query: create table stats_part(key int,value string) partitioned by (p int) tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@stats_part
+PREHOOK: query: insert into table stats_part partition(p=101) values (1, "foo")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@stats_part@p=101
+POSTHOOK: query: insert into table stats_part partition(p=101) values (1, "foo")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@stats_part@p=101
+POSTHOOK: Lineage: stats_part PARTITION(p=101).key SCRIPT []
+POSTHOOK: Lineage: stats_part PARTITION(p=101).value SCRIPT []
+PREHOOK: query: insert into table stats_part partition(p=102) values (2, "bar")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@stats_part@p=102
+POSTHOOK: query: insert into table stats_part partition(p=102) values (2, "bar")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@stats_part@p=102
+POSTHOOK: Lineage: stats_part PARTITION(p=102).key SCRIPT []
+POSTHOOK: Lineage: stats_part PARTITION(p=102).value SCRIPT []
+PREHOOK: query: insert into table stats_part partition(p=103) values (3, "baz")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@stats_part@p=103
+POSTHOOK: query: insert into table stats_part partition(p=103) values (3, "baz")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@stats_part@p=103
+POSTHOOK: Lineage: stats_part PARTITION(p=103).key SCRIPT []
+POSTHOOK: Lineage: stats_part PARTITION(p=103).value SCRIPT []
+PREHOOK: query: alter table stats_part partition column (p decimal(10,0))
+PREHOOK: type: ALTERTABLE_PARTCOLTYPE
+PREHOOK: Input: default@stats_part
+POSTHOOK: query: alter table stats_part partition column (p decimal(10,0))
+POSTHOOK: type: ALTERTABLE_PARTCOLTYPE
+POSTHOOK: Input: default@stats_part
+POSTHOOK: Output: default@stats_part
+PREHOOK: query: explain select count(key) from stats_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(key) from stats_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: analyze table stats_part partition(p) compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@stats_part
+PREHOOK: Input: default@stats_part@p=101
+PREHOOK: Input: default@stats_part@p=102
+PREHOOK: Input: default@stats_part@p=103
+PREHOOK: Output: default@stats_part
+PREHOOK: Output: default@stats_part@p=101
+PREHOOK: Output: default@stats_part@p=102
+PREHOOK: Output: default@stats_part@p=103
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table stats_part partition(p) compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@stats_part
+POSTHOOK: Input: default@stats_part@p=101
+POSTHOOK: Input: default@stats_part@p=102
+POSTHOOK: Input: default@stats_part@p=103
+POSTHOOK: Output: default@stats_part
+POSTHOOK: Output: default@stats_part@p=101
+POSTHOOK: Output: default@stats_part@p=102
+POSTHOOK: Output: default@stats_part@p=103
+#### A masked pattern was here ####
+PREHOOK: query: explain select count(key) from stats_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(key) from stats_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: alter table stats_part partition(p=102) rename to partition (p=104)
+PREHOOK: type: ALTERTABLE_RENAMEPART
+PREHOOK: Input: default@stats_part
+PREHOOK: Output: default@stats_part@p=102
+POSTHOOK: query: alter table stats_part partition(p=102) rename to partition (p=104)
+POSTHOOK: type: ALTERTABLE_RENAMEPART
+POSTHOOK: Input: default@stats_part
+POSTHOOK: Input: default@stats_part@p=102
+POSTHOOK: Output: default@stats_part@p=102
+POSTHOOK: Output: default@stats_part@p=104
+PREHOOK: query: explain select count(key) from stats_part where p = 101
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(key) from stats_part where p = 101
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select count(key) from stats_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(key) from stats_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: analyze table stats_part partition(p) compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@stats_part
+PREHOOK: Input: default@stats_part@p=101
+PREHOOK: Input: default@stats_part@p=103
+PREHOOK: Input: default@stats_part@p=104
+PREHOOK: Output: default@stats_part
+PREHOOK: Output: default@stats_part@p=101
+PREHOOK: Output: default@stats_part@p=103
+PREHOOK: Output: default@stats_part@p=104
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table stats_part partition(p) compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@stats_part
+POSTHOOK: Input: default@stats_part@p=101
+POSTHOOK: Input: default@stats_part@p=103
+POSTHOOK: Input: default@stats_part@p=104
+POSTHOOK: Output: default@stats_part
+POSTHOOK: Output: default@stats_part@p=101
+POSTHOOK: Output: default@stats_part@p=103
+POSTHOOK: Output: default@stats_part@p=104
+#### A masked pattern was here ####
+PREHOOK: query: explain select count(key) from stats_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(key) from stats_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: ALTER TABLE stats_part CHANGE COLUMN key key2 int
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@stats_part
+PREHOOK: Output: default@stats_part
+POSTHOOK: query: ALTER TABLE stats_part CHANGE COLUMN key key2 int
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@stats_part
+POSTHOOK: Output: default@stats_part
+PREHOOK: query: explain select count(key2) from stats_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+PREHOOK: Input: default@stats_part@p=101
+PREHOOK: Input: default@stats_part@p=103
+PREHOOK: Input: default@stats_part@p=104
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(key2) from stats_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+POSTHOOK: Input: default@stats_part@p=101
+POSTHOOK: Input: default@stats_part@p=103
+POSTHOOK: Input: default@stats_part@p=104
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: stats_part
+                  Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key2 (type: int)
+                    outputColumnNames: key2
+                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count(key2)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: bigint)
+            Execution mode: llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select count(value) from stats_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(value) from stats_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: analyze table stats_part partition(p) compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@stats_part
+PREHOOK: Input: default@stats_part@p=101
+PREHOOK: Input: default@stats_part@p=103
+PREHOOK: Input: default@stats_part@p=104
+PREHOOK: Output: default@stats_part
+PREHOOK: Output: default@stats_part@p=101
+PREHOOK: Output: default@stats_part@p=103
+PREHOOK: Output: default@stats_part@p=104
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table stats_part partition(p) compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@stats_part
+POSTHOOK: Input: default@stats_part@p=101
+POSTHOOK: Input: default@stats_part@p=103
+POSTHOOK: Input: default@stats_part@p=104
+POSTHOOK: Output: default@stats_part
+POSTHOOK: Output: default@stats_part@p=101
+POSTHOOK: Output: default@stats_part@p=103
+POSTHOOK: Output: default@stats_part@p=104
+#### A masked pattern was here ####
+PREHOOK: query: explain select count(key2) from stats_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(key2) from stats_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: alter table stats_part add partition(p=105)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@stats_part
+POSTHOOK: query: alter table stats_part add partition(p=105)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@stats_part
+POSTHOOK: Output: default@stats_part@p=105
+PREHOOK: query: explain select count(key2) from stats_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+PREHOOK: Input: default@stats_part@p=101
+PREHOOK: Input: default@stats_part@p=103
+PREHOOK: Input: default@stats_part@p=104
+PREHOOK: Input: default@stats_part@p=105
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(key2) from stats_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+POSTHOOK: Input: default@stats_part@p=101
+POSTHOOK: Input: default@stats_part@p=103
+POSTHOOK: Input: default@stats_part@p=104
+POSTHOOK: Input: default@stats_part@p=105
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: stats_part
+                  Statistics: Num rows: 3 Data size: 12 Basic stats: PARTIAL Column stats: PARTIAL
+                  Select Operator
+                    expressions: key2 (type: int)
+                    outputColumnNames: key2
+                    Statistics: Num rows: 3 Data size: 12 Basic stats: PARTIAL Column stats: PARTIAL
+                    Group By Operator
+                      aggregations: count(key2)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: PARTIAL Column stats: PARTIAL
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: PARTIAL Column stats: PARTIAL
+                        value expressions: _col0 (type: bigint)
+            Execution mode: llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 12 Basic stats: PARTIAL Column stats: PARTIAL
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: PARTIAL Column stats: PARTIAL
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: analyze table stats_part partition(p) compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@stats_part
+PREHOOK: Input: default@stats_part@p=101
+PREHOOK: Input: default@stats_part@p=103
+PREHOOK: Input: default@stats_part@p=104
+PREHOOK: Input: default@stats_part@p=105
+PREHOOK: Output: default@stats_part
+PREHOOK: Output: default@stats_part@p=101
+PREHOOK: Output: default@stats_part@p=103
+PREHOOK: Output: default@stats_part@p=104
+PREHOOK: Output: default@stats_part@p=105
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table stats_part partition(p) compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@stats_part
+POSTHOOK: Input: default@stats_part@p=101
+POSTHOOK: Input: default@stats_part@p=103
+POSTHOOK: Input: default@stats_part@p=104
+POSTHOOK: Input: default@stats_part@p=105
+POSTHOOK: Output: default@stats_part
+POSTHOOK: Output: default@stats_part@p=101
+POSTHOOK: Output: default@stats_part@p=103
+POSTHOOK: Output: default@stats_part@p=104
+POSTHOOK: Output: default@stats_part@p=105
+#### A masked pattern was here ####
+PREHOOK: query: explain select count(key2) from stats_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+PREHOOK: Input: default@stats_part@p=101
+PREHOOK: Input: default@stats_part@p=103
+PREHOOK: Input: default@stats_part@p=104
+PREHOOK: Input: default@stats_part@p=105
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(key2) from stats_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+POSTHOOK: Input: default@stats_part@p=101
+POSTHOOK: Input: default@stats_part@p=103
+POSTHOOK: Input: default@stats_part@p=104
+POSTHOOK: Input: default@stats_part@p=105
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: stats_part
+                  Statistics: Num rows: 3 Data size: 12 Basic stats: PARTIAL Column stats: PARTIAL
+                  Select Operator
+                    expressions: key2 (type: int)
+                    outputColumnNames: key2
+                    Statistics: Num rows: 3 Data size: 12 Basic stats: PARTIAL Column stats: PARTIAL
+                    Group By Operator
+                      aggregations: count(key2)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: PARTIAL Column stats: PARTIAL
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: PARTIAL Column stats: PARTIAL
+                        value expressions: _col0 (type: bigint)
+            Execution mode: llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 12 Basic stats: PARTIAL Column stats: PARTIAL
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: PARTIAL Column stats: PARTIAL
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: alter table stats_part drop partition(p=104)
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@stats_part
+PREHOOK: Output: default@stats_part@p=104
+POSTHOOK: query: alter table stats_part drop partition(p=104)
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@stats_part
+POSTHOOK: Output: default@stats_part@p=104
+PREHOOK: query: explain select count(key2) from stats_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_part
+PREHOOK: Input: default@stats_part@p=101
+PREHOOK: Input: default@stats_part@p=103
+PREHOOK: Input: default@stats_part@p=105
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(key2) from stats_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_part
+POSTHOOK: Input: default@stats_part@p=101
+POSTHOOK: Input: default@stats_part@p=103
+POSTHOOK: Input: default@stats_part@p=105
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: stats_part
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: PARTIAL Column stats: PARTIAL
+                  Select Operator
+                    expressions: key2 (type: int)
+                    outputColumnNames: key2
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: PARTIAL Column stats: PARTIAL
+                    Group By Operator
+                      aggregations: count(key2)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: PARTIAL Column stats: PARTIAL
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: PARTIAL Column stats: PARTIAL
+                        value expressions: _col0 (type: bigint)
+            Execution mode: llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 12 Basic stats: PARTIAL Column stats: PARTIAL
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: PARTIAL Column stats: PARTIAL
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: drop table stats_part
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@stats_part
+PREHOOK: Output: database:default
+PREHOOK: Output: default@stats_part
+POSTHOOK: query: drop table stats_part
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@stats_part
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@stats_part
