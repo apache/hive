@@ -34,6 +34,6 @@ public abstract class GetListHelper<A, T> extends GetHelper<A, List<T>> {
 
   @Override
   protected String describeResult() {
-    return results.size() + " entries";
+    return (results != null ? results.size() : 0) + " entries";
   }
 }

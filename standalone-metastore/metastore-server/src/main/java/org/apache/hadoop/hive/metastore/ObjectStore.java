@@ -778,12 +778,14 @@ public class ObjectStore implements RawStore, Configurable {
 
       @Override
       protected Database getSqlResult() throws MetaException {
-        return directSql.getDatabase(argument.getCat(), argument.getDb());
+        return directSql.getDatabase(normalizeIdentifier(argument.getCat()),
+            normalizeIdentifier(argument.getDb()));
       }
 
       @Override
       protected Database getJdoResult() throws MetaException, NoSuchObjectException {
-        return getJDODatabase(argument.getCat(), argument.getDb());
+        return getJDODatabase(normalizeIdentifier(argument.getCat()),
+            normalizeIdentifier(argument.getDb()));
       }
     }.run(false);
    }
