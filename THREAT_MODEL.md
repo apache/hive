@@ -273,3 +273,9 @@ Grouped in waves; answer inline (a few at a time is fine). Each promotes an
     them and wires `AGENTS.md → SECURITY.md → THREAT_MODEL.md`. Confirm this
     in-repo model is canonical (vs the cwiki security pages), how it should
     reference those pages, and who owns revisions.
+15. *(Raised by okumin.)* HiveServer2 and the Hive Metastore have **different
+    security models and parameters** — should HMS get its **own**
+    `THREAT_MODEL.md` (e.g. `THREAT_MODEL.md` for HS2 + a separate one for HMS,
+    each discoverable), rather than one combined document? Leaning toward
+    splitting if it makes the per-component scope cleaner for both triagers and
+    scan agents; the PMC's call on structure.
