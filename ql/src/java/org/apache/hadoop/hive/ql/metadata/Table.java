@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 
 import java.util.stream.Stream;
 
+import com.google.common.collect.Maps;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -115,7 +116,7 @@ public class Table implements Serializable {
    */
   private List<FieldSchema> tablePartCols;
   private record TableColumn(int index, FieldSchema field) {}
-  private transient Map<String, TableColumn> columnsByName;
+  private transient Map<String, TableColumn> nameToIndexedColumn;
   private transient List<FieldSchema> tableNonPartCols;
   private transient Deserializer deserializer;
   private Class<? extends OutputFormat> outputFormatClass;
@@ -202,7 +203,10 @@ public class Table implements Serializable {
     newTab.setMetaTable(this.getMetaTable());
     newTab.setSnapshotRef(this.getSnapshotRef());
     if (this.tablePartCols != null) {
-      newTab.tablePartCols = new ArrayList<>(this.tablePartCols);
+      newTab.tablePartCols = new ArrayList<>(this.tablePartCols.size());
+      for (FieldSchema fs : this.tablePartCols) {
+        newTab.tablePartCols.add(fs.deepCopy());
+      }
     }
     return newTab;
   }
@@ -225,6 +229,9 @@ public class Table implements Serializable {
    */
   public void setTTable(org.apache.hadoop.hive.metastore.api.Table tTable) {
     this.tTable = tTable;
+    tablePartCols = null;
+    tableNonPartCols = null;
+    nameToIndexedColumn = null;
   }
 
   /**
@@ -616,6 +623,8 @@ public class Table implements Serializable {
     }
     if (hasNonNativePartitionSupport()) {
       List<FieldSchema> partCols = getStorageHandler().getPartitionKeys(this);
+      // Partition cols come from the handler, but user comments are stored in HMS sd.getCols().
+      // Copy HMS comments onto handler fields so DESCRIBE/SHOW match native table behavior.
       for (FieldSchema partCol : partCols) {
         FieldSchema storageSchemaCol = getColumnByName(partCol.getName());
         if (storageSchemaCol != null && storageSchemaCol.getComment() != null) {
@@ -704,7 +713,7 @@ public class Table implements Serializable {
 
   public Map<List<String>, String> getSkewedColValueLocationMaps() {
     return (tTable.getSd().getSkewedInfo() != null) ? tTable.getSd().getSkewedInfo()
-        .getSkewedColValueLocationMaps() : new HashMap<>();
+        .getSkewedColValueLocationMaps() : Collections.emptyMap();
   }
 
   public void setSkewedColValues(List<List<String>> skewedValues) {
@@ -713,7 +722,7 @@ public class Table implements Serializable {
 
   public List<List<String>> getSkewedColValues(){
     return (tTable.getSd().getSkewedInfo() != null) ? tTable.getSd().getSkewedInfo()
-        .getSkewedColValues() : new ArrayList<>();
+        .getSkewedColValues() : Collections.emptyList();
   }
 
   public void setSkewedColNames(List<String> skewedColNames) {
@@ -722,7 +731,7 @@ public class Table implements Serializable {
 
   public List<String> getSkewedColNames() {
     return (tTable.getSd().getSkewedInfo() != null) ? tTable.getSd().getSkewedInfo()
-        .getSkewedColNames() : new ArrayList<>();
+        .getSkewedColNames() : Collections.emptyList();
   }
 
   public SkewedInfo getSkewedInfo() {
@@ -750,31 +759,33 @@ public class Table implements Serializable {
     return false;
   }
 
-  private void  ensureColumnsIndexed() {
-    if (columnsByName != null) {
-      return;
-    }
-    Map<String, TableColumn> indexedColumns = new HashMap<>();
-    List<FieldSchema> fsList = new ArrayList<>(getColsInternal(false));
-    if (!hasNonNativePartitionSupport() || isView()) {
-      fsList.addAll(getPartitionKeys());
-    }
-    for (int i = 0; i < fsList.size(); i++) {
-      indexedColumns.put(fsList.get(i).getName().toLowerCase(), new TableColumn(i, fsList.get(i)));
-    }
-    columnsByName = indexedColumns;
-  }
-
   public Integer getColumnIndexByName(String colName) {
-    ensureColumnsIndexed();
-    TableColumn column = columnsByName.get(colName.toLowerCase());
+    TableColumn column = lazyIndexedColumnByName().get(colName.toLowerCase());
     return column != null ? column.index() : null;
   }
 
   public FieldSchema getColumnByName(String colName) {
-    ensureColumnsIndexed();
-    TableColumn column = columnsByName.get(colName.toLowerCase());
+    TableColumn column = lazyIndexedColumnByName().get(colName.toLowerCase());
     return column != null ? column.field() : null;
+  }
+
+  private Map<String, TableColumn> lazyIndexedColumnByName() {
+    if (nameToIndexedColumn == null) {
+      this.nameToIndexedColumn = indexedColumnByName();
+    }
+    return nameToIndexedColumn;
+  }
+
+  private Map<String, TableColumn> indexedColumnByName() {
+    List<FieldSchema> fsList = new ArrayList<>(getColsInternal(false));
+    if (!hasNonNativePartitionSupport() || isView()) {
+      fsList.addAll(getPartitionKeys());
+    }
+    Map<String, TableColumn> indexedColumns = Maps.newHashMapWithExpectedSize(fsList.size());
+    for (int i = 0; i < fsList.size(); i++) {
+      indexedColumns.put(fsList.get(i).getName().toLowerCase(), new TableColumn(i, fsList.get(i)));
+    }
+    return indexedColumns;
   }
 
   public List<FieldSchema> getCols() {
@@ -784,14 +795,14 @@ public class Table implements Serializable {
     if (!hasNonNativePartitionSupport()) {
       tableNonPartCols = getColsInternal(false);
     } else {
-      List<FieldSchema> nonPartFields = new ArrayList<>();
-      Set<String> partFieldsName = getPartCols().stream().map(FieldSchema::getName).collect(Collectors.toSet());
-      for (FieldSchema field : getColsInternal(false)) {
-        if (!partFieldsName.contains(field.getName())) {
-          nonPartFields.add(field);
-        }
-      }
-      tableNonPartCols = nonPartFields;
+      // For Iceberg, HMS sd.getCols() holds the full schema while partitionKeys is empty (HIVE-29633).
+      // Filter out handler partition columns to keep getCols() as data columns only.
+      Set<String> partColNames = getPartCols().stream()
+          .map(FieldSchema::getName)
+          .collect(Collectors.toSet());
+      tableNonPartCols = getColsInternal(false).stream()
+          .filter(field -> !partColNames.contains(field.getName()))
+          .toList();
     }
     return tableNonPartCols;
   }
@@ -837,7 +848,7 @@ public class Table implements Serializable {
     tTable.setPartitionKeys(partCols);
     tablePartCols = null;
     tableNonPartCols = null;
-    columnsByName = null;
+    nameToIndexedColumn = null;
   }
 
   public String getCatName() {
@@ -889,7 +900,7 @@ public class Table implements Serializable {
     tTable.getSd().setCols(fields);
     tableNonPartCols = null;
     tablePartCols = null;
-    columnsByName = null;
+    nameToIndexedColumn = null;
   }
 
   public void setNumBuckets(int nb) {
