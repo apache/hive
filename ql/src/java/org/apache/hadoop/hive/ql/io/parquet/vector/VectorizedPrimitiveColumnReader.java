@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.parquet.column.ColumnDescriptor;
 import org.apache.parquet.column.page.PageReader;
@@ -612,31 +613,10 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       if (column instanceof Decimal64ColumnVector dec64) {
         fillDecimal64PrecisionScale(dec64);
         boolean fast = dictionary.isFastDecimal64();
-        short valueScale = getEncodedDecimalScale();
+        short valueScale = (short) getDecimalTypeInfo().getScale();
         for (int i = rowId; i < rowId + num; ++i) {
           if (!column.isNull[i]) {
-            int id = (int) dictionaryIds.vector[i];
-            boolean stored;
-            if (fast) {
-              // Identity fast path: store the raw unscaled long directly.
-              long v = dictionary.readDecimal64(id);
-              stored = dictionary.isValid();
-              if (stored) {
-                dec64.vector[i] = v;
-              }
-            } else {
-              // set() enforces the column precision/scale and marks the entry NULL on overflow.
-              byte[] bytes = dictionary.readDecimal(id);
-              stored = dictionary.isValid();
-              if (stored) {
-                dec64.set(i, bytes, valueScale);
-                stored = !dec64.isNull[i];
-              }
-            }
-            if (!stored) {
-              setNullValue(column, i);
-              dec64.vector[i] = 0;
-            }
+            setDecimal64Value(dec64, i, fast, dictionary, (int) dictionaryIds.vector[i], valueScale);
           }
         }
         break;
@@ -672,51 +652,39 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     }
   }
 
+  /**
+   * Fill a {@link DecimalColumnVector} at the Parquet file (logical-type) precision/scale: the scale
+   * {@link #readDecimal} reads the unscaled bytes at, carried per row by the HiveDecimal.
+   */
   private void fillDecimalPrecisionScale(DecimalColumnVector c) {
-    short[] ps = getDecimalPrecisionScale();
-    c.precision = ps[0];
-    c.scale = ps[1];
+    DecimalTypeInfo dti = getDecimalTypeInfo();
+    c.precision = (short) dti.getPrecision();
+    c.scale = (short) dti.getScale();
   }
 
   /**
    * Fill a long-backed {@link Decimal64ColumnVector} at the Hive (table) scale -- the scale every
    * consumer reads {@code c.vector} at, and the only scale at which the unscaled value fits the long.
-   * NOT the Parquet file scale from {@link #getDecimalPrecisionScale()}: under schema evolution that
+   * NOT the Parquet file scale from {@link #getDecimalTypeInfo()}: under schema evolution that
    * scale can be larger (e.g. a DECIMAL(38,37) file read as DECIMAL(16,8)) and would overflow.
    */
   private void fillDecimal64PrecisionScale(Decimal64ColumnVector c) {
-    if (hiveType instanceof DecimalTypeInfo dti) {
-      c.precision = (short) dti.getPrecision();
-      c.scale = (short) dti.getScale();
-    } else {
-      short[] ps = getDecimalPrecisionScale();
-      c.precision = ps[0];
-      c.scale = ps[1];
-    }
+    DecimalTypeInfo dti = hiveType instanceof DecimalTypeInfo hiveDti ? hiveDti : getDecimalTypeInfo();
+    c.precision = (short) dti.getPrecision();
+    c.scale = (short) dti.getScale();
   }
 
   /**
-   * Scale at which {@code dataColumn}/{@code dictionary}.readDecimal() encodes the unscaled bytes:
-   * the Parquet physical scale when stored as decimal, else the Hive scale. Pass this to
-   * {@link Decimal64ColumnVector#set(int, byte[], int)} so the bytes are read at the right scale
-   * before re-scaling to the column scale.
-   */
-  private short getEncodedDecimalScale() {
-    return getDecimalPrecisionScale()[1];
-  }
-
-  /**
-   * Precision/scale for this decimal column: from the Parquet decimal logical type when present,
+   * Decimal precision/scale for this column: from the Parquet decimal logical type when present,
    * otherwise from the Hive type (Parquet stores it as a non-decimal physical type but HMS reports
    * decimal).
    */
-  private short[] getDecimalPrecisionScale() {
+  private DecimalTypeInfo getDecimalTypeInfo() {
     if (type.getLogicalTypeAnnotation() instanceof DecimalLogicalTypeAnnotation d) {
-      return new short[] { (short) d.getPrecision(), (short) d.getScale() };
+      return TypeInfoFactory.getDecimalTypeInfo(d.getPrecision(), d.getScale());
     } else if (TypeInfoUtils.getBaseName(hiveType.getTypeName())
         .equalsIgnoreCase(serdeConstants.DECIMAL_TYPE_NAME)) {
-      DecimalTypeInfo dti = (DecimalTypeInfo) hiveType;
-      return new short[] { (short) dti.getPrecision(), (short) dti.getScale() };
+      return (DecimalTypeInfo) hiveType;
     }
     throw new UnsupportedOperationException(
         "The underlying Parquet type cannot be converted to Hive Decimal type: " + type);
@@ -730,42 +698,54 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
   private void readDecimal64(int total, Decimal64ColumnVector c, int rowId) {
     fillDecimal64PrecisionScale(c);
     boolean fast = dataColumn.isFastDecimal64();
-    short valueScale = getEncodedDecimalScale();
+    short valueScale = (short) getDecimalTypeInfo().getScale();
     int left = total;
     while (left > 0) {
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
-        boolean stored;
-        if (fast) {
-          // Identity fast path: store the raw unscaled long directly (no HiveDecimal/byte[] per row).
-          long v = dataColumn.readDecimal64();
-          stored = dataColumn.isValid();
-          if (stored) {
-            c.vector[rowId] = v;
-          }
-        } else {
-          // set() enforces the column precision/scale and marks the entry NULL if the value does not
-          // fit (e.g. schema-evolved data whose larger file scale can't be held at the column scale).
-          byte[] bytes = dataColumn.readDecimal();
-          stored = dataColumn.isValid();
-          if (stored) {
-            c.isNull[rowId] = false;
-            c.set(rowId, bytes, valueScale);
-            stored = !c.isNull[rowId];
-          }
-        }
-        if (stored) {
-          c.isNull[rowId] = false;
+        setDecimal64Value(c, rowId, fast, dataColumn, -1, valueScale);
+        if (!c.isNull[rowId]) {
           c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
-        } else {
-          c.vector[rowId] = 0;
-          setNullValue(c, rowId);
         }
       } else {
         setNullValue(c, rowId);
       }
       rowId++;
       left--;
+    }
+  }
+
+  /**
+   * Store one decimal64 value into {@code c[rowId]} from {@code reader}, NULLing the entry when the
+   * value is out of range. {@code fast} selects the identity fast path (raw unscaled long) over the
+   * HiveDecimal/byte[] slow path. {@code id >= 0} reads that dictionary entry; a negative {@code id}
+   * reads the current page value. Shared by the page ({@link #readDecimal64}) and dictionary
+   * ({@link #decodeDictionaryIds}) decode loops.
+   */
+  private void setDecimal64Value(Decimal64ColumnVector c, int rowId, boolean fast,
+      ParquetDataColumnReader reader, int id, short valueScale) {
+    c.isNull[rowId] = false;
+    boolean stored;
+    if (fast) {
+      // Identity fast path: store the raw unscaled long directly (no HiveDecimal/byte[] per row).
+      long v = id >= 0 ? reader.readDecimal64(id) : reader.readDecimal64();
+      stored = reader.isValid();
+      if (stored) {
+        c.vector[rowId] = v;
+      }
+    } else {
+      // set() enforces the column precision/scale and marks the entry NULL if the value does not
+      // fit (e.g. schema-evolved data whose larger file scale can't be held at the column scale).
+      byte[] bytes = id >= 0 ? reader.readDecimal(id) : reader.readDecimal();
+      stored = reader.isValid();
+      if (stored) {
+        c.set(rowId, bytes, valueScale);
+        stored = !c.isNull[rowId];
+      }
+    }
+    if (!stored) {
+      c.vector[rowId] = 0;
+      setNullValue(c, rowId);
     }
   }
 }

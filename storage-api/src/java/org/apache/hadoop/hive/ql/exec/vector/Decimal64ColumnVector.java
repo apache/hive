@@ -68,8 +68,7 @@ public class Decimal64ColumnVector extends LongColumnVector implements IDecimalC
 
   /**
    * Set a Decimal64 field straight from the unscaled big-integer {@code bigIntegerBytes} (encoded at
-   * {@code valueScale}), without materializing a HiveDecimal per row -- unlike the sibling
-   * {@link #set(int, HiveDecimalWritable)}.
+   * {@code valueScale}), without materializing a HiveDecimal per row.
    *
    * {@code valueScale} may differ from this vector's {@link #scale} under schema evolution (e.g.
    * reading a DECIMAL(38,37) file column as DECIMAL(16,8)); the stored long is always at this

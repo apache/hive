@@ -426,10 +426,8 @@ public class VectorizedColumnReaderTestBase {
 
   // Unscaled values (scale=2) used by the INT32/INT64-backed Decimal64 tests. The element at
   // DECIMAL64_NULL_INDEX is ignored because those rows are written as null. 1001 -> 10.01,
-  // 1234 -> 12.34, -550 -> -5.50, 9999 -> 99.99. These would all decode WRONG (truncated integer
-  // part, e.g. 1001 -> 10) on the buggy readInteger()/readLong() path, and to the correct unscaled
-  // long on the fixed reader path. At scale 2 that equals the literal value, which is what the
-  // tests assert.
+  // 1234 -> 12.34, -550 -> -5.50, 9999 -> 99.99. The Decimal64 vector must hold the full unscaled
+  // long; at scale 2 that equals the literal value, which is what the tests assert.
   private static final long[] DECIMAL64_UNSCALED = { 1001L, 1234L, -550L, 0L, 9999L };
   private static final int DECIMAL64_NULL_INDEX = 3;
   private static final int DECIMAL64_ROWS = 200;
@@ -512,9 +510,8 @@ public class VectorizedColumnReaderTestBase {
             sawNull = true;
           } else {
             assertFalse("Unexpected null at pos " + c + " for " + label, vector.isNull[i]);
-            // A Decimal64 vector must hold the FULL unscaled long: 10.01 -> 1001, not 10 or 0.
-            // For scale 2 the expected unscaled long is exactly DECIMAL64_UNSCALED[idx], so the
-            // buggy truncating reader (returning the integer part 10, or 0) cannot pass this.
+            // A Decimal64 vector must hold the FULL unscaled long: 10.01 -> 1001. For scale 2 the
+            // expected unscaled long is exactly DECIMAL64_UNSCALED[idx].
             assertEquals("Decimal64 must keep the full unscaled value at pos " + c + " for " + label,
                 DECIMAL64_UNSCALED[idx], vector.vector[i]);
           }
@@ -727,6 +724,100 @@ public class VectorizedColumnReaderTestBase {
     decimal64ReadPrecisionNarrowing(PrimitiveTypeName.INT32, false);
     decimal64ReadPrecisionNarrowing(PrimitiveTypeName.INT64, true);
     decimal64ReadPrecisionNarrowing(PrimitiveTypeName.INT64, false);
+  }
+
+  /**
+   * Coverage for the FIXED_LEN_BYTE_ARRAY-backed Decimal64 fast path: binaryToUnscaledLong decodes
+   * the big-endian two's-complement bytes straight into the long. Uses a 16-byte fixed array (wider
+   * than 8) so the multi-byte shift and leading sign-byte extension actually run, includes negative
+   * values (encoded with leading 0xFF), and a value beyond the read precision that the bounds check
+   * must NULL. Writes DECIMAL(18,2) so the fast path engages (file scale 2 == table scale, file
+   * precision <= 18), reads as DECIMAL(10,2); every result is checked against the unscaled literal.
+   */
+  protected void decimal64ReadFixedLenByteArray(boolean dictionaryEncoding) throws Exception {
+    final int scale = 2;
+    final int filePrecision = 18;
+    final int byteLen = 16;
+    final int readPrecision = 10;                 // max abs unscaled value at scale 2 = 9_999_999_999
+    final long absMax = 9_999_999_999L;
+    // 10.01, -10.01, the +/- precision-10 boundary, then 11 digits -> exceeds DECIMAL(10,2) -> NULL.
+    long[] unscaled = { 1001L, -1001L, absMax, -absMax, 10_000_000_000L };
+
+    FileSystem fs = DECIMAL64_FILE.getFileSystem(conf);
+    if (fs.exists(DECIMAL64_FILE)) {
+      fs.delete(DECIMAL64_FILE, true);
+    }
+    MessageType writeSchema = Types.buildMessage()
+        .optional(PrimitiveTypeName.FIXED_LEN_BYTE_ARRAY).length(byteLen)
+        .as(LogicalTypeAnnotation.decimalType(scale, filePrecision)).named("value")
+        .named("hive_schema");
+    GroupWriteSupport.setSchema(writeSchema, conf);
+    try (ParquetWriter<Group> writer = new ParquetWriter<>(
+        DECIMAL64_FILE, new GroupWriteSupport(), GZIP, 1024 * 1024, 1024, 1024 * 1024,
+        dictionaryEncoding, false, PARQUET_1_0, conf)) {
+      SimpleGroupFactory f = new SimpleGroupFactory(writeSchema);
+      for (int i = 0; i < DECIMAL64_ROWS; i++) {
+        Group group = f.newGroup();
+        group.append("value", Binary.fromConstantByteArray(toFixedLenBytes(unscaled[i % unscaled.length], byteLen)));
+        writer.write(group);
+      }
+    }
+
+    Configuration readerConf = new Configuration();
+    readerConf.set(IOConstants.COLUMNS, "value");
+    readerConf.set(IOConstants.COLUMNS_TYPES, "decimal(" + readPrecision + "," + scale + ")");
+    readerConf.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, false);
+    readerConf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0");
+    VectorizedParquetRecordReader reader = createTestParquetReader(
+        writeSchema.toString(), readerConf,
+        new DataTypePhysicalVariation[] { DataTypePhysicalVariation.DECIMAL_64 }, DECIMAL64_FILE);
+    VectorizedRowBatch previous = reader.createValue();
+    String label = "FIXED_LEN_BYTE_ARRAY(" + byteLen + ")" + (dictionaryEncoding ? " (dict)" : " (plain)");
+    try {
+      int c = 0;
+      while (reader.next(NullWritable.get(), previous)) {
+        Decimal64ColumnVector vector = (Decimal64ColumnVector) previous.cols[0];
+        assertEquals((short) scale, vector.scale);
+        for (int i = 0; i < previous.size; i++) {
+          if (c == DECIMAL64_ROWS) {
+            break;
+          }
+          long v = unscaled[c % unscaled.length];
+          if (v < -absMax || v > absMax) {
+            assertTrue("Expected NULL (out of read precision) at pos " + c + " for " + label, vector.isNull[i]);
+          } else {
+            assertFalse("Unexpected null at pos " + c + " for " + label, vector.isNull[i]);
+            assertEquals("Wide byte-array Decimal64 must decode the full unscaled value at pos " + c
+                + " for " + label, v, vector.vector[i]);
+          }
+          c++;
+        }
+      }
+      assertEquals("Did not read all rows for " + label, DECIMAL64_ROWS, c);
+    } finally {
+      reader.close();
+      if (fs.exists(DECIMAL64_FILE)) {
+        fs.delete(DECIMAL64_FILE, true);
+      }
+    }
+  }
+
+  protected void decimal64ReadFixedLenByteArray() throws Exception {
+    decimal64ReadFixedLenByteArray(true);
+    decimal64ReadFixedLenByteArray(false);
+  }
+
+  // Big-endian two's-complement of value, left-padded to exactly len bytes (FIXED_LEN_BYTE_ARRAY
+  // storage). Negative values pad with 0xFF, exercising the leading sign-extension bytes that
+  // binaryToUnscaledLong must drop losslessly.
+  private static byte[] toFixedLenBytes(long value, int len) {
+    byte[] bytes = new byte[len];
+    if (value < 0) {
+      Arrays.fill(bytes, (byte) 0xFF);
+    }
+    byte[] minimal = BigInteger.valueOf(value).toByteArray();
+    System.arraycopy(minimal, 0, bytes, len - minimal.length, minimal.length);
+    return bytes;
   }
 
   private static StructObjectInspector createStructObjectInspector(Configuration conf) {

@@ -145,6 +145,11 @@ public class TestVectorizedColumnReader extends VectorizedColumnReaderTestBase {
   }
 
   @Test
+  public void testDecimal64ReadFixedLenByteArray() throws Exception {
+    decimal64ReadFixedLenByteArray();
+  }
+
+  @Test
   public void verifyBatchOffsets() throws Exception {
     super.verifyBatchOffsets();
   }
