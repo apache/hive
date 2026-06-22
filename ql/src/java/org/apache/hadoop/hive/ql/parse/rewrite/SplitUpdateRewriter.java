@@ -74,16 +74,12 @@ public class SplitUpdateRewriter implements Rewriter<UpdateStatement> {
     List<FieldSchema> nonPartCols = targetTable.getCols();
     for (int i = 0; i < nonPartCols.size(); i++) {
       appendUpdateColumn(updateBlock, sqlGenerator, insertValues, setColExprs,
-          nonPartCols.get(i).getName(), i, columnOffset, true, !first);
+          nonPartCols.get(i).getName(), i, columnOffset, !first);
       first = false;
     }
-    List<FieldSchema> partCols = targetTable.getPartCols();
-    boolean appendToSelect = targetTable.hasNonNativePartitionSupport();
-    for (int i = 0; i < partCols.size(); i++) {
-      appendUpdateColumn(updateBlock, sqlGenerator, insertValues, setColExprs,
-          partCols.get(i).getName(), nonPartCols.size() + i, columnOffset, appendToSelect, !first);
-      first = false;
-    }
+
+    appendPartitionColumns(updateBlock, sqlGenerator, insertValues, setColExprs, nonPartCols,
+        columnOffset, !first);
     addRowLineageColumnsForUpdate(targetTable, sqlGenerator, insertValues, conf);
 
     sqlGenerator.append(" FROM ").append(sqlGenerator.getTargetTableFullName()).append(") ");
@@ -117,21 +113,26 @@ public class SplitUpdateRewriter implements Rewriter<UpdateStatement> {
     return rr;
   }
 
-  private void appendUpdateColumn(UpdateStatement updateBlock,
+  protected void appendPartitionColumns(UpdateStatement updateBlock, MultiInsertSqlGenerator sqlGenerator,
+      List<String> insertValues, Map<Integer, ASTNode> setColExprs, List<FieldSchema> nonPartCols,
+      int columnOffset, boolean prependComma) {
+    for (FieldSchema partCol : updateBlock.getTargetTable().getPartCols()) {
+      String identifier = HiveUtils.unparseIdentifier(partCol.getName(), conf);
+      insertValues.set(updateBlock.getTargetTable().getColumnIndexByName(partCol.getName()),
+          sqlGenerator.qualify(identifier));
+    }
+  }
+
+  protected void appendUpdateColumn(UpdateStatement updateBlock,
                MultiInsertSqlGenerator sqlGenerator, List<String> insertValues,
                Map<Integer, ASTNode> setColExprs, String columnName, int setColExprIndex, int columnOffset,
-               boolean appendToSelect, boolean prependComma) {
+               boolean prependComma) {
     String identifier = HiveUtils.unparseIdentifier(columnName, conf);
 
     // The insert value is placed for every column (data and partition).
     int index = updateBlock.getTargetTable().getColumnIndexByName(columnName);
     insertValues.set(index, sqlGenerator.qualify(identifier));
 
-    // Native tables: partition cols are already in the subquery SELECT (appendAcidSelectColumns).
-    // Non-native tables: appendAcidSelectColumns exposes only delete-prefixed aliases, so add plain names below (appendToSelect).
-    if (!appendToSelect) {
-      return;
-    }
     if (prependComma) {
       sqlGenerator.append(",");
     }

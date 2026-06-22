@@ -51,7 +51,9 @@ public class UpdateRewriterFactory implements RewriterFactory<UpdateStatement> {
     if (copyOnWriteMode) {
       return new CopyOnWriteUpdateRewriter(conf, sqlGeneratorFactory);
     } else if (splitUpdate) {
-      return new SplitUpdateRewriter(conf, sqlGeneratorFactory);
+      return table.hasNonNativePartitionSupport() ?
+          new NonNativeSplitUpdateRewriter(conf, sqlGeneratorFactory) :
+          new SplitUpdateRewriter(conf, sqlGeneratorFactory);
     } else {
       if (AcidUtils.isNonNativeAcidTable(table)) {
         throw new SemanticException(ErrorMsg.NON_NATIVE_ACID_UPDATE.getErrorCodedMsg());
