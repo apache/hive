@@ -168,14 +168,24 @@ cluster:
       cpuScaleDownThreshold: 30
 
   # ---------------------------------------------------------------------------
-  # LLAP — enabled by default for full-HA
+  # LLAP CLUSTER ROUTING — server-side rules that map users/groups to LLAP
+  # clusters. When set, clients don't need to specify namespace configs.
+  # Format: user:<name>=<cluster>,group:<name>=<cluster>,default=<cluster>
+  # Example: "user:alice=llap0,group:eng=llap0,default=llap0"
   # ---------------------------------------------------------------------------
-  llap:
+  llapClusterRouting: ""
+
+  # ---------------------------------------------------------------------------
+  # LLAP CLUSTERS — each entry is an independent LLAP cluster with its own
+  # StatefulSet, autoscaling, and ZooKeeper registration.
+  # Users select a cluster via: SET hive.llap.daemon.service.hosts=@llap0;
+  # ---------------------------------------------------------------------------
+  llapClusters:
+  - name: llap0
     enabled: true
     replicas: 2
     executors: 1
     memoryMb: 1024
-    serviceHosts: "@llap0"
     resources: {}
     configOverrides: {}
     extraVolumes: []

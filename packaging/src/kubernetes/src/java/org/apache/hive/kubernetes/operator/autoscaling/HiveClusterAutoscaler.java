@@ -29,6 +29,7 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
 import org.apache.hive.kubernetes.operator.model.spec.AutoscalingSpec;
+import org.apache.hive.kubernetes.operator.model.spec.LlapSpec;
 import org.apache.hive.kubernetes.operator.model.status.AutoscalingStatus;
 import org.apache.hive.kubernetes.operator.util.ConfigUtils;
 import org.apache.hive.kubernetes.operator.util.Labels;
@@ -137,14 +138,25 @@ public class HiveClusterAutoscaler {
     String namespace = cluster.getMetadata().getNamespace();
     String clusterName = cluster.getMetadata().getName();
 
-    // HiveServer2
-    if (spec.hiveServer2().autoscaling().isEnabled()) {
+    // Always register HS2 metrics scraping when LLAP/TezAM autoscaling needs
+    // the activation gate (hs2_llap_target_sessions_*), even if HS2 itself
+    // doesn't autoscale.
+    boolean llapOrTezAmAutoscales = spec.llapClusters().stream().anyMatch(
+        l -> l.isEnabled() && (l.autoscaling().isEnabled()
+            || (spec.tezAm().isEnabled() && l.tezAm().autoscaling().isEnabled())));
+    boolean scrapeHs2 = spec.hiveServer2().autoscaling().isEnabled() || llapOrTezAmAutoscales;
+    if (scrapeHs2) {
       AutoscalingSpec hs2Auto = spec.hiveServer2().autoscaling();
-      String hs2Key = namespace + "/" + clusterName + "/" + ConfigUtils.COMPONENT_HIVESERVER2;
       Map<String, String> hs2Selector = Labels.selectorForComponent(cluster, ConfigUtils.COMPONENT_HIVESERVER2);
       bgScraper.registerOrUpdate(namespace, clusterName,
           ConfigUtils.COMPONENT_HIVESERVER2, hs2Selector,
           hs2Auto.metricsPort(), hs2Auto.metricsScrapeIntervalSeconds());
+    }
+
+    // HiveServer2
+    if (spec.hiveServer2().autoscaling().isEnabled()) {
+      AutoscalingSpec hs2Auto = spec.hiveServer2().autoscaling();
+      String hs2Key = namespace + "/" + clusterName + "/" + ConfigUtils.COMPONENT_HIVESERVER2;
       int maxStale = hs2Auto.metricsScrapeIntervalSeconds() * 3;
       List<PodMetrics> hs2Metrics = metricsCache.getOrEmpty(hs2Key, maxStale);
 
@@ -203,32 +215,46 @@ public class HiveClusterAutoscaler {
           spec.metastore().replicas(), patches, statuses, msMetrics);
     }
 
-    // LLAP
-    if (spec.llap().isEnabled() && spec.llap().autoscaling().isEnabled()) {
-      AutoscalingSpec llapAuto = spec.llap().autoscaling();
-      Map<String, String> llapSelector = Labels.selectorForComponent(cluster, ConfigUtils.COMPONENT_LLAP);
+    // LLAP clusters (each evaluated independently)
+    for (LlapSpec llapSpec : spec.llapClusters()) {
+      if (!llapSpec.isEnabled() || !llapSpec.autoscaling().isEnabled()) {
+        continue;
+      }
+      String llapComponentKey = ConfigUtils.llapComponentKey(llapSpec.name());
+      AutoscalingSpec llapAuto = llapSpec.autoscaling();
+      Map<String, String> llapSelector = Labels.selectorForLlapCluster(cluster, llapSpec.name());
       bgScraper.registerOrUpdate(namespace, clusterName,
-          ConfigUtils.COMPONENT_LLAP, llapSelector,
+          llapComponentKey, llapSelector,
           llapAuto.metricsPort(), llapAuto.metricsScrapeIntervalSeconds());
-      String llapKey = namespace + "/" + clusterName + "/" + ConfigUtils.COMPONENT_LLAP;
+      String llapKey = cacheKey(namespace, clusterName, llapComponentKey);
       List<PodMetrics> llapMetrics = metricsCache.getOrEmpty(llapKey, llapAuto.metricsScrapeIntervalSeconds() * 3);
       evaluateComponent(cluster, client, namespace, clusterName,
-          ConfigUtils.COMPONENT_LLAP, llapAuto,
-          spec.llap().replicas(), patches, statuses, llapMetrics);
+          llapComponentKey, llapAuto,
+          llapSpec.replicas(), patches, statuses, llapMetrics);
     }
 
-    // TezAM
-    if (spec.tezAm().isEnabled() && spec.tezAm().autoscaling().isEnabled()) {
-      AutoscalingSpec tezAuto = spec.tezAm().autoscaling();
-      Map<String, String> tezSelector = Labels.selectorForComponent(cluster, ConfigUtils.COMPONENT_TEZAM);
-      bgScraper.registerOrUpdate(namespace, clusterName,
-          ConfigUtils.COMPONENT_TEZAM, tezSelector,
-          tezAuto.metricsPort(), tezAuto.metricsScrapeIntervalSeconds());
-      String tezKey = namespace + "/" + clusterName + "/" + ConfigUtils.COMPONENT_TEZAM;
-      List<PodMetrics> tezMetrics = metricsCache.getOrEmpty(tezKey, tezAuto.metricsScrapeIntervalSeconds() * 3);
-      evaluateComponent(cluster, client, namespace, clusterName,
-          ConfigUtils.COMPONENT_TEZAM, tezAuto,
-          spec.tezAm().replicas(), patches, statuses, tezMetrics);
+    // Per-LLAP TezAM (one TezAM per LLAP cluster, each with its own autoscaling config)
+    if (spec.tezAm().isEnabled()) {
+      for (LlapSpec llapSpec : spec.llapClusters()) {
+        if (!llapSpec.isEnabled()) {
+          continue;
+        }
+        LlapSpec.LlapTezAmSpec perLlapTezAm = llapSpec.tezAm();
+        if (!perLlapTezAm.autoscaling().isEnabled()) {
+          continue;
+        }
+        AutoscalingSpec tezAuto = perLlapTezAm.autoscaling();
+        String tezAmComponentKey = ConfigUtils.tezAmComponentKey(llapSpec.name());
+        Map<String, String> tezSelector = Labels.selectorForTezAmCluster(cluster, llapSpec.name());
+        bgScraper.registerOrUpdate(namespace, clusterName,
+            tezAmComponentKey, tezSelector,
+            tezAuto.metricsPort(), tezAuto.metricsScrapeIntervalSeconds());
+        String tezKey = cacheKey(namespace, clusterName, tezAmComponentKey);
+        List<PodMetrics> tezMetrics = metricsCache.getOrEmpty(tezKey, tezAuto.metricsScrapeIntervalSeconds() * 3);
+        evaluateComponent(cluster, client, namespace, clusterName,
+            tezAmComponentKey, tezAuto,
+            perLlapTezAm.replicas(), patches, statuses, tezMetrics);
+      }
     }
 
     return new AutoscalingEvaluation(patches, statuses);
@@ -258,8 +284,8 @@ public class HiveClusterAutoscaler {
 
     // For LLAP and TezAM, scaling decisions are based on HS2 metrics (activation gate),
     // not their own pod metrics. Allow evaluation even with 0 own pods.
-    boolean usesHs2Activation = ConfigUtils.COMPONENT_LLAP.equals(component)
-        || ConfigUtils.COMPONENT_TEZAM.equals(component);
+    boolean usesHs2Activation = component.startsWith(ConfigUtils.COMPONENT_LLAP + "-")
+        || component.startsWith(ConfigUtils.COMPONENT_TEZAM + "-");
 
     if (metrics.isEmpty() && !usesHs2Activation) {
       LOG.debug("[{}] No ready pods to scrape, skipping", component);
@@ -305,19 +331,39 @@ public class HiveClusterAutoscaler {
   }
 
   private ScalingStrategy createStrategy(String component, HiveCluster cluster) {
+    if (component.startsWith(ConfigUtils.COMPONENT_LLAP + "-")) {
+      String llapName = component.substring(ConfigUtils.COMPONENT_LLAP.length() + 1);
+      return new LlapScalingStrategy(this, cluster, llapName);
+    }
+    if (component.startsWith(ConfigUtils.COMPONENT_TEZAM + "-")) {
+      String llapName = component.substring(ConfigUtils.COMPONENT_TEZAM.length() + 1);
+      return new TezAmScalingStrategy(this, cluster, llapName);
+    }
     return switch (component) {
     case ConfigUtils.COMPONENT_HIVESERVER2 -> new HiveServer2ScalingStrategy();
     case ConfigUtils.COMPONENT_METASTORE -> new MetastoreScalingStrategy();
-    case ConfigUtils.COMPONENT_LLAP -> new LlapScalingStrategy(this, cluster);
-    case ConfigUtils.COMPONENT_TEZAM -> new TezAmScalingStrategy(this, cluster);
     default -> throw new IllegalArgumentException("Unknown component: " + component);
     };
   }
 
   private int getCurrentReplicas(KubernetesClient client, String namespace,
       String clusterName, String component) {
-    String workloadName = clusterName + "-" + component;
-    if (ConfigUtils.COMPONENT_LLAP.equals(component) || ConfigUtils.COMPONENT_TEZAM.equals(component)) {
+    // Component key → workload name mapping:
+    //   "llap-{name}"  → "{cluster}-{name}"
+    //   "tezam-{name}" → "{cluster}-tezam-{name}"
+    //   other          → "{cluster}-{component}"
+    String workloadName;
+    if (component.startsWith(ConfigUtils.COMPONENT_LLAP + "-")) {
+      String llapName = component.substring(ConfigUtils.COMPONENT_LLAP.length() + 1);
+      workloadName = clusterName + "-" + llapName;
+    } else if (component.startsWith(ConfigUtils.COMPONENT_TEZAM + "-")) {
+      String llapName = component.substring(ConfigUtils.COMPONENT_TEZAM.length() + 1);
+      workloadName = clusterName + "-tezam-" + llapName;
+    } else {
+      workloadName = clusterName + "-" + component;
+    }
+    if (component.startsWith(ConfigUtils.COMPONENT_LLAP + "-")
+        || component.startsWith(ConfigUtils.COMPONENT_TEZAM + "-")) {
       var ss = client.apps().statefulSets()
           .inNamespace(namespace).withName(workloadName).get();
       return ss != null && ss.getSpec().getReplicas() != null ? ss.getSpec().getReplicas() : 0;

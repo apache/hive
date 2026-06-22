@@ -111,6 +111,7 @@ public class TestRestrictedList {
     addToExpectedRestrictedMap("hive.hook.proto.base-directory");
     addToExpectedRestrictedMap("hive.rewrite.data.policy");
     addToExpectedRestrictedMap("hive.query.history.enabled");
+    addToExpectedRestrictedMap("hive.llap.cluster.routing.rules");
 
     checkRestrictedListMatch();
   }
