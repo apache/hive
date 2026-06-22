@@ -147,7 +147,11 @@ public class AvroSerdeUtils {
       Schema s;
       if (requiresHttpFetch(schemaString)) {
         URL url = new URL(schemaString);
-        try (InputStream in = url.openStream()) {
+        java.net.URLConnection conn = url.openConnection();
+        if (conn instanceof java.net.HttpURLConnection) {
+          ((java.net.HttpURLConnection) conn).setInstanceFollowRedirects(false);
+        }
+        try (InputStream in = conn.getInputStream()) {
           s = getSchemaParser().parse(in);
         }
       } else {
@@ -184,6 +188,11 @@ public class AvroSerdeUtils {
     }
 
     final String schemeLower = scheme.toLowerCase(Locale.ROOT);
+    if ("file".equals(schemeLower)) {
+      throw new AvroSerdeException("avro.schema.url scheme '" + scheme
+          + "' is not permitted. Use a Hadoop FileSystem URI (e.g. hdfs://, s3a://) or "
+          + "avro.schema.literal instead.");
+    }
     if (HTTP_SCHEMES.contains(schemeLower)) {
       if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_AVRO_SCHEMA_URL_REMOTE_HTTP_ENABLED)) {
         throw new AvroSerdeException("avro.schema.url scheme '" + scheme
@@ -226,8 +235,7 @@ public class AvroSerdeUtils {
         return true;
       }
       String schemeLower = scheme.toLowerCase(Locale.ROOT);
-      return !HTTP_SCHEMES.contains(schemeLower)
-          && getAllowedFilesystemSchemes(null).contains(schemeLower);
+      return !HTTP_SCHEMES.contains(schemeLower) && !"file".equals(schemeLower);
     } catch (URISyntaxException e) {
       return false;
     }

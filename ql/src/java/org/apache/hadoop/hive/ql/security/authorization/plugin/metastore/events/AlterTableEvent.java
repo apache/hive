@@ -133,6 +133,10 @@ public class AlterTableEvent extends HiveMetaStoreAuthorizableEvent {
     if (!AvroSerDe.class.getName().equals(newTable.getSd().getSerdeInfo().getSerializationLib())) {
       return;
     }
+    String literal = newTable.getParameters().get(AvroTableProperties.SCHEMA_LITERAL.getPropName());
+    if (StringUtils.isNotEmpty(literal) && !AvroSerdeUtils.SCHEMA_NONE.equals(literal)) {
+      return;
+    }
     String newSchemaUrl = newTable.getParameters().get(AvroTableProperties.SCHEMA_URL.getPropName());
     if (StringUtils.isEmpty(newSchemaUrl) || AvroSerdeUtils.SCHEMA_NONE.equals(newSchemaUrl)) {
       return;

@@ -230,9 +230,9 @@ public class TestAvroSerdeUtils {
   public void determineSchemaAllowsHttpWhenHostAllowlisted() throws IOException {
     HiveConf conf = new HiveConf();
     conf.setBoolVar(HiveConf.ConfVars.HIVE_AVRO_SCHEMA_URL_REMOTE_HTTP_ENABLED, true);
-    conf.setVar(HiveConf.ConfVars.HIVE_AVRO_SCHEMA_URL_HTTP_ALLOWED_HOSTS, "schema.example.com");
+    conf.setVar(HiveConf.ConfVars.HIVE_AVRO_SCHEMA_URL_HTTP_ALLOWED_HOSTS, "127.0.0.1");
     Properties props = new Properties();
-    props.put(AvroTableProperties.SCHEMA_URL.getPropName(), "http://schema.example.com/schema.avsc");
+    props.put(AvroTableProperties.SCHEMA_URL.getPropName(), "http://127.0.0.1:1/schema.avsc");
 
     try {
       determineSchemaOrThrowException(conf, props);
