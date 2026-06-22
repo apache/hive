@@ -116,7 +116,7 @@ public class Table implements Serializable {
    */
   private List<FieldSchema> tablePartCols;
   private record TableColumn(int index, FieldSchema field) {}
-  private transient Map<String, TableColumn> nameToIndexedColumn;
+  private transient Map<String, TableColumn> columnsByName;
   private transient List<FieldSchema> tableNonPartCols;
   private transient Deserializer deserializer;
   private Class<? extends OutputFormat> outputFormatClass;
@@ -231,7 +231,7 @@ public class Table implements Serializable {
     this.tTable = tTable;
     tablePartCols = null;
     tableNonPartCols = null;
-    nameToIndexedColumn = null;
+    columnsByName = null;
   }
 
   /**
@@ -760,32 +760,32 @@ public class Table implements Serializable {
   }
 
   public Integer getColumnIndexByName(String colName) {
-    TableColumn column = lazyIndexedColumnByName().get(colName.toLowerCase());
+    TableColumn column = lazyColumnsByName().get(colName.toLowerCase());
     return column != null ? column.index() : null;
   }
 
   public FieldSchema getColumnByName(String colName) {
-    TableColumn column = lazyIndexedColumnByName().get(colName.toLowerCase());
+    TableColumn column = lazyColumnsByName().get(colName.toLowerCase());
     return column != null ? column.field() : null;
   }
 
-  private Map<String, TableColumn> lazyIndexedColumnByName() {
-    if (nameToIndexedColumn == null) {
-      this.nameToIndexedColumn = indexedColumnByName();
+  private Map<String, TableColumn> lazyColumnsByName() {
+    if (columnsByName == null) {
+      this.columnsByName = indexColumnsByName();
     }
-    return nameToIndexedColumn;
+    return columnsByName;
   }
 
-  private Map<String, TableColumn> indexedColumnByName() {
+  private Map<String, TableColumn> indexColumnsByName() {
     List<FieldSchema> fsList = new ArrayList<>(getColsInternal(false));
     if (!hasNonNativePartitionSupport() || isView()) {
       fsList.addAll(getPartitionKeys());
     }
-    Map<String, TableColumn> indexedColumns = Maps.newHashMapWithExpectedSize(fsList.size());
+    Map<String, TableColumn> columnsByName = Maps.newHashMapWithExpectedSize(fsList.size());
     for (int i = 0; i < fsList.size(); i++) {
-      indexedColumns.put(fsList.get(i).getName().toLowerCase(), new TableColumn(i, fsList.get(i)));
+      columnsByName.put(fsList.get(i).getName().toLowerCase(), new TableColumn(i, fsList.get(i)));
     }
-    return indexedColumns;
+    return columnsByName;
   }
 
   public List<FieldSchema> getCols() {
@@ -848,7 +848,7 @@ public class Table implements Serializable {
     tTable.setPartitionKeys(partCols);
     tablePartCols = null;
     tableNonPartCols = null;
-    nameToIndexedColumn = null;
+    columnsByName = null;
   }
 
   public String getCatName() {
@@ -900,7 +900,7 @@ public class Table implements Serializable {
     tTable.getSd().setCols(fields);
     tableNonPartCols = null;
     tablePartCols = null;
-    nameToIndexedColumn = null;
+    columnsByName = null;
   }
 
   public void setNumBuckets(int nb) {
