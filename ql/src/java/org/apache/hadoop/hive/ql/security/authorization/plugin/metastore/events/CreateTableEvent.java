@@ -84,6 +84,10 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
     if (!AvroSerDe.class.getName().equals(table.getSd().getSerdeInfo().getSerializationLib())) {
       return;
     }
+    String literal = table.getParameters().get(AvroTableProperties.SCHEMA_LITERAL.getPropName());
+    if (StringUtils.isNotEmpty(literal) && !AvroSerdeUtils.SCHEMA_NONE.equals(literal)) {
+      return;
+    }
     String schemaUrl = table.getParameters().get(AvroTableProperties.SCHEMA_URL.getPropName());
     if (StringUtils.isEmpty(schemaUrl) || AvroSerdeUtils.SCHEMA_NONE.equals(schemaUrl)) {
       return;
