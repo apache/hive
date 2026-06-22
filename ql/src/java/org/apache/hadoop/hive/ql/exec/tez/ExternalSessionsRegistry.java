@@ -40,4 +40,11 @@ public interface ExternalSessionsRegistry {
    * Closes the external session registry.
    */
   void close();
+
+  /**
+   * Returns true if this registry instance currently holds a claim on the given AM.
+   */
+  default boolean isClaimed(String appId) {
+    return true; // Non-ZK registries case is always true
+  }
 }
