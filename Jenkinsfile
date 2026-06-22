@@ -411,7 +411,7 @@ tar -xzf packaging/target/apache-hive-*-nightly-*-src.tar.gz
               sh """#!/bin/bash -e
               tar -czf ${fn} --files-from  <(find . -path '*/surefire-reports/*')"""
               saveFile(fn)
-              junit '**/TEST-*.xml'
+              junit skipPublishingChecks: true, testResults: '**/TEST-*.xml'
             }
           }
         }
