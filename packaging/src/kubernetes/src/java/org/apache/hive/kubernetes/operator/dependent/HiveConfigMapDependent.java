@@ -131,24 +131,4 @@ public abstract class HiveConfigMapDependent extends HiveDependentResource<Confi
     }
   }
 
-  /**
-   * LLAP llap-daemon-site.xml ConfigMap.
-   */
-  @KubernetesDependent(informer = @Informer(labelSelector = "app.kubernetes.io/component=llap,"
-      + "app.kubernetes.io/managed-by=hive-kubernetes-operator"))
-  public static class Llap extends HiveConfigMapDependent {
-    public Llap() {
-      super(ConfigUtils.COMPONENT_LLAP, "llap-config");
-    }
-
-    @Override
-    protected void addData(ConfigMapBuilder builder, HiveCluster hiveCluster) {
-      builder.addToData("llap-daemon-site.xml",
-          HadoopXmlBuilder.buildXml(HiveConfigBuilder.getLlapDaemonSite(hiveCluster.getSpec())));
-    }
-
-    public static String resourceName(HiveCluster hiveCluster) {
-      return hiveCluster.getMetadata().getName() + "-llap-config";
-    }
-  }
 }

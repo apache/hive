@@ -57,6 +57,8 @@ public class MetricsConstant {
   public static final String HS2_OPEN_SESSIONS = "hs2_open_sessions";
   public static final String HS2_ACTIVE_SESSIONS = "hs2_active_sessions";
   public static final String HS2_ABANDONED_SESSIONS = "hs2_abandoned_sessions";
+  // Per-LLAP-cluster session count: metric name is HS2_LLAP_TARGET_SESSIONS + "_" + sanitizedTarget
+  public static final String HS2_LLAP_TARGET_SESSIONS = "hs2_llap_target_sessions";
   public static final String HS2_AVG_OPEN_SESSION_TIME = "hs2_avg_open_session_time";
   public static final String HS2_AVG_ACTIVE_SESSION_TIME = "hs2_avg_active_session_time";
 

@@ -5106,6 +5106,11 @@ public class HiveConf extends Configuration {
     LLAP_ZK_REGISTRY_NAMESPACE("hive.llap.zk.registry.namespace", null,
         "In the LLAP ZooKeeper-based registry, overrides the ZK path namespace. Note that\n" +
         "using this makes the path management (e.g. setting correct ACLs) your responsibility."),
+    LLAP_CLUSTER_ROUTING_RULES("hive.llap.cluster.routing.rules", "",
+        "Comma-separated rules mapping users/groups to LLAP cluster names.\n" +
+        "Format: user:<name>=<cluster>,group:<name>=<cluster>,default=<cluster>.\n" +
+        "Per-cluster configs are read from hive.llap.cluster.<cluster>.sessions.namespace\n" +
+        "and hive.llap.cluster.<cluster>.registry.namespace."),
     // Note: do not rename to ..service.acl; Hadoop generates .hosts setting name from this,
     // resulting in a collision with existing hive.llap.daemon.service.hosts and bizarre errors.
     // These are read by Hadoop IPC, so you should check the usage and naming conventions (e.g.
@@ -5560,7 +5565,8 @@ public class HiveConf extends Configuration {
             "hive.iceberg.allow.datafiles.in.table.location.only," +
             "hive.hook.proto.base-directory," +
             "hive.rewrite.data.policy," +
-            "hive.query.history.enabled", // Query History service is initialized on HS2 startup (HIVE-29170)
+            "hive.query.history.enabled," + // Query History service is initialized on HS2 startup (HIVE-29170)
+            "hive.llap.cluster.routing.rules",
         "Comma separated list of configuration options which are immutable at runtime"),
     HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
         METASTORE_PWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname

@@ -472,9 +472,8 @@ public class TezTask extends Task<TezWork> {
       TezSession session, String[] nonConfResources) throws Exception {
     TezClient client = session.getTezClient();
     // TODO null can also mean that this operation was interrupted. Should we really try to re-create the session in that case ?
-    if (client == null) {
-      // Note: the only sane case where this can happen is the non-pool one. We should get rid
-      //       of it, in non-pool case perf doesn't matter so we might as well open at get time
+    if (client == null || !session.isOpen()) {
+      // Note: We should get rid of it, in non-pool case perf doesn't matter so we might as well open at get time
       //       and then call update like we do in the else.
       // Can happen if the user sets the tez flag after the session was established.
       LOG.info("Tez session hasn't been created yet. Opening session");
@@ -692,7 +691,7 @@ public class TezTask extends Task<TezWork> {
 
   private DAGClient submitInternal(DAG dag, TezSession sessionState) throws TezException, IOException {
     runtimeContext.init(sessionState);
-    return sessionState.getTezClient().submitDAG(dag);
+    return sessionState.submitDAG(dag);
   }
 
   private void sessionDestroyOrReturnToPool(Ref<TezSession> sessionStateRef,

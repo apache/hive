@@ -44,12 +44,12 @@ spec:
     configOverrides:
       hive.server2.enable.doAs: "false"
 
-  llap:
+  llapClusters:
+  - name: llap0
     enabled: true
     replicas: 2
     executors: 1
     memoryMb: 1024
-    serviceHosts: "@llap0"
     resources:
       requestsMemory: "2Gi"
       limitsMemory: "3Gi"

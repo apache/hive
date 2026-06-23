@@ -22,9 +22,11 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import io.fabric8.kubernetes.api.model.Condition;
 import io.fabric8.kubernetes.api.model.HasMetadata;
@@ -44,13 +46,16 @@ import org.apache.hive.kubernetes.operator.autoscaling.HiveClusterAutoscaler;
 import org.apache.hive.kubernetes.operator.autoscaling.MetricsCache;
 import org.apache.hive.kubernetes.operator.autoscaling.MetricsScraper;
 import org.apache.hive.kubernetes.operator.autoscaling.PodMetrics;
+import org.apache.hive.kubernetes.operator.dependent.LlapResourceBuilder;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
 import org.apache.hive.kubernetes.operator.model.HiveClusterStatus;
 import org.apache.hive.kubernetes.operator.model.spec.AutoSuspendSpec;
+import org.apache.hive.kubernetes.operator.model.spec.LlapSpec;
 import org.apache.hive.kubernetes.operator.model.status.AutoscalingStatus;
 import org.apache.hive.kubernetes.operator.model.status.ComponentStatus;
 import org.apache.hive.kubernetes.operator.util.ConfigUtils;
+import org.apache.hive.kubernetes.operator.util.Labels;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -149,6 +154,11 @@ public class HiveClusterReconciler
       newStatus.setIdleForMinutes(null);
       newStatus.setSuspendedSince(null);
       break;
+    }
+
+    // --- Imperative LLAP cluster management ---
+    if (action != SuspendAction.STAY_SUSPENDED && action != SuspendAction.SUSPEND_NOW) {
+      reconcileLlapClusters(resource, client);
     }
 
     // --- Autoscaling evaluation (only when enabled and not suspended) ---
@@ -274,24 +284,38 @@ public class HiveClusterReconciler
         hs2Ready ? "HiveServer2 is ready" : "HiveServer2 not yet ready",
         existingConditions));
 
-    // LLAP status (optional)
-    if (resource.getSpec().llap().isEnabled()) {
-      int llapMin = resource.getSpec().llap().autoscaling().isEnabled()
-          ? resource.getSpec().llap().autoscaling().minReplicas()
-          : resource.getSpec().llap().replicas();
-      status.setLlap(buildComponentStatus(context, StatefulSet.class,
-          resource.getMetadata().getName() + "-llap",
-          resource.getSpec().llap().replicas(), llapMin));
+    // LLAP clusters status
+    Map<String, ComponentStatus> llapStatuses = new java.util.LinkedHashMap<>();
+    for (var llapSpec : resource.getSpec().llapClusters()) {
+      if (!llapSpec.isEnabled()) {
+        continue;
+      }
+      String ssName = resource.getMetadata().getName() + "-" + llapSpec.name();
+      int llapMin = llapSpec.autoscaling().isEnabled()
+          ? llapSpec.autoscaling().minReplicas()
+          : llapSpec.replicas();
+      llapStatuses.put(llapSpec.name(),
+          buildComponentStatus(context, StatefulSet.class, ssName, llapSpec.replicas(), llapMin));
     }
+    status.setLlapClusters(llapStatuses);
 
-    // TezAM status (optional)
+    // Per-LLAP TezAM status (one TezAM per LLAP cluster)
     if (resource.getSpec().tezAm().isEnabled()) {
-      int tezAmMin = resource.getSpec().tezAm().autoscaling().isEnabled()
-          ? resource.getSpec().tezAm().autoscaling().minReplicas()
-          : resource.getSpec().tezAm().replicas();
-      status.setTezAm(buildComponentStatus(context, StatefulSet.class,
-          resource.getMetadata().getName() + "-tezam",
-          resource.getSpec().tezAm().replicas(), tezAmMin));
+      Map<String, ComponentStatus> tezAmStatuses = new java.util.LinkedHashMap<>();
+      for (var llapSpec : resource.getSpec().llapClusters()) {
+        if (!llapSpec.isEnabled()) {
+          continue;
+        }
+        LlapSpec.LlapTezAmSpec perLlapTezAm = llapSpec.tezAm();
+        String tezAmSsName = LlapResourceBuilder.tezAmResourceName(resource, llapSpec);
+        int tezAmMin = perLlapTezAm.autoscaling().isEnabled()
+            ? perLlapTezAm.autoscaling().minReplicas()
+            : perLlapTezAm.replicas();
+        tezAmStatuses.put(llapSpec.name(),
+            buildComponentStatus(context, StatefulSet.class, tezAmSsName,
+                perLlapTezAm.replicas(), tezAmMin));
+      }
+      status.setTezAmClusters(tezAmStatuses);
     }
 
     // Overall Ready condition
@@ -418,10 +442,10 @@ public class HiveClusterReconciler
     if (!Objects.equals(a.getHiveServer2(), b.getHiveServer2())) {
       return false;
     }
-    if (!Objects.equals(a.getLlap(), b.getLlap())) {
+    if (!Objects.equals(a.getLlapClusters(), b.getLlapClusters())) {
       return false;
     }
-    if (!Objects.equals(a.getTezAm(), b.getTezAm())) {
+    if (!Objects.equals(a.getTezAmClusters(), b.getTezAmClusters())) {
       return false;
     }
     // Compare conditions by type+status+reason+message, ignoring lastTransitionTime
@@ -459,11 +483,17 @@ public class HiveClusterReconciler
     if (statuses.containsKey(ConfigUtils.COMPONENT_METASTORE) && status.getMetastore() != null) {
       status.getMetastore().setAutoscaling(statuses.get(ConfigUtils.COMPONENT_METASTORE));
     }
-    if (statuses.containsKey(ConfigUtils.COMPONENT_LLAP) && status.getLlap() != null) {
-      status.getLlap().setAutoscaling(statuses.get(ConfigUtils.COMPONENT_LLAP));
+    for (Map.Entry<String, ComponentStatus> entry : status.getLlapClusters().entrySet()) {
+      String llapKey = ConfigUtils.llapComponentKey(entry.getKey());
+      if (statuses.containsKey(llapKey)) {
+        entry.getValue().setAutoscaling(statuses.get(llapKey));
+      }
     }
-    if (statuses.containsKey(ConfigUtils.COMPONENT_TEZAM) && status.getTezAm() != null) {
-      status.getTezAm().setAutoscaling(statuses.get(ConfigUtils.COMPONENT_TEZAM));
+    for (Map.Entry<String, ComponentStatus> entry : status.getTezAmClusters().entrySet()) {
+      String tezAmKey = ConfigUtils.tezAmComponentKey(entry.getKey());
+      if (statuses.containsKey(tezAmKey)) {
+        entry.getValue().setAutoscaling(statuses.get(tezAmKey));
+      }
     }
   }
 
@@ -486,11 +516,13 @@ public class HiveClusterReconciler
     if (spec.metastore().isEnabled() && spec.metastore().autoscaling().isEnabled()) {
       return true;
     }
-    if (spec.llap().isEnabled() && spec.llap().autoscaling().isEnabled()) {
-      return true;
-    }
-    if (spec.tezAm().isEnabled() && spec.tezAm().autoscaling().isEnabled()) {
-      return true;
+    for (var llap : spec.llapClusters()) {
+      if (llap.isEnabled() && llap.autoscaling().isEnabled()) {
+        return true;
+      }
+      if (llap.isEnabled() && spec.tezAm().isEnabled() && llap.tezAm().autoscaling().isEnabled()) {
+        return true;
+      }
     }
     return false;
   }
@@ -503,11 +535,13 @@ public class HiveClusterReconciler
     if (spec.metastore().isEnabled() && spec.metastore().autoscaling().isEnabled()) {
       min = Math.min(min, spec.metastore().autoscaling().metricsScrapeIntervalSeconds());
     }
-    if (spec.llap().isEnabled() && spec.llap().autoscaling().isEnabled()) {
-      min = Math.min(min, spec.llap().autoscaling().metricsScrapeIntervalSeconds());
-    }
-    if (spec.tezAm().isEnabled() && spec.tezAm().autoscaling().isEnabled()) {
-      min = Math.min(min, spec.tezAm().autoscaling().metricsScrapeIntervalSeconds());
+    for (var llap : spec.llapClusters()) {
+      if (llap.isEnabled() && llap.autoscaling().isEnabled()) {
+        min = Math.min(min, llap.autoscaling().metricsScrapeIntervalSeconds());
+      }
+      if (llap.isEnabled() && spec.tezAm().isEnabled() && llap.tezAm().autoscaling().isEnabled()) {
+        min = Math.min(min, llap.tezAm().autoscaling().metricsScrapeIntervalSeconds());
+      }
     }
     return min == Integer.MAX_VALUE ? 10 : min;
   }
@@ -515,9 +549,21 @@ public class HiveClusterReconciler
   private void patchReplicas(KubernetesClient client, HiveCluster resource,
       String component, int replicas) {
     String namespace = resource.getMetadata().getNamespace();
-    String workloadName = resource.getMetadata().getName() + "-" + component;
+    // Component keys use prefixes: "llap-{name}" → workload "{cluster}-{name}",
+    // "tezam-{name}" → workload "{cluster}-tezam-{name}".
+    String workloadName;
+    if (component.startsWith(ConfigUtils.COMPONENT_LLAP + "-")) {
+      String llapName = component.substring(ConfigUtils.COMPONENT_LLAP.length() + 1);
+      workloadName = resource.getMetadata().getName() + "-" + llapName;
+    } else if (component.startsWith(ConfigUtils.COMPONENT_TEZAM + "-")) {
+      String llapName = component.substring(ConfigUtils.COMPONENT_TEZAM.length() + 1);
+      workloadName = resource.getMetadata().getName() + "-tezam-" + llapName;
+    } else {
+      workloadName = resource.getMetadata().getName() + "-" + component;
+    }
     try {
-      if (ConfigUtils.COMPONENT_LLAP.equals(component) || ConfigUtils.COMPONENT_TEZAM.equals(component)) {
+      if (component.startsWith(ConfigUtils.COMPONENT_LLAP + "-")
+          || component.startsWith(ConfigUtils.COMPONENT_TEZAM + "-")) {
         client.apps().statefulSets().inNamespace(namespace).withName(workloadName).scale(replicas);
       } else {
         client.apps().deployments().inNamespace(namespace).withName(workloadName).scale(replicas);
@@ -537,13 +583,182 @@ public class HiveClusterReconciler
           HiveClusterSpec oldSpec = hc.getSpec();
           HiveClusterSpec newSpec = new HiveClusterSpec(
               oldSpec.image(), oldSpec.imagePullPolicy(), oldSpec.metastore(),
-              oldSpec.hiveServer2(), oldSpec.llap(), oldSpec.tezAm(), oldSpec.zookeeper(),
+              oldSpec.hiveServer2(), oldSpec.llapClusters(), oldSpec.llapClusterRouting(),
+              oldSpec.tezAm(), oldSpec.zookeeper(),
               oldSpec.hadoop(), oldSpec.envVars(), oldSpec.externalJars(),
               oldSpec.volumes(), oldSpec.volumeMounts(), oldSpec.autoSuspend(), suspend);
           hc.setSpec(newSpec);
           return hc;
         });
     LOG.info("Patched spec.suspend={} on {}/{}", suspend, ns, name);
+  }
+
+  // --- Imperative LLAP cluster management ---
+
+  /**
+   * Creates or updates LLAP cluster resources (ConfigMap, Service, StatefulSet, PDB)
+   * imperatively via server-side apply. Also garbage-collects resources for removed clusters.
+   */
+  private void reconcileLlapClusters(HiveCluster resource, KubernetesClient client) {
+    String ns = resource.getMetadata().getNamespace();
+    String clusterName = resource.getMetadata().getName();
+    Set<String> desiredNames = new HashSet<>();
+
+    for (LlapSpec llapSpec : resource.getSpec().llapClusters()) {
+      if (!llapSpec.isEnabled()) {
+        continue;
+      }
+      desiredNames.add(llapSpec.name());
+      int replicas = resolveLlapReplicaCount(resource, llapSpec, ns, clusterName);
+
+      // --- LLAP resources ---
+      client.configMaps().inNamespace(ns)
+          .resource(LlapResourceBuilder.buildConfigMap(resource, llapSpec))
+          .serverSideApply();
+      client.services().inNamespace(ns)
+          .resource(LlapResourceBuilder.buildService(resource, llapSpec))
+          .serverSideApply();
+
+      // Always include replicas in SSA with forceConflicts to avoid the
+      // brief scale-up-then-down on first create (K8s defaults to 1 if omitted).
+      // resolveLlapReplicaCount already reads the autoscaler's managed value,
+      // so this is always the correct replica count.
+      client.apps().statefulSets().inNamespace(ns)
+          .resource(LlapResourceBuilder.buildStatefulSet(resource, llapSpec, replicas))
+          .forceConflicts()
+          .serverSideApply();
+      if (llapSpec.autoscaling().isEnabled()) {
+        client.policy().v1().podDisruptionBudget().inNamespace(ns)
+            .resource(LlapResourceBuilder.buildPdb(resource, llapSpec))
+            .serverSideApply();
+      }
+
+      // --- Per-LLAP TezAM resources (one TezAM per LLAP cluster) ---
+      if (resource.getSpec().tezAm().isEnabled()) {
+        int tezAmReplicas = resolveTezAmReplicaCount(resource, ns, clusterName, llapSpec);
+        client.configMaps().inNamespace(ns)
+            .resource(LlapResourceBuilder.buildTezAmConfigMap(resource, llapSpec))
+            .serverSideApply();
+        client.services().inNamespace(ns)
+            .resource(LlapResourceBuilder.buildTezAmService(resource, llapSpec))
+            .serverSideApply();
+        client.apps().statefulSets().inNamespace(ns)
+            .resource(LlapResourceBuilder.buildTezAmStatefulSet(resource, llapSpec, tezAmReplicas))
+            .forceConflicts()
+            .serverSideApply();
+        if (llapSpec.tezAm().autoscaling().isEnabled()) {
+          client.policy().v1().podDisruptionBudget().inNamespace(ns)
+              .resource(LlapResourceBuilder.buildTezAmPdb(resource, llapSpec))
+              .serverSideApply();
+        }
+      }
+    }
+
+    garbageCollectLlapResources(client, ns, clusterName, desiredNames);
+  }
+
+  /**
+   * Resolves the replica count for a LLAP cluster, respecting autoscaler-managed values
+   * and suspend state.
+   */
+  private int resolveLlapReplicaCount(HiveCluster resource,
+      LlapSpec llapSpec, String ns, String clusterName) {
+    if (resource.getSpec().suspend()) {
+      return 0;
+    }
+    String componentKey = ConfigUtils.llapComponentKey(llapSpec.name());
+    Integer managed = HiveClusterAutoscaler.getManagedReplicas(ns, clusterName, componentKey);
+    if (managed != null) {
+      return managed;
+    }
+    // First reconcile before autoscaler runs: start at minReplicas if autoscaling enabled
+    if (llapSpec.autoscaling().isEnabled()) {
+      return llapSpec.autoscaling().minReplicas();
+    }
+    return llapSpec.replicas();
+  }
+
+  /**
+   * Resolves the replica count for a per-LLAP TezAM cluster.
+   * TezAM follows its paired LLAP cluster's lifecycle.
+   */
+  private int resolveTezAmReplicaCount(HiveCluster resource,
+      String ns, String clusterName, LlapSpec llapSpec) {
+    if (resource.getSpec().suspend()) {
+      return 0;
+    }
+    LlapSpec.LlapTezAmSpec tezAmSpec = llapSpec.tezAm();
+    // Check if autoscaler has a managed value for this specific TezAM
+    String tezAmComponentKey = ConfigUtils.tezAmComponentKey(llapSpec.name());
+    Integer tezAmManaged = HiveClusterAutoscaler.getManagedReplicas(ns, clusterName, tezAmComponentKey);
+    if (tezAmManaged != null) {
+      return tezAmManaged;
+    }
+    // TezAM follows LLAP's autoscaling gate: only run if LLAP is running.
+    String llapComponentKey = ConfigUtils.llapComponentKey(llapSpec.name());
+    Integer llapManaged = HiveClusterAutoscaler.getManagedReplicas(ns, clusterName, llapComponentKey);
+    if (llapManaged != null && llapManaged == 0) {
+      return 0;
+    }
+    if (llapSpec.autoscaling().isEnabled() && llapManaged == null) {
+      // First reconcile, LLAP starts at minReplicas (likely 0) — TezAM matches
+      return llapSpec.autoscaling().minReplicas() > 0
+          ? tezAmSpec.replicas() : 0;
+    }
+    return tezAmSpec.replicas();
+  }
+
+  /**
+   * Deletes LLAP and per-LLAP TezAM resources that belong to this HiveCluster
+   * but are no longer in the desired set of LLAP cluster names.
+   */
+  private void garbageCollectLlapResources(KubernetesClient client, String ns,
+      String clusterName, Set<String> desiredNames) {
+    Map<String, String> llapSelector = Map.of(
+        Labels.MANAGED_BY, Labels.MANAGED_BY_VALUE,
+        Labels.APP_INSTANCE, clusterName,
+        Labels.APP_COMPONENT, ConfigUtils.COMPONENT_LLAP);
+
+    // Find StatefulSets owned by this cluster with component=llap
+    client.apps().statefulSets().inNamespace(ns).withLabels(llapSelector).list().getItems()
+        .stream()
+        .filter(ss -> {
+          String llapName = ss.getMetadata().getLabels().get(Labels.LLAP_CLUSTER);
+          return llapName != null && !desiredNames.contains(llapName);
+        })
+        .forEach(ss -> {
+          String llapName = ss.getMetadata().getLabels().get(Labels.LLAP_CLUSTER);
+          LOG.info("Garbage-collecting LLAP cluster '{}' resources in {}/{}", llapName, ns, clusterName);
+          client.apps().statefulSets().inNamespace(ns).withName(ss.getMetadata().getName()).delete();
+          client.services().inNamespace(ns).withName(ss.getMetadata().getName()).delete();
+          client.configMaps().inNamespace(ns)
+              .withName(ss.getMetadata().getName() + "-config").delete();
+          client.policy().v1().podDisruptionBudget().inNamespace(ns)
+              .withName(ss.getMetadata().getName() + "-pdb").delete();
+        });
+
+    // Garbage-collect per-LLAP TezAM resources
+    Map<String, String> tezamSelector = Map.of(
+        Labels.MANAGED_BY, Labels.MANAGED_BY_VALUE,
+        Labels.APP_INSTANCE, clusterName,
+        Labels.APP_COMPONENT, ConfigUtils.COMPONENT_TEZAM);
+
+    client.apps().statefulSets().inNamespace(ns).withLabels(tezamSelector).list().getItems()
+        .stream()
+        .filter(ss -> {
+          String llapName = ss.getMetadata().getLabels().get(Labels.LLAP_CLUSTER);
+          return llapName != null && !desiredNames.contains(llapName);
+        })
+        .forEach(ss -> {
+          String llapName = ss.getMetadata().getLabels().get(Labels.LLAP_CLUSTER);
+          LOG.info("Garbage-collecting TezAM for LLAP cluster '{}' in {}/{}", llapName, ns, clusterName);
+          client.apps().statefulSets().inNamespace(ns).withName(ss.getMetadata().getName()).delete();
+          client.services().inNamespace(ns).withName(ss.getMetadata().getName()).delete();
+          client.configMaps().inNamespace(ns)
+              .withName(ss.getMetadata().getName() + "-config").delete();
+          client.policy().v1().podDisruptionBudget().inNamespace(ns)
+              .withName(ss.getMetadata().getName() + "-pdb").delete();
+        });
   }
 
   // --- Auto-Suspend / Wake ---
@@ -603,16 +818,22 @@ public class HiveClusterReconciler
     String ns = resource.getMetadata().getNamespace();
     String name = resource.getMetadata().getName();
 
-    // All components must be at minReplicas
-    if (spec.llap().isEnabled()
-        && !isAtMinReplicas(client, ns, name + "-" + ConfigUtils.COMPONENT_LLAP, true,
-            spec.llap().autoscaling().minReplicas())) {
-      return false;
+    // All LLAP clusters must be at minReplicas
+    for (var llap : spec.llapClusters()) {
+      if (llap.isEnabled()
+          && !isAtMinReplicas(client, ns, name + "-" + llap.name(), true,
+              llap.autoscaling().minReplicas())) {
+        return false;
+      }
     }
-    if (spec.tezAm().isEnabled()
-        && !isAtMinReplicas(client, ns, name + "-" + ConfigUtils.COMPONENT_TEZAM, true,
-            spec.tezAm().autoscaling().minReplicas())) {
-      return false;
+    if (spec.tezAm().isEnabled()) {
+      for (var llap : spec.llapClusters()) {
+        if (llap.isEnabled()
+            && !isAtMinReplicas(client, ns, name + "-tezam-" + llap.name(), true,
+                llap.tezAm().autoscaling().minReplicas())) {
+          return false;
+        }
+      }
     }
     if (!isAtMinReplicas(client, ns, name + "-" + ConfigUtils.COMPONENT_HIVESERVER2, false,
         Math.max(1, spec.hiveServer2().autoscaling().minReplicas()))) {
@@ -684,11 +905,18 @@ public class HiveClusterReconciler
     if (spec.metastore().isEnabled() && spec.autoSuspend().includeMetastore()) {
       HiveClusterAutoscaler.setManagedReplicas(ns, name, ConfigUtils.COMPONENT_METASTORE, 0);
     }
-    if (spec.llap().isEnabled()) {
-      HiveClusterAutoscaler.setManagedReplicas(ns, name, ConfigUtils.COMPONENT_LLAP, 0);
+    for (var llap : spec.llapClusters()) {
+      if (llap.isEnabled()) {
+        HiveClusterAutoscaler.setManagedReplicas(ns, name, ConfigUtils.llapComponentKey(llap.name()), 0);
+      }
     }
     if (spec.tezAm().isEnabled()) {
-      HiveClusterAutoscaler.setManagedReplicas(ns, name, ConfigUtils.COMPONENT_TEZAM, 0);
+      for (var llap : spec.llapClusters()) {
+        if (llap.isEnabled()) {
+          HiveClusterAutoscaler.setManagedReplicas(ns, name,
+              ConfigUtils.tezAmComponentKey(llap.name()), 0);
+        }
+      }
     }
 
     LOG.info("Cluster {}/{} suspended", ns, name);
@@ -711,14 +939,21 @@ public class HiveClusterReconciler
       HiveClusterAutoscaler.setManagedReplicas(ns, name, ConfigUtils.COMPONENT_METASTORE, hmsMin);
     }
 
-    if (spec.llap().isEnabled()) {
-      int llapWake = spec.llap().autoscaling().minReplicas();
-      HiveClusterAutoscaler.setManagedReplicas(ns, name, ConfigUtils.COMPONENT_LLAP, llapWake);
+    for (var llap : spec.llapClusters()) {
+      if (llap.isEnabled()) {
+        int llapWake = llap.autoscaling().minReplicas();
+        HiveClusterAutoscaler.setManagedReplicas(ns, name, ConfigUtils.llapComponentKey(llap.name()), llapWake);
+      }
     }
 
     if (spec.tezAm().isEnabled()) {
-      int tezWake = spec.tezAm().autoscaling().minReplicas();
-      HiveClusterAutoscaler.setManagedReplicas(ns, name, ConfigUtils.COMPONENT_TEZAM, tezWake);
+      for (var llap : spec.llapClusters()) {
+        if (llap.isEnabled()) {
+          int tezWake = llap.tezAm().autoscaling().minReplicas();
+          HiveClusterAutoscaler.setManagedReplicas(ns, name,
+              ConfigUtils.tezAmComponentKey(llap.name()), tezWake);
+        }
+      }
     }
 
     LOG.info("Cluster {}/{} woken up — restored to minReplicas", ns, name);
@@ -733,11 +968,13 @@ public class HiveClusterReconciler
         && !spec.metastore().autoscaling().isEnabled()) {
       return false;
     }
-    if (spec.llap().isEnabled() && !spec.llap().autoscaling().isEnabled()) {
-      return false;
-    }
-    if (spec.tezAm().isEnabled() && !spec.tezAm().autoscaling().isEnabled()) {
-      return false;
+    for (var llap : spec.llapClusters()) {
+      if (llap.isEnabled() && !llap.autoscaling().isEnabled()) {
+        return false;
+      }
+      if (llap.isEnabled() && spec.tezAm().isEnabled() && !llap.tezAm().autoscaling().isEnabled()) {
+        return false;
+      }
     }
     return true;
   }
