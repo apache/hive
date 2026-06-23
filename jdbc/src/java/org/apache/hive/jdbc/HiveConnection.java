@@ -157,7 +157,6 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
 /**
@@ -170,10 +169,9 @@ public class HiveConnection implements java.sql.Connection {
   /**
    * Last effective {@code hive.query.timeout.seconds} in seconds, or {@code -1} if not yet set.
    * Seeded from the JDBC URL at connect time; a JDBC {@link java.sql.Connection} may be shared
-   * across threads with concurrent {@link org.apache.hive.jdbc.HiveStatement}s on one HS2 session,
-   * so this field uses an {@link AtomicLong} to keep updates well-defined.
+   * across threads with concurrent {@link org.apache.hive.jdbc.HiveStatement}s on one HS2 session.
    */
-  private final AtomicLong sessionQueryTimeoutSeconds = new AtomicLong(-1L);
+  private volatile long sessionQueryTimeoutSeconds = -1L;
   private String jdbcUriString;
   private String host;
   private int port;
@@ -206,7 +204,7 @@ public class HiveConnection implements java.sql.Connection {
    * Called at connect time from the JDBC URL hive-conf map, and may be called again later if needed.
    */
   void setSessionQueryTimeoutSeconds(long seconds) {
-    sessionQueryTimeoutSeconds.set(seconds);
+    sessionQueryTimeoutSeconds = seconds;
   }
 
   /**
@@ -238,7 +236,7 @@ public class HiveConnection implements java.sql.Connection {
    * @return the tracked {@code hive.query.timeout.seconds} in seconds, or {@code -1} if not set
    */
   long getSessionQueryTimeoutSeconds() {
-    return sessionQueryTimeoutSeconds.get();
+    return sessionQueryTimeoutSeconds;
   }
 
   /**
