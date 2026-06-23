@@ -46,7 +46,6 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.iceberg.FileScanTask;
-import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
@@ -69,7 +68,7 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
     LlapCacheOnlyInputFormatInterface.VectorizedOnly {
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergInputFormat.class);
-  public static final String ICEBERG_DISABLE_VECTORIZATION_PREFIX = "iceberg.disable.vectorization.";
+  public static final String ICEBERG_DISABLE_DECIMAL64_PREFIX = "iceberg.disable.decimal64.";
 
   /**
    * Encapsulates planning-time and reader-time Iceberg filter expressions derived from Hive predicates.
@@ -249,16 +248,17 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
 
   @Override
   public VectorizedSupport.Support[] getSupportedFeatures(HiveConf hiveConf, TableDesc tableDesc) {
-    // disabling VectorizedSupport.Support.DECIMAL_64 for Parquet as it doesn't support it
-    boolean isORCOnly =
-        Boolean.parseBoolean(tableDesc.getProperties().getProperty(HiveIcebergMetaHook.DECIMAL64_VECTORIZATION)) &&
-            Boolean.parseBoolean(tableDesc.getProperties().getProperty(HiveIcebergMetaHook.ORC_FILES_ONLY)) &&
-            org.apache.iceberg.FileFormat.ORC.name()
-                .equalsIgnoreCase(tableDesc.getProperties().getProperty(TableProperties.DEFAULT_FILE_FORMAT));
-    if (!isORCOnly) {
-      final String vectorizationConfName = getVectorizationConfName(tableDesc.getTableName());
-      LOG.debug("Setting {} for table: {} to true", vectorizationConfName, tableDesc.getTableName());
-      hiveConf.set(vectorizationConfName, "true");
+    // Both vectorizable file formats (ORC and Parquet) now support DECIMAL_64 reads, so advertise it
+    // whenever decimal64 vectorization is enabled for the table, regardless of file format.
+    boolean decimal64Enabled =
+        Boolean.parseBoolean(tableDesc.getProperty(HiveIcebergMetaHook.DECIMAL64_VECTORIZATION));
+    if (!decimal64Enabled) {
+      // Keep the LLAP ORC reader from emitting decimal64 so it stays consistent with the full-decimal
+      // operator pipeline; consumed in HiveVectorizedReader#orcRecordReader.
+      final String decimal64DisableConfName = getDecimal64DisableConfName(tableDesc.getTableName());
+      LOG.debug("Setting {} for table: {} to true", decimal64DisableConfName, tableDesc.getTableName());
+      hiveConf.set(decimal64DisableConfName, "true");
+
       return new VectorizedSupport.Support[] {};
     }
     return new VectorizedSupport.Support[] { VectorizedSupport.Support.DECIMAL_64 };
@@ -269,9 +269,9 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
     // no-op for Iceberg
   }
 
-  public static String getVectorizationConfName(String tableName) {
+  public static String getDecimal64DisableConfName(String tableName) {
     String dbAndTableName = TableName.fromString(tableName, null, null).getNotEmptyDbTable();
-    return ICEBERG_DISABLE_VECTORIZATION_PREFIX + dbAndTableName;
+    return ICEBERG_DISABLE_DECIMAL64_PREFIX + dbAndTableName;
   }
 
   @Override

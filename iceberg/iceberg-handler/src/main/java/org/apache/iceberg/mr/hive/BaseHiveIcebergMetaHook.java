@@ -92,7 +92,6 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
   );
   private static final Set<String> PARAMETERS_TO_REMOVE = ImmutableSet
       .of(InputFormatConfig.TABLE_SCHEMA, Catalogs.LOCATION, Catalogs.NAME, InputFormatConfig.PARTITION_SPEC);
-  static final String ORC_FILES_ONLY = "iceberg.orc.files.only";
   private static final String ZORDER_FIELDS_JSON_KEY = "zorderFields";
 
   protected final Configuration conf;
@@ -214,8 +213,6 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
 
     assertFileFormat(tableProperties.getProperty(TableProperties.DEFAULT_FILE_FORMAT));
 
-    // Set whether the format is ORC, to be used during vectorization.
-    setOrcOnlyFilesParam(hmsTable);
     // Remove hive primary key columns from table request, as iceberg doesn't support hive primary key.
     request.setPrimaryKeys(null);
     setSortOrder(hmsTable, schema, tableProperties);
@@ -483,14 +480,6 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     }
 
     return HMSTablePropertyHelper.getPartitionSpec(hmsTable.getParameters(), schema);
-  }
-
-  protected void setOrcOnlyFilesParam(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    hmsTable.getParameters().put(ORC_FILES_ONLY, String.valueOf(isOrcOnlyFiles(hmsTable)));
-  }
-
-  protected boolean isOrcOnlyFiles(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    return !"FALSE".equalsIgnoreCase(hmsTable.getParameters().get(ORC_FILES_ONLY)) && isOrcFileFormat(hmsTable);
   }
 
   static boolean isOrcFileFormat(org.apache.hadoop.hive.metastore.api.Table hmsTable) {

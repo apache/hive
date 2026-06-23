@@ -99,7 +99,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	external.table.purge	true                
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	1                   
 	numRows             	7                   
