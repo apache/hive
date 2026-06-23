@@ -1020,19 +1020,7 @@ public class QTestUtil {
       qTestResultProcessor.overwriteResults(f.getPath(), outFileName);
       return QTestProcessExecResult.createWithoutOutput(0);
     } else {
-      // Apply the same masking pipeline to a temporary copy of the reference file so that
-      // non-deterministic values are normalized on both sides.
-      // This preserves backward compatibility with existing .q.out files that were written
-      // before the masking rules were introduced.
-      File maskedRef = new File(outFileName + ".masked_ref");
-      try {
-        FileUtils.copyFile(new File(outFileName), maskedRef);
-        qOutProcessor.maskPatterns(maskedRef.getPath());
-        return qTestResultProcessor.executeDiffCommand(f.getPath(), maskedRef.getPath(), false);
-      } finally {
-        maskedRef.delete();
-        new File(maskedRef.getPath() + ".orig").delete();
-      }
+      return qTestResultProcessor.executeDiffCommand(f.getPath(), outFileName, false);
     }
   }
 
