@@ -19,6 +19,7 @@
 package org.apache.hive.kubernetes.operator.dependent;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,16 +32,24 @@ import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.OwnerReference;
 import io.fabric8.kubernetes.api.model.OwnerReferenceBuilder;
 import io.fabric8.kubernetes.api.model.IntOrString;
+import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.Probe;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.ServiceBuilder;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeMount;
+import io.fabric8.kubernetes.api.model.apps.Deployment;
+import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.apps.StatefulSetBuilder;
+import io.fabric8.kubernetes.api.model.discovery.v1.Endpoint;
+import io.fabric8.kubernetes.api.model.discovery.v1.EndpointBuilder;
+import io.fabric8.kubernetes.api.model.discovery.v1.EndpointSlice;
+import io.fabric8.kubernetes.api.model.discovery.v1.EndpointSliceBuilder;
 import io.fabric8.kubernetes.api.model.policy.v1.PodDisruptionBudget;
 import io.fabric8.kubernetes.api.model.policy.v1.PodDisruptionBudgetBuilder;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
+import org.apache.hive.kubernetes.operator.autoscaling.TezAmBusyMetrics;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
 import org.apache.hive.kubernetes.operator.model.spec.AutoscalingSpec;
@@ -193,7 +202,7 @@ public class LlapResourceBuilder
 
   // --- TezAM resource builders (one TezAM per LLAP cluster) ---
 
-  /** TezAM StatefulSet name for a specific LLAP cluster. */
+  /** TezAM Deployment/Service name for a specific LLAP cluster. */
   public static String tezAmResourceName(HiveCluster hc, LlapSpec llap) {
     return hc.getMetadata().getName() + TEZAM_INFIX + llap.name();
   }
@@ -229,9 +238,81 @@ public class LlapResourceBuilder
         .build();
   }
 
-  /** Builds the TezAM StatefulSet for a specific LLAP cluster. */
-  public static StatefulSet buildTezAmStatefulSet(HiveCluster hc, LlapSpec llap, Integer replicas) {
-    return INSTANCE.doBuildTezAmStatefulSet(hc, llap, replicas);
+  /** Builds the TezAM Deployment for a specific LLAP cluster. */
+  public static Deployment buildTezAmDeployment(HiveCluster hc, LlapSpec llap, Integer replicas) {
+    return INSTANCE.doBuildTezAmDeployment(hc, llap, replicas);
+  }
+
+  /**
+   * Name for the operator-managed EndpointSlice that provides per-pod DNS for TezAM.
+   * CoreDNS creates {@code <pod-name>.<svc>.<ns>.svc.cluster.local} A-records using it.
+   */
+  public static String tezAmEndpointSliceName(HiveCluster hc, LlapSpec llap) {
+    return tezAmResourceName(hc, llap) + "-hostnames";
+  }
+
+  /**
+   * Builds a custom EndpointSlice for the TezAM headless Service.
+   * <p>
+   * Kubernetes only creates per-pod DNS records ({@code <pod>.<svc>.<ns>.svc.cluster.local})
+   * when the Endpoints/EndpointSlice has a {@code hostname} field for each address. The
+   * default EndpointSlice controller omits {@code hostname} for Deployment pods (it only
+   * sets it automatically for StatefulSet pods). This operator-managed EndpointSlice fills
+   * that gap, giving every ready TezAM pod a resolvable FQDN.
+   *
+   * @param pods list of TezAM pods
+   */
+  public static EndpointSlice buildTezAmEndpointSlice(HiveCluster hc, LlapSpec llap, List<Pod> pods) {
+    String ns = hc.getMetadata().getNamespace();
+    String svcName = tezAmResourceName(hc, llap);
+    Map<String, String> labels = new HashMap<>(Map.of(
+        "kubernetes.io/service-name", svcName,
+        "endpointslice.kubernetes.io/managed-by", "hive-kubernetes-operator",
+        Labels.MANAGED_BY, Labels.MANAGED_BY_VALUE,
+        Labels.APP_INSTANCE, hc.getMetadata().getName(),
+        Labels.APP_COMPONENT, ConfigUtils.COMPONENT_TEZAM));
+
+    List<Endpoint> endpoints = new ArrayList<>();
+    for (var pod : pods) {
+      String ip = pod.getStatus() != null ? pod.getStatus().getPodIP() : null;
+      if (ip == null || ip.isEmpty()) {
+        continue;
+      }
+      boolean ready = isPodReady(pod);
+      endpoints.add(new EndpointBuilder()
+          .withHostname(pod.getMetadata().getName())
+          .withAddresses(ip)
+          .withNewConditions()
+            .withReady(ready)
+            .withServing(ready)
+            .withTerminating(false)
+          .endConditions()
+          .withNewTargetRef()
+            .withKind("Pod")
+            .withNamespace(ns)
+            .withName(pod.getMetadata().getName())
+          .endTargetRef()
+          .build());
+    }
+
+    return new EndpointSliceBuilder()
+        .withNewMetadata()
+          .withName(tezAmEndpointSliceName(hc, llap))
+          .withNamespace(ns)
+          .withLabels(labels)
+          .withOwnerReferences(ownerRef(hc))
+        .endMetadata()
+        .withAddressType("IPv4")
+        .withEndpoints(endpoints)
+        .build();
+  }
+
+  private static boolean isPodReady(io.fabric8.kubernetes.api.model.Pod pod) {
+    if (pod.getStatus() == null || pod.getStatus().getConditions() == null) {
+      return false;
+    }
+    return pod.getStatus().getConditions().stream()
+        .anyMatch(c -> "Ready".equals(c.getType()) && "True".equals(c.getStatus()));
   }
 
   /** Builds the headless Service for a TezAM cluster. */
@@ -261,6 +342,11 @@ public class LlapResourceBuilder
     Map<String, String> labels = Labels.forTezAmCluster(hc, llap.name());
     Map<String, String> tezSite = HiveConfigBuilder.getTezSite(spec, llap);
 
+    // Register the Hadoop Metrics2 JMX sink so LlapTaskSchedulerMetrics are exposed as
+    // JMX MBeans. The metrics system has no JMX sink and the JMX Exporter agent cannot
+    // see any Hadoop/LLAP metrics without this being present.
+    String hadoopMetrics2 = "*.sink.jmx.class=org.apache.hadoop.metrics2.sink.JmxSink\n";
+
     return new ConfigMapBuilder()
         .withNewMetadata()
           .withName(tezAmConfigMapName(hc, llap))
@@ -269,16 +355,17 @@ public class LlapResourceBuilder
           .withOwnerReferences(ownerRef(hc))
         .endMetadata()
         .addToData("tez-site.xml", HadoopXmlBuilder.buildXml(tezSite))
+        .addToData("hadoop-metrics2.properties", hadoopMetrics2)
         .build();
   }
 
   // --- Private instance methods that use protected helpers from HiveDependentResource ---
 
-  private StatefulSet doBuildTezAmStatefulSet(HiveCluster hiveCluster, LlapSpec llap,
+  private Deployment doBuildTezAmDeployment(HiveCluster hiveCluster, LlapSpec llap,
       Integer replicas) {
     HiveClusterSpec spec = hiveCluster.getSpec();
     String ns = hiveCluster.getMetadata().getNamespace();
-    String ssName = tezAmResourceName(hiveCluster, llap);
+    String deployName = tezAmResourceName(hiveCluster, llap);
     Map<String, String> allLabels = Labels.forTezAmCluster(hiveCluster, llap.name());
     Map<String, String> selectorLabels = Labels.selectorForTezAmCluster(hiveCluster, llap.name());
 
@@ -321,24 +408,28 @@ public class LlapResourceBuilder
     addExternalJars(spec.image(), spec.externalJars(),
         initContainers, volumeMounts, volumes, envVars);
     replaceConfMountWithSubPaths(volumeMounts, HIVE_CONFIG_VOLUME,
-        "hive-site.xml", "tez-site.xml", "core-site.xml");
+        "hive-site.xml", "tez-site.xml", "core-site.xml", "hadoop-metrics2.properties");
+
+    AutoscalingSpec tezAutoscaling = llap.tezAm().autoscaling();
+    if (tezAutoscaling.isEnabled()) {
+      addJmxExporter(spec.image(), ConfigUtils.COMPONENT_TEZAM, tezAutoscaling.metricsPort(),
+          initContainers, volumeMounts, volumes, envVars, ports);
+    }
 
     String configHash = sha256(
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getHiveServer2HiveSite(hiveCluster, spec)),
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getTezSite(spec, llap)),
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getHadoopCoreSite(spec)));
 
-    StatefulSet statefulSet = new StatefulSetBuilder()
+    Deployment deployment = new DeploymentBuilder()
         .withNewMetadata()
-          .withName(ssName)
+          .withName(deployName)
           .withNamespace(ns)
           .withLabels(allLabels)
           .withOwnerReferences(ownerRef(hiveCluster))
         .endMetadata()
         .withNewSpec()
           .withReplicas(replicas)
-          .withPodManagementPolicy("Parallel")
-          .withServiceName(ssName)
           .withNewSelector()
             .withMatchLabels(selectorLabels)
           .endSelector()
@@ -350,6 +441,7 @@ public class LlapResourceBuilder
               .addToAnnotations("hive.apache.org/config-hash", configHash)
             .endMetadata()
             .withNewSpec()
+              .withSubdomain(deployName)
               .withInitContainers(initContainers)
               .addNewContainer()
                 .withName(ConfigUtils.COMPONENT_TEZAM)
@@ -367,13 +459,31 @@ public class LlapResourceBuilder
         .build();
 
     applySpreadAffinityIfAbsent(
-        statefulSet.getSpec().getTemplate().getSpec(), selectorLabels);
+        deployment.getSpec().getTemplate().getSpec(), selectorLabels);
 
-    appendUserVolumes(statefulSet.getSpec().getTemplate().getSpec(),
+    appendUserVolumes(deployment.getSpec().getTemplate().getSpec(),
         spec.volumes(), spec.volumeMounts(),
         spec.tezAm().extraVolumes(), spec.tezAm().extraVolumeMounts());
 
-    return statefulSet;
+    // When autoscaling is enabled, add a preStop hook that waits for any in-flight DAG
+    // to complete before exiting. The operator has already deleted the ZK registration
+    // node (see HiveClusterAutoscaler) so no new DAGs can arrive. If a DAG arrives in
+    // via the brief race window before ZK delete, we wait for it to finish.
+    // Once tez_am_dag_running reaches 0, the hook exits and Kubernetes terminates the pod.
+    if (tezAutoscaling.isEnabled()) {
+      String preStopScript = buildDrainScript(
+          "Waiting for active DAG to complete",
+          TezAmBusyMetrics.METRIC_DAG_RUNNING, "DAG",
+          "TezAM is idle. preStop complete, K8s will terminate pod.",
+          10, 6, null, tezAutoscaling.metricsPort());
+      applyAutoscalingLifecycle(
+          deployment.getSpec().getTemplate().getSpec(),
+          deployment.getSpec().getTemplate().getMetadata(),
+          preStopScript, tezAutoscaling.gracePeriodSeconds(),
+          tezAutoscaling.metricsScrapeIntervalSeconds());
+    }
+
+    return deployment;
   }
 
   private StatefulSet doBuildStatefulSet(HiveCluster hiveCluster, LlapSpec llap, Integer replicas) {

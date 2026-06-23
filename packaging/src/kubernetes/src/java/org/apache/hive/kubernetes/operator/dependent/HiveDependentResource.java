@@ -855,9 +855,12 @@ public abstract class HiveDependentResource<R extends HasMetadata,
       sb.append("  type: GAUGE\n");
       break;
     case ConfigUtils.COMPONENT_TEZAM:
-      // TezAM DAG execution metrics
-      sb.append("- pattern: 'Hadoop<service=TezAppMaster, name=TezAppMaster><>(.+)'\n");
-      sb.append("  name: tez_am_$1\n");
+      // LlapMetricsSystem registers beans under LlapTaskScheduler service
+      // SchedulerDagRunning tracks if the AM is running a dag or is idle as a binary
+      // so exported as GAUGE.
+      String schedulerBean = "Hadoop<service=LlapTaskScheduler, name=LlapTaskSchedulerMetrics.+><>";
+      sb.append("- pattern: '").append(schedulerBean).append("SchedulerDagRunning'\n");
+      sb.append("  name: tez_am_dag_running\n");
       sb.append("  type: GAUGE\n");
       break;
     default:
