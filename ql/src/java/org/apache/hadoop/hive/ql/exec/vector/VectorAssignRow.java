@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
@@ -465,7 +466,7 @@ public class VectorAssignRow {
           {
             if (object instanceof String) {
               String string = (String) object;
-              byte[] bytes = string.getBytes();
+              byte[] bytes = string.getBytes(StandardCharsets.UTF_8);
               ((BytesColumnVector) columnVector).setVal(
                   batchIndex, bytes, 0, bytes.length);
             } else {

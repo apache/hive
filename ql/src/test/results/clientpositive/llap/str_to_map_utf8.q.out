@@ -1,0 +1,206 @@
+PREHOOK: query: CREATE TABLE hive28728_src (id string, name string, multi string) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive28728_src
+POSTHOOK: query: CREATE TABLE hive28728_src (id string, name string, multi string) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive28728_src
+PREHOOK: query: INSERT INTO hive28728_src VALUES
+  ('100','hive', 'en:1'),
+  ('200','spark', null),
+  ('300','oozie', 'a:1,b:2'),
+  ('400','airflow', 'ascii:值'),
+  ('500','优惠活动', '上海:北京,优惠活动:折扣'),
+  ('600','日本語', 'val:1,val:2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hive28728_src
+POSTHOOK: query: INSERT INTO hive28728_src VALUES
+  ('100','hive', 'en:1'),
+  ('200','spark', null),
+  ('300','oozie', 'a:1,b:2'),
+  ('400','airflow', 'ascii:值'),
+  ('500','优惠活动', '上海:北京,优惠活动:折扣'),
+  ('600','日本語', 'val:1,val:2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hive28728_src
+POSTHOOK: Lineage: hive28728_src.id SCRIPT []
+POSTHOOK: Lineage: hive28728_src.multi SCRIPT []
+POSTHOOK: Lineage: hive28728_src.name SCRIPT []
+PREHOOK: query: SELECT STR_TO_MAP(CONCAT(id, ':', name), ',', ':') FROM hive28728_src ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive28728_src
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT STR_TO_MAP(CONCAT(id, ':', name), ',', ':') FROM hive28728_src ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive28728_src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"100":"hive"}
+{"200":"spark"}
+{"300":"oozie"}
+{"400":"airflow"}
+{"500":"优惠活动"}
+{"600":"日本語"}
+PREHOOK: query: SELECT STR_TO_MAP(multi, ',', ':') FROM hive28728_src WHERE multi IS NOT NULL ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive28728_src
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT STR_TO_MAP(multi, ',', ':') FROM hive28728_src WHERE multi IS NOT NULL ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive28728_src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"en":"1"}
+{"a":"1","b":"2"}
+{"ascii":"值"}
+{"上海":"北京","优惠活动":"折扣"}
+{"val":"2"}
+PREHOOK: query: SELECT STR_TO_MAP(multi, ',', ':')['优惠活动'] FROM hive28728_src WHERE id = '500'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive28728_src
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT STR_TO_MAP(multi, ',', ':')['优惠活动'] FROM hive28728_src WHERE id = '500'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive28728_src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+折扣
+PREHOOK: query: SELECT STR_TO_MAP('优惠活动:折扣,北京:海淀', ',', ':')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT STR_TO_MAP('优惠活动:折扣,北京:海淀', ',', ':')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"优惠活动":"折扣","北京":"海淀"}
+PREHOOK: query: SELECT STR_TO_MAP(multi, ',', ':') FROM hive28728_src WHERE id = '200'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive28728_src
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT STR_TO_MAP(multi, ',', ':') FROM hive28728_src WHERE id = '200'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive28728_src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{}
+PREHOOK: query: SELECT STR_TO_MAP('700', ',', ':')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT STR_TO_MAP('700', ',', ':')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"700":null}
+PREHOOK: query: CREATE TABLE hive28728_result (cd MAP<STRING, STRING>) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive28728_result
+POSTHOOK: query: CREATE TABLE hive28728_result (cd MAP<STRING, STRING>) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive28728_result
+PREHOOK: query: INSERT OVERWRITE TABLE hive28728_result
+  SELECT STR_TO_MAP(CONCAT(id, ':', name), ',', ':') FROM hive28728_src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive28728_src
+PREHOOK: Output: default@hive28728_result
+POSTHOOK: query: INSERT OVERWRITE TABLE hive28728_result
+  SELECT STR_TO_MAP(CONCAT(id, ':', name), ',', ':') FROM hive28728_src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive28728_src
+POSTHOOK: Output: default@hive28728_result
+POSTHOOK: Lineage: hive28728_result.cd EXPRESSION [(hive28728_src)hive28728_src.FieldSchema(name:id, type:string, comment:null), (hive28728_src)hive28728_src.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM hive28728_result ORDER BY cd
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive28728_result
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM hive28728_result ORDER BY cd
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive28728_result
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"100":"hive"}
+{"200":"spark"}
+{"300":"oozie"}
+{"400":"airflow"}
+{"500":"优惠活动"}
+{"600":"日本語"}
+PREHOOK: query: CREATE TABLE hive28728_multi (cd MAP<STRING, STRING>) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive28728_multi
+POSTHOOK: query: CREATE TABLE hive28728_multi (cd MAP<STRING, STRING>) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive28728_multi
+PREHOOK: query: INSERT OVERWRITE TABLE hive28728_multi
+  SELECT STR_TO_MAP(multi, ',', ':') FROM hive28728_src WHERE multi IS NOT NULL ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive28728_src
+PREHOOK: Output: default@hive28728_multi
+POSTHOOK: query: INSERT OVERWRITE TABLE hive28728_multi
+  SELECT STR_TO_MAP(multi, ',', ':') FROM hive28728_src WHERE multi IS NOT NULL ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive28728_src
+POSTHOOK: Output: default@hive28728_multi
+POSTHOOK: Lineage: hive28728_multi.cd EXPRESSION [(hive28728_src)hive28728_src.FieldSchema(name:multi, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM hive28728_multi ORDER BY cd
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive28728_multi
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM hive28728_multi ORDER BY cd
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive28728_multi
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"a":"1","b":"2"}
+{"ascii":"值"}
+{"en":"1"}
+{"val":"2"}
+{"上海":"北京","优惠活动":"折扣"}
+PREHOOK: query: CREATE TABLE hive28728_result_novec (cd MAP<STRING, STRING>) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive28728_result_novec
+POSTHOOK: query: CREATE TABLE hive28728_result_novec (cd MAP<STRING, STRING>) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive28728_result_novec
+PREHOOK: query: INSERT OVERWRITE TABLE hive28728_result_novec
+  SELECT STR_TO_MAP(CONCAT(id, ':', name), ',', ':') FROM hive28728_src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive28728_src
+PREHOOK: Output: default@hive28728_result_novec
+POSTHOOK: query: INSERT OVERWRITE TABLE hive28728_result_novec
+  SELECT STR_TO_MAP(CONCAT(id, ':', name), ',', ':') FROM hive28728_src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive28728_src
+POSTHOOK: Output: default@hive28728_result_novec
+POSTHOOK: Lineage: hive28728_result_novec.cd EXPRESSION [(hive28728_src)hive28728_src.FieldSchema(name:id, type:string, comment:null), (hive28728_src)hive28728_src.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM hive28728_result_novec ORDER BY cd
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive28728_result_novec
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM hive28728_result_novec ORDER BY cd
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive28728_result_novec
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"100":"hive"}
+{"200":"spark"}
+{"300":"oozie"}
+{"400":"airflow"}
+{"500":"优惠活动"}
+{"600":"日本語"}
+PREHOOK: query: SELECT STR_TO_MAP(CONCAT(id, ':', name), ',', ':') FROM hive28728_src ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive28728_src
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT STR_TO_MAP(CONCAT(id, ':', name), ',', ':') FROM hive28728_src ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive28728_src
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"100":"hive"}
+{"200":"spark"}
+{"300":"oozie"}
+{"400":"airflow"}
+{"500":"优惠活动"}
+{"600":"日本語"}
