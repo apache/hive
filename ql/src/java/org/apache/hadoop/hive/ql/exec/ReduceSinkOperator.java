@@ -62,11 +62,12 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
 
   private static final long serialVersionUID = 1L;
 
-  private transient int buckColIdxInKey;
   /**
-   * {@link org.apache.hadoop.hive.ql.optimizer.SortedDynPartitionOptimizer}
+   * Index in the reduce key where the computed bucket number is written.
+   * Defaults to {@code partitionCols.size()} for legacy plans; SDPO plans that add
+   * {@code bucket_number()} as a sort key use its actual key index instead.
    */
-  private transient int buckColIdxInKeyForSdpo = -1;
+  private transient int buckColIdxInKey;
   private boolean firstRow;
   private transient int tag;
   private boolean skipTag = false;
@@ -161,10 +162,12 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       }
 
       keyEval = new ExprNodeEvaluator[keys.size()];
+      int bucketPlaceholderIdx = -1;
       int i = 0;
       for (ExprNodeDesc e : keys) {
-        if (e instanceof ExprNodeGenericFuncDesc && ((ExprNodeGenericFuncDesc) e).getGenericUDF() instanceof GenericUDFBucketNumber) {
-          buckColIdxInKeyForSdpo = i;
+        if (e instanceof ExprNodeGenericFuncDesc
+            && ((ExprNodeGenericFuncDesc) e).getGenericUDF() instanceof GenericUDFBucketNumber) {
+          bucketPlaceholderIdx = i;
         }
         keyEval[i++] = ExprNodeEvaluatorFactory.get(e);
       }
@@ -195,7 +198,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
           bucketEval[i++] = index < 0 ? ExprNodeEvaluatorFactory.get(e) : keyEval[index];
         }
 
-        buckColIdxInKey = conf.getPartitionCols().size();
+        buckColIdxInKey = bucketPlaceholderIdx >= 0 ? bucketPlaceholderIdx : conf.getPartitionCols().size();
       }
 
       tag = conf.getTag();
@@ -315,9 +318,6 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
         bucketNumber = computeBucketNumber(row, conf.getNumBuckets());
         cachedKeys[0][buckColIdxInKey] = new Text(String.valueOf(bucketNumber));
       }
-      if (buckColIdxInKeyForSdpo != -1) {
-        cachedKeys[0][buckColIdxInKeyForSdpo] = new Text(String.valueOf(bucketNumber));
-      }
 
       HiveKey firstKey = toHiveKey(cachedKeys[0], tag, null);
       int distKeyLength = firstKey.getDistKeyLength();
@@ -423,6 +423,11 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
    * {@link org.apache.hadoop.hive.ql.optimizer.SortedDynPartitionOptimizer}
    */
   private int computeHashCode(Object row, int buckNum) throws HiveException {
+    // CLUSTERED BY + SDPO: no partition keys, distribute only by computed bucket number so all
+    // rows in a logical bucket reach the same reducer (and Iceberg bucket file).
+    if (partitionEval.length == 0 && bucketEval != null && buckNum >= 0) {
+      return buckNum;
+    }
     // Evaluate the HashCode
     int keyHashCode = 0;
     if (partitionEval.length == 0) {

@@ -23,6 +23,8 @@ import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorage
 import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setMergeTaskEnabled;
 import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setWriteOperation;
 import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setWriteOperationIsSorted;
+import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.ICEBERG_HIVE_BUCKETING_ROUTE_ENABLED;
+import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setIcebergHiveBucketingRouteEnabled;
 
 import com.google.common.collect.Lists;
 import java.io.IOException;
@@ -638,12 +640,20 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       fs = specPath.getFileSystem(hconf);
 
       jc = new JobConf(hconf);
-      setWriteOperation(jc, getConf().getTableInfo().getTableName(), getConf().getWriteOperation());
-      setWriteOperationIsSorted(jc, getConf().getTableInfo().getTableName(),
+      final String targetTableName = getConf().getTableInfo().getTableName();
+      setWriteOperation(jc, targetTableName, getConf().getWriteOperation());
+      setWriteOperationIsSorted(jc, targetTableName,
               dpCtx != null && dpCtx.hasCustomPartitionOrSortExpression());
-      setMergeTaskEnabled(jc, getConf().getTableInfo().getTableName(),
+      setMergeTaskEnabled(jc, targetTableName,
           Boolean.parseBoolean((String) getConf().getTableInfo().getProperties().get(
-              MERGE_TASK_ENABLED + getConf().getTableInfo().getTableName())));
+              MERGE_TASK_ENABLED + targetTableName)));
+
+      // Iceberg: propagate Hive-native bucketing routing flag (set by SDPO for specific plans).
+      final Properties tableInfoProps = getConf().getTableInfo().getProperties();
+      final String routeEnabledStr = (String) tableInfoProps.get(ICEBERG_HIVE_BUCKETING_ROUTE_ENABLED + targetTableName);
+      if (routeEnabledStr != null) {
+        setIcebergHiveBucketingRouteEnabled(jc, targetTableName, Boolean.parseBoolean(routeEnabledStr));
+      }
 
       try {
         createHiveOutputFormat(jc);

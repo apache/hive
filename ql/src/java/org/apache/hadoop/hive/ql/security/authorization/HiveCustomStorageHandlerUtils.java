@@ -35,6 +35,11 @@ public class HiveCustomStorageHandlerUtils {
 
   public static final String MERGE_TASK_ENABLED = "file.sink.merge.task.enabled.";
 
+  // Iceberg: gate Hive-native bucketing (CLUSTERED BY) file routing for a specific write target.
+  // Bucket count/columns/version are read from HMS table metadata at runtime.
+  public static final String ICEBERG_HIVE_BUCKETING_ROUTE_ENABLED =
+      "file.sink.iceberg.hive.bucketing.route.enabled.";
+
   public static String getTablePropsForCustomStorageHandler(Map<String, String> tableProperties) {
     StringBuilder properties = new StringBuilder();
     for (Map.Entry<String, String> serdeMap : tableProperties.entrySet()) {
@@ -94,5 +99,17 @@ public class HiveCustomStorageHandlerUtils {
   public static boolean isMergeTaskEnabled(UnaryOperator<String> ops, String tableName) {
     String operation = ops.apply(MERGE_TASK_ENABLED + tableName);
     return Boolean.parseBoolean(operation);
+  }
+
+  public static void setIcebergHiveBucketingRouteEnabled(Configuration conf, String tableName, boolean enabled) {
+    if (conf == null || tableName == null) {
+      return;
+    }
+    conf.set(ICEBERG_HIVE_BUCKETING_ROUTE_ENABLED + tableName, Boolean.toString(enabled));
+  }
+
+  public static boolean getIcebergHiveBucketingRouteEnabled(UnaryOperator<String> ops, String tableName) {
+    String value = ops.apply(ICEBERG_HIVE_BUCKETING_ROUTE_ENABLED + tableName);
+    return Boolean.parseBoolean(value);
   }
 }

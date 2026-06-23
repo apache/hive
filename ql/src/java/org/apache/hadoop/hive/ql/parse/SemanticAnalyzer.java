@@ -12154,7 +12154,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       // Check if input can be pruned
-      ts.setInputPruning((sampleExprs.size() == 0 || colsEqual));
+      boolean inputPruning = (sampleExprs.size() == 0 || colsEqual);
+      // Iceberg files are not at native Hive bucket paths; rely on the hash predicate only.
+      if (MetaStoreUtils.isIcebergTable(tab.getParameters())) {
+        inputPruning = false;
+      }
+      ts.setInputPruning(inputPruning);
 
       // check if input pruning is enough
       if ((sampleExprs.size() == 0 || colsEqual)
@@ -12168,7 +12173,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 tab.getBucketingVersion());
         FilterDesc filterDesc = new FilterDesc(
             samplePredicate, true, new SampleDesc(ts.getNumerator(),
-            ts.getDenominator(), tabBucketCols, true));
+            ts.getDenominator(), tabBucketCols, inputPruning));
         filterDesc.setGenerated(true);
         op = OperatorFactory.getAndMakeChild(filterDesc,
             new RowSchema(rwsch.getColumnInfos()), top);
