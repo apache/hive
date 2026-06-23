@@ -17,9 +17,9 @@ Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error 
 #### A masked pattern was here ####
 Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: [Error 20000]: Unable to initialize custom script.
 #### A masked pattern was here ####
-Caused by: java.io.IOException: Cannot run program "FAKE_SCRIPT_SHOULD_NOT_EXIST": error=2, No such file or directory
+Caused by: java.io.IOException: Cannot run program "FAKE_SCRIPT_SHOULD_NOT_EXIST": Exec failed, error: 2 (No such file or directory) 
 #### A masked pattern was here ####
-Caused by: java.io.IOException: error=2, No such file or directory
+Caused by: java.io.IOException: Exec failed, error: 2 (No such file or directory) 
 #### A masked pattern was here ####
 ], TaskAttempt 1 failed, info=[Error: Node: #NODE# : Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing row
 #### A masked pattern was here ####
@@ -29,12 +29,12 @@ Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error 
 #### A masked pattern was here ####
 Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: [Error 20000]: Unable to initialize custom script.
 #### A masked pattern was here ####
-Caused by: java.io.IOException: Cannot run program "FAKE_SCRIPT_SHOULD_NOT_EXIST": error=2, No such file or directory
+Caused by: java.io.IOException: Cannot run program "FAKE_SCRIPT_SHOULD_NOT_EXIST": Exec failed, error: 2 (No such file or directory) 
 #### A masked pattern was here ####
-Caused by: java.io.IOException: error=2, No such file or directory
+Caused by: java.io.IOException: Exec failed, error: 2 (No such file or directory) 
 #### A masked pattern was here ####
 ]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Map 1] killed/failed due to:OWN_TASK_FAILURE]
-DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0
+DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:#Masked#
 Begin cached logs.
 PREHOOK: query: FROM src SELECT TRANSFORM (key, value) USING 'FAKE_SCRIPT_SHOULD_NOT_EXIST' AS key, value
 PREHOOK: type: QUERY
@@ -49,9 +49,9 @@ Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error 
 #### A masked pattern was here ####
 Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: [Error 20000]: Unable to initialize custom script.
 #### A masked pattern was here ####
-Caused by: java.io.IOException: Cannot run program "FAKE_SCRIPT_SHOULD_NOT_EXIST": error=2, No such file or directory
+Caused by: java.io.IOException: Cannot run program "FAKE_SCRIPT_SHOULD_NOT_EXIST": Exec failed, error: 2 (No such file or directory) 
 #### A masked pattern was here ####
-Caused by: java.io.IOException: error=2, No such file or directory
+Caused by: java.io.IOException: Exec failed, error: 2 (No such file or directory) 
 #### A masked pattern was here ####
 ], TaskAttempt 1 failed, info=[Error: Node: #NODE# : Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing row
 #### A masked pattern was here ####
@@ -61,12 +61,12 @@ Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error 
 #### A masked pattern was here ####
 Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: [Error 20000]: Unable to initialize custom script.
 #### A masked pattern was here ####
-Caused by: java.io.IOException: Cannot run program "FAKE_SCRIPT_SHOULD_NOT_EXIST": error=2, No such file or directory
+Caused by: java.io.IOException: Cannot run program "FAKE_SCRIPT_SHOULD_NOT_EXIST": Exec failed, error: 2 (No such file or directory) 
 #### A masked pattern was here ####
-Caused by: java.io.IOException: error=2, No such file or directory
+Caused by: java.io.IOException: Exec failed, error: 2 (No such file or directory) 
 #### A masked pattern was here ####
 ]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Map 1] killed/failed due to:OWN_TASK_FAILURE]
-DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0
+DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:#Masked#
 End cached logs.
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.TezTask. Vertex failed, vertexName=Map 1, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Node: #NODE# : Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing row
 #### A masked pattern was here ####
@@ -76,9 +76,9 @@ Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error 
 #### A masked pattern was here ####
 Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: [Error 20000]: Unable to initialize custom script.
 #### A masked pattern was here ####
-Caused by: java.io.IOException: Cannot run program "FAKE_SCRIPT_SHOULD_NOT_EXIST": error=2, No such file or directory
+Caused by: java.io.IOException: Cannot run program "FAKE_SCRIPT_SHOULD_NOT_EXIST": Exec failed, error: 2 (No such file or directory) 
 #### A masked pattern was here ####
-Caused by: java.io.IOException: error=2, No such file or directory
+Caused by: java.io.IOException: Exec failed, error: 2 (No such file or directory) 
 #### A masked pattern was here ####
 ], TaskAttempt 1 failed, info=[Error: Node: #NODE# : Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error while processing row
 #### A masked pattern was here ####
@@ -88,8 +88,8 @@ Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: Hive Runtime Error 
 #### A masked pattern was here ####
 Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: [Error 20000]: Unable to initialize custom script.
 #### A masked pattern was here ####
-Caused by: java.io.IOException: Cannot run program "FAKE_SCRIPT_SHOULD_NOT_EXIST": error=2, No such file or directory
+Caused by: java.io.IOException: Cannot run program "FAKE_SCRIPT_SHOULD_NOT_EXIST": Exec failed, error: 2 (No such file or directory) 
 #### A masked pattern was here ####
-Caused by: java.io.IOException: error=2, No such file or directory
+Caused by: java.io.IOException: Exec failed, error: 2 (No such file or directory) 
 #### A masked pattern was here ####
-]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Map 1] killed/failed due to:OWN_TASK_FAILURE]DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0
+]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Map 1] killed/failed due to:OWN_TASK_FAILURE]DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:#Masked#
