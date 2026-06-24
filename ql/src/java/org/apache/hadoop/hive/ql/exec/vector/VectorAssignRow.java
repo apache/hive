@@ -18,10 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.nio.charset.StandardCharsets;
 
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;

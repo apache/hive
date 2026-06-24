@@ -7,6 +7,11 @@ SET hive.tez.java.opts=-Dfile.encoding=US-ASCII;
 SET hive.vectorized.execution.enabled=true;
 SET hive.fetch.task.conversion=none;
 
+DROP TABLE IF EXISTS hive28728_src;
+DROP TABLE IF EXISTS hive28728_result;
+DROP TABLE IF EXISTS hive28728_multi;
+DROP TABLE IF EXISTS hive28728_result_novec;
+
 CREATE TABLE hive28728_src (id string, name string, multi string) STORED AS ORC;
 INSERT INTO hive28728_src VALUES
   ('100','hive', 'en:1'),
@@ -43,3 +48,8 @@ INSERT OVERWRITE TABLE hive28728_result_novec
 SELECT * FROM hive28728_result_novec ORDER BY cd;
 
 SELECT STR_TO_MAP(CONCAT(id, ':', name), ',', ':') FROM hive28728_src ORDER BY id;
+
+DROP TABLE IF EXISTS hive28728_src;
+DROP TABLE IF EXISTS hive28728_result;
+DROP TABLE IF EXISTS hive28728_multi;
+DROP TABLE IF EXISTS hive28728_result_novec;

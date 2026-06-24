@@ -1,3 +1,27 @@
+PREHOOK: query: DROP TABLE IF EXISTS hive28728_src
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS hive28728_src
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS hive28728_result
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS hive28728_result
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS hive28728_multi
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS hive28728_multi
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS hive28728_result_novec
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS hive28728_result_novec
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE hive28728_src (id string, name string, multi string) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -204,3 +228,43 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"400":"airflow"}
 {"500":"优惠活动"}
 {"600":"日本語"}
+PREHOOK: query: DROP TABLE IF EXISTS hive28728_src
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hive28728_src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive28728_src
+POSTHOOK: query: DROP TABLE IF EXISTS hive28728_src
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hive28728_src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive28728_src
+PREHOOK: query: DROP TABLE IF EXISTS hive28728_result
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hive28728_result
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive28728_result
+POSTHOOK: query: DROP TABLE IF EXISTS hive28728_result
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hive28728_result
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive28728_result
+PREHOOK: query: DROP TABLE IF EXISTS hive28728_multi
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hive28728_multi
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive28728_multi
+POSTHOOK: query: DROP TABLE IF EXISTS hive28728_multi
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hive28728_multi
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive28728_multi
+PREHOOK: query: DROP TABLE IF EXISTS hive28728_result_novec
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hive28728_result_novec
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive28728_result_novec
+POSTHOOK: query: DROP TABLE IF EXISTS hive28728_result_novec
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hive28728_result_novec
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive28728_result_novec
