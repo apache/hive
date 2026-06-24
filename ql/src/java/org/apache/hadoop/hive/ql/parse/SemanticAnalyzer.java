@@ -111,6 +111,7 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
+import org.apache.hadoop.hive.ql.QueryProperties.QueryFeature;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
@@ -669,19 +670,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         qbexpr.setOpcode(QBExpr.Opcode.UNION);
         break;
       case HiveParser.TOK_INTERSECTALL:
-        queryProperties.setHasIntersect(true);
+        queryProperties.addFeature(QueryFeature.INTERSECT);
         qbexpr.setOpcode(QBExpr.Opcode.INTERSECTALL);
         break;
       case HiveParser.TOK_INTERSECTDISTINCT:
-        queryProperties.setHasIntersect(true);
+        queryProperties.addFeature(QueryFeature.INTERSECT);
         qbexpr.setOpcode(QBExpr.Opcode.INTERSECT);
         break;
       case HiveParser.TOK_EXCEPTALL:
-        queryProperties.setHasExcept(true);
+        queryProperties.addFeature(QueryFeature.EXCEPT);
         qbexpr.setOpcode(QBExpr.Opcode.EXCEPTALL);
         break;
       case HiveParser.TOK_EXCEPTDISTINCT:
-        queryProperties.setHasExcept(true);
+        queryProperties.addFeature(QueryFeature.EXCEPT);
         qbexpr.setOpcode(QBExpr.Opcode.EXCEPT);
         break;
       default:
@@ -724,7 +725,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (ASTNode wdwFn : wdwFns) {
       WindowingSpec spec = qb.getWindowingSpec(dest);
       if(spec == null) {
-        queryProperties.setHasWindowing(true);
+        queryProperties.addFeature(QueryFeature.WINDOWING);
         spec = new WindowingSpec();
         qb.addDestToWindowingSpec(dest, spec);
       }
@@ -1674,7 +1675,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       } else if (child.getToken().getType() == HiveParser.TOK_SUBQUERY) {
         processSubQuery(qb, child);
       } else if (child.getToken().getType() == HiveParser.TOK_PTBLFUNCTION) {
-        queryProperties.setHasPTF(true);
+        queryProperties.addFeature(QueryFeature.PTF);
         processPTF(qb, child);
         PTFInvocationSpec ptfInvocationSpec = qb.getPTFInvocationSpec(child);
         String inputAlias = ptfInvocationSpec == null ? null :
@@ -1785,7 +1786,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
 
         if ((ast.getChild(posn).getChild(0).getType() == HiveParser.TOK_TRANSFORM)) {
-          queryProperties.setUsesScript(true);
+          queryProperties.addFeature(QueryFeature.USES_SCRIPT);
         }
 
         Map<String, ASTNode> aggregations = doPhase1GetAggregationsFromSelect(ast, qb, ctx_1.dest);
@@ -1894,7 +1895,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           processJoin(qb, frm);
           qbp.setJoinExpr(frm);
         }else if(frm.getToken().getType() == HiveParser.TOK_PTBLFUNCTION){
-          queryProperties.setHasPTF(true);
+          queryProperties.addFeature(QueryFeature.PTF);
           processPTF(qb, frm);
         }
         break;
@@ -1902,14 +1903,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_CLUSTERBY:
         // Get the clusterby aliases - these are aliased to the entries in the
         // select list
-        queryProperties.setHasClusterBy(true);
+        queryProperties.addFeature(QueryFeature.CLUSTER_BY);
         qbp.setClusterByExprForClause(ctx_1.dest, ast);
         break;
 
       case HiveParser.TOK_DISTRIBUTEBY:
         // Get the distribute by aliases - these are aliased to the entries in
         // the select list
-        queryProperties.setHasDistributeBy(true);
+        queryProperties.addFeature(QueryFeature.DISTRIBUTE_BY);
         qbp.setDistributeByExprForClause(ctx_1.dest, ast);
         if (qbp.getClusterByForClause(ctx_1.dest) != null) {
           throw new SemanticException(generateErrorMessage(ast,
@@ -1923,7 +1924,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_SORTBY:
         // Get the sort by aliases - these are aliased to the entries in the
         // select list
-        queryProperties.setHasSortBy(true);
+        queryProperties.addFeature(QueryFeature.SORT_BY);
         qbp.setSortByExprForClause(ctx_1.dest, ast);
         if (qbp.getClusterByForClause(ctx_1.dest) != null) {
           throw new SemanticException(generateErrorMessage(ast,
@@ -1938,7 +1939,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_ORDERBY:
         // Get the order by aliases - these are aliased to the entries in the
         // select list
-        queryProperties.setHasOrderBy(true);
+        queryProperties.addFeature(QueryFeature.ORDER_BY);
         qbp.setOrderByExprForClause(ctx_1.dest, ast);
         if (qbp.getClusterByForClause(ctx_1.dest) != null) {
           throw new SemanticException(generateErrorMessage(ast,
@@ -1955,9 +1956,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_GROUPING_SETS:
         // Get the groupby aliases - these are aliased to the entries in the
         // select list
-        queryProperties.setHasGroupBy(true);
+        queryProperties.addFeature(QueryFeature.GROUP_BY);
         if (qbp.getJoinExpr() != null) {
-          queryProperties.setHasJoinFollowedByGroupBy(true);
+          queryProperties.addFeature(QueryFeature.JOIN_FOLLOWED_BY_GROUP_BY);
         }
         qbp.setGroupByExprForClause(ctx_1.dest, ast);
         skipRecursion = true;
@@ -1982,7 +1983,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
 
       case HiveParser.TOK_QUALIFY:
-        queryProperties.setHasQualify(true);
+        queryProperties.addFeature(QueryFeature.QUALIFY);
         qbp.setQualifyExprForClause(ctx_1.dest, ast);
         qbp.addAggregationExprsForClause(ctx_1.dest,
                 doPhase1GetAggregationsFromSelect(ast, qb, ctx_1.dest));
@@ -1997,7 +1998,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
 
       case HiveParser.TOK_LIMIT:
-        queryProperties.setHasLimit(true);
+        queryProperties.addFeature(QueryFeature.LIMIT);
         if (ast.getChildCount() == 2) {
           qbp.setDestLimit(ctx_1.dest,
               Integer.valueOf(ast.getChild(0).getText()), Integer.valueOf(ast.getChild(1).getText()));
@@ -4767,7 +4768,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean isInTransform = (selExprList.getChild(posn).getChild(0).getType() ==
         HiveParser.TOK_TRANSFORM);
     if (isInTransform) {
-      queryProperties.setUsesScript(true);
+      queryProperties.addFeature(QueryFeature.USES_SCRIPT);
       globalLimitCtx.setHasTransformOrUDTF(true);
       trfm = (ASTNode) selExprList.getChild(posn).getChild(0);
     }
@@ -11594,7 +11595,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       curr = genHavingPlan(dest, qb, curr, aliasToOpInfo);
     }
 
-    if(queryProperties.hasWindowing() && qb.getWindowingSpec(dest) != null) {
+    if(queryProperties.hasFeature(QueryFeature.WINDOWING) && qb.getWindowingSpec(dest) != null) {
       curr = genWindowingPlan(qb, qb.getWindowingSpec(dest), curr);
       // GBy for DISTINCT after windowing
       if ((qbp.getAggregationExprsForClause(dest).size() != 0
@@ -12419,7 +12420,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Operator srcOpInfo = null;
     Operator lastPTFOp = null;
 
-    if(queryProperties.hasPTF()){
+    if(queryProperties.hasFeature(QueryFeature.PTF)){
       //After processing subqueries and source tables, process
       // partitioned table functions
 
@@ -15118,8 +15119,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (qb.getParseInfo().hasInsertTables()) {
         queryProperties.setQueryType(QueryProperties.QueryType.DML);
       }
-      queryProperties.setHasOuterOrderBy(!qb.getParseInfo().getIsSubQ() &&
-          !qb.getParseInfo().getDestToOrderBy().isEmpty());
+      if (!qb.getParseInfo().getIsSubQ() && !qb.getParseInfo().getDestToOrderBy().isEmpty()) {
+        queryProperties.addFeature(QueryFeature.OUTER_ORDER_BY);
+      }
       queryProperties.setOuterQueryLimit(qb.getParseInfo().getOuterQueryLimit());
       queryProperties.setView(forViewCreation);
       queryProperties.setMaterializedView(qb.isMaterializedView());

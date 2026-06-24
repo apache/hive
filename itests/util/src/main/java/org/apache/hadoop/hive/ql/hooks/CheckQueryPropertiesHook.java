@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.hooks;
 
 import org.apache.hadoop.hive.ql.QueryProperties;
+import org.apache.hadoop.hive.ql.QueryProperties.QueryFeature;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 
@@ -41,13 +42,14 @@ public class CheckQueryPropertiesHook implements ExecuteWithHookContext {
 
     if (queryProps != null) {
       console.printError("Has Join: " + queryProps.hasJoin());
-      console.printError("Has Group By: " + queryProps.hasGroupBy());
-      console.printError("Has Sort By: " + queryProps.hasSortBy());
-      console.printError("Has Order By: " + queryProps.hasOrderBy());
-      console.printError("Has Group By After Join: " + queryProps.hasJoinFollowedByGroupBy());
-      console.printError("Uses Script: " + queryProps.usesScript());
-      console.printError("Has Distribute By: " + queryProps.hasDistributeBy());
-      console.printError("Has Cluster By: " + queryProps.hasClusterBy());
+      console.printError("Has Group By: " + queryProps.hasFeature(QueryFeature.GROUP_BY));
+      console.printError("Has Sort By: " + queryProps.hasFeature(QueryFeature.SORT_BY));
+      console.printError("Has Order By: " + queryProps.hasFeature(QueryFeature.ORDER_BY));
+      console.printError("Has Group By After Join: "
+          + queryProps.hasFeature(QueryFeature.JOIN_FOLLOWED_BY_GROUP_BY));
+      console.printError("Uses Script: " + queryProps.hasFeature(QueryFeature.USES_SCRIPT));
+      console.printError("Has Distribute By: " + queryProps.hasFeature(QueryFeature.DISTRIBUTE_BY));
+      console.printError("Has Cluster By: " + queryProps.hasFeature(QueryFeature.CLUSTER_BY));
     }
   }
 }
