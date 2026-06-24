@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql;
 
 
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -56,6 +57,24 @@ public class QueryProperties {
     }
   }
 
+  public enum QueryFeature {
+    GROUP_BY,
+    ORDER_BY,
+    OUTER_ORDER_BY,
+    SORT_BY,
+    LIMIT,
+    JOIN_FOLLOWED_BY_GROUP_BY,
+    PTF,
+    WINDOWING,
+    QUALIFY,
+    EXCEPT,
+    INTERSECT,
+    USES_SCRIPT,
+    DISTRIBUTE_BY,
+    CLUSTER_BY,
+    MAP_GROUP_BY
+  }
+
   boolean query;
   boolean analyzeCommand;
   boolean noScanAnalyzeCommand;
@@ -64,25 +83,8 @@ public class QueryProperties {
   int outerQueryLimit;
 
   boolean hasJoin = false;
-  boolean hasGroupBy = false;
-  boolean hasOrderBy = false;
-  boolean hasOuterOrderBy = false;
-  boolean hasSortBy = false;
-  boolean hasLimit = false;
-  boolean hasJoinFollowedByGroupBy = false;
-  boolean hasPTF = false;
-  boolean hasWindowing = false;
-  boolean hasQualify = false;
-  boolean hasExcept = false;
-  boolean hasIntersect = false;
-
-  // does the query have a using clause
-  boolean usesScript = false;
-
-  boolean hasDistributeBy = false;
-  boolean hasClusterBy = false;
+  private final EnumSet<QueryFeature> features = EnumSet.noneOf(QueryFeature.class);
   boolean mapJoinRemoved = false;
-  boolean hasMapGroupBy = false;
 
   private boolean hasLateralViews = false;
   private boolean cboSupportedLateralViews = true;
@@ -196,116 +198,124 @@ public class QueryProperties {
     return cboSupportedLateralViews;
   }
 
+  public void addFeature(QueryFeature feature) {
+    features.add(feature);
+  }
+
+  public boolean hasFeature(QueryFeature feature) {
+    return features.contains(feature);
+  }
+
   public boolean hasGroupBy() {
-    return hasGroupBy;
+    return hasFeature(QueryFeature.GROUP_BY);
   }
 
   public void setHasGroupBy(boolean hasGroupBy) {
-    this.hasGroupBy = hasGroupBy;
+    setFeature(QueryFeature.GROUP_BY, hasGroupBy);
   }
 
   public boolean hasOrderBy() {
-    return hasOrderBy;
+    return hasFeature(QueryFeature.ORDER_BY);
   }
 
   public void setHasOrderBy(boolean hasOrderBy) {
-    this.hasOrderBy = hasOrderBy;
+    setFeature(QueryFeature.ORDER_BY, hasOrderBy);
   }
 
   public boolean hasOuterOrderBy() {
-    return hasOuterOrderBy;
+    return hasFeature(QueryFeature.OUTER_ORDER_BY);
   }
 
   public void setHasOuterOrderBy(boolean hasOuterOrderBy) {
-    this.hasOuterOrderBy = hasOuterOrderBy;
+    setFeature(QueryFeature.OUTER_ORDER_BY, hasOuterOrderBy);
   }
 
   public boolean hasSortBy() {
-    return hasSortBy;
+    return hasFeature(QueryFeature.SORT_BY);
   }
 
   public void setHasSortBy(boolean hasSortBy) {
-    this.hasSortBy = hasSortBy;
+    setFeature(QueryFeature.SORT_BY, hasSortBy);
   }
 
   public void setHasLimit(boolean hasLimit) {
-    this.hasLimit = hasLimit;
+    setFeature(QueryFeature.LIMIT, hasLimit);
   }
 
   public boolean hasLimit() {
-    return hasLimit;
+    return hasFeature(QueryFeature.LIMIT);
   }
 
   public boolean hasJoinFollowedByGroupBy() {
-    return hasJoinFollowedByGroupBy;
+    return hasFeature(QueryFeature.JOIN_FOLLOWED_BY_GROUP_BY);
   }
 
   public void setHasJoinFollowedByGroupBy(boolean hasJoinFollowedByGroupBy) {
-    this.hasJoinFollowedByGroupBy = hasJoinFollowedByGroupBy;
+    setFeature(QueryFeature.JOIN_FOLLOWED_BY_GROUP_BY, hasJoinFollowedByGroupBy);
   }
 
   public boolean usesScript() {
-    return usesScript;
+    return hasFeature(QueryFeature.USES_SCRIPT);
   }
 
   public void setUsesScript(boolean usesScript) {
-    this.usesScript = usesScript;
+    setFeature(QueryFeature.USES_SCRIPT, usesScript);
   }
 
   public boolean hasDistributeBy() {
-    return hasDistributeBy;
+    return hasFeature(QueryFeature.DISTRIBUTE_BY);
   }
 
   public void setHasDistributeBy(boolean hasDistributeBy) {
-    this.hasDistributeBy = hasDistributeBy;
+    setFeature(QueryFeature.DISTRIBUTE_BY, hasDistributeBy);
   }
 
   public boolean hasClusterBy() {
-    return hasClusterBy;
+    return hasFeature(QueryFeature.CLUSTER_BY);
   }
 
   public void setHasClusterBy(boolean hasClusterBy) {
-    this.hasClusterBy = hasClusterBy;
+    setFeature(QueryFeature.CLUSTER_BY, hasClusterBy);
   }
 
   public boolean hasPTF() {
-    return hasPTF;
+    return hasFeature(QueryFeature.PTF);
   }
 
   public void setHasPTF(boolean hasPTF) {
-    this.hasPTF = hasPTF;
+    setFeature(QueryFeature.PTF, hasPTF);
   }
 
   public boolean hasWindowing() {
-    return hasWindowing;
+    return hasFeature(QueryFeature.WINDOWING);
   }
 
   public void setHasWindowing(boolean hasWindowing) {
-    this.hasWindowing = hasWindowing;
+    setFeature(QueryFeature.WINDOWING, hasWindowing);
   }
 
   public boolean hasQualify() {
-    return hasQualify;
+    return hasFeature(QueryFeature.QUALIFY);
   }
 
   public void setHasQualify(boolean hasQualify) {
-    this.hasQualify = hasQualify;
+    setFeature(QueryFeature.QUALIFY, hasQualify);
   }
 
   public boolean hasExcept() {
-    return hasExcept;
+    return hasFeature(QueryFeature.EXCEPT);
   }
 
   public void setHasExcept(boolean hasExcept) {
-    this.hasExcept = hasExcept;
+    setFeature(QueryFeature.EXCEPT, hasExcept);
   }
 
   public boolean hasIntersect() {
-    return hasIntersect;
+    return hasFeature(QueryFeature.INTERSECT);
   }
 
   public void setHasIntersect(boolean hasIntersect) {
-    this.hasIntersect = hasIntersect;
+    setFeature(QueryFeature.INTERSECT, hasIntersect);
   }
 
   public boolean isMapJoinRemoved() {
@@ -317,11 +327,11 @@ public class QueryProperties {
   }
 
   public boolean isHasMapGroupBy() {
-    return hasMapGroupBy;
+    return hasFeature(QueryFeature.MAP_GROUP_BY);
   }
 
   public void setHasMapGroupBy(boolean hasMapGroupBy) {
-    this.hasMapGroupBy = hasMapGroupBy;
+    setFeature(QueryFeature.MAP_GROUP_BY, hasMapGroupBy);
   }
 
   public boolean hasMultiDestQuery() {
@@ -386,24 +396,8 @@ public class QueryProperties {
     isMaterializedView = false;
 
     hasJoin = false;
-    hasGroupBy = false;
-    hasOrderBy = false;
-    hasOuterOrderBy = false;
-    hasSortBy = false;
-    hasJoinFollowedByGroupBy = false;
-    hasPTF = false;
-    hasWindowing = false;
-    hasQualify = false;
-    hasExcept = false;
-    hasIntersect = false;
-
-    // does the query have a using clause
-    usesScript = false;
-
-    hasDistributeBy = false;
-    hasClusterBy = false;
+    features.clear();
     mapJoinRemoved = false;
-    hasMapGroupBy = false;
 
     noOfJoins = 0;
     noOfOuterJoins = 0;
@@ -412,5 +406,13 @@ public class QueryProperties {
     filterWithSubQuery = false;
 
     usedTables.clear();
+  }
+
+  private void setFeature(QueryFeature feature, boolean enabled) {
+    if (enabled) {
+      addFeature(feature);
+    } else {
+      features.remove(feature);
+    }
   }
 }
