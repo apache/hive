@@ -221,7 +221,7 @@ public class TestQOutProcessor {
 
   private File tmpFile(String... lines) throws Exception {
     File f = tmpFolder.newFile();
-    try (PrintWriter pw = new PrintWriter(f, "UTF-8")) {
+    try (PrintWriter pw = new PrintWriter(Files.newBufferedWriter(f.toPath(), StandardCharsets.UTF_8))) {
       for (String l : lines) {
         pw.println(l);
       }

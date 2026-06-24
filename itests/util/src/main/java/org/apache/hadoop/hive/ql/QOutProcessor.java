@@ -373,7 +373,7 @@ public class QOutProcessor {
 
     // The number of vertices killed when a DAG fails is a scheduling race condition —
     // depends on how many sibling vertices are still running at the moment the kill propagates.
-    ppm.add(new PatternReplacementPair(Pattern.compile("killedVertices:[0-9]+"), "killedVertices:#Masked#"));
+    ppm.add(new PatternReplacementPair(Pattern.compile("killedVertices:\\d+"), "killedVertices:#Masked#"));
 
     partialPlanMask = ppm.toArray(new PatternReplacementPair[ppm.size()]);
   }
