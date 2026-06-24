@@ -1,80 +1,79 @@
-PREHOOK: query: CREATE TABLE t_is_null_nested (id INT, name STRING)
+PREHOOK: query: CREATE TABLE test (id INT, name STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t_is_null_nested
-POSTHOOK: query: CREATE TABLE t_is_null_nested (id INT, name STRING)
+PREHOOK: Output: default@test
+POSTHOOK: query: CREATE TABLE test (id INT, name STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t_is_null_nested
-PREHOOK: query: INSERT INTO t_is_null_nested VALUES
-  (1, 'alice'),
-  (2, NULL)
+POSTHOOK: Output: default@test
+PREHOOK: query: EXPLAIN CBO SELECT id, (name IS NULL) IS NULL FROM test
 PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: default@t_is_null_nested
-POSTHOOK: query: INSERT INTO t_is_null_nested VALUES
-  (1, 'alice'),
-  (2, NULL)
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT id, (name IS NULL) IS NULL FROM test
 POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@t_is_null_nested
-POSTHOOK: Lineage: t_is_null_nested.id SCRIPT []
-POSTHOOK: Lineage: t_is_null_nested.name SCRIPT []
-PREHOOK: query: SELECT id, (name IS NULL) IS NULL FROM t_is_null_nested ORDER BY id
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(id=[$0], _c1=[false])
+  HiveTableScan(table=[[default, test]], table:alias=[test])
+
+PREHOOK: query: EXPLAIN CBO SELECT id, (name IS NOT NULL) IS NULL FROM test
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t_is_null_nested
+PREHOOK: Input: default@test
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT id, (name IS NULL) IS NULL FROM t_is_null_nested ORDER BY id
+POSTHOOK: query: EXPLAIN CBO SELECT id, (name IS NOT NULL) IS NULL FROM test
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t_is_null_nested
+POSTHOOK: Input: default@test
 #### A masked pattern was here ####
-1	false
-2	false
-PREHOOK: query: SELECT id, (name IS NOT NULL) IS NULL FROM t_is_null_nested ORDER BY id
+CBO PLAN:
+HiveProject(id=[$0], _c1=[false])
+  HiveTableScan(table=[[default, test]], table:alias=[test])
+
+PREHOOK: query: EXPLAIN CBO SELECT id, (name IS NULL) IS NOT NULL FROM test
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t_is_null_nested
+PREHOOK: Input: default@test
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT id, (name IS NOT NULL) IS NULL FROM t_is_null_nested ORDER BY id
+POSTHOOK: query: EXPLAIN CBO SELECT id, (name IS NULL) IS NOT NULL FROM test
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t_is_null_nested
+POSTHOOK: Input: default@test
 #### A masked pattern was here ####
-1	false
-2	false
-PREHOOK: query: SELECT id, (name IS NULL) IS NOT NULL FROM t_is_null_nested ORDER BY id
+CBO PLAN:
+HiveProject(id=[$0], _c1=[true])
+  HiveTableScan(table=[[default, test]], table:alias=[test])
+
+PREHOOK: query: EXPLAIN CBO SELECT id, (name IS NOT NULL) IS NOT NULL FROM test
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t_is_null_nested
+PREHOOK: Input: default@test
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT id, (name IS NULL) IS NOT NULL FROM t_is_null_nested ORDER BY id
+POSTHOOK: query: EXPLAIN CBO SELECT id, (name IS NOT NULL) IS NOT NULL FROM test
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t_is_null_nested
+POSTHOOK: Input: default@test
 #### A masked pattern was here ####
-1	true
-2	true
-PREHOOK: query: SELECT id, (name IS NOT NULL) IS NOT NULL FROM t_is_null_nested ORDER BY id
+CBO PLAN:
+HiveProject(id=[$0], _c1=[true])
+  HiveTableScan(table=[[default, test]], table:alias=[test])
+
+PREHOOK: query: EXPLAIN CBO SELECT id FROM test WHERE (name IS NULL) IS NOT NULL
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t_is_null_nested
+PREHOOK: Input: default@test
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT id, (name IS NOT NULL) IS NOT NULL FROM t_is_null_nested ORDER BY id
+POSTHOOK: query: EXPLAIN CBO SELECT id FROM test WHERE (name IS NULL) IS NOT NULL
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t_is_null_nested
+POSTHOOK: Input: default@test
 #### A masked pattern was here ####
-1	true
-2	true
-PREHOOK: query: SELECT id FROM t_is_null_nested WHERE (name IS NULL) IS NOT NULL ORDER BY id
+CBO PLAN:
+HiveProject(id=[$0])
+  HiveTableScan(table=[[default, test]], table:alias=[test])
+
+PREHOOK: query: EXPLAIN CBO SELECT id FROM test WHERE (name IS NULL) IS NULL
 PREHOOK: type: QUERY
-PREHOOK: Input: default@t_is_null_nested
+PREHOOK: Input: default@test
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT id FROM t_is_null_nested WHERE (name IS NULL) IS NOT NULL ORDER BY id
+POSTHOOK: query: EXPLAIN CBO SELECT id FROM test WHERE (name IS NULL) IS NULL
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t_is_null_nested
+POSTHOOK: Input: default@test
 #### A masked pattern was here ####
-1
-2
-PREHOOK: query: SELECT id FROM t_is_null_nested WHERE (name IS NULL) IS NULL ORDER BY id
-PREHOOK: type: QUERY
-PREHOOK: Input: default@t_is_null_nested
-#### A masked pattern was here ####
-POSTHOOK: query: SELECT id FROM t_is_null_nested WHERE (name IS NULL) IS NULL ORDER BY id
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t_is_null_nested
-#### A masked pattern was here ####
+CBO PLAN:
+HiveValues(tuples=[[]])
+

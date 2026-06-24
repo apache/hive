@@ -1531,6 +1531,17 @@ public final class FunctionRegistry {
   }
 
   /**
+   * Returns whether the return type of a GenericUDF is nullable.
+   */
+  public static boolean isNullable(GenericUDF genericUDF) {
+    if (genericUDF == null) {
+      return true;
+    }
+    UDFType udfType = AnnotationUtils.getAnnotation(genericUDF.getClass(), UDFType.class);
+    return udfType == null || udfType.nullable();
+  }
+
+  /**
    * Returns whether the expression, for a single query, returns the same result given
    * the same arguments/children. This includes deterministic functions as well as runtime
    * constants (which may not be deterministic across queries).
