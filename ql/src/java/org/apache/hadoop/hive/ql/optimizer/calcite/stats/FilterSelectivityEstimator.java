@@ -160,8 +160,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     }
 
     case IS_NULL: {
-      if (childRel instanceof HiveTableScan) {
-        HiveTableScan hiveTableScan = (HiveTableScan) childRel;
+      if (childRel instanceof HiveTableScan hiveTableScan) {
         Set<Integer> iRefSet = HiveCalciteUtil.getInputRefs(call);
         List<ColStatistics> colStats =
             hiveTableScan.getColStat(new ArrayList<>(iRefSet));
@@ -174,7 +173,9 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
         if (childCardinality >= noOfNulls) {
           selectivity = noOfNulls / Math.max(childCardinality, 1);
         } else {
-          HiveConfPlannerContext ctx = childRel.getCluster().getPlanner().getContext().unwrap(HiveConfPlannerContext.class);
+          HiveConfPlannerContext ctx = 
+		  	childRel.getCluster().getPlanner().getContext()
+			  .unwrap(HiveConfPlannerContext.class);
           String msg = "Invalid statistics: Number of null values > number of tuples. " +
               "Consider recomputing statistics for table: " +
               ((RelOptHiveTable) childRel.getTable()).getHiveTableMD().getFullyQualifiedName();
