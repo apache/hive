@@ -40,14 +40,17 @@ public class LlapScalingStrategy implements ScalingStrategy {
   static final String METRIC_QUEUED = "hadoop_llapdaemon_executornumqueuedrequests";
   static final String METRIC_CONFIGURED = "hadoop_llapdaemon_executornumexecutorsconfigured";
   static final String METRIC_AVAILABLE = "hadoop_llapdaemon_executornumexecutorsavailable";
+  static final String METRIC_LLAP_TARGET_PREFIX = "hs2_llap_target_sessions_";
 
   private final HiveClusterAutoscaler orchestrator;
   private final HiveCluster cluster;
+  private final String llapName;
   private int lastMetric;
 
-  public LlapScalingStrategy(HiveClusterAutoscaler orchestrator, HiveCluster cluster) {
+  public LlapScalingStrategy(HiveClusterAutoscaler orchestrator, HiveCluster cluster, String llapName) {
     this.orchestrator = orchestrator;
     this.cluster = cluster;
+    this.llapName = llapName;
   }
 
   @Override
@@ -117,7 +120,12 @@ public class LlapScalingStrategy implements ScalingStrategy {
   }
 
   /**
-   * Detect HS2 open sessions.
+   * Detect HS2 sessions targeting this specific LLAP cluster.
+   * First tries the per-target metric (hs2_llap_target_sessions_{llapName}) which is
+   * available when HS2 has the per-LLAP-cluster session tracking patch.
+   * Falls back to the generic hs2_open_sessions for backward compatibility only if
+   * HS2 does NOT expose any per-target metrics at all (i.e. older HS2 image).
+   *
    * @return true if sessions > 0, false if scraped and all 0, null if scrape returned no pods
    *         (ambiguous — could be transient failure or HS2 genuinely absent)
    */
@@ -125,6 +133,36 @@ public class LlapScalingStrategy implements ScalingStrategy {
     if (hs2Metrics.isEmpty()) {
       return null;
     }
+
+    // Check if HS2 supports per-target metrics (any metric with the prefix exists).
+    // If it does, use only the per-target metric for this cluster — a missing metric
+    // means 0 sessions targeting this cluster (the gauge is registered lazily on first connect).
+    String targetMetric = METRIC_LLAP_TARGET_PREFIX + llapName;
+    boolean hs2SupportsTargetMetrics = false;
+    for (PodMetrics pm : hs2Metrics) {
+      for (String key : pm.metrics().keySet()) {
+        if (key.startsWith(METRIC_LLAP_TARGET_PREFIX)) {
+          hs2SupportsTargetMetrics = true;
+          break;
+        }
+      }
+      if (hs2SupportsTargetMetrics) {
+        break;
+      }
+    }
+
+    if (hs2SupportsTargetMetrics) {
+      // HS2 has per-target tracking: check only our specific metric
+      for (PodMetrics pm : hs2Metrics) {
+        Double val = pm.metrics().get(targetMetric);
+        if (val != null && val > 0) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    // Fallback: generic hs2_open_sessions (older HS2 without per-target metrics)
     for (PodMetrics pm : hs2Metrics) {
       double sessions = pm.metrics().getOrDefault(
           HiveServer2ScalingStrategy.METRIC_OPEN_SESSIONS, 0.0);

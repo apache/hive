@@ -632,7 +632,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"pcol_year\",\"transform\":\"year\",\"source-id\":3,\"field-id\":1000}]}
 	format-version      	2                   
-	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	#Masked#                   
 	numPartitions       	1                   
@@ -1302,7 +1301,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"pcol_month\",\"transform\":\"month\",\"source-id\":2,\"field-id\":1000}]}
 	format-version      	2                   
-	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	#Masked#                   
 	numPartitions       	1                   
@@ -1976,7 +1974,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"pcol_day\",\"transform\":\"day\",\"source-id\":1,\"field-id\":1000}]}
 	format-version      	2                   
-	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	#Masked#                   
 	numPartitions       	5                   
@@ -2431,7 +2428,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"pcol_trunc\",\"transform\":\"truncate[2]\",\"source-id\":1,\"field-id\":1000}]}
 	format-version      	2                   
-	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	#Masked#                   
 	numPartitions       	1                   

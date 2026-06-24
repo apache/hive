@@ -58,8 +58,8 @@ mvn clean package -pl packaging/src/kubernetes -Pkubernetes -DskipTests
 ## Quick Start (Helm)
 
 The Helm chart defaults to a **Full-HA** cluster (Metastore x2, HiveServer2 x2,
-LLAP x2, TezAM x2). You only need to provide three things: database, ZooKeeper,
-and storage.
+LLAP x2, TezAM x2 — one TezAM per LLAP cluster). You only need to provide three
+things: database, ZooKeeper, and storage.
 
 ### Prerequisites
 
@@ -353,7 +353,7 @@ helm install hive ./helm/hive-operator \
   --set 'cluster.storage.envVars[2].value=ozone' \
   --set cluster.metastore.replicas=1 \
   --set cluster.hiveServer2.replicas=1 \
-  --set cluster.llap.enabled=false \
+  --set cluster.llapClusters=[] \
   --set cluster.tezAm.enabled=false
 ```
 
@@ -392,8 +392,7 @@ cluster:
     replicas: 1
   hiveServer2:
     replicas: 1
-  llap:
-    enabled: false
+  llapClusters: []
   tezAm:
     enabled: false
 ```
@@ -477,7 +476,8 @@ cluster:
       requestsMemory: "2Gi"
       limitsMemory: "4Gi"
 
-  llap:
+  llapClusters:
+  - name: llap0
     enabled: true
     replicas: 3
     executors: 2
@@ -487,13 +487,217 @@ cluster:
       limitsMemory: "6Gi"
 
   tezAm:
-    replicas: 3
+    enabled: true
     scratchStorageSize: "5Gi"
 ```
 
 ```bash
 helm install hive ./helm/hive-operator -f values.yaml
 ```
+
+---
+
+## Multi-Tenant LLAP
+
+Multi-tenant LLAP allows you to run multiple independent LLAP clusters within a single
+HiveCluster, each with its own resource pool, autoscaling policy, and TezAM instance.
+HS2 routes sessions to clusters server-side based on admin-defined user/group rules.
+
+### How It Works
+
+```
+                        Multi-Tenant LLAP Architecture
+
+  beeline -n alice
+    |
+    v
+  HiveServer2 (resolves user→cluster via routing rules)
+    |
+    +-- alice (user:alice=llap0) --> TezAM-llap0 --> LLAP daemon llap0-0, llap0-1, ...
+    +-- bob   (user:bob=llap1)   --> TezAM-llap1 --> LLAP daemon llap1-0, llap1-1, ...
+    +-- carol (default=llap2)    --> TezAM-llap2 --> LLAP daemon llap2-0, llap2-1, ...
+```
+
+Each LLAP cluster is fully isolated:
+- **Separate LLAP daemon StatefulSet** with independent executor count, memory, and replicas
+- **Separate TezAM StatefulSet** (one per LLAP cluster) with its own ZooKeeper registration
+- **Separate autoscaling** — each cluster scales independently based on its own metrics
+- **Shared scratch PVC** (ReadWriteMany) for HS2 ↔ TezAM coordination files
+
+### Configuration
+
+**Values file:**
+
+```yaml
+# values-multi-tenant.yaml
+cluster:
+  database:
+    type: postgres
+    url: "jdbc:postgresql://postgres-postgresql:5432/metastore"
+    driver: "org.postgresql.Driver"
+    username: hive
+    passwordSecretRef:
+      name: hive-db-secret
+      key: password
+    driverJarUrl: "https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.5/postgresql-42.7.5.jar"
+
+  zookeeper:
+    quorum: "zookeeper:2181"
+
+  storage:
+    coreSiteOverrides:
+      fs.defaultFS: "s3a://hive"
+      fs.s3a.endpoint: "http://ozone-s3g-rest:9878"
+      fs.s3a.path.style.access: "true"
+    envVars:
+      - name: HADOOP_OPTIONAL_TOOLS
+        value: "hadoop-aws"
+      - name: AWS_ACCESS_KEY_ID
+        value: "ozone"
+      - name: AWS_SECRET_ACCESS_KEY
+        value: "ozone"
+
+  hiveServer2:
+    replicas: 2
+
+  tezAm:
+    enabled: true
+    scratchStorageSize: "2Gi"
+
+  # Server-side routing: map users/groups to LLAP clusters
+  llapClusterRouting: "user:alice=production,group:eng=analytics,default=dev"
+
+  # Three LLAP clusters: production (large), analytics (medium), dev (small)
+  llapClusters:
+  - name: production
+    enabled: true
+    replicas: 6
+    executors: 4
+    memoryMb: 8192
+    resources:
+      requestsMemory: "8Gi"
+      limitsMemory: "10Gi"
+    autoscaling:
+      enabled: true
+      minReplicas: 2
+      scaleUpThreshold: 2
+
+  - name: analytics
+    enabled: true
+    replicas: 4
+    executors: 2
+    memoryMb: 4096
+    resources:
+      requestsMemory: "4Gi"
+      limitsMemory: "6Gi"
+    autoscaling:
+      enabled: true
+      minReplicas: 0        # scales to zero when idle
+
+  - name: dev
+    enabled: true
+    replicas: 2
+    executors: 1
+    memoryMb: 1024
+    resources:
+      requestsMemory: "1Gi"
+      limitsMemory: "2Gi"
+    autoscaling:
+      enabled: true
+      minReplicas: 0        # scales to zero when idle
+```
+
+```bash
+helm install hive ./helm/hive-operator -f values-multi-tenant.yaml
+```
+
+### Resulting Kubernetes Resources
+
+For the above configuration, the operator creates:
+
+| Resource | Name | Purpose |
+|----------|------|---------|
+| StatefulSet | `hive-production` | LLAP daemons for production cluster |
+| StatefulSet | `hive-tezam-production` | TezAM for production cluster |
+| StatefulSet | `hive-analytics` | LLAP daemons for analytics cluster |
+| StatefulSet | `hive-tezam-analytics` | TezAM for analytics cluster |
+| StatefulSet | `hive-dev` | LLAP daemons for dev cluster |
+| StatefulSet | `hive-tezam-dev` | TezAM for dev cluster |
+| Service (headless) | `hive-production`, `hive-analytics`, `hive-dev` | LLAP daemon discovery |
+| Service (headless) | `hive-tezam-production`, `hive-tezam-analytics`, `hive-tezam-dev` | TezAM discovery |
+| ConfigMap | `hive-production-config`, etc. | `llap-daemon-site.xml` per cluster |
+| ConfigMap | `hive-tezam-production-config`, etc. | `tez-site.xml` per cluster |
+| PVC | `hive-scratch` | Shared scratch (ReadWriteMany) for HS2 ↔ TezAM |
+
+### Routing Queries to a Specific LLAP Cluster
+
+Routing is server-side — administrators define rules in the CR that map users/groups to
+LLAP clusters. HS2 resolves the target cluster at session open and sets all required
+properties automatically. Clients do not need any cluster-specific configuration.
+
+```yaml
+spec:
+  llapClusterRouting: "user:alice=production,group:eng=analytics,default=dev"
+  llapClusters:
+    - name: production
+    - name: analytics
+    - name: dev
+```
+
+Clients just connect with their identity:
+
+```bash
+beeline -u "jdbc:hive2://hive-hiveserver2:10001/;transportMode=http;httpPath=cliservice" -n alice
+```
+
+HS2 resolves `alice → production` and sets the following on the session:
+- `hive.server2.tez.external.sessions.namespace = /tez-external-sessions/production`
+- `tez.am.registry.namespace = /production`
+- `hive.llap.daemon.service.hosts = @production`
+
+Priority: user match > group match > default.
+
+The operator auto-generates per-cluster definitions from the LLAP spec names:
+- `hive.llap.cluster.<name>.sessions.namespace = /tez-external-sessions/<name>`
+- `hive.llap.cluster.<name>.registry.namespace = /<name>`
+- `hive.llap.cluster.<name>.service.hosts = @<name>`
+
+### ZooKeeper Registration
+
+Each LLAP cluster registers independently in ZooKeeper:
+
+| Cluster | LLAP daemons register at | TezAM registers session at |
+|---------|--------------------------|----------------------------|
+| `production` | `@production` (ZK service record) | `/tez-external-sessions/production/<appId>` |
+| `analytics` | `@analytics` (ZK service record) | `/tez-external-sessions/analytics/<appId>` |
+| `dev` | `@dev` (ZK service record) | `/tez-external-sessions/dev/<appId>` |
+
+HS2 discovers available TezAM sessions via `hive.server2.tez.external.sessions.namespace` and
+uses `tez.am.registry.namespace` for client cache isolation.
+
+### Per-Cluster Autoscaling Isolation
+
+When autoscaling is enabled, metrics are fully isolated per LLAP cluster:
+
+- **LLAP executor metrics**: The operator selects pods by label `hive.apache.org/llap-cluster=<name>`.
+  Only that cluster's pods are scraped and included in the scaling formula.
+- **HS2 activation gate**: The operator reads `hs2_llap_target_sessions_<name>` from HS2 pods.
+  Each cluster only wakes when sessions specifically target it.
+- **TezAM scaling**: Each TezAM scales based on session demand for its paired LLAP cluster.
+
+This means scaling up `production` never affects `analytics` or `dev` replicas.
+
+### Adding/Removing LLAP Clusters
+
+To add a new cluster, append to `llapClusters[]` and run `helm upgrade`:
+
+```bash
+helm upgrade hive ./helm/hive-operator -f values-multi-tenant.yaml
+```
+
+To remove a cluster, delete the entry from `llapClusters[]` and upgrade. The operator
+automatically garbage-collects the removed cluster's StatefulSet, Service, ConfigMap,
+and PDB via label-based discovery.
 
 ---
 
@@ -634,8 +838,13 @@ terminates immediately once sessions drain, not after the full grace period.
 |-----------|-------------|----------------------|--------------|
 | **HS2** | 1 | N/A (always running) | N/A |
 | **HMS** | 1 | Never (always running) | N/A |
-| **LLAP** | 0 | No HS2 sessions (activation gate fails) | HS2 has open sessions (next scrape) |
+| **LLAP** | 0 | No HS2 sessions targeting this cluster | HS2 has sessions targeting this cluster (`hs2_llap_target_sessions_{name}`) |
 | **TezAM** | 0 | No HS2 sessions (activation gate fails) | HS2 has open sessions (next scrape) |
+
+**Per-cluster LLAP wake:** When multiple LLAP clusters are configured (e.g., `llap0`, `llap1`),
+each cluster wakes independently based on the `hs2_llap_target_sessions_{name}` metric.
+If HS2 does not expose per-target metrics (older builds), the operator falls back to the generic
+`hs2_open_sessions` metric (which wakes all LLAP clusters on any session).
 
 ### Auto-Suspend (Full Cluster Hibernation)
 
@@ -774,11 +983,12 @@ cluster:
       enabled: true
       minReplicas: 1
 
-  llap:
+  llapClusters:
+  - name: llap0
     replicas: 8
     autoscaling:
       enabled: true
-      minReplicas: 0        # scales to 0 via normal autoscaling when HS2 idle
+      minReplicas: 0        # scales to 0 via normal autoscaling when no sessions target this cluster
 
   tezAm:
     replicas: 10
@@ -789,9 +999,9 @@ cluster:
 
 With this configuration, the cluster lifecycle is:
 1. Under load → all components scaled up by autoscaler
-2. Load drops → autoscaler scales to minReplicas (HS2=1, HMS=1, LLAP=0, TezAM=0)
+2. Load drops → autoscaler scales to minReplicas (HS2=1, HMS=1, LLAP clusters=0, TezAM=0)
 3. HS2 idle (0 sessions) for 15 minutes → auto-suspend kicks in → HS2, LLAP, TezAM to 0 (HMS stays at minReplicas)
-4. `kubectl patch hivecluster hive --type=merge -p '{"spec":{"suspend":false}}'` → wake → HS2=1, LLAP=1, TezAM=1
+4. `kubectl patch hivecluster hive --type=merge -p '{"spec":{"suspend":false}}'` → wake → HS2=1, each LLAP cluster=1, TezAM=1
 5. User connects → autoscaler detects sessions → scales up as needed
 
 ### CPU-Based Scaling (HS2 and HMS)
@@ -915,7 +1125,7 @@ helm install hive ./helm/hive-operator \
   --set 'cluster.storage.envVars[2].value=ozone' \
   --set cluster.hiveServer2.autoscaling.enabled=true \
   --set cluster.metastore.autoscaling.enabled=true \
-  --set cluster.llap.autoscaling.enabled=true \
+  --set 'cluster.llapClusters[0].autoscaling.enabled=true' \
   --set cluster.tezAm.autoscaling.enabled=true
 ```
 
@@ -971,11 +1181,12 @@ cluster:
       # gracePeriodSeconds: 60 # default — fast drain (HMS is stateless)
       # metricsScrapeIntervalSeconds: 10  # default — operator scrape interval
 
-  llap:
+  llapClusters:
+  - name: llap0
     replicas: 8               # Acts as maxReplicas when autoscaling is enabled
     autoscaling:
       enabled: true
-      # minReplicas: 0        # default — scale to zero when no HS2 sessions
+      # minReplicas: 0        # default — scale to zero when no sessions target this cluster
       # scaleUpThreshold: 1   # default — total busy slots (queued+running) triggering scale-up
       # scaleUpStabilizationSeconds: 60   # default — scale-up window
       # scaleDownStabilizationSeconds: 900 # default — scale-down window (long — scaling down destroys cache)
@@ -1176,28 +1387,48 @@ setup is needed — simply connect to HS2 and the operator wakes LLAP/TezAM as n
 | `cluster.hiveServer2.extraVolumes` | `[]` | Additional volumes for HS2 pods |
 | `cluster.hiveServer2.extraVolumeMounts` | `[]` | Additional volume mounts for HS2 containers |
 
-### LLAP
+### LLAP Clusters
+
+LLAP is configured as an array (`llapClusters`) to support multi-tenant deployments with
+independent scaling. Each entry creates a separate LLAP StatefulSet, Service, ConfigMap,
+and a paired TezAM StatefulSet (when `tezAm.enabled: true`).
 
 | Value | Default | Description |
 |-------|---------|-------------|
-| `cluster.llap.enabled` | `true` | Enable LLAP daemons |
-| `cluster.llap.replicas` | `2` | Replica count |
-| `cluster.llap.executors` | `1` | Executors per daemon |
-| `cluster.llap.memoryMb` | `1024` | Memory per daemon (MB) |
-| `cluster.llap.serviceHosts` | `@llap0` | LLAP ZK identity |
-| `cluster.llap.resources` | `{}` | CPU/memory |
-| `cluster.llap.configOverrides` | `{}` | Extra LLAP config properties |
-| `cluster.llap.extraVolumes` | `[]` | Additional volumes for LLAP pods |
-| `cluster.llap.extraVolumeMounts` | `[]` | Additional volume mounts for LLAP containers |
+| `cluster.llapClusters[].name` | *(required)* | Unique name for this LLAP cluster (e.g., `llap0`) |
+| `cluster.llapClusters[].enabled` | `true` | Enable this LLAP cluster |
+| `cluster.llapClusters[].replicas` | `2` | Replica count (maxReplicas when autoscaling enabled) |
+| `cluster.llapClusters[].executors` | `1` | Executors per daemon |
+| `cluster.llapClusters[].memoryMb` | `1024` | Memory per daemon (MB) |
+| `cluster.llapClusters[].resources` | `{}` | CPU/memory |
+| `cluster.llapClusters[].configOverrides` | `{}` | Extra LLAP config properties |
+| `cluster.llapClusters[].extraVolumes` | `[]` | Additional volumes for LLAP pods |
+| `cluster.llapClusters[].extraVolumeMounts` | `[]` | Additional volume mounts for LLAP containers |
+| `cluster.llapClusters[].autoscaling.enabled` | `false` | Enable per-cluster autoscaling |
+| `cluster.llapClusters[].autoscaling.minReplicas` | `0` | Min replicas (0 = scale to zero) |
+| `cluster.llapClusters[].autoscaling.scaleUpThreshold` | `1` | Busy-slot threshold for scale-up |
+
+HS2 routes sessions to LLAP clusters server-side based on user/group identity:
+
+| Value | Default | Description |
+|-------|---------|-------------|
+| `cluster.llapClusterRouting` | `""` | Routing rules (e.g., `"user:alice=llap1,default=llap0"`) |
+
+The operator auto-generates per-cluster namespace definitions in hive-site.xml.
+Clients connect with just their identity — no cluster-specific JDBC URL params needed.
 
 ### Tez AM
 
+TezAM is deployed as one StatefulSet per LLAP cluster. The global `tezAm` section
+controls shared settings (enabled flag, scratch PVC). Per-LLAP TezAM settings
+(replicas, autoscaling) can be overridden in each `llapClusters[].tezAm` entry.
+
 | Value | Default | Description |
 |-------|---------|-------------|
-| `cluster.tezAm.enabled` | `true` | Enable Tez Application Master |
-| `cluster.tezAm.replicas` | `2` | Replica count |
-| `cluster.tezAm.scratchStorageSize` | `1Gi` | Shared scratch PVC size |
-| `cluster.tezAm.scratchStorageClassName` | | StorageClass (must support RWX) |
+| `cluster.tezAm.enabled` | `true` | Enable Tez Application Master (one per LLAP cluster) |
+| `cluster.tezAm.replicas` | `2` | Default replica count per TezAM (overridable per LLAP cluster) |
+| `cluster.tezAm.scratchStorageSize` | `1Gi` | Shared scratch PVC size (single PVC shared by all HS2 and TezAM pods) |
+| `cluster.tezAm.scratchStorageClassName` | | StorageClass (must support ReadWriteMany) |
 | `cluster.tezAm.resources` | `{}` | CPU/memory |
 | `cluster.tezAm.configOverrides` | `{}` | Extra TezAM config properties |
 | `cluster.tezAm.extraVolumes` | `[]` | Additional volumes for TezAM pods |
@@ -1345,20 +1576,32 @@ HiveCluster CR
   v
 HiveClusterReconciler
   |
-  +-- HadoopConfigMapDependent          (core-site.xml)
-  +-- MetastoreConfigMapDependent       (metastore-site.xml)
-  +-- HiveServer2ConfigMapDependent     (hive-site.xml + tez-site.xml)
-  +-- SchemaInitJobDependent            (schematool -initOrUpgradeSchema)
-  +-- MetastoreDeploymentDependent      --> MetastoreServiceDependent
-  +-- HiveServer2DeploymentDependent    --> HiveServer2ServiceDependent
-  +-- LlapStatefulSetDependent          --> LlapServiceDependent          (optional)
-  +-- ScratchPvcDependent               (shared scratch PVC, optional)
-  +-- TezAmStatefulSetDependent         --> TezAmServiceDependent         (optional)
+  +-- [JOSDK Workflow Dependents]
+  |     +-- HadoopConfigMapDependent          (core-site.xml)
+  |     +-- MetastoreConfigMapDependent       (metastore-site.xml)
+  |     +-- HiveServer2ConfigMapDependent     (hive-site.xml + tez-site.xml)
+  |     +-- SchemaInitJobDependent            (schematool -initOrUpgradeSchema)
+  |     +-- MetastoreDeploymentDependent      --> MetastoreServiceDependent
+  |     +-- HiveServer2DeploymentDependent    --> HiveServer2ServiceDependent
+  |     +-- ScratchPvcDependent               (shared scratch PVC for HS2 ↔ TezAM)
+  |
+  +-- [Imperative] Per-LLAP-Cluster Resources (for each llapClusters[] entry):
+        +-- LLAP StatefulSet + headless Service + ConfigMap + PDB
+        +-- TezAM StatefulSet + headless Service + ConfigMap (one TezAM per LLAP cluster)
 ```
+
+LLAP clusters and their paired TezAM instances are managed imperatively by the reconciler
+(not via JOSDK workflow dependents) because the number of clusters is dynamic — determined
+at runtime from the CR spec. Each `llapClusters[]` entry produces:
+- **LLAP**: StatefulSet (`{cluster}-{name}`), headless Service, ConfigMap (`llap-daemon-site.xml`), PDB
+- **TezAM**: StatefulSet (`{cluster}-tezam-{name}`), headless Service, ConfigMap (`tez-site.xml`)
+
+All imperative resources are applied via `serverSideApply()`. Removed LLAP clusters (and
+their TezAMs) are garbage-collected automatically using label-based discovery.
 
 **Startup order:**
 1. ConfigMaps (Hadoop, Metastore, HiveServer2)
 2. Schema Init Job [if Metastore enabled]
 3. Metastore Deployment + Service [if enabled]
-4. HiveServer2 Deployment + Service
-5. LLAP + TezAM [if enabled]
+4. HiveServer2 Deployment + Service + Shared Scratch PVC
+5. LLAP clusters + paired TezAM instances [if enabled]

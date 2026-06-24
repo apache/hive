@@ -26,10 +26,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Scaling strategy for Tez Application Master.
- * TezAM scaling tracks HS2 session demand: desired = ceil(sum(hs2_open_sessions)).
+ * Scaling strategy for per-LLAP TezAM instances.
+ * Each TezAM follows its paired LLAP cluster's lifecycle: it should be up
+ * when there are sessions targeting that LLAP cluster, and at 0 otherwise.
  * <p>
- * Activation gate: only scale if HS2 has open sessions.
+ * Uses the per-target session metric from HS2: hs2_llap_target_sessions_{llapName}.
+ * Falls back to hs2_open_sessions if per-target metrics are not available.
  */
 public class TezAmScalingStrategy implements ScalingStrategy {
 
@@ -37,11 +39,14 @@ public class TezAmScalingStrategy implements ScalingStrategy {
 
   private final HiveClusterAutoscaler orchestrator;
   private final HiveCluster cluster;
+  private final String llapName;
   private int lastMetric;
 
-  public TezAmScalingStrategy(HiveClusterAutoscaler orchestrator, HiveCluster cluster) {
+  public TezAmScalingStrategy(HiveClusterAutoscaler orchestrator,
+      HiveCluster cluster, String llapName) {
     this.orchestrator = orchestrator;
     this.cluster = cluster;
+    this.llapName = llapName;
   }
 
   @Override
@@ -53,30 +58,50 @@ public class TezAmScalingStrategy implements ScalingStrategy {
     // Activation gate: if HS2 scrape returns no data but TezAM has running pods,
     // treat as "unknown" and preserve current state to avoid spurious scale-to-zero.
     if (hs2Metrics.isEmpty() && !podMetrics.isEmpty()) {
-      LOG.debug("[tezam] HS2 scrape returned no pods; preserving TezAM (has {} running pods)", podMetrics.size());
+      LOG.debug("[tezam-{}] HS2 scrape returned no pods; preserving TezAM", llapName);
       lastMetric = 0;
       return Math.max(1, autoscaling.minReplicas());
     }
 
-    double totalSessions = 0;
+    // Use per-LLAP target sessions metric (same logic as LlapScalingStrategy).
+    String targetMetric = "hs2_llap_target_sessions_" + llapName;
+    boolean anyPerTargetMetricExists = false;
+    double targetSessions = 0;
+
     for (PodMetrics pm : hs2Metrics) {
-      totalSessions += pm.metrics().getOrDefault(
-          HiveServer2ScalingStrategy.METRIC_OPEN_SESSIONS, 0.0);
+      // Check if HS2 exposes ANY per-target metric (feature support check)
+      for (String key : pm.metrics().keySet()) {
+        if (key.startsWith("hs2_llap_target_sessions_")) {
+          anyPerTargetMetricExists = true;
+          break;
+        }
+      }
+      targetSessions += pm.metrics().getOrDefault(targetMetric, 0.0);
     }
 
-    if (totalSessions <= 0) {
-      LOG.debug("[tezam] No HS2 sessions, scaling to minReplicas");
+    if (!anyPerTargetMetricExists && !hs2Metrics.isEmpty()) {
+      // HS2 doesn't support per-target metrics — fall back to total sessions
+      double totalSessions = 0;
+      for (PodMetrics pm : hs2Metrics) {
+        totalSessions += pm.metrics().getOrDefault(
+            HiveServer2ScalingStrategy.METRIC_OPEN_SESSIONS, 0.0);
+      }
+      targetSessions = totalSessions;
+    }
+
+    if (targetSessions <= 0) {
+      LOG.debug("[tezam-{}] No sessions targeting this cluster, scaling to minReplicas", llapName);
       lastMetric = 0;
       return autoscaling.minReplicas();
     }
 
-    lastMetric = (int) totalSessions;
+    lastMetric = (int) targetSessions;
 
-    // Scale based on concurrent demand — one TezAM per open HS2 session
-    int desired = (int) Math.ceil(totalSessions);
+    // TezAM desired: at least 1 when there are sessions, capped at maxReplicas
+    int desired = (int) Math.ceil(targetSessions);
     desired = Math.min(desired, maxReplicas);
 
-    LOG.debug("[tezam] totalSessions={}, desired={}", totalSessions, desired);
+    LOG.debug("[tezam-{}] targetSessions={}, desired={}", llapName, targetSessions, desired);
 
     return Math.max(desired, autoscaling.minReplicas());
   }

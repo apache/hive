@@ -97,10 +97,11 @@ public class HiveServer2DeploymentDependent
           spec.zookeeper().quorum(), null));
     }
 
-    if (spec.llap().isEnabled()) {
-      envVars.add(new EnvVar("HIVE_LLAP_DAEMON_SERVICE_HOSTS",
-          spec.llap().serviceHosts(), null));
-    }
+    spec.llapClusters().stream()
+        .filter(l -> l.isEnabled())
+        .findFirst()
+        .ifPresent(llap -> envVars.add(new EnvVar("HIVE_LLAP_DAEMON_SERVICE_HOSTS",
+            llap.serviceHosts(), null)));
 
     int metastorePort = ConfigUtils.getInt(
         spec.metastore().configOverrides(),
@@ -117,14 +118,17 @@ public class HiveServer2DeploymentDependent
           .append(ConfigUtils.HIVE_METASTORE_URIS_KEY)
           .append("=").append(metastoreUri);
     }
-    if (spec.llap().isEnabled()) {
-      serviceOpts.append(" -D")
-          .append(ConfigUtils.HIVE_EXECUTION_MODE_KEY)
-          .append("=llap");
-      serviceOpts.append(" -D")
-          .append(ConfigUtils.HIVE_LLAP_DAEMON_SERVICE_HOSTS_KEY)
-          .append("=").append(spec.llap().serviceHosts());
-    }
+    spec.llapClusters().stream()
+        .filter(l -> l.isEnabled())
+        .findFirst()
+        .ifPresent(llap -> {
+          serviceOpts.append(" -D")
+              .append(ConfigUtils.HIVE_EXECUTION_MODE_KEY)
+              .append("=llap");
+          serviceOpts.append(" -D")
+              .append(ConfigUtils.HIVE_LLAP_DAEMON_SERVICE_HOSTS_KEY)
+              .append("=").append(llap.serviceHosts());
+        });
     if (spec.tezAm().isEnabled()) {
       serviceOpts.append(" -D")
           .append(ConfigUtils.HIVE_ZOOKEEPER_QUORUM_KEY)
@@ -185,8 +189,7 @@ public class HiveServer2DeploymentDependent
       volumes.add(new io.fabric8.kubernetes.api.model.VolumeBuilder()
           .withName("scratch")
           .withNewPersistentVolumeClaim()
-            .withClaimName(ScratchPvcDependent
-                .resourceName(hiveCluster))
+            .withClaimName(ScratchPvcDependent.resourceName(hiveCluster))
           .endPersistentVolumeClaim()
           .build());
     }
@@ -204,9 +207,13 @@ public class HiveServer2DeploymentDependent
     replaceConfMountWithSubPaths(volumeMounts, "hive-config",
         "hive-site.xml", "tez-site.xml", "core-site.xml");
 
-    // Add Prometheus JMX Exporter when autoscaling is enabled
+    // Add Prometheus JMX Exporter when HS2 autoscaling is enabled, or when
+    // LLAP/TezAM autoscaling needs the HS2 activation gate metric.
     AutoscalingSpec autoscaling = hs2.autoscaling();
-    if (autoscaling.isEnabled()) {
+    boolean llapOrTezAmAutoscales = spec.llapClusters().stream().anyMatch(
+        l -> l.isEnabled() && (l.autoscaling().isEnabled()
+            || (spec.tezAm().isEnabled() && l.tezAm().autoscaling().isEnabled())));
+    if (autoscaling.isEnabled() || llapOrTezAmAutoscales) {
       addJmxExporter(spec.image(), COMPONENT, autoscaling.metricsPort(),
           initContainers, volumeMounts, volumes, envVars, ports);
     }

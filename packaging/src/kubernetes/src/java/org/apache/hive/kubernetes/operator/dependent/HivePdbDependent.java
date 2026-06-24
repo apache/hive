@@ -29,12 +29,13 @@ import org.apache.hive.kubernetes.operator.util.ConfigUtils;
 import org.apache.hive.kubernetes.operator.util.Labels;
 
 /**
- * Unified PodDisruptionBudget dependent resource for all Hive components.
+ * PodDisruptionBudget dependent resource for workflow-managed Hive components.
  * Uses maxUnavailable=1 to allow at most one pod to be disrupted at a time
  * while still permitting node drains when replicas=1.
  * <p>
- * Subclassed per component (HS2, Metastore, LLAP, TezAM) only to satisfy
- * JOSDK's requirement for distinct no-arg-constructible classes in the workflow.
+ * Subclassed per component (HS2, Metastore) to satisfy JOSDK's requirement
+ * for distinct no-arg-constructible classes in the workflow.
+ * LLAP and TezAM PDBs are managed imperatively via {@link LlapResourceBuilder}.
  */
 public abstract class HivePdbDependent
     extends HiveDependentResource<PodDisruptionBudget, HiveCluster> {
@@ -90,23 +91,4 @@ public abstract class HivePdbDependent
     }
   }
 
-  @KubernetesDependent(
-      informer = @Informer(labelSelector = "app.kubernetes.io/component=llap,"
-          + "app.kubernetes.io/managed-by=hive-kubernetes-operator")
-  )
-  public static class Llap extends HivePdbDependent {
-    public Llap() {
-      super(ConfigUtils.COMPONENT_LLAP);
-    }
-  }
-
-  @KubernetesDependent(
-      informer = @Informer(labelSelector = "app.kubernetes.io/component=tezam,"
-          + "app.kubernetes.io/managed-by=hive-kubernetes-operator")
-  )
-  public static class TezAm extends HivePdbDependent {
-    public TezAm() {
-      super(ConfigUtils.COMPONENT_TEZAM);
-    }
-  }
 }

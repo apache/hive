@@ -20,16 +20,22 @@ package org.apache.hive.kubernetes.operator.model.spec;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import io.fabric8.crd.generator.annotation.PreserveUnknownFields;
 import io.fabric8.crd.generator.annotation.SchemaFrom;
 import io.fabric8.generator.annotation.Default;
+import io.fabric8.generator.annotation.Required;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeMount;
 
 /** Configuration for LLAP (Live Long and Process) daemons. */
 public record LlapSpec(
+    @Required
+    @JsonPropertyDescription("Unique name for this LLAP cluster (e.g. llap0, llap1). "
+        + "Used as the ZooKeeper registration namespace and Kubernetes resource suffix.")
+    String name,
     @JsonPropertyDescription("Number of replicas")
     @Default("1")
     Integer replicas,
@@ -52,23 +58,51 @@ public record LlapSpec(
     @JsonPropertyDescription("Memory in MB per LLAP daemon instance")
     @Default("1024")
     Integer memoryMb,
-    @JsonPropertyDescription("LLAP service hosts identifier for ZooKeeper registration")
+    @JsonPropertyDescription("LLAP service hosts identifier for ZooKeeper registration. "
+        + "Defaults to @{name} (e.g. @llap0).")
     String serviceHosts,
     @JsonPropertyDescription("Readiness probe configuration")
     ProbeSpec readinessProbe,
     @JsonPropertyDescription("Autoscaling configuration (operator-driven, no external dependencies)")
-    AutoscalingSpec autoscaling) {
+    AutoscalingSpec autoscaling,
+    @JsonPropertyDescription("Per-LLAP TezAM configuration. Each LLAP cluster gets its own TezAM "
+        + "with independent replica count and autoscaling.")
+    LlapTezAmSpec tezAm) {
+
+  /** Per-LLAP-cluster TezAM replica and autoscaling overrides. */
+  public record LlapTezAmSpec(
+      @JsonPropertyDescription("Max number of TezAM replicas for this LLAP cluster")
+      @Default("1")
+      Integer replicas,
+      @JsonPropertyDescription("Autoscaling configuration for this LLAP cluster's TezAM")
+      AutoscalingSpec autoscaling) {
+
+    public LlapTezAmSpec {
+      replicas = replicas != null ? replicas : 1;
+      autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
+          false, 0, 0, 60, 600, 120, 10, 0, 0, null);
+    }
+  }
+
+  private static final java.util.regex.Pattern VALID_NAME =
+      java.util.regex.Pattern.compile("[a-z0-9]+");
 
   public LlapSpec {
+    Objects.requireNonNull(name, "llapClusters[].name is required");
+    if (!VALID_NAME.matcher(name).matches()) {
+      throw new IllegalArgumentException(
+          "llapClusters[].name must be lowercase alphanumeric (no dashes, dots, or underscores): " + name);
+    }
     replicas = replicas != null ? replicas : 1;
     enabled = enabled != null ? enabled : true;
     executors = executors != null ? executors : 1;
     memoryMb = memoryMb != null ? memoryMb : 1024;
-    serviceHosts = serviceHosts != null ? serviceHosts : "@llap0";
+    serviceHosts = serviceHosts != null ? serviceHosts : "@" + name;
     extraVolumes = extraVolumes != null ? extraVolumes : List.of();
     extraVolumeMounts = extraVolumeMounts != null ? extraVolumeMounts : List.of();
     autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
         false, 0, 1, 60, 900, 600, 10, 0, 0, null);
+    tezAm = tezAm != null ? tezAm : new LlapTezAmSpec(null, null);
   }
 
   public boolean isEnabled() {

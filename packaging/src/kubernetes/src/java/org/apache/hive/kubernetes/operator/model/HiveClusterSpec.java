@@ -46,8 +46,15 @@ public record HiveClusterSpec(
     MetastoreSpec metastore,
     @JsonPropertyDescription("HiveServer2 component configuration")
     HiveServer2Spec hiveServer2,
-    @JsonPropertyDescription("LLAP daemon configuration. Enabled by default.")
-    LlapSpec llap,
+    @JsonPropertyDescription("LLAP compute clusters. Each entry is an independent LLAP cluster "
+        + "with its own StatefulSet, autoscaling, and ZooKeeper registration. "
+        + "Users select a cluster via hive.llap.daemon.service.hosts=@{name} in their session.")
+    List<LlapSpec> llapClusters,
+    @JsonPropertyDescription("Server-side LLAP cluster routing rules. Maps users/groups to LLAP "
+        + "cluster names so clients don't need to specify namespace configs. "
+        + "Format: user:<name>=<cluster>,group:<name>=<cluster>,default=<cluster>. "
+        + "Example: \"user:alice=llap1,group:eng=llap0,default=llap0\"")
+    String llapClusterRouting,
     @JsonPropertyDescription("Tez Application Master configuration. Enabled by default.")
     TezAmSpec tezAm,
     @Required
@@ -89,8 +96,7 @@ public record HiveClusterSpec(
         1, null, null, null, null, null, null, true, null, null, null, null);
     hiveServer2 = hiveServer2 != null ? hiveServer2 : new HiveServer2Spec(
         1, null, null, null, null, null, null, null, null, null);
-    llap = llap != null ? llap : new LlapSpec(
-        1, null, null, null, null, true, null, null, null, null, null);
+    llapClusters = llapClusters != null ? llapClusters : List.of();
     tezAm = tezAm != null ? tezAm : new TezAmSpec(
         1, null, null, null, null, true, null, null, null);
     envVars = envVars != null ? envVars : List.of();

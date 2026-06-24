@@ -210,7 +210,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"dept_id\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1000},{\"name\":\"city\",\"transform\":\"identity\",\"source-id\":4,\"field-id\":1001},{\"name\":\"registration_date\",\"transform\":\"identity\",\"source-id\":5,\"field-id\":1002}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	11                  
 	numRows             	11                  
@@ -322,7 +321,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"dept_id\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1000},{\"name\":\"city\",\"transform\":\"identity\",\"source-id\":4,\"field-id\":1001},{\"name\":\"registration_date\",\"transform\":\"identity\",\"source-id\":5,\"field-id\":1002}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	6                   
 	numPartitions       	2                   
@@ -441,7 +439,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"dept_id\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1000},{\"name\":\"city\",\"transform\":\"identity\",\"source-id\":4,\"field-id\":1001},{\"name\":\"registration_date\",\"transform\":\"identity\",\"source-id\":5,\"field-id\":1002}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	2                   
 	numPartitions       	2                   

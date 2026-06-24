@@ -31,11 +31,9 @@ import org.apache.hive.kubernetes.operator.dependent.HiveConfigMapDependent;
 import org.apache.hive.kubernetes.operator.dependent.HiveServer2DeploymentDependent;
 import org.apache.hive.kubernetes.operator.dependent.HivePdbDependent;
 import org.apache.hive.kubernetes.operator.dependent.HiveServiceDependent;
-import org.apache.hive.kubernetes.operator.dependent.LlapStatefulSetDependent;
 import org.apache.hive.kubernetes.operator.dependent.MetastoreDeploymentDependent;
 import org.apache.hive.kubernetes.operator.dependent.SchemaInitJobDependent;
 import org.apache.hive.kubernetes.operator.dependent.ScratchPvcDependent;
-import org.apache.hive.kubernetes.operator.dependent.TezAmStatefulSetDependent;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 
 /**
@@ -50,45 +48,27 @@ public final class HiveWorkflowSpec implements WorkflowSpec {
   private static final String HADOOP_CONFIGMAP = "hadoop-configmap";
   private static final String METASTORE_CONFIGMAP = "metastore-configmap";
   private static final String HIVESERVER2_CONFIGMAP = "hiveserver2-configmap";
-  private static final String LLAP_CONFIGMAP = "llap-configmap";
   private static final String SCHEMA_INIT_JOB = "schema-init-job";
   private static final String METASTORE_DEPLOYMENT = "metastore-deployment";
   private static final String METASTORE_SERVICE = "metastore-service";
   private static final String HIVESERVER2_DEPLOYMENT = "hiveserver2-deployment";
   private static final String HIVESERVER2_SERVICE = "hiveserver2-service";
-  private static final String LLAP_STATEFULSET = "llap-statefulset";
-  private static final String LLAP_SERVICE = "llap-service";
-  private static final String TEZAM_SERVICE = "tezam-service";
-  private static final String TEZAM_STATEFULSET = "tezam-statefulset";
   private static final String SCRATCH_PVC = "scratch-pvc";
   private static final String HS2_PDB = "hs2-pdb";
   private static final String METASTORE_PDB = "metastore-pdb";
-  private static final String LLAP_PDB = "llap-pdb";
-  private static final String TEZAM_PDB = "tezam-pdb";
 
   private static final Condition<?, HiveCluster> METASTORE_ENABLED =
       (dr, primary, ctx) -> primary.getSpec().metastore().isEnabled();
-
-  private static final Condition<?, HiveCluster> LLAP_ENABLED =
-      (dr, primary, ctx) -> primary.getSpec().llap().isEnabled();
-
-  private static final Condition<?, HiveCluster> TEZAM_ENABLED =
-      (dr, primary, ctx) -> primary.getSpec().tezAm().isEnabled();
 
   private static final Condition<?, HiveCluster> METASTORE_AUTOSCALING =
       (dr, primary, ctx) -> primary.getSpec().metastore().isEnabled()
           && primary.getSpec().metastore().autoscaling().isEnabled();
 
-  private static final Condition<?, HiveCluster> LLAP_AUTOSCALING =
-      (dr, primary, ctx) -> primary.getSpec().llap().isEnabled()
-          && primary.getSpec().llap().autoscaling().isEnabled();
-
-  private static final Condition<?, HiveCluster> TEZAM_AUTOSCALING =
-      (dr, primary, ctx) -> primary.getSpec().tezAm().isEnabled()
-          && primary.getSpec().tezAm().autoscaling().isEnabled();
-
   private static final Condition<?, HiveCluster> HS2_AUTOSCALING =
       (dr, primary, ctx) -> primary.getSpec().hiveServer2().autoscaling().isEnabled();
+
+  private static final Condition<?, HiveCluster> TEZAM_ENABLED =
+      (dr, primary, ctx) -> primary.getSpec().tezAm().isEnabled();
 
 
   // SPECS must be declared AFTER all conditions to avoid static init order issues.
@@ -129,6 +109,11 @@ public final class HiveWorkflowSpec implements WorkflowSpec {
         Set.of(METASTORE_CONFIGMAP),
         null, null, null, METASTORE_ENABLED, null));
 
+    // --- Shared Scratch PVC (Required for HS2 to TezAM communication) ---
+    specs.add(new DependentResourceSpec(
+        ScratchPvcDependent.class, SCRATCH_PVC,
+        Set.of(), null, null, null, TEZAM_ENABLED, null));
+
     specs.add(new DependentResourceSpec(
         HiveServer2DeploymentDependent.class, HIVESERVER2_DEPLOYMENT,
         Set.of(HIVESERVER2_CONFIGMAP, HADOOP_CONFIGMAP),
@@ -138,34 +123,6 @@ public final class HiveWorkflowSpec implements WorkflowSpec {
         HiveServiceDependent.HiveServer2.class, HIVESERVER2_SERVICE,
         Set.of(HIVESERVER2_CONFIGMAP),
         null, null, null, null, null));
-
-    // --- LLAP (conditional) ---
-    specs.add(new DependentResourceSpec(
-        HiveConfigMapDependent.Llap.class, LLAP_CONFIGMAP,
-        Set.of(), null, null, null, LLAP_ENABLED, null));
-
-    specs.add(new DependentResourceSpec(
-        LlapStatefulSetDependent.class, LLAP_STATEFULSET,
-        Set.of(LLAP_CONFIGMAP, HADOOP_CONFIGMAP),
-        null, null, null, LLAP_ENABLED, null));
-
-    specs.add(new DependentResourceSpec(
-        HiveServiceDependent.Llap.class, LLAP_SERVICE,
-        Set.of(), null, null, null, LLAP_ENABLED, null));
-
-    // --- TezAM (conditional) ---
-    specs.add(new DependentResourceSpec(
-        ScratchPvcDependent.class, SCRATCH_PVC,
-        Set.of(), null, null, null, TEZAM_ENABLED, null));
-
-    specs.add(new DependentResourceSpec(
-        HiveServiceDependent.TezAm.class, TEZAM_SERVICE,
-        Set.of(), null, null, null, TEZAM_ENABLED, null));
-
-    specs.add(new DependentResourceSpec(
-        TezAmStatefulSetDependent.class, TEZAM_STATEFULSET,
-        Set.of(HIVESERVER2_CONFIGMAP, HADOOP_CONFIGMAP, TEZAM_SERVICE, SCRATCH_PVC),
-        null, null, null, TEZAM_ENABLED, null));
 
     // --- Autoscaling: PodDisruptionBudgets (conditional) ---
     specs.add(new DependentResourceSpec(
@@ -177,16 +134,6 @@ public final class HiveWorkflowSpec implements WorkflowSpec {
         HivePdbDependent.Metastore.class, METASTORE_PDB,
         Set.of(METASTORE_DEPLOYMENT),
         null, METASTORE_AUTOSCALING, null, null, null));
-
-    specs.add(new DependentResourceSpec(
-        HivePdbDependent.Llap.class, LLAP_PDB,
-        Set.of(LLAP_STATEFULSET),
-        null, LLAP_AUTOSCALING, null, null, null));
-
-    specs.add(new DependentResourceSpec(
-        HivePdbDependent.TezAm.class, TEZAM_PDB,
-        Set.of(TEZAM_STATEFULSET),
-        null, TEZAM_AUTOSCALING, null, null, null));
 
     return Collections.unmodifiableList(specs);
   }
