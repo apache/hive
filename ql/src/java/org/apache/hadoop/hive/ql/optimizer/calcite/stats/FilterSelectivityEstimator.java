@@ -174,8 +174,8 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
           selectivity = noOfNulls / Math.max(childCardinality, 1);
         } else {
           HiveConfPlannerContext ctx = 
-		  	childRel.getCluster().getPlanner().getContext()
-			  .unwrap(HiveConfPlannerContext.class);
+            childRel.getCluster().getPlanner().getContext()
+              .unwrap(HiveConfPlannerContext.class);
           String msg = "Invalid statistics: Number of null values > number of tuples. " +
               "Consider recomputing statistics for table: " +
               ((RelOptHiveTable) childRel.getTable()).getHiveTableMD().getFullyQualifiedName();
