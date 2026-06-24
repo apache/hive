@@ -38,7 +38,6 @@ Table Parameters:
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"id\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"text\",\"required\":false,\"type\":\"string\"}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	0                   
 	numRows             	0                   
@@ -283,7 +282,6 @@ Table Parameters:
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"id\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"text\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"bool_val\",\"required\":false,\"type\":\"boolean\"},{\"id\":4,\"name\":\"date_val\",\"required\":false,\"type\":\"date\"}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	0                   
 	numRows             	0                   
@@ -409,7 +407,6 @@ Table Parameters:
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"ts\",\"required\":false,\"type\":\"timestamp\"},{\"id\":2,\"name\":\"dd\",\"required\":false,\"type\":\"double\"},{\"id\":3,\"name\":\"ll\",\"required\":false,\"type\":\"long\"}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	0                   
 	numRows             	0                   
@@ -543,7 +540,6 @@ Table Parameters:
 	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"20\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"20\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"1\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	1                   
 	numRows             	20                  
@@ -663,7 +659,6 @@ Table Parameters:
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"ts\",\"required\":false,\"type\":\"timestamp\"},{\"id\":2,\"name\":\"dd\",\"required\":false,\"type\":\"double\"},{\"id\":3,\"name\":\"ll\",\"required\":false,\"type\":\"int\"}]}
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"ll_bucket\",\"transform\":\"bucket[4]\",\"source-id\":3,\"field-id\":1000}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	0                   
 	numRows             	0                   

@@ -63,13 +63,26 @@ public class Decimal64ColumnVector extends LongColumnVector implements IDecimalC
    */
   public void set(int elementNum, HiveDecimalWritable writable) {
     scratchHiveDecWritable.set(writable);
-    scratchHiveDecWritable.mutateEnforcePrecisionScale(precision, scale);
-    if (!scratchHiveDecWritable.isSet()) {
-      noNulls = false;
-      isNull[elementNum] = true;
-    } else {
-      vector[elementNum] = scratchHiveDecWritable.serialize64(scale);
-    }
+    enforceScaleAndSet(elementNum);
+  }
+
+  /**
+   * Set a Decimal64 field straight from the unscaled big-integer {@code bigIntegerBytes} (encoded at
+   * {@code valueScale}), without materializing a HiveDecimal per row.
+   *
+   * {@code valueScale} may differ from this vector's {@link #scale} under schema evolution (e.g.
+   * reading a DECIMAL(38,37) file column as DECIMAL(16,8)); the stored long is always at this
+   * vector's scale, where the value fits the 64-bit backing store and downstream consumers read it.
+   *
+   * FAST version: assumes elementNum is already adjusted for isRepeating and the isNull entry is set.
+   *
+   * @param elementNum
+   * @param bigIntegerBytes
+   * @param valueScale
+   */
+  public void set(int elementNum, byte[] bigIntegerBytes, int valueScale) {
+    scratchHiveDecWritable.set(bigIntegerBytes, valueScale);
+    enforceScaleAndSet(elementNum);
   }
 
   /**
@@ -87,6 +100,14 @@ public class Decimal64ColumnVector extends LongColumnVector implements IDecimalC
    */
   public void set(int elementNum, HiveDecimal hiveDec) {
     scratchHiveDecWritable.set(hiveDec);
+    enforceScaleAndSet(elementNum);
+  }
+
+  /**
+   * Apply this vector's precision/scale to the value in scratchHiveDecWritable and store it as a
+   * Decimal64 long, marking the entry NULL if out of range.
+   */
+  private void enforceScaleAndSet(int elementNum) {
     scratchHiveDecWritable.mutateEnforcePrecisionScale(precision, scale);
     if (!scratchHiveDecWritable.isSet()) {
       noNulls = false;

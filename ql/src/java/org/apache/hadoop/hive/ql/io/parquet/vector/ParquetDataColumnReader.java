@@ -105,6 +105,32 @@ public interface ParquetDataColumnReader {
   byte[] readDecimal();
 
   /**
+   * True when this reader can supply DECIMAL_64 values as raw unscaled longs at the column's scale,
+   * with no per-row HiveDecimal/byte[] conversion -- i.e. an INT32/INT64- or byte-array-backed decimal
+   * whose file scale equals the requested Hive scale and whose value fits a long. When true, the
+   * long-backed reader may call {@link #readDecimal64()} / {@link #readDecimal64(int)} instead of
+   * {@link #readDecimal()} / {@link #readDecimal(int)}.
+   */
+  default boolean isFastDecimal64() {
+    return false;
+  }
+
+  /**
+   * @return the next value as a raw unscaled decimal64 long. Only valid when {@link #isFastDecimal64()}.
+   * {@link #isValid()} is set false when the value does not fit the Hive precision (caller -> NULL).
+   */
+  default long readDecimal64() {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * @return the dictionary value at {@code id} as a raw unscaled decimal64 long. See {@link #readDecimal64()}.
+   */
+  default long readDecimal64(int id) {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
    * @return the next Double from the page
    */
   double readDouble();

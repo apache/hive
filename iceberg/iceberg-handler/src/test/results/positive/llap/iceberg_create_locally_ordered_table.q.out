@@ -39,7 +39,6 @@ Table Parameters:
 	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"9\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"9\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"1\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	1                   
 	numRows             	9                   
@@ -134,7 +133,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-sort-order  	{\"order-id\":1,\"fields\":[{\"transform\":\"identity\",\"source-id\":1,\"direction\":\"desc\",\"null-order\":\"nulls-first\"},{\"transform\":\"identity\",\"source-id\":2,\"direction\":\"asc\",\"null-order\":\"nulls-last\"}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	1                   
 	numRows             	9                   

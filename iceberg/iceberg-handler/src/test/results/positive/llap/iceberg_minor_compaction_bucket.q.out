@@ -93,7 +93,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"key_bucket_8\",\"transform\":\"bucket[8]\",\"source-id\":2,\"field-id\":1001}]}
 	format-version      	2                   
-	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
 	numFiles            	7                   
 	numPartitions       	6                   
@@ -211,7 +210,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"key_bucket_8\",\"transform\":\"bucket[8]\",\"source-id\":2,\"field-id\":1001}]}
 	format-version      	2                   
-	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
 	numFiles            	8                   
 	numPartitions       	4                   

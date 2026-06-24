@@ -188,7 +188,6 @@ Table Parameters:
 	current-snapshot-summary	{\"deleted-data-files\":\"3\",\"deleted-records\":\"3\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"11\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"11\",\"total-delete-files\":\"7\",\"total-position-deletes\":\"7\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	11                  
 	numRows             	11                  
@@ -301,7 +300,6 @@ Table Parameters:
 	current-snapshot-summary	{\"added-data-files\":\"1\",\"deleted-data-files\":\"11\",\"removed-position-delete-files\":\"7\",\"removed-delete-files\":\"7\",\"added-records\":\"4\",\"deleted-records\":\"11\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"removed-position-deletes\":\"7\",\"changed-partition-count\":\"1\",\"total-records\":\"4\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"1\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	1                   
 	numRows             	4                   
