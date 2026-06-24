@@ -586,7 +586,8 @@ public class HiveClusterReconciler
               oldSpec.hiveServer2(), oldSpec.llapClusters(), oldSpec.llapClusterRouting(),
               oldSpec.tezAm(), oldSpec.zookeeper(),
               oldSpec.hadoop(), oldSpec.envVars(), oldSpec.externalJars(),
-              oldSpec.volumes(), oldSpec.volumeMounts(), oldSpec.autoSuspend(), suspend);
+              oldSpec.volumes(), oldSpec.volumeMounts(), oldSpec.serviceAccountName(),
+              oldSpec.autoSuspend(), suspend);
           hc.setSpec(newSpec);
           return hc;
         });

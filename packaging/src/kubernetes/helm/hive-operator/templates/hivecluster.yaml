@@ -26,6 +26,9 @@ metadata:
 spec:
   image: {{ .Values.cluster.image }}
   imagePullPolicy: {{ .Values.cluster.imagePullPolicy }}
+  {{- if .Values.cluster.serviceAccountName }}
+  serviceAccountName: {{ .Values.cluster.serviceAccountName }}
+  {{- end }}
 
   metastore:
     enabled: {{ .Values.cluster.metastore.enabled }}
@@ -178,7 +181,6 @@ spec:
   tezAm:
     enabled: {{ .Values.cluster.tezAm.enabled }}
     {{- if .Values.cluster.tezAm.enabled }}
-    replicas: {{ .Values.cluster.tezAm.replicas }}
     scratchStorageSize: {{ .Values.cluster.tezAm.scratchStorageSize | quote }}
     {{- if .Values.cluster.tezAm.scratchStorageClassName }}
     scratchStorageClassName: {{ .Values.cluster.tezAm.scratchStorageClassName | quote }}
