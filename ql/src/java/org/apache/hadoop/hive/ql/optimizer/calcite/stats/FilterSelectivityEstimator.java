@@ -162,11 +162,15 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     case IS_NULL: {
       if (childRel instanceof HiveTableScan) {
         HiveTableScan hiveTableScan = (HiveTableScan) childRel;
-        if (hasMissingColumnStats(call, hiveTableScan)) {
+        Set<Integer> iRefSet = HiveCalciteUtil.getInputRefs(call);
+        List<ColStatistics> colStats =
+            hiveTableScan.getColStat(new ArrayList<>(iRefSet));
+
+        if (hasMissingColumnStats(iRefSet, colStats)) {
           selectivity = DEFAULT_COMPARISON_SELECTIVITY;
           break;
         }
-        double noOfNulls = getMaxNulls(call, hiveTableScan);
+        double noOfNulls = maxNullsFromColStats(colStats);
         if (childCardinality >= noOfNulls) {
           selectivity = noOfNulls / Math.max(childCardinality, 1);
         } else {
@@ -865,17 +869,16 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
   }
 
   /**
-   * Returns true when one or more referenced columns do not have column statistics
-   * or getInputRefs returns empty
-   * Does not account for stale stats
+   * Returns true when one or more referenced columns do not have column statistics.
+   * Does not account for stale stats.
    */
-  private boolean hasMissingColumnStats(RexCall call, HiveTableScan t) {
-    Set<Integer> iRefSet = HiveCalciteUtil.getInputRefs(call);
-    if (iRefSet.isEmpty()) return true;
-
-    List<ColStatistics> colStats = t.getColStat(new ArrayList<Integer>(iRefSet));
-    if (colStats.size() < iRefSet.size()) return true;
-
+  private boolean hasMissingColumnStats(Set<Integer> iRefSet, List<ColStatistics> colStats) {
+    if (iRefSet.isEmpty()) {
+      return true;
+    }
+    if (colStats.size() < iRefSet.size()) {
+      return true;
+    }
     for (ColStatistics cs : colStats) {
       // Treat estimated stats as missing stats
       if (cs == null || cs.isEstimated()) {
@@ -883,6 +886,15 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       }
     }
     return false;
+  }
+
+  private long maxNullsFromColStats(List<ColStatistics> colStats) {
+    long maxNoNulls = 0;
+    for (ColStatistics cs : colStats) {
+      long numNulls = cs.getNumNulls();
+      maxNoNulls = Math.max(maxNoNulls, numNulls);
+    }
+    return maxNoNulls;
   }
 
   private Double getMaxNDV(RexCall call) {

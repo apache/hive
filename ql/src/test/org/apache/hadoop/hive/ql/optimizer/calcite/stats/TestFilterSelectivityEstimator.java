@@ -1125,6 +1125,13 @@ public class TestFilterSelectivityEstimator {
   }
 
   @Test
+  public void testComputeIsNullSelectivityNull() {
+    doReturn(Collections.singletonList(null)).when(tableMock).getColStat(Collections.singletonList(0));
+    RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.IS_NULL, inputRef0);
+    checkSelectivity(1f / 3f, filter); // fallback to DEFAULT_COMPARISON_SELECTIVITY
+  }
+
+  @Test
   public void testComputeIsNullSelectivityMissingStats() {
     doReturn(Collections.emptyList()).when(tableMock).getColStat(Collections.singletonList(0));
     RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.IS_NULL, inputRef0);
