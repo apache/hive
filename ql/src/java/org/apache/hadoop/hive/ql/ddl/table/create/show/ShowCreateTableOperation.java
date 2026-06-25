@@ -54,7 +54,7 @@ public class ShowCreateTableOperation extends DDLOperation<ShowCreateTableDesc> 
       DDLPlanUtils ddlObj = new DDLPlanUtils();
       String command;
       if (table.isView()) {
-        command = ddlObj.getCreateViewCommand(table, desc.isRelative());
+        command = ddlObj.getCreateViewCommand(table, desc.isRelative()).replace("\t", "\\t");
       } else {
         List<String> commands = new ArrayList<>();
         commands.add(ddlObj.getCreateTableCommand(table, desc.isRelative()));

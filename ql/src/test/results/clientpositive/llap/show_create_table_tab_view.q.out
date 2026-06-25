@@ -1,0 +1,223 @@
+PREHOOK: query: DROP VIEW IF EXISTS hive_29059_v
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW IF EXISTS hive_29059_v
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: DROP VIEW IF EXISTS hive_29059_v2
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW IF EXISTS hive_29059_v2
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: DROP VIEW IF EXISTS hive_29059_v3
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW IF EXISTS hive_29059_v3
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: DROP VIEW IF EXISTS hive_29059_v4
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW IF EXISTS hive_29059_v4
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: DROP VIEW IF EXISTS hive_29059_v5
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW IF EXISTS hive_29059_v5
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: DROP TABLE IF EXISTS hive_29059_src
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS hive_29059_src
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE hive_29059_src (val1 string COMMENT 'val	1', 
+                             val2 string COMMENT 'val
+                                                2', 
+                             val3 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive_29059_src
+POSTHOOK: query: CREATE TABLE hive_29059_src (val1 string COMMENT 'val	1', 
+                             val2 string COMMENT 'val
+                                                2', 
+                             val3 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive_29059_src
+PREHOOK: query: INSERT INTO hive_29059_src VALUES ('a1', 'b1', 'c1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hive_29059_src
+POSTHOOK: query: INSERT INTO hive_29059_src VALUES ('a1', 'b1', 'c1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hive_29059_src
+POSTHOOK: Lineage: hive_29059_src.val1 SCRIPT []
+POSTHOOK: Lineage: hive_29059_src.val2 SCRIPT []
+POSTHOOK: Lineage: hive_29059_src.val3 SCRIPT []
+PREHOOK: query: CREATE VIEW hive_29059_v AS SELECT * FROM hive_29059_src 
+	WHERE val1	= 'a1'
+	AND val2	= 'b1'
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@hive_29059_src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive_29059_v
+POSTHOOK: query: CREATE VIEW hive_29059_v AS SELECT * FROM hive_29059_src 
+	WHERE val1	= 'a1'
+	AND val2	= 'b1'
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@hive_29059_src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive_29059_v
+POSTHOOK: Lineage: hive_29059_v.val1 SIMPLE []
+POSTHOOK: Lineage: hive_29059_v.val2 SIMPLE []
+POSTHOOK: Lineage: hive_29059_v.val3 SIMPLE [(hive_29059_src)hive_29059_src.FieldSchema(name:val3, type:string, comment:null), ]
+PREHOOK: query: SHOW CREATE TABLE hive_29059_v
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@hive_29059_v
+POSTHOOK: query: SHOW CREATE TABLE hive_29059_v
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@hive_29059_v
+CREATE VIEW `hive_29059_v` AS SELECT `hive_29059_src`.`val1`, `hive_29059_src`.`val2`, `hive_29059_src`.`val3` FROM `default`.`hive_29059_src` 
+\tWHERE `hive_29059_src`.`val1`\t= 'a1'
+\tAND `hive_29059_src`.`val2`\t= 'b1'
+PREHOOK: query: SHOW CREATE TABLE hive_29059_src
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@hive_29059_src
+POSTHOOK: query: SHOW CREATE TABLE hive_29059_src
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@hive_29059_src
+CREATE TABLE `hive_29059_src`(
+  `val1` string COMMENT 'val\t1', 
+  `val2` string COMMENT 'val\n                                                2', 
+  `val3` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: CREATE VIEW hive_29059_v2 AS SELECT 'before
+	after' AS col1
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive_29059_v2
+POSTHOOK: query: CREATE VIEW hive_29059_v2 AS SELECT 'before
+	after' AS col1
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive_29059_v2
+POSTHOOK: Lineage: hive_29059_v2.col1 SIMPLE []
+PREHOOK: query: SHOW CREATE TABLE hive_29059_v2
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@hive_29059_v2
+POSTHOOK: query: SHOW CREATE TABLE hive_29059_v2
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@hive_29059_v2
+CREATE VIEW `hive_29059_v2` AS SELECT 'before
+\tafter' AS `col1`
+PREHOOK: query: CREATE VIEW hive_29059_v3 AS SELECT '	a		b 	c		' AS col1
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive_29059_v3
+POSTHOOK: query: CREATE VIEW hive_29059_v3 AS SELECT '	a		b 	c		' AS col1
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive_29059_v3
+POSTHOOK: Lineage: hive_29059_v3.col1 SIMPLE []
+PREHOOK: query: SHOW CREATE TABLE hive_29059_v3
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@hive_29059_v3
+POSTHOOK: query: SHOW CREATE TABLE hive_29059_v3
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@hive_29059_v3
+CREATE VIEW `hive_29059_v3` AS SELECT '\ta\t\tb \tc\t\t' AS `col1`
+PREHOOK: query: CREATE VIEW hive_29059_v4 AS SELECT 'a\\tb\tc' AS col1
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive_29059_v4
+POSTHOOK: query: CREATE VIEW hive_29059_v4 AS SELECT 'a\\tb\tc' AS col1
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive_29059_v4
+POSTHOOK: Lineage: hive_29059_v4.col1 SIMPLE []
+PREHOOK: query: SHOW CREATE TABLE hive_29059_v4
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@hive_29059_v4
+POSTHOOK: query: SHOW CREATE TABLE hive_29059_v4
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@hive_29059_v4
+CREATE VIEW `hive_29059_v4` AS SELECT 'a\\tb\tc' AS `col1`
+PREHOOK: query: CREATE VIEW hive_29059_v5 AS SELECT val1 FROM hive_29059_src WHERE val1 LIKE 'a%	'
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@hive_29059_src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive_29059_v5
+POSTHOOK: query: CREATE VIEW hive_29059_v5 AS SELECT val1 FROM hive_29059_src WHERE val1 LIKE 'a%	'
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@hive_29059_src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive_29059_v5
+POSTHOOK: Lineage: hive_29059_v5.val1 SIMPLE [(hive_29059_src)hive_29059_src.FieldSchema(name:val1, type:string, comment:val	1), ]
+PREHOOK: query: SHOW CREATE TABLE hive_29059_v5
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@hive_29059_v5
+POSTHOOK: query: SHOW CREATE TABLE hive_29059_v5
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@hive_29059_v5
+CREATE VIEW `hive_29059_v5` AS SELECT `hive_29059_src`.`val1` FROM `default`.`hive_29059_src` WHERE `hive_29059_src`.`val1` LIKE 'a%\t'
+PREHOOK: query: DROP VIEW IF EXISTS hive_29059_v
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@hive_29059_v
+PREHOOK: Output: default@hive_29059_v
+POSTHOOK: query: DROP VIEW IF EXISTS hive_29059_v
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@hive_29059_v
+POSTHOOK: Output: default@hive_29059_v
+PREHOOK: query: DROP VIEW IF EXISTS hive_29059_v2
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@hive_29059_v2
+PREHOOK: Output: default@hive_29059_v2
+POSTHOOK: query: DROP VIEW IF EXISTS hive_29059_v2
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@hive_29059_v2
+POSTHOOK: Output: default@hive_29059_v2
+PREHOOK: query: DROP VIEW IF EXISTS hive_29059_v3
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@hive_29059_v3
+PREHOOK: Output: default@hive_29059_v3
+POSTHOOK: query: DROP VIEW IF EXISTS hive_29059_v3
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@hive_29059_v3
+POSTHOOK: Output: default@hive_29059_v3
+PREHOOK: query: DROP VIEW IF EXISTS hive_29059_v4
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@hive_29059_v4
+PREHOOK: Output: default@hive_29059_v4
+POSTHOOK: query: DROP VIEW IF EXISTS hive_29059_v4
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@hive_29059_v4
+POSTHOOK: Output: default@hive_29059_v4
+PREHOOK: query: DROP VIEW IF EXISTS hive_29059_v5
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@hive_29059_v5
+PREHOOK: Output: default@hive_29059_v5
+POSTHOOK: query: DROP VIEW IF EXISTS hive_29059_v5
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@hive_29059_v5
+POSTHOOK: Output: default@hive_29059_v5
+PREHOOK: query: DROP TABLE IF EXISTS hive_29059_src
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hive_29059_src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hive_29059_src
+POSTHOOK: query: DROP TABLE IF EXISTS hive_29059_src
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hive_29059_src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hive_29059_src
