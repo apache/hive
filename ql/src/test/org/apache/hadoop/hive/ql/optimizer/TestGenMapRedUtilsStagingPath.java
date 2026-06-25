@@ -86,7 +86,7 @@ public class TestGenMapRedUtilsStagingPath {
    */
   private static FileSinkDesc buildFileSinkDesc(Path destPath) {
     TableDesc tableDesc = new TableDesc(null, null, new Properties());
-    FileSinkDesc fsd = new FileSinkDesc(
+    return new FileSinkDesc(
         destPath,
         tableDesc,
         false,
@@ -105,7 +105,6 @@ public class TestGenMapRedUtilsStagingPath {
         false,
         AcidUtils.Operation.NOT_ACID,
         false);
-    return fsd;
   }
 
   private static FileSinkOperator buildFileSinkOperator(FileSinkDesc fsd) {
@@ -223,8 +222,8 @@ public class TestGenMapRedUtilsStagingPath {
   }
 
   /**
-   * The HIVE-26758 staging path change applies ONLY to:
-   * native table, no micro-managed (MM), no direct-insert, no full-ACID
+   * The HIVE-26758 staging path change applies ONLY to native, non-MM, non-direct-insert tables.
+   * Micro-managed (insert-only) tables must bypass the staging path selection entirely.
    */
   @Test
   public void testNoStagingForMmTable() {
@@ -257,7 +256,8 @@ public class TestGenMapRedUtilsStagingPath {
   }
 
   /**
-   * Full-ACID tables with direct-insert must bypass the staging path selection;
+   * Full-ACID tables with direct-insert must bypass the staging path selection entirely.
+   * Neither Context staging method should be called and getDirName() must remain unchanged.
    */
   @Test
   public void testNoStagingForDirectInsert() {
@@ -288,9 +288,9 @@ public class TestGenMapRedUtilsStagingPath {
   }
 
   /**
-   * With the default config hive.use.scratchdir.for.staging=false;
+   * With the default config hive.use.scratchdir.for.staging=false.
    * GenMapRedUtils#createMoveTask must produce the new HIVE-26758 layout:
-   * <staging_root>/<SPPath> — staging directory appears before the static partition segment.
+   * <staging_root>/<SPPath> where the staging directory appears before the static partition segment.
    * Example (year=2001 is the static partition)
    * table_path/.hive-staging_job0/year=2001
    */
@@ -332,7 +332,7 @@ public class TestGenMapRedUtilsStagingPath {
   }
 
   /**
-   * With hive.use.scratchdir.for.staging=true,
+   * With hive.use.scratchdir.for.staging=true.
    * GenMapRedUtils#createMoveTask must place staging under the
    * scratch directory and still append the static partition after it:
    * <hive.exec.scratchdir>/<staging_root>/<SPPath>
