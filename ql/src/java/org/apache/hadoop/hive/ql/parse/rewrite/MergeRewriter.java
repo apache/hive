@@ -239,29 +239,24 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
 
     protected void addValues(Table targetTable, String targetAlias, Map<String, String> newValues,
                              List<String> values) {
-      UnaryOperator<String> formatter = name -> String.format("%s.%s", targetAlias,
-          HiveUtils.unparseIdentifier(name, conf));
-      List<String> valuesToBeAdded = new ArrayList<>(Collections.nCopies(targetTable.getAllCols().size(), null));
       for (FieldSchema fieldSchema : targetTable.getCols()) {
-        setColumnValue(targetTable, valuesToBeAdded, newValues, formatter, fieldSchema.getName(), true);
+        setColumnValue(targetAlias, newValues, values, fieldSchema);
       }
-
-      for (FieldSchema partCol : targetTable.getPartCols()) {
-        setColumnValue(targetTable, valuesToBeAdded, newValues, formatter, partCol.getName(),
-            targetTable.hasNonNativePartitionSupport());
-      }
-      values.addAll(valuesToBeAdded);
+      targetTable.getPartCols().forEach(fieldSchema -> values.add(
+          formatValue(targetAlias, fieldSchema.getName())));
     }
 
-    protected void setColumnValue(Table targetTable, List<String> valuesToBeAdded,
-        Map<String, String> newValues, UnaryOperator<String> formatter, String columnName,
-        boolean applyNewValues) {
-      int index = targetTable.getColumnIndexByName(columnName);
-      String formattedColumn = formatter.apply(columnName);
-      String value = applyNewValues && newValues.containsKey(columnName)
-          ? getRhsExpValue(newValues.get(columnName), formattedColumn)
-          : formattedColumn;
-      valuesToBeAdded.set(index, value);
+    protected void setColumnValue(String targetAlias, Map<String, String> newValues, List<String> values, FieldSchema fieldSchema) {
+      if (newValues.containsKey(fieldSchema.getName())) {
+        String rhsExp = newValues.get(fieldSchema.getName());
+        values.add(getRhsExpValue(rhsExp, formatValue(targetAlias, fieldSchema.getName())));
+      } else {
+        values.add(formatValue(targetAlias, fieldSchema.getName()));
+      }
+    }
+
+    private String formatValue(String targetAlias, String name) {
+      return String.format("%s.%s", targetAlias, HiveUtils.unparseIdentifier(name, conf));
     }
     
     protected String getRhsExpValue(String newValue, String alias) {

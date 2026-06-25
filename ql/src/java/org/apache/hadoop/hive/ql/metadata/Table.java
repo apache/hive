@@ -229,9 +229,7 @@ public class Table implements Serializable {
    */
   public void setTTable(org.apache.hadoop.hive.metastore.api.Table tTable) {
     this.tTable = tTable;
-    tablePartCols = null;
-    tableNonPartCols = null;
-    columnsByName = null;
+    resetColumnCache();
   }
 
   /**
@@ -846,9 +844,7 @@ public class Table implements Serializable {
 
   public void setPartCols(List<FieldSchema> partCols) {
     tTable.setPartitionKeys(partCols);
-    tablePartCols = null;
-    tableNonPartCols = null;
-    columnsByName = null;
+    resetColumnCache();
   }
 
   public String getCatName() {
@@ -898,6 +894,10 @@ public class Table implements Serializable {
 
   public void setFields(List<FieldSchema> fields) {
     tTable.getSd().setCols(fields);
+    resetColumnCache();
+  }
+
+  private void resetColumnCache() {
     tableNonPartCols = null;
     tablePartCols = null;
     columnsByName = null;
