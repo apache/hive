@@ -26,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
 
@@ -353,8 +354,11 @@ public class SortedDynPartitionOptimizer extends Transform {
       // Iceberg: route output files by Hive bucket id (not reducer task id).
       if (isIcebergHiveBucketedWrite && reusedNumReducers != null && reusedNumReducers > 0) {
         String tableName = fsOp.getConf().getTableInfo().getTableName();
-        fsOp.getConf().getTableInfo().getProperties().put(
+        Properties tableProps = fsOp.getConf().getTableInfo().getProperties();
+        tableProps.setProperty(
             HiveCustomStorageHandlerUtils.ICEBERG_HIVE_BUCKETING_ROUTE_ENABLED + tableName, "true");
+        HiveCustomStorageHandlerUtils.writeIcebergHiveBucketingMetadata(tableProps::setProperty, tableName,
+            HiveCustomStorageHandlerUtils.IcebergHiveBucketingConf.fromTable(destTable));
       }
 
       List<ExprNodeDesc> descs = new ArrayList<ExprNodeDesc>(allRSCols.size());

@@ -39,8 +39,9 @@ import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
- * To Verify Hive CLUSTERED BY works correctly in combination with Iceberg linear
- * write sort order via {@code WRITE LOCALLY ORDERED BY}.
+ * Tests HMS and Iceberg metadata for Hive CLUSTERED BY combined with linear
+ * {@code WRITE LOCALLY ORDERED BY}. Physical sort order within buckets is covered by
+ * {@code iceberg_clustered_by_with_linear_sort.q}.
  */
 public class TestHiveIcebergClusteredByWithLinearSort extends HiveIcebergStorageHandlerWithEngineBase {
 
@@ -84,7 +85,6 @@ public class TestHiveIcebergClusteredByWithLinearSort extends HiveIcebergStorage
 
     insertTestData();
     validateBucketDistribution(icebergTable);
-    validateLinearSortWithinBuckets();
 
     shell.executeStatement("DROP TABLE IF EXISTS " + TABLE_NAME);
   }
@@ -113,7 +113,7 @@ public class TestHiveIcebergClusteredByWithLinearSort extends HiveIcebergStorage
     icebergTable.refresh();
     Map<Integer, Long> bucketCounts = extractBucketRecordCounts(icebergTable);
 
-    Assert.assertFalse("Should have at least one data file", bucketCounts.isEmpty());
+    Assert.assertTrue("Should have at least one data file", !bucketCounts.isEmpty());
 
     long totalRecords = bucketCounts.values().stream().mapToLong(Long::longValue).sum();
     List<Object[]> countResult = shell.executeStatement("SELECT COUNT(*) FROM " + TABLE_NAME);
@@ -123,39 +123,6 @@ public class TestHiveIcebergClusteredByWithLinearSort extends HiveIcebergStorage
     for (Integer bucketId : bucketCounts.keySet()) {
       Assert.assertTrue("Bucket ID should be within range [0, " + (NUM_BUCKETS - 1) + "]",
           bucketId >= 0 && bucketId < NUM_BUCKETS);
-    }
-  }
-
-  /**
-   * Within each Hive bucket, physical scan order (ROW__POSITION) should follow the declared linear
-   * sort: order_date ASC, amount DESC.
-   */
-  private void validateLinearSortWithinBuckets() {
-    for (int bucket = 1; bucket <= NUM_BUCKETS; bucket++) {
-      List<Object[]> rows = shell.executeStatement(
-          "SELECT order_date, amount, customer_id, ROW__POSITION FROM " + TABLE_NAME +
-          " TABLESAMPLE(BUCKET " + bucket + " OUT OF " + NUM_BUCKETS + " ON customer_id) " +
-          "ORDER BY ROW__POSITION");
-
-      if (rows.isEmpty()) {
-        continue;
-      }
-
-      for (int i = 1; i < rows.size(); i++) {
-        Object[] prev = rows.get(i - 1);
-        Object[] curr = rows.get(i);
-        String prevDate = prev[0].toString();
-        String currDate = curr[0].toString();
-        double prevAmount = ((Number) prev[1]).doubleValue();
-        double currAmount = ((Number) curr[1]).doubleValue();
-
-        int dateCompare = prevDate.compareTo(currDate);
-        Assert.assertTrue(
-            String.format("Bucket %d rows not linearly sorted by order_date ASC, amount DESC at " +
-                "ROW__POSITION: prev=(%s, %s), curr=(%s, %s)",
-                bucket - 1, prevDate, prevAmount, currDate, currAmount),
-            dateCompare < 0 || dateCompare == 0 && prevAmount >= currAmount);
-      }
     }
   }
 

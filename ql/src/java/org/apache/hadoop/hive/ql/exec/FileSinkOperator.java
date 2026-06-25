@@ -20,11 +20,10 @@ package org.apache.hadoop.hive.ql.exec;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_TEMPORARY_TABLE_STORAGE;
 import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.MERGE_TASK_ENABLED;
+import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.propagateIcebergHiveBucketingFromTableInfo;
 import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setMergeTaskEnabled;
 import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setWriteOperation;
 import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setWriteOperationIsSorted;
-import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.ICEBERG_HIVE_BUCKETING_ROUTE_ENABLED;
-import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setIcebergHiveBucketingRouteEnabled;
 
 import com.google.common.collect.Lists;
 import java.io.IOException;
@@ -648,12 +647,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           Boolean.parseBoolean((String) getConf().getTableInfo().getProperties().get(
               MERGE_TASK_ENABLED + targetTableName)));
 
-      // Iceberg: propagate Hive-native bucketing routing flag (set by SDPO for specific plans).
-      final Properties tableInfoProps = getConf().getTableInfo().getProperties();
-      final String routeEnabledStr = (String) tableInfoProps.get(ICEBERG_HIVE_BUCKETING_ROUTE_ENABLED + targetTableName);
-      if (routeEnabledStr != null) {
-        setIcebergHiveBucketingRouteEnabled(jc, targetTableName, Boolean.parseBoolean(routeEnabledStr));
-      }
+      // Iceberg: propagate Hive-native bucketing routing flag and metadata (set by SDPO).
+      propagateIcebergHiveBucketingFromTableInfo(getConf().getTableInfo().getProperties(), jc, targetTableName);
 
       try {
         createHiveOutputFormat(jc);

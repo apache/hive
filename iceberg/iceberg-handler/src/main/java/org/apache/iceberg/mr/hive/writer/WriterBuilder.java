@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.IntFunction;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -36,8 +36,8 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
+import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.IcebergHiveBucketingConf;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
-import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.mapred.TaskAttemptID;
 import org.apache.iceberg.BatchScan;
 import org.apache.iceberg.DeleteFile;
@@ -55,7 +55,6 @@ import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.OutputFileFactory;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
-import org.apache.iceberg.mr.hive.HiveIcebergHiveBucketingMetadata;
 import org.apache.iceberg.mr.hive.IcebergTableUtil;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
@@ -149,20 +148,23 @@ public class WriterBuilder {
     boolean isCOW = IcebergTableUtil.isCopyOnWriteMode(operation, table.properties()::getOrDefault);
 
     if (isCOW) {
-      writer = context.hiveBucketingRouteEnabled() ?
-          bucketRoutingWriter(bucketId -> new HiveIcebergCopyOnWriteRecordWriter(table, writerFactory,
-              perBucketDataFileFactory(bucketId, taskId, operationId), shouldAddRowLineageColumns, context)) :
-          new HiveIcebergCopyOnWriteRecordWriter(table, writerFactory, dataFileFactory,
-              shouldAddRowLineageColumns, context);
+      if (context.hiveBucketingRouteEnabled()) {
+        writer = bucketRoutingWriter(taskId, operationId, perBucketFactory ->
+            new HiveIcebergCopyOnWriteRecordWriter(table, writerFactory, perBucketFactory,
+                shouldAddRowLineageColumns, context));
+      } else {
+        writer = new HiveIcebergCopyOnWriteRecordWriter(table, writerFactory, dataFileFactory,
+            shouldAddRowLineageColumns, context);
+      }
     } else {
       writer = switch (operation) {
         case DELETE ->
             new HiveIcebergDeleteWriter(table, rewritableDeletes.get(), writerFactory, deleteFileFactory, context);
         case OTHER ->
             context.hiveBucketingRouteEnabled() ?
-                bucketRoutingWriter(bucketId -> new HiveIcebergRecordWriter(table, writerFactory,
-                    perBucketDataFileFactory(bucketId, taskId, operationId), context)) :
-                new HiveIcebergRecordWriter(table, writerFactory, dataFileFactory, context);
+                bucketRoutingWriter(taskId, operationId, perBucketFactory ->
+                    new HiveIcebergRecordWriter(table, writerFactory, perBucketFactory, context))
+                : new HiveIcebergRecordWriter(table, writerFactory, dataFileFactory, context);
         default ->
             // Update and Merge should be split to inserts and deletes
             throw new IllegalArgumentException("Unsupported operation when creating IcebergRecordWriter: " +
@@ -174,12 +176,13 @@ public class WriterBuilder {
     return writer;
   }
 
-  private HiveIcebergHiveBucketRoutingWriter bucketRoutingWriter(
-      IntFunction<HiveIcebergWriter> perBucketWriterFactory) {
-    return new HiveIcebergHiveBucketRoutingWriter(perBucketWriterFactory, context.hiveBucketingNumBuckets());
+  private HiveIcebergWriter bucketRoutingWriter(int taskId, String operationId,
+      Function<OutputFileFactory, HiveIcebergWriter> writerCreator) {
+    return new HiveIcebergHiveBucketRoutingWriter(bucketId -> writerCreator.apply(
+        outputFileFactoryForBucket(bucketId, taskId, operationId)), context.hiveBucketingNumBuckets());
   }
 
-  private OutputFileFactory perBucketDataFileFactory(int bucketId, int taskId, String operationId) {
+  private OutputFileFactory outputFileFactoryForBucket(int bucketId, int taskId, String operationId) {
     return OutputFileFactory.builderFor(table, bucketId, taskId)
         .format(context.dataFileFormat())
         .operationId(operationId)
@@ -353,16 +356,11 @@ public class WriterBuilder {
       if (configuration == null) {
         throw new IllegalStateException("Hive bucket routing requires task configuration for table " + tableName);
       }
-      try {
-        HiveIcebergHiveBucketingMetadata metadata = HiveIcebergHiveBucketingMetadata.load(configuration, tableName);
-        if (!metadata.hasHiveBucketing()) {
-          throw new IllegalStateException("Bucket routing enabled but HMS table has no CLUSTERED BY metadata: " +
-              tableName);
-        }
-        return metadata.numBuckets();
-      } catch (SerDeException e) {
-        throw new IllegalStateException("Failed to load Hive bucketing metadata for table " + tableName, e);
-      }
+      return HiveCustomStorageHandlerUtils.readIcebergHiveBucketingMetadata(configuration::get, tableName)
+          .filter(IcebergHiveBucketingConf::hasHiveBucketing)
+          .map(IcebergHiveBucketingConf::numBuckets)
+          .orElseThrow(() -> new IllegalStateException(
+              "Bucket routing enabled but Hive bucketing metadata missing from jobconf for table: " + tableName));
     }
 
     public Set<String> missingColumns() {

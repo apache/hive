@@ -178,6 +178,11 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     }
   }
 
+  /**
+   * Reads Hive {@code CLUSTERED BY} metadata from jobconf when bucket routing is enabled for this write.
+   * Metadata is staged by SDPO on the FileSink table properties and propagated to the task JobConf by
+   * {@link org.apache.hadoop.hive.ql.exec.FileSinkOperator}.
+   */
   private void initHiveBucketingRoute(Configuration conf, Properties serDeProperties) throws SerDeException {
     final String tableName = serDeProperties.getProperty(Catalogs.NAME);
     if (tableName == null) {
@@ -188,9 +193,14 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     if (!hiveBucketingRouteEnabled) {
       return;
     }
-    HiveIcebergHiveBucketingMetadata bucketingMetadata = HiveIcebergHiveBucketingMetadata.load(conf, tableName);
+    HiveCustomStorageHandlerUtils.IcebergHiveBucketingConf bucketingMetadata =
+        HiveCustomStorageHandlerUtils.readIcebergHiveBucketingMetadata(conf::get, tableName)
+            .orElseThrow(() -> new SerDeException(
+                "Bucket routing enabled but Hive bucketing metadata missing from jobconf for table: " +
+                    tableName));
     if (!bucketingMetadata.hasHiveBucketing()) {
-      throw new SerDeException("Bucket routing enabled but HMS table has no CLUSTERED BY metadata: " + tableName);
+      throw new SerDeException(
+          "Bucket routing enabled but jobconf has no CLUSTERED BY metadata for table: " + tableName);
     }
     hiveBucketingNumBuckets = bucketingMetadata.numBuckets();
     hiveBucketingVersion = bucketingMetadata.bucketingVersion();
