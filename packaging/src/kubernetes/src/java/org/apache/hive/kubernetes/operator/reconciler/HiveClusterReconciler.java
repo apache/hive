@@ -34,6 +34,7 @@ import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
+import io.fabric8.kubernetes.api.model.discovery.v1.EndpointSlice;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.api.reconciler.Cleaner;
@@ -778,7 +779,18 @@ public class HiveClusterReconciler
     String ns = resource.getMetadata().getNamespace();
     Map<String, String> selector = Labels.selectorForTezAmCluster(resource, llapSpec.name());
     List<Pod> pods = client.pods().inNamespace(ns).withLabels(selector).list().getItems();
-    var slice = LlapResourceBuilder.buildTezAmEndpointSlice(resource, llapSpec, pods);
+    EndpointSlice slice = LlapResourceBuilder.buildTezAmEndpointSlice(resource, llapSpec, pods);
+    String sliceName = LlapResourceBuilder.tezAmEndpointSliceName(resource, llapSpec);
+    if (slice == null) {
+      client.discovery().v1().endpointSlices().inNamespace(ns).withName(sliceName).delete();
+      return;
+    }
+    var existing = client.discovery().v1().endpointSlices().inNamespace(ns).withName(sliceName).get();
+    if (existing != null && existing.getAddressType() != null
+        && !existing.getAddressType().equals(slice.getAddressType())) {
+      client.discovery().v1().endpointSlices().inNamespace(ns).withName(sliceName).withGracePeriod(0L).delete();
+    }
+    
     client.discovery().v1().endpointSlices().inNamespace(ns)
         .resource(slice)
         .forceConflicts()

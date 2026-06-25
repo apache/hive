@@ -261,6 +261,7 @@ public class LlapResourceBuilder
    * that gap, giving every ready TezAM pod a resolvable FQDN.
    *
    * @param pods list of TezAM pods
+   * @return the EndpointSlice, or {@code null} if there are no pod IPs yet or if pods have mixed IPv4/IPv6 addresses
    */
   public static EndpointSlice buildTezAmEndpointSlice(HiveCluster hc, LlapSpec llap, List<Pod> pods) {
     String ns = hc.getMetadata().getNamespace();
@@ -273,10 +274,17 @@ public class LlapResourceBuilder
         Labels.APP_COMPONENT, ConfigUtils.COMPONENT_TEZAM));
 
     List<Endpoint> endpoints = new ArrayList<>();
+    String addressType = null;
     for (var pod : pods) {
       String ip = pod.getStatus() != null ? pod.getStatus().getPodIP() : null;
       if (ip == null || ip.isEmpty()) {
         continue;
+      }
+      String ipFamily = ipAddressType(ip);
+      if (addressType == null) {
+        addressType = ipFamily;
+      } else if (!addressType.equals(ipFamily)) {
+        return null;
       }
       boolean ready = isPodReady(pod);
       String hostname = pod.getMetadata().getName();
@@ -299,6 +307,10 @@ public class LlapResourceBuilder
           .build());
     }
 
+    if (endpoints.isEmpty()) {
+      return null;
+    }
+
     return new EndpointSliceBuilder()
         .withNewMetadata()
           .withName(tezAmEndpointSliceName(hc, llap))
@@ -306,9 +318,14 @@ public class LlapResourceBuilder
           .withLabels(labels)
           .withOwnerReferences(ownerRef(hc))
         .endMetadata()
-        .withAddressType("IPv4")
+        .withAddressType(addressType)
         .withEndpoints(endpoints)
         .build();
+  }
+
+  /** Returns {@code IPv4} or {@code IPv6} for a pod IP string. */
+  private static String ipAddressType(String ip) {
+    return ip.indexOf(':') >= 0 ? "IPv6" : "IPv4";
   }
 
   private static boolean isPodReady(io.fabric8.kubernetes.api.model.Pod pod) {
