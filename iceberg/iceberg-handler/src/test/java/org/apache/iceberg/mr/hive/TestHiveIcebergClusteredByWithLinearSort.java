@@ -40,8 +40,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 /**
  * Tests HMS and Iceberg metadata for Hive CLUSTERED BY combined with linear
- * {@code WRITE LOCALLY ORDERED BY}. Physical sort order within buckets is covered by
- * {@code iceberg_clustered_by_with_linear_sort.q}.
+ * {@code WRITE LOCALLY ORDERED BY}.
  */
 public class TestHiveIcebergClusteredByWithLinearSort extends HiveIcebergStorageHandlerWithEngineBase {
 

@@ -25,9 +25,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
 import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -56,15 +54,10 @@ public class HiveCustomStorageHandlerUtils {
   /**
    * Hive {@code CLUSTERED BY} metadata for an Iceberg write target, carried in jobconf when available.
    */
-  public static final class IcebergHiveBucketingConf {
-    private final int numBuckets;
-    private final List<String> bucketCols;
-    private final int bucketingVersion;
+  public record IcebergHiveBucketingConf(int numBuckets, List<String> bucketCols, int bucketingVersion) {
 
-    public IcebergHiveBucketingConf(int numBuckets, List<String> bucketCols, int bucketingVersion) {
-      this.numBuckets = numBuckets;
-      this.bucketCols = bucketCols == null ? Collections.emptyList() : bucketCols;
-      this.bucketingVersion = bucketingVersion;
+    public IcebergHiveBucketingConf {
+      bucketCols = bucketCols == null ? Collections.emptyList() : bucketCols;
     }
 
     public static IcebergHiveBucketingConf fromTable(org.apache.hadoop.hive.ql.metadata.Table table) {
@@ -74,18 +67,6 @@ public class HiveCustomStorageHandlerUtils {
 
     public boolean hasHiveBucketing() {
       return numBuckets > 0 && !bucketCols.isEmpty();
-    }
-
-    public int numBuckets() {
-      return numBuckets;
-    }
-
-    public List<String> bucketCols() {
-      return bucketCols;
-    }
-
-    public int bucketingVersion() {
-      return bucketingVersion;
     }
   }
 
@@ -173,7 +154,7 @@ public class HiveCustomStorageHandlerUtils {
   }
 
   public static Optional<IcebergHiveBucketingConf> readIcebergHiveBucketingMetadata(
-      Function<String, String> lookup, String tableName) {
+      UnaryOperator<String> lookup, String tableName) {
     if (lookup == null || tableName == null) {
       return Optional.empty();
     }
@@ -211,6 +192,6 @@ public class HiveCustomStorageHandlerUtils {
     return Arrays.stream(cols.split(","))
         .map(String::trim)
         .filter(s -> !s.isEmpty())
-        .collect(Collectors.toList());
+        .toList();
   }
 }

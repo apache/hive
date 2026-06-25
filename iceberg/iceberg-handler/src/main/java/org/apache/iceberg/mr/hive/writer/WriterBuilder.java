@@ -73,7 +73,6 @@ public class WriterBuilder {
   private final Supplier<Map<String, DeleteFileSet>> rewritableDeletes;
   private final Context context;
   private final String tableName;
-  private final Configuration configuration;
   private TaskAttemptID attemptID;
   private String queryId;
   private Operation operation;
@@ -88,7 +87,6 @@ public class WriterBuilder {
 
   private WriterBuilder(Table table, Configuration configuration, UnaryOperator<String> ops) {
     this.table = table;
-    this.configuration = configuration;
     this.tableName = ops.apply(Catalogs.NAME);
     this.context = new Context(table.properties(), ops, tableName, configuration);
     this.operation = HiveCustomStorageHandlerUtils.getWriteOperation(ops, tableName);

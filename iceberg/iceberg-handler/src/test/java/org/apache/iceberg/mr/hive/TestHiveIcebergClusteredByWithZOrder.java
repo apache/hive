@@ -249,7 +249,7 @@ public class TestHiveIcebergClusteredByWithZOrder extends HiveIcebergStorageHand
     Assert.assertEquals(TOTAL_ROWS, total);
   }
 
-  private void validateOneDataFilePerBucket(Map<Integer, Integer> filesPerBucket) throws IOException {
+  private void validateOneDataFilePerBucket(Map<Integer, Integer> filesPerBucket) {
     for (int bucketId = 0; bucketId < NUM_BUCKETS; bucketId++) {
       Assert.assertEquals(
           "Expected one data file for bucket prefix " + bucketId + " but saw " + filesPerBucket,
@@ -278,7 +278,7 @@ public class TestHiveIcebergClusteredByWithZOrder extends HiveIcebergStorageHand
         "(6, DATE '2024-01-30', 98.40, 'West')");
   }
 
-  private void validateBucketDistribution(Map<Integer, Long> bucketCounts) throws IOException {
+  private void validateBucketDistribution(Map<Integer, Long> bucketCounts) {
     Assert.assertFalse("Should have at least one data file", bucketCounts.isEmpty());
 
     // Validate number of rows in the table

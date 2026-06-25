@@ -23,8 +23,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
-import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
@@ -62,6 +62,7 @@ import org.apache.iceberg.mr.mapred.Container;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
+import org.apache.iceberg.types.Types;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,7 +122,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
       Table table = IcebergTableUtil.getTable(conf, serDeProperties);
       // always prefer the original table schema if there is one
       this.tableSchema = table.schema();
-      this.partitionColumns = table.spec().fields().stream().map(PartitionField::name).collect(Collectors.toList());
+      this.partitionColumns = table.spec().fields().stream().map(PartitionField::name).toList();
       LOG.info("Using schema from existing table {}", SchemaParser.toJson(tableSchema));
     } catch (Exception e) {
       initTableSchemaOnLoadFailure(conf, serDeProperties, e);
@@ -133,7 +134,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     if (serDeProperties.get(InputFormatConfig.PARTITION_SPEC) != null) {
       PartitionSpec spec =
           PartitionSpecParser.fromJson(tableSchema, serDeProperties.getProperty(InputFormatConfig.PARTITION_SPEC));
-      this.partitionColumns = spec.fields().stream().map(PartitionField::name).collect(Collectors.toList());
+      this.partitionColumns = spec.fields().stream().map(PartitionField::name).toList();
     } else {
       this.partitionColumns = ImmutableList.of();
     }
@@ -166,7 +167,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
       TableMetadata metadata = TableMetadataParser.read(fileIO, serDeProperties.getProperty("metadata_location"));
       this.tableSchema = metadata.schema();
       this.partitionColumns =
-          metadata.spec().fields().stream().map(PartitionField::name).collect(Collectors.toList());
+          metadata.spec().fields().stream().map(PartitionField::name).toList();
       // Validate no schema is provided via create command
       if (!getColumnNames().isEmpty() || !getPartitionColumnNames().isEmpty()) {
         throw new SerDeException("Column names can not be provided along with metadata location.");
@@ -280,19 +281,17 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     }
 
     row.set(deserializer.deserialize(o));
+    Record rec = Objects.requireNonNull(row.get(), "deserialized record must not be null");
     if (hiveBucketingRouteEnabled) {
-      HiveBucketComputer computer = bucketComputers.get(objectInspector);
-      if (computer == null) {
-        if (!(objectInspector instanceof StructObjectInspector)) {
-          throw new IllegalStateException("Expected StructObjectInspector for bucketing route but got: " +
-              objectInspector.getTypeName());
-        }
-        computer = new HiveBucketComputer((StructObjectInspector) objectInspector, hiveBucketingBucketCols,
-            tableSchemaColumnNames(), hiveBucketingNumBuckets, hiveBucketingVersion);
-        bucketComputers.put(objectInspector, computer);
+      if (!(objectInspector instanceof StructObjectInspector structInspector)) {
+        throw new IllegalStateException("Expected StructObjectInspector for bucketing route but got: " +
+            (objectInspector == null ? "null" : objectInspector.getTypeName()));
       }
+      HiveBucketComputer computer = bucketComputers.computeIfAbsent(objectInspector, oi ->
+          new HiveBucketComputer(structInspector, hiveBucketingBucketCols,
+              tableSchemaColumnNames(), hiveBucketingNumBuckets, hiveBucketingVersion));
       int bucketId = computer.bucketId(o);
-      bucketAwareRow.set(row.get(), bucketId);
+      bucketAwareRow.set(rec, bucketId);
       return bucketAwareRow;
     }
     return row;
@@ -368,8 +367,8 @@ public class HiveIcebergSerDe extends AbstractSerDe {
       return ImmutableList.of();
     }
     return tableSchema.columns().stream()
-        .map(col -> col.name())
-        .collect(Collectors.toList());
+        .map(Types.NestedField::name)
+        .toList();
   }
 
   private static final class HiveBucketComputer {

@@ -165,8 +165,8 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       int bucketPlaceholderIdx = -1;
       int i = 0;
       for (ExprNodeDesc e : keys) {
-        if (e instanceof ExprNodeGenericFuncDesc
-            && ((ExprNodeGenericFuncDesc) e).getGenericUDF() instanceof GenericUDFBucketNumber) {
+        if (e instanceof ExprNodeGenericFuncDesc genericFuncDesc
+            && genericFuncDesc.getGenericUDF() instanceof GenericUDFBucketNumber) {
           bucketPlaceholderIdx = i;
         }
         keyEval[i++] = ExprNodeEvaluatorFactory.get(e);
@@ -428,8 +428,14 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     if (partitionEval.length == 0 && bucketEval != null && buckNum >= 0) {
       return buckNum;
     }
-    // Evaluate the HashCode
-    int keyHashCode = 0;
+    int hashCode = combineWithBucketNum(computeKeyHashCode(row), buckNum);
+    if (LOG.isTraceEnabled()) {
+      LOG.trace("Going to return hash code " + hashCode);
+    }
+    return hashCodeForCompaction(row, hashCode);
+  }
+
+  private int computeKeyHashCode(Object row) throws HiveException {
     if (partitionEval.length == 0) {
       // If no partition cols, just distribute the data uniformly
       // to provide better load balance. If the requirement is to have a single reducer, we should
@@ -437,32 +443,34 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       if (random == null) {
         random = new Random(12345);
       }
-      keyHashCode = random.nextInt();
+      return random.nextInt();
+    }
+    Object[] bucketFieldValues = new Object[partitionEval.length];
+    for (int i = 0; i < partitionEval.length; i++) {
+      bucketFieldValues[i] = partitionEval[i].evaluate(row);
+    }
+    return partitionHashFunc.applyAsInt(bucketFieldValues);
+  }
+
+  private static int combineWithBucketNum(int keyHashCode, int buckNum) {
+    return buckNum < 0 ? keyHashCode : keyHashCode * 31 + buckNum;
+  }
+
+  private int hashCodeForCompaction(Object row, int hashCode) {
+    if (!conf.isCompaction()) {
+      return hashCode;
+    }
+    int bucket;
+    Object bucketProperty = ((Object[]) row)[2];
+    if (bucketProperty == null) {
+      return hashCode;
+    }
+    if (bucketProperty instanceof Writable) {
+      bucket = ((IntWritable) bucketProperty).get();
     } else {
-      Object[] bucketFieldValues = new Object[partitionEval.length];
-      for(int i = 0; i < partitionEval.length; i++) {
-        bucketFieldValues[i] = partitionEval[i].evaluate(row);
-      }
-      keyHashCode = partitionHashFunc.applyAsInt(bucketFieldValues);
+      bucket = (int) bucketProperty;
     }
-    int hashCode = buckNum < 0 ? keyHashCode : keyHashCode * 31 + buckNum;
-    if (LOG.isTraceEnabled()) {
-      LOG.trace("Going to return hash code " + hashCode);
-    }
-    if (conf.isCompaction()) {
-      int bucket;
-      Object bucketProperty = ((Object[]) row)[2];
-      if (bucketProperty == null) {
-        return hashCode;
-      }
-      if (bucketProperty instanceof Writable) {
-        bucket = ((IntWritable) bucketProperty).get();
-      } else {
-        bucket = (int) bucketProperty;
-      }
-      return BucketCodec.determineVersion(bucket).decodeWriterId(bucket);
-    }
-    return hashCode;
+    return BucketCodec.determineVersion(bucket).decodeWriterId(bucket);
   }
 
   private boolean partitionKeysAreNull(Object row) throws HiveException {

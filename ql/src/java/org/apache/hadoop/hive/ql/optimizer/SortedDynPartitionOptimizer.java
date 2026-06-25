@@ -164,31 +164,8 @@ public class SortedDynPartitionOptimizer extends Transform {
 
       LOG.info("Sorted dynamic partitioning optimization kicked in..");
 
-      // if not dynamic partitioning then bail out
-      if (fsOp.getConf().getDynPartCtx() == null) {
-        LOG.debug("Bailing out of sort dynamic partition optimization as dynamic partitioning context is null");
-        return null;
-      }
-
-      // if list bucketing then bail out
-      ListBucketingCtx lbCtx = fsOp.getConf().getLbCtx();
-      if (lbCtx != null && !lbCtx.getSkewedColNames().isEmpty()
-          && !lbCtx.getSkewedColValues().isEmpty()) {
-        LOG.debug("Bailing out of sort dynamic partition optimization as list bucketing is enabled");
-        return null;
-      }
-
       Table destTable = fsOp.getConf().getTable();
-      if (destTable == null) {
-        LOG.debug("Bailing out of sort dynamic partition optimization as destination table is null");
-        return null;
-      }
-
-      if (destTable.isMaterializedView() &&
-          (destTable.getProperty(Constants.MATERIALIZED_VIEW_SORT_COLUMNS) != null ||
-              destTable.getProperty(Constants.MATERIALIZED_VIEW_DISTRIBUTE_COLUMNS) != null)) {
-        LOG.debug("Bailing out of sort dynamic partition optimization as destination is a materialized view"
-            + "with CLUSTER/SORT/DISTRIBUTE spec");
+      if (skipSortedDynamicPartitionOptimization(fsOp, destTable)) {
         return null;
       }
 
@@ -258,54 +235,11 @@ public class SortedDynPartitionOptimizer extends Transform {
       // Get the positions for partition, bucket and sort columns
       List<Integer> bucketPositions = getBucketPositions(destTable.getBucketCols(),
           destTable.getCols());
-      List<Integer> sortPositions = null;
-      List<Integer> sortOrder = null;
-      ArrayList<ExprNodeDesc> bucketColumns = null;
-      if (fsOp.getConf().getWriteType() == AcidUtils.Operation.UPDATE ||
-          fsOp.getConf().getWriteType() == AcidUtils.Operation.DELETE) {
-        // When doing updates and deletes we always want to sort on the rowid because the ACID
-        // reader will expect this sort order when doing reads.  So
-        // ignore whatever comes from the table and enforce this sort order instead.
-        sortPositions = Collections.singletonList(0);
-        sortOrder = Collections.singletonList(1); // 1 means asc, could really use enum here in the thrift if
-        /**
-         * ROW__ID is always the 1st column of Insert representing Update/Delete operation
-         * (set up in {@link org.apache.hadoop.hive.ql.parse.UpdateDeleteSemanticAnalyzer})
-         * and we wrap it in UDFToInteger
-         * (in {@link org.apache.hadoop.hive.ql.parse.SemanticAnalyzer#getPartitionColsFromBucketColsForUpdateDelete(Operator, boolean)})
-         * which extracts bucketId from it
-         * see {@link org.apache.hadoop.hive.ql.udf.UDFToInteger#evaluate(RecordIdentifier)}*/
-        ColumnInfo ci = fsParent.getSchema().getSignature().get(0);
-        if (!VirtualColumn.ROWID.getTypeInfo().equals(ci.getType())) {
-          throw new IllegalStateException("expected 1st column to be ROW__ID but got wrong type: " + ci.toString());
-        }
-
-        if (numBuckets > 0) {
-          bucketColumns = new ArrayList<>();
-          //add a cast(ROW__ID as int) to wrap in UDFToInteger()
-          bucketColumns.add(ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
-              .createConversionCast(new ExprNodeColumnDesc(ci), TypeInfoFactory.intTypeInfo));
-        }
-      } else {
-        if (!destTable.getSortCols().isEmpty()) {
-          // Sort columns specified by table
-          sortPositions = getSortPositions(destTable.getSortCols(), destTable.getCols());
-          sortOrder = getSortOrders(destTable.getSortCols(), destTable.getCols());
-        } else if (customSortExprs.isEmpty() &&
-            HiveConf.getBoolVar(this.parseCtx.getConf(), HiveConf.ConfVars.HIVE_SORT_WHEN_BUCKETING) &&
-            !bucketPositions.isEmpty()) {
-          // We use clustered columns as sort columns (skip when custom sort e.g. z-order is present)
-          sortPositions = new ArrayList<>(bucketPositions);
-          sortOrder = sortPositions.stream().map(e -> 1).collect(Collectors.toList());
-        } else {
-          // Infer sort columns from operator tree
-          sortPositions = Lists.newArrayList();
-          sortOrder = Lists.newArrayList();
-          inferSortPositions(fsParent, sortPositions, sortOrder);
-        }
-        List<ColumnInfo> colInfos = fsParent.getSchema().getSignature();
-        bucketColumns = getPositionsToExprNodes(bucketPositions, colInfos);
-      }
+      SortBucketColumns sortBucketColumns = resolveSortBucketColumns(fsOp, destTable, fsParent,
+          bucketPositions, customSortExprs, numBuckets);
+      List<Integer> sortPositions = sortBucketColumns.sortPositions;
+      List<Integer> sortOrder = sortBucketColumns.sortOrder;
+      ArrayList<ExprNodeDesc> bucketColumns = sortBucketColumns.bucketColumns;
       List<Integer> sortNullOrder = new ArrayList<>();
       for (int order : sortOrder) {
         sortNullOrder.add(NullOrdering.defaultNullOrder(order, parseCtx.getConf()).getCode());
@@ -351,15 +285,9 @@ public class SortedDynPartitionOptimizer extends Transform {
         rsOp.getConf().setNumReducers(reusedNumReducers);
       }
 
-      // Iceberg: route output files by Hive bucket id (not reducer task id).
-      if (isIcebergHiveBucketedWrite && reusedNumReducers != null && reusedNumReducers > 0) {
-        String tableName = fsOp.getConf().getTableInfo().getTableName();
-        Properties tableProps = fsOp.getConf().getTableInfo().getProperties();
-        tableProps.setProperty(
-            HiveCustomStorageHandlerUtils.ICEBERG_HIVE_BUCKETING_ROUTE_ENABLED + tableName, "true");
-        HiveCustomStorageHandlerUtils.writeIcebergHiveBucketingMetadata(tableProps::setProperty, tableName,
-            HiveCustomStorageHandlerUtils.IcebergHiveBucketingConf.fromTable(destTable));
-      }
+      // Iceberg: when reducers < buckets, route output files by Hive bucket id (not reducer task id).
+      configureIcebergHiveBucketingRoute(fsOp, destTable, isIcebergHiveBucketedWrite, numBuckets,
+          rsOp.getConf().getNumReducers());
 
       List<ExprNodeDesc> descs = new ArrayList<ExprNodeDesc>(allRSCols.size());
       List<String> colNames = new ArrayList<String>();
@@ -433,6 +361,122 @@ public class SortedDynPartitionOptimizer extends Transform {
 
       parseCtx.setReduceSinkAddedBySortedDynPartition(true);
       return null;
+    }
+
+    private boolean skipSortedDynamicPartitionOptimization(FileSinkOperator fsOp, Table destTable) {
+      if (fsOp.getConf().getDynPartCtx() == null) {
+        LOG.debug("Bailing out of sort dynamic partition optimization as dynamic partitioning context is null");
+        return true;
+      }
+
+      ListBucketingCtx lbCtx = fsOp.getConf().getLbCtx();
+      if (lbCtx != null && !lbCtx.getSkewedColNames().isEmpty()
+          && !lbCtx.getSkewedColValues().isEmpty()) {
+        LOG.debug("Bailing out of sort dynamic partition optimization as list bucketing is enabled");
+        return true;
+      }
+
+      if (destTable == null) {
+        LOG.debug("Bailing out of sort dynamic partition optimization as destination table is null");
+        return true;
+      }
+
+      if (destTable.isMaterializedView() &&
+          (destTable.getProperty(Constants.MATERIALIZED_VIEW_SORT_COLUMNS) != null ||
+              destTable.getProperty(Constants.MATERIALIZED_VIEW_DISTRIBUTE_COLUMNS) != null)) {
+        LOG.debug("Bailing out of sort dynamic partition optimization as destination is a materialized view"
+            + "with CLUSTER/SORT/DISTRIBUTE spec");
+        return true;
+      }
+      return false;
+    }
+
+    private static final class SortBucketColumns {
+      private final List<Integer> sortPositions;
+      private final List<Integer> sortOrder;
+      private final ArrayList<ExprNodeDesc> bucketColumns;
+
+      private SortBucketColumns(List<Integer> sortPositions, List<Integer> sortOrder,
+          ArrayList<ExprNodeDesc> bucketColumns) {
+        this.sortPositions = sortPositions;
+        this.sortOrder = sortOrder;
+        this.bucketColumns = bucketColumns;
+      }
+    }
+
+    private SortBucketColumns resolveSortBucketColumns(FileSinkOperator fsOp, Table destTable,
+        Operator<? extends OperatorDesc> fsParent, List<Integer> bucketPositions,
+        LinkedList<Function<List<ExprNodeDesc>, ExprNodeDesc>> customSortExprs, int numBuckets)
+        throws SemanticException {
+      List<Integer> sortPositions;
+      List<Integer> sortOrder;
+      ArrayList<ExprNodeDesc> bucketColumns;
+      if (fsOp.getConf().getWriteType() == AcidUtils.Operation.UPDATE ||
+          fsOp.getConf().getWriteType() == AcidUtils.Operation.DELETE) {
+        // When doing updates and deletes we always want to sort on the rowid because the ACID
+        // reader will expect this sort order when doing reads.  So
+        // ignore whatever comes from the table and enforce this sort order instead.
+        sortPositions = Collections.singletonList(0);
+        sortOrder = Collections.singletonList(1); // 1 means asc, could really use enum here in the thrift if
+        /**
+         * ROW__ID is always the 1st column of Insert representing Update/Delete operation
+         * (set up in {@link org.apache.hadoop.hive.ql.parse.UpdateDeleteSemanticAnalyzer})
+         * and we wrap it in UDFToInteger
+         * (in {@link org.apache.hadoop.hive.ql.parse.SemanticAnalyzer#getPartitionColsFromBucketColsForUpdateDelete(Operator, boolean)})
+         * which extracts bucketId from it
+         * see {@link org.apache.hadoop.hive.ql.udf.UDFToInteger#evaluate(RecordIdentifier)}*/
+        ColumnInfo ci = fsParent.getSchema().getSignature().get(0);
+        if (!VirtualColumn.ROWID.getTypeInfo().equals(ci.getType())) {
+          throw new IllegalStateException("expected 1st column to be ROW__ID but got wrong type: " + ci.toString());
+        }
+
+        bucketColumns = null;
+        if (numBuckets > 0) {
+          bucketColumns = new ArrayList<>();
+          //add a cast(ROW__ID as int) to wrap in UDFToInteger()
+          bucketColumns.add(ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
+              .createConversionCast(new ExprNodeColumnDesc(ci), TypeInfoFactory.intTypeInfo));
+        }
+      } else {
+        if (!destTable.getSortCols().isEmpty()) {
+          // Sort columns specified by table
+          sortPositions = getSortPositions(destTable.getSortCols(), destTable.getCols());
+          sortOrder = getSortOrders(destTable.getSortCols(), destTable.getCols());
+        } else if (customSortExprs.isEmpty() &&
+            HiveConf.getBoolVar(this.parseCtx.getConf(), HiveConf.ConfVars.HIVE_SORT_WHEN_BUCKETING) &&
+            !bucketPositions.isEmpty()) {
+          // We use clustered columns as sort columns (skip when custom sort e.g. z-order is present)
+          sortPositions = new ArrayList<>(bucketPositions);
+          sortOrder = sortPositions.stream().map(e -> 1).collect(Collectors.toList());
+        } else {
+          // Infer sort columns from operator tree
+          sortPositions = Lists.newArrayList();
+          sortOrder = Lists.newArrayList();
+          inferSortPositions(fsParent, sortPositions, sortOrder);
+        }
+        List<ColumnInfo> colInfos = fsParent.getSchema().getSignature();
+        bucketColumns = getPositionsToExprNodes(bucketPositions, colInfos);
+      }
+      return new SortBucketColumns(sortPositions, sortOrder, bucketColumns);
+    }
+
+    /**
+     * Enables per-row Hive bucket routing for Iceberg writes when the planned reducer count is below the
+     * table bucket count. In that case multiple logical buckets share a reducer, so file prefixes must use
+     * the row's bucket id rather than the reducer task id. When reducers &gt;= buckets, each reducer receives
+     * a single bucket's rows and {@link org.apache.iceberg.mr.hive.writer.WriterBuilder} can use task id directly.
+     */
+    private void configureIcebergHiveBucketingRoute(FileSinkOperator fsOp, Table destTable,
+        boolean isIcebergHiveBucketedWrite, int numBuckets, int plannedNumReducers) {
+      if (!isIcebergHiveBucketedWrite || plannedNumReducers <= 0 || plannedNumReducers >= numBuckets) {
+        return;
+      }
+      String tableName = fsOp.getConf().getTableInfo().getTableName();
+      Properties tableProps = fsOp.getConf().getTableInfo().getProperties();
+      tableProps.setProperty(
+          HiveCustomStorageHandlerUtils.ICEBERG_HIVE_BUCKETING_ROUTE_ENABLED + tableName, "true");
+      HiveCustomStorageHandlerUtils.writeIcebergHiveBucketingMetadata(tableProps::setProperty, tableName,
+          HiveCustomStorageHandlerUtils.IcebergHiveBucketingConf.fromTable(destTable));
     }
 
     private boolean allStaticPartitions(Operator<? extends OperatorDesc> op, List<ExprNodeDesc> allRSCols,
@@ -526,7 +570,7 @@ public class SortedDynPartitionOptimizer extends Transform {
         Operator<? extends OperatorDesc> rsParent = rsToRemove.getParentOperators().get(0);
 
         // RS is expected to have exactly ONE child
-        assert(rsToRemove.getChildOperators().size() == 1);
+        assert (rsToRemove.getChildOperators().size() == 1);
 
         Operator<? extends OperatorDesc> rsChildToRemove = rsToRemove.getChildOperators().get(0);
 
@@ -542,28 +586,38 @@ public class SortedDynPartitionOptimizer extends Transform {
         // if child is select and contains expression which isn't column it shouldn't
         // be removed because otherwise we will end up with different types/schema later
         // while introducing select for RS
-        for(ExprNodeDesc expr: rsChildToRemove.getColumnExprMap().values()){
-          if(!(expr instanceof ExprNodeColumnDesc)){
-            return RemovedEnforceRs.failed();
-          }
+        if (!enforceBucketingSelectContainsOnlyColumns(rsChildToRemove)) {
+          return RemovedEnforceRs.failed();
         }
 
-        List<Operator<? extends OperatorDesc>> rsGrandChildren = rsChildToRemove.getChildOperators();
-
-        rsParent.getChildOperators().remove(rsToRemove);
-        rsParent.getChildOperators().addAll(rsGrandChildren);
-
-
-        // fix grandchildren
-        for (Operator<? extends OperatorDesc> rsGrandChild: rsGrandChildren) {
-          rsGrandChild.getParentOperators().clear();
-          rsGrandChild.getParentOperators().add(rsParent);
-        }
+        unlinkEnforceBucketingReduceSink(rsParent, rsToRemove, rsChildToRemove);
         LOG.info("Removed " + rsToRemove.getOperatorId() + " and " + rsChildToRemove.getOperatorId()
             + " as it was introduced by enforce bucketing/sorting.");
-        return RemovedEnforceRs.success(removed);
+        return RemovedEnforceRs.withRemovedRs(removed);
       }
-      return RemovedEnforceRs.success(null);
+      return RemovedEnforceRs.withRemovedRs(null);
+    }
+
+    private static boolean enforceBucketingSelectContainsOnlyColumns(
+        Operator<? extends OperatorDesc> rsChildToRemove) {
+      for (ExprNodeDesc expr : rsChildToRemove.getColumnExprMap().values()) {
+        if (!(expr instanceof ExprNodeColumnDesc)) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    private static void unlinkEnforceBucketingReduceSink(Operator<? extends OperatorDesc> rsParent,
+        Operator<? extends OperatorDesc> rsToRemove, Operator<? extends OperatorDesc> rsChildToRemove) {
+      List<Operator<? extends OperatorDesc>> rsGrandChildren = rsChildToRemove.getChildOperators();
+      rsParent.getChildOperators().remove(rsToRemove);
+      rsParent.getChildOperators().addAll(rsGrandChildren);
+      // fix grandchildren
+      for (Operator<? extends OperatorDesc> rsGrandChild : rsGrandChildren) {
+        rsGrandChild.getParentOperators().clear();
+        rsGrandChild.getParentOperators().add(rsParent);
+      }
     }
 
     private boolean isIcebergHiveStorageHandler(Table destTable) {
@@ -583,7 +637,7 @@ public class SortedDynPartitionOptimizer extends Transform {
         this.removedRs = removedRs;
       }
 
-      static RemovedEnforceRs success(ReduceSinkOperator removedRs) {
+      static RemovedEnforceRs withRemovedRs(ReduceSinkOperator removedRs) {
         return new RemovedEnforceRs(true, removedRs);
       }
 
