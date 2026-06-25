@@ -254,53 +254,60 @@ public class HiveClusterAutoscaler {
             tezAuto.metricsPort(), tezAuto.metricsScrapeIntervalSeconds());
         String tezKey = cacheKey(namespace, clusterName, tezAmComponentKey);
         List<PodMetrics> tezMetrics = metricsCache.getOrEmpty(tezKey, tezAuto.metricsScrapeIntervalSeconds() * 3);
+        int currentTezReplicas = getCurrentReplicas(client, namespace, clusterName, tezAmComponentKey);
 
         updateDeploymentPodDeletionCost(client, namespace, tezMetrics,
             pm -> TezAmBusyMetrics.deletionCost(pm.metrics()));
 
-        Map<String, Integer> tezPatches = new HashMap<>();
-        evaluateComponent(cluster, client, namespace, clusterName,
-            tezAmComponentKey, tezAuto, perLlapTezAm.replicas(), tezPatches, statuses, tezMetrics);
+        PendingScaleDown pending = pendingScaleDowns.get(tezKey);
+        if (pending != null) {
+          Integer appliedTarget = null;
+          if (Duration.between(pending.annotatedAt(), Instant.now()).toSeconds() >= 2) {
+            // Deregister idle AMs from ZK before applying the scale patch.
+            // All HS2 instances see CHILD_REMOVED and stop routing to these AMs.
+            // No new DAGs can arrive on pods that are about to be terminated.
+            List<String> idlePodNames = tezMetrics.stream()
+                .filter(pm -> !TezAmBusyMetrics.hasActiveDag(pm.metrics()))
+                .map(PodMetrics::podName)
+                .toList();
+            TezAmZkDeregistrar.deregisterIdlePods(
+                cluster.getSpec().zookeeper().quorum(), llapSpec.name(), idlePodNames,
+                cluster.getSpec().hiveServer2().configOverrides());
+            appliedTarget = pending.targetReplicas();
+            patches.put(tezAmComponentKey, appliedTarget);
+            MANAGED_REPLICAS.put(tezKey, appliedTarget);
+            lastScaleTimes.put(tezKey, Instant.now().toString());
+            pendingScaleDowns.remove(tezKey);
+            LOG.info("[{}] Applying deferred scale-down to {} replicas", tezAmComponentKey, appliedTarget);
+          }
+          evaluateComponent(cluster, client, namespace, clusterName,
+              tezAmComponentKey, tezAuto, perLlapTezAm.replicas(), new HashMap<>(), statuses, tezMetrics);
+          if (pendingScaleDowns.containsKey(tezKey)) {
+            MANAGED_REPLICAS.put(tezKey, currentTezReplicas);
+          } else if (appliedTarget != null) {
+            MANAGED_REPLICAS.put(tezKey, appliedTarget);
+          }
+        } else {
+          Map<String, Integer> tezPatches = new HashMap<>();
+          evaluateComponent(cluster, client, namespace, clusterName,
+              tezAmComponentKey, tezAuto, perLlapTezAm.replicas(), tezPatches, statuses, tezMetrics);
 
-        Integer tezPatch = tezPatches.get(tezAmComponentKey);
-        int currentTezReplicas = getCurrentReplicas(client, namespace, clusterName, tezAmComponentKey);
-        if (tezPatch != null && tezPatch < currentTezReplicas) {
-          // Scale-down: effective target = max(desired, busyCount).
-          // Idle pods are removed first as per pod-deletion-cost
-          PendingScaleDown pending = pendingScaleDowns.get(tezKey);
-          if (pending != null) {
-            if (Duration.between(pending.annotatedAt(), Instant.now()).toSeconds() >= 2) {
-              // Deregister idle AMs from ZK before applying the scale patch.
-              // All HS2 instances (active-active HA) see CHILD_REMOVED and stop routing to
-              // these AMs — no new DAGs can arrive on pods that are about to be terminated.
-              List<String> idlePodNames = tezMetrics.stream()
-                  .filter(pm -> !TezAmBusyMetrics.hasActiveDag(pm.metrics()))
-                  .map(PodMetrics::podName)
-                  .toList();
-              TezAmZkDeregistrar.deregisterIdlePods(
-                  cluster.getSpec().zookeeper().quorum(), llapSpec.name(), idlePodNames,
-                  cluster.getSpec().hiveServer2().configOverrides());
-              patches.put(tezAmComponentKey, pending.targetReplicas());
-              MANAGED_REPLICAS.put(tezKey, pending.targetReplicas());
-              lastScaleTimes.put(tezKey, Instant.now().toString());
-              pendingScaleDowns.remove(tezKey);
-              LOG.info("[{}] Applying deferred scale-down to {} replicas", tezAmComponentKey,
-                  pending.targetReplicas());
-            }
-          } else {
+          Integer tezPatch = tezPatches.get(tezAmComponentKey);
+          if (tezPatch != null && tezPatch < currentTezReplicas) {
             int busyCount = countBusyPods(tezMetrics);
             int effectivePatch = Math.max(tezPatch, busyCount);
             if (effectivePatch != tezPatch) {
               LOG.info("[{}] Scale-down target adjusted to {} (desired={}, busy AMs={})",
                   tezAmComponentKey, effectivePatch, tezPatch, busyCount);
             }
+            MANAGED_REPLICAS.put(tezKey, currentTezReplicas);
             pendingScaleDowns.put(tezKey, new PendingScaleDown(effectivePatch, Instant.now()));
             LOG.info("[{}] Deferring scale-down to {} (waiting for deletion-cost propagation)",
                 tezAmComponentKey, effectivePatch);
+          } else if (tezPatch != null) {
+            patches.put(tezAmComponentKey, tezPatch);
+            MANAGED_REPLICAS.put(tezKey, tezPatch);
           }
-        } else if (tezPatch != null) {
-          patches.put(tezAmComponentKey, tezPatch);
-          MANAGED_REPLICAS.put(tezKey, tezPatch);
         }
       }
     }
