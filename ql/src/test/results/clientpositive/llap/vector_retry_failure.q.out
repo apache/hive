@@ -156,7 +156,7 @@ Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operator
 Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: ASSERT_TRUE(): assertion failed.
 #### A masked pattern was here ####
 ]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 2] killed/failed due to:OWN_TASK_FAILURE]
-DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0
+DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:#Masked#
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.TezTask. Vertex failed, vertexName=Reducer 2, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: java.lang.RuntimeException: Hive Runtime Error while closing operators: ASSERT_TRUE(): assertion failed.
 #### A masked pattern was here ####
 Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operators: ASSERT_TRUE(): assertion failed.
@@ -169,7 +169,7 @@ Caused by: java.lang.RuntimeException: Hive Runtime Error while closing operator
 #### A masked pattern was here ####
 Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: ASSERT_TRUE(): assertion failed.
 #### A masked pattern was here ####
-]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 2] killed/failed due to:OWN_TASK_FAILURE]DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0
+]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 2] killed/failed due to:OWN_TASK_FAILURE]DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:#Masked#
 PREHOOK: query: select assert_true(2 > a) from tx_n0 group by a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tx_n0
