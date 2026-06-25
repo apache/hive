@@ -276,7 +276,7 @@ public class HiveClusterAutoscaler {
               List<String> idlePodNames = tezMetrics.stream()
                   .filter(pm -> !TezAmBusyMetrics.hasActiveDag(pm.metrics()))
                   .map(PodMetrics::podName)
-                  .collect(Collectors.toList());
+                  .toList();
               TezAmZkDeregistrar.deregisterIdlePods(
                   cluster.getSpec().zookeeper().quorum(), llapSpec.name(), idlePodNames,
                   cluster.getSpec().hiveServer2().configOverrides());
@@ -422,7 +422,7 @@ public class HiveClusterAutoscaler {
     }
   }
 
-  /** Counts TezAM pods with active DAG work */
+  /** Counts TezAM pods with active DAG work. */
   private int countBusyPods(List<PodMetrics> tezMetrics) {
     return (int) tezMetrics.stream()
         .filter(pm -> TezAmBusyMetrics.hasActiveDag(pm.metrics()))

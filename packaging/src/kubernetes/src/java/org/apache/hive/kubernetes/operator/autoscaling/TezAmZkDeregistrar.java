@@ -55,6 +55,7 @@ import org.slf4j.LoggerFactory;
 public final class TezAmZkDeregistrar {
 
   private static final Logger LOG = LoggerFactory.getLogger(TezAmZkDeregistrar.class);
+  private static final String PATH_SEPARATOR = "/";
 
   private TezAmZkDeregistrar() {}
 
@@ -79,7 +80,7 @@ public final class TezAmZkDeregistrar {
     int baseSleepMs = getTimeMs(hiveSiteConfig, "hive.zookeeper.connection.basesleeptime", 1000);
     int maxRetries = getInt(hiveSiteConfig, "hive.zookeeper.connection.max.retries", 3);
 
-    String registryPath = ConfigUtils.TEZ_EXTERNAL_SESSIONS_ZK_PREFIX + "/" + llapName;
+    String registryPath = ConfigUtils.TEZ_EXTERNAL_SESSIONS_ZK_PREFIX + PATH_SEPARATOR + llapName;
     CuratorFramework client = CuratorFrameworkFactory.builder()
         .connectString(zkQuorum)
         .connectionTimeoutMs(connTimeoutMs)
@@ -96,31 +97,42 @@ public final class TezAmZkDeregistrar {
         return;
       }
       for (String appId : client.getChildren().forPath(registryPath)) {
-        String nodePath = registryPath + "/" + appId;
+        String nodePath = registryPath + PATH_SEPARATOR + appId;
         byte[] data = client.getData().forPath(nodePath);
         if (data == null || data.length == 0) {
           continue;
         }
         String hostName = extractHostName(new String(data, StandardCharsets.UTF_8));
-        if (hostName == null) {
-          continue;
-        }
-        // hostName = "<podName>.<svcName>.<ns>.svc.cluster.local"
-        String podName = hostName.contains(".") ? hostName.substring(0, hostName.indexOf('.')) : hostName;
-        if (idlePodNames.contains(podName)) {
-          try {
-            client.delete().forPath(nodePath);
-            LOG.info("[tezam-{}] Deregistered pod {} (appId={}) from ZK — HS2 will stop routing to it",
-                llapName, podName, appId);
-          } catch (Exception e) {
-            LOG.warn("[tezam-{}] Failed to delete ZK node for pod {}: {}", llapName, podName, e.getMessage());
+        if (hostName != null) {
+          // hostName = "<podName>.<svcName>.<ns>.svc.cluster.local"
+          String podName = hostName.contains(".") ? hostName.substring(0, hostName.indexOf('.')) : hostName;
+          if (idlePodNames.contains(podName)) {
+            deleteRegistrationNode(client, llapName, nodePath, podName, appId);
           }
         }
       }
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      LOG.warn("[tezam-{}] ZK deregistration interrupted: {}", llapName, e.getMessage());
     } catch (Exception e) {
       LOG.warn("[tezam-{}] ZK deregistration error: {}", llapName, e.getMessage());
     } finally {
       client.close();
+    }
+  }
+
+  private static void deleteRegistrationNode(CuratorFramework client, String llapName,
+      String nodePath, String podName, String appId) {
+    try {
+      client.delete().forPath(nodePath);
+      LOG.info("[tezam-{}] Deregistered pod {} (appId={}) from ZK — HS2 will stop routing to it",
+          llapName, podName, appId);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      LOG.warn("[tezam-{}] Failed to delete ZK node for pod {} (interrupted): {}",
+          llapName, podName, e.getMessage());
+    } catch (Exception e) {
+      LOG.warn("[tezam-{}] Failed to delete ZK node for pod {}: {}", llapName, podName, e.getMessage());
     }
   }
 

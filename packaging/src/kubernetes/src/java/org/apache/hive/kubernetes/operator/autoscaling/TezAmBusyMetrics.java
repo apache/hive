@@ -41,7 +41,7 @@ public final class TezAmBusyMetrics {
   }
 
   /**
-   * Returns the pod-deletion-cost for this AM:
+   * Returns the pod-deletion-cost for this AM.
    * 0 if the AM is idle
    * 1 if the AM is running a DAG
    */

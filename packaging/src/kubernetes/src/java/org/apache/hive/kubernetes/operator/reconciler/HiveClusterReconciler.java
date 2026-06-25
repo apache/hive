@@ -638,7 +638,6 @@ public class HiveClusterReconciler
       // --- Per-LLAP TezAM resources (one TezAM per LLAP cluster) ---
       if (resource.getSpec().tezAm().isEnabled()) {
         int tezAmReplicas = resolveTezAmReplicaCount(resource, ns, clusterName, llapSpec);
-        String tezAmName = LlapResourceBuilder.tezAmResourceName(resource, llapSpec);
         client.configMaps().inNamespace(ns)
             .resource(LlapResourceBuilder.buildTezAmConfigMap(resource, llapSpec))
             .serverSideApply();
