@@ -279,8 +279,12 @@ public class LlapResourceBuilder
         continue;
       }
       boolean ready = isPodReady(pod);
+      String hostname = pod.getMetadata().getName();
+      if (hostname.length() > 63) {
+        hostname = hostname.substring(0, 63).replaceAll("-+$", "");
+      }
       endpoints.add(new EndpointBuilder()
-          .withHostname(pod.getMetadata().getName())
+          .withHostname(hostname)
           .withAddresses(ip)
           .withNewConditions()
             .withReady(ready)
