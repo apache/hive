@@ -84,6 +84,16 @@ services:
       HIVE_SCRATCH_DIR: /opt/hive/scratch
       HIVE_QUERY_RESULTS_CACHE_DIRECTORY: /opt/hive/scratch/_resultscache_
 
+      # LLAP / external Tez session wiring — consumed by envsubst against
+      # hive-site.xml.template and tez-site.xml.template in entrypoint.sh.
+      # Without these, the templates fall back to the defaults in
+      # entrypoint.sh (external sessions disabled) even when start-hive.sh
+      # was invoked with --llap.
+      HIVE_ZOOKEEPER_QUORUM: "${HIVE_ZOOKEEPER_QUORUM:-}"
+      HIVE_LLAP_DAEMON_SERVICE_HOSTS: "${HIVE_LLAP_DAEMON_SERVICE_HOSTS:-}"
+      HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS: "${HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS:-false}"
+      TEZ_FRAMEWORK_MODE: "${TEZ_FRAMEWORK_MODE:-}"
+
       DB_DRIVER: postgres
       SERVICE_OPTS: >-
         -Xmx1G
