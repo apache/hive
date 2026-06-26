@@ -49,6 +49,7 @@ import io.fabric8.kubernetes.api.model.discovery.v1.EndpointSliceBuilder;
 import io.fabric8.kubernetes.api.model.policy.v1.PodDisruptionBudget;
 import io.fabric8.kubernetes.api.model.policy.v1.PodDisruptionBudgetBuilder;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hive.kubernetes.operator.autoscaling.TezAmBusyMetrics;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
@@ -289,7 +290,7 @@ public class LlapResourceBuilder
       boolean ready = isPodReady(pod);
       String hostname = pod.getMetadata().getName();
       if (hostname.length() > 63) {
-        hostname = hostname.substring(0, 63).replaceAll("-+$", "");
+        hostname = StringUtils.stripEnd(hostname.substring(0, 63), "-");
       }
       endpoints.add(new EndpointBuilder()
           .withHostname(hostname)

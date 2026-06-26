@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.ToIntFunction;
-import java.util.stream.Collectors;
 
 import io.fabric8.kubernetes.client.KubernetesClient;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
