@@ -1353,7 +1353,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
       throw new UnsupportedOperationException("Correlated subqueries in outer join conditions not supported yet." +
         " Join condition: " + rel.getCondition());
     }
-    if (!rel.getJoinType().projectsRight()) {
+    if (JoinRelType.ANTI.equals(rel.getJoinType())) {
       return decorrelateRel((RelNode) rel);
     }
     //
@@ -1374,6 +1374,11 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
       return null;
     }
 
+    if (rel.getJoinType().projectsRight() && !rightFrame.corDefOutputs.isEmpty()) {
+      // decorrelating semi-join with correlation variables in the RHS is not supported yet
+      return null;
+    }
+
     final RelNode newJoin = HiveJoin.getJoin(rel.getCluster(), leftFrame.r, rightFrame.r,
         decorrelateExpr(rel.getCondition()), rel.getJoinType());
 
@@ -1385,16 +1390,20 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
     int newLeftFieldCount = leftFrame.r.getRowType().getFieldCount();
 
     int oldRightFieldCount = oldRight.getRowType().getFieldCount();
-    assert rel.getRowType().getFieldCount()
-            == oldLeftFieldCount + oldRightFieldCount;
+
+    int expectedRowCount = oldLeftFieldCount + (rel.getJoinType().projectsRight() ? oldRightFieldCount : 0);
+    if (rel.getRowType().getFieldCount() != expectedRowCount)
+      throw new AssertionError();
 
     // Left input positions are not changed.
     mapOldToNewOutputs.putAll(leftFrame.oldToNewOutputs);
 
-    // Right input positions are shifted by newLeftFieldCount.
-    for (int i = 0; i < oldRightFieldCount; i++) {
-      mapOldToNewOutputs.put(i + oldLeftFieldCount,
-              rightFrame.oldToNewOutputs.get(i) + newLeftFieldCount);
+    if (rel.getJoinType().projectsRight()) {
+      // Right input positions are shifted by newLeftFieldCount.
+      for (int i = 0; i < oldRightFieldCount; i++) {
+        mapOldToNewOutputs.put(i + oldLeftFieldCount,
+            rightFrame.oldToNewOutputs.get(i) + newLeftFieldCount);
+      }
     }
 
     final SortedMap<CorDef, Integer> corDefOutputs =
