@@ -135,12 +135,16 @@ public class HiveFunctionHelper implements FunctionHelper {
       inputsOIs[i] = createObjectInspector(inputs.get(i));
     }
     // 2) Initialize and obtain return type
-    ObjectInspector oi = fi.getGenericUDF() != null ?
-        fi.getGenericUDF().initializeAndFoldConstants(inputsOIs) :
+    GenericUDF genericUDF = fi.getGenericUDF();
+    ObjectInspector oi = genericUDF != null ?
+        genericUDF.initializeAndFoldConstants(inputsOIs) :
         fi.getGenericUDTF().initialize(inputsOIs);
     // 3) Convert to RelDataType
     return TypeConverter.convert(
-        TypeInfoUtils.getTypeInfoFromObjectInspector(oi), rexBuilder.getTypeFactory());
+        TypeInfoUtils.getTypeInfoFromObjectInspector(oi),
+        FunctionRegistry.isNullable(genericUDF),
+        rexBuilder.getTypeFactory()
+    );
   }
 
   /**

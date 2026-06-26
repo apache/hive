@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IsNotNull;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsNotNull;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.BooleanWritable;
@@ -37,6 +38,7 @@ import org.apache.hadoop.io.BooleanWritable;
     value = "_FUNC_ a - Returns true if a is not NULL and false otherwise")
 @VectorizedExpressions({IsNotNull.class, SelectColumnIsNotNull.class})
 @NDV(maxNdv = 2)
+@UDFType(nullable = false)
 public class GenericUDFOPNotNull extends GenericUDF {
   private final BooleanWritable result = new BooleanWritable();
 
