@@ -212,9 +212,9 @@ docker compose logs -f llapdaemon
 To stop and remove the LLAP stack:
 
 ```shell
-./stop-hive.sh --llap # to stop and delete containers
+./stop-hive.sh # to stop and delete containers
 #OR
-./stop-hive.sh --llap --cleanup # to remove volumes also
+./stop-hive.sh --cleanup # to remove volumes also
 ```
 
 #### Usage
