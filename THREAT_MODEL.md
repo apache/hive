@@ -50,26 +50,31 @@ README)*. The in-scope component families:
 | **JDBC/ODBC drivers + Beeline** | client-side connectors | client trust domain |
 
 Hive is **not** a standalone secured appliance: it is a clustered service
-that depends on Hadoop (HDFS, YARN), a metastore RDBMS, and typically an
-external authorization service (Apache Ranger or SQL-standard authorization)
-and a KDC for Kerberos *(inferred — §14 Q3)*.
+deployed behind an operator-controlled perimeter, depending on Hadoop (HDFS,
+YARN), a metastore RDBMS, an external authorization provider (typically Apache
+Ranger in production deployments, though SQL-standard authorization may also be
+used), and a KDC for Kerberos — all treated as trusted dependencies.
+*(maintainer — okumin, §14 Q3)*
 
 ## §3 — Adversaries in and out of scope
 
 **In scope**:
 
-1. A **SQL client** connecting to HiveServer2 with valid or attempted-invalid
-   credentials, trying to read/modify data outside their authorization, or to
-   reach the host through query features. *(inferred — §14 Q4)*
-2. A **network adversary** between client and HS2 / between HS2 and HMS, where
-   transport security is not configured. *(inferred — §14 Q4)*
+1. **Untrusted clients at Hive's service boundaries** — a **SQL client**
+   submitting statements to HiveServer2, and a **client accessing the Hive
+   Metastore through its supported APIs** — attempting to read/modify data
+   outside their authorization, or to reach the host through query features.
+   *(maintainer — okumin, §14 Q4)*
+2. A **network MITM** on the client↔HS2 or HS2↔HMS path, **in scope when TLS
+   (or equivalent transport protection) is enabled**; the operator is
+   responsible for configuring TLS correctly. *(maintainer — okumin, §14 Q4)*
 3. A **direct Metastore (HMS) client.** Some external services (e.g. Apache
    Spark) connect to the Hive Metastore directly, so HMS is expected to enforce
    caller authorization at the **application level** — it is not merely an
    intra-cluster service shielded by a network perimeter. A client reaching HMS
    outside its authorization is in-model. *(maintainer — okumin, §14 Q1.)*
 
-**Out of scope** *(inferred — §14 Q5)*:
+**Out of scope** *(maintainer — okumin, §14 Q5)*:
 
 4. **An operator with `root` / the Hadoop superuser / direct HDFS or metastore-DB
    access.** Anyone who already controls the storage layer or the cluster
@@ -95,7 +100,7 @@ and a KDC for Kerberos *(inferred — §14 Q3)*.
   level** (it enforces caller authorization), because external services such as
   Spark talk to HMS directly (§3.3); network isolation is defense-in-depth, not
   the primary control *(maintainer — okumin, §14 Q1)*. The HS2 → engine / HDFS
-  path is assumed inside an operator-controlled perimeter *(inferred — §14 Q3)*.
+  path is assumed inside an operator-controlled perimeter *(maintainer — okumin, §14 Q3)*.
 - **`doAs` impersonation:** when enabled, HS2 executes work as the connected
   end user against HDFS rather than as the Hive service principal; when
   disabled, all access runs as the Hive principal and authorization is fully
@@ -161,10 +166,12 @@ and a KDC for Kerberos *(inferred — §14 Q3)*.
       plugin or configuring the hook themselves.
 - **Protection against an operator who controls the underlying storage,
   metastore DB, or cluster processes** (see §3 item 4).
-- **Resource fairness / DoS protection as a hard guarantee.** A sufficiently
-  expensive query can exhaust cluster resources; per-pool/queue limits
-  (YARN, HS2 query limits) are the operator's lever, not an engine invariant
-  *(inferred — §14 Q11)*.
+- **Resource fairness / DoS protection as a hard guarantee.** Hive accepts
+  arbitrary HiveQL, so bounding the impact of a pathological query is an
+  operator responsibility, not a Hive bug: operators use HiveServer2 limits
+  (e.g. `hive.query.max.length`) and YARN resource pools, and — where stronger
+  isolation than HS2 + YARN can provide is required — separate HS2 instances or
+  separate Hadoop/YARN clusters. *(maintainer — okumin, §14 Q11)*
 
 ## §8 — Key configuration levers (load-bearing)
 
@@ -232,13 +239,23 @@ Grouped in waves; answer inline (a few at a time is fine). Each promotes an
    disable via `DisallowTransformHook`. Folded into §7 / §8 / §11a.)* ~~Are
    UDFs / SerDes / custom InputFormats / `TRANSFORM` scripts in scope as
    code-execution-by-design (not a sandbox), per §7?~~
-3. Confirm the assumed deployment: clustered, behind an operator-controlled
-   perimeter, with Hadoop + a metastore RDBMS + (Ranger or SQL-std auth) + KDC
-   as trusted dependencies.
-4. Is the in-scope adversary "a SQL client at the HS2 boundary" (+ a network
-   MITM where TLS is off)? Anything to add?
-5. Confirm operators with storage/metastore-DB/cluster-process access, and
-   trusted admins doing authorized actions, are out of model.
+3. *(Answered — okumin: confirmed. Clustered, operator-controlled perimeter;
+   Hadoop, the metastore RDBMS, the authorization provider (typically Ranger in
+   production, SQL-standard also supported), and the KDC are trusted
+   dependencies. Folded into §2 / §4.)* ~~Confirm the assumed deployment:
+   clustered, behind an operator-controlled perimeter, with Hadoop + a metastore
+   RDBMS + (Ranger or SQL-std auth) + KDC as trusted dependencies.~~
+4. *(Answered — okumin: the primary in-scope adversaries are untrusted clients
+   at Hive's service boundaries — SQL clients submitting to HS2 and clients
+   reaching the Metastore through supported APIs; a network MITM is in scope
+   when TLS / equivalent transport protection is enabled (operator-configured).
+   Folded into §3.1 / §3.2.)* ~~Is the in-scope adversary "a SQL client at the
+   HS2 boundary" (+ a network MITM where TLS is off)? Anything to add?~~
+5. *(Answered — okumin: confirmed. Operators with direct storage / metastore-DB
+   / cluster-process access are trusted and out of scope; authorized actions by
+   trusted admins are out of model. Folded into §3.4 / §3.5.)* ~~Confirm
+   operators with storage/metastore-DB/cluster-process access, and trusted
+   admins doing authorized actions, are out of model.~~
 
 **Wave 2 — trust boundaries & auth**
 6. At the client→HS2 boundary, are SQL text, JDBC connection properties, and
@@ -259,8 +276,12 @@ Grouped in waves; answer inline (a few at a time is fine). Each promotes an
    Confirm the operator-owned list in §6 (TLS, authz-model choice, network
    isolation, UDF vetting). Anything mis-assigned?
 10. Confirm the by-design non-guarantees in §7.
-11. Is super-linear resource use / a hang on a pathological query a bug, or is
-    bounding it the operator's job (YARN queues / HS2 limits)?
+11. *(Answered — okumin: the operator's job, not a Hive bug — Hive accepts
+    arbitrary HiveQL; operators bound it with HS2 limits (e.g.
+    `hive.query.max.length`) + YARN pools, and separate HS2 instances / clusters
+    for stronger isolation. Folded into §7.)* ~~Is super-linear resource use / a
+    hang on a pathological query a bug, or is bounding it the operator's job
+    (YARN queues / HS2 limits)?~~
 12. *(PMC reviewing — okumin is checking the exact TLS configuration parameter
     names on the Hive side; §8 TLS lever left unnamed pending that.)* Confirm
     the real names + shipped defaults of the §8 levers (especially
