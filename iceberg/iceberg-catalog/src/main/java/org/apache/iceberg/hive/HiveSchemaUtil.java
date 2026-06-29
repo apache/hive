@@ -154,6 +154,23 @@ public final class HiveSchemaUtil {
     return HiveSchemaConverter.convert(typeInfo, false, defaultValue);
   }
 
+  public static Type applyInitialDefaultsToStruct(Type type) {
+    Types.StructType struct = type.asStructType();
+    return Types.StructType.of(
+        struct.fields().stream().map(HiveSchemaUtil::applyInitialDefaultsToField).collect(Collectors.toList()));
+  }
+
+  private static Types.NestedField applyInitialDefaultsToField(Types.NestedField field) {
+    Types.NestedField.Builder builder = Types.NestedField.from(field);
+    if (field.type().isStructType()) {
+      builder.ofType(applyInitialDefaultsToStruct(field.type()));
+    }
+    if (field.initialDefaultLiteral() == null && field.writeDefaultLiteral() != null) {
+      builder.withInitialDefault(field.writeDefaultLiteral());
+    }
+    return builder.build();
+  }
+
   /**
    * Returns a SchemaDifference containing those fields which are present in only one of the collections, as well as
    * those fields which are present in both (in terms of the name) but their type or comment has changed.
@@ -430,6 +447,24 @@ public final class HiveSchemaUtil {
   }
 
   /**
+   * Backfills struct column that is null on read using nested {@code initialDefault} metadata.
+   * This applies to rows written before {@code ADD COLUMNS} added the struct.
+   * Spec allows struct defaults as {@code {}} (see https://iceberg.apache.org/spec/#default-values), but
+   * {@code UpdateSchema} add column only supports primitives today;
+   * if empty structs are allowed, this backfill can be removed.
+   */
+  public static void backfillStructInitialDefaults(Record record, List<Types.NestedField> columns) {
+    for (Types.NestedField field : columns) {
+      if (field.type().isStructType() && record.getField(field.name()) == null) {
+        Record nestedRecord = buildStructWithInitialDefaults(field.type().asStructType());
+        if (nestedRecord != null) {
+          record.setField(field.name(), nestedRecord);
+        }
+      }
+    }
+  }
+
+  /**
    * Recursively builds a struct populated with write defaults.
    * * @return A populated Record, or null if no nested fields have defaults.
    */
@@ -456,6 +491,42 @@ public final class HiveSchemaUtil {
 
     // If no fields (or nested fields) had defaults, return null to avoid an empty struct
     return hasAnyDefault ? nestedRecord : null;
+  }
+
+  private static Record buildStructWithInitialDefaults(Types.StructType structType) {
+    Record nestedRecord = GenericRecord.create(structType);
+    boolean hasAnyDefault = false;
+
+    for (Types.NestedField field : structType.fields()) {
+      if (field.initialDefault() != null) {
+        Object defaultValue = convertToWriteType(field.initialDefault(), field.type());
+        nestedRecord.setField(field.name(), defaultValue);
+        hasAnyDefault = true;
+      } else if (field.type().isStructType()) {
+        Record deeperRecord = buildStructWithInitialDefaults(field.type().asStructType());
+        if (deeperRecord != null) {
+          nestedRecord.setField(field.name(), deeperRecord);
+          hasAnyDefault = true;
+        }
+      }
+    }
+
+    return hasAnyDefault ? nestedRecord : null;
+  }
+
+  public static Map<String, Object> getStructInitialDefaults(Types.StructType structType) {
+    Map<String, Object> result = Maps.newHashMap();
+    for (Types.NestedField field : structType.fields()) {
+      if (field.initialDefault() != null) {
+        result.put(field.name(), field.initialDefault());
+      } else if (field.type().isStructType()) {
+        Map<String, Object> nested = getStructInitialDefaults(field.type().asStructType());
+        if (!nested.isEmpty()) {
+          result.put(field.name(), nested);
+        }
+      }
+    }
+    return result;
   }
 
   /**
@@ -494,21 +565,6 @@ public final class HiveSchemaUtil {
     Record record = GenericRecord.create(structType);
     parent.setField(fieldName, record);
     return record;
-  }
-
-  // Special method for nested structs that always applies defaults to null fields
-  private static void setDefaultValuesForNestedStruct(Record record, List<Types.NestedField> fields) {
-    for (Types.NestedField field : fields) {
-      Object fieldValue = record.getField(field.name());
-
-      if (field.writeDefault() != null) {
-        Object defaultValue = convertToWriteType(field.writeDefault(), field.type());
-        record.setField(field.name(), defaultValue);
-      } else if (field.type().isStructType()) {
-        // Recursively process nested structs
-        setDefaultValuesForNestedStruct((Record) fieldValue, field.type().asStructType().fields());
-      }
-    }
   }
 
   public static Object convertToWriteType(Object value, Type type) {

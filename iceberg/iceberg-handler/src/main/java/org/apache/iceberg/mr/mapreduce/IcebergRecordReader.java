@@ -53,6 +53,7 @@ import org.apache.iceberg.data.orc.GenericOrcReader;
 import org.apache.iceberg.data.parquet.GenericParquetReaders;
 import org.apache.iceberg.encryption.EncryptedFiles;
 import org.apache.iceberg.expressions.Expression;
+import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.CloseableIterator;
 import org.apache.iceberg.io.InputFile;
@@ -173,7 +174,16 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
       default -> throw new UnsupportedOperationException(
           String.format("Cannot read %s file: %s", file.format().name(), file.location()));
     };
-    return applyResidualFiltering(iterable, residual, readSchema);
+    return applyResidualFiltering(withStructInitialDefaultBackfill(iterable, readSchema), residual, readSchema);
+  }
+
+  private CloseableIterable<T> withStructInitialDefaultBackfill(CloseableIterable<T> iterable, Schema readSchema) {
+    return CloseableIterable.transform(iterable, record -> {
+      if (record instanceof Record) {
+        HiveSchemaUtil.backfillStructInitialDefaults((Record) record, readSchema.columns());
+      }
+      return record;
+    });
   }
 
   private CloseableIterable<T> newAvroIterable(

@@ -13,7 +13,14 @@ ALTER TABLE ice_parq ADD COLUMNS (point STRUCT<x:INT, y:INT> DEFAULT '{"x":100,"
   created_date DATE DEFAULT '2024-01-01',
   created_ts TIMESTAMP DEFAULT '2024-01-01T10:00:00',
   score DECIMAL(5,2) DEFAULT 100.00,
-  category STRING DEFAULT 'general');
+  category STRING DEFAULT 'general',
+  person STRUCT<
+    name: STRING,
+    address: STRUCT<
+      street: STRING,
+      city: STRING
+    >
+  > DEFAULT '{"name":"John","address":{"street":"Main St","city":"New York"}}');
 
 INSERT INTO ice_parq (id) VALUES (2);
 
@@ -45,7 +52,14 @@ ALTER TABLE ice_avro ADD COLUMNS (point STRUCT<x:INT, y:INT> DEFAULT '{"x":100,"
   created_date DATE DEFAULT '2024-01-01',
   created_ts TIMESTAMP DEFAULT '2024-01-01T10:00:00',
   score DECIMAL(5,2) DEFAULT 100.00,
-  category STRING DEFAULT 'general');
+  category STRING DEFAULT 'general',
+  person STRUCT<
+    name: STRING,
+    address: STRUCT<
+      street: STRING,
+      city: STRING
+    >
+  > DEFAULT '{"name":"John","address":{"street":"Main St","city":"New York"}}');
 
 INSERT INTO ice_avro (id) VALUES (2);
 
@@ -77,7 +91,14 @@ ALTER TABLE ice_orc ADD COLUMNS (point STRUCT<x:INT, y:INT> DEFAULT '{"x":100,"y
   created_date DATE DEFAULT '2024-01-01',
   created_ts TIMESTAMP DEFAULT '2024-01-01T10:00:00',
   score DECIMAL(5,2) DEFAULT 100.00,
-  category STRING DEFAULT 'general');
+  category STRING DEFAULT 'general',
+  person STRUCT<
+    name: STRING,
+    address: STRUCT<
+      street: STRING,
+      city: STRING
+    >
+  > DEFAULT '{"name":"John","address":{"street":"Main St","city":"New York"}}');
 
 INSERT INTO ice_orc (id) VALUES (2);
 
