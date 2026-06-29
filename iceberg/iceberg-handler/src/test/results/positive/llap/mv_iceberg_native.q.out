@@ -2,10 +2,24 @@ PREHOOK: query: drop materialized view if exists mat_native
 PREHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: query: drop materialized view if exists mat_native
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: query: drop materialized view if exists mat_native_orc
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: query: drop materialized view if exists mat_native_orc
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: query: drop materialized view if exists mat_native_orc_partitioned
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: query: drop materialized view if exists mat_native_orc_partitioned
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
 PREHOOK: query: drop table if exists tbl_ice_native
 PREHOOK: type: DROPTABLE
 PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tbl_ice_native
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists tbl_ice_v2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists tbl_ice_v2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: database:default
 PREHOOK: query: create table tbl_ice_native(a int, b string, c int) stored by iceberg stored as orc tblproperties ('format-version'='1')
@@ -477,20 +491,6 @@ POSTHOOK: Input: default@mat_native_orc
 five	54
 four	53
 six	60
-PREHOOK: query: create materialized view mat_native_orc_2 stored as orc tblproperties ('format-version'='1', 'max-staleness-ms'='1000') as
-select b, c from tbl_ice_native where c > 52
-PREHOOK: type: CREATE_MATERIALIZED_VIEW
-PREHOOK: Input: default@tbl_ice_native
-PREHOOK: Output: database:default
-PREHOOK: Output: default@mat_native_orc_2
-POSTHOOK: query: create materialized view mat_native_orc_2 stored as orc tblproperties ('format-version'='1', 'max-staleness-ms'='1000') as
-select b, c from tbl_ice_native where c > 52
-POSTHOOK: type: CREATE_MATERIALIZED_VIEW
-POSTHOOK: Input: default@tbl_ice_native
-POSTHOOK: Output: database:default
-POSTHOOK: Output: default@mat_native_orc_2
-POSTHOOK: Lineage: mat_native_orc_2.b SIMPLE [(tbl_ice_native)tbl_ice_native.FieldSchema(name:b, type:string, comment:null), ]
-POSTHOOK: Lineage: mat_native_orc_2.c SIMPLE [(tbl_ice_native)tbl_ice_native.FieldSchema(name:c, type:int, comment:null), ]
 PREHOOK: query: create materialized view mat_native_orc_partitioned partitioned on (b) stored by iceberg stored as orc tblproperties ('format-version'='1') as
 select b, c from tbl_ice_native where c > 52
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -668,5 +668,4 @@ POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 # MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
 mat_native_multiple_tables	Yes                 	Manual refresh      	Available for insert operations only
 mat_native_orc      	Yes                 	Manual refresh      	Available for insert operations only
-mat_native_orc_2    	Yes                 	Manual refresh      	Available for insert operations only
 mat_native_orc_partitioned	Yes                 	Manual refresh      	Available for insert operations only
