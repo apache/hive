@@ -239,6 +239,22 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
 
     protected void addValues(Table targetTable, String targetAlias, Map<String, String> newValues,
                              List<String> values) {
+      if (targetTable.hasNonNativePartitionSupport()) {
+        addNonNativeMergeUpdateValues(targetTable, targetAlias, newValues, values);
+      } else {
+        addNativeMergeUpdateValues(targetTable, targetAlias, newValues, values);
+      }
+    }
+
+    private void addNonNativeMergeUpdateValues(Table targetTable, String targetAlias,
+        Map<String, String> newValues, List<String> values) {
+      for (FieldSchema fieldSchema : targetTable.getAllCols()) {
+        setColumnValue(targetAlias, newValues, values, fieldSchema);
+      }
+    }
+
+    private void addNativeMergeUpdateValues(Table targetTable, String targetAlias,
+        Map<String, String> newValues, List<String> values) {
       for (FieldSchema fieldSchema : targetTable.getCols()) {
         setColumnValue(targetAlias, newValues, values, fieldSchema);
       }
@@ -258,7 +274,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
     private String formatValue(String targetAlias, String name) {
       return String.format("%s.%s", targetAlias, HiveUtils.unparseIdentifier(name, conf));
     }
-    
+
     protected String getRhsExpValue(String newValue, String alias) {
       return newValue;
     }
@@ -267,7 +283,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
                                           MultiInsertSqlGenerator sqlGenerator) {
       addWhereClauseOfUpdate(onClauseAsString, extraPredicate, deleteExtraPredicate, sqlGenerator, UnaryOperator.identity());
     }
-    
+
     protected void addWhereClauseOfUpdate(String onClauseAsString, String extraPredicate, String deleteExtraPredicate,
                                           MultiInsertSqlGenerator sqlGenerator, UnaryOperator<String> columnRefsFunc) {
       StringBuilder whereClause = new StringBuilder(onClauseAsString);

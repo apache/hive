@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.parse.rewrite;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -27,7 +26,6 @@ import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static org.apache.hadoop.hive.ql.metadata.RowLineageUtils.addRowLineageColumnsForWhenMatchedUpdateClause;
 
@@ -40,9 +38,6 @@ public class SplitMergeRewriter extends MergeRewriter {
   @Override
   protected MergeWhenClauseSqlGenerator createMergeSqlGenerator(
       MergeStatement mergeStatement, MultiInsertSqlGenerator sqlGenerator) {
-    if (mergeStatement.getTargetTable().hasNonNativePartitionSupport()) {
-      return new PartColWhenUpdateClauseSqlGenerator(conf, sqlGenerator, mergeStatement, isRowLineageSupported);
-    }
     return new SplitMergeWhenClauseSqlGenerator(conf, sqlGenerator, mergeStatement, isRowLineageSupported);
   }
 
@@ -79,22 +74,6 @@ public class SplitMergeRewriter extends MergeRewriter {
           updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), hintStr, sqlGenerator);
     }
   }
-
-  static class PartColWhenUpdateClauseSqlGenerator extends SplitMergeWhenClauseSqlGenerator {
-    PartColWhenUpdateClauseSqlGenerator(
-        HiveConf conf, MultiInsertSqlGenerator sqlGenerator, MergeStatement mergeStatement,
-        boolean isRowLineageSupported) {
-      super(conf, sqlGenerator, mergeStatement, isRowLineageSupported);
-    }
-
-    @Override
-    protected void addValues(Table targetTable, String targetAlias, Map<String, String> newValues, List<String> values) {
-      for (FieldSchema fieldSchema : targetTable.getAllCols()) {
-        setColumnValue(targetAlias, newValues, values, fieldSchema);
-      }
-    }
-  }
-
 
   @Override
   public void setOperation(Context context) {
