@@ -73,13 +73,17 @@ public class SplitUpdateRewriter implements Rewriter<UpdateStatement> {
 
     List<FieldSchema> nonPartCols = targetTable.getCols();
     for (int i = 0; i < nonPartCols.size(); i++) {
+      if (first) {
+        first = false;
+      } else {
+        sqlGenerator.append(",");
+      }
+
       appendUpdateColumn(updateBlock, sqlGenerator, insertValues, setColExprs,
-          nonPartCols.get(i).getName(), i, columnOffset, !first);
-      first = false;
+          nonPartCols.get(i).getName(), i + columnOffset);
     }
 
-    appendPartitionColumns(updateBlock, sqlGenerator, insertValues, setColExprs, nonPartCols,
-        columnOffset, !first);
+    appendPartitionColumns(updateBlock, sqlGenerator, insertValues, setColExprs, columnOffset);
     addRowLineageColumnsForUpdate(targetTable, sqlGenerator, insertValues, conf);
 
     sqlGenerator.append(" FROM ").append(sqlGenerator.getTargetTableFullName()).append(") ");
@@ -114,8 +118,7 @@ public class SplitUpdateRewriter implements Rewriter<UpdateStatement> {
   }
 
   protected void appendPartitionColumns(UpdateStatement updateBlock, MultiInsertSqlGenerator sqlGenerator,
-      List<String> insertValues, Map<Integer, ASTNode> setColExprs, List<FieldSchema> nonPartCols,
-      int columnOffset, boolean prependComma) {
+      List<String> insertValues, Map<Integer, ASTNode> setColExprs, int columnOffset) {
     for (FieldSchema partCol : updateBlock.getTargetTable().getPartCols()) {
       String identifier = HiveUtils.unparseIdentifier(partCol.getName(), conf);
       insertValues.set(updateBlock.getTargetTable().getColumnIndexByName(partCol.getName()),
@@ -125,17 +128,13 @@ public class SplitUpdateRewriter implements Rewriter<UpdateStatement> {
 
   protected void appendUpdateColumn(UpdateStatement updateBlock,
                MultiInsertSqlGenerator sqlGenerator, List<String> insertValues,
-               Map<Integer, ASTNode> setColExprs, String columnName, int setColExprIndex, int columnOffset,
-               boolean prependComma) {
+               Map<Integer, ASTNode> setColExprs, String columnName, int setColExprIndex) {
     String identifier = HiveUtils.unparseIdentifier(columnName, conf);
 
     // The insert value is placed for every column (data and partition).
     int index = updateBlock.getTargetTable().getColumnIndexByName(columnName);
     insertValues.set(index, sqlGenerator.qualify(identifier));
 
-    if (prependComma) {
-      sqlGenerator.append(",");
-    }
     ASTNode setCol = updateBlock.getSetCols().get(columnName);
     if (setCol != null) {
       if (setCol.getType() == HiveParser.TOK_TABLE_OR_COL &&
@@ -145,7 +144,7 @@ public class SplitUpdateRewriter implements Rewriter<UpdateStatement> {
         sqlGenerator.append(identifier);
         // This is one of the columns we're setting, record it's position so we can come back
         // later and patch it up. 0th is ROW_ID
-        setColExprs.put(setColExprIndex + columnOffset, setCol);
+        setColExprs.put(setColExprIndex, setCol);
       }
     } else {
       sqlGenerator.append(identifier);

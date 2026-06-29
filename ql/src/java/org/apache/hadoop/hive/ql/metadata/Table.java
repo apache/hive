@@ -622,7 +622,8 @@ public class Table implements Serializable {
     if (hasNonNativePartitionSupport()) {
       List<FieldSchema> partCols = getStorageHandler().getPartitionKeys(this);
       // Partition cols come from the handler, but user comments are stored in HMS sd.getCols().
-      // Copy HMS comments onto handler fields so DESCRIBE/SHOW match native table behavior.
+      // Copy HMS comments onto handler fields so DESCRIBE/SHOW match native table behavior; for
+      // imported non-native tables these comments may be invalid as the handler might not support them.
       for (FieldSchema partCol : partCols) {
         FieldSchema storageSchemaCol = getColumnByName(partCol.getName());
         if (storageSchemaCol != null && storageSchemaCol.getComment() != null) {

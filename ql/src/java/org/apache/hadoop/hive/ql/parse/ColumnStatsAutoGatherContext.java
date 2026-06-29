@@ -296,8 +296,7 @@ public class ColumnStatsAutoGatherContext {
     for (int i = 0; i < partitionColumns.size(); i++) {
       String partColName = partitionColumns.get(i).getName();
       int tableIndex = tbl.getColumnIndexByName(partColName);
-      boolean isStaticPartition = partSpec != null && partSpec.containsKey(partColName)
-          && partSpec.get(partColName) != null;
+      boolean isStaticPartition = partSpec != null && partSpec.get(partColName) != null;
 
       ExprNodeDesc exprNodeDesc;
       // 2. deal with static partition columns
