@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore.client;
 
 import org.apache.hadoop.hive.metastore.ColumnType;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -40,6 +41,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.lang.reflect.Field;
 import java.util.*;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
@@ -410,6 +412,66 @@ public class TestTablesGetExists extends MetaStoreClientTest {
     client.getTableObjectsByName(OTHER_DATABASE, tableNames);
     Assert.assertEquals("Found tables", 0, tables.size());
 
+  }
+
+  /**
+   * HIVE-29690: Case 3 — tableNames != null and pattern != null.
+   * The batched flow must apply the pattern as an additional filter, so only tables
+   * that match both the name list and the pattern are returned.
+   *
+   * The test is designed to fail if the non-batched (pattern-only) code path is taken:
+   * an extra table "test_table_to_find_extra" is created that matches the pattern but is
+   * intentionally absent from the name list.  A non-batched path would ignore the name list
+   * and return all three pattern-matching tables; the batched path returns only the two
+   * that appear in both the name list and the pattern.
+   */
+  @Test
+  public void testGetTableObjectsByNameAndPattern() throws Exception {
+    // Create a table that matches the pattern but is NOT in the requested name list.
+    // If the code wrongly takes the non-batched (pattern-only) path it returns this table
+    // too, making tables.size() == 3 and failing the assertion below.
+    new TableBuilder()
+        .setDbName(DEFAULT_DATABASE)
+        .setTableName("test_table_to_find_extra")
+        .addCol("test_col", "int")
+        .create(client, metaStore.getConf());
+
+    // Access the underlying Thrift iface so we can set both tblNames and tablesPattern.
+    HiveMetaStoreClient hmsClient = (HiveMetaStoreClient) client;
+    Field field = ThriftHiveMetaStoreClient.class.getDeclaredField("client");
+    field.setAccessible(true);
+    ThriftHiveMetastore.Iface iface =
+        (ThriftHiveMetastore.Iface) field.get(hmsClient.getThriftClient());
+
+    // Name list contains test_table_to_find_1 and test_table_to_find_2, but NOT
+    // test_table_to_find_extra.  The pattern matches all three.
+    // Batched path  → intersection of name list ∩ pattern → 2 tables  (correct)
+    // Non-batched   → all tables matching pattern (name list ignored) → 3 tables (wrong)
+    List<String> requestedNames = Arrays.asList(
+        testTables[2].getTableName(),  // "test_table_to_find_1"
+        testTables[3].getTableName()   // "test_table_to_find_2"
+    );
+
+    GetTablesRequest req = new GetTablesRequest(DEFAULT_DATABASE);
+    req.setCatName(testTables[0].getCatName());
+    req.setTblNames(requestedNames);
+    req.setTablesPattern("test_table_to_find_*");
+    req.setCapabilities(ThriftHiveMetaStoreClient.TEST_VERSION);
+
+    List<Table> tables = iface.get_table_objects_by_name_req(req).getTables();
+    Assert.assertEquals(
+        "Batched path must return only the 2 tables present in both the name list and the pattern; "
+            + "3 results would mean the non-batched (pattern-only) path was taken",
+        2, tables.size());
+    Set<String> returnedNames = new HashSet<>();
+    for (Table t : tables) {
+      returnedNames.add(t.getTableName());
+    }
+    Assert.assertTrue(returnedNames.contains(testTables[2].getTableName()));
+    Assert.assertTrue(returnedNames.contains(testTables[3].getTableName()));
+    Assert.assertFalse(
+        "test_table_to_find_extra was not in the name list and must not be returned",
+        returnedNames.contains("test_table_to_find_extra"));
   }
 
   @Test
