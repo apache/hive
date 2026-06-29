@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.UUID;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.iceberg.CatalogUtil;
@@ -95,10 +96,6 @@ public final class Catalogs {
   public static final String MATERIALIZED_VIEW_PROPERTY_KEY = "iceberg.materialized.view";
   public static final String MATERIALIZED_VIEW_STORAGE_TABLE_PROPERTY_KEY =
           "iceberg.materialized.view.storage.table";
-  public static final String MATERIALIZED_VIEW_BASE_SNAPSHOT_PROPERTY_KEY_PREFIX =
-          "iceberg.base.snapshot.";
-  public static final String MATERIALIZED_VIEW_VERSION_PROPERTY_KEY =
-          "iceberg.materialized.view.version";
   public static final String MATERIALIZED_VIEW_ORIGINAL_TEXT = "iceberg.materialized.view.original.text";
   public static final String MATERIALIZED_VIEW_STORAGE_TABLE_IDENTIFIER_SUFFIX = "_storage_table";
 
@@ -358,7 +355,8 @@ public final class Catalogs {
     List<SourceState> sourceStates = Lists.newArrayList();
 
     for (var sourceTable : creationMetadata.getSourceTables()) {
-      SourceState.SourceStateType type = sourceTable.getTable().getViewExpandedText() == null ?
+      SourceState.SourceStateType type = TableType.EXTERNAL_TABLE.name()
+          .equalsIgnoreCase(sourceTable.getTable().getTableType()) ?
               SourceState.SourceStateType.TABLE :
               SourceState.SourceStateType.VIEW;
 
@@ -373,7 +371,7 @@ public final class Catalogs {
 
       switch (type) {
         case TABLE -> {
-          Table icebergTable = tableCatalog.loadTable(TableIdentifier.parse(dbName + "." + sourceTableName));
+          Table icebergTable = tableCatalog.loadTable(TableIdentifier.of(dbName, sourceTableName));
           uuid = icebergTable.uuid();
           snapshot = icebergTable.currentSnapshot();
 

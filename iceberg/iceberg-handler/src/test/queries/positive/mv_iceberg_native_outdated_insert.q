@@ -10,7 +10,7 @@ set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.iceberg.materializedview.metadata.location=iceberg;
 
 
-
+drop materialized view if exists mat1;
 drop table if exists tbl_ice;
 drop table if exists tbl_ice_v2;
 
@@ -24,7 +24,6 @@ create materialized view mat1
 as
 select tbl_ice.b, tbl_ice.c, tbl_ice_v2.e from tbl_ice
 join tbl_ice_v2 on tbl_ice.a=tbl_ice_v2.d where tbl_ice.c > 52;
--- group by tbl_ice.b, tbl_ice.c, tbl_ice_v2.e;
 
 -- view should be empty
 select * from mat1;
