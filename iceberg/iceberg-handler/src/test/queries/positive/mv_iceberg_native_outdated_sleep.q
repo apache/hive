@@ -10,7 +10,7 @@ set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.iceberg.materializedview.metadata.location=iceberg;
 
 
-
+drop materialized view if exists mat1;
 drop table if exists tbl_ice;
 drop table if exists tbl_ice_v2;
 
@@ -29,7 +29,6 @@ join tbl_ice_v2 on tbl_ice.a=tbl_ice_v2.d where tbl_ice.c > 52;
 
 !sleep 61;
 
--- view should be empty
 select * from mat1;
 
 -- view is up-to-date, use it
