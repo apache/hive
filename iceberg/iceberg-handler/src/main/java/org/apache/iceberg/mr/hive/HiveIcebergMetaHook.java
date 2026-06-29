@@ -468,12 +468,16 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
         // meanwhile. The base metadata locations differ, while we know that this wasn't an intentional, manual
         // metadata_location set by a user. To protect the interim commit we need to refresh the metadata file location.
         tblParams.put(BaseMetastoreTableOperations.METADATA_LOCATION_PROP, currentMetadataLocation);
-        LOG.warn("Detected an alter table operation attempting to do alterations on an Iceberg table with a stale " +
-              "metadata_location. Considered base metadata_location: {}, Actual metadata_location: {}. Will override " +
-              "this request with the refreshed metadata_location in order to preserve the concurrent commit.",
-            newMetadataLocation, currentMetadataLocation);
+        warnAboutStaleMetadataLocation(newMetadataLocation, currentMetadataLocation);
       }
     }
+  }
+
+  private static void warnAboutStaleMetadataLocation(String newMetadataLocation, String currentMetadataLocation) {
+    LOG.warn("Detected an alter table operation attempting to do alterations on an Iceberg table with a stale " +
+          "metadata_location. Considered base metadata_location: {}, Actual metadata_location: {}. Will override " +
+          "this request with the refreshed metadata_location in order to preserve the concurrent commit.",
+        newMetadataLocation, currentMetadataLocation);
   }
 
   private void assertNotCrossTableMetadataLocationChangeForTable(
@@ -498,10 +502,7 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
         // meanwhile. The base metadata locations differ, while we know that this wasn't an intentional, manual
         // metadata_location set by a user. To protect the interim commit we need to refresh the metadata file location.
         tblParams.put(BaseMetastoreTableOperations.METADATA_LOCATION_PROP, currentMetadata.metadataFileLocation());
-        LOG.warn("Detected an alter table operation attempting to do alterations on an Iceberg table with a stale " +
-              "metadata_location. Considered base metadata_location: {}, Actual metadata_location: {}. Will override " +
-              "this request with the refreshed metadata_location in order to preserve the concurrent commit.",
-            newMetadataLocation, currentMetadata.metadataFileLocation());
+        warnAboutStaleMetadataLocation(newMetadataLocation, currentMetadata.metadataFileLocation());
       }
     }
   }
