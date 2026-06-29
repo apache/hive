@@ -18,6 +18,9 @@
 
 package org.apache.hive.kubernetes.operator.autoscaling;
 
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -30,6 +33,7 @@ import java.util.Map;
 public final class TezAmBusyMetrics {
 
   public static final String METRIC_DAG_RUNNING = "tez_am_dag_running";
+  public static final int BUSY_DELETION_COST = Integer.MAX_VALUE;
 
   private TezAmBusyMetrics() {}
 
@@ -41,11 +45,36 @@ public final class TezAmBusyMetrics {
   }
 
   /**
-   * Returns the pod-deletion-cost for this AM.
-   * 0 if the AM is idle
-   * 1 if the AM is running a DAG
+   * Assigns unique {@code pod-deletion-cost} values per pod so the ReplicaSet controller
+   * and the operator pick the same pods during scale-down.
+   * <p>
+   * Busy AMs receive {@link #BUSY_DELETION_COST}. Idle AMs receive 0, 1, 2, … in list order.
    */
-  public static int deletionCost(Map<String, Double> metrics) {
-    return hasActiveDag(metrics) ? 1 : 0;
+  public static Map<String, Integer> deletionCostsByPod(List<PodMetrics> metrics) {
+    Map<String, Integer> costs = new HashMap<>();
+    int idleCost = 0;
+    for (PodMetrics pm : metrics) {
+      if (hasActiveDag(pm.metrics())) {
+        costs.put(pm.podName(), BUSY_DELETION_COST);
+      } else {
+        costs.put(pm.podName(), idleCost++);
+      }
+    }
+    return costs;
+  }
+
+  /**
+   * Returns the pod names K8s will terminate for a scale-down of {@code toRemove} replicas —
+   * those with the lowest deletion costs from the same snapshot used to patch annotations.
+   */
+  public static List<String> podsToRemove(List<PodMetrics> metrics, Map<String, Integer> costs, int removeCount) {
+    if (removeCount <= 0) {
+      return List.of();
+    }
+    return metrics.stream()
+        .sorted(Comparator.comparingInt(pm -> costs.get(pm.podName())))
+        .limit(removeCount)
+        .map(PodMetrics::podName)
+        .toList();
   }
 }

@@ -364,11 +364,6 @@ public class LlapResourceBuilder
     Map<String, String> labels = Labels.forTezAmCluster(hc, llap.name());
     Map<String, String> tezSite = HiveConfigBuilder.getTezSite(spec, llap);
 
-    // Register the Hadoop Metrics2 JMX sink so LlapTaskSchedulerMetrics are exposed as
-    // JMX MBeans. The metrics system has no JMX sink and the JMX Exporter agent cannot
-    // see any Hadoop/LLAP metrics without this being present.
-    String hadoopMetrics2 = "*.sink.jmx.class=org.apache.hadoop.metrics2.sink.JmxSink\n";
-
     return new ConfigMapBuilder()
         .withNewMetadata()
           .withName(tezAmConfigMapName(hc, llap))
@@ -377,7 +372,6 @@ public class LlapResourceBuilder
           .withOwnerReferences(ownerRef(hc))
         .endMetadata()
         .addToData("tez-site.xml", HadoopXmlBuilder.buildXml(tezSite))
-        .addToData("hadoop-metrics2.properties", hadoopMetrics2)
         .build();
   }
 
@@ -430,7 +424,7 @@ public class LlapResourceBuilder
     addExternalJars(spec.image(), spec.externalJars(),
         initContainers, volumeMounts, volumes, envVars);
     replaceConfMountWithSubPaths(volumeMounts, HIVE_CONFIG_VOLUME,
-        "hive-site.xml", "tez-site.xml", "core-site.xml", "hadoop-metrics2.properties");
+        "hive-site.xml", "tez-site.xml", "core-site.xml");
 
     AutoscalingSpec tezAutoscaling = llap.tezAm().autoscaling();
     if (tezAutoscaling.isEnabled()) {
