@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.ql.QueryProperties.QueryFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -72,7 +73,7 @@ public class ProcessAnalyzeTable implements SemanticNodeProcessor {
     Table table = tableScan.getConf().getTableMetadata();
     Class<? extends InputFormat> inputFormat = table.getInputFormatClass();
 
-    if (parseContext.getQueryProperties().isAnalyzeCommand()) {
+    if (parseContext.getQueryProperties().hasFeature(QueryFeature.ANALYZE)) {
 
       assert tableScan.getChildOperators() == null || tableScan.getChildOperators().size() == 0;
 
@@ -114,7 +115,7 @@ public class ProcessAnalyzeTable implements SemanticNodeProcessor {
 
         BasicStatsWork basicStatsWork = new BasicStatsWork(table.getTableSpec());
         basicStatsWork.setIsExplicitAnalyze(true);
-        basicStatsWork.setNoScanAnalyzeCommand(parseContext.getQueryProperties().isNoScanAnalyzeCommand());
+        basicStatsWork.setNoScanAnalyzeCommand(parseContext.getQueryProperties().hasFeature(QueryFeature.NO_SCAN));
         StatsWork columnStatsWork = new StatsWork(table, basicStatsWork, parseContext.getConf());
         columnStatsWork.collectStatsFromAggregator(tableScan.getConf());
 
@@ -124,7 +125,7 @@ public class ProcessAnalyzeTable implements SemanticNodeProcessor {
 
         // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;
         // The plan consists of a StatsTask only.
-        if (parseContext.getQueryProperties().isNoScanAnalyzeCommand()) {
+        if (parseContext.getQueryProperties().hasFeature(QueryFeature.NO_SCAN)) {
           statsTask.setParentTasks(null);
           context.rootTasks.remove(context.currentTask);
           context.rootTasks.add(statsTask);

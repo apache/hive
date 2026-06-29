@@ -45,6 +45,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.QueryProperties.QueryFeature;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -105,8 +106,9 @@ public class SimpleFetchOptimizer extends Transform {
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
     Map<String, TableScanOperator> topOps = pctx.getTopOps();
-    if ((pctx.getQueryProperties().isQuery() || pctx.getQueryProperties().isView())
-        && !pctx.getQueryProperties().isAnalyzeCommand()
+    if ((pctx.getQueryProperties().hasFeature(QueryFeature.QUERY)
+        || pctx.getQueryProperties().hasFeature(QueryFeature.VIEW))
+        && !pctx.getQueryProperties().hasFeature(QueryFeature.ANALYZE)
         && topOps.size() == 1) {
       // no join, no groupby, no distinct, no lateral view, no subq,
       // no CTAS or insert, not analyze command, and single sourced.

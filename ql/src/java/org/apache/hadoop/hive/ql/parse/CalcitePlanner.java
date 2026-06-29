@@ -568,7 +568,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       Pair<Boolean, String> canCBOHandleReason = canCBOHandleAst(queryForCbo, getQB(), cboCtx);
       runCBO = canCBOHandleReason.left;
-      if (queryProperties.hasMultiDestQuery()) {
+      if (queryProperties.hasFeature(QueryFeature.MULTI_DEST_QUERY)) {
         handleMultiDestQuery(ast, cboCtx);
       }
 
