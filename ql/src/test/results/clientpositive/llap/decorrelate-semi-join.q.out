@@ -1,0 +1,51 @@
+PREHOOK: query: DROP TABLE IF EXISTS `tab`
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS `tab`
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE EXTERNAL TABLE `tab`(
+  `f1` string,
+  `f2` string,
+  `f3` string,
+  `f4` string,
+  `f5` string,
+  `f6` string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tab
+POSTHOOK: query: CREATE EXTERNAL TABLE `tab`(
+  `f1` string,
+  `f2` string,
+  `f3` string,
+  `f4` string,
+  `f5` string,
+  `f6` string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tab
+Warning: Shuffle Join MERGEJOIN[29][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: SELECT 1
+FROM tab a
+WHERE a.f4 IN ('1', '2')
+AND EXISTS (
+  SELECT 1
+  FROM tab b
+  WHERE  a.f6 = b.f1 AND b.f3 IN (SELECT 1)
+)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@tab
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT 1
+FROM tab a
+WHERE a.f4 IN ('1', '2')
+AND EXISTS (
+  SELECT 1
+  FROM tab b
+  WHERE  a.f6 = b.f1 AND b.f3 IN (SELECT 1)
+)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@tab
+#### A masked pattern was here ####

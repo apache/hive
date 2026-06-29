@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptRuleOperand;
@@ -44,6 +45,7 @@ import org.apache.calcite.sql.type.OperandTypes;
 import org.apache.calcite.sql.type.ReturnTypes;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.RelBuilder;
+import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
 
 import com.google.common.collect.ImmutableList;
@@ -55,6 +57,7 @@ import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubqueryRuntimeException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttleImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.correlation.HiveCorrelationInfo;
@@ -505,10 +508,34 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
     }
     switch (logic) {
     case TRUE:
-      builder.join(JoinRelType.SEMI, builder.and(conditions), variablesSet);
+      if (variablesSet.size() == 1) {
+        CorrelationId id = Iterables.getOnlyElement(variablesSet);
+        ImmutableBitSet requiredColumns = RelOptUtil.correlationColumns(id, builder.peek(1));
+        builder.correlate(JoinRelType.SEMI, id,
+            requiredColumns.asList().stream()
+                .map(i -> builder.getRexBuilder().makeInputRef(builder.peek(1), i)).toList());
+        builder.filter(builder.and(conditions));
+      } else {
+        builder.join(JoinRelType.INNER, builder.and(conditions), variablesSet);
+      }
       return builder.literal(true);
     case FALSE:
-      builder.join(JoinRelType.ANTI, builder.and(conditions), variablesSet);
+      if (variablesSet.size() == 1) {
+        RexNode condition = builder.and(conditions);
+        CorrelationId id = Iterables.getOnlyElement(variablesSet);
+        ImmutableBitSet requiredColumns = RelOptUtil.correlationColumns(id, builder.peek(1));
+        // Correlate does not have an ON clause.
+        // For a LEFT correlate, predicate must be evaluated first.
+        // For INNER, we can defer.
+        HiveRelBuilder.Shifter shifter =
+            new HiveRelBuilder.Shifter(builder.peek(1), id, builder.peek(), builder.getRexBuilder());
+        builder.filter(condition.accept(shifter));
+        builder.correlate(JoinRelType.ANTI, id,
+            requiredColumns.asList().stream()
+                .map(i -> builder.getRexBuilder().makeInputRef(builder.peek(1), i)).toList());
+      } else {
+        builder.join(JoinRelType.LEFT, builder.and(conditions), variablesSet);
+      }
       return builder.literal(false);
     }
     builder.join(JoinRelType.LEFT, builder.and(conditions), variablesSet);

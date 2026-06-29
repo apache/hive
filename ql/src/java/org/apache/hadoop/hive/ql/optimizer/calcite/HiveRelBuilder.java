@@ -155,7 +155,7 @@ public class HiveRelBuilder extends RelBuilder {
       case SEMI:
       case ANTI:
         // For a LEFT/SEMI/ANTI, predicate must be evaluated first.
-        filter(condition.accept(new Shifter(left, id, right)));
+        filter(condition.accept(new Shifter(left, id, right, getRexBuilder())));
         right = this.peek(0);
         break;
       case INNER:
@@ -188,15 +188,17 @@ public class HiveRelBuilder extends RelBuilder {
   /** Shuttle that shifts a predicate's inputs to the left, replacing early
    * ones with references to a
    * {@link RexCorrelVariable}. */
-  private class Shifter extends RexShuttle {
+  public static class Shifter extends RexShuttle {
     private final RelNode left;
     private final CorrelationId id;
     private final RelNode right;
+    private final RexBuilder rexBuilder;
 
-    Shifter(RelNode left, CorrelationId id, RelNode right) {
+    public Shifter(RelNode left, CorrelationId id, RelNode right, RexBuilder rexBuilder) {
       this.left = left;
       this.id = id;
       this.right = right;
+      this.rexBuilder = rexBuilder;
       if (Bug.CALCITE_4574_FIXED) {
         throw new IllegalStateException("Class should be redundant once CALCITE-4574 is fixed");
       }
@@ -204,7 +206,6 @@ public class HiveRelBuilder extends RelBuilder {
 
     public RexNode visitInputRef(RexInputRef inputRef) {
       final RelDataType leftRowType = left.getRowType();
-      final RexBuilder rexBuilder = getRexBuilder();
       final int leftCount = leftRowType.getFieldCount();
       if (inputRef.getIndex() < leftCount) {
         final RexNode v = rexBuilder.makeCorrel(leftRowType, id);
