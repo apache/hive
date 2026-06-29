@@ -41,7 +41,7 @@ public class CheckQueryPropertiesHook implements ExecuteWithHookContext {
     QueryProperties queryProps = hookContext.getQueryPlan().getQueryProperties();
 
     if (queryProps != null) {
-      console.printError("Has Join: " + queryProps.hasJoin());
+      console.printError("Has Join: " + queryProps.hasFeature(QueryFeature.JOIN));
       console.printError("Has Group By: " + queryProps.hasFeature(QueryFeature.GROUP_BY));
       console.printError("Has Sort By: " + queryProps.hasFeature(QueryFeature.SORT_BY));
       console.printError("Has Order By: " + queryProps.hasFeature(QueryFeature.ORDER_BY));

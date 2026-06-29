@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.QueryProperties.QueryFeature;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.ddl.DDLDescWithTableProperties;
@@ -135,7 +136,7 @@ public abstract class TaskCompiler {
     List<LoadTableDesc> loadTableWork = pCtx.getLoadTableWork();
     List<LoadFileDesc> loadFileWork = pCtx.getLoadFileWork();
 
-    boolean isCStats = pCtx.getQueryProperties().isAnalyzeRewrite();
+    boolean isCStats = pCtx.getQueryProperties().hasFeature(QueryFeature.REWRITE);
     int outerQueryLimit = pCtx.getQueryProperties().getOuterQueryLimit();
 
     boolean directInsert = false;
@@ -178,7 +179,7 @@ public abstract class TaskCompiler {
       return;
     }
 
-    if (!pCtx.getQueryProperties().isAnalyzeCommand()) {
+    if (!pCtx.getQueryProperties().hasFeature(QueryFeature.ANALYZE)) {
       LOG.debug("Skipping optimize operator plan for analyze command.");
       optimizeOperatorPlan(pCtx);
     }
@@ -188,7 +189,7 @@ public abstract class TaskCompiler {
      * If the select is from analyze table column rewrite, don't create a fetch task. Instead create
      * a column stats task later.
      */
-    if (pCtx.getQueryProperties().isQuery() && !isCStats) {
+    if (pCtx.getQueryProperties().hasFeature(QueryFeature.QUERY) && !isCStats) {
       if ((!loadTableWork.isEmpty()) || (loadFileWork.size() != 1)) {
         throw new SemanticException(ErrorMsg.INVALID_LOAD_TABLE_FILE_WORK.getMsg());
       }
@@ -279,14 +280,16 @@ public abstract class TaskCompiler {
     } else if (!isCStats) {
       for (LoadTableDesc ltd : loadTableWork) {
         Task<MoveWork> tsk = TaskFactory
-            .get(new MoveWork(pCtx.getQueryProperties().isCTAS() && pCtx.getCreateTable().isExternal(),
+            .get(new MoveWork(pCtx.getQueryProperties().hasFeature(QueryFeature.CTAS)
+                    && pCtx.getCreateTable().isExternal(),
                     null, null, ltd, null, false));
         mvTask.add(tsk);
       }
 
       boolean oneLoadFileForCtas = true;
       for (LoadFileDesc lfd : loadFileWork) {
-        if (pCtx.getQueryProperties().isCTAS() || pCtx.getQueryProperties().isMaterializedView()) {
+        if (pCtx.getQueryProperties().hasFeature(QueryFeature.CTAS)
+            || pCtx.getQueryProperties().hasFeature(QueryFeature.MATERIALIZED_VIEW)) {
           if (!oneLoadFileForCtas) { // should not have more than 1 load file for CTAS.
             throw new SemanticException(
                 "One query is not expected to contain multiple CTAS loads statements");
@@ -295,7 +298,8 @@ public abstract class TaskCompiler {
           oneLoadFileForCtas = false;
         }
         mvTask.add(TaskFactory.get(
-            new MoveWork(pCtx.getQueryProperties().isCTAS() && pCtx.getCreateTable().isExternal(), null, null, null,
+            new MoveWork(pCtx.getQueryProperties().hasFeature(QueryFeature.CTAS)
+                && pCtx.getCreateTable().isExternal(), null, null, null,
                 lfd, false)));
       }
     }
@@ -408,14 +412,15 @@ public abstract class TaskCompiler {
 
     // for direct insert CTAS, we don't need this table creation DDL task, since the table will be created
     // ahead of time by the non-native table
-    if (pCtx.getQueryProperties().isCTAS() && !pCtx.getCreateTable().isMaterialization() && !directInsert) {
+    if (pCtx.getQueryProperties().hasFeature(QueryFeature.CTAS)
+        && !pCtx.getCreateTable().isMaterialization() && !directInsert) {
       // generate a DDL task and make it a dependent task of the leaf
       CreateTableDesc crtTblDesc = pCtx.getCreateTable();
       crtTblDesc.validate(conf);
       Task<?> crtTblTask = TaskFactory.get(new DDLWork(inputs, outputs, crtTblDesc));
       patchUpAfterCTASorMaterializedView(rootTasks, inputs, outputs, crtTblTask,
           CollectionUtils.isEmpty(crtTblDesc.getPartColNames()));
-    } else if (pCtx.getQueryProperties().isMaterializedView() && !directInsert) {
+    } else if (pCtx.getQueryProperties().hasFeature(QueryFeature.MATERIALIZED_VIEW) && !directInsert) {
       // generate a DDL task and make it a dependent task of the leaf
       CreateMaterializedViewDesc viewDesc = pCtx.getCreateViewDesc();
       Task<?> crtViewTask = TaskFactory.get(new DDLWork(
@@ -495,7 +500,7 @@ public abstract class TaskCompiler {
   private void setLoadFileLocation(
       final ParseContext pCtx, LoadFileDesc lfd) throws SemanticException {
     // CTAS; make the move task's destination directory the table's destination.
-    DDLDescWithTableProperties ddlDesc = pCtx.getQueryProperties().isCTAS() ?
+    DDLDescWithTableProperties ddlDesc = pCtx.getQueryProperties().hasFeature(QueryFeature.CTAS) ?
         pCtx.getCreateTable() : pCtx.getCreateViewDesc();
 
     FileSinkDesc dataSink = ddlDesc.getAndUnsetWriter();
@@ -504,7 +509,7 @@ public abstract class TaskCompiler {
     int stmtId = 0; // CTAS or CMV cannot be part of multi-txn stmt
     
     Path location = (loc == null) ? getDefaultCtasOrCMVLocation(pCtx) : new Path(loc);
-    if (pCtx.getQueryProperties().isCTAS()) {
+    if (pCtx.getQueryProperties().hasFeature(QueryFeature.CTAS)) {
       CreateTableDesc ctd = pCtx.getCreateTable();
       if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.CREATE_TABLE_AS_EXTERNAL)) {
         ctd.getTblProps().put(hive_metastoreConstants.CTAS_LEGACY_CONFIG, "true"); // create as external table
@@ -547,12 +552,12 @@ public abstract class TaskCompiler {
       boolean createTableOrMVUseSuffix = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX)
               || HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
 
-      if (pCtx.getQueryProperties().isCTAS()) {
+      if (pCtx.getQueryProperties().hasFeature(QueryFeature.CTAS)) {
         protoName = pCtx.getCreateTable().getDbTableName();
         isExternal = pCtx.getCreateTable().isExternal();
         createTableOrMVUseSuffix &= AcidUtils.isTransactionalTable(pCtx.getCreateTable());
         suffix = Utilities.getTableOrMVSuffix(pCtx.getContext(), createTableOrMVUseSuffix);
-      } else if (pCtx.getQueryProperties().isMaterializedView()) {
+      } else if (pCtx.getQueryProperties().hasFeature(QueryFeature.MATERIALIZED_VIEW)) {
         protoName = pCtx.getCreateViewDesc().getViewName();
         createTableOrMVUseSuffix &= AcidUtils.isTransactionalView(pCtx.getCreateViewDesc());
         suffix = Utilities.getTableOrMVSuffix(pCtx.getContext(), createTableOrMVUseSuffix);

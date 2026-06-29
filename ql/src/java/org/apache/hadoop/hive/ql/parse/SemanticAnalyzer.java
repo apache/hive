@@ -1714,7 +1714,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     int numChildren = lateralView.getChildCount();
     assert (numChildren == 2);
 
-    queryProperties.setCBOSupportedLateralViews(isCBOSupportedLateralView());
+    if (!isCBOSupportedLateralView()) {
+      queryProperties.markUnsupportedLateralViewsForCBO();
+    }
 
     ASTNode next = (ASTNode) lateralView.getChild(1);
     String alias = null;
@@ -1799,7 +1801,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_WHERE:
         qbp.setWhrExprForClause(ctx_1.dest, ast);
         if (!SubQueryUtils.findSubQueries((ASTNode) ast.getChild(0)).isEmpty()) {
-          queryProperties.setFilterWithSubQuery(true);
+          queryProperties.addFeature(QueryFeature.FILTER_WITH_SUBQUERY);
         }
         doPhase1WhereClause(ast, qb);
         break;
@@ -1854,10 +1856,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           // Using qbp.getClauseNamesForDest().size() >= 2 would be
           // equivalent, but we use == to avoid setting the property
           // multiple times
-          queryProperties.setMultiDestQuery(true);
+          queryProperties.addFeature(QueryFeature.MULTI_DEST_QUERY);
         }
 
-        if (plannerCtx != null && !queryProperties.hasMultiDestQuery()) {
+        if (plannerCtx != null && !queryProperties.hasFeature(QueryFeature.MULTI_DEST_QUERY)) {
           plannerCtx.setInsertToken(ast, isTmpFileDest);
         } else if (plannerCtx != null && qbp.getClauseNamesForDest().size() == 2) {
           // For multi-insert query, currently we only optimize the FROM clause.
@@ -1889,7 +1891,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         } else if (frm.getToken().getType() == HiveParser.TOK_SUBQUERY) {
           processSubQuery(qb, frm);
         } else if (isASTNodeLateralView(frm)) {
-          queryProperties.setHasLateralViews(true);
+          queryProperties.addFeature(QueryFeature.LATERAL_VIEW);
           processLateralView(qb, frm);
         } else if (isJoinToken(frm)) {
           processJoin(qb, frm);
@@ -10326,7 +10328,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
         }
         else {
-          queryProperties.setMapJoinRemoved(true);
         }
       }
     }
@@ -15111,11 +15112,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void copyInfoToQueryProperties(QueryProperties queryProperties) {
     if (qb != null) {
-      queryProperties.setQuery(qb.getIsQuery() && !forViewCreation);
-      queryProperties.setAnalyzeCommand(qb.getParseInfo().isAnalyzeCommand());
-      queryProperties.setNoScanAnalyzeCommand(qb.getParseInfo().isNoScanAnalyzeCommand());
-      queryProperties.setAnalyzeRewrite(qb.isAnalyzeRewrite());
-      queryProperties.setCTAS(qb.getTableDesc() != null);
+      if (qb.getIsQuery() && !forViewCreation) {
+        queryProperties.addFeature(QueryFeature.QUERY);
+      }
+      if (qb.getParseInfo().isAnalyzeCommand()) {
+        queryProperties.addFeature(QueryFeature.ANALYZE);
+      }
+      if (qb.getParseInfo().isNoScanAnalyzeCommand()) {
+        queryProperties.addFeature(QueryFeature.ANALYZE);
+        queryProperties.addFeature(QueryFeature.NO_SCAN);
+      }
+      if (qb.isAnalyzeRewrite()) {
+        queryProperties.addFeature(QueryFeature.ANALYZE);
+        queryProperties.addFeature(QueryFeature.REWRITE);
+      }
+      if (qb.getTableDesc() != null) {
+        queryProperties.addFeature(QueryFeature.CTAS);
+      }
       if (qb.getParseInfo().hasInsertTables()) {
         queryProperties.setQueryType(QueryProperties.QueryType.DML);
       }
@@ -15123,8 +15136,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         queryProperties.addFeature(QueryFeature.OUTER_ORDER_BY);
       }
       queryProperties.setOuterQueryLimit(qb.getParseInfo().getOuterQueryLimit());
-      queryProperties.setView(forViewCreation);
-      queryProperties.setMaterializedView(qb.isMaterializedView());
+      if (forViewCreation) {
+        queryProperties.addFeature(QueryFeature.VIEW);
+      }
+      if (qb.isMaterializedView()) {
+        queryProperties.addFeature(QueryFeature.MATERIALIZED_VIEW);
+      }
     }
   }
 
