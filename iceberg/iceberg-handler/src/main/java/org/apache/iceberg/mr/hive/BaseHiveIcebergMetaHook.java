@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
@@ -221,41 +220,6 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     // Remove hive primary key columns from table request, as iceberg doesn't support hive primary key.
     request.setPrimaryKeys(null);
     setSortOrder(hmsTable, schema, tableProperties);
-  }
-
-  private void setTableType(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    String tableTypeValue = hmsTable.getTableType();
-
-    if (tableTypeValue == null) {
-      // Set the table type even for non HiveCatalog based tables
-      hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
-              BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase());
-      return;
-    }
-
-    TableType tableType = Enum.valueOf(TableType.class, tableTypeValue);
-    if (tableType.equals(TableType.MATERIALIZED_VIEW) &&
-        "iceberg".equals(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_MATERIALIZEDVIEW_METADATA_LOCATION))) {
-
-      hmsTable.setTableType(TableType.EXTERNAL_MATERIALIZED_VIEW.toString());
-    }
-
-    switch (tableType) {
-      case EXTERNAL_TABLE,
-           MANAGED_TABLE:
-        hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
-                BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase());
-        break;
-      case VIRTUAL_VIEW,
-           MATERIALIZED_VIEW,
-           EXTERNAL_MATERIALIZED_VIEW:
-        hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
-                HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE.toUpperCase());
-        break;
-      default:
-        throw new UnsupportedOperationException("The database object type " + hmsTable.getTableType() +
-                " is not supported as an Iceberg object type");
-    }
   }
 
   private void storeViewTextInfoForMaterializedView(CreateTableRequest request, TableType tableType) {
