@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -465,7 +466,7 @@ public class VectorAssignRow {
           {
             if (object instanceof String) {
               String string = (String) object;
-              byte[] bytes = string.getBytes();
+              byte[] bytes = string.getBytes(StandardCharsets.UTF_8);
               ((BytesColumnVector) columnVector).setVal(
                   batchIndex, bytes, 0, bytes.length);
             } else {
