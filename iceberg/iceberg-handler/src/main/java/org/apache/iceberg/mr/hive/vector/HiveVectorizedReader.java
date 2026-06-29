@@ -52,6 +52,7 @@ import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.expressions.Expression;
+import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.CloseableIterator;
 import org.apache.iceberg.mr.InputFormatConfig;
@@ -187,6 +188,12 @@ public class HiveVectorizedReader {
     for (Types.NestedField column : columns) {
       if (column.initialDefault() != null) {
         columnDefaults.put(column.name(), column.initialDefault());
+      } else if (column.type().isStructType()) {
+        Map<String, Object> structDefaults =
+            HiveSchemaUtil.getStructInitialDefaults(column.type().asStructType());
+        if (!structDefaults.isEmpty()) {
+          columnDefaults.put(column.name(), structDefaults);
+        }
       }
     }
     return columnDefaults;

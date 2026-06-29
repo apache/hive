@@ -24,14 +24,18 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A dummy vectorized parquet reader used for schema evolution.
@@ -64,6 +68,41 @@ public class VectorizedDummyColumnReader extends BaseVectorizedColumnReader {
 
     if (typeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE) {
       fillPrimitive(col, (PrimitiveTypeInfo) typeInfo, defaultValue);
+    } else if (typeInfo.getCategory() == ObjectInspector.Category.STRUCT) {
+      fillStruct(col, (StructTypeInfo) typeInfo, defaultValue);
+    } else {
+      throw new IOException("Unsupported type category in DummyColumnReader: " + typeInfo.getCategory());
+    }
+  }
+
+  private void fillStruct(ColumnVector col, StructTypeInfo structTypeInfo, Object defaultValue) throws IOException {
+    StructColumnVector structCol = (StructColumnVector) col;
+    List<String> fieldNames = structTypeInfo.getAllStructFieldNames();
+    List<TypeInfo> fieldTypes = structTypeInfo.getAllStructFieldTypeInfos();
+    Map<String, Object> fieldDefaults = defaultValue instanceof Map ? (Map<String, Object>) defaultValue : null;
+
+    for (int i = 0; i < fieldNames.size(); i++) {
+      Object fieldDefault = fieldDefaults != null ? fieldDefaults.get(fieldNames.get(i)) : null;
+      fillStructField(structCol.fields[i], fieldTypes.get(i), fieldDefault);
+    }
+  }
+
+  private void fillStructField(ColumnVector col, TypeInfo typeInfo, Object fieldDefault) throws IOException {
+    if (fieldDefault == null) {
+      col.isRepeating = true;
+      Arrays.fill(col.isNull, true);
+      col.noNulls = false;
+      return;
+    }
+
+    col.isRepeating = true;
+    col.noNulls = true;
+    col.isNull[0] = false;
+
+    if (typeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE) {
+      fillPrimitive(col, (PrimitiveTypeInfo) typeInfo, fieldDefault);
+    } else if (typeInfo.getCategory() == ObjectInspector.Category.STRUCT) {
+      fillStruct(col, (StructTypeInfo) typeInfo, fieldDefault);
     } else {
       throw new IOException("Unsupported type category in DummyColumnReader: " + typeInfo.getCategory());
     }
