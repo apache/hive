@@ -26,21 +26,26 @@ import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory;
 import java.util.List;
 import java.util.Map;
 
-public class NonNativeSplitUpdateRewriter extends SplitUpdateRewriter {
+public class PartitionSplitUpdateRewriter extends SplitUpdateRewriter {
 
-  public NonNativeSplitUpdateRewriter(HiveConf conf, SqlGeneratorFactory sqlGeneratorFactory) {
+  public PartitionSplitUpdateRewriter(HiveConf conf, SqlGeneratorFactory sqlGeneratorFactory) {
     super(conf, sqlGeneratorFactory);
   }
 
   @Override
   protected void appendPartitionColumns(UpdateStatement updateBlock, MultiInsertSqlGenerator sqlGenerator,
-      List<String> insertValues, Map<Integer, ASTNode> setColExprs, List<FieldSchema> nonPartCols,
-      int columnOffset, boolean prependComma) {
+      List<String> insertValues, Map<Integer, ASTNode> setColExprs,
+      int columnOffset) {
     List<FieldSchema> partCols = updateBlock.getTargetTable().getPartCols();
+    boolean first = partCols.size() == updateBlock.getTargetTable().getAllCols().size();
     for (int i = 0; i < partCols.size(); i++) {
+      if (first) {
+        first = false;
+      } else {
+        sqlGenerator.append(",");
+      }
       appendUpdateColumn(updateBlock, sqlGenerator, insertValues, setColExprs,
-          partCols.get(i).getName(), nonPartCols.size() + i, columnOffset, prependComma);
-      prependComma = true;
+          partCols.get(i).getName(), updateBlock.getTargetTable().getCols().size() + i + columnOffset);
     }
   }
 }

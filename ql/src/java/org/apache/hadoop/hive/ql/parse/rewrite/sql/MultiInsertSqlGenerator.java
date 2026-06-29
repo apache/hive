@@ -77,9 +77,11 @@ public abstract class MultiInsertSqlGenerator {
     return String.format("%s.%s", subQueryAlias, columnName);
   }
 
-  public void appendInsertBranch(String hintStr, List<String> values) {
+  public void appendInsertBranchInsertClause() {
     queryStr.append("INSERT INTO ").append(targetTableFullName);
-    appendPartitionCols(targetTable);
+  }
+
+  public void appendInsertBranchSelectClause(String hintStr, List<String> values) {
     queryStr.append("\n");
 
     queryStr.append(INDENT);
@@ -90,6 +92,11 @@ public abstract class MultiInsertSqlGenerator {
 
     queryStr.append(StringUtils.join(values, ","));
     queryStr.append("\n");
+  }
+
+  public void appendInsertBranch(String hintStr, List<String> values) {
+    appendInsertBranchInsertClause();
+    appendInsertBranchSelectClause(hintStr, values);
   }
 
   public void appendDeleteBranch(String hintStr) {
