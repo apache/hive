@@ -178,6 +178,12 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
   }
 
   private CloseableIterable<T> withStructInitialDefaultBackfill(CloseableIterable<T> iterable, Schema readSchema) {
+    boolean needsBackfill = readSchema.columns().stream()
+        .filter(field -> field.type().isStructType())
+        .anyMatch(field -> !HiveSchemaUtil.getStructInitialDefaults(field.type().asStructType()).isEmpty());
+    if (!needsBackfill) {
+      return iterable;
+    }
     return CloseableIterable.transform(iterable, row -> {
       if (row instanceof Record curIceRecord) {
         HiveSchemaUtil.backfillStructInitialDefaults(curIceRecord, readSchema.columns());

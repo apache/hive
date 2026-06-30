@@ -157,10 +157,10 @@ public final class HiveSchemaUtil {
   public static Type applyInitialDefaultsToStruct(Type type) {
     Types.StructType struct = type.asStructType();
     return Types.StructType.of(
-        struct.fields().stream().map(HiveSchemaUtil::applyInitialDefaultsToField).toList());
+        struct.fields().stream().map(HiveSchemaUtil::applyInitialDefaultsToStructField).toList());
   }
 
-  private static Types.NestedField applyInitialDefaultsToField(Types.NestedField field) {
+  private static Types.NestedField applyInitialDefaultsToStructField(Types.NestedField field) {
     Types.NestedField.Builder builder = Types.NestedField.from(field);
     if (field.type().isStructType()) {
       builder.ofType(applyInitialDefaultsToStruct(field.type()));
