@@ -25,7 +25,7 @@ import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerIn
 import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerInfo.SchedulerPendingPreemptionTaskCount;
 import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerInfo.SchedulerPendingTaskCount;
 import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerInfo.SchedulerPreemptedTaskCount;
-import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerInfo.SchedulerDagRunning;
+import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerInfo.SchedulerDagStatus;
 import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerInfo.SchedulerRunningTaskCount;
 import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerInfo.SchedulerSchedulableTaskCount;
 import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerInfo.SchedulerSuccessfulTaskCount;
@@ -279,7 +279,7 @@ public class LlapTaskSchedulerMetrics implements MetricsSource {
         .addGauge(SchedulerMemoryPerInstance, memoryPerInstance.value())
         .addGauge(SchedulerCpuCoresPerInstance, cpuCoresPerInstance.value())
         .addGauge(SchedulerDisabledNodeCount, disabledNodeCount.value())
-        .addGauge(SchedulerDagRunning, dagRunning.value())
+        .addGauge(SchedulerDagStatus, dagRunning.value())
         .addCounter(SchedulerPendingTaskCount, pendingTasksCount.value())
         .addCounter(SchedulerSchedulableTaskCount, schedulableTasksCount.value())
         .addCounter(SchedulerRunningTaskCount, runningTasksCount.value())
