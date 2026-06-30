@@ -157,7 +157,7 @@ public final class HiveSchemaUtil {
   public static Type applyInitialDefaultsToStruct(Type type) {
     Types.StructType struct = type.asStructType();
     return Types.StructType.of(
-        struct.fields().stream().map(HiveSchemaUtil::applyInitialDefaultsToField).collect(Collectors.toList()));
+        struct.fields().stream().map(HiveSchemaUtil::applyInitialDefaultsToField).toList());
   }
 
   private static Types.NestedField applyInitialDefaultsToField(Types.NestedField field) {
@@ -453,12 +453,12 @@ public final class HiveSchemaUtil {
    * {@code UpdateSchema} add column only supports primitives today;
    * if empty structs are allowed, this backfill can be removed.
    */
-  public static void backfillStructInitialDefaults(Record record, List<Types.NestedField> columns) {
+  public static void backfillStructInitialDefaults(Record iceRecord, List<Types.NestedField> columns) {
     for (Types.NestedField field : columns) {
-      if (field.type().isStructType() && record.getField(field.name()) == null) {
+      if (field.type().isStructType() && iceRecord.getField(field.name()) == null) {
         Record nestedRecord = buildStructWithInitialDefaults(field.type().asStructType());
         if (nestedRecord != null) {
-          record.setField(field.name(), nestedRecord);
+          iceRecord.setField(field.name(), nestedRecord);
         }
       }
     }
