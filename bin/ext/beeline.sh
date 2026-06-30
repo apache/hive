@@ -44,6 +44,12 @@ beeline () {
       case "$x" in
         *slf4j-reload4j*|*slf4j-log4j12*|*log4j-1.2*|*reload4j*) continue ;;
       esac
+      # `hadoop classpath --glob` already covers everything HADOOP_CLASSPATH adds, so
+      # skip entries we have seen — otherwise the same jar lands on the classpath twice.
+      if [[ ":${beelineClasspath}:" == *":${x}:"* ]]
+      then
+        continue
+      fi
       beelineClasspath="${beelineClasspath}:${x}"
     done
     # JAVAEXE is only set by bin/hive on the no-Hadoop fallback path, so resolve
