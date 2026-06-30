@@ -73,7 +73,8 @@ public class ProcessAnalyzeTable implements SemanticNodeProcessor {
     Table table = tableScan.getConf().getTableMetadata();
     Class<? extends InputFormat> inputFormat = table.getInputFormatClass();
 
-    if (parseContext.getQueryProperties().hasFeature(QueryFeature.ANALYZE)) {
+    if (parseContext.getQueryProperties().hasFeature(QueryFeature.ANALYZE)
+        && !parseContext.getQueryProperties().hasFeature(QueryFeature.REWRITE)) {
 
       assert tableScan.getChildOperators() == null || tableScan.getChildOperators().size() == 0;
 

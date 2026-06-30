@@ -137,6 +137,7 @@ public abstract class TaskCompiler {
     List<LoadFileDesc> loadFileWork = pCtx.getLoadFileWork();
 
     boolean isCStats = pCtx.getQueryProperties().hasFeature(QueryFeature.REWRITE);
+    boolean isAnalyzeCommand = pCtx.getQueryProperties().hasFeature(QueryFeature.ANALYZE) && !isCStats;
     int outerQueryLimit = pCtx.getQueryProperties().getOuterQueryLimit();
 
     boolean directInsert = false;
@@ -179,7 +180,7 @@ public abstract class TaskCompiler {
       return;
     }
 
-    if (!pCtx.getQueryProperties().hasFeature(QueryFeature.ANALYZE)) {
+    if (!isAnalyzeCommand) {
       LOG.debug("Skipping optimize operator plan for analyze command.");
       optimizeOperatorPlan(pCtx);
     }
