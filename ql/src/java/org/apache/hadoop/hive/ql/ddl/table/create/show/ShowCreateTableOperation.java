@@ -54,7 +54,7 @@ public class ShowCreateTableOperation extends DDLOperation<ShowCreateTableDesc> 
       DDLPlanUtils ddlObj = new DDLPlanUtils();
       String command;
       if (table.isView()) {
-        command = ddlObj.getCreateViewCommand(table, desc.isRelative()).replace("\t", "\\t");
+        command = escapeSqlTabs(ddlObj.getCreateViewCommand(table, desc.isRelative()));
       } else {
         List<String> commands = new ArrayList<>();
         commands.add(ddlObj.getCreateTableCommand(table, desc.isRelative()));
@@ -73,5 +73,40 @@ public class ShowCreateTableOperation extends DDLOperation<ShowCreateTableDesc> 
     } catch (Exception e) {
       throw new HiveException(e);
     }
+  }
+
+  private static String escapeSqlTabs(String sql) {
+    if (sql == null || sql.indexOf('\t') < 0) {
+      return sql;
+    }
+    StringBuilder result = new StringBuilder(sql.length());
+    char quote = 0;
+    for (int i = 0; i < sql.length(); i++) {
+      char c = sql.charAt(i);
+      if (quote == 0) { // outside string literal
+        if (c == '\'' || c == '"') {
+          quote = c;
+          result.append(c);
+        } else if (c == '\t') {
+          result.append(' ');
+        } else {
+          result.append(c);
+        }
+      } else { // inside string literal
+        if (c == '\\' && i + 1 < sql.length()) {
+          result.append(c);
+          result.append(sql.charAt(i + 1));
+          i++;
+        } else if (c == quote) {
+          quote = 0;
+          result.append(c);
+        } else if (c == '\t') {
+          result.append("\\t");
+        } else {
+          result.append(c);
+        }
+      }
+    }
+    return result.toString();
   }
 }

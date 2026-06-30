@@ -12,11 +12,11 @@ POSTHOOK: query: CREATE TABLE showcrt_tab_src (val1 string COMMENT 'val	1',
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@showcrt_tab_src
-PREHOOK: query: INSERT INTO showcrt_tab_src VALUES ('a1', 'b1', 'c1')
+PREHOOK: query: INSERT INTO showcrt_tab_src VALUES ('a1	', 'b1', 'c1')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@showcrt_tab_src
-POSTHOOK: query: INSERT INTO showcrt_tab_src VALUES ('a1', 'b1', 'c1')
+POSTHOOK: query: INSERT INTO showcrt_tab_src VALUES ('a1	', 'b1', 'c1')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@showcrt_tab_src
@@ -24,14 +24,14 @@ POSTHOOK: Lineage: showcrt_tab_src.val1 SCRIPT []
 POSTHOOK: Lineage: showcrt_tab_src.val2 SCRIPT []
 POSTHOOK: Lineage: showcrt_tab_src.val3 SCRIPT []
 PREHOOK: query: CREATE VIEW showcrt_tab_src_v AS SELECT * FROM showcrt_tab_src 
-	WHERE val1	= 'a1'
+	WHERE val1	= 'a1	'       
 	AND val2	= 'b1'
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@showcrt_tab_src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@showcrt_tab_src_v
 POSTHOOK: query: CREATE VIEW showcrt_tab_src_v AS SELECT * FROM showcrt_tab_src 
-	WHERE val1	= 'a1'
+	WHERE val1	= 'a1	'       
 	AND val2	= 'b1'
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@showcrt_tab_src
@@ -47,8 +47,19 @@ POSTHOOK: query: SHOW CREATE TABLE showcrt_tab_src_v
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@showcrt_tab_src_v
 CREATE VIEW `showcrt_tab_src_v` AS SELECT `showcrt_tab_src`.`val1`, `showcrt_tab_src`.`val2`, `showcrt_tab_src`.`val3` FROM `default`.`showcrt_tab_src` 
-\tWHERE `showcrt_tab_src`.`val1`\t= 'a1'
-\tAND `showcrt_tab_src`.`val2`\t= 'b1'
+ WHERE `showcrt_tab_src`.`val1` = 'a1\t'       
+ AND `showcrt_tab_src`.`val2` = 'b1'
+PREHOOK: query: SELECT * FROM showcrt_tab_src_v
+PREHOOK: type: QUERY
+PREHOOK: Input: default@showcrt_tab_src
+PREHOOK: Input: default@showcrt_tab_src_v
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM showcrt_tab_src_v
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@showcrt_tab_src
+POSTHOOK: Input: default@showcrt_tab_src_v
+#### A masked pattern was here ####
+a1		b1	c1
 PREHOOK: query: SHOW CREATE TABLE showcrt_tab_src
 PREHOOK: type: SHOW_CREATETABLE
 PREHOOK: Input: default@showcrt_tab_src
@@ -145,3 +156,32 @@ POSTHOOK: query: SHOW CREATE TABLE showcrt_tab_src_v5
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@showcrt_tab_src_v5
 CREATE VIEW `showcrt_tab_src_v5` AS SELECT `showcrt_tab_src`.`val1` FROM `default`.`showcrt_tab_src` WHERE `showcrt_tab_src`.`val1` LIKE 'a%\t'
+PREHOOK: query: CREATE VIEW showcrt_tab_src_v6 AS SELECT "Nested	'string	with	tab' "
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@showcrt_tab_src_v6
+POSTHOOK: query: CREATE VIEW showcrt_tab_src_v6 AS SELECT "Nested	'string	with	tab' "
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@showcrt_tab_src_v6
+POSTHOOK: Lineage: showcrt_tab_src_v6._c0 SIMPLE []
+PREHOOK: query: SHOW CREATE TABLE showcrt_tab_src_v6
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@showcrt_tab_src_v6
+POSTHOOK: query: SHOW CREATE TABLE showcrt_tab_src_v6
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@showcrt_tab_src_v6
+CREATE VIEW `showcrt_tab_src_v6` AS SELECT "Nested\t'string\twith\ttab' "
+PREHOOK: query: SELECT * FROM showcrt_tab_src_v6
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@showcrt_tab_src_v6
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM showcrt_tab_src_v6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@showcrt_tab_src_v6
+#### A masked pattern was here ####
+Nested	'string	with	tab' 
