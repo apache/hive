@@ -96,12 +96,12 @@ public class TestHiveSchemaUtil {
   );
 
   @Test
-  public void testSimpleSchemaConvertToIcebergSchema() {
+  void testSimpleSchemaConvertToIcebergSchema() {
     assertThat(HiveSchemaUtil.convert(SIMPLE_HIVE_SCHEMA).asStruct()).isEqualTo(SIMPLE_ICEBERG_SCHEMA.asStruct());
   }
 
   @Test
-  public void testSimpleSchemaConvertToIcebergSchemaFromNameAndTypeLists() {
+  void testSimpleSchemaConvertToIcebergSchemaFromNameAndTypeLists() {
     List<String> names = SIMPLE_HIVE_SCHEMA.stream().map(field -> field.getName()).collect(Collectors.toList());
     List<TypeInfo> types = SIMPLE_HIVE_SCHEMA.stream()
         .map(field -> TypeInfoUtils.getTypeInfoFromTypeString(field.getType()))
@@ -111,18 +111,18 @@ public class TestHiveSchemaUtil {
   }
 
   @Test
-  public void testComplexSchemaConvertToIcebergSchema() {
+  void testComplexSchemaConvertToIcebergSchema() {
     assertThat(HiveSchemaUtil.convert(COMPLEX_HIVE_SCHEMA).asStruct()).isEqualTo(COMPLEX_ICEBERG_SCHEMA.asStruct());
   }
 
   @Test
-  public void testSchemaConvertToIcebergSchemaForEveryPrimitiveType() {
+  void testSchemaConvertToIcebergSchemaForEveryPrimitiveType() {
     Schema schemaWithEveryType = HiveSchemaUtil.convert(getSupportedFieldSchemas());
     assertThat(schemaWithEveryType.asStruct()).isEqualTo(getSchemaWithSupportedTypes().asStruct());
   }
 
   @Test
-  public void testNotSupportedTypes() {
+  void testNotSupportedTypes() {
     for (FieldSchema notSupportedField : getNotSupportedFieldSchemas()) {
       assertThatThrownBy(
           () -> HiveSchemaUtil.convert(
@@ -133,17 +133,17 @@ public class TestHiveSchemaUtil {
   }
 
   @Test
-  public void testSimpleSchemaConvertToHiveSchema() {
+  void testSimpleSchemaConvertToHiveSchema() {
     assertThat(HiveSchemaUtil.convert(SIMPLE_ICEBERG_SCHEMA)).isEqualTo(SIMPLE_HIVE_SCHEMA);
   }
 
   @Test
-  public void testComplexSchemaConvertToHiveSchema() {
+  void testComplexSchemaConvertToHiveSchema() {
     assertThat(HiveSchemaUtil.convert(COMPLEX_ICEBERG_SCHEMA)).isEqualTo(COMPLEX_HIVE_SCHEMA);
   }
 
   @Test
-  public void testSimpleTypeAndTypeInfoConvert() {
+  void testSimpleTypeAndTypeInfoConvert() {
     // Test for every supported type
     List<FieldSchema> fieldSchemas = getSupportedFieldSchemas();
     List<Types.NestedField> nestedFields = getSchemaWithSupportedTypes().columns();
@@ -153,7 +153,7 @@ public class TestHiveSchemaUtil {
   }
 
   @Test
-  public void testComplexTypeAndTypeInfoConvert() {
+  void testComplexTypeAndTypeInfoConvert() {
     for (int i = 0; i < COMPLEX_HIVE_SCHEMA.size(); ++i) {
       checkConvert(TypeInfoUtils.getTypeInfoFromTypeString(COMPLEX_HIVE_SCHEMA.get(i).getType()),
           COMPLEX_ICEBERG_SCHEMA.columns().get(i).type());
@@ -161,7 +161,7 @@ public class TestHiveSchemaUtil {
   }
 
   @Test
-  public void testConversionWithoutLastComment() {
+  void testConversionWithoutLastComment() {
     Schema expected = new Schema(
         optional(1, "customer_id", Types.LongType.get(), "customer comment"),
         optional(2, "first_name", Types.StringType.get(), null)
@@ -247,7 +247,7 @@ public class TestHiveSchemaUtil {
   }
 
   @Test
-  public void testBackfillStructInitialDefaults() {
+  void testBackfillStructInitialDefaults() {
     Schema schema = new Schema(
         optional(1, "id", Types.IntegerType.get()),
         optional(2, "point", Types.StructType.of(
@@ -268,19 +268,19 @@ public class TestHiveSchemaUtil {
         ))
     );
 
-    Record record = GenericRecord.create(schema);
-    record.setField("id", 1);
+    Record iceRecord = GenericRecord.create(schema);
+    iceRecord.setField("id", 1);
 
-    HiveSchemaUtil.backfillStructInitialDefaults(record, schema.columns());
+    HiveSchemaUtil.backfillStructInitialDefaults(iceRecord, schema.columns());
 
-    Record point = (Record) record.getField("point");
+    Record point = (Record) iceRecord.getField("point");
     assertThat(point).isNotNull();
     assertThat(point.getField("x")).isEqualTo(100);
     assertThat(point.getField("y")).isEqualTo(99);
   }
 
   @Test
-  public void testApplyInitialDefaults() {
+  void testApplyInitialDefaults() {
     Type structType = Types.StructType.of(
         Types.NestedField.builder()
             .withId(1)
@@ -305,7 +305,7 @@ public class TestHiveSchemaUtil {
   }
 
   @Test
-  public void testGetStructInitialDefaults() {
+  void testGetStructInitialDefaults() {
     Types.StructType addressStruct = Types.StructType.of(
         Types.NestedField.builder()
             .withId(4)
