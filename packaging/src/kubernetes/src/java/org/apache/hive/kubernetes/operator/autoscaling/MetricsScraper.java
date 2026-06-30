@@ -132,7 +132,7 @@ public class MetricsScraper {
         });
   }
 
-  private static boolean isPodReady(Pod pod) {
+  public static boolean isPodReady(Pod pod) {
     if (pod.getStatus() == null || pod.getStatus().getConditions() == null) {
       return false;
     }

@@ -269,7 +269,7 @@ public class HiveClusterAutoscaler {
           evaluateComponent(cluster, client, namespace, clusterName,
               tezAmComponentKey, tezAuto, perLlapTezAm.replicas(), new HashMap<>(), statuses, tezMetrics);
         } else {
-          Map<String, Integer> tezCosts = TezAmBusyMetrics.deletionCostsByPod(tezMetrics);
+          Map<String, Integer> tezCosts = TezAmScalingStrategy.deletionCostsByPod(tezMetrics);
           updateDeploymentPodDeletionCost(client, namespace, tezMetrics, pm -> tezCosts.get(pm.podName()));
           
           Map<String, Integer> tezPatches = new HashMap<>();
@@ -283,7 +283,7 @@ public class HiveClusterAutoscaler {
             int busyCount = countBusyPods(tezMetrics);
             int effectivePatch = Math.max(tezPatch, busyCount);
             int removeCount = currentTezReplicas - effectivePatch;
-            List<String> podsToDeregister = TezAmBusyMetrics.podsToRemove(tezMetrics, tezCosts, removeCount);
+            List<String> podsToDeregister = TezAmScalingStrategy.podsToRemove(tezMetrics, tezCosts, removeCount);
             pendingScaleDowns.put(tezKey, new PendingScaleDown(effectivePatch, Instant.now(), podsToDeregister));
             LOG.info("[{}] Deferring scale-down to {} (waiting for deletion-cost propagation)",
                 tezAmComponentKey, effectivePatch);
@@ -416,7 +416,7 @@ public class HiveClusterAutoscaler {
   /** Counts TezAM pods with active DAG work. */
   private int countBusyPods(List<PodMetrics> tezMetrics) {
     return (int) tezMetrics.stream()
-        .filter(pm -> TezAmBusyMetrics.hasActiveDag(pm.metrics()))
+        .filter(pm -> TezAmScalingStrategy.hasActiveDag(pm.metrics()))
         .count();
   }
 

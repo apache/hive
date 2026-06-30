@@ -50,7 +50,7 @@ import io.fabric8.kubernetes.api.model.policy.v1.PodDisruptionBudget;
 import io.fabric8.kubernetes.api.model.policy.v1.PodDisruptionBudgetBuilder;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.hive.kubernetes.operator.autoscaling.TezAmBusyMetrics;
+import org.apache.hive.kubernetes.operator.autoscaling.TezAmScalingStrategy;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
 import org.apache.hive.kubernetes.operator.model.spec.AutoscalingSpec;
@@ -59,6 +59,8 @@ import org.apache.hive.kubernetes.operator.util.ConfigUtils;
 import org.apache.hive.kubernetes.operator.util.HadoopXmlBuilder;
 import org.apache.hive.kubernetes.operator.util.HiveConfigBuilder;
 import org.apache.hive.kubernetes.operator.util.Labels;
+
+import static org.apache.hive.kubernetes.operator.autoscaling.MetricsScraper.isPodReady;
 
 /**
  * Static builder methods for LLAP Kubernetes resources.
@@ -329,14 +331,6 @@ public class LlapResourceBuilder
     return ip.indexOf(':') >= 0 ? "IPv6" : "IPv4";
   }
 
-  private static boolean isPodReady(io.fabric8.kubernetes.api.model.Pod pod) {
-    if (pod.getStatus() == null || pod.getStatus().getConditions() == null) {
-      return false;
-    }
-    return pod.getStatus().getConditions().stream()
-        .anyMatch(c -> "Ready".equals(c.getType()) && "True".equals(c.getStatus()));
-  }
-
   /** Builds the headless Service for a TezAM cluster. */
   public static Service buildTezAmService(HiveCluster hc, LlapSpec llap) {
     String ns = hc.getMetadata().getNamespace();
@@ -490,7 +484,7 @@ public class LlapResourceBuilder
     if (tezAutoscaling.isEnabled()) {
       String preStopScript = buildDrainScript(
           "Waiting for active DAG to complete",
-          TezAmBusyMetrics.METRIC_DAG_RUNNING, "DAG",
+          TezAmScalingStrategy.METRIC_DAG_RUNNING, "DAG",
           "TezAM is idle. preStop complete, K8s will terminate pod.",
           10, 6, null, tezAutoscaling.metricsPort());
       applyAutoscalingLifecycle(
