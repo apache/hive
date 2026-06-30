@@ -44,13 +44,8 @@ import org.slf4j.LoggerFactory;
  * it belongs to the HS2 ZK session and disappears naturally when HS2 releases it.
  * <p>
  * ZK connection parameters are read from the cluster's HS2 configOverrides using the
- * same keys that {@code ZookeeperExternalSessionsRegistryClient} reads from HiveConf:
- * <ul>
- *   <li>{@code hive.zookeeper.connection.timeout} (default: 15s → 15000 ms)</li>
- *   <li>{@code hive.zookeeper.session.timeout} (default: 120000ms)</li>
- *   <li>{@code hive.zookeeper.connection.basesleeptime} (default: 1000ms)</li>
- *   <li>{@code hive.zookeeper.connection.max.retries} (default: 3)</li>
- * </ul>
+ * same keys that {@code ZookeeperExternalSessionsRegistryClient} reads from HiveConf
+ * (see {@link ConfigUtils} ZK constants).
  */
 public final class TezAmZkDeregistrar {
 
@@ -75,10 +70,14 @@ public final class TezAmZkDeregistrar {
     if (idlePodNames.isEmpty()) {
       return;
     }
-    int connTimeoutMs = getTimeMs(hiveSiteConfig, "hive.zookeeper.connection.timeout", 15000);
-    int sessionTimeoutMs = getTimeMs(hiveSiteConfig, "hive.zookeeper.session.timeout", 120000);
-    int baseSleepMs = getTimeMs(hiveSiteConfig, "hive.zookeeper.connection.basesleeptime", 1000);
-    int maxRetries = getInt(hiveSiteConfig, "hive.zookeeper.connection.max.retries", 3);
+    int connTimeoutMs = ConfigUtils.getTimeMs(hiveSiteConfig, ConfigUtils.HIVE_ZOOKEEPER_CONNECTION_TIMEOUT_KEY,
+        ConfigUtils.HIVE_ZOOKEEPER_CONNECTION_TIMEOUT_DEFAULT_MS);
+    int sessionTimeoutMs = ConfigUtils.getTimeMs(hiveSiteConfig, ConfigUtils.HIVE_ZOOKEEPER_SESSION_TIMEOUT_KEY,
+        ConfigUtils.HIVE_ZOOKEEPER_SESSION_TIMEOUT_DEFAULT_MS);
+    int baseSleepMs = ConfigUtils.getTimeMs(hiveSiteConfig, ConfigUtils.HIVE_ZOOKEEPER_CONNECTION_BASESLEEPTIME_KEY,
+        ConfigUtils.HIVE_ZOOKEEPER_CONNECTION_BASESLEEPTIME_DEFAULT_MS);
+    int maxRetries = ConfigUtils.getInt(hiveSiteConfig, ConfigUtils.HIVE_ZOOKEEPER_CONNECTION_MAX_RETRIES_KEY,
+        null, ConfigUtils.HIVE_ZOOKEEPER_CONNECTION_MAX_RETRIES_DEFAULT);
 
     String registryPath = ConfigUtils.TEZ_EXTERNAL_SESSIONS_ZK_PREFIX + PATH_SEPARATOR + llapName;
     CuratorFramework client = CuratorFrameworkFactory.builder()
@@ -102,7 +101,7 @@ public final class TezAmZkDeregistrar {
         if (data == null || data.length == 0) {
           continue;
         }
-        String hostName = extractHostName(new String(data, StandardCharsets.UTF_8));
+        String hostName = ConfigUtils.getJsonStringField(new String(data, StandardCharsets.UTF_8), "hostName");
         if (hostName != null) {
           // hostName = "<podName>.<svcName>.<ns>.svc.cluster.local"
           String podName = hostName.contains(".") ? hostName.substring(0, hostName.indexOf('.')) : hostName;
@@ -134,62 +133,5 @@ public final class TezAmZkDeregistrar {
     } catch (Exception e) {
       LOG.warn("[tezam-{}] Failed to delete ZK node for pod {}: {}", llapName, podName, e.getMessage());
     }
-  }
-
-  /**
-   * Reads a time value (in milliseconds) from the config map.
-   * If the key is absent or un-parseable the defaultMs value is returned.
-   */
-  static int getTimeMs(Map<String, String> config, String key, int defaultMs) {
-    if (config == null) {
-      return defaultMs;
-    }
-    String val = config.get(key);
-    if (val == null) {
-      return defaultMs;
-    }
-    val = val.trim();
-    try {
-      if (val.endsWith("ms")) {
-        return Integer.parseInt(val.substring(0, val.length() - 2).trim());
-      }
-      if (val.endsWith("s")) {
-        return (int) (Double.parseDouble(val.substring(0, val.length() - 1).trim()) * 1_000);
-      }
-      if (val.endsWith("m")) {
-        return (int) (Double.parseDouble(val.substring(0, val.length() - 1).trim()) * 60_000);
-      }
-      return Integer.parseInt(val);
-    } catch (NumberFormatException e) {
-      LOG.debug("Unparseable ZK config '{}' = '{}', using default {}ms", key, val, defaultMs);
-      return defaultMs;
-    }
-  }
-
-  static int getInt(Map<String, String> config, String key, int defaultVal) {
-    if (config == null) {
-      return defaultVal;
-    }
-    String val = config.get(key);
-    if (val == null) {
-      return defaultVal;
-    }
-    try {
-      return Integer.parseInt(val.trim());
-    } catch (NumberFormatException e) {
-      LOG.debug("Unparseable ZK config '{}' = '{}', using default {}", key, val, defaultVal);
-      return defaultVal;
-    }
-  }
-
-  static String extractHostName(String json) {
-    String marker = "\"hostName\":\"";
-    int start = json.indexOf(marker);
-    if (start < 0) {
-      return null;
-    }
-    start += marker.length();
-    int end = json.indexOf('"', start);
-    return end > start ? json.substring(start, end) : null;
   }
 }

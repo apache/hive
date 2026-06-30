@@ -20,7 +20,13 @@ package org.apache.hive.kubernetes.operator.util;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public final class ConfigUtils {
+
+  private static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 
   private ConfigUtils() {
   }
@@ -84,6 +90,18 @@ public final class ConfigUtils {
       "hive.server2.tez.external.sessions.registry.class";
 
   public static final String HIVE_ZOOKEEPER_QUORUM_KEY = "hive.zookeeper.quorum";
+
+  public static final String HIVE_ZOOKEEPER_CONNECTION_TIMEOUT_KEY = "hive.zookeeper.connection.timeout";
+  public static final int HIVE_ZOOKEEPER_CONNECTION_TIMEOUT_DEFAULT_MS = 15000;
+
+  public static final String HIVE_ZOOKEEPER_SESSION_TIMEOUT_KEY = "hive.zookeeper.session.timeout";
+  public static final int HIVE_ZOOKEEPER_SESSION_TIMEOUT_DEFAULT_MS = 120000;
+
+  public static final String HIVE_ZOOKEEPER_CONNECTION_BASESLEEPTIME_KEY = "hive.zookeeper.connection.basesleeptime";
+  public static final int HIVE_ZOOKEEPER_CONNECTION_BASESLEEPTIME_DEFAULT_MS = 1000;
+
+  public static final String HIVE_ZOOKEEPER_CONNECTION_MAX_RETRIES_KEY = "hive.zookeeper.connection.max.retries";
+  public static final int HIVE_ZOOKEEPER_CONNECTION_MAX_RETRIES_DEFAULT = 3;
 
   public static final String HIVE_EXECUTION_MODE_KEY = "hive.execution.mode";
 
@@ -198,6 +216,31 @@ public final class ConfigUtils {
     return defaultVal;
   }
 
+  public static int getTimeMs(Map<String, String> overrides, String key, int defaultMs) {
+    if (overrides == null) {
+      return defaultMs;
+    }
+    String val = overrides.get(key);
+    if (val == null) {
+      return defaultMs;
+    }
+    val = val.trim();
+    try {
+      if (val.endsWith("ms")) {
+        return Integer.parseInt(val.substring(0, val.length() - 2).trim());
+      }
+      if (val.endsWith("s")) {
+        return (int) (Double.parseDouble(val.substring(0, val.length() - 1).trim()) * 1000);
+      }
+      if (val.endsWith("m")) {
+        return (int) (Double.parseDouble(val.substring(0, val.length() - 1).trim()) * 60000);
+      }
+      return Integer.parseInt(val);
+    } catch (NumberFormatException e) {
+      return defaultMs;
+    }
+  }
+
   public static boolean getBoolean(Map<String, String> overrides,
       String key, boolean defaultVal) {
     if (overrides != null) {
@@ -207,5 +250,17 @@ public final class ConfigUtils {
       }
     }
     return defaultVal;
+  }
+
+  public static String getJsonStringField(String json, String fieldName) {
+    if (json == null || json.isBlank()) {
+      return null;
+    }
+    try {
+      JsonNode field = JSON_MAPPER.readTree(json).get(fieldName);
+      return field != null && field.isTextual() ? field.asText() : null;
+    } catch (JsonProcessingException e) {
+      return null;
+    }
   }
 }
