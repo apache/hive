@@ -84,7 +84,8 @@ public class GenMRTableScan1 implements SemanticNodeProcessor {
         ctx.setCurrAliasId(currAliasId);
         mapCurrCtx.put(op, new GenMapRedCtx(currTask, currAliasId));
 
-        if (parseCtx.getQueryProperties().hasFeature(QueryFeature.ANALYZE)) {
+        if (parseCtx.getQueryProperties().hasFeature(QueryFeature.ANALYZE)
+            && !parseCtx.getQueryProperties().hasFeature(QueryFeature.REWRITE)) {
           boolean noScan = parseCtx.getQueryProperties().hasFeature(QueryFeature.NO_SCAN);
           if (BasicStatsNoJobTask.canUseBasicStats(table, inputFormat)) {
             // For ORC and Parquet, all the following statements are the same
