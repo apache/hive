@@ -142,8 +142,12 @@ public class TestIcebergVendedCredentialUtil {
         SerializationUtil.deserializeFromBase64(
             jobSecrets.get(InputFormatConfig.VENDED_STORAGE_CREDENTIALS));
 
+    assertThat(serialized.getFirst().prefix()).isEqualTo("s3://my-bucket/");
     assertThat(serialized.getFirst().config())
-        .containsEntry(IcebergVendedCredentialUtil.ENDPOINT, "http://host:9000");
+        .containsEntry(IcebergVendedCredentialUtil.ENDPOINT, "http://host:9000")
+        .containsEntry(IcebergVendedCredentialUtil.ACCESS_KEY_ID, "access")
+        .containsEntry(IcebergVendedCredentialUtil.SECRET_ACCESS_KEY, "secret")
+        .containsEntry(IcebergVendedCredentialUtil.PATH_STYLE_ACCESS, "true");
   }
 
   /**
@@ -183,7 +187,11 @@ public class TestIcebergVendedCredentialUtil {
     IcebergVendedCredentialUtil.propagateToJob(table, "ice01", jobProps, null, conf);
 
     assertThat(jobProps)
+        .containsEntry(
+            "iceberg.catalog.ice01." + IcebergVendedCredentialUtil.ENDPOINT,
+            "http://host:9000")
         .containsEntry("fs.s3a.bucket.my-bucket.endpoint", "http://host:9000")
+        .containsEntry("fs.s3a.bucket.my-bucket.path.style.access", "true")
         .doesNotContainKey(InputFormatConfig.VENDED_STORAGE_CREDENTIALS)
         .doesNotContainKey(
             "iceberg.catalog.ice01." + IcebergVendedCredentialUtil.ACCESS_KEY_ID);
@@ -216,11 +224,12 @@ public class TestIcebergVendedCredentialUtil {
     Table table = new BaseTable(new StaticTableOperations(metadata, fileIO), "db.t");
 
     assertThat(IcebergVendedCredentialUtil.extractCredentials(table)).hasSize(1);
-    assertThat(
-        IcebergVendedCredentialUtil.extractCredentials(table)
-            .getFirst()
-            .config())
-        .containsEntry(IcebergVendedCredentialUtil.ACCESS_KEY_ID, "access");
+    StorageCredential extracted = IcebergVendedCredentialUtil.extractCredentials(table).getFirst();
+    assertThat(extracted.prefix()).isEqualTo("s3://my-bucket/");
+    assertThat(extracted.config())
+        .containsEntry(IcebergVendedCredentialUtil.ACCESS_KEY_ID, "access")
+        .containsEntry(IcebergVendedCredentialUtil.SECRET_ACCESS_KEY, "secret")
+        .containsEntry(IcebergVendedCredentialUtil.ENDPOINT, "http://minio:9000");
   }
 
   /**
@@ -263,6 +272,15 @@ public class TestIcebergVendedCredentialUtil {
         .satisfies(map ->
             assertThat(map.get(InputFormatConfig.VENDED_STORAGE_CREDENTIALS))
                 .isNotBlank());
+
+    List<StorageCredential> serialized =
+        SerializationUtil.deserializeFromBase64(
+            jobSecrets.get(InputFormatConfig.VENDED_STORAGE_CREDENTIALS));
+
+    assertThat(serialized.getFirst().prefix()).isEqualTo("s3://my-bucket/");
+    assertThat(serialized.getFirst().config())
+        .containsEntry(IcebergVendedCredentialUtil.ACCESS_KEY_ID, "access")
+        .containsEntry(IcebergVendedCredentialUtil.SECRET_ACCESS_KEY, "secret");
   }
 
   /**
@@ -325,14 +343,13 @@ public class TestIcebergVendedCredentialUtil {
 
     IcebergVendedCredentialUtil.applyFromJobConf(table, conf);
 
-    assertThat(
-        ((SupportsStorageCredentials) table.io())
-            .credentials()
-            .getFirst()
-            .config())
-        .containsEntry(
-            IcebergVendedCredentialUtil.ENDPOINT,
-            "http://host:9000");
+    StorageCredential applied =
+        ((SupportsStorageCredentials) table.io()).credentials().getFirst();
+    assertThat(applied.prefix()).isEqualTo("s3://my-bucket/");
+    assertThat(applied.config())
+        .containsEntry(IcebergVendedCredentialUtil.ENDPOINT, "http://host:9000")
+        .containsEntry(IcebergVendedCredentialUtil.ACCESS_KEY_ID, "access")
+        .containsEntry(IcebergVendedCredentialUtil.SECRET_ACCESS_KEY, "secret");
   }
 
   /**
@@ -369,19 +386,20 @@ public class TestIcebergVendedCredentialUtil {
     Configuration taskConf = new Configuration();
     jobProps.forEach(taskConf::set);
     jobSecrets.forEach(taskConf::set);
+    taskConf.set(InputFormatConfig.CATALOG_NAME, "ice01");
 
     CredentialFileIO executorIo = new CredentialFileIO();
     Table executorTable =
         new BaseTable(new StaticTableOperations("s3://my-bucket/t", executorIo), "db.t");
     IcebergVendedCredentialUtil.applyFromJobConf(executorTable, taskConf);
 
+    StorageCredential applied =
+        ((SupportsStorageCredentials) executorTable.io()).credentials().getFirst();
     assertThat(((SupportsStorageCredentials) executorTable.io()).credentials()).hasSize(1);
-    assertThat(
-        ((SupportsStorageCredentials) executorTable.io())
-            .credentials()
-            .getFirst()
-            .config())
-        .containsEntry(IcebergVendedCredentialUtil.ACCESS_KEY_ID, "access");
+    assertThat(applied.prefix()).isEqualTo("s3://my-bucket/");
+    assertThat(applied.config())
+        .containsEntry(IcebergVendedCredentialUtil.ACCESS_KEY_ID, "access")
+        .containsEntry(IcebergVendedCredentialUtil.SECRET_ACCESS_KEY, "secret");
   }
 
   private static final class CredentialFileIO implements FileIO, SupportsStorageCredentials {

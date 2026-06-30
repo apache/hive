@@ -424,6 +424,7 @@ public final class IcebergVendedCredentialUtil {
     return StringUtils.isNotBlank(override) ? override : vendedValue;
   }
 
+  @SuppressWarnings("java:S1075") // S3 URI path separator, not a filesystem path
   private static String bucketFromPrefix(String prefix) {
     if (StringUtils.isBlank(prefix)) {
       return null;
