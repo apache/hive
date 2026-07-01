@@ -1000,7 +1000,7 @@ public class Table implements Serializable {
 
   public List<FieldSchema> getPartitionKeys() {
     if (tTable.getPartitionKeys() == null) {
-      tTable.setPartitionKeys(new ArrayList<>());
+      tTable.setPartitionKeys(Collections.emptyList());
     }
     return tTable.getPartitionKeys();
   }
