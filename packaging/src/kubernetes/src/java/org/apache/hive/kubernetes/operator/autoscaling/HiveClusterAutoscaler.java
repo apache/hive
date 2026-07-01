@@ -255,20 +255,28 @@ public class HiveClusterAutoscaler {
         String tezKey = cacheKey(namespace, clusterName, tezAmComponentKey);
         List<PodMetrics> tezMetrics = metricsCache.getOrEmpty(tezKey, tezAuto.metricsScrapeIntervalSeconds() * 3);
 
+        int currentTezReplicas = getCurrentReplicas(client, namespace, clusterName, tezAmComponentKey);
         PendingScaleDown pending = pendingScaleDowns.get(tezKey);
         if (pending != null) {
+          Integer appliedTarget = null;
           if (Duration.between(pending.annotatedAt(), Instant.now()).toSeconds() >= 2) {
             TezAmZkDeregister.deregisterIdlePods(namespace, clusterName,
                 cluster.getSpec().zookeeper().quorum(), llapSpec.name(), pending.podsToDeregister(),
                 cluster.getSpec().hiveServer2().configOverrides());
-            patches.put(tezAmComponentKey, pending.targetReplicas());
-            MANAGED_REPLICAS.put(tezKey, pending.targetReplicas());
+            appliedTarget = pending.targetReplicas();
+            patches.put(tezAmComponentKey, appliedTarget);
+            MANAGED_REPLICAS.put(tezKey, appliedTarget);
             lastScaleTimes.put(tezKey, Instant.now().toString());
             pendingScaleDowns.remove(tezKey);
-            LOG.info("[{}] Applying deferred scale-down to {} replicas", tezAmComponentKey, pending.targetReplicas());
+            LOG.info("[{}] Applying deferred scale-down to {} replicas", tezAmComponentKey, appliedTarget);
           }
           evaluateComponent(cluster, client, namespace, clusterName,
               tezAmComponentKey, tezAuto, perLlapTezAm.replicas(), new HashMap<>(), statuses, tezMetrics);
+          if (pendingScaleDowns.containsKey(tezKey)) {
+            MANAGED_REPLICAS.put(tezKey, currentTezReplicas);
+          } else if (appliedTarget != null) {
+            MANAGED_REPLICAS.put(tezKey, appliedTarget);
+          }
         } else {
           Map<String, Integer> tezCosts = TezAmScalingStrategy.deletionCostsByPod(tezMetrics);
           updateDeploymentPodDeletionCost(client, namespace, tezMetrics, pm -> tezCosts.get(pm.podName()));
@@ -278,7 +286,6 @@ public class HiveClusterAutoscaler {
               tezAmComponentKey, tezAuto, perLlapTezAm.replicas(), tezPatches, statuses, tezMetrics);
 
           Integer tezPatch = tezPatches.get(tezAmComponentKey);
-          int currentTezReplicas = getCurrentReplicas(client, namespace, clusterName, tezAmComponentKey);
           if (tezPatch != null && tezPatch < currentTezReplicas) {
             // Scale-down: defer to allow deletion-cost annotations to propagate
             int busyCount = countBusyPods(tezMetrics);
@@ -286,6 +293,7 @@ public class HiveClusterAutoscaler {
             int removeCount = currentTezReplicas - effectivePatch;
             List<String> podsToDeregister = TezAmScalingStrategy.podsToRemove(tezMetrics, tezCosts, removeCount);
             pendingScaleDowns.put(tezKey, new PendingScaleDown(effectivePatch, Instant.now(), podsToDeregister));
+            MANAGED_REPLICAS.put(tezKey, currentTezReplicas);
             LOG.info("[{}] Deferring scale-down to {} (waiting for deletion-cost propagation)",
                 tezAmComponentKey, effectivePatch);
           } else if (tezPatch != null) {
