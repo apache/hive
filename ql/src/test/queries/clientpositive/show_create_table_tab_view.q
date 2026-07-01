@@ -33,3 +33,12 @@ SHOW CREATE TABLE showcrt_tab_src_v5;
 CREATE VIEW showcrt_tab_src_v6 AS SELECT "Nested	'string	with	tab' ";
 SHOW CREATE TABLE showcrt_tab_src_v6;
 SELECT * FROM showcrt_tab_src_v6;
+
+-- Test for tabs within ` identifiers
+CREATE TABLE showcrt_tab_src2 (`col	with	tab` string);
+INSERT INTO showcrt_tab_src2 VALUES ('a1');
+SELECT * FROM showcrt_tab_src2 WHERE `col	with	tab` = 'a1';
+
+CREATE VIEW showcrt_tab_src_v7 AS SELECT `col	with	tab` FROM showcrt_tab_src2 WHERE `col	with	tab` = 'a1';
+SHOW CREATE TABLE showcrt_tab_src_v7;
+SELECT * FROM showcrt_tab_src_v7;
