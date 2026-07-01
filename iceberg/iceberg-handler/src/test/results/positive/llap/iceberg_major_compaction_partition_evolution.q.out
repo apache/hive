@@ -269,9 +269,7 @@ POSTHOOK: Input: default@ice_orc
 # col_name            	data_type           	comment             
 first_name          	string              	                    
 last_name           	string              	                    
-dept_id             	bigint              	                    
 team_id             	bigint              	                    
-company_id          	bigint              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -865,9 +863,7 @@ POSTHOOK: Input: default@ice_orc
 # col_name            	data_type           	comment             
 first_name          	string              	                    
 last_name           	string              	                    
-dept_id             	bigint              	                    
 team_id             	bigint              	                    
-company_id          	bigint              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             

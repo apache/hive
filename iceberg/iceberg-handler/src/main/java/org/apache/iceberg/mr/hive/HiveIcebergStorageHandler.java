@@ -433,7 +433,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     if (!getStatsSource().equals(HiveMetaHook.ICEBERG)) {
       return false;
     }
-    if (BaseHiveIcebergMetaHook.isIcebergView(hmsTable.getTTable())) {
+    if (HiveTableUtil.isIcebergView(hmsTable.getTTable())) {
       return false;
     }
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
@@ -899,7 +899,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
   @Override
   public List<TransformSpec> getPartitionTransformSpec(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
-    if (BaseHiveIcebergMetaHook.isIcebergView(hmsTable.getTTable())) {
+    if (HiveTableUtil.isIcebergView(hmsTable.getTTable())) {
       return Collections.emptyList();
     }
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
@@ -916,7 +916,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   @Override
   public Map<Integer, List<TransformSpec>> getPartitionTransformSpecs(
       org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
-    if (BaseHiveIcebergMetaHook.isIcebergView(hmsTable.getTTable())) {
+    if (HiveTableUtil.isIcebergView(hmsTable.getTTable())) {
       return Collections.emptyMap();
     }
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
@@ -1550,10 +1550,10 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       case DELETE ->
         // TODO: make it configurable whether we want to include the table columns in the select query.
         // It might make delete writes faster if we don't have to write out the row object
-          ListUtils.union(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getCols());
+          ListUtils.union(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getAllCols());
       case UPDATE -> shouldOverwrite(table, operation) ?
           ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA :
-          ListUtils.union(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getCols());
+          ListUtils.union(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getAllCols());
       case MERGE -> ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA;
       default -> ImmutableList.of();
     };
@@ -1584,7 +1584,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
   @Override
   public List<FieldSchema> sortColumns(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
-    if (BaseHiveIcebergMetaHook.isIcebergView(hmsTable.getTTable())) {
+    if (HiveTableUtil.isIcebergView(hmsTable.getTTable())) {
       return Collections.emptyList();
     }
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
@@ -1989,8 +1989,9 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       desc.setIsExternal(true);
     }
 
-    // If source is Iceberg table set the schema and the partition spec
-    if (MetaStoreUtils.isIcebergTable(origParams)) {
+    // parameter table_type is set to "ICEBERG" in case of Iceberg tables
+    // set the schema and the partition spec accordingly
+    if (HiveTableUtil.isTableTypeSet(origParams)) {
       tbl.getParameters()
           .put(InputFormatConfig.TABLE_SCHEMA, origParams.get(InputFormatConfig.TABLE_SCHEMA));
       tbl.getParameters()
@@ -2147,12 +2148,11 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   }
 
   public boolean isPartitioned(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
-    if (BaseHiveIcebergMetaHook.isIcebergView(hmsTable.getTTable())) {
-      List<FieldSchema> partCols = hmsTable.getPartCols();
-      return partCols != null && !partCols.isEmpty();
-    }
-    if (!hmsTable.getTTable().isSetId()) {
+    if (hmsTable.getMetaTable() != null) {
       return false;
+    }
+    if (!HiveTableUtil.isRegistered(hmsTable) || HiveTableUtil.isIcebergView(hmsTable.getTTable())) {
+      return !hmsTable.getPartitionKeys().isEmpty();
     }
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, hmsTable);
@@ -2296,12 +2296,11 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
   @Override
   public List<FieldSchema> getPartitionKeys(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
-    if (BaseHiveIcebergMetaHook.isIcebergView(hmsTable.getTTable())) {
-      List<FieldSchema> partCols = hmsTable.getPartCols();
-      return partCols != null ? partCols : Collections.emptyList();
-    }
-    if (!hmsTable.getTTable().isSetId()) {
+    if (hmsTable.getMetaTable() != null) {
       return Collections.emptyList();
+    }
+    if (!HiveTableUtil.isRegistered(hmsTable) || HiveTableUtil.isIcebergView(hmsTable.getTTable())) {
+      return hmsTable.getPartitionKeys();
     }
     Table icebergTable = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     return MetastoreUtil.getPartitionKeys(icebergTable, icebergTable.spec().specId());

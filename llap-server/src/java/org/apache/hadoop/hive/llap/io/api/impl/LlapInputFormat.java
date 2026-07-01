@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -232,7 +231,7 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
     if (paths.hasNext()) {
       PartitionDesc partDesc = mapWork.getPathToPartitionInfo().get(paths.next());
       if (partDesc != null) {
-        LinkedHashMap<String, String> partSpec = partDesc.getPartSpec();
+        Map<String, String> partSpec = partDesc.getPartSpec();
         if (partSpec != null && !partSpec.isEmpty()) {
           partitionColumnCount = partSpec.size();
         }
