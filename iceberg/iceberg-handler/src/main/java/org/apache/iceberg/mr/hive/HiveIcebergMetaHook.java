@@ -744,12 +744,14 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
     boolean isORc = isOrcFileFormat(hmsTable);
     for (FieldSchema addedCol : addedCols) {
       String defaultValue = defaultValues.get(addedCol.getName());
-      Type type = HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(addedCol.getType()), defaultValue);
-      Literal<Object> defaultVal = Optional.ofNullable(defaultValue).filter(v -> !type.isStructType())
-          .map(v -> Expressions.lit(HiveSchemaUtil.getDefaultValue(v, type))).orElse(null);
-
+      Type baseType = HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(addedCol.getType()), defaultValue);
+      final Type resolvedType = (!isORc && baseType.isStructType()) ?
+          HiveSchemaUtil.applyInitialDefaultsToStruct(baseType) :
+          baseType;
+      Literal<Object> defaultVal = Optional.ofNullable(defaultValue).filter(v -> !resolvedType.isStructType())
+          .map(v -> Expressions.lit(HiveSchemaUtil.getDefaultValue(v, resolvedType))).orElse(null);
       // ORC doesn't have support for initialDefault from iceberg layer, we only need to set default for writeDefault.
-      updateSchema.addColumn(addedCol.getName(), type, addedCol.getComment(), isORc ? null : defaultVal);
+      updateSchema.addColumn(addedCol.getName(), resolvedType, addedCol.getComment(), isORc ? null : defaultVal);
       if (isORc && defaultVal != null) {
         updateSchema.updateColumnDefault(addedCol.getName(), defaultVal);
       }

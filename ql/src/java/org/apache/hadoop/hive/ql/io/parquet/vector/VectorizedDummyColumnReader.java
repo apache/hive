@@ -24,14 +24,19 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A dummy vectorized parquet reader used for schema evolution.
@@ -49,10 +54,13 @@ public class VectorizedDummyColumnReader extends BaseVectorizedColumnReader {
 
   @Override
   public void readBatch(int total, ColumnVector col, TypeInfo typeInfo) throws IOException {
+    fillColumnWithDefault(col, typeInfo, defaultValue);
+  }
 
+  private void fillColumnWithDefault(ColumnVector col, TypeInfo typeInfo, Object value) throws IOException {
     col.isRepeating = true;
     // Case 1: No default → (all nulls)
-    if (defaultValue == null) {
+    if (value == null) {
       Arrays.fill(col.isNull, true);
       col.noNulls = false;
       return;
@@ -63,9 +71,22 @@ public class VectorizedDummyColumnReader extends BaseVectorizedColumnReader {
     col.isNull[0] = false;
 
     if (typeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE) {
-      fillPrimitive(col, (PrimitiveTypeInfo) typeInfo, defaultValue);
+      fillPrimitive(col, (PrimitiveTypeInfo) typeInfo, value);
+    } else if (typeInfo.getCategory() == ObjectInspector.Category.STRUCT) {
+      fillStruct(col, (StructTypeInfo) typeInfo, value);
     } else {
       throw new IOException("Unsupported type category in DummyColumnReader: " + typeInfo.getCategory());
+    }
+  }
+
+  private void fillStruct(ColumnVector col, StructTypeInfo structTypeInfo, Object defaultValue) throws IOException {
+    StructColumnVector structCol = (StructColumnVector) col;
+    List<String> fieldNames = structTypeInfo.getAllStructFieldNames();
+    List<TypeInfo> fieldTypes = structTypeInfo.getAllStructFieldTypeInfos();
+    Map<String, Object> fieldDefaults = defaultValue instanceof Map ? (Map<String, Object>) defaultValue : Collections.emptyMap();
+
+    for (int i = 0; i < fieldNames.size(); i++) {
+      fillColumnWithDefault(structCol.fields[i], fieldTypes.get(i), fieldDefaults.get(fieldNames.get(i)));
     }
   }
 

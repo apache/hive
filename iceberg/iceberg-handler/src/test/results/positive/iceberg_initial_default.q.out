@@ -28,7 +28,14 @@ PREHOOK: query: ALTER TABLE ice_parq ADD COLUMNS (point STRUCT<x:INT, y:INT> DEF
   created_date DATE DEFAULT '2024-01-01',
   created_ts TIMESTAMP DEFAULT '2024-01-01T10:00:00',
   score DECIMAL(5,2) DEFAULT 100.00,
-  category STRING DEFAULT 'general')
+  category STRING DEFAULT 'general',
+  person STRUCT<
+    name: STRING,
+    address: STRUCT<
+      street: STRING,
+      city: STRING
+    >
+  > DEFAULT '{"name":"John","address":{"street":"Main St","city":"New York"}}')
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@ice_parq
 PREHOOK: Output: default@ice_parq
@@ -40,7 +47,14 @@ POSTHOOK: query: ALTER TABLE ice_parq ADD COLUMNS (point STRUCT<x:INT, y:INT> DE
   created_date DATE DEFAULT '2024-01-01',
   created_ts TIMESTAMP DEFAULT '2024-01-01T10:00:00',
   score DECIMAL(5,2) DEFAULT 100.00,
-  category STRING DEFAULT 'general')
+  category STRING DEFAULT 'general',
+  person STRUCT<
+    name: STRING,
+    address: STRUCT<
+      street: STRING,
+      city: STRING
+    >
+  > DEFAULT '{"name":"John","address":{"street":"Main St","city":"New York"}}')
 POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@ice_parq
 POSTHOOK: Output: default@ice_parq
@@ -60,8 +74,8 @@ POSTHOOK: query: SELECT * FROM ice_parq ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_parq
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1	NULL	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
-2	{"x":100,"y":99}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
+1	{"x":100,"y":99}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general	{"name":"John","address":{"street":"Main St","city":"New York"}}
+2	{"x":100,"y":99}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general	{"name":"John","address":{"street":"Main St","city":"New York"}}
 PREHOOK: query: ALTER TABLE ice_parq CHANGE COLUMN point point STRUCT<x:INT, y:INT> DEFAULT '{"x":100,"y":88}'
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@ice_parq
@@ -94,9 +108,9 @@ POSTHOOK: query: SELECT * FROM ice_parq ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_parq
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1	NULL	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
-2	{"x":100,"y":99}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
-3	{"x":100,"y":88}	unknown	21	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
+1	{"x":100,"y":99}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general	{"name":"John","address":{"street":"Main St","city":"New York"}}
+2	{"x":100,"y":99}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general	{"name":"John","address":{"street":"Main St","city":"New York"}}
+3	{"x":100,"y":88}	unknown	21	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general	{"name":"John","address":{"street":"Main St","city":"New York"}}
 PREHOOK: query: CREATE TABLE ice_avro (
   id INT)
 STORED BY ICEBERG  stored as avro
@@ -127,7 +141,14 @@ PREHOOK: query: ALTER TABLE ice_avro ADD COLUMNS (point STRUCT<x:INT, y:INT> DEF
   created_date DATE DEFAULT '2024-01-01',
   created_ts TIMESTAMP DEFAULT '2024-01-01T10:00:00',
   score DECIMAL(5,2) DEFAULT 100.00,
-  category STRING DEFAULT 'general')
+  category STRING DEFAULT 'general',
+  person STRUCT<
+    name: STRING,
+    address: STRUCT<
+      street: STRING,
+      city: STRING
+    >
+  > DEFAULT '{"name":"John","address":{"street":"Main St","city":"New York"}}')
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@ice_avro
 PREHOOK: Output: default@ice_avro
@@ -139,7 +160,14 @@ POSTHOOK: query: ALTER TABLE ice_avro ADD COLUMNS (point STRUCT<x:INT, y:INT> DE
   created_date DATE DEFAULT '2024-01-01',
   created_ts TIMESTAMP DEFAULT '2024-01-01T10:00:00',
   score DECIMAL(5,2) DEFAULT 100.00,
-  category STRING DEFAULT 'general')
+  category STRING DEFAULT 'general',
+  person STRUCT<
+    name: STRING,
+    address: STRUCT<
+      street: STRING,
+      city: STRING
+    >
+  > DEFAULT '{"name":"John","address":{"street":"Main St","city":"New York"}}')
 POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@ice_avro
 POSTHOOK: Output: default@ice_avro
@@ -159,8 +187,8 @@ POSTHOOK: query: SELECT * FROM ice_avro ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_avro
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1	NULL	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
-2	{"x":100,"y":99}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
+1	{"x":100,"y":99}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general	{"name":"John","address":{"street":"Main St","city":"New York"}}
+2	{"x":100,"y":99}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general	{"name":"John","address":{"street":"Main St","city":"New York"}}
 PREHOOK: query: ALTER TABLE ice_avro CHANGE COLUMN point point STRUCT<x:INT, y:INT> DEFAULT '{"x":100,"y":88}'
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@ice_avro
@@ -193,9 +221,9 @@ POSTHOOK: query: SELECT * FROM ice_avro ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_avro
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1	NULL	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
-2	{"x":100,"y":99}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
-3	{"x":100,"y":88}	unknown	21	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
+1	{"x":100,"y":99}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general	{"name":"John","address":{"street":"Main St","city":"New York"}}
+2	{"x":100,"y":99}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general	{"name":"John","address":{"street":"Main St","city":"New York"}}
+3	{"x":100,"y":88}	unknown	21	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general	{"name":"John","address":{"street":"Main St","city":"New York"}}
 PREHOOK: query: CREATE TABLE ice_orc (
   id INT)
 STORED BY ICEBERG stored as orc
@@ -226,7 +254,14 @@ PREHOOK: query: ALTER TABLE ice_orc ADD COLUMNS (point STRUCT<x:INT, y:INT> DEFA
   created_date DATE DEFAULT '2024-01-01',
   created_ts TIMESTAMP DEFAULT '2024-01-01T10:00:00',
   score DECIMAL(5,2) DEFAULT 100.00,
-  category STRING DEFAULT 'general')
+  category STRING DEFAULT 'general',
+  person STRUCT<
+    name: STRING,
+    address: STRUCT<
+      street: STRING,
+      city: STRING
+    >
+  > DEFAULT '{"name":"John","address":{"street":"Main St","city":"New York"}}')
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@ice_orc
 PREHOOK: Output: default@ice_orc
@@ -238,7 +273,14 @@ POSTHOOK: query: ALTER TABLE ice_orc ADD COLUMNS (point STRUCT<x:INT, y:INT> DEF
   created_date DATE DEFAULT '2024-01-01',
   created_ts TIMESTAMP DEFAULT '2024-01-01T10:00:00',
   score DECIMAL(5,2) DEFAULT 100.00,
-  category STRING DEFAULT 'general')
+  category STRING DEFAULT 'general',
+  person STRUCT<
+    name: STRING,
+    address: STRUCT<
+      street: STRING,
+      city: STRING
+    >
+  > DEFAULT '{"name":"John","address":{"street":"Main St","city":"New York"}}')
 POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@ice_orc
 POSTHOOK: Output: default@ice_orc
@@ -258,8 +300,8 @@ POSTHOOK: query: SELECT * FROM ice_orc ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-2	{"x":100,"y":99}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
+1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+2	{"x":100,"y":99}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general	{"name":"John","address":{"street":"Main St","city":"New York"}}
 PREHOOK: query: ALTER TABLE ice_orc CHANGE COLUMN point point STRUCT<x:INT, y:INT> DEFAULT '{"x":100,"y":88}'
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@ice_orc
@@ -292,9 +334,9 @@ POSTHOOK: query: SELECT * FROM ice_orc ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-2	{"x":100,"y":99}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
-3	{"x":100,"y":88}	unknown	21	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
+1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+2	{"x":100,"y":99}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general	{"name":"John","address":{"street":"Main St","city":"New York"}}
+3	{"x":100,"y":88}	unknown	21	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general	{"name":"John","address":{"street":"Main St","city":"New York"}}
 PREHOOK: query: SELECT * FROM ice_parq ORDER BY id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_parq
@@ -303,9 +345,9 @@ POSTHOOK: query: SELECT * FROM ice_parq ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_parq
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1	NULL	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
-2	{"x":100,"y":99}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
-3	{"x":100,"y":88}	unknown	21	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
+1	{"x":100,"y":99}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general	{"name":"John","address":{"street":"Main St","city":"New York"}}
+2	{"x":100,"y":99}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general	{"name":"John","address":{"street":"Main St","city":"New York"}}
+3	{"x":100,"y":88}	unknown	21	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general	{"name":"John","address":{"street":"Main St","city":"New York"}}
 PREHOOK: query: SELECT * FROM ice_avro ORDER BY id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_avro
@@ -314,9 +356,9 @@ POSTHOOK: query: SELECT * FROM ice_avro ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_avro
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1	NULL	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
-2	{"x":100,"y":99}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
-3	{"x":100,"y":88}	unknown	21	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
+1	{"x":100,"y":99}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general	{"name":"John","address":{"street":"Main St","city":"New York"}}
+2	{"x":100,"y":99}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general	{"name":"John","address":{"street":"Main St","city":"New York"}}
+3	{"x":100,"y":88}	unknown	21	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general	{"name":"John","address":{"street":"Main St","city":"New York"}}
 PREHOOK: query: SELECT * FROM ice_orc ORDER BY id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_orc
@@ -325,6 +367,6 @@ POSTHOOK: query: SELECT * FROM ice_orc ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_orc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-2	{"x":100,"y":99}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
-3	{"x":100,"y":88}	unknown	21	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general
+1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+2	{"x":100,"y":99}	unknown	25	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general	{"name":"John","address":{"street":"Main St","city":"New York"}}
+3	{"x":100,"y":88}	unknown	21	50000.0	true	2024-01-01	2024-01-01 10:00:00	100.00	general	{"name":"John","address":{"street":"Main St","city":"New York"}}
