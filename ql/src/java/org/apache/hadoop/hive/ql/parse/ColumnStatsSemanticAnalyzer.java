@@ -107,7 +107,8 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
    */
   private static FieldSchemas getStatsEligibleFieldSchemas(Table tbl) {
     List<FieldSchema> result = new ArrayList<>();
-    for (FieldSchema col : tbl.getCols()) {
+    List<FieldSchema> colsToLookUp = tbl.hasNonNativePartitionSupport() ? tbl.getAllCols() : tbl.getCols();
+    for (FieldSchema col : colsToLookUp) {
       String type = col.getType();
       TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(type);
       boolean isSupported = ColumnStatsAutoGatherContext.isColumnSupported(typeInfo.getCategory(), () -> typeInfo);
@@ -207,8 +208,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
 
 
   private static String getColTypeOf(Table tbl, String partKey) {
-    for (FieldSchema fs : tbl.hasNonNativePartitionSupport() ?
-          tbl.getStorageHandler().getPartitionKeys(tbl) : tbl.getPartitionKeys()) {
+    for (FieldSchema fs : tbl.getPartCols()) {
       if (partKey.equalsIgnoreCase(fs.getName())) {
         return fs.getType().toLowerCase();
       }
@@ -231,12 +231,13 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       }
     }
 
-    for (FieldSchema col : tbl.getCols()) {
+    List<FieldSchema> colsToLookUp = tbl.hasNonNativePartitionSupport() ? tbl.getAllCols() : tbl.getCols();
+    for (FieldSchema col : colsToLookUp) {
       specifiedColsMap.computeIfPresent(col.getName().toLowerCase(), (key, value) -> col);
     }
 
     List<FieldSchema> result = new ArrayList<>();
-    List<String> tableColNames = new FieldSchemas(tbl.getCols()).getColName();
+    List<String> tableColNames = new FieldSchemas(colsToLookUp).getColName();
     for (String colName : colNames) {
       FieldSchema fs = specifiedColsMap.get(colName.toLowerCase());
 

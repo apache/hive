@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -224,7 +225,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
 
       sqlGenerator.append("    -- update clause").append("\n");
       List<String> valuesAndAcidSortKeys = new ArrayList<>(
-          targetTable.getCols().size() + targetTable.getPartCols().size() + 1);
+          targetTable.getAllCols().size() + 1);
       valuesAndAcidSortKeys.addAll(sqlGenerator.getSortKeys(Operation.MERGE));
       addValues(targetTable, targetAlias, updateClause.getNewValuesMap(), valuesAndAcidSortKeys);
       sqlGenerator.appendInsertBranch(hintStr, valuesAndAcidSortKeys);
@@ -238,22 +239,42 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
 
     protected void addValues(Table targetTable, String targetAlias, Map<String, String> newValues,
                              List<String> values) {
-      UnaryOperator<String> formatter = name -> String.format("%s.%s", targetAlias, 
-          HiveUtils.unparseIdentifier(name, conf));
-      
-      for (FieldSchema fieldSchema : targetTable.getCols()) {
-        if (newValues.containsKey(fieldSchema.getName())) {
-          String rhsExp = newValues.get(fieldSchema.getName());
-          values.add(getRhsExpValue(rhsExp, formatter.apply(fieldSchema.getName())));
-        } else {
-          values.add(formatter.apply(fieldSchema.getName()));
-        }
+      if (targetTable.hasNonNativePartitionSupport()) {
+        addNonNativeMergeUpdateValues(targetTable, targetAlias, newValues, values);
+      } else {
+        addNativeMergeUpdateValues(targetTable, targetAlias, newValues, values);
       }
-      
-      targetTable.getPartCols().forEach(fieldSchema -> values.add(
-          formatter.apply(fieldSchema.getName())));
     }
-    
+
+    private void addNonNativeMergeUpdateValues(Table targetTable, String targetAlias,
+        Map<String, String> newValues, List<String> values) {
+      for (FieldSchema fieldSchema : targetTable.getAllCols()) {
+        setColumnValue(targetAlias, newValues, values, fieldSchema);
+      }
+    }
+
+    private void addNativeMergeUpdateValues(Table targetTable, String targetAlias,
+        Map<String, String> newValues, List<String> values) {
+      for (FieldSchema fieldSchema : targetTable.getCols()) {
+        setColumnValue(targetAlias, newValues, values, fieldSchema);
+      }
+      targetTable.getPartCols().forEach(fieldSchema -> values.add(
+          formatValue(targetAlias, fieldSchema.getName())));
+    }
+
+    protected void setColumnValue(String targetAlias, Map<String, String> newValues, List<String> values, FieldSchema fieldSchema) {
+      if (newValues.containsKey(fieldSchema.getName())) {
+        String rhsExp = newValues.get(fieldSchema.getName());
+        values.add(getRhsExpValue(rhsExp, formatValue(targetAlias, fieldSchema.getName())));
+      } else {
+        values.add(formatValue(targetAlias, fieldSchema.getName()));
+      }
+    }
+
+    private String formatValue(String targetAlias, String name) {
+      return String.format("%s.%s", targetAlias, HiveUtils.unparseIdentifier(name, conf));
+    }
+
     protected String getRhsExpValue(String newValue, String alias) {
       return newValue;
     }
@@ -262,7 +283,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
                                           MultiInsertSqlGenerator sqlGenerator) {
       addWhereClauseOfUpdate(onClauseAsString, extraPredicate, deleteExtraPredicate, sqlGenerator, UnaryOperator.identity());
     }
-    
+
     protected void addWhereClauseOfUpdate(String onClauseAsString, String extraPredicate, String deleteExtraPredicate,
                                           MultiInsertSqlGenerator sqlGenerator, UnaryOperator<String> columnRefsFunc) {
       StringBuilder whereClause = new StringBuilder(onClauseAsString);

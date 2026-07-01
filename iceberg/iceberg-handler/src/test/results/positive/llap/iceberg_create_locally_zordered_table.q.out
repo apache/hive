@@ -636,7 +636,6 @@ POSTHOOK: Input: default@zorder_tsdl_test
 # col_name            	data_type           	comment             
 ts                  	timestamp           	                    
 dd                  	double              	                    
-ll                  	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
