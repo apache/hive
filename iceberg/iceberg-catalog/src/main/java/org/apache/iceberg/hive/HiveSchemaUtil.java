@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -435,7 +436,8 @@ public final class HiveSchemaUtil {
     for (Types.NestedField field : missingFields) {
       if (field.type().isStructType()) {
         // Attempt to build the nested struct with its defaults
-        Record nestedRecord = buildStructWithDefaults(field.type().asStructType());
+        Record nestedRecord = buildStructFromDefaults(
+            field.type().asStructType(), Types.NestedField::writeDefault);
         if (nestedRecord != null) {
           record.setField(field.name(), nestedRecord);
         }
@@ -450,60 +452,36 @@ public final class HiveSchemaUtil {
    * Backfills struct column that is null on read using nested {@code initialDefault} metadata.
    * This applies to rows written before {@code ADD COLUMNS} added the struct.
    * Spec allows struct defaults as {@code {}} (see https://iceberg.apache.org/spec/#default-values), but
-   * {@code UpdateSchema} add column only supports primitives today;
+   * {@code UpdateSchema} add column only supports defaults of underlying primitives and keeping the
+   * struct default as null due to which we need to backfill that nested default record while reading;
    * if empty structs are allowed, this backfill can be removed.
    */
-  public static void backfillStructInitialDefaults(Record iceRecord, List<Types.NestedField> columns) {
-    for (Types.NestedField field : columns) {
-      if (field.type().isStructType() && iceRecord.getField(field.name()) == null) {
-        Record nestedRecord = buildStructWithInitialDefaults(field.type().asStructType());
-        if (nestedRecord != null) {
-          iceRecord.setField(field.name(), nestedRecord);
-        }
+  public static void backfillStructInitialDefaults(
+      Record iceRecord, Map<String, Record> initialDefaultStructsByColumn) {
+    for (Map.Entry<String, Record> columnAndInitialDefaultStruct : initialDefaultStructsByColumn.entrySet()) {
+      String columnName = columnAndInitialDefaultStruct.getKey();
+      if (iceRecord.getField(columnName) == null) {
+        iceRecord.setField(columnName, columnAndInitialDefaultStruct.getValue());
       }
     }
   }
 
   /**
-   * Recursively builds a struct populated with write defaults.
-   * * @return A populated Record, or null if no nested fields have defaults.
+   * Recursively builds a struct populated with underlying field defaults.
+   * @return A populated Record, or null if no nested fields have defaults.
    */
-  private static Record buildStructWithDefaults(Types.StructType structType) {
+  public static Record buildStructFromDefaults(
+      Types.StructType structType, Function<Types.NestedField, Object> defaultForField) {
     Record nestedRecord = GenericRecord.create(structType);
     boolean hasAnyDefault = false;
 
     for (Types.NestedField field : structType.fields()) {
-      if (field.writeDefault() != null) {
-        Object defaultValue = convertToWriteType(field.writeDefault(), field.type());
-        nestedRecord.setField(field.name(), defaultValue);
+      Object defaultValue = defaultForField.apply(field);
+      if (defaultValue != null) {
+        nestedRecord.setField(field.name(), convertToWriteType(defaultValue, field.type()));
         hasAnyDefault = true;
       } else if (field.type().isStructType()) {
-        // Recursively process deeper nested structs
-        Record deeperRecord = buildStructWithDefaults(field.type().asStructType());
-
-        // If the deeper struct has defaults, attach it and flag this current struct as populated
-        if (deeperRecord != null) {
-          nestedRecord.setField(field.name(), deeperRecord);
-          hasAnyDefault = true;
-        }
-      }
-    }
-
-    // If no fields (or nested fields) had defaults, return null to avoid an empty struct
-    return hasAnyDefault ? nestedRecord : null;
-  }
-
-  private static Record buildStructWithInitialDefaults(Types.StructType structType) {
-    Record nestedRecord = GenericRecord.create(structType);
-    boolean hasAnyDefault = false;
-
-    for (Types.NestedField field : structType.fields()) {
-      if (field.initialDefault() != null) {
-        Object defaultValue = convertToWriteType(field.initialDefault(), field.type());
-        nestedRecord.setField(field.name(), defaultValue);
-        hasAnyDefault = true;
-      } else if (field.type().isStructType()) {
-        Record deeperRecord = buildStructWithInitialDefaults(field.type().asStructType());
+        Record deeperRecord = buildStructFromDefaults(field.type().asStructType(), defaultForField);
         if (deeperRecord != null) {
           nestedRecord.setField(field.name(), deeperRecord);
           hasAnyDefault = true;
