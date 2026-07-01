@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.ql.QueryProperties.QueryFeature;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -83,8 +84,9 @@ public class GenMRTableScan1 implements SemanticNodeProcessor {
         ctx.setCurrAliasId(currAliasId);
         mapCurrCtx.put(op, new GenMapRedCtx(currTask, currAliasId));
 
-        if (parseCtx.getQueryProperties().isAnalyzeCommand()) {
-          boolean noScan = parseCtx.getQueryProperties().isNoScanAnalyzeCommand();
+        if (parseCtx.getQueryProperties().hasFeature(QueryFeature.ANALYZE)
+            && !parseCtx.getQueryProperties().hasFeature(QueryFeature.REWRITE)) {
+          boolean noScan = parseCtx.getQueryProperties().hasFeature(QueryFeature.NO_SCAN);
           if (BasicStatsNoJobTask.canUseBasicStats(table, inputFormat)) {
             // For ORC and Parquet, all the following statements are the same
             // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS

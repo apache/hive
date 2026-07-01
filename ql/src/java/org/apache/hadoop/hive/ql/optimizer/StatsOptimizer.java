@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.api.DateColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.QueryProperties.QueryFeature;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -108,8 +109,9 @@ public class StatsOptimizer extends Transform {
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
 
-    if (pctx.getFetchTask() != null || !pctx.getQueryProperties().isQuery()
-        || pctx.getQueryProperties().isAnalyzeRewrite() || pctx.getQueryProperties().isCTAS()
+    if (pctx.getFetchTask() != null || !pctx.getQueryProperties().hasFeature(QueryFeature.QUERY)
+        || pctx.getQueryProperties().hasFeature(QueryFeature.REWRITE)
+        || pctx.getQueryProperties().hasFeature(QueryFeature.CTAS)
         || pctx.getLoadFileWork().size() > 1 || !pctx.getLoadTableWork().isEmpty()
         // If getNameToSplitSample is not empty, at least one of the source
         // tables is being sampled and we can not optimize.
