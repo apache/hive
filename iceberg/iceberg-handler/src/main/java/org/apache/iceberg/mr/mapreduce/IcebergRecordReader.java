@@ -64,6 +64,7 @@ import org.apache.iceberg.mr.hive.vector.HiveVectorizedReader;
 import org.apache.iceberg.orc.ORC;
 import org.apache.iceberg.parquet.Parquet;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.TypeUtil;
 import org.apache.iceberg.types.Types;
@@ -174,19 +175,26 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
       default -> throw new UnsupportedOperationException(
           String.format("Cannot read %s file: %s", file.format().name(), file.location()));
     };
-    return applyResidualFiltering(withStructInitialDefaultBackfill(iterable, readSchema), residual, readSchema);
+    return applyResidualFiltering(withStructInitialDefaultsBackfill(iterable, readSchema), residual, readSchema);
   }
 
-  private CloseableIterable<T> withStructInitialDefaultBackfill(CloseableIterable<T> iterable, Schema readSchema) {
-    boolean needsBackfill = readSchema.columns().stream()
-        .filter(field -> field.type().isStructType())
-        .anyMatch(field -> !HiveSchemaUtil.getStructInitialDefaults(field.type().asStructType()).isEmpty());
-    if (!needsBackfill) {
+  private CloseableIterable<T> withStructInitialDefaultsBackfill(CloseableIterable<T> iterable, Schema readSchema) {
+    Map<String, Record> initialDefaultStructsByColumn = Maps.newHashMap();
+    for (Types.NestedField column : readSchema.columns()) {
+      if (column.type().isStructType()) {
+        Record initialDefaultStruct = HiveSchemaUtil
+            .buildStructFromDefaults(column.type().asStructType(), Types.NestedField::initialDefault);
+        if (initialDefaultStruct != null) {
+          initialDefaultStructsByColumn.put(column.name(), initialDefaultStruct);
+        }
+      }
+    }
+    if (initialDefaultStructsByColumn.isEmpty()) {
       return iterable;
     }
     return CloseableIterable.transform(iterable, row -> {
       if (row instanceof Record curIceRecord) {
-        HiveSchemaUtil.backfillStructInitialDefaults(curIceRecord, readSchema.columns());
+        HiveSchemaUtil.backfillStructInitialDefaults(curIceRecord, initialDefaultStructsByColumn);
       }
       return row;
     });

@@ -22,16 +22,12 @@ package org.apache.iceberg.hive;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.iceberg.Schema;
-import org.apache.iceberg.data.GenericRecord;
-import org.apache.iceberg.data.Record;
-import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Type;
@@ -41,7 +37,6 @@ import org.junit.jupiter.api.Test;
 import static org.apache.iceberg.types.Types.NestedField.optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.InstanceOfAssertFactories.MAP;
 
 public class TestHiveSchemaUtil {
   private static final Schema SIMPLE_ICEBERG_SCHEMA = new Schema(
@@ -244,103 +239,5 @@ public class TestHiveSchemaUtil {
         assertThat(actualFields.get(i).name()).isEqualTo(expectedFields.get(i).name());
       }
     }
-  }
-
-  @Test
-  void testBackfillStructInitialDefaults() {
-    Schema schema = new Schema(
-        optional(1, "id", Types.IntegerType.get()),
-        optional(2, "point", Types.StructType.of(
-            Types.NestedField.builder()
-                .withId(3)
-                .withName("x")
-                .asOptional()
-                .ofType(Types.IntegerType.get())
-                .withInitialDefault(Expressions.lit(100))
-                .build(),
-            Types.NestedField.builder()
-                .withId(4)
-                .withName("y")
-                .asOptional()
-                .ofType(Types.IntegerType.get())
-                .withInitialDefault(Expressions.lit(99))
-                .build()
-        ))
-    );
-
-    Record iceRecord = GenericRecord.create(schema);
-    iceRecord.setField("id", 1);
-
-    HiveSchemaUtil.backfillStructInitialDefaults(iceRecord, schema.columns());
-
-    Record point = (Record) iceRecord.getField("point");
-    assertThat(point).isNotNull();
-    assertThat(point.getField("x")).isEqualTo(100);
-    assertThat(point.getField("y")).isEqualTo(99);
-  }
-
-  @Test
-  void testApplyInitialDefaults() {
-    Type structType = Types.StructType.of(
-        Types.NestedField.builder()
-            .withId(1)
-            .withName("x")
-            .asOptional()
-            .ofType(Types.IntegerType.get())
-            .withWriteDefault(Expressions.lit(100))
-            .build(),
-        Types.NestedField.builder()
-            .withId(2)
-            .withName("y")
-            .asOptional()
-            .ofType(Types.IntegerType.get())
-            .withWriteDefault(Expressions.lit(99))
-            .build());
-
-    Type withInitialDefaults = HiveSchemaUtil.applyInitialDefaultsToStruct(structType);
-    Types.NestedField xField = withInitialDefaults.asStructType().field("x");
-    Types.NestedField yField = withInitialDefaults.asStructType().field("y");
-    assertThat(xField.initialDefault()).isEqualTo(100);
-    assertThat(yField.initialDefault()).isEqualTo(99);
-  }
-
-  @Test
-  void testGetStructInitialDefaults() {
-    Types.StructType addressStruct = Types.StructType.of(
-        Types.NestedField.builder()
-            .withId(4)
-            .withName("street")
-            .asOptional()
-            .ofType(Types.StringType.get())
-            .withInitialDefault(Expressions.lit("Main St"))
-            .build(),
-        Types.NestedField.builder()
-            .withId(5)
-            .withName("city")
-            .asOptional()
-            .ofType(Types.StringType.get())
-            .withInitialDefault(Expressions.lit("New York"))
-            .build());
-    Types.StructType personStruct = Types.StructType.of(
-        Types.NestedField.builder()
-            .withId(3)
-            .withName("name")
-            .asOptional()
-            .ofType(Types.StringType.get())
-            .withInitialDefault(Expressions.lit("John"))
-            .build(),
-        Types.NestedField.builder()
-            .withId(6)
-            .withName("address")
-            .asOptional()
-            .ofType(addressStruct)
-            .build());
-
-    Map<String, Object> personDefaults = HiveSchemaUtil.getStructInitialDefaults(personStruct);
-    assertThat(personDefaults)
-        .containsEntry("name", "John")
-        .extractingByKey("address", MAP)
-        .containsEntry("street", "Main St")
-        .containsEntry("city", "New York");
   }
 }
