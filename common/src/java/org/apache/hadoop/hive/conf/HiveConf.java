@@ -1737,6 +1737,15 @@ public class HiveConf extends Configuration {
         "How many rows in the right-most join operand Hive should buffer before emitting the join result."),
     HIVE_JOIN_CACHE_SIZE("hive.join.cache.size", 25000,
         "How many rows in the joining tables (except the streaming table) should be cached in memory."),
+    HIVE_MERGE_JOIN_SKEW_THRESHOLD("hive.merge.join.skew.threshold", -1L,
+        "Maximum number of rows allowed per join key in a single sort-merge join task before a "
+        + "skew event is reported."),
+    HIVE_MERGE_JOIN_SKEW_ABORT("hive.merge.join.skew.abort", false,
+        "When set to true and the row count is equal to hive.merge.join.skew.threshold, the task will be aborted."),
+    HIVE_MERGE_JOIN_SKEW_CHECK_INTERVAL("hive.merge.join.skew.check.interval", 10000L,
+        "Number of rows added to a join-key group between consecutive skew checks. "
+        + "A lower value detects skew earlier but adds slightly more overhead. "
+        + "Only effective when hive.merge.join.skew.threshold is set to a positive value."),
     HIVE_PUSH_RESIDUAL_INNER("hive.join.inner.residual", false,
         "Whether to push non-equi filter predicates within inner joins. This can improve efficiency in "
         + "the evaluation of certain joins, since we will not be emitting rows which are thrown away by "
