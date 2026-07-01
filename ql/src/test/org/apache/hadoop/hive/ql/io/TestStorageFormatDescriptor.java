@@ -42,6 +42,8 @@ public class TestStorageFormatDescriptor {
       (new AvroStorageFormatDescriptor()).getNames());
     Assert.assertEquals(Sets.newHashSet(IOConstants.JSONFILE),
         (new JsonFileStorageFormatDescriptor()).getNames());
+    Assert.assertEquals(Sets.newHashSet(IOConstants.BTREE),
+            (new BtreeStorageFormatDescriptor()).getNames());
 
   }
 }

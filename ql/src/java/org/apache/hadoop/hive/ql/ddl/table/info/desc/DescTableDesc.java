@@ -38,7 +38,7 @@ import com.google.common.collect.ImmutableList;
 public class DescTableDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
-  public static final String SCHEMA = "col_name,data_type,comment#string:string:string";
+  public static final String SCHEMA = "col_name,data_type,comment,policy#string:string:string:string";
   public static final String COLUMN_STATISTICS_SCHEMA = "column_property,value#string:string";
   public static final String PARTITION_TRANSFORM_SPEC_SCHEMA = "col_name,transform_type#string:string";
   private static final List<String> PURE_STATISTICS_HEADERS = ImmutableList.of(
@@ -52,6 +52,7 @@ public class DescTableDesc implements DDLDesc, Serializable {
       .add("data_type")
       .addAll(PURE_STATISTICS_HEADERS)
       .add("comment")
+      .add("policy")
       .build();
 
   private final String resFile;

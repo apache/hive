@@ -1,0 +1,4 @@
+id,mode,subject_count,table_rows,t_conform_ms,bytes_after,read_lat_ms,order_preserved,run_num,error
+0,ERASE,1,1000000,4033,50529480,18,true,0,
+1,UPDATE_ONLY,1,1000000,9223372036854775807,106643368,27,false,0,update_only_t_us=5254
+2,UPDATE_PLUS_COMPACT,1,1000000,5151,106652401,32,false,0,compaction_submitted_non_blocking

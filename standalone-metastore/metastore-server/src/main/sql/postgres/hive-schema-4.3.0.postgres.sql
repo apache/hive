@@ -1951,6 +1951,298 @@ CREATE TABLE "CATALOG_PARAMS" (
      CONSTRAINT "CATALOG_PARAMS_FK1" FOREIGN KEY ("CTLG_ID") REFERENCES "CTLGS" ("CTLG_ID") ON DELETE CASCADE
 );
 
+-- ---------------------------------------------------------------------------
+-- Data Anonymisation Engine (DAE) / Erasure-policy governance schema.
+--
+-- The core COLUMNS_V2 table gains a nullable POLICY_ID column that
+-- foreign-keys against ERASURE_POLICIES; the remaining tables
+-- back the erasure-policy entities. In standard Hive Metastore deployments
+-- DataNucleus creates these tables automatically from the package.jdo mapping
+-- on first access; this DDL exists as canonical documentation and for
+-- environments that prefer pre-provisioning. It must follow the core tables it
+-- references (TBLS, COLUMNS_V2, DBS, SDS) and precede the VERSION record.
+-- ---------------------------------------------------------------------------
+
+ALTER TABLE "COLUMNS_V2" ADD COLUMN "POLICY_ID" bigint;
+
+CREATE TABLE "ERASURE_POLICIES" (
+    "POLICY_ID" bigint NOT NULL,
+    "POLICY_NAME" character varying (30) NOT NULL UNIQUE,
+    PRIMARY KEY ("POLICY_ID")
+);
+
+CREATE TABLE "ERASURE_INDEXES" (
+    "INDEX_ID" bigint NOT NULL,
+    "INDEX_NAME" character varying (30) NOT NULL UNIQUE,
+    "TBL_NAME" character varying (30) NOT NULL,
+    "COL_NAME" character varying (30) NOT NULL,
+    "ID_FLD_NAME" character varying (30) NOT NULL,
+    "LOCATOR" character varying (30) NOT NULL,
+    PRIMARY KEY ("INDEX_ID")
+);
+
+CREATE TABLE "IDXS" (
+    "INDEX_ID" bigint NOT NULL PRIMARY KEY ,
+    "CREATE_TIME" bigint NOT NULL,
+    "DEFERRED_REBUILD" boolean NOT NULL,
+    "INDEX_HANDLER_CLASS" character varying(400),
+    "INDEX_NAME" character varying(128),
+    "INDEX_TBL_ID" bigint,
+    "LAST_ACCESS_TIME" bigint,
+    "ORIG_TBL_ID" bigint,
+    "SD_ID" bigint,
+    "PAGE_SIZE" int,
+    "BUFFER_POOL_SIZE" int,
+    "POINTER_TYPE" varchar(20),
+    "INDEX_TYPE" varchar(20)
+);
+
+ALTER TABLE ONLY "IDXS"
+    ADD CONSTRAINT "UNIQUEINDEX" UNIQUE ("INDEX_NAME", "ORIG_TBL_ID");
+
+ALTER TABLE ONLY "IDXS"
+    ADD CONSTRAINT "IDXS_INDEX_TBL_ID_fkey" FOREIGN KEY ("INDEX_TBL_ID") REFERENCES "TBLS"("TBL_ID") DEFERRABLE;
+
+ALTER TABLE ONLY "IDXS"
+    ADD CONSTRAINT "IDXS_ORIG_TBL_ID_fkey" FOREIGN KEY ("ORIG_TBL_ID") REFERENCES "TBLS"("TBL_ID") DEFERRABLE;
+
+ALTER TABLE ONLY "IDXS"
+    ADD CONSTRAINT "IDXS_SD_ID_fkey" FOREIGN KEY ("SD_ID") REFERENCES "SDS"("SD_ID") DEFERRABLE;
+
+ALTER TABLE ONLY "COLUMNS_V2"
+    ADD CONSTRAINT "COLUMNS_V2_POLICY_ID_fkey" FOREIGN KEY ("POLICY_ID") REFERENCES "ERASURE_POLICIES"("POLICY_ID") DEFERRABLE;
+
+
+-- ---------------------------------------------------------------------------
+-- Erasure policy governance schema additions.
+--
+-- These nine tables back the entities introduced in the Thrift IDL for the
+-- versioned-policy + multi-policy-binding + audit model. In standard Hive
+-- Metastore deployments DataNucleus creates the tables automatically from
+-- the package.jdo mapping on first access; this schema exists as canonical
+-- documentation and for environments that prefer pre-provisioning.
+--
+-- Foreign-key references to ERASURE_POLICIES, TBLS, and the new tables use
+-- DEFERRABLE following the surrounding convention. No ON DELETE CASCADE
+-- so audit history survives policy deletion.
+-- ---------------------------------------------------------------------------
+
+-- 1. ERASURE_POLICY_VERSIONS
+CREATE TABLE "ERASURE_POLICY_VERSIONS" (
+    "VERSION_ID"           bigint        NOT NULL,
+    "POLICY_ID"            bigint        NOT NULL,
+    "VERSION_LABEL"        varchar(64)   NOT NULL,
+    "STATUS"               varchar(16)   NOT NULL,
+    "IDENTITY_FIELD_NAME"  varchar(128)  NOT NULL,
+    "IDENTITY_FIELD_TYPE"  varchar(8)    NOT NULL,
+    "SCHEMA_TYPE"          varchar(8)    NOT NULL,
+    "SOURCE_PATH"          varchar(1024),
+    "SOURCE_CHECKSUM"      character(64),
+    "SOURCE_TEXT"          varchar(7000),
+    "VALIDATED_BY"         varchar(256),
+    "VALIDATED_TS"         bigint,
+    "ACTIVATED_BY"         varchar(256),
+    "ACTIVATED_TS"         bigint,
+    "DEACTIVATED_BY"       varchar(256),
+    "DEACTIVATED_TS"       bigint,
+    PRIMARY KEY ("VERSION_ID")
+);
+
+ALTER TABLE ONLY "ERASURE_POLICY_VERSIONS"
+    ADD CONSTRAINT "EPV_UNIQ_LABEL" UNIQUE ("POLICY_ID", "VERSION_LABEL");
+
+ALTER TABLE ONLY "ERASURE_POLICY_VERSIONS"
+    ADD CONSTRAINT "EPV_POLICY_ID_fkey" FOREIGN KEY ("POLICY_ID") REFERENCES "ERASURE_POLICIES"("POLICY_ID") DEFERRABLE;
+
+CREATE INDEX "EPV_BY_POLICY" ON "ERASURE_POLICY_VERSIONS" ("POLICY_ID", "STATUS");
+
+
+-- 4. ERASURE_POLICY_BINDINGS  (multi-policy column-to-policy binding)
+CREATE TABLE "ERASURE_POLICY_BINDINGS" (
+    "BINDING_ID"       bigint       NOT NULL,
+    "TBL_ID"           bigint       NOT NULL,
+    "COLUMN_NAME"      varchar(128) NOT NULL,
+    "SCHEMA_FIELD"     varchar(128) NOT NULL,
+    "ROW_LOCATOR"      varchar(128) NOT NULL,
+    "COLUMN_FORMAT"    varchar(16)  NOT NULL,
+    "RESOLUTION_MODE"  varchar(16)  NOT NULL,
+    "CREATED_BY"       varchar(256) NOT NULL,
+    "CREATED_TS"       bigint       NOT NULL,
+    PRIMARY KEY ("BINDING_ID")
+);
+
+ALTER TABLE ONLY "ERASURE_POLICY_BINDINGS"
+    ADD CONSTRAINT "EPB_UNIQ_COL" UNIQUE ("TBL_ID", "COLUMN_NAME");
+
+ALTER TABLE ONLY "ERASURE_POLICY_BINDINGS"
+    ADD CONSTRAINT "EPB_TBL_ID_fkey" FOREIGN KEY ("TBL_ID") REFERENCES "TBLS"("TBL_ID") DEFERRABLE;
+
+CREATE INDEX "EPB_BY_TABLE" ON "ERASURE_POLICY_BINDINGS" ("TBL_ID");
+
+
+-- 5. ERASURE_POLICY_BINDING_MEMBERS  (M:N: bindings x policies)
+CREATE TABLE "ERASURE_POLICY_BINDING_MEMBERS" (
+    "BINDING_MEMBER_ID" bigint  NOT NULL,
+    "BINDING_ID"        bigint,
+    "POLICY_ID"         bigint,
+    "ORDINAL"           integer NOT NULL,
+    PRIMARY KEY ("BINDING_MEMBER_ID")
+);
+
+ALTER TABLE ONLY "ERASURE_POLICY_BINDING_MEMBERS"
+    ADD CONSTRAINT "EPBM_BINDING_ID_fkey" FOREIGN KEY ("BINDING_ID") REFERENCES "ERASURE_POLICY_BINDINGS"("BINDING_ID") ON DELETE CASCADE DEFERRABLE;
+
+ALTER TABLE ONLY "ERASURE_POLICY_BINDING_MEMBERS"
+    ADD CONSTRAINT "EPBM_POLICY_ID_fkey" FOREIGN KEY ("POLICY_ID") REFERENCES "ERASURE_POLICIES"("POLICY_ID") DEFERRABLE;
+
+CREATE INDEX "EPBM_BY_POLICY"  ON "ERASURE_POLICY_BINDING_MEMBERS" ("POLICY_ID");
+CREATE INDEX "EPBM_BY_BINDING" ON "ERASURE_POLICY_BINDING_MEMBERS" ("BINDING_ID");
+
+
+-- 6. ERASURE_POLICY_BINDING_RESOLVED  (materialised §5.6 output)
+CREATE TABLE "ERASURE_POLICY_BINDING_RESOLVED" (
+    "RESOLVED_ID"             bigint        NOT NULL,
+    "BINDING_ID"              bigint        NOT NULL,
+    "SCHEMA_VALUE"            varchar(256)  NOT NULL,
+    "FIELD_PATH"              varchar(512)  NOT NULL,
+    "ACTION"                  varchar(16)   NOT NULL,
+    "LITERAL_VALUE"           varchar(1024),
+    "LITERAL_TYPE"            varchar(8),
+    "PARAMS"                  text,
+    "CONTRIBUTING_POLICIES"   text          NOT NULL,
+    "RESOLUTION_NOTE"         varchar(256),
+    PRIMARY KEY ("RESOLVED_ID")
+);
+
+ALTER TABLE ONLY "ERASURE_POLICY_BINDING_RESOLVED"
+    ADD CONSTRAINT "EPBR_BINDING_ID_fkey" FOREIGN KEY ("BINDING_ID") REFERENCES "ERASURE_POLICY_BINDINGS"("BINDING_ID") ON DELETE CASCADE DEFERRABLE;
+
+CREATE INDEX "EPBR_BY_BINDING" ON "ERASURE_POLICY_BINDING_RESOLVED" ("BINDING_ID", "SCHEMA_VALUE");
+
+
+-- 7. ERASURE_POLICY_LIFECYCLE_EVENTS  (append-only audit log)
+CREATE TABLE "ERASURE_POLICY_LIFECYCLE_EVENTS" (
+    "EVENT_ID"       bigint       NOT NULL,
+    "VERSION_ID"     bigint       NOT NULL,
+    "EVENT_TYPE"     varchar(24)  NOT NULL,
+    "PRINCIPAL"      varchar(256) NOT NULL,
+    "EVENT_TS"       bigint       NOT NULL,
+    "NOTE"           varchar(2048),
+    "CONFLICT_CLASS" varchar(16),
+    "BINDING_ID"     bigint,
+    PRIMARY KEY ("EVENT_ID")
+);
+
+ALTER TABLE ONLY "ERASURE_POLICY_LIFECYCLE_EVENTS"
+    ADD CONSTRAINT "EPLE_VERSION_ID_fkey" FOREIGN KEY ("VERSION_ID") REFERENCES "ERASURE_POLICY_VERSIONS"("VERSION_ID") DEFERRABLE;
+
+ALTER TABLE ONLY "ERASURE_POLICY_LIFECYCLE_EVENTS"
+    ADD CONSTRAINT "EPLE_BINDING_ID_fkey" FOREIGN KEY ("BINDING_ID") REFERENCES "ERASURE_POLICY_BINDINGS"("BINDING_ID") ON DELETE SET NULL DEFERRABLE;
+
+CREATE INDEX "EPLE_BY_VERSION" ON "ERASURE_POLICY_LIFECYCLE_EVENTS" ("VERSION_ID", "EVENT_TS");
+CREATE INDEX "EPLE_BY_BINDING" ON "ERASURE_POLICY_LIFECYCLE_EVENTS" ("BINDING_ID", "EVENT_TS");
+CREATE INDEX "EPLE_BY_TYPE"    ON "ERASURE_POLICY_LIFECYCLE_EVENTS" ("EVENT_TYPE", "EVENT_TS");
+
+
+-- 8. ERASURE_RUN_AUDIT  (per-execution audit of ERASE FROM TABLE)
+CREATE TABLE "ERASURE_RUN_AUDIT" (
+    "RUN_ID"                       bigint       NOT NULL,
+    "TBL_ID"                       bigint       NOT NULL,
+    "COLUMN_NAME"                  varchar(128) NOT NULL,
+    "BINDING_ID"                   bigint,
+    "PRINCIPAL"                    varchar(256) NOT NULL,
+    "STARTED_TS"                   bigint       NOT NULL,
+    "COMPLETED_TS"                 bigint,
+    "RELEASE_REASON" character varying(4000),
+    "IDENTITY_VALUES"              text,
+    "POLICY_VERSIONS"              text,
+    "RESOLVED_RULES_SNAPSHOT_ID"   bigint,
+    "FILES_REWRITTEN"              integer,
+    "BYTES_BEFORE"                 bigint,
+    "BYTES_AFTER"                  bigint,
+    "STATUS"                       varchar(16)  NOT NULL,
+    "MATCHES_INSPECTED"            bigint,
+    "MATCHES_REDACTED"             bigint,
+    "MATCHES_FLAGGED"              bigint,
+    PRIMARY KEY ("RUN_ID")
+);
+
+ALTER TABLE ONLY "ERASURE_RUN_AUDIT"
+    ADD CONSTRAINT "ERA_TBL_ID_fkey" FOREIGN KEY ("TBL_ID") REFERENCES "TBLS"("TBL_ID") DEFERRABLE;
+
+-- §4.4 audit-of-record invariant: a §4.6 DETACH of the binding must
+-- not lose the §4.7 audit history that references it. ON DELETE SET
+-- NULL keeps every audit row, nulling only the now-stale link.
+ALTER TABLE ONLY "ERASURE_RUN_AUDIT"
+    ADD CONSTRAINT "ERA_BINDING_ID_fkey" FOREIGN KEY ("BINDING_ID")
+    REFERENCES "ERASURE_POLICY_BINDINGS"("BINDING_ID")
+    ON DELETE SET NULL DEFERRABLE;
+
+CREATE INDEX "ERA_BY_TABLE"   ON "ERASURE_RUN_AUDIT" ("TBL_ID", "STARTED_TS");
+CREATE INDEX "ERA_BY_BINDING" ON "ERASURE_RUN_AUDIT" ("BINDING_ID", "STARTED_TS");
+CREATE INDEX "ERA_BY_USER"    ON "ERASURE_RUN_AUDIT" ("PRINCIPAL", "STARTED_TS");
+CREATE INDEX "ERA_BY_STATUS"  ON "ERASURE_RUN_AUDIT" ("STATUS", "STARTED_TS");
+
+-- 8a-i. ERASURE_RUN_AUDIT_IDENTITY  (§4.8 normalised identity index)
+-- One row per (run, identity value) so AUDIT BY IDENTITY VALUES is an indexed
+-- exact-match lookup on IDENTITY_VALUE instead of a substring scan over the
+-- parent's serialised IDENTITY_VALUES CLOB (which also mis-matches a value
+-- that is a substring of another, e.g. '1001' inside '10012').
+CREATE TABLE "ERASURE_RUN_AUDIT_IDENTITY" (
+    "ERAI_ID"        bigint       NOT NULL,
+    "RUN_ID"         bigint       NOT NULL,
+    "IDENTITY_VALUE" varchar(256) NOT NULL,
+    PRIMARY KEY ("ERAI_ID")
+);
+
+ALTER TABLE ONLY "ERASURE_RUN_AUDIT_IDENTITY"
+    ADD CONSTRAINT "ERAI_RUN_ID_fkey" FOREIGN KEY ("RUN_ID")
+    REFERENCES "ERASURE_RUN_AUDIT"("RUN_ID") DEFERRABLE;
+
+CREATE INDEX "ERAI_BY_IDENTITY" ON "ERASURE_RUN_AUDIT_IDENTITY" ("IDENTITY_VALUE");
+
+
+-- 9. POLICY_PRIVS  (privilege grants on policy objects)
+-- POLICY_ID = 0 is the wildcard "*" (grant applies to every policy); the
+-- sentinel value is not a valid POLICY_ID in ERASURE_POLICIES, so no FK is
+-- declared on this column.
+CREATE TABLE "POLICY_PRIVS" (
+    "POLICY_PRIV_ID"  bigint       NOT NULL,
+    "POLICY_ID"       bigint       NOT NULL,
+    "PRINCIPAL_NAME"  varchar(256) NOT NULL,
+    "PRINCIPAL_TYPE"  varchar(16)  NOT NULL,
+    "PRIVILEGE"       varchar(32)  NOT NULL,
+    "CREATE_TIME"     bigint       NOT NULL,
+    "GRANTOR"         varchar(256),
+    "GRANTOR_TYPE"    varchar(16),
+    "GRANT_OPTION"    smallint     NOT NULL DEFAULT 0,
+    PRIMARY KEY ("POLICY_PRIV_ID")
+);
+
+ALTER TABLE ONLY "POLICY_PRIVS"
+    ADD CONSTRAINT "PP_UNIQ_GRANT" UNIQUE ("POLICY_ID", "PRINCIPAL_NAME", "PRINCIPAL_TYPE", "PRIVILEGE");
+
+CREATE INDEX "PP_BY_PRINCIPAL" ON "POLICY_PRIVS" ("PRINCIPAL_NAME", "PRINCIPAL_TYPE");
+CREATE INDEX "PP_BY_POLICY"    ON "POLICY_PRIVS" ("POLICY_ID");
+
+-- HiveDAE: per-table erasure run-lock (MErasureRunLock). Not in 4.1.0 SQL (was
+-- DataNucleus-created); the ERASE path acquires/releases it, so it must exist.
+CREATE TABLE "ERASURE_RUN_LOCK" (
+    "TBL_ID" bigint NOT NULL,
+    "RUN_ID" bigint NOT NULL,
+    "PRINCIPAL" character varying(256),
+    "STARTED_TS" bigint NOT NULL,
+    "COMPLETED_TS" bigint,
+    "RELEASED_BY" character varying(256),
+    "RELEASED_TS" bigint,
+    "RELEASE_REASON" character varying(1024),
+    "STATUS" character varying(32)
+);
+ALTER TABLE ONLY "ERASURE_RUN_LOCK"
+    ADD CONSTRAINT "ERASURE_RUN_LOCK_PK" PRIMARY KEY ("TBL_ID");
+
+
+
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script
 -- -----------------------------------------------------------------

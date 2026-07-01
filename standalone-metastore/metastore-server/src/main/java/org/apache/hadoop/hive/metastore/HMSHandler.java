@@ -59,6 +59,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -4550,5 +4551,467 @@ public Package find_package(GetPackageRequest request) throws MetaException, NoS
     } finally {
       endFunction("get_all_write_event_info", ex == null, ex);
     }
+  }
+
+  /* anonymization extensions */
+
+  @Override
+  public void create_erasure_policy(ErasurePolicy erasurePolicy) throws AlreadyExistsException, TException {
+    RawStore rs = getMS();
+    ErasurePolicy tmpPolicy = rs.getErasurePolicy(erasurePolicy.getPolicyName());
+    if(tmpPolicy != null){
+      throw new AlreadyExistsException("policy " + erasurePolicy.getPolicyName() + " already exists.");
+    }
+    rs.createErasurePolicy(erasurePolicy);
+  }
+
+  @Override
+  public void drop_erasure_policy(String policyName, boolean ifExists) throws TException {
+    getMS().dropErasurePolicy(policyName, ifExists);
+  }
+
+  @Override
+  public void add_index(final Index newIndex, final Table indexTable) throws TException {
+    startFunction("add_index", ": " + newIndex.toString() + " " + indexTable.toString());
+    Index ret = null;
+    Exception ex = null;
+    try {
+      ret = add_index_core(getMS(), newIndex, indexTable);
+    } catch (Exception e) {
+      rethrowException(e);
+    } finally {
+      String tableName = indexTable != null ? indexTable.getTableName() : null;
+      endFunction("add_index", ret != null, ex, tableName);
+    }
+  }
+
+  private Index add_index_core(final RawStore ms, final Index index, final Table indexTable)
+    throws InvalidObjectException, AlreadyExistsException, MetaException, InvalidInputException, TException {
+    boolean success = false, indexTableCreated = false;
+    //String[] qualified = MetaStoreUtils.getQualifiedName(index.getDbName(), index.getIndexTableName());
+    String[] parsedDbName = parseDbName(index.getDbName(), conf);
+    String catName = parsedDbName[CAT_NAME];
+    String dbName = parsedDbName[DB_NAME];
+    //Map<String, String> transactionalListenerResponses = Collections.emptyMap();
+    try {
+      ms.openTransaction();
+//      firePreEvent(new PreAddIndexEvent(index, this));
+      Index old_index = null;
+      try {
+        old_index = get_index_by_name(index.getDbName(), index.getOrigTableName(), index.getIndexName());
+      } catch (Exception e) {
+      }
+      if (old_index != null) {
+        throw new AlreadyExistsException("Index already exists:" + index);
+      }
+
+      Table origTbl = ms.getTable(catName, dbName, index.getOrigTableName());
+      if (origTbl == null) {
+        throw new InvalidObjectException("Unable to add index because database or the original table do not exist");
+      }
+
+      Table indexTbl = indexTable;
+      if (indexTbl != null) {
+        try {
+          indexTbl = ms.getTable(catName, dbName, index.getIndexTableName());
+        } catch (Exception e) {
+        }
+        if (indexTbl != null) {
+          throw new InvalidObjectException("Unable to add index because index table already exists");
+        }
+        this.create_table(indexTable);
+        indexTableCreated = true;
+      }
+
+      ms.addIndex(index);
+
+      success = ms.commitTransaction();
+      return index;
+    } finally {
+      if (!success) {
+        if (indexTableCreated) {
+          try {
+            drop_table(dbName, index.getIndexTableName(), false);
+          } catch (Exception e) {
+          }
+        }
+        ms.rollbackTransaction();
+      }
+    }
+  }
+
+  @Override
+  public Index get_index_by_name(final String dbName, final String tblName, final String indexName) throws MetaException, NoSuchObjectException, TException {
+//    startFunction("get_index_by_name", ": db=" + dbName + " tbl=" + tblName + " index=" + indexName);
+    Index ret = null;
+    Exception ex = null;
+    try {
+      ret = get_index_by_name_core(getMS(), dbName, tblName, indexName);
+    } catch (Exception e) {
+      ex = e;
+      rethrowException(e);
+    } finally {
+//      endFunction("get_index_by_name", ret != null, ex, tblName);
+    }
+    return ret;
+  }
+
+  private Index get_index_by_name_core(final RawStore ms, final String db_name, final String tbl_name, final String index_name) throws MetaException, NoSuchObjectException, TException {
+    Index index = ms.getIndex(db_name, tbl_name, index_name);
+    if (index == null) {
+      throw new NoSuchObjectException(db_name + "." + tbl_name + " index=" + index_name + " not found");
+    }
+    return index;
+  }
+
+  @Override
+  public void drop_anon_index(final String indexName) throws TException {
+    getMS().dropAnonIndex(indexName);
+  }
+
+  @Override
+  public ErasurePolicy get_erasure_policy(final String policyName) throws TException {
+    ErasurePolicy policy = getMS().getErasurePolicy(policyName);
+    if (policy == null) {
+      throw new NoSuchObjectException("policy not found: " + policyName);
+    }
+    return policy;
+  }
+
+  /* erasure policy governance: versioning, binding, lifecycle audit, run audit, priv grants */
+
+  @Override
+  public ErasurePolicyVersion add_erasure_policy_version(ErasurePolicyVersion version)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
+    return getMS().addErasurePolicyVersion(version);
+  }
+
+  @Override
+  public ErasurePolicyVersion get_erasure_policy_version(String policyName, String versionLabel)
+      throws NoSuchObjectException, MetaException, TException {
+    return getMS().getErasurePolicyVersion(policyName, versionLabel);
+  }
+
+  @Override
+  public List<ErasurePolicyVersion> list_erasure_policy_versions(String policyName)
+      throws NoSuchObjectException, MetaException, TException {
+    return getMS().listErasurePolicyVersions(policyName);
+  }
+
+  @Override
+  public void update_erasure_policy_version_status(long versionId, PolicyVersionStatus newStatus,
+      String principal)
+      throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
+    getMS().updateErasurePolicyVersionStatus(versionId, newStatus, principal);
+  }
+
+  @Override
+  public ErasurePolicyVersion get_active_erasure_policy_version(String policyName)
+      throws NoSuchObjectException, MetaException, TException {
+    return getMS().getActiveErasurePolicyVersion(policyName);
+  }
+
+  @Override
+  public List<ErasurePolicyStatement> get_erasure_policy_statements(long versionId)
+      throws NoSuchObjectException, MetaException, TException {
+    return getMS().getErasurePolicyStatements(versionId);
+  }
+
+  @Override
+  public List<ErasurePolicyRule> get_erasure_policy_rules(long statementId)
+      throws NoSuchObjectException, MetaException, TException {
+    return getMS().getErasurePolicyRules(statementId);
+  }
+
+  @Override
+  public ErasurePolicyBinding add_erasure_policy_binding(ErasurePolicyBinding binding)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
+    return getMS().addErasurePolicyBinding(binding);
+  }
+
+  @Override
+  public ErasurePolicyBinding get_erasure_policy_binding(long tblId, String columnName)
+      throws NoSuchObjectException, MetaException, TException {
+    return getMS().getErasurePolicyBinding(tblId, columnName);
+  }
+
+  @Override
+  public void drop_erasure_policy_binding(long bindingId)
+      throws NoSuchObjectException, MetaException, TException {
+    getMS().dropErasurePolicyBinding(bindingId);
+  }
+
+  @Override
+  public void update_erasure_policy_binding_settings(long bindingId,
+      PolicyResolutionMode resolutionMode, ColumnInternalFormat columnFormat)
+      throws NoSuchObjectException, MetaException, TException {
+    getMS().updateErasurePolicyBindingSettings(bindingId, resolutionMode, columnFormat);
+  }
+
+  @Override
+  public void attach_policy_to_binding(long bindingId, long policyId, int ordinal)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
+    getMS().attachPolicyToBinding(bindingId, policyId, ordinal);
+  }
+
+  @Override
+  public void detach_policy_from_binding(long bindingId, long policyId)
+      throws NoSuchObjectException, MetaException, TException {
+    getMS().detachPolicyFromBinding(bindingId, policyId);
+  }
+
+  @Override
+  public List<ErasurePolicyBindingMember> get_binding_members(long bindingId)
+      throws NoSuchObjectException, MetaException, TException {
+    return getMS().getBindingMembers(bindingId);
+  }
+
+  @Override
+  public void replace_binding_resolved_rules(long bindingId,
+      List<ErasurePolicyBindingResolved> resolved)
+      throws NoSuchObjectException, MetaException, TException {
+    getMS().replaceBindingResolvedRules(bindingId, resolved);
+  }
+
+  @Override
+  public List<ErasurePolicyBindingResolved> get_binding_resolved_rules(long bindingId)
+      throws NoSuchObjectException, MetaException, TException {
+    return getMS().getBindingResolvedRules(bindingId);
+  }
+
+  @Override
+  public void record_lifecycle_event(ErasurePolicyLifecycleEvent evt)
+      throws MetaException, TException {
+    getMS().recordLifecycleEvent(evt);
+  }
+
+  @Override
+  public List<ErasurePolicyLifecycleEvent> get_lifecycle_events_for_policy(String policyName,
+      long fromTs, long untilTs) throws NoSuchObjectException, MetaException, TException {
+    return getMS().getLifecycleEventsForPolicy(policyName, fromTs, untilTs);
+  }
+
+  @Override
+  public List<ErasurePolicyLifecycleEvent> get_lifecycle_events_for_binding(long bindingId,
+      long fromTs, long untilTs) throws NoSuchObjectException, MetaException, TException {
+    return getMS().getLifecycleEventsForBinding(bindingId, fromTs, untilTs);
+  }
+
+  @Override
+  public List<ErasurePolicyLifecycleEvent> get_attach_rejected_events(long fromTs, long untilTs)
+      throws MetaException, TException {
+    return getMS().getAttachRejectedEvents(fromTs, untilTs);
+  }
+
+  @Override
+  public void record_erasure_run(ErasureRunAudit run) throws MetaException, TException {
+    getMS().recordErasureRun(run);
+  }
+
+  @Override
+  public List<ErasureRunAudit> get_erasure_runs_for_table(long tblId, long fromTs, long untilTs,
+      String byUser, String forIdentity) throws MetaException, TException {
+    return getMS().getErasureRunsForTable(tblId, fromTs, untilTs, byUser, forIdentity);
+  }
+
+  @Override
+  public void update_erasure_run_completion(long tblId, long startedTs, long completedTs,
+      ErasureRunStatus status, long matchesInspected, long matchesRedacted, long matchesFlagged)
+      throws NoSuchObjectException, MetaException, TException {
+    getMS().updateErasureRunCompletion(tblId, startedTs, completedTs, status,
+        matchesInspected, matchesRedacted, matchesFlagged);
+  }
+
+  // -----------------------------------------------------------------------
+  // ERASE FROM TABLE per-table run-lock service handlers.
+  // -----------------------------------------------------------------------
+
+  @Override
+  public ErasureRunLock acquire_erasure_run_lock(long tblId, long runId, String principal)
+      throws MetaException, TException {
+    return toThriftRunLock(getMS().acquireErasureRunLock(tblId, runId, principal));
+  }
+
+  @Override
+  public ErasureRunLock get_erasure_run_lock(long tblId) throws MetaException, TException {
+    return toThriftRunLock(getMS().getErasureRunLock(tblId));
+  }
+
+  @Override
+  public boolean complete_erasure_run_lock(long tblId, long runId)
+      throws MetaException, TException {
+    return getMS().completeErasureRunLock(tblId, runId);
+  }
+
+  @Override
+  public ErasureRunLock manually_release_erasure_run_lock(long tblId, String releasedBy,
+      String releaseReason, boolean force)
+      throws NoSuchObjectException, MetaException, TException {
+    return toThriftRunLock(
+        getMS().manuallyReleaseErasureRunLock(tblId, releasedBy, releaseReason, force));
+  }
+
+  @Override
+  public java.util.List<ErasureRunLock> list_erasure_run_locks()
+      throws MetaException, TException {
+    java.util.List<org.apache.hadoop.hive.metastore.model.MErasureRunLock> rows =
+        getMS().listErasureRunLocks();
+    java.util.List<ErasureRunLock> out = new java.util.ArrayList<>(rows.size());
+    for (org.apache.hadoop.hive.metastore.model.MErasureRunLock m : rows) {
+      out.add(toThriftRunLock(m));
+    }
+    return out;
+  }
+
+  /**
+   * Convert a JDO {@link org.apache.hadoop.hive.metastore.model.MErasureRunLock}
+   * to the thrift wire struct, mapping the status string back to the
+   * {@link ErasureRunLockStatus} enum.
+   */
+  private static ErasureRunLock toThriftRunLock(
+      org.apache.hadoop.hive.metastore.model.MErasureRunLock m) {
+    if (m == null) {
+      return null;
+    }
+    ErasureRunLock out = new ErasureRunLock();
+    out.setTblId(m.getTblId());
+    out.setRunId(m.getRunId());
+    out.setPrincipal(m.getPrincipal());
+    out.setStartedTs(m.getStartedTs());
+    if (m.getCompletedTs() != null) out.setCompletedTs(m.getCompletedTs());
+    if (m.getReleasedBy() != null) out.setReleasedBy(m.getReleasedBy());
+    if (m.getReleasedTs() != null) out.setReleasedTs(m.getReleasedTs());
+    if (m.getReleaseReason() != null) out.setReleaseReason(m.getReleaseReason());
+    if (m.getStatus() != null) {
+      out.setStatus(ErasureRunLockStatus.valueOf(m.getStatus()));
+    }
+    return out;
+  }
+
+  @Override
+  public void grant_policy_priv(PolicyPriv priv)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
+    getMS().grantPolicyPriv(priv);
+  }
+
+  @Override
+  public void revoke_policy_priv(long policyPrivId)
+      throws NoSuchObjectException, MetaException, TException {
+    getMS().revokePolicyPriv(policyPrivId);
+  }
+
+  @Override
+  public List<PolicyPriv> list_policy_privs(long policyId, String principalName)
+      throws MetaException, TException {
+    return getMS().listPolicyPrivs(policyId, principalName);
+  }
+
+  @Override
+  public boolean drop_index_by_name(final String dbName, final String tblName, final String indexName, final boolean deleteData, final boolean ifExist) throws NoSuchObjectException, MetaException, TException {
+    startFunction("drop_index_by_name", ": db=" + dbName + " tbl=" + tblName + " index=" + indexName);
+
+    boolean ret = false;
+    Exception ex = null;
+    try {
+      ret = drop_index_by_name_core(getMS(), dbName, tblName, indexName, deleteData);
+    } catch (IOException e) {
+      ex = e;
+      throw new MetaException(e.getMessage());
+    } catch (Exception e) {
+      ex = e;
+      rethrowException(e);
+    } finally {
+      endFunction("drop_index_by_name", ret, ex, tblName);
+    }
+
+    return ret;
+  }
+
+  private boolean drop_index_by_name_core(final RawStore ms, final String dbName, final String tblName, final String indexName, final boolean deleteData)
+    throws NoSuchObjectException, MetaException, TException, IOException, InvalidObjectException, InvalidInputException {
+    boolean success = false;
+    Index index = null;
+    Path tblPath = null;
+    List<Path> partPaths = null;
+    Map<String, String> transactionalListenerResponses = Collections.emptyMap();
+    try {
+      ms.openTransaction();
+      // drop the underlying index table
+      index = get_index_by_name(dbName, tblName, indexName);  // throws exception if not exists
+//      firePreEvent(new PreDropIndexEvent(index, this));
+      ms.dropIndex(dbName, tblName, indexName);
+      String idxTblName = index.getIndexTableName();
+      if (idxTblName != null) {
+
+        String[] parsedDbName = parseDbName(index.getDbName(), conf);
+        String catName = parsedDbName[CAT_NAME];
+
+//        String[] qualified = MetaStoreUtils.getQualifiedName(index.getDbName(), idxTblName);
+        GetTableRequest idxTableReq = new GetTableRequest(dbName, idxTblName);
+        idxTableReq.setCatName(catName);
+        Table tbl = get_table_core(idxTableReq); //WIP
+        if (tbl.getSd() == null) {
+          throw new MetaException("Table metadata is corrupted");
+        }
+
+        if (tbl.getSd().getLocation() != null) {
+          tblPath = new Path(tbl.getSd().getLocation());
+          if (!wh.isWritable(tblPath.getParent())) {
+            throw new MetaException("Index table metadata not deleted since " + tblPath.getParent() + " is not writable");
+          }
+        }
+
+        // Drop the partitions and get a list of partition locations which need to be deleted
+        TableName idxTableName = new TableName(catName, dbName, idxTblName);
+        List<String> idxPartLocations = ms.dropAllPartitionsAndGetLocations(idxTableName,
+            tblPath != null ? wh.getDnsPath(tblPath).toString() : null,
+            new AtomicReference<>("Dropping index table " + idxTableName)); //WIP
+        partPaths = idxPartLocations.stream().map(Path::new).collect(Collectors.toList());
+        if (!ms.dropTable(catName, dbName, idxTblName)) {
+          throw new MetaException("Unable to drop underlying data table " + dbName + "." + idxTblName + " for index " + indexName);
+        }
+      }
+
+      success = ms.commitTransaction();
+    } finally {
+      if (!success) {
+        ms.rollbackTransaction();
+      } else if (deleteData && tblPath != null) {
+        // ok even if the data is not deleted
+        List<Path> pathsToDelete = new ArrayList<>();
+        if (partPaths != null) {
+          pathsToDelete.addAll(partPaths);
+        }
+        pathsToDelete.add(tblPath);
+        for (Path path : pathsToDelete) {
+          try {
+            wh.deleteDir(path, true, true); //WIP
+          } catch (Exception e) {
+            LOG.error("Failed to delete directory: {}", path, e);
+          }
+        }
+      }
+    }
+    return success;
+  }
+
+  @Override
+  public List<Index> get_indexes(String dbName, String tblName, short maxIndexes) throws TException {
+    List<Index> ret = null;
+    Exception ex = null;
+    try {
+      ret = getMS().getIndexes(dbName, tblName, maxIndexes);
+    } catch (Exception e) {
+      ex = e;
+      rethrowException(e);
+    } finally {
+
+    }
+    return ret;
+  }
+
+  @Override
+  public List<PolicyInfo> get_all_erasure_policies() throws TException {
+    return getMS().getAllErasurePolicies();
   }
 }

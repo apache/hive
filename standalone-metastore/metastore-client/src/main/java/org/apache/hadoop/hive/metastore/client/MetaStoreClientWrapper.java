@@ -1539,4 +1539,241 @@ public abstract class MetaStoreClientWrapper extends BaseMetaStoreClient {
       String mapPredicate, String... selection) throws TException {
     return delegate.getProperties(nameSpace, mapPrefix, mapPredicate, selection);
   }
+
+  /* anonymization extensions */
+
+  @Override
+  public void createErasurePolicy(ErasurePolicy policy) throws AlreadyExistsException, TException {
+    delegate.createErasurePolicy(policy);
+  }
+
+  @Override
+  public void dropErasurePolicy(String policyName, boolean ifExists) throws TException {
+    delegate.dropErasurePolicy(policyName, ifExists);
+  }
+
+  @Override
+  public void createIndex(Index index, Table table) throws TException {
+    delegate.createIndex(index, table);
+  }
+
+  @Override
+  public void dropAnonIndex(String indexName) throws TException {
+    delegate.dropAnonIndex(indexName);
+  }
+
+  @Override
+  public ErasurePolicy getErasurePolicy(String policyName) throws TException {
+    return delegate.getErasurePolicy(policyName);
+  }
+
+  @Override
+  public Index getIndex(String dbName, String tblName, String indexName) throws TException {
+    return delegate.getIndex(dbName, tblName, indexName);
+  }
+
+  @Override
+  public boolean dropIndex(String db_name, String tbl_name, String name, boolean deleteData, boolean ifExists) throws NoSuchObjectException, MetaException, TException {
+    return delegate.dropIndex(db_name, tbl_name, name, deleteData, ifExists);
+  }
+
+  @Override
+  public List<Index> listIndexes(String db_name, String tbl_name, short max) throws NoSuchObjectException, MetaException, TException {
+    return delegate.listIndexes(db_name, tbl_name, max);
+  }
+
+  @Override
+  public List<PolicyInfo> getAllErasurePolicyNames() throws MetaException, TException {
+    return delegate.getAllErasurePolicyNames();
+  }
+
+  /* erasure policy governance: §5 versioning, binding, lifecycle audit, run audit, priv grants */
+
+  @Override
+  public ErasurePolicyVersion addErasurePolicyVersion(ErasurePolicyVersion version)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
+    return delegate.addErasurePolicyVersion(version);
+  }
+
+  @Override
+  public ErasurePolicyVersion getErasurePolicyVersion(String policyName, String versionLabel)
+      throws NoSuchObjectException, MetaException, TException {
+    return delegate.getErasurePolicyVersion(policyName, versionLabel);
+  }
+
+  @Override
+  public List<ErasurePolicyVersion> listErasurePolicyVersions(String policyName)
+      throws NoSuchObjectException, MetaException, TException {
+    return delegate.listErasurePolicyVersions(policyName);
+  }
+
+  @Override
+  public void updateErasurePolicyVersionStatus(long versionId, PolicyVersionStatus newStatus,
+      String principal)
+      throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
+    delegate.updateErasurePolicyVersionStatus(versionId, newStatus, principal);
+  }
+
+  @Override
+  public ErasurePolicyVersion getActiveErasurePolicyVersion(String policyName)
+      throws NoSuchObjectException, MetaException, TException {
+    return delegate.getActiveErasurePolicyVersion(policyName);
+  }
+
+  @Override
+  public List<ErasurePolicyStatement> getErasurePolicyStatements(long versionId)
+      throws NoSuchObjectException, MetaException, TException {
+    return delegate.getErasurePolicyStatements(versionId);
+  }
+
+  @Override
+  public List<ErasurePolicyRule> getErasurePolicyRules(long statementId)
+      throws NoSuchObjectException, MetaException, TException {
+    return delegate.getErasurePolicyRules(statementId);
+  }
+
+  @Override
+  public ErasurePolicyBinding addErasurePolicyBinding(ErasurePolicyBinding binding)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
+    return delegate.addErasurePolicyBinding(binding);
+  }
+
+  @Override
+  public ErasurePolicyBinding getErasurePolicyBinding(long tblId, String columnName)
+      throws NoSuchObjectException, MetaException, TException {
+    return delegate.getErasurePolicyBinding(tblId, columnName);
+  }
+
+  @Override
+  public void dropErasurePolicyBinding(long bindingId)
+      throws NoSuchObjectException, MetaException, TException {
+    delegate.dropErasurePolicyBinding(bindingId);
+  }
+
+  @Override
+  public void updateErasurePolicyBindingSettings(long bindingId, PolicyResolutionMode resolutionMode,
+      ColumnInternalFormat columnFormat)
+      throws NoSuchObjectException, MetaException, TException {
+    delegate.updateErasurePolicyBindingSettings(bindingId, resolutionMode, columnFormat);
+  }
+
+  @Override
+  public void attachPolicyToBinding(long bindingId, long policyId, int ordinal)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
+    delegate.attachPolicyToBinding(bindingId, policyId, ordinal);
+  }
+
+  @Override
+  public void detachPolicyFromBinding(long bindingId, long policyId)
+      throws NoSuchObjectException, MetaException, TException {
+    delegate.detachPolicyFromBinding(bindingId, policyId);
+  }
+
+  @Override
+  public List<ErasurePolicyBindingMember> getBindingMembers(long bindingId)
+      throws NoSuchObjectException, MetaException, TException {
+    return delegate.getBindingMembers(bindingId);
+  }
+
+  @Override
+  public void replaceBindingResolvedRules(long bindingId, List<ErasurePolicyBindingResolved> resolved)
+      throws NoSuchObjectException, MetaException, TException {
+    delegate.replaceBindingResolvedRules(bindingId, resolved);
+  }
+
+  @Override
+  public List<ErasurePolicyBindingResolved> getBindingResolvedRules(long bindingId)
+      throws NoSuchObjectException, MetaException, TException {
+    return delegate.getBindingResolvedRules(bindingId);
+  }
+
+  @Override
+  public void recordLifecycleEvent(ErasurePolicyLifecycleEvent evt) throws MetaException, TException {
+    delegate.recordLifecycleEvent(evt);
+  }
+
+  @Override
+  public List<ErasurePolicyLifecycleEvent> getLifecycleEventsForPolicy(String policyName, long fromTs,
+      long untilTs) throws NoSuchObjectException, MetaException, TException {
+    return delegate.getLifecycleEventsForPolicy(policyName, fromTs, untilTs);
+  }
+
+  @Override
+  public List<ErasurePolicyLifecycleEvent> getLifecycleEventsForBinding(long bindingId, long fromTs,
+      long untilTs) throws NoSuchObjectException, MetaException, TException {
+    return delegate.getLifecycleEventsForBinding(bindingId, fromTs, untilTs);
+  }
+
+  @Override
+  public List<ErasurePolicyLifecycleEvent> getAttachRejectedEvents(long fromTs, long untilTs)
+      throws MetaException, TException {
+    return delegate.getAttachRejectedEvents(fromTs, untilTs);
+  }
+
+  @Override
+  public void recordErasureRun(ErasureRunAudit run) throws MetaException, TException {
+    delegate.recordErasureRun(run);
+  }
+
+  @Override
+  public List<ErasureRunAudit> getErasureRunsForTable(long tblId, long fromTs, long untilTs,
+      String byUser, String forIdentity) throws MetaException, TException {
+    return delegate.getErasureRunsForTable(tblId, fromTs, untilTs, byUser, forIdentity);
+  }
+
+  @Override
+  public void updateErasureRunCompletion(long tblId, long startedTs, long completedTs,
+      ErasureRunStatus status, long matchesInspected, long matchesRedacted, long matchesFlagged)
+      throws NoSuchObjectException, MetaException, TException {
+    delegate.updateErasureRunCompletion(tblId, startedTs, completedTs, status, matchesInspected,
+        matchesRedacted, matchesFlagged);
+  }
+
+  @Override
+  public ErasureRunLock acquireErasureRunLock(long tblId, long runId, String principal)
+      throws MetaException, TException {
+    return delegate.acquireErasureRunLock(tblId, runId, principal);
+  }
+
+  @Override
+  public ErasureRunLock getErasureRunLock(long tblId)
+      throws MetaException, TException {
+    return delegate.getErasureRunLock(tblId);
+  }
+
+  @Override
+  public boolean completeErasureRunLock(long tblId, long runId)
+      throws MetaException, TException {
+    return delegate.completeErasureRunLock(tblId, runId);
+  }
+
+  @Override
+  public ErasureRunLock manuallyReleaseErasureRunLock(long tblId, String releasedBy,
+      String releaseReason, boolean force)
+      throws NoSuchObjectException, MetaException, TException {
+    return delegate.manuallyReleaseErasureRunLock(tblId, releasedBy, releaseReason, force);
+  }
+
+  @Override
+  public java.util.List<ErasureRunLock> listErasureRunLocks()
+      throws MetaException, TException {
+    return delegate.listErasureRunLocks();
+  }
+
+  @Override
+  public void grantPolicyPriv(PolicyPriv priv)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
+    delegate.grantPolicyPriv(priv);
+  }
+
+  @Override
+  public void revokePolicyPriv(long policyPrivId) throws NoSuchObjectException, MetaException, TException {
+    delegate.revokePolicyPriv(policyPrivId);
+  }
+
+  @Override
+  public List<PolicyPriv> listPolicyPrivs(long policyId, String principalName)
+      throws MetaException, TException {
+    return delegate.listPolicyPrivs(policyId, principalName);
+  }
 }

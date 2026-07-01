@@ -2435,6 +2435,358 @@ class Iface(fb303.FacebookService.Iface):
         """
         pass
 
+    def create_erasure_policy(self, erasurePolicy):
+        """
+        Parameters:
+         - erasurePolicy
+
+        """
+        pass
+
+    def drop_erasure_policy(self, policyName, ifExists):
+        """
+        Parameters:
+         - policyName
+         - ifExists
+
+        """
+        pass
+
+    def drop_anon_index(self, indexName):
+        """
+        Parameters:
+         - indexName
+
+        """
+        pass
+
+    def get_erasure_policy(self, policyName):
+        """
+        Parameters:
+         - policyName
+
+        """
+        pass
+
+    def add_index(self, new_index, index_table):
+        """
+        Parameters:
+         - new_index
+         - index_table
+
+        """
+        pass
+
+    def get_index_by_name(self, db_name, tbl_name, index_name):
+        """
+        Parameters:
+         - db_name
+         - tbl_name
+         - index_name
+
+        """
+        pass
+
+    def drop_index_by_name(self, db_name, tbl_name, index_name, deleteData, ifExists):
+        """
+        Parameters:
+         - db_name
+         - tbl_name
+         - index_name
+         - deleteData
+         - ifExists
+
+        """
+        pass
+
+    def get_indexes(self, db_name, tbl_name, max_indexes):
+        """
+        Parameters:
+         - db_name
+         - tbl_name
+         - max_indexes
+
+        """
+        pass
+
+    def get_all_erasure_policies(self):
+        pass
+
+    def add_erasure_policy_version(self, version):
+        """
+        Parameters:
+         - version
+
+        """
+        pass
+
+    def get_erasure_policy_version(self, policyName, versionLabel):
+        """
+        Parameters:
+         - policyName
+         - versionLabel
+
+        """
+        pass
+
+    def list_erasure_policy_versions(self, policyName):
+        """
+        Parameters:
+         - policyName
+
+        """
+        pass
+
+    def update_erasure_policy_version_status(self, versionId, newStatus, principal):
+        """
+        Parameters:
+         - versionId
+         - newStatus
+         - principal
+
+        """
+        pass
+
+    def get_active_erasure_policy_version(self, policyName):
+        """
+        Parameters:
+         - policyName
+
+        """
+        pass
+
+    def get_erasure_policy_statements(self, versionId):
+        """
+        Parameters:
+         - versionId
+
+        """
+        pass
+
+    def get_erasure_policy_rules(self, statementId):
+        """
+        Parameters:
+         - statementId
+
+        """
+        pass
+
+    def add_erasure_policy_binding(self, binding):
+        """
+        Parameters:
+         - binding
+
+        """
+        pass
+
+    def get_erasure_policy_binding(self, tblId, columnName):
+        """
+        Parameters:
+         - tblId
+         - columnName
+
+        """
+        pass
+
+    def drop_erasure_policy_binding(self, bindingId):
+        """
+        Parameters:
+         - bindingId
+
+        """
+        pass
+
+    def update_erasure_policy_binding_settings(self, bindingId, resolutionMode, columnFormat):
+        """
+        Parameters:
+         - bindingId
+         - resolutionMode
+         - columnFormat
+
+        """
+        pass
+
+    def attach_policy_to_binding(self, bindingId, policyId, ordinal):
+        """
+        Parameters:
+         - bindingId
+         - policyId
+         - ordinal
+
+        """
+        pass
+
+    def detach_policy_from_binding(self, bindingId, policyId):
+        """
+        Parameters:
+         - bindingId
+         - policyId
+
+        """
+        pass
+
+    def get_binding_members(self, bindingId):
+        """
+        Parameters:
+         - bindingId
+
+        """
+        pass
+
+    def replace_binding_resolved_rules(self, bindingId, resolved):
+        """
+        Parameters:
+         - bindingId
+         - resolved
+
+        """
+        pass
+
+    def get_binding_resolved_rules(self, bindingId):
+        """
+        Parameters:
+         - bindingId
+
+        """
+        pass
+
+    def record_lifecycle_event(self, evt):
+        """
+        Parameters:
+         - evt
+
+        """
+        pass
+
+    def get_lifecycle_events_for_policy(self, policyName, fromTs, untilTs):
+        """
+        Parameters:
+         - policyName
+         - fromTs
+         - untilTs
+
+        """
+        pass
+
+    def get_lifecycle_events_for_binding(self, bindingId, fromTs, untilTs):
+        """
+        Parameters:
+         - bindingId
+         - fromTs
+         - untilTs
+
+        """
+        pass
+
+    def get_attach_rejected_events(self, fromTs, untilTs):
+        """
+        Parameters:
+         - fromTs
+         - untilTs
+
+        """
+        pass
+
+    def record_erasure_run(self, run):
+        """
+        Parameters:
+         - run
+
+        """
+        pass
+
+    def get_erasure_runs_for_table(self, tblId, fromTs, untilTs, byUser, forIdentity):
+        """
+        Parameters:
+         - tblId
+         - fromTs
+         - untilTs
+         - byUser
+         - forIdentity
+
+        """
+        pass
+
+    def update_erasure_run_completion(self, tblId, startedTs, completedTs, status, matchesInspected, matchesRedacted, matchesFlagged):
+        """
+        Parameters:
+         - tblId
+         - startedTs
+         - completedTs
+         - status
+         - matchesInspected
+         - matchesRedacted
+         - matchesFlagged
+
+        """
+        pass
+
+    def acquire_erasure_run_lock(self, tblId, runId, principal):
+        """
+        Parameters:
+         - tblId
+         - runId
+         - principal
+
+        """
+        pass
+
+    def get_erasure_run_lock(self, tblId):
+        """
+        Parameters:
+         - tblId
+
+        """
+        pass
+
+    def complete_erasure_run_lock(self, tblId, runId):
+        """
+        Parameters:
+         - tblId
+         - runId
+
+        """
+        pass
+
+    def manually_release_erasure_run_lock(self, tblId, releasedBy, releaseReason, force):
+        """
+        Parameters:
+         - tblId
+         - releasedBy
+         - releaseReason
+         - force
+
+        """
+        pass
+
+    def list_erasure_run_locks(self):
+        pass
+
+    def grant_policy_priv(self, priv):
+        """
+        Parameters:
+         - priv
+
+        """
+        pass
+
+    def revoke_policy_priv(self, policyPrivId):
+        """
+        Parameters:
+         - policyPrivId
+
+        """
+        pass
+
+    def list_policy_privs(self, policyId, principalName):
+        """
+        Parameters:
+         - policyId
+         - principalName
+
+        """
+        pass
+
 
 class Client(fb303.FacebookService.Client, Iface):
     """
@@ -12798,6 +13150,1482 @@ class Client(fb303.FacebookService.Client, Iface):
             raise result.o1
         raise TApplicationException(TApplicationException.MISSING_RESULT, "get_replayed_txns_for_policy failed: unknown result")
 
+    def create_erasure_policy(self, erasurePolicy):
+        """
+        Parameters:
+         - erasurePolicy
+
+        """
+        self.send_create_erasure_policy(erasurePolicy)
+        self.recv_create_erasure_policy()
+
+    def send_create_erasure_policy(self, erasurePolicy):
+        self._oprot.writeMessageBegin('create_erasure_policy', TMessageType.CALL, self._seqid)
+        args = create_erasure_policy_args()
+        args.erasurePolicy = erasurePolicy
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_create_erasure_policy(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = create_erasure_policy_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        if result.o3 is not None:
+            raise result.o3
+        return
+
+    def drop_erasure_policy(self, policyName, ifExists):
+        """
+        Parameters:
+         - policyName
+         - ifExists
+
+        """
+        self.send_drop_erasure_policy(policyName, ifExists)
+        self.recv_drop_erasure_policy()
+
+    def send_drop_erasure_policy(self, policyName, ifExists):
+        self._oprot.writeMessageBegin('drop_erasure_policy', TMessageType.CALL, self._seqid)
+        args = drop_erasure_policy_args()
+        args.policyName = policyName
+        args.ifExists = ifExists
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_drop_erasure_policy(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = drop_erasure_policy_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.o1 is not None:
+            raise result.o1
+        if result.o3 is not None:
+            raise result.o3
+        return
+
+    def drop_anon_index(self, indexName):
+        """
+        Parameters:
+         - indexName
+
+        """
+        self.send_drop_anon_index(indexName)
+        self.recv_drop_anon_index()
+
+    def send_drop_anon_index(self, indexName):
+        self._oprot.writeMessageBegin('drop_anon_index', TMessageType.CALL, self._seqid)
+        args = drop_anon_index_args()
+        args.indexName = indexName
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_drop_anon_index(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = drop_anon_index_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        return
+
+    def get_erasure_policy(self, policyName):
+        """
+        Parameters:
+         - policyName
+
+        """
+        self.send_get_erasure_policy(policyName)
+        return self.recv_get_erasure_policy()
+
+    def send_get_erasure_policy(self, policyName):
+        self._oprot.writeMessageBegin('get_erasure_policy', TMessageType.CALL, self._seqid)
+        args = get_erasure_policy_args()
+        args.policyName = policyName
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_get_erasure_policy(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = get_erasure_policy_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "get_erasure_policy failed: unknown result")
+
+    def add_index(self, new_index, index_table):
+        """
+        Parameters:
+         - new_index
+         - index_table
+
+        """
+        self.send_add_index(new_index, index_table)
+        self.recv_add_index()
+
+    def send_add_index(self, new_index, index_table):
+        self._oprot.writeMessageBegin('add_index', TMessageType.CALL, self._seqid)
+        args = add_index_args()
+        args.new_index = new_index
+        args.index_table = index_table
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_add_index(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = add_index_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        if result.o3 is not None:
+            raise result.o3
+        return
+
+    def get_index_by_name(self, db_name, tbl_name, index_name):
+        """
+        Parameters:
+         - db_name
+         - tbl_name
+         - index_name
+
+        """
+        self.send_get_index_by_name(db_name, tbl_name, index_name)
+        return self.recv_get_index_by_name()
+
+    def send_get_index_by_name(self, db_name, tbl_name, index_name):
+        self._oprot.writeMessageBegin('get_index_by_name', TMessageType.CALL, self._seqid)
+        args = get_index_by_name_args()
+        args.db_name = db_name
+        args.tbl_name = tbl_name
+        args.index_name = index_name
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_get_index_by_name(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = get_index_by_name_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "get_index_by_name failed: unknown result")
+
+    def drop_index_by_name(self, db_name, tbl_name, index_name, deleteData, ifExists):
+        """
+        Parameters:
+         - db_name
+         - tbl_name
+         - index_name
+         - deleteData
+         - ifExists
+
+        """
+        self.send_drop_index_by_name(db_name, tbl_name, index_name, deleteData, ifExists)
+        return self.recv_drop_index_by_name()
+
+    def send_drop_index_by_name(self, db_name, tbl_name, index_name, deleteData, ifExists):
+        self._oprot.writeMessageBegin('drop_index_by_name', TMessageType.CALL, self._seqid)
+        args = drop_index_by_name_args()
+        args.db_name = db_name
+        args.tbl_name = tbl_name
+        args.index_name = index_name
+        args.deleteData = deleteData
+        args.ifExists = ifExists
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_drop_index_by_name(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = drop_index_by_name_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "drop_index_by_name failed: unknown result")
+
+    def get_indexes(self, db_name, tbl_name, max_indexes):
+        """
+        Parameters:
+         - db_name
+         - tbl_name
+         - max_indexes
+
+        """
+        self.send_get_indexes(db_name, tbl_name, max_indexes)
+        return self.recv_get_indexes()
+
+    def send_get_indexes(self, db_name, tbl_name, max_indexes):
+        self._oprot.writeMessageBegin('get_indexes', TMessageType.CALL, self._seqid)
+        args = get_indexes_args()
+        args.db_name = db_name
+        args.tbl_name = tbl_name
+        args.max_indexes = max_indexes
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_get_indexes(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = get_indexes_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "get_indexes failed: unknown result")
+
+    def get_all_erasure_policies(self):
+        self.send_get_all_erasure_policies()
+        return self.recv_get_all_erasure_policies()
+
+    def send_get_all_erasure_policies(self):
+        self._oprot.writeMessageBegin('get_all_erasure_policies', TMessageType.CALL, self._seqid)
+        args = get_all_erasure_policies_args()
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_get_all_erasure_policies(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = get_all_erasure_policies_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.o1 is not None:
+            raise result.o1
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "get_all_erasure_policies failed: unknown result")
+
+    def add_erasure_policy_version(self, version):
+        """
+        Parameters:
+         - version
+
+        """
+        self.send_add_erasure_policy_version(version)
+        return self.recv_add_erasure_policy_version()
+
+    def send_add_erasure_policy_version(self, version):
+        self._oprot.writeMessageBegin('add_erasure_policy_version', TMessageType.CALL, self._seqid)
+        args = add_erasure_policy_version_args()
+        args.version = version
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_add_erasure_policy_version(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = add_erasure_policy_version_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        if result.o3 is not None:
+            raise result.o3
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "add_erasure_policy_version failed: unknown result")
+
+    def get_erasure_policy_version(self, policyName, versionLabel):
+        """
+        Parameters:
+         - policyName
+         - versionLabel
+
+        """
+        self.send_get_erasure_policy_version(policyName, versionLabel)
+        return self.recv_get_erasure_policy_version()
+
+    def send_get_erasure_policy_version(self, policyName, versionLabel):
+        self._oprot.writeMessageBegin('get_erasure_policy_version', TMessageType.CALL, self._seqid)
+        args = get_erasure_policy_version_args()
+        args.policyName = policyName
+        args.versionLabel = versionLabel
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_get_erasure_policy_version(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = get_erasure_policy_version_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "get_erasure_policy_version failed: unknown result")
+
+    def list_erasure_policy_versions(self, policyName):
+        """
+        Parameters:
+         - policyName
+
+        """
+        self.send_list_erasure_policy_versions(policyName)
+        return self.recv_list_erasure_policy_versions()
+
+    def send_list_erasure_policy_versions(self, policyName):
+        self._oprot.writeMessageBegin('list_erasure_policy_versions', TMessageType.CALL, self._seqid)
+        args = list_erasure_policy_versions_args()
+        args.policyName = policyName
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_list_erasure_policy_versions(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = list_erasure_policy_versions_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "list_erasure_policy_versions failed: unknown result")
+
+    def update_erasure_policy_version_status(self, versionId, newStatus, principal):
+        """
+        Parameters:
+         - versionId
+         - newStatus
+         - principal
+
+        """
+        self.send_update_erasure_policy_version_status(versionId, newStatus, principal)
+        self.recv_update_erasure_policy_version_status()
+
+    def send_update_erasure_policy_version_status(self, versionId, newStatus, principal):
+        self._oprot.writeMessageBegin('update_erasure_policy_version_status', TMessageType.CALL, self._seqid)
+        args = update_erasure_policy_version_status_args()
+        args.versionId = versionId
+        args.newStatus = newStatus
+        args.principal = principal
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_update_erasure_policy_version_status(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = update_erasure_policy_version_status_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        if result.o3 is not None:
+            raise result.o3
+        return
+
+    def get_active_erasure_policy_version(self, policyName):
+        """
+        Parameters:
+         - policyName
+
+        """
+        self.send_get_active_erasure_policy_version(policyName)
+        return self.recv_get_active_erasure_policy_version()
+
+    def send_get_active_erasure_policy_version(self, policyName):
+        self._oprot.writeMessageBegin('get_active_erasure_policy_version', TMessageType.CALL, self._seqid)
+        args = get_active_erasure_policy_version_args()
+        args.policyName = policyName
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_get_active_erasure_policy_version(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = get_active_erasure_policy_version_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "get_active_erasure_policy_version failed: unknown result")
+
+    def get_erasure_policy_statements(self, versionId):
+        """
+        Parameters:
+         - versionId
+
+        """
+        self.send_get_erasure_policy_statements(versionId)
+        return self.recv_get_erasure_policy_statements()
+
+    def send_get_erasure_policy_statements(self, versionId):
+        self._oprot.writeMessageBegin('get_erasure_policy_statements', TMessageType.CALL, self._seqid)
+        args = get_erasure_policy_statements_args()
+        args.versionId = versionId
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_get_erasure_policy_statements(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = get_erasure_policy_statements_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "get_erasure_policy_statements failed: unknown result")
+
+    def get_erasure_policy_rules(self, statementId):
+        """
+        Parameters:
+         - statementId
+
+        """
+        self.send_get_erasure_policy_rules(statementId)
+        return self.recv_get_erasure_policy_rules()
+
+    def send_get_erasure_policy_rules(self, statementId):
+        self._oprot.writeMessageBegin('get_erasure_policy_rules', TMessageType.CALL, self._seqid)
+        args = get_erasure_policy_rules_args()
+        args.statementId = statementId
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_get_erasure_policy_rules(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = get_erasure_policy_rules_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "get_erasure_policy_rules failed: unknown result")
+
+    def add_erasure_policy_binding(self, binding):
+        """
+        Parameters:
+         - binding
+
+        """
+        self.send_add_erasure_policy_binding(binding)
+        return self.recv_add_erasure_policy_binding()
+
+    def send_add_erasure_policy_binding(self, binding):
+        self._oprot.writeMessageBegin('add_erasure_policy_binding', TMessageType.CALL, self._seqid)
+        args = add_erasure_policy_binding_args()
+        args.binding = binding
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_add_erasure_policy_binding(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = add_erasure_policy_binding_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        if result.o3 is not None:
+            raise result.o3
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "add_erasure_policy_binding failed: unknown result")
+
+    def get_erasure_policy_binding(self, tblId, columnName):
+        """
+        Parameters:
+         - tblId
+         - columnName
+
+        """
+        self.send_get_erasure_policy_binding(tblId, columnName)
+        return self.recv_get_erasure_policy_binding()
+
+    def send_get_erasure_policy_binding(self, tblId, columnName):
+        self._oprot.writeMessageBegin('get_erasure_policy_binding', TMessageType.CALL, self._seqid)
+        args = get_erasure_policy_binding_args()
+        args.tblId = tblId
+        args.columnName = columnName
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_get_erasure_policy_binding(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = get_erasure_policy_binding_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "get_erasure_policy_binding failed: unknown result")
+
+    def drop_erasure_policy_binding(self, bindingId):
+        """
+        Parameters:
+         - bindingId
+
+        """
+        self.send_drop_erasure_policy_binding(bindingId)
+        self.recv_drop_erasure_policy_binding()
+
+    def send_drop_erasure_policy_binding(self, bindingId):
+        self._oprot.writeMessageBegin('drop_erasure_policy_binding', TMessageType.CALL, self._seqid)
+        args = drop_erasure_policy_binding_args()
+        args.bindingId = bindingId
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_drop_erasure_policy_binding(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = drop_erasure_policy_binding_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        return
+
+    def update_erasure_policy_binding_settings(self, bindingId, resolutionMode, columnFormat):
+        """
+        Parameters:
+         - bindingId
+         - resolutionMode
+         - columnFormat
+
+        """
+        self.send_update_erasure_policy_binding_settings(bindingId, resolutionMode, columnFormat)
+        self.recv_update_erasure_policy_binding_settings()
+
+    def send_update_erasure_policy_binding_settings(self, bindingId, resolutionMode, columnFormat):
+        self._oprot.writeMessageBegin('update_erasure_policy_binding_settings', TMessageType.CALL, self._seqid)
+        args = update_erasure_policy_binding_settings_args()
+        args.bindingId = bindingId
+        args.resolutionMode = resolutionMode
+        args.columnFormat = columnFormat
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_update_erasure_policy_binding_settings(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = update_erasure_policy_binding_settings_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        return
+
+    def attach_policy_to_binding(self, bindingId, policyId, ordinal):
+        """
+        Parameters:
+         - bindingId
+         - policyId
+         - ordinal
+
+        """
+        self.send_attach_policy_to_binding(bindingId, policyId, ordinal)
+        self.recv_attach_policy_to_binding()
+
+    def send_attach_policy_to_binding(self, bindingId, policyId, ordinal):
+        self._oprot.writeMessageBegin('attach_policy_to_binding', TMessageType.CALL, self._seqid)
+        args = attach_policy_to_binding_args()
+        args.bindingId = bindingId
+        args.policyId = policyId
+        args.ordinal = ordinal
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_attach_policy_to_binding(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = attach_policy_to_binding_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        if result.o3 is not None:
+            raise result.o3
+        return
+
+    def detach_policy_from_binding(self, bindingId, policyId):
+        """
+        Parameters:
+         - bindingId
+         - policyId
+
+        """
+        self.send_detach_policy_from_binding(bindingId, policyId)
+        self.recv_detach_policy_from_binding()
+
+    def send_detach_policy_from_binding(self, bindingId, policyId):
+        self._oprot.writeMessageBegin('detach_policy_from_binding', TMessageType.CALL, self._seqid)
+        args = detach_policy_from_binding_args()
+        args.bindingId = bindingId
+        args.policyId = policyId
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_detach_policy_from_binding(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = detach_policy_from_binding_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        return
+
+    def get_binding_members(self, bindingId):
+        """
+        Parameters:
+         - bindingId
+
+        """
+        self.send_get_binding_members(bindingId)
+        return self.recv_get_binding_members()
+
+    def send_get_binding_members(self, bindingId):
+        self._oprot.writeMessageBegin('get_binding_members', TMessageType.CALL, self._seqid)
+        args = get_binding_members_args()
+        args.bindingId = bindingId
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_get_binding_members(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = get_binding_members_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "get_binding_members failed: unknown result")
+
+    def replace_binding_resolved_rules(self, bindingId, resolved):
+        """
+        Parameters:
+         - bindingId
+         - resolved
+
+        """
+        self.send_replace_binding_resolved_rules(bindingId, resolved)
+        self.recv_replace_binding_resolved_rules()
+
+    def send_replace_binding_resolved_rules(self, bindingId, resolved):
+        self._oprot.writeMessageBegin('replace_binding_resolved_rules', TMessageType.CALL, self._seqid)
+        args = replace_binding_resolved_rules_args()
+        args.bindingId = bindingId
+        args.resolved = resolved
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_replace_binding_resolved_rules(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = replace_binding_resolved_rules_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        return
+
+    def get_binding_resolved_rules(self, bindingId):
+        """
+        Parameters:
+         - bindingId
+
+        """
+        self.send_get_binding_resolved_rules(bindingId)
+        return self.recv_get_binding_resolved_rules()
+
+    def send_get_binding_resolved_rules(self, bindingId):
+        self._oprot.writeMessageBegin('get_binding_resolved_rules', TMessageType.CALL, self._seqid)
+        args = get_binding_resolved_rules_args()
+        args.bindingId = bindingId
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_get_binding_resolved_rules(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = get_binding_resolved_rules_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "get_binding_resolved_rules failed: unknown result")
+
+    def record_lifecycle_event(self, evt):
+        """
+        Parameters:
+         - evt
+
+        """
+        self.send_record_lifecycle_event(evt)
+        self.recv_record_lifecycle_event()
+
+    def send_record_lifecycle_event(self, evt):
+        self._oprot.writeMessageBegin('record_lifecycle_event', TMessageType.CALL, self._seqid)
+        args = record_lifecycle_event_args()
+        args.evt = evt
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_record_lifecycle_event(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = record_lifecycle_event_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.o1 is not None:
+            raise result.o1
+        return
+
+    def get_lifecycle_events_for_policy(self, policyName, fromTs, untilTs):
+        """
+        Parameters:
+         - policyName
+         - fromTs
+         - untilTs
+
+        """
+        self.send_get_lifecycle_events_for_policy(policyName, fromTs, untilTs)
+        return self.recv_get_lifecycle_events_for_policy()
+
+    def send_get_lifecycle_events_for_policy(self, policyName, fromTs, untilTs):
+        self._oprot.writeMessageBegin('get_lifecycle_events_for_policy', TMessageType.CALL, self._seqid)
+        args = get_lifecycle_events_for_policy_args()
+        args.policyName = policyName
+        args.fromTs = fromTs
+        args.untilTs = untilTs
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_get_lifecycle_events_for_policy(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = get_lifecycle_events_for_policy_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "get_lifecycle_events_for_policy failed: unknown result")
+
+    def get_lifecycle_events_for_binding(self, bindingId, fromTs, untilTs):
+        """
+        Parameters:
+         - bindingId
+         - fromTs
+         - untilTs
+
+        """
+        self.send_get_lifecycle_events_for_binding(bindingId, fromTs, untilTs)
+        return self.recv_get_lifecycle_events_for_binding()
+
+    def send_get_lifecycle_events_for_binding(self, bindingId, fromTs, untilTs):
+        self._oprot.writeMessageBegin('get_lifecycle_events_for_binding', TMessageType.CALL, self._seqid)
+        args = get_lifecycle_events_for_binding_args()
+        args.bindingId = bindingId
+        args.fromTs = fromTs
+        args.untilTs = untilTs
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_get_lifecycle_events_for_binding(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = get_lifecycle_events_for_binding_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "get_lifecycle_events_for_binding failed: unknown result")
+
+    def get_attach_rejected_events(self, fromTs, untilTs):
+        """
+        Parameters:
+         - fromTs
+         - untilTs
+
+        """
+        self.send_get_attach_rejected_events(fromTs, untilTs)
+        return self.recv_get_attach_rejected_events()
+
+    def send_get_attach_rejected_events(self, fromTs, untilTs):
+        self._oprot.writeMessageBegin('get_attach_rejected_events', TMessageType.CALL, self._seqid)
+        args = get_attach_rejected_events_args()
+        args.fromTs = fromTs
+        args.untilTs = untilTs
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_get_attach_rejected_events(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = get_attach_rejected_events_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.o1 is not None:
+            raise result.o1
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "get_attach_rejected_events failed: unknown result")
+
+    def record_erasure_run(self, run):
+        """
+        Parameters:
+         - run
+
+        """
+        self.send_record_erasure_run(run)
+        self.recv_record_erasure_run()
+
+    def send_record_erasure_run(self, run):
+        self._oprot.writeMessageBegin('record_erasure_run', TMessageType.CALL, self._seqid)
+        args = record_erasure_run_args()
+        args.run = run
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_record_erasure_run(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = record_erasure_run_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.o1 is not None:
+            raise result.o1
+        return
+
+    def get_erasure_runs_for_table(self, tblId, fromTs, untilTs, byUser, forIdentity):
+        """
+        Parameters:
+         - tblId
+         - fromTs
+         - untilTs
+         - byUser
+         - forIdentity
+
+        """
+        self.send_get_erasure_runs_for_table(tblId, fromTs, untilTs, byUser, forIdentity)
+        return self.recv_get_erasure_runs_for_table()
+
+    def send_get_erasure_runs_for_table(self, tblId, fromTs, untilTs, byUser, forIdentity):
+        self._oprot.writeMessageBegin('get_erasure_runs_for_table', TMessageType.CALL, self._seqid)
+        args = get_erasure_runs_for_table_args()
+        args.tblId = tblId
+        args.fromTs = fromTs
+        args.untilTs = untilTs
+        args.byUser = byUser
+        args.forIdentity = forIdentity
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_get_erasure_runs_for_table(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = get_erasure_runs_for_table_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.o1 is not None:
+            raise result.o1
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "get_erasure_runs_for_table failed: unknown result")
+
+    def update_erasure_run_completion(self, tblId, startedTs, completedTs, status, matchesInspected, matchesRedacted, matchesFlagged):
+        """
+        Parameters:
+         - tblId
+         - startedTs
+         - completedTs
+         - status
+         - matchesInspected
+         - matchesRedacted
+         - matchesFlagged
+
+        """
+        self.send_update_erasure_run_completion(tblId, startedTs, completedTs, status, matchesInspected, matchesRedacted, matchesFlagged)
+        self.recv_update_erasure_run_completion()
+
+    def send_update_erasure_run_completion(self, tblId, startedTs, completedTs, status, matchesInspected, matchesRedacted, matchesFlagged):
+        self._oprot.writeMessageBegin('update_erasure_run_completion', TMessageType.CALL, self._seqid)
+        args = update_erasure_run_completion_args()
+        args.tblId = tblId
+        args.startedTs = startedTs
+        args.completedTs = completedTs
+        args.status = status
+        args.matchesInspected = matchesInspected
+        args.matchesRedacted = matchesRedacted
+        args.matchesFlagged = matchesFlagged
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_update_erasure_run_completion(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = update_erasure_run_completion_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        return
+
+    def acquire_erasure_run_lock(self, tblId, runId, principal):
+        """
+        Parameters:
+         - tblId
+         - runId
+         - principal
+
+        """
+        self.send_acquire_erasure_run_lock(tblId, runId, principal)
+        return self.recv_acquire_erasure_run_lock()
+
+    def send_acquire_erasure_run_lock(self, tblId, runId, principal):
+        self._oprot.writeMessageBegin('acquire_erasure_run_lock', TMessageType.CALL, self._seqid)
+        args = acquire_erasure_run_lock_args()
+        args.tblId = tblId
+        args.runId = runId
+        args.principal = principal
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_acquire_erasure_run_lock(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = acquire_erasure_run_lock_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.o1 is not None:
+            raise result.o1
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "acquire_erasure_run_lock failed: unknown result")
+
+    def get_erasure_run_lock(self, tblId):
+        """
+        Parameters:
+         - tblId
+
+        """
+        self.send_get_erasure_run_lock(tblId)
+        return self.recv_get_erasure_run_lock()
+
+    def send_get_erasure_run_lock(self, tblId):
+        self._oprot.writeMessageBegin('get_erasure_run_lock', TMessageType.CALL, self._seqid)
+        args = get_erasure_run_lock_args()
+        args.tblId = tblId
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_get_erasure_run_lock(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = get_erasure_run_lock_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.o1 is not None:
+            raise result.o1
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "get_erasure_run_lock failed: unknown result")
+
+    def complete_erasure_run_lock(self, tblId, runId):
+        """
+        Parameters:
+         - tblId
+         - runId
+
+        """
+        self.send_complete_erasure_run_lock(tblId, runId)
+        return self.recv_complete_erasure_run_lock()
+
+    def send_complete_erasure_run_lock(self, tblId, runId):
+        self._oprot.writeMessageBegin('complete_erasure_run_lock', TMessageType.CALL, self._seqid)
+        args = complete_erasure_run_lock_args()
+        args.tblId = tblId
+        args.runId = runId
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_complete_erasure_run_lock(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = complete_erasure_run_lock_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.o1 is not None:
+            raise result.o1
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "complete_erasure_run_lock failed: unknown result")
+
+    def manually_release_erasure_run_lock(self, tblId, releasedBy, releaseReason, force):
+        """
+        Parameters:
+         - tblId
+         - releasedBy
+         - releaseReason
+         - force
+
+        """
+        self.send_manually_release_erasure_run_lock(tblId, releasedBy, releaseReason, force)
+        return self.recv_manually_release_erasure_run_lock()
+
+    def send_manually_release_erasure_run_lock(self, tblId, releasedBy, releaseReason, force):
+        self._oprot.writeMessageBegin('manually_release_erasure_run_lock', TMessageType.CALL, self._seqid)
+        args = manually_release_erasure_run_lock_args()
+        args.tblId = tblId
+        args.releasedBy = releasedBy
+        args.releaseReason = releaseReason
+        args.force = force
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_manually_release_erasure_run_lock(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = manually_release_erasure_run_lock_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "manually_release_erasure_run_lock failed: unknown result")
+
+    def list_erasure_run_locks(self):
+        self.send_list_erasure_run_locks()
+        return self.recv_list_erasure_run_locks()
+
+    def send_list_erasure_run_locks(self):
+        self._oprot.writeMessageBegin('list_erasure_run_locks', TMessageType.CALL, self._seqid)
+        args = list_erasure_run_locks_args()
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_list_erasure_run_locks(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = list_erasure_run_locks_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.o1 is not None:
+            raise result.o1
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "list_erasure_run_locks failed: unknown result")
+
+    def grant_policy_priv(self, priv):
+        """
+        Parameters:
+         - priv
+
+        """
+        self.send_grant_policy_priv(priv)
+        self.recv_grant_policy_priv()
+
+    def send_grant_policy_priv(self, priv):
+        self._oprot.writeMessageBegin('grant_policy_priv', TMessageType.CALL, self._seqid)
+        args = grant_policy_priv_args()
+        args.priv = priv
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_grant_policy_priv(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = grant_policy_priv_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        if result.o3 is not None:
+            raise result.o3
+        return
+
+    def revoke_policy_priv(self, policyPrivId):
+        """
+        Parameters:
+         - policyPrivId
+
+        """
+        self.send_revoke_policy_priv(policyPrivId)
+        self.recv_revoke_policy_priv()
+
+    def send_revoke_policy_priv(self, policyPrivId):
+        self._oprot.writeMessageBegin('revoke_policy_priv', TMessageType.CALL, self._seqid)
+        args = revoke_policy_priv_args()
+        args.policyPrivId = policyPrivId
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_revoke_policy_priv(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = revoke_policy_priv_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        return
+
+    def list_policy_privs(self, policyId, principalName):
+        """
+        Parameters:
+         - policyId
+         - principalName
+
+        """
+        self.send_list_policy_privs(policyId, principalName)
+        return self.recv_list_policy_privs()
+
+    def send_list_policy_privs(self, policyId, principalName):
+        self._oprot.writeMessageBegin('list_policy_privs', TMessageType.CALL, self._seqid)
+        args = list_policy_privs_args()
+        args.policyId = policyId
+        args.principalName = principalName
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_list_policy_privs(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = list_policy_privs_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.o1 is not None:
+            raise result.o1
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "list_policy_privs failed: unknown result")
+
 
 class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     def __init__(self, handler):
@@ -13089,6 +14917,46 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         self._processMap["drop_package"] = Processor.process_drop_package
         self._processMap["get_all_write_event_info"] = Processor.process_get_all_write_event_info
         self._processMap["get_replayed_txns_for_policy"] = Processor.process_get_replayed_txns_for_policy
+        self._processMap["create_erasure_policy"] = Processor.process_create_erasure_policy
+        self._processMap["drop_erasure_policy"] = Processor.process_drop_erasure_policy
+        self._processMap["drop_anon_index"] = Processor.process_drop_anon_index
+        self._processMap["get_erasure_policy"] = Processor.process_get_erasure_policy
+        self._processMap["add_index"] = Processor.process_add_index
+        self._processMap["get_index_by_name"] = Processor.process_get_index_by_name
+        self._processMap["drop_index_by_name"] = Processor.process_drop_index_by_name
+        self._processMap["get_indexes"] = Processor.process_get_indexes
+        self._processMap["get_all_erasure_policies"] = Processor.process_get_all_erasure_policies
+        self._processMap["add_erasure_policy_version"] = Processor.process_add_erasure_policy_version
+        self._processMap["get_erasure_policy_version"] = Processor.process_get_erasure_policy_version
+        self._processMap["list_erasure_policy_versions"] = Processor.process_list_erasure_policy_versions
+        self._processMap["update_erasure_policy_version_status"] = Processor.process_update_erasure_policy_version_status
+        self._processMap["get_active_erasure_policy_version"] = Processor.process_get_active_erasure_policy_version
+        self._processMap["get_erasure_policy_statements"] = Processor.process_get_erasure_policy_statements
+        self._processMap["get_erasure_policy_rules"] = Processor.process_get_erasure_policy_rules
+        self._processMap["add_erasure_policy_binding"] = Processor.process_add_erasure_policy_binding
+        self._processMap["get_erasure_policy_binding"] = Processor.process_get_erasure_policy_binding
+        self._processMap["drop_erasure_policy_binding"] = Processor.process_drop_erasure_policy_binding
+        self._processMap["update_erasure_policy_binding_settings"] = Processor.process_update_erasure_policy_binding_settings
+        self._processMap["attach_policy_to_binding"] = Processor.process_attach_policy_to_binding
+        self._processMap["detach_policy_from_binding"] = Processor.process_detach_policy_from_binding
+        self._processMap["get_binding_members"] = Processor.process_get_binding_members
+        self._processMap["replace_binding_resolved_rules"] = Processor.process_replace_binding_resolved_rules
+        self._processMap["get_binding_resolved_rules"] = Processor.process_get_binding_resolved_rules
+        self._processMap["record_lifecycle_event"] = Processor.process_record_lifecycle_event
+        self._processMap["get_lifecycle_events_for_policy"] = Processor.process_get_lifecycle_events_for_policy
+        self._processMap["get_lifecycle_events_for_binding"] = Processor.process_get_lifecycle_events_for_binding
+        self._processMap["get_attach_rejected_events"] = Processor.process_get_attach_rejected_events
+        self._processMap["record_erasure_run"] = Processor.process_record_erasure_run
+        self._processMap["get_erasure_runs_for_table"] = Processor.process_get_erasure_runs_for_table
+        self._processMap["update_erasure_run_completion"] = Processor.process_update_erasure_run_completion
+        self._processMap["acquire_erasure_run_lock"] = Processor.process_acquire_erasure_run_lock
+        self._processMap["get_erasure_run_lock"] = Processor.process_get_erasure_run_lock
+        self._processMap["complete_erasure_run_lock"] = Processor.process_complete_erasure_run_lock
+        self._processMap["manually_release_erasure_run_lock"] = Processor.process_manually_release_erasure_run_lock
+        self._processMap["list_erasure_run_locks"] = Processor.process_list_erasure_run_locks
+        self._processMap["grant_policy_priv"] = Processor.process_grant_policy_priv
+        self._processMap["revoke_policy_priv"] = Processor.process_revoke_policy_priv
+        self._processMap["list_policy_privs"] = Processor.process_list_policy_privs
         self._on_message_begin = None
 
     def on_message_begin(self, func):
@@ -21274,6 +23142,1157 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
             msg_type = TMessageType.EXCEPTION
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
         oprot.writeMessageBegin("get_replayed_txns_for_policy", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_create_erasure_policy(self, seqid, iprot, oprot):
+        args = create_erasure_policy_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = create_erasure_policy_result()
+        try:
+            self._handler.create_erasure_policy(args.erasurePolicy)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except AlreadyExistsException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except InvalidObjectException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except MetaException as o3:
+            msg_type = TMessageType.REPLY
+            result.o3 = o3
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("create_erasure_policy", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_drop_erasure_policy(self, seqid, iprot, oprot):
+        args = drop_erasure_policy_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = drop_erasure_policy_result()
+        try:
+            self._handler.drop_erasure_policy(args.policyName, args.ifExists)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except NoSuchObjectException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except MetaException as o3:
+            msg_type = TMessageType.REPLY
+            result.o3 = o3
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("drop_erasure_policy", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_drop_anon_index(self, seqid, iprot, oprot):
+        args = drop_anon_index_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = drop_anon_index_result()
+        try:
+            self._handler.drop_anon_index(args.indexName)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except NoSuchObjectException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except MetaException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("drop_anon_index", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_get_erasure_policy(self, seqid, iprot, oprot):
+        args = get_erasure_policy_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_erasure_policy_result()
+        try:
+            result.success = self._handler.get_erasure_policy(args.policyName)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except NoSuchObjectException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except MetaException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("get_erasure_policy", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_add_index(self, seqid, iprot, oprot):
+        args = add_index_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = add_index_result()
+        try:
+            self._handler.add_index(args.new_index, args.index_table)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except InvalidObjectException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except AlreadyExistsException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except MetaException as o3:
+            msg_type = TMessageType.REPLY
+            result.o3 = o3
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("add_index", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_get_index_by_name(self, seqid, iprot, oprot):
+        args = get_index_by_name_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_index_by_name_result()
+        try:
+            result.success = self._handler.get_index_by_name(args.db_name, args.tbl_name, args.index_name)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except MetaException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except NoSuchObjectException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("get_index_by_name", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_drop_index_by_name(self, seqid, iprot, oprot):
+        args = drop_index_by_name_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = drop_index_by_name_result()
+        try:
+            result.success = self._handler.drop_index_by_name(args.db_name, args.tbl_name, args.index_name, args.deleteData, args.ifExists)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except NoSuchObjectException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except MetaException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("drop_index_by_name", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_get_indexes(self, seqid, iprot, oprot):
+        args = get_indexes_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_indexes_result()
+        try:
+            result.success = self._handler.get_indexes(args.db_name, args.tbl_name, args.max_indexes)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except NoSuchObjectException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except MetaException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("get_indexes", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_get_all_erasure_policies(self, seqid, iprot, oprot):
+        args = get_all_erasure_policies_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_all_erasure_policies_result()
+        try:
+            result.success = self._handler.get_all_erasure_policies()
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except MetaException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("get_all_erasure_policies", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_add_erasure_policy_version(self, seqid, iprot, oprot):
+        args = add_erasure_policy_version_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = add_erasure_policy_version_result()
+        try:
+            result.success = self._handler.add_erasure_policy_version(args.version)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except AlreadyExistsException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except InvalidObjectException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except MetaException as o3:
+            msg_type = TMessageType.REPLY
+            result.o3 = o3
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("add_erasure_policy_version", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_get_erasure_policy_version(self, seqid, iprot, oprot):
+        args = get_erasure_policy_version_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_erasure_policy_version_result()
+        try:
+            result.success = self._handler.get_erasure_policy_version(args.policyName, args.versionLabel)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except NoSuchObjectException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except MetaException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("get_erasure_policy_version", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_list_erasure_policy_versions(self, seqid, iprot, oprot):
+        args = list_erasure_policy_versions_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = list_erasure_policy_versions_result()
+        try:
+            result.success = self._handler.list_erasure_policy_versions(args.policyName)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except NoSuchObjectException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except MetaException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("list_erasure_policy_versions", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_update_erasure_policy_version_status(self, seqid, iprot, oprot):
+        args = update_erasure_policy_version_status_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = update_erasure_policy_version_status_result()
+        try:
+            self._handler.update_erasure_policy_version_status(args.versionId, args.newStatus, args.principal)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except NoSuchObjectException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except InvalidObjectException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except MetaException as o3:
+            msg_type = TMessageType.REPLY
+            result.o3 = o3
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("update_erasure_policy_version_status", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_get_active_erasure_policy_version(self, seqid, iprot, oprot):
+        args = get_active_erasure_policy_version_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_active_erasure_policy_version_result()
+        try:
+            result.success = self._handler.get_active_erasure_policy_version(args.policyName)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except NoSuchObjectException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except MetaException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("get_active_erasure_policy_version", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_get_erasure_policy_statements(self, seqid, iprot, oprot):
+        args = get_erasure_policy_statements_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_erasure_policy_statements_result()
+        try:
+            result.success = self._handler.get_erasure_policy_statements(args.versionId)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except NoSuchObjectException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except MetaException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("get_erasure_policy_statements", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_get_erasure_policy_rules(self, seqid, iprot, oprot):
+        args = get_erasure_policy_rules_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_erasure_policy_rules_result()
+        try:
+            result.success = self._handler.get_erasure_policy_rules(args.statementId)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except NoSuchObjectException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except MetaException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("get_erasure_policy_rules", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_add_erasure_policy_binding(self, seqid, iprot, oprot):
+        args = add_erasure_policy_binding_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = add_erasure_policy_binding_result()
+        try:
+            result.success = self._handler.add_erasure_policy_binding(args.binding)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except AlreadyExistsException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except InvalidObjectException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except MetaException as o3:
+            msg_type = TMessageType.REPLY
+            result.o3 = o3
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("add_erasure_policy_binding", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_get_erasure_policy_binding(self, seqid, iprot, oprot):
+        args = get_erasure_policy_binding_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_erasure_policy_binding_result()
+        try:
+            result.success = self._handler.get_erasure_policy_binding(args.tblId, args.columnName)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except NoSuchObjectException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except MetaException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("get_erasure_policy_binding", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_drop_erasure_policy_binding(self, seqid, iprot, oprot):
+        args = drop_erasure_policy_binding_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = drop_erasure_policy_binding_result()
+        try:
+            self._handler.drop_erasure_policy_binding(args.bindingId)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except NoSuchObjectException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except MetaException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("drop_erasure_policy_binding", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_update_erasure_policy_binding_settings(self, seqid, iprot, oprot):
+        args = update_erasure_policy_binding_settings_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = update_erasure_policy_binding_settings_result()
+        try:
+            self._handler.update_erasure_policy_binding_settings(args.bindingId, args.resolutionMode, args.columnFormat)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except NoSuchObjectException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except MetaException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("update_erasure_policy_binding_settings", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_attach_policy_to_binding(self, seqid, iprot, oprot):
+        args = attach_policy_to_binding_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = attach_policy_to_binding_result()
+        try:
+            self._handler.attach_policy_to_binding(args.bindingId, args.policyId, args.ordinal)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except AlreadyExistsException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except InvalidObjectException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except MetaException as o3:
+            msg_type = TMessageType.REPLY
+            result.o3 = o3
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("attach_policy_to_binding", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_detach_policy_from_binding(self, seqid, iprot, oprot):
+        args = detach_policy_from_binding_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = detach_policy_from_binding_result()
+        try:
+            self._handler.detach_policy_from_binding(args.bindingId, args.policyId)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except NoSuchObjectException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except MetaException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("detach_policy_from_binding", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_get_binding_members(self, seqid, iprot, oprot):
+        args = get_binding_members_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_binding_members_result()
+        try:
+            result.success = self._handler.get_binding_members(args.bindingId)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except NoSuchObjectException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except MetaException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("get_binding_members", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_replace_binding_resolved_rules(self, seqid, iprot, oprot):
+        args = replace_binding_resolved_rules_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = replace_binding_resolved_rules_result()
+        try:
+            self._handler.replace_binding_resolved_rules(args.bindingId, args.resolved)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except NoSuchObjectException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except MetaException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("replace_binding_resolved_rules", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_get_binding_resolved_rules(self, seqid, iprot, oprot):
+        args = get_binding_resolved_rules_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_binding_resolved_rules_result()
+        try:
+            result.success = self._handler.get_binding_resolved_rules(args.bindingId)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except NoSuchObjectException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except MetaException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("get_binding_resolved_rules", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_record_lifecycle_event(self, seqid, iprot, oprot):
+        args = record_lifecycle_event_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = record_lifecycle_event_result()
+        try:
+            self._handler.record_lifecycle_event(args.evt)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except MetaException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("record_lifecycle_event", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_get_lifecycle_events_for_policy(self, seqid, iprot, oprot):
+        args = get_lifecycle_events_for_policy_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_lifecycle_events_for_policy_result()
+        try:
+            result.success = self._handler.get_lifecycle_events_for_policy(args.policyName, args.fromTs, args.untilTs)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except NoSuchObjectException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except MetaException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("get_lifecycle_events_for_policy", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_get_lifecycle_events_for_binding(self, seqid, iprot, oprot):
+        args = get_lifecycle_events_for_binding_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_lifecycle_events_for_binding_result()
+        try:
+            result.success = self._handler.get_lifecycle_events_for_binding(args.bindingId, args.fromTs, args.untilTs)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except NoSuchObjectException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except MetaException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("get_lifecycle_events_for_binding", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_get_attach_rejected_events(self, seqid, iprot, oprot):
+        args = get_attach_rejected_events_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_attach_rejected_events_result()
+        try:
+            result.success = self._handler.get_attach_rejected_events(args.fromTs, args.untilTs)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except MetaException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("get_attach_rejected_events", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_record_erasure_run(self, seqid, iprot, oprot):
+        args = record_erasure_run_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = record_erasure_run_result()
+        try:
+            self._handler.record_erasure_run(args.run)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except MetaException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("record_erasure_run", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_get_erasure_runs_for_table(self, seqid, iprot, oprot):
+        args = get_erasure_runs_for_table_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_erasure_runs_for_table_result()
+        try:
+            result.success = self._handler.get_erasure_runs_for_table(args.tblId, args.fromTs, args.untilTs, args.byUser, args.forIdentity)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except MetaException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("get_erasure_runs_for_table", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_update_erasure_run_completion(self, seqid, iprot, oprot):
+        args = update_erasure_run_completion_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = update_erasure_run_completion_result()
+        try:
+            self._handler.update_erasure_run_completion(args.tblId, args.startedTs, args.completedTs, args.status, args.matchesInspected, args.matchesRedacted, args.matchesFlagged)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except NoSuchObjectException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except MetaException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("update_erasure_run_completion", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_acquire_erasure_run_lock(self, seqid, iprot, oprot):
+        args = acquire_erasure_run_lock_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = acquire_erasure_run_lock_result()
+        try:
+            result.success = self._handler.acquire_erasure_run_lock(args.tblId, args.runId, args.principal)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except MetaException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("acquire_erasure_run_lock", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_get_erasure_run_lock(self, seqid, iprot, oprot):
+        args = get_erasure_run_lock_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_erasure_run_lock_result()
+        try:
+            result.success = self._handler.get_erasure_run_lock(args.tblId)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except MetaException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("get_erasure_run_lock", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_complete_erasure_run_lock(self, seqid, iprot, oprot):
+        args = complete_erasure_run_lock_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = complete_erasure_run_lock_result()
+        try:
+            result.success = self._handler.complete_erasure_run_lock(args.tblId, args.runId)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except MetaException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("complete_erasure_run_lock", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_manually_release_erasure_run_lock(self, seqid, iprot, oprot):
+        args = manually_release_erasure_run_lock_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = manually_release_erasure_run_lock_result()
+        try:
+            result.success = self._handler.manually_release_erasure_run_lock(args.tblId, args.releasedBy, args.releaseReason, args.force)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except NoSuchObjectException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except MetaException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("manually_release_erasure_run_lock", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_list_erasure_run_locks(self, seqid, iprot, oprot):
+        args = list_erasure_run_locks_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = list_erasure_run_locks_result()
+        try:
+            result.success = self._handler.list_erasure_run_locks()
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except MetaException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("list_erasure_run_locks", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_grant_policy_priv(self, seqid, iprot, oprot):
+        args = grant_policy_priv_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = grant_policy_priv_result()
+        try:
+            self._handler.grant_policy_priv(args.priv)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except AlreadyExistsException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except InvalidObjectException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except MetaException as o3:
+            msg_type = TMessageType.REPLY
+            result.o3 = o3
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("grant_policy_priv", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_revoke_policy_priv(self, seqid, iprot, oprot):
+        args = revoke_policy_priv_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = revoke_policy_priv_result()
+        try:
+            self._handler.revoke_policy_priv(args.policyPrivId)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except NoSuchObjectException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except MetaException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("revoke_policy_priv", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_list_policy_privs(self, seqid, iprot, oprot):
+        args = list_policy_privs_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = list_policy_privs_result()
+        try:
+            result.success = self._handler.list_policy_privs(args.policyId, args.principalName)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except MetaException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("list_policy_privs", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
@@ -64877,6 +67896,6295 @@ class get_replayed_txns_for_policy_result(object):
 all_structs.append(get_replayed_txns_for_policy_result)
 get_replayed_txns_for_policy_result.thrift_spec = (
     (0, TType.STRUCT, 'success', [ReplayedTxnsForPolicyResult, None], None, ),  # 0
+    (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
+)
+
+
+class create_erasure_policy_args(object):
+    """
+    Attributes:
+     - erasurePolicy
+
+    """
+
+
+    def __init__(self, erasurePolicy=None,):
+        self.erasurePolicy = erasurePolicy
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.erasurePolicy = ErasurePolicy()
+                    self.erasurePolicy.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('create_erasure_policy_args')
+        if self.erasurePolicy is not None:
+            oprot.writeFieldBegin('erasurePolicy', TType.STRUCT, 1)
+            self.erasurePolicy.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(create_erasure_policy_args)
+create_erasure_policy_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'erasurePolicy', [ErasurePolicy, None], None, ),  # 1
+)
+
+
+class create_erasure_policy_result(object):
+    """
+    Attributes:
+     - o1
+     - o2
+     - o3
+
+    """
+
+
+    def __init__(self, o1=None, o2=None, o3=None,):
+        self.o1 = o1
+        self.o2 = o2
+        self.o3 = o3
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = AlreadyExistsException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = InvalidObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRUCT:
+                    self.o3 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('create_erasure_policy_result')
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o3 is not None:
+            oprot.writeFieldBegin('o3', TType.STRUCT, 3)
+            self.o3.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(create_erasure_policy_result)
+create_erasure_policy_result.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'o1', [AlreadyExistsException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [InvalidObjectException, None], None, ),  # 2
+    (3, TType.STRUCT, 'o3', [MetaException, None], None, ),  # 3
+)
+
+
+class drop_erasure_policy_args(object):
+    """
+    Attributes:
+     - policyName
+     - ifExists
+
+    """
+
+
+    def __init__(self, policyName=None, ifExists=None,):
+        self.policyName = policyName
+        self.ifExists = ifExists
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.policyName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.BOOL:
+                    self.ifExists = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('drop_erasure_policy_args')
+        if self.policyName is not None:
+            oprot.writeFieldBegin('policyName', TType.STRING, 1)
+            oprot.writeString(self.policyName.encode('utf-8') if sys.version_info[0] == 2 else self.policyName)
+            oprot.writeFieldEnd()
+        if self.ifExists is not None:
+            oprot.writeFieldBegin('ifExists', TType.BOOL, 2)
+            oprot.writeBool(self.ifExists)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(drop_erasure_policy_args)
+drop_erasure_policy_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'policyName', 'UTF8', None, ),  # 1
+    (2, TType.BOOL, 'ifExists', None, None, ),  # 2
+)
+
+
+class drop_erasure_policy_result(object):
+    """
+    Attributes:
+     - o1
+     - o3
+
+    """
+
+
+    def __init__(self, o1=None, o3=None,):
+        self.o1 = o1
+        self.o3 = o3
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = NoSuchObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o3 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('drop_erasure_policy_result')
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o3 is not None:
+            oprot.writeFieldBegin('o3', TType.STRUCT, 2)
+            self.o3.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(drop_erasure_policy_result)
+drop_erasure_policy_result.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'o1', [NoSuchObjectException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o3', [MetaException, None], None, ),  # 2
+)
+
+
+class drop_anon_index_args(object):
+    """
+    Attributes:
+     - indexName
+
+    """
+
+
+    def __init__(self, indexName=None,):
+        self.indexName = indexName
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.indexName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('drop_anon_index_args')
+        if self.indexName is not None:
+            oprot.writeFieldBegin('indexName', TType.STRING, 1)
+            oprot.writeString(self.indexName.encode('utf-8') if sys.version_info[0] == 2 else self.indexName)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(drop_anon_index_args)
+drop_anon_index_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'indexName', 'UTF8', None, ),  # 1
+)
+
+
+class drop_anon_index_result(object):
+    """
+    Attributes:
+     - o1
+     - o2
+
+    """
+
+
+    def __init__(self, o1=None, o2=None,):
+        self.o1 = o1
+        self.o2 = o2
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = NoSuchObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('drop_anon_index_result')
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(drop_anon_index_result)
+drop_anon_index_result.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'o1', [NoSuchObjectException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [MetaException, None], None, ),  # 2
+)
+
+
+class get_erasure_policy_args(object):
+    """
+    Attributes:
+     - policyName
+
+    """
+
+
+    def __init__(self, policyName=None,):
+        self.policyName = policyName
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.policyName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_erasure_policy_args')
+        if self.policyName is not None:
+            oprot.writeFieldBegin('policyName', TType.STRING, 1)
+            oprot.writeString(self.policyName.encode('utf-8') if sys.version_info[0] == 2 else self.policyName)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_erasure_policy_args)
+get_erasure_policy_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'policyName', 'UTF8', None, ),  # 1
+)
+
+
+class get_erasure_policy_result(object):
+    """
+    Attributes:
+     - success
+     - o1
+     - o2
+
+    """
+
+
+    def __init__(self, success=None, o1=None, o2=None,):
+        self.success = success
+        self.o1 = o1
+        self.o2 = o2
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.STRUCT:
+                    self.success = ErasurePolicy()
+                    self.success.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = NoSuchObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_erasure_policy_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.STRUCT, 0)
+            self.success.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_erasure_policy_result)
+get_erasure_policy_result.thrift_spec = (
+    (0, TType.STRUCT, 'success', [ErasurePolicy, None], None, ),  # 0
+    (1, TType.STRUCT, 'o1', [NoSuchObjectException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [MetaException, None], None, ),  # 2
+)
+
+
+class add_index_args(object):
+    """
+    Attributes:
+     - new_index
+     - index_table
+
+    """
+
+
+    def __init__(self, new_index=None, index_table=None,):
+        self.new_index = new_index
+        self.index_table = index_table
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.new_index = Index()
+                    self.new_index.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.index_table = Table()
+                    self.index_table.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('add_index_args')
+        if self.new_index is not None:
+            oprot.writeFieldBegin('new_index', TType.STRUCT, 1)
+            self.new_index.write(oprot)
+            oprot.writeFieldEnd()
+        if self.index_table is not None:
+            oprot.writeFieldBegin('index_table', TType.STRUCT, 2)
+            self.index_table.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(add_index_args)
+add_index_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'new_index', [Index, None], None, ),  # 1
+    (2, TType.STRUCT, 'index_table', [Table, None], None, ),  # 2
+)
+
+
+class add_index_result(object):
+    """
+    Attributes:
+     - o1
+     - o2
+     - o3
+
+    """
+
+
+    def __init__(self, o1=None, o2=None, o3=None,):
+        self.o1 = o1
+        self.o2 = o2
+        self.o3 = o3
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = InvalidObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = AlreadyExistsException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRUCT:
+                    self.o3 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('add_index_result')
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o3 is not None:
+            oprot.writeFieldBegin('o3', TType.STRUCT, 3)
+            self.o3.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(add_index_result)
+add_index_result.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'o1', [InvalidObjectException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [AlreadyExistsException, None], None, ),  # 2
+    (3, TType.STRUCT, 'o3', [MetaException, None], None, ),  # 3
+)
+
+
+class get_index_by_name_args(object):
+    """
+    Attributes:
+     - db_name
+     - tbl_name
+     - index_name
+
+    """
+
+
+    def __init__(self, db_name=None, tbl_name=None, index_name=None,):
+        self.db_name = db_name
+        self.tbl_name = tbl_name
+        self.index_name = index_name
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.db_name = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.tbl_name = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.index_name = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_index_by_name_args')
+        if self.db_name is not None:
+            oprot.writeFieldBegin('db_name', TType.STRING, 1)
+            oprot.writeString(self.db_name.encode('utf-8') if sys.version_info[0] == 2 else self.db_name)
+            oprot.writeFieldEnd()
+        if self.tbl_name is not None:
+            oprot.writeFieldBegin('tbl_name', TType.STRING, 2)
+            oprot.writeString(self.tbl_name.encode('utf-8') if sys.version_info[0] == 2 else self.tbl_name)
+            oprot.writeFieldEnd()
+        if self.index_name is not None:
+            oprot.writeFieldBegin('index_name', TType.STRING, 3)
+            oprot.writeString(self.index_name.encode('utf-8') if sys.version_info[0] == 2 else self.index_name)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_index_by_name_args)
+get_index_by_name_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'db_name', 'UTF8', None, ),  # 1
+    (2, TType.STRING, 'tbl_name', 'UTF8', None, ),  # 2
+    (3, TType.STRING, 'index_name', 'UTF8', None, ),  # 3
+)
+
+
+class get_index_by_name_result(object):
+    """
+    Attributes:
+     - success
+     - o1
+     - o2
+
+    """
+
+
+    def __init__(self, success=None, o1=None, o2=None,):
+        self.success = success
+        self.o1 = o1
+        self.o2 = o2
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.STRUCT:
+                    self.success = Index()
+                    self.success.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = NoSuchObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_index_by_name_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.STRUCT, 0)
+            self.success.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_index_by_name_result)
+get_index_by_name_result.thrift_spec = (
+    (0, TType.STRUCT, 'success', [Index, None], None, ),  # 0
+    (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [NoSuchObjectException, None], None, ),  # 2
+)
+
+
+class drop_index_by_name_args(object):
+    """
+    Attributes:
+     - db_name
+     - tbl_name
+     - index_name
+     - deleteData
+     - ifExists
+
+    """
+
+
+    def __init__(self, db_name=None, tbl_name=None, index_name=None, deleteData=None, ifExists=None,):
+        self.db_name = db_name
+        self.tbl_name = tbl_name
+        self.index_name = index_name
+        self.deleteData = deleteData
+        self.ifExists = ifExists
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.db_name = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.tbl_name = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.index_name = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.BOOL:
+                    self.deleteData = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.BOOL:
+                    self.ifExists = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('drop_index_by_name_args')
+        if self.db_name is not None:
+            oprot.writeFieldBegin('db_name', TType.STRING, 1)
+            oprot.writeString(self.db_name.encode('utf-8') if sys.version_info[0] == 2 else self.db_name)
+            oprot.writeFieldEnd()
+        if self.tbl_name is not None:
+            oprot.writeFieldBegin('tbl_name', TType.STRING, 2)
+            oprot.writeString(self.tbl_name.encode('utf-8') if sys.version_info[0] == 2 else self.tbl_name)
+            oprot.writeFieldEnd()
+        if self.index_name is not None:
+            oprot.writeFieldBegin('index_name', TType.STRING, 3)
+            oprot.writeString(self.index_name.encode('utf-8') if sys.version_info[0] == 2 else self.index_name)
+            oprot.writeFieldEnd()
+        if self.deleteData is not None:
+            oprot.writeFieldBegin('deleteData', TType.BOOL, 4)
+            oprot.writeBool(self.deleteData)
+            oprot.writeFieldEnd()
+        if self.ifExists is not None:
+            oprot.writeFieldBegin('ifExists', TType.BOOL, 5)
+            oprot.writeBool(self.ifExists)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(drop_index_by_name_args)
+drop_index_by_name_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'db_name', 'UTF8', None, ),  # 1
+    (2, TType.STRING, 'tbl_name', 'UTF8', None, ),  # 2
+    (3, TType.STRING, 'index_name', 'UTF8', None, ),  # 3
+    (4, TType.BOOL, 'deleteData', None, None, ),  # 4
+    (5, TType.BOOL, 'ifExists', None, None, ),  # 5
+)
+
+
+class drop_index_by_name_result(object):
+    """
+    Attributes:
+     - success
+     - o1
+     - o2
+
+    """
+
+
+    def __init__(self, success=None, o1=None, o2=None,):
+        self.success = success
+        self.o1 = o1
+        self.o2 = o2
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.BOOL:
+                    self.success = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = NoSuchObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('drop_index_by_name_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.BOOL, 0)
+            oprot.writeBool(self.success)
+            oprot.writeFieldEnd()
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(drop_index_by_name_result)
+drop_index_by_name_result.thrift_spec = (
+    (0, TType.BOOL, 'success', None, None, ),  # 0
+    (1, TType.STRUCT, 'o1', [NoSuchObjectException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [MetaException, None], None, ),  # 2
+)
+
+
+class get_indexes_args(object):
+    """
+    Attributes:
+     - db_name
+     - tbl_name
+     - max_indexes
+
+    """
+
+
+    def __init__(self, db_name=None, tbl_name=None, max_indexes=-1,):
+        self.db_name = db_name
+        self.tbl_name = tbl_name
+        self.max_indexes = max_indexes
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.db_name = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.tbl_name = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.I16:
+                    self.max_indexes = iprot.readI16()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_indexes_args')
+        if self.db_name is not None:
+            oprot.writeFieldBegin('db_name', TType.STRING, 1)
+            oprot.writeString(self.db_name.encode('utf-8') if sys.version_info[0] == 2 else self.db_name)
+            oprot.writeFieldEnd()
+        if self.tbl_name is not None:
+            oprot.writeFieldBegin('tbl_name', TType.STRING, 2)
+            oprot.writeString(self.tbl_name.encode('utf-8') if sys.version_info[0] == 2 else self.tbl_name)
+            oprot.writeFieldEnd()
+        if self.max_indexes is not None:
+            oprot.writeFieldBegin('max_indexes', TType.I16, 3)
+            oprot.writeI16(self.max_indexes)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_indexes_args)
+get_indexes_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'db_name', 'UTF8', None, ),  # 1
+    (2, TType.STRING, 'tbl_name', 'UTF8', None, ),  # 2
+    (3, TType.I16, 'max_indexes', None, -1, ),  # 3
+)
+
+
+class get_indexes_result(object):
+    """
+    Attributes:
+     - success
+     - o1
+     - o2
+
+    """
+
+
+    def __init__(self, success=None, o1=None, o2=None,):
+        self.success = success
+        self.o1 = o1
+        self.o2 = o2
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype2024, _size2021) = iprot.readListBegin()
+                    for _i2025 in range(_size2021):
+                        _elem2026 = Index()
+                        _elem2026.read(iprot)
+                        self.success.append(_elem2026)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = NoSuchObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_indexes_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.LIST, 0)
+            oprot.writeListBegin(TType.STRUCT, len(self.success))
+            for iter2027 in self.success:
+                iter2027.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_indexes_result)
+get_indexes_result.thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRUCT, [Index, None], False), None, ),  # 0
+    (1, TType.STRUCT, 'o1', [NoSuchObjectException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [MetaException, None], None, ),  # 2
+)
+
+
+class get_all_erasure_policies_args(object):
+
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_all_erasure_policies_args')
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_all_erasure_policies_args)
+get_all_erasure_policies_args.thrift_spec = (
+)
+
+
+class get_all_erasure_policies_result(object):
+    """
+    Attributes:
+     - success
+     - o1
+
+    """
+
+
+    def __init__(self, success=None, o1=None,):
+        self.success = success
+        self.o1 = o1
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype2031, _size2028) = iprot.readListBegin()
+                    for _i2032 in range(_size2028):
+                        _elem2033 = PolicyInfo()
+                        _elem2033.read(iprot)
+                        self.success.append(_elem2033)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_all_erasure_policies_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.LIST, 0)
+            oprot.writeListBegin(TType.STRUCT, len(self.success))
+            for iter2034 in self.success:
+                iter2034.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_all_erasure_policies_result)
+get_all_erasure_policies_result.thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRUCT, [PolicyInfo, None], False), None, ),  # 0
+    (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
+)
+
+
+class add_erasure_policy_version_args(object):
+    """
+    Attributes:
+     - version
+
+    """
+
+
+    def __init__(self, version=None,):
+        self.version = version
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.version = ErasurePolicyVersion()
+                    self.version.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('add_erasure_policy_version_args')
+        if self.version is not None:
+            oprot.writeFieldBegin('version', TType.STRUCT, 1)
+            self.version.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(add_erasure_policy_version_args)
+add_erasure_policy_version_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'version', [ErasurePolicyVersion, None], None, ),  # 1
+)
+
+
+class add_erasure_policy_version_result(object):
+    """
+    Attributes:
+     - success
+     - o1
+     - o2
+     - o3
+
+    """
+
+
+    def __init__(self, success=None, o1=None, o2=None, o3=None,):
+        self.success = success
+        self.o1 = o1
+        self.o2 = o2
+        self.o3 = o3
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.STRUCT:
+                    self.success = ErasurePolicyVersion()
+                    self.success.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = AlreadyExistsException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = InvalidObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRUCT:
+                    self.o3 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('add_erasure_policy_version_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.STRUCT, 0)
+            self.success.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o3 is not None:
+            oprot.writeFieldBegin('o3', TType.STRUCT, 3)
+            self.o3.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(add_erasure_policy_version_result)
+add_erasure_policy_version_result.thrift_spec = (
+    (0, TType.STRUCT, 'success', [ErasurePolicyVersion, None], None, ),  # 0
+    (1, TType.STRUCT, 'o1', [AlreadyExistsException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [InvalidObjectException, None], None, ),  # 2
+    (3, TType.STRUCT, 'o3', [MetaException, None], None, ),  # 3
+)
+
+
+class get_erasure_policy_version_args(object):
+    """
+    Attributes:
+     - policyName
+     - versionLabel
+
+    """
+
+
+    def __init__(self, policyName=None, versionLabel=None,):
+        self.policyName = policyName
+        self.versionLabel = versionLabel
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.policyName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.versionLabel = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_erasure_policy_version_args')
+        if self.policyName is not None:
+            oprot.writeFieldBegin('policyName', TType.STRING, 1)
+            oprot.writeString(self.policyName.encode('utf-8') if sys.version_info[0] == 2 else self.policyName)
+            oprot.writeFieldEnd()
+        if self.versionLabel is not None:
+            oprot.writeFieldBegin('versionLabel', TType.STRING, 2)
+            oprot.writeString(self.versionLabel.encode('utf-8') if sys.version_info[0] == 2 else self.versionLabel)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_erasure_policy_version_args)
+get_erasure_policy_version_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'policyName', 'UTF8', None, ),  # 1
+    (2, TType.STRING, 'versionLabel', 'UTF8', None, ),  # 2
+)
+
+
+class get_erasure_policy_version_result(object):
+    """
+    Attributes:
+     - success
+     - o1
+     - o2
+
+    """
+
+
+    def __init__(self, success=None, o1=None, o2=None,):
+        self.success = success
+        self.o1 = o1
+        self.o2 = o2
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.STRUCT:
+                    self.success = ErasurePolicyVersion()
+                    self.success.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = NoSuchObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_erasure_policy_version_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.STRUCT, 0)
+            self.success.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_erasure_policy_version_result)
+get_erasure_policy_version_result.thrift_spec = (
+    (0, TType.STRUCT, 'success', [ErasurePolicyVersion, None], None, ),  # 0
+    (1, TType.STRUCT, 'o1', [NoSuchObjectException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [MetaException, None], None, ),  # 2
+)
+
+
+class list_erasure_policy_versions_args(object):
+    """
+    Attributes:
+     - policyName
+
+    """
+
+
+    def __init__(self, policyName=None,):
+        self.policyName = policyName
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.policyName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('list_erasure_policy_versions_args')
+        if self.policyName is not None:
+            oprot.writeFieldBegin('policyName', TType.STRING, 1)
+            oprot.writeString(self.policyName.encode('utf-8') if sys.version_info[0] == 2 else self.policyName)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(list_erasure_policy_versions_args)
+list_erasure_policy_versions_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'policyName', 'UTF8', None, ),  # 1
+)
+
+
+class list_erasure_policy_versions_result(object):
+    """
+    Attributes:
+     - success
+     - o1
+     - o2
+
+    """
+
+
+    def __init__(self, success=None, o1=None, o2=None,):
+        self.success = success
+        self.o1 = o1
+        self.o2 = o2
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype2038, _size2035) = iprot.readListBegin()
+                    for _i2039 in range(_size2035):
+                        _elem2040 = ErasurePolicyVersion()
+                        _elem2040.read(iprot)
+                        self.success.append(_elem2040)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = NoSuchObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('list_erasure_policy_versions_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.LIST, 0)
+            oprot.writeListBegin(TType.STRUCT, len(self.success))
+            for iter2041 in self.success:
+                iter2041.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(list_erasure_policy_versions_result)
+list_erasure_policy_versions_result.thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRUCT, [ErasurePolicyVersion, None], False), None, ),  # 0
+    (1, TType.STRUCT, 'o1', [NoSuchObjectException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [MetaException, None], None, ),  # 2
+)
+
+
+class update_erasure_policy_version_status_args(object):
+    """
+    Attributes:
+     - versionId
+     - newStatus
+     - principal
+
+    """
+
+
+    def __init__(self, versionId=None, newStatus=None, principal=None,):
+        self.versionId = versionId
+        self.newStatus = newStatus
+        self.principal = principal
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.versionId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I32:
+                    self.newStatus = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.principal = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('update_erasure_policy_version_status_args')
+        if self.versionId is not None:
+            oprot.writeFieldBegin('versionId', TType.I64, 1)
+            oprot.writeI64(self.versionId)
+            oprot.writeFieldEnd()
+        if self.newStatus is not None:
+            oprot.writeFieldBegin('newStatus', TType.I32, 2)
+            oprot.writeI32(self.newStatus)
+            oprot.writeFieldEnd()
+        if self.principal is not None:
+            oprot.writeFieldBegin('principal', TType.STRING, 3)
+            oprot.writeString(self.principal.encode('utf-8') if sys.version_info[0] == 2 else self.principal)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(update_erasure_policy_version_status_args)
+update_erasure_policy_version_status_args.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'versionId', None, None, ),  # 1
+    (2, TType.I32, 'newStatus', None, None, ),  # 2
+    (3, TType.STRING, 'principal', 'UTF8', None, ),  # 3
+)
+
+
+class update_erasure_policy_version_status_result(object):
+    """
+    Attributes:
+     - o1
+     - o2
+     - o3
+
+    """
+
+
+    def __init__(self, o1=None, o2=None, o3=None,):
+        self.o1 = o1
+        self.o2 = o2
+        self.o3 = o3
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = NoSuchObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = InvalidObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRUCT:
+                    self.o3 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('update_erasure_policy_version_status_result')
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o3 is not None:
+            oprot.writeFieldBegin('o3', TType.STRUCT, 3)
+            self.o3.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(update_erasure_policy_version_status_result)
+update_erasure_policy_version_status_result.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'o1', [NoSuchObjectException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [InvalidObjectException, None], None, ),  # 2
+    (3, TType.STRUCT, 'o3', [MetaException, None], None, ),  # 3
+)
+
+
+class get_active_erasure_policy_version_args(object):
+    """
+    Attributes:
+     - policyName
+
+    """
+
+
+    def __init__(self, policyName=None,):
+        self.policyName = policyName
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.policyName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_active_erasure_policy_version_args')
+        if self.policyName is not None:
+            oprot.writeFieldBegin('policyName', TType.STRING, 1)
+            oprot.writeString(self.policyName.encode('utf-8') if sys.version_info[0] == 2 else self.policyName)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_active_erasure_policy_version_args)
+get_active_erasure_policy_version_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'policyName', 'UTF8', None, ),  # 1
+)
+
+
+class get_active_erasure_policy_version_result(object):
+    """
+    Attributes:
+     - success
+     - o1
+     - o2
+
+    """
+
+
+    def __init__(self, success=None, o1=None, o2=None,):
+        self.success = success
+        self.o1 = o1
+        self.o2 = o2
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.STRUCT:
+                    self.success = ErasurePolicyVersion()
+                    self.success.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = NoSuchObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_active_erasure_policy_version_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.STRUCT, 0)
+            self.success.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_active_erasure_policy_version_result)
+get_active_erasure_policy_version_result.thrift_spec = (
+    (0, TType.STRUCT, 'success', [ErasurePolicyVersion, None], None, ),  # 0
+    (1, TType.STRUCT, 'o1', [NoSuchObjectException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [MetaException, None], None, ),  # 2
+)
+
+
+class get_erasure_policy_statements_args(object):
+    """
+    Attributes:
+     - versionId
+
+    """
+
+
+    def __init__(self, versionId=None,):
+        self.versionId = versionId
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.versionId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_erasure_policy_statements_args')
+        if self.versionId is not None:
+            oprot.writeFieldBegin('versionId', TType.I64, 1)
+            oprot.writeI64(self.versionId)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_erasure_policy_statements_args)
+get_erasure_policy_statements_args.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'versionId', None, None, ),  # 1
+)
+
+
+class get_erasure_policy_statements_result(object):
+    """
+    Attributes:
+     - success
+     - o1
+     - o2
+
+    """
+
+
+    def __init__(self, success=None, o1=None, o2=None,):
+        self.success = success
+        self.o1 = o1
+        self.o2 = o2
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype2045, _size2042) = iprot.readListBegin()
+                    for _i2046 in range(_size2042):
+                        _elem2047 = ErasurePolicyStatement()
+                        _elem2047.read(iprot)
+                        self.success.append(_elem2047)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = NoSuchObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_erasure_policy_statements_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.LIST, 0)
+            oprot.writeListBegin(TType.STRUCT, len(self.success))
+            for iter2048 in self.success:
+                iter2048.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_erasure_policy_statements_result)
+get_erasure_policy_statements_result.thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRUCT, [ErasurePolicyStatement, None], False), None, ),  # 0
+    (1, TType.STRUCT, 'o1', [NoSuchObjectException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [MetaException, None], None, ),  # 2
+)
+
+
+class get_erasure_policy_rules_args(object):
+    """
+    Attributes:
+     - statementId
+
+    """
+
+
+    def __init__(self, statementId=None,):
+        self.statementId = statementId
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.statementId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_erasure_policy_rules_args')
+        if self.statementId is not None:
+            oprot.writeFieldBegin('statementId', TType.I64, 1)
+            oprot.writeI64(self.statementId)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_erasure_policy_rules_args)
+get_erasure_policy_rules_args.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'statementId', None, None, ),  # 1
+)
+
+
+class get_erasure_policy_rules_result(object):
+    """
+    Attributes:
+     - success
+     - o1
+     - o2
+
+    """
+
+
+    def __init__(self, success=None, o1=None, o2=None,):
+        self.success = success
+        self.o1 = o1
+        self.o2 = o2
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype2052, _size2049) = iprot.readListBegin()
+                    for _i2053 in range(_size2049):
+                        _elem2054 = ErasurePolicyRule()
+                        _elem2054.read(iprot)
+                        self.success.append(_elem2054)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = NoSuchObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_erasure_policy_rules_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.LIST, 0)
+            oprot.writeListBegin(TType.STRUCT, len(self.success))
+            for iter2055 in self.success:
+                iter2055.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_erasure_policy_rules_result)
+get_erasure_policy_rules_result.thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRUCT, [ErasurePolicyRule, None], False), None, ),  # 0
+    (1, TType.STRUCT, 'o1', [NoSuchObjectException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [MetaException, None], None, ),  # 2
+)
+
+
+class add_erasure_policy_binding_args(object):
+    """
+    Attributes:
+     - binding
+
+    """
+
+
+    def __init__(self, binding=None,):
+        self.binding = binding
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.binding = ErasurePolicyBinding()
+                    self.binding.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('add_erasure_policy_binding_args')
+        if self.binding is not None:
+            oprot.writeFieldBegin('binding', TType.STRUCT, 1)
+            self.binding.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(add_erasure_policy_binding_args)
+add_erasure_policy_binding_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'binding', [ErasurePolicyBinding, None], None, ),  # 1
+)
+
+
+class add_erasure_policy_binding_result(object):
+    """
+    Attributes:
+     - success
+     - o1
+     - o2
+     - o3
+
+    """
+
+
+    def __init__(self, success=None, o1=None, o2=None, o3=None,):
+        self.success = success
+        self.o1 = o1
+        self.o2 = o2
+        self.o3 = o3
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.STRUCT:
+                    self.success = ErasurePolicyBinding()
+                    self.success.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = AlreadyExistsException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = InvalidObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRUCT:
+                    self.o3 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('add_erasure_policy_binding_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.STRUCT, 0)
+            self.success.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o3 is not None:
+            oprot.writeFieldBegin('o3', TType.STRUCT, 3)
+            self.o3.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(add_erasure_policy_binding_result)
+add_erasure_policy_binding_result.thrift_spec = (
+    (0, TType.STRUCT, 'success', [ErasurePolicyBinding, None], None, ),  # 0
+    (1, TType.STRUCT, 'o1', [AlreadyExistsException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [InvalidObjectException, None], None, ),  # 2
+    (3, TType.STRUCT, 'o3', [MetaException, None], None, ),  # 3
+)
+
+
+class get_erasure_policy_binding_args(object):
+    """
+    Attributes:
+     - tblId
+     - columnName
+
+    """
+
+
+    def __init__(self, tblId=None, columnName=None,):
+        self.tblId = tblId
+        self.columnName = columnName
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.tblId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.columnName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_erasure_policy_binding_args')
+        if self.tblId is not None:
+            oprot.writeFieldBegin('tblId', TType.I64, 1)
+            oprot.writeI64(self.tblId)
+            oprot.writeFieldEnd()
+        if self.columnName is not None:
+            oprot.writeFieldBegin('columnName', TType.STRING, 2)
+            oprot.writeString(self.columnName.encode('utf-8') if sys.version_info[0] == 2 else self.columnName)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_erasure_policy_binding_args)
+get_erasure_policy_binding_args.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'tblId', None, None, ),  # 1
+    (2, TType.STRING, 'columnName', 'UTF8', None, ),  # 2
+)
+
+
+class get_erasure_policy_binding_result(object):
+    """
+    Attributes:
+     - success
+     - o1
+     - o2
+
+    """
+
+
+    def __init__(self, success=None, o1=None, o2=None,):
+        self.success = success
+        self.o1 = o1
+        self.o2 = o2
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.STRUCT:
+                    self.success = ErasurePolicyBinding()
+                    self.success.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = NoSuchObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_erasure_policy_binding_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.STRUCT, 0)
+            self.success.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_erasure_policy_binding_result)
+get_erasure_policy_binding_result.thrift_spec = (
+    (0, TType.STRUCT, 'success', [ErasurePolicyBinding, None], None, ),  # 0
+    (1, TType.STRUCT, 'o1', [NoSuchObjectException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [MetaException, None], None, ),  # 2
+)
+
+
+class drop_erasure_policy_binding_args(object):
+    """
+    Attributes:
+     - bindingId
+
+    """
+
+
+    def __init__(self, bindingId=None,):
+        self.bindingId = bindingId
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.bindingId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('drop_erasure_policy_binding_args')
+        if self.bindingId is not None:
+            oprot.writeFieldBegin('bindingId', TType.I64, 1)
+            oprot.writeI64(self.bindingId)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(drop_erasure_policy_binding_args)
+drop_erasure_policy_binding_args.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'bindingId', None, None, ),  # 1
+)
+
+
+class drop_erasure_policy_binding_result(object):
+    """
+    Attributes:
+     - o1
+     - o2
+
+    """
+
+
+    def __init__(self, o1=None, o2=None,):
+        self.o1 = o1
+        self.o2 = o2
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = NoSuchObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('drop_erasure_policy_binding_result')
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(drop_erasure_policy_binding_result)
+drop_erasure_policy_binding_result.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'o1', [NoSuchObjectException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [MetaException, None], None, ),  # 2
+)
+
+
+class update_erasure_policy_binding_settings_args(object):
+    """
+    Attributes:
+     - bindingId
+     - resolutionMode
+     - columnFormat
+
+    """
+
+
+    def __init__(self, bindingId=None, resolutionMode=None, columnFormat=None,):
+        self.bindingId = bindingId
+        self.resolutionMode = resolutionMode
+        self.columnFormat = columnFormat
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.bindingId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I32:
+                    self.resolutionMode = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.I32:
+                    self.columnFormat = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('update_erasure_policy_binding_settings_args')
+        if self.bindingId is not None:
+            oprot.writeFieldBegin('bindingId', TType.I64, 1)
+            oprot.writeI64(self.bindingId)
+            oprot.writeFieldEnd()
+        if self.resolutionMode is not None:
+            oprot.writeFieldBegin('resolutionMode', TType.I32, 2)
+            oprot.writeI32(self.resolutionMode)
+            oprot.writeFieldEnd()
+        if self.columnFormat is not None:
+            oprot.writeFieldBegin('columnFormat', TType.I32, 3)
+            oprot.writeI32(self.columnFormat)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(update_erasure_policy_binding_settings_args)
+update_erasure_policy_binding_settings_args.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'bindingId', None, None, ),  # 1
+    (2, TType.I32, 'resolutionMode', None, None, ),  # 2
+    (3, TType.I32, 'columnFormat', None, None, ),  # 3
+)
+
+
+class update_erasure_policy_binding_settings_result(object):
+    """
+    Attributes:
+     - o1
+     - o2
+
+    """
+
+
+    def __init__(self, o1=None, o2=None,):
+        self.o1 = o1
+        self.o2 = o2
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = NoSuchObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('update_erasure_policy_binding_settings_result')
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(update_erasure_policy_binding_settings_result)
+update_erasure_policy_binding_settings_result.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'o1', [NoSuchObjectException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [MetaException, None], None, ),  # 2
+)
+
+
+class attach_policy_to_binding_args(object):
+    """
+    Attributes:
+     - bindingId
+     - policyId
+     - ordinal
+
+    """
+
+
+    def __init__(self, bindingId=None, policyId=None, ordinal=None,):
+        self.bindingId = bindingId
+        self.policyId = policyId
+        self.ordinal = ordinal
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.bindingId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I64:
+                    self.policyId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.I32:
+                    self.ordinal = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('attach_policy_to_binding_args')
+        if self.bindingId is not None:
+            oprot.writeFieldBegin('bindingId', TType.I64, 1)
+            oprot.writeI64(self.bindingId)
+            oprot.writeFieldEnd()
+        if self.policyId is not None:
+            oprot.writeFieldBegin('policyId', TType.I64, 2)
+            oprot.writeI64(self.policyId)
+            oprot.writeFieldEnd()
+        if self.ordinal is not None:
+            oprot.writeFieldBegin('ordinal', TType.I32, 3)
+            oprot.writeI32(self.ordinal)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(attach_policy_to_binding_args)
+attach_policy_to_binding_args.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'bindingId', None, None, ),  # 1
+    (2, TType.I64, 'policyId', None, None, ),  # 2
+    (3, TType.I32, 'ordinal', None, None, ),  # 3
+)
+
+
+class attach_policy_to_binding_result(object):
+    """
+    Attributes:
+     - o1
+     - o2
+     - o3
+
+    """
+
+
+    def __init__(self, o1=None, o2=None, o3=None,):
+        self.o1 = o1
+        self.o2 = o2
+        self.o3 = o3
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = AlreadyExistsException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = InvalidObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRUCT:
+                    self.o3 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('attach_policy_to_binding_result')
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o3 is not None:
+            oprot.writeFieldBegin('o3', TType.STRUCT, 3)
+            self.o3.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(attach_policy_to_binding_result)
+attach_policy_to_binding_result.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'o1', [AlreadyExistsException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [InvalidObjectException, None], None, ),  # 2
+    (3, TType.STRUCT, 'o3', [MetaException, None], None, ),  # 3
+)
+
+
+class detach_policy_from_binding_args(object):
+    """
+    Attributes:
+     - bindingId
+     - policyId
+
+    """
+
+
+    def __init__(self, bindingId=None, policyId=None,):
+        self.bindingId = bindingId
+        self.policyId = policyId
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.bindingId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I64:
+                    self.policyId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('detach_policy_from_binding_args')
+        if self.bindingId is not None:
+            oprot.writeFieldBegin('bindingId', TType.I64, 1)
+            oprot.writeI64(self.bindingId)
+            oprot.writeFieldEnd()
+        if self.policyId is not None:
+            oprot.writeFieldBegin('policyId', TType.I64, 2)
+            oprot.writeI64(self.policyId)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(detach_policy_from_binding_args)
+detach_policy_from_binding_args.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'bindingId', None, None, ),  # 1
+    (2, TType.I64, 'policyId', None, None, ),  # 2
+)
+
+
+class detach_policy_from_binding_result(object):
+    """
+    Attributes:
+     - o1
+     - o2
+
+    """
+
+
+    def __init__(self, o1=None, o2=None,):
+        self.o1 = o1
+        self.o2 = o2
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = NoSuchObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('detach_policy_from_binding_result')
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(detach_policy_from_binding_result)
+detach_policy_from_binding_result.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'o1', [NoSuchObjectException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [MetaException, None], None, ),  # 2
+)
+
+
+class get_binding_members_args(object):
+    """
+    Attributes:
+     - bindingId
+
+    """
+
+
+    def __init__(self, bindingId=None,):
+        self.bindingId = bindingId
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.bindingId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_binding_members_args')
+        if self.bindingId is not None:
+            oprot.writeFieldBegin('bindingId', TType.I64, 1)
+            oprot.writeI64(self.bindingId)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_binding_members_args)
+get_binding_members_args.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'bindingId', None, None, ),  # 1
+)
+
+
+class get_binding_members_result(object):
+    """
+    Attributes:
+     - success
+     - o1
+     - o2
+
+    """
+
+
+    def __init__(self, success=None, o1=None, o2=None,):
+        self.success = success
+        self.o1 = o1
+        self.o2 = o2
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype2059, _size2056) = iprot.readListBegin()
+                    for _i2060 in range(_size2056):
+                        _elem2061 = ErasurePolicyBindingMember()
+                        _elem2061.read(iprot)
+                        self.success.append(_elem2061)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = NoSuchObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_binding_members_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.LIST, 0)
+            oprot.writeListBegin(TType.STRUCT, len(self.success))
+            for iter2062 in self.success:
+                iter2062.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_binding_members_result)
+get_binding_members_result.thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRUCT, [ErasurePolicyBindingMember, None], False), None, ),  # 0
+    (1, TType.STRUCT, 'o1', [NoSuchObjectException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [MetaException, None], None, ),  # 2
+)
+
+
+class replace_binding_resolved_rules_args(object):
+    """
+    Attributes:
+     - bindingId
+     - resolved
+
+    """
+
+
+    def __init__(self, bindingId=None, resolved=None,):
+        self.bindingId = bindingId
+        self.resolved = resolved
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.bindingId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.LIST:
+                    self.resolved = []
+                    (_etype2066, _size2063) = iprot.readListBegin()
+                    for _i2067 in range(_size2063):
+                        _elem2068 = ErasurePolicyBindingResolved()
+                        _elem2068.read(iprot)
+                        self.resolved.append(_elem2068)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('replace_binding_resolved_rules_args')
+        if self.bindingId is not None:
+            oprot.writeFieldBegin('bindingId', TType.I64, 1)
+            oprot.writeI64(self.bindingId)
+            oprot.writeFieldEnd()
+        if self.resolved is not None:
+            oprot.writeFieldBegin('resolved', TType.LIST, 2)
+            oprot.writeListBegin(TType.STRUCT, len(self.resolved))
+            for iter2069 in self.resolved:
+                iter2069.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(replace_binding_resolved_rules_args)
+replace_binding_resolved_rules_args.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'bindingId', None, None, ),  # 1
+    (2, TType.LIST, 'resolved', (TType.STRUCT, [ErasurePolicyBindingResolved, None], False), None, ),  # 2
+)
+
+
+class replace_binding_resolved_rules_result(object):
+    """
+    Attributes:
+     - o1
+     - o2
+
+    """
+
+
+    def __init__(self, o1=None, o2=None,):
+        self.o1 = o1
+        self.o2 = o2
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = NoSuchObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('replace_binding_resolved_rules_result')
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(replace_binding_resolved_rules_result)
+replace_binding_resolved_rules_result.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'o1', [NoSuchObjectException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [MetaException, None], None, ),  # 2
+)
+
+
+class get_binding_resolved_rules_args(object):
+    """
+    Attributes:
+     - bindingId
+
+    """
+
+
+    def __init__(self, bindingId=None,):
+        self.bindingId = bindingId
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.bindingId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_binding_resolved_rules_args')
+        if self.bindingId is not None:
+            oprot.writeFieldBegin('bindingId', TType.I64, 1)
+            oprot.writeI64(self.bindingId)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_binding_resolved_rules_args)
+get_binding_resolved_rules_args.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'bindingId', None, None, ),  # 1
+)
+
+
+class get_binding_resolved_rules_result(object):
+    """
+    Attributes:
+     - success
+     - o1
+     - o2
+
+    """
+
+
+    def __init__(self, success=None, o1=None, o2=None,):
+        self.success = success
+        self.o1 = o1
+        self.o2 = o2
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype2073, _size2070) = iprot.readListBegin()
+                    for _i2074 in range(_size2070):
+                        _elem2075 = ErasurePolicyBindingResolved()
+                        _elem2075.read(iprot)
+                        self.success.append(_elem2075)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = NoSuchObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_binding_resolved_rules_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.LIST, 0)
+            oprot.writeListBegin(TType.STRUCT, len(self.success))
+            for iter2076 in self.success:
+                iter2076.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_binding_resolved_rules_result)
+get_binding_resolved_rules_result.thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRUCT, [ErasurePolicyBindingResolved, None], False), None, ),  # 0
+    (1, TType.STRUCT, 'o1', [NoSuchObjectException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [MetaException, None], None, ),  # 2
+)
+
+
+class record_lifecycle_event_args(object):
+    """
+    Attributes:
+     - evt
+
+    """
+
+
+    def __init__(self, evt=None,):
+        self.evt = evt
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.evt = ErasurePolicyLifecycleEvent()
+                    self.evt.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('record_lifecycle_event_args')
+        if self.evt is not None:
+            oprot.writeFieldBegin('evt', TType.STRUCT, 1)
+            self.evt.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(record_lifecycle_event_args)
+record_lifecycle_event_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'evt', [ErasurePolicyLifecycleEvent, None], None, ),  # 1
+)
+
+
+class record_lifecycle_event_result(object):
+    """
+    Attributes:
+     - o1
+
+    """
+
+
+    def __init__(self, o1=None,):
+        self.o1 = o1
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('record_lifecycle_event_result')
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(record_lifecycle_event_result)
+record_lifecycle_event_result.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
+)
+
+
+class get_lifecycle_events_for_policy_args(object):
+    """
+    Attributes:
+     - policyName
+     - fromTs
+     - untilTs
+
+    """
+
+
+    def __init__(self, policyName=None, fromTs=None, untilTs=None,):
+        self.policyName = policyName
+        self.fromTs = fromTs
+        self.untilTs = untilTs
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.policyName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I64:
+                    self.fromTs = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.I64:
+                    self.untilTs = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_lifecycle_events_for_policy_args')
+        if self.policyName is not None:
+            oprot.writeFieldBegin('policyName', TType.STRING, 1)
+            oprot.writeString(self.policyName.encode('utf-8') if sys.version_info[0] == 2 else self.policyName)
+            oprot.writeFieldEnd()
+        if self.fromTs is not None:
+            oprot.writeFieldBegin('fromTs', TType.I64, 2)
+            oprot.writeI64(self.fromTs)
+            oprot.writeFieldEnd()
+        if self.untilTs is not None:
+            oprot.writeFieldBegin('untilTs', TType.I64, 3)
+            oprot.writeI64(self.untilTs)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_lifecycle_events_for_policy_args)
+get_lifecycle_events_for_policy_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'policyName', 'UTF8', None, ),  # 1
+    (2, TType.I64, 'fromTs', None, None, ),  # 2
+    (3, TType.I64, 'untilTs', None, None, ),  # 3
+)
+
+
+class get_lifecycle_events_for_policy_result(object):
+    """
+    Attributes:
+     - success
+     - o1
+     - o2
+
+    """
+
+
+    def __init__(self, success=None, o1=None, o2=None,):
+        self.success = success
+        self.o1 = o1
+        self.o2 = o2
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype2080, _size2077) = iprot.readListBegin()
+                    for _i2081 in range(_size2077):
+                        _elem2082 = ErasurePolicyLifecycleEvent()
+                        _elem2082.read(iprot)
+                        self.success.append(_elem2082)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = NoSuchObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_lifecycle_events_for_policy_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.LIST, 0)
+            oprot.writeListBegin(TType.STRUCT, len(self.success))
+            for iter2083 in self.success:
+                iter2083.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_lifecycle_events_for_policy_result)
+get_lifecycle_events_for_policy_result.thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRUCT, [ErasurePolicyLifecycleEvent, None], False), None, ),  # 0
+    (1, TType.STRUCT, 'o1', [NoSuchObjectException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [MetaException, None], None, ),  # 2
+)
+
+
+class get_lifecycle_events_for_binding_args(object):
+    """
+    Attributes:
+     - bindingId
+     - fromTs
+     - untilTs
+
+    """
+
+
+    def __init__(self, bindingId=None, fromTs=None, untilTs=None,):
+        self.bindingId = bindingId
+        self.fromTs = fromTs
+        self.untilTs = untilTs
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.bindingId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I64:
+                    self.fromTs = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.I64:
+                    self.untilTs = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_lifecycle_events_for_binding_args')
+        if self.bindingId is not None:
+            oprot.writeFieldBegin('bindingId', TType.I64, 1)
+            oprot.writeI64(self.bindingId)
+            oprot.writeFieldEnd()
+        if self.fromTs is not None:
+            oprot.writeFieldBegin('fromTs', TType.I64, 2)
+            oprot.writeI64(self.fromTs)
+            oprot.writeFieldEnd()
+        if self.untilTs is not None:
+            oprot.writeFieldBegin('untilTs', TType.I64, 3)
+            oprot.writeI64(self.untilTs)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_lifecycle_events_for_binding_args)
+get_lifecycle_events_for_binding_args.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'bindingId', None, None, ),  # 1
+    (2, TType.I64, 'fromTs', None, None, ),  # 2
+    (3, TType.I64, 'untilTs', None, None, ),  # 3
+)
+
+
+class get_lifecycle_events_for_binding_result(object):
+    """
+    Attributes:
+     - success
+     - o1
+     - o2
+
+    """
+
+
+    def __init__(self, success=None, o1=None, o2=None,):
+        self.success = success
+        self.o1 = o1
+        self.o2 = o2
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype2087, _size2084) = iprot.readListBegin()
+                    for _i2088 in range(_size2084):
+                        _elem2089 = ErasurePolicyLifecycleEvent()
+                        _elem2089.read(iprot)
+                        self.success.append(_elem2089)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = NoSuchObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_lifecycle_events_for_binding_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.LIST, 0)
+            oprot.writeListBegin(TType.STRUCT, len(self.success))
+            for iter2090 in self.success:
+                iter2090.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_lifecycle_events_for_binding_result)
+get_lifecycle_events_for_binding_result.thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRUCT, [ErasurePolicyLifecycleEvent, None], False), None, ),  # 0
+    (1, TType.STRUCT, 'o1', [NoSuchObjectException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [MetaException, None], None, ),  # 2
+)
+
+
+class get_attach_rejected_events_args(object):
+    """
+    Attributes:
+     - fromTs
+     - untilTs
+
+    """
+
+
+    def __init__(self, fromTs=None, untilTs=None,):
+        self.fromTs = fromTs
+        self.untilTs = untilTs
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.fromTs = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I64:
+                    self.untilTs = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_attach_rejected_events_args')
+        if self.fromTs is not None:
+            oprot.writeFieldBegin('fromTs', TType.I64, 1)
+            oprot.writeI64(self.fromTs)
+            oprot.writeFieldEnd()
+        if self.untilTs is not None:
+            oprot.writeFieldBegin('untilTs', TType.I64, 2)
+            oprot.writeI64(self.untilTs)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_attach_rejected_events_args)
+get_attach_rejected_events_args.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'fromTs', None, None, ),  # 1
+    (2, TType.I64, 'untilTs', None, None, ),  # 2
+)
+
+
+class get_attach_rejected_events_result(object):
+    """
+    Attributes:
+     - success
+     - o1
+
+    """
+
+
+    def __init__(self, success=None, o1=None,):
+        self.success = success
+        self.o1 = o1
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype2094, _size2091) = iprot.readListBegin()
+                    for _i2095 in range(_size2091):
+                        _elem2096 = ErasurePolicyLifecycleEvent()
+                        _elem2096.read(iprot)
+                        self.success.append(_elem2096)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_attach_rejected_events_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.LIST, 0)
+            oprot.writeListBegin(TType.STRUCT, len(self.success))
+            for iter2097 in self.success:
+                iter2097.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_attach_rejected_events_result)
+get_attach_rejected_events_result.thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRUCT, [ErasurePolicyLifecycleEvent, None], False), None, ),  # 0
+    (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
+)
+
+
+class record_erasure_run_args(object):
+    """
+    Attributes:
+     - run
+
+    """
+
+
+    def __init__(self, run=None,):
+        self.run = run
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.run = ErasureRunAudit()
+                    self.run.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('record_erasure_run_args')
+        if self.run is not None:
+            oprot.writeFieldBegin('run', TType.STRUCT, 1)
+            self.run.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(record_erasure_run_args)
+record_erasure_run_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'run', [ErasureRunAudit, None], None, ),  # 1
+)
+
+
+class record_erasure_run_result(object):
+    """
+    Attributes:
+     - o1
+
+    """
+
+
+    def __init__(self, o1=None,):
+        self.o1 = o1
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('record_erasure_run_result')
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(record_erasure_run_result)
+record_erasure_run_result.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
+)
+
+
+class get_erasure_runs_for_table_args(object):
+    """
+    Attributes:
+     - tblId
+     - fromTs
+     - untilTs
+     - byUser
+     - forIdentity
+
+    """
+
+
+    def __init__(self, tblId=None, fromTs=None, untilTs=None, byUser=None, forIdentity=None,):
+        self.tblId = tblId
+        self.fromTs = fromTs
+        self.untilTs = untilTs
+        self.byUser = byUser
+        self.forIdentity = forIdentity
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.tblId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I64:
+                    self.fromTs = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.I64:
+                    self.untilTs = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.STRING:
+                    self.byUser = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.STRING:
+                    self.forIdentity = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_erasure_runs_for_table_args')
+        if self.tblId is not None:
+            oprot.writeFieldBegin('tblId', TType.I64, 1)
+            oprot.writeI64(self.tblId)
+            oprot.writeFieldEnd()
+        if self.fromTs is not None:
+            oprot.writeFieldBegin('fromTs', TType.I64, 2)
+            oprot.writeI64(self.fromTs)
+            oprot.writeFieldEnd()
+        if self.untilTs is not None:
+            oprot.writeFieldBegin('untilTs', TType.I64, 3)
+            oprot.writeI64(self.untilTs)
+            oprot.writeFieldEnd()
+        if self.byUser is not None:
+            oprot.writeFieldBegin('byUser', TType.STRING, 4)
+            oprot.writeString(self.byUser.encode('utf-8') if sys.version_info[0] == 2 else self.byUser)
+            oprot.writeFieldEnd()
+        if self.forIdentity is not None:
+            oprot.writeFieldBegin('forIdentity', TType.STRING, 5)
+            oprot.writeString(self.forIdentity.encode('utf-8') if sys.version_info[0] == 2 else self.forIdentity)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_erasure_runs_for_table_args)
+get_erasure_runs_for_table_args.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'tblId', None, None, ),  # 1
+    (2, TType.I64, 'fromTs', None, None, ),  # 2
+    (3, TType.I64, 'untilTs', None, None, ),  # 3
+    (4, TType.STRING, 'byUser', 'UTF8', None, ),  # 4
+    (5, TType.STRING, 'forIdentity', 'UTF8', None, ),  # 5
+)
+
+
+class get_erasure_runs_for_table_result(object):
+    """
+    Attributes:
+     - success
+     - o1
+
+    """
+
+
+    def __init__(self, success=None, o1=None,):
+        self.success = success
+        self.o1 = o1
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype2101, _size2098) = iprot.readListBegin()
+                    for _i2102 in range(_size2098):
+                        _elem2103 = ErasureRunAudit()
+                        _elem2103.read(iprot)
+                        self.success.append(_elem2103)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_erasure_runs_for_table_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.LIST, 0)
+            oprot.writeListBegin(TType.STRUCT, len(self.success))
+            for iter2104 in self.success:
+                iter2104.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_erasure_runs_for_table_result)
+get_erasure_runs_for_table_result.thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRUCT, [ErasureRunAudit, None], False), None, ),  # 0
+    (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
+)
+
+
+class update_erasure_run_completion_args(object):
+    """
+    Attributes:
+     - tblId
+     - startedTs
+     - completedTs
+     - status
+     - matchesInspected
+     - matchesRedacted
+     - matchesFlagged
+
+    """
+
+
+    def __init__(self, tblId=None, startedTs=None, completedTs=None, status=None, matchesInspected=None, matchesRedacted=None, matchesFlagged=None,):
+        self.tblId = tblId
+        self.startedTs = startedTs
+        self.completedTs = completedTs
+        self.status = status
+        self.matchesInspected = matchesInspected
+        self.matchesRedacted = matchesRedacted
+        self.matchesFlagged = matchesFlagged
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.tblId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I64:
+                    self.startedTs = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.I64:
+                    self.completedTs = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.I32:
+                    self.status = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.I64:
+                    self.matchesInspected = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.I64:
+                    self.matchesRedacted = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.I64:
+                    self.matchesFlagged = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('update_erasure_run_completion_args')
+        if self.tblId is not None:
+            oprot.writeFieldBegin('tblId', TType.I64, 1)
+            oprot.writeI64(self.tblId)
+            oprot.writeFieldEnd()
+        if self.startedTs is not None:
+            oprot.writeFieldBegin('startedTs', TType.I64, 2)
+            oprot.writeI64(self.startedTs)
+            oprot.writeFieldEnd()
+        if self.completedTs is not None:
+            oprot.writeFieldBegin('completedTs', TType.I64, 3)
+            oprot.writeI64(self.completedTs)
+            oprot.writeFieldEnd()
+        if self.status is not None:
+            oprot.writeFieldBegin('status', TType.I32, 4)
+            oprot.writeI32(self.status)
+            oprot.writeFieldEnd()
+        if self.matchesInspected is not None:
+            oprot.writeFieldBegin('matchesInspected', TType.I64, 5)
+            oprot.writeI64(self.matchesInspected)
+            oprot.writeFieldEnd()
+        if self.matchesRedacted is not None:
+            oprot.writeFieldBegin('matchesRedacted', TType.I64, 6)
+            oprot.writeI64(self.matchesRedacted)
+            oprot.writeFieldEnd()
+        if self.matchesFlagged is not None:
+            oprot.writeFieldBegin('matchesFlagged', TType.I64, 7)
+            oprot.writeI64(self.matchesFlagged)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(update_erasure_run_completion_args)
+update_erasure_run_completion_args.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'tblId', None, None, ),  # 1
+    (2, TType.I64, 'startedTs', None, None, ),  # 2
+    (3, TType.I64, 'completedTs', None, None, ),  # 3
+    (4, TType.I32, 'status', None, None, ),  # 4
+    (5, TType.I64, 'matchesInspected', None, None, ),  # 5
+    (6, TType.I64, 'matchesRedacted', None, None, ),  # 6
+    (7, TType.I64, 'matchesFlagged', None, None, ),  # 7
+)
+
+
+class update_erasure_run_completion_result(object):
+    """
+    Attributes:
+     - o1
+     - o2
+
+    """
+
+
+    def __init__(self, o1=None, o2=None,):
+        self.o1 = o1
+        self.o2 = o2
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = NoSuchObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('update_erasure_run_completion_result')
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(update_erasure_run_completion_result)
+update_erasure_run_completion_result.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'o1', [NoSuchObjectException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [MetaException, None], None, ),  # 2
+)
+
+
+class acquire_erasure_run_lock_args(object):
+    """
+    Attributes:
+     - tblId
+     - runId
+     - principal
+
+    """
+
+
+    def __init__(self, tblId=None, runId=None, principal=None,):
+        self.tblId = tblId
+        self.runId = runId
+        self.principal = principal
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.tblId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I64:
+                    self.runId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.principal = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('acquire_erasure_run_lock_args')
+        if self.tblId is not None:
+            oprot.writeFieldBegin('tblId', TType.I64, 1)
+            oprot.writeI64(self.tblId)
+            oprot.writeFieldEnd()
+        if self.runId is not None:
+            oprot.writeFieldBegin('runId', TType.I64, 2)
+            oprot.writeI64(self.runId)
+            oprot.writeFieldEnd()
+        if self.principal is not None:
+            oprot.writeFieldBegin('principal', TType.STRING, 3)
+            oprot.writeString(self.principal.encode('utf-8') if sys.version_info[0] == 2 else self.principal)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(acquire_erasure_run_lock_args)
+acquire_erasure_run_lock_args.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'tblId', None, None, ),  # 1
+    (2, TType.I64, 'runId', None, None, ),  # 2
+    (3, TType.STRING, 'principal', 'UTF8', None, ),  # 3
+)
+
+
+class acquire_erasure_run_lock_result(object):
+    """
+    Attributes:
+     - success
+     - o1
+
+    """
+
+
+    def __init__(self, success=None, o1=None,):
+        self.success = success
+        self.o1 = o1
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.STRUCT:
+                    self.success = ErasureRunLock()
+                    self.success.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('acquire_erasure_run_lock_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.STRUCT, 0)
+            self.success.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(acquire_erasure_run_lock_result)
+acquire_erasure_run_lock_result.thrift_spec = (
+    (0, TType.STRUCT, 'success', [ErasureRunLock, None], None, ),  # 0
+    (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
+)
+
+
+class get_erasure_run_lock_args(object):
+    """
+    Attributes:
+     - tblId
+
+    """
+
+
+    def __init__(self, tblId=None,):
+        self.tblId = tblId
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.tblId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_erasure_run_lock_args')
+        if self.tblId is not None:
+            oprot.writeFieldBegin('tblId', TType.I64, 1)
+            oprot.writeI64(self.tblId)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_erasure_run_lock_args)
+get_erasure_run_lock_args.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'tblId', None, None, ),  # 1
+)
+
+
+class get_erasure_run_lock_result(object):
+    """
+    Attributes:
+     - success
+     - o1
+
+    """
+
+
+    def __init__(self, success=None, o1=None,):
+        self.success = success
+        self.o1 = o1
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.STRUCT:
+                    self.success = ErasureRunLock()
+                    self.success.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_erasure_run_lock_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.STRUCT, 0)
+            self.success.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_erasure_run_lock_result)
+get_erasure_run_lock_result.thrift_spec = (
+    (0, TType.STRUCT, 'success', [ErasureRunLock, None], None, ),  # 0
+    (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
+)
+
+
+class complete_erasure_run_lock_args(object):
+    """
+    Attributes:
+     - tblId
+     - runId
+
+    """
+
+
+    def __init__(self, tblId=None, runId=None,):
+        self.tblId = tblId
+        self.runId = runId
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.tblId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I64:
+                    self.runId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('complete_erasure_run_lock_args')
+        if self.tblId is not None:
+            oprot.writeFieldBegin('tblId', TType.I64, 1)
+            oprot.writeI64(self.tblId)
+            oprot.writeFieldEnd()
+        if self.runId is not None:
+            oprot.writeFieldBegin('runId', TType.I64, 2)
+            oprot.writeI64(self.runId)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(complete_erasure_run_lock_args)
+complete_erasure_run_lock_args.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'tblId', None, None, ),  # 1
+    (2, TType.I64, 'runId', None, None, ),  # 2
+)
+
+
+class complete_erasure_run_lock_result(object):
+    """
+    Attributes:
+     - success
+     - o1
+
+    """
+
+
+    def __init__(self, success=None, o1=None,):
+        self.success = success
+        self.o1 = o1
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.BOOL:
+                    self.success = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('complete_erasure_run_lock_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.BOOL, 0)
+            oprot.writeBool(self.success)
+            oprot.writeFieldEnd()
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(complete_erasure_run_lock_result)
+complete_erasure_run_lock_result.thrift_spec = (
+    (0, TType.BOOL, 'success', None, None, ),  # 0
+    (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
+)
+
+
+class manually_release_erasure_run_lock_args(object):
+    """
+    Attributes:
+     - tblId
+     - releasedBy
+     - releaseReason
+     - force
+
+    """
+
+
+    def __init__(self, tblId=None, releasedBy=None, releaseReason=None, force=None,):
+        self.tblId = tblId
+        self.releasedBy = releasedBy
+        self.releaseReason = releaseReason
+        self.force = force
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.tblId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.releasedBy = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.releaseReason = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.BOOL:
+                    self.force = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('manually_release_erasure_run_lock_args')
+        if self.tblId is not None:
+            oprot.writeFieldBegin('tblId', TType.I64, 1)
+            oprot.writeI64(self.tblId)
+            oprot.writeFieldEnd()
+        if self.releasedBy is not None:
+            oprot.writeFieldBegin('releasedBy', TType.STRING, 2)
+            oprot.writeString(self.releasedBy.encode('utf-8') if sys.version_info[0] == 2 else self.releasedBy)
+            oprot.writeFieldEnd()
+        if self.releaseReason is not None:
+            oprot.writeFieldBegin('releaseReason', TType.STRING, 3)
+            oprot.writeString(self.releaseReason.encode('utf-8') if sys.version_info[0] == 2 else self.releaseReason)
+            oprot.writeFieldEnd()
+        if self.force is not None:
+            oprot.writeFieldBegin('force', TType.BOOL, 4)
+            oprot.writeBool(self.force)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(manually_release_erasure_run_lock_args)
+manually_release_erasure_run_lock_args.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'tblId', None, None, ),  # 1
+    (2, TType.STRING, 'releasedBy', 'UTF8', None, ),  # 2
+    (3, TType.STRING, 'releaseReason', 'UTF8', None, ),  # 3
+    (4, TType.BOOL, 'force', None, None, ),  # 4
+)
+
+
+class manually_release_erasure_run_lock_result(object):
+    """
+    Attributes:
+     - success
+     - o1
+     - o2
+
+    """
+
+
+    def __init__(self, success=None, o1=None, o2=None,):
+        self.success = success
+        self.o1 = o1
+        self.o2 = o2
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.STRUCT:
+                    self.success = ErasureRunLock()
+                    self.success.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = NoSuchObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('manually_release_erasure_run_lock_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.STRUCT, 0)
+            self.success.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(manually_release_erasure_run_lock_result)
+manually_release_erasure_run_lock_result.thrift_spec = (
+    (0, TType.STRUCT, 'success', [ErasureRunLock, None], None, ),  # 0
+    (1, TType.STRUCT, 'o1', [NoSuchObjectException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [MetaException, None], None, ),  # 2
+)
+
+
+class list_erasure_run_locks_args(object):
+
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('list_erasure_run_locks_args')
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(list_erasure_run_locks_args)
+list_erasure_run_locks_args.thrift_spec = (
+)
+
+
+class list_erasure_run_locks_result(object):
+    """
+    Attributes:
+     - success
+     - o1
+
+    """
+
+
+    def __init__(self, success=None, o1=None,):
+        self.success = success
+        self.o1 = o1
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype2108, _size2105) = iprot.readListBegin()
+                    for _i2109 in range(_size2105):
+                        _elem2110 = ErasureRunLock()
+                        _elem2110.read(iprot)
+                        self.success.append(_elem2110)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('list_erasure_run_locks_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.LIST, 0)
+            oprot.writeListBegin(TType.STRUCT, len(self.success))
+            for iter2111 in self.success:
+                iter2111.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(list_erasure_run_locks_result)
+list_erasure_run_locks_result.thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRUCT, [ErasureRunLock, None], False), None, ),  # 0
+    (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
+)
+
+
+class grant_policy_priv_args(object):
+    """
+    Attributes:
+     - priv
+
+    """
+
+
+    def __init__(self, priv=None,):
+        self.priv = priv
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.priv = PolicyPriv()
+                    self.priv.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('grant_policy_priv_args')
+        if self.priv is not None:
+            oprot.writeFieldBegin('priv', TType.STRUCT, 1)
+            self.priv.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(grant_policy_priv_args)
+grant_policy_priv_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'priv', [PolicyPriv, None], None, ),  # 1
+)
+
+
+class grant_policy_priv_result(object):
+    """
+    Attributes:
+     - o1
+     - o2
+     - o3
+
+    """
+
+
+    def __init__(self, o1=None, o2=None, o3=None,):
+        self.o1 = o1
+        self.o2 = o2
+        self.o3 = o3
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = AlreadyExistsException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = InvalidObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRUCT:
+                    self.o3 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('grant_policy_priv_result')
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o3 is not None:
+            oprot.writeFieldBegin('o3', TType.STRUCT, 3)
+            self.o3.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(grant_policy_priv_result)
+grant_policy_priv_result.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'o1', [AlreadyExistsException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [InvalidObjectException, None], None, ),  # 2
+    (3, TType.STRUCT, 'o3', [MetaException, None], None, ),  # 3
+)
+
+
+class revoke_policy_priv_args(object):
+    """
+    Attributes:
+     - policyPrivId
+
+    """
+
+
+    def __init__(self, policyPrivId=None,):
+        self.policyPrivId = policyPrivId
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.policyPrivId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('revoke_policy_priv_args')
+        if self.policyPrivId is not None:
+            oprot.writeFieldBegin('policyPrivId', TType.I64, 1)
+            oprot.writeI64(self.policyPrivId)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(revoke_policy_priv_args)
+revoke_policy_priv_args.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'policyPrivId', None, None, ),  # 1
+)
+
+
+class revoke_policy_priv_result(object):
+    """
+    Attributes:
+     - o1
+     - o2
+
+    """
+
+
+    def __init__(self, o1=None, o2=None,):
+        self.o1 = o1
+        self.o2 = o2
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = NoSuchObjectException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('revoke_policy_priv_result')
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(revoke_policy_priv_result)
+revoke_policy_priv_result.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'o1', [NoSuchObjectException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [MetaException, None], None, ),  # 2
+)
+
+
+class list_policy_privs_args(object):
+    """
+    Attributes:
+     - policyId
+     - principalName
+
+    """
+
+
+    def __init__(self, policyId=None, principalName=None,):
+        self.policyId = policyId
+        self.principalName = principalName
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.policyId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.principalName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('list_policy_privs_args')
+        if self.policyId is not None:
+            oprot.writeFieldBegin('policyId', TType.I64, 1)
+            oprot.writeI64(self.policyId)
+            oprot.writeFieldEnd()
+        if self.principalName is not None:
+            oprot.writeFieldBegin('principalName', TType.STRING, 2)
+            oprot.writeString(self.principalName.encode('utf-8') if sys.version_info[0] == 2 else self.principalName)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(list_policy_privs_args)
+list_policy_privs_args.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'policyId', None, None, ),  # 1
+    (2, TType.STRING, 'principalName', 'UTF8', None, ),  # 2
+)
+
+
+class list_policy_privs_result(object):
+    """
+    Attributes:
+     - success
+     - o1
+
+    """
+
+
+    def __init__(self, success=None, o1=None,):
+        self.success = success
+        self.o1 = o1
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype2115, _size2112) = iprot.readListBegin()
+                    for _i2116 in range(_size2112):
+                        _elem2117 = PolicyPriv()
+                        _elem2117.read(iprot)
+                        self.success.append(_elem2117)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = MetaException.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('list_policy_privs_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.LIST, 0)
+            oprot.writeListBegin(TType.STRUCT, len(self.success))
+            for iter2118 in self.success:
+                iter2118.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(list_policy_privs_result)
+list_policy_privs_result.thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRUCT, [PolicyPriv, None], False), None, ),  # 0
     (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
 )
 fix_spec(all_structs)

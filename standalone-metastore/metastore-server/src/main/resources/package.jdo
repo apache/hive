@@ -908,13 +908,13 @@
       <field name="tblName">
         <column name="TBL_NAME" length="256" jdbc-type="VARCHAR"/>
       </field>
-       <field name="partName">
+      <field name="partName">
         <column name="PARTITION_NAME" length="767" jdbc-type="VARCHAR"/>
       </field>
       <field name="eventType">
         <column name="EVENT_TYPE"  jdbc-type="integer"/>
       </field>
-     <field name="eventTime">
+      <field name="eventTime">
         <column name="EVENT_TIME"  jdbc-type="BIGINT"/>
       </field>
 
@@ -1620,6 +1620,403 @@
             <column name="AUTHORIZER" length="128" jdbc-type="VARCHAR"/>
           </field>
         </class>
+
+    <class name="MErasurePolicy" table="ERASURE_POLICIES" identity-type="datastore" detachable="true">
+         <datastore-identity>
+             <column name="POLICY_ID"/>
+         </datastore-identity>
+         <field name="policyName">
+             <column name="POLICY_NAME" length="30" jdbc-type="VARCHAR" allows-null="false"/>
+         </field>
+       </class>
+
+    <class name="MErasureIndex" table="ERASURE_INDEXES" identity-type="datastore" detachable="true">
+         <datastore-identity>
+             <column name="INDEX_ID"/>
+         </datastore-identity>
+         <field name="indexName">
+             <column name="INDEX_NAME" length="30" jdbc-type="VARCHAR" allows-null="false"/>
+         </field>
+         <field name="tblName">
+             <column name="TBL_NAME" length="30" jdbc-type="VARCHAR" allows-null="false"/>
+         </field>
+         <field name="colName">
+             <column name="COL_NAME" length="30" jdbc-type="VARCHAR" allows-null="false"/>
+         </field>
+         <field name="identityFieldName">
+             <column name="ID_FLD_NAME" length="30" jdbc-type="VARCHAR" allows-null="false"/>
+         </field>
+         <field name="locator">
+             <column name="LOCATOR" length="30" jdbc-type="VARCHAR" allows-null="false"/>
+         </field>
+       </class>
+
+    <class name="MIndex" table="IDXS" identity-type="datastore" detachable="true">
+      <index name="UniqueINDEX" unique="true">
+        <column name="INDEX_NAME"/>
+        <column name="ORIG_TBL_ID"/>
+      </index>
+
+      <datastore-identity>
+        <column name="INDEX_ID"/>
+      </datastore-identity>
+
+      <field name="indexName">
+        <column name="INDEX_NAME" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="origTable">
+        <column name="ORIG_TBL_ID"/>
+      </field>
+      <field name="indexTable">
+        <column name="INDEX_TBL_ID"/>
+      </field>
+      <field name="indexHandlerClass">
+        <column name="INDEX_HANDLER_CLASS" length="4000" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="deferredRebuild">
+        <column name="DEFERRED_REBUILD"/>
+      </field>
+      <field name="createTime">
+        <column name="CREATE_TIME" jdbc-type="integer"/>
+      </field>
+      <field name="lastAccessTime">
+        <column name="LAST_ACCESS_TIME" jdbc-type="integer"/>
+      </field>
+      <field name="sd" dependent="true">
+        <column name="SD_ID"/>
+      </field>
+      <field name="pageSize" dependent="true">
+        <column name="PAGE_SIZE" jdbc-type="integer"/>
+      </field>
+      <field name="bufferPoolSize" dependent="true">
+        <column name="BUFFER_POOL_SIZE" jdbc-type="integer"/>
+      </field>
+      <field name="pointerType" dependent="true">
+        <column name="POINTER_TYPE" jdbc-type="VARCHAR" length="20"/>
+      </field>
+      <field name="indexType" dependent="true">
+        <column name="INDEX_TYPE" jdbc-type="VARCHAR" length="20"/>
+      </field>
+    </class>
+
+    <!-- ===========================================================
+         Erasure policy governance entities.
+         Versioning + multi-policy binding + lifecycle audit + run
+         audit + policy-object privilege grants.
+         =========================================================== -->
+
+    <class name="MErasurePolicyVersion" table="ERASURE_POLICY_VERSIONS" identity-type="datastore" detachable="true">
+      <datastore-identity>
+        <column name="VERSION_ID"/>
+      </datastore-identity>
+      <field name="policy">
+        <column name="POLICY_ID"/>
+      </field>
+      <field name="versionLabel">
+        <column name="VERSION_LABEL" jdbc-type="VARCHAR" length="64"/>
+      </field>
+      <field name="status">
+        <column name="STATUS" jdbc-type="VARCHAR" length="16"/>
+      </field>
+      <field name="identityFieldName">
+        <column name="IDENTITY_FIELD_NAME" jdbc-type="VARCHAR" length="128"/>
+      </field>
+      <field name="identityFieldType">
+        <column name="IDENTITY_FIELD_TYPE" jdbc-type="VARCHAR" length="8"/>
+      </field>
+      <field name="schemaType">
+        <column name="SCHEMA_TYPE" jdbc-type="VARCHAR" length="8"/>
+      </field>
+      <field name="sourcePath">
+        <column name="SOURCE_PATH" jdbc-type="VARCHAR" length="1024"/>
+      </field>
+      <field name="sourceChecksum">
+        <column name="SOURCE_CHECKSUM" jdbc-type="CHAR" length="64"/>
+      </field>
+      <field name="sourceText">
+        <column name="SOURCE_TEXT" jdbc-type="VARCHAR" length="7000"/>
+      </field>
+      <field name="validatedBy">
+        <column name="VALIDATED_BY" jdbc-type="VARCHAR" length="256"/>
+      </field>
+      <field name="validatedTs">
+        <column name="VALIDATED_TS" jdbc-type="BIGINT"/>
+      </field>
+      <field name="activatedBy">
+        <column name="ACTIVATED_BY" jdbc-type="VARCHAR" length="256"/>
+      </field>
+      <field name="activatedTs">
+        <column name="ACTIVATED_TS" jdbc-type="BIGINT"/>
+      </field>
+      <field name="deactivatedBy">
+        <column name="DEACTIVATED_BY" jdbc-type="VARCHAR" length="256"/>
+      </field>
+      <field name="deactivatedTs">
+        <column name="DEACTIVATED_TS" jdbc-type="BIGINT"/>
+      </field>
+    </class>
+
+    <class name="MErasurePolicyBinding" table="ERASURE_POLICY_BINDINGS" identity-type="datastore" detachable="true">
+      <datastore-identity>
+        <column name="BINDING_ID"/>
+      </datastore-identity>
+      <field name="tblId">
+        <column name="TBL_ID" jdbc-type="BIGINT"/>
+      </field>
+      <field name="columnName">
+        <column name="COLUMN_NAME" jdbc-type="VARCHAR" length="128"/>
+      </field>
+      <field name="schemaField">
+        <column name="SCHEMA_FIELD" jdbc-type="VARCHAR" length="128"/>
+      </field>
+      <field name="rowLocator">
+        <column name="ROW_LOCATOR" jdbc-type="VARCHAR" length="128"/>
+      </field>
+      <field name="columnFormat">
+        <column name="COLUMN_FORMAT" jdbc-type="VARCHAR" length="16"/>
+      </field>
+      <field name="resolutionMode">
+        <column name="RESOLUTION_MODE" jdbc-type="VARCHAR" length="16"/>
+      </field>
+      <field name="createdBy">
+        <column name="CREATED_BY" jdbc-type="VARCHAR" length="256"/>
+      </field>
+      <field name="createdTs">
+        <column name="CREATED_TS" jdbc-type="BIGINT"/>
+      </field>
+    </class>
+
+    <class name="MErasurePolicyBindingMember" table="ERASURE_POLICY_BINDING_MEMBERS" identity-type="datastore" detachable="true">
+      <datastore-identity>
+        <column name="BINDING_MEMBER_ID"/>
+      </datastore-identity>
+      <!-- Member rows belong to one binding; DETACH cascades them. -->
+      <field name="binding" delete-action="cascade">
+        <column name="BINDING_ID"/>
+      </field>
+      <field name="policy">
+        <column name="POLICY_ID"/>
+      </field>
+      <field name="ordinal">
+        <column name="ORDINAL" jdbc-type="INTEGER"/>
+      </field>
+    </class>
+
+    <class name="MErasurePolicyBindingResolved" table="ERASURE_POLICY_BINDING_RESOLVED" identity-type="datastore" detachable="true">
+      <datastore-identity>
+        <column name="RESOLVED_ID"/>
+      </datastore-identity>
+      <!-- Resolved-rule rows are per-binding artefacts; DETACH cascades them. -->
+      <field name="binding" delete-action="cascade">
+        <column name="BINDING_ID"/>
+      </field>
+      <field name="schemaValue">
+        <column name="SCHEMA_VALUE" jdbc-type="VARCHAR" length="256"/>
+      </field>
+      <field name="fieldPath">
+        <column name="FIELD_PATH" jdbc-type="VARCHAR" length="512"/>
+      </field>
+      <field name="action">
+        <column name="ACTION" jdbc-type="VARCHAR" length="16"/>
+      </field>
+      <field name="literalValue">
+        <column name="LITERAL_VALUE" jdbc-type="VARCHAR" length="1024"/>
+      </field>
+      <field name="literalType">
+        <column name="LITERAL_TYPE" jdbc-type="VARCHAR" length="8"/>
+      </field>
+      <field name="params">
+        <column name="PARAMS" jdbc-type="CLOB"/>
+      </field>
+      <field name="contributingPolicies">
+        <column name="CONTRIBUTING_POLICIES" jdbc-type="CLOB"/>
+      </field>
+      <field name="resolutionNote">
+        <column name="RESOLUTION_NOTE" jdbc-type="VARCHAR" length="256"/>
+      </field>
+    </class>
+
+    <class name="MErasurePolicyLifecycleEvent" table="ERASURE_POLICY_LIFECYCLE_EVENTS" identity-type="datastore" detachable="true">
+      <datastore-identity>
+        <column name="EVENT_ID"/>
+      </datastore-identity>
+      <field name="version">
+        <column name="VERSION_ID"/>
+      </field>
+      <field name="eventType">
+        <column name="EVENT_TYPE" jdbc-type="VARCHAR" length="24"/>
+      </field>
+      <field name="principal">
+        <column name="PRINCIPAL" jdbc-type="VARCHAR" length="256"/>
+      </field>
+      <field name="eventTs">
+        <column name="EVENT_TS" jdbc-type="BIGINT"/>
+      </field>
+      <field name="note">
+        <column name="NOTE" jdbc-type="VARCHAR" length="2048"/>
+      </field>
+      <field name="conflictClass">
+        <column name="CONFLICT_CLASS" jdbc-type="VARCHAR" length="16"/>
+      </field>
+      <!--
+        Lifecycle events are audit-trail records: they outlive the
+        binding they describe. DETACH nulls out the link but keeps the
+        UNBOUND / ATTACH_REJECTED / etc. events for the reviewer.
+      -->
+      <field name="binding" delete-action="null">
+        <column name="BINDING_ID" allows-null="true"/>
+      </field>
+    </class>
+
+    <class name="MErasureRunAudit" table="ERASURE_RUN_AUDIT" identity-type="datastore" detachable="true">
+      <datastore-identity>
+        <column name="RUN_ID"/>
+      </datastore-identity>
+      <field name="tblId">
+        <column name="TBL_ID" jdbc-type="BIGINT"/>
+      </field>
+      <field name="columnName">
+        <column name="COLUMN_NAME" jdbc-type="VARCHAR" length="128"/>
+      </field>
+      <!--
+        BINDING_ID FK uses ON DELETE SET NULL so the §4.4 "audit rows are
+        never deleted" invariant survives binding removal: a §4.6 DETACH
+        clears the link without losing the §4.7 audit history that
+        references it. The bindingId on the audit row becomes NULL once
+        its binding is dropped; the rest of the row (tblId, principal,
+        timestamps, identityValues, status) stays intact for the
+        compliance reviewer.
+      -->
+      <field name="binding" delete-action="null">
+        <column name="BINDING_ID" allows-null="true"/>
+      </field>
+      <field name="principal">
+        <column name="PRINCIPAL" jdbc-type="VARCHAR" length="256"/>
+      </field>
+      <field name="startedTs">
+        <column name="STARTED_TS" jdbc-type="BIGINT"/>
+      </field>
+      <field name="completedTs">
+        <column name="COMPLETED_TS" jdbc-type="BIGINT"/>
+      </field>
+      <field name="identityValues">
+        <column name="IDENTITY_VALUES" jdbc-type="CLOB"/>
+      </field>
+      <field name="policyVersions">
+        <column name="POLICY_VERSIONS" jdbc-type="CLOB"/>
+      </field>
+      <field name="resolvedRulesSnapshotId">
+        <column name="RESOLVED_RULES_SNAPSHOT_ID" jdbc-type="BIGINT"/>
+      </field>
+      <field name="filesRewritten">
+        <column name="FILES_REWRITTEN" jdbc-type="INTEGER"/>
+      </field>
+      <field name="bytesBefore">
+        <column name="BYTES_BEFORE" jdbc-type="BIGINT"/>
+      </field>
+      <field name="bytesAfter">
+        <column name="BYTES_AFTER" jdbc-type="BIGINT"/>
+      </field>
+      <field name="status">
+        <column name="STATUS" jdbc-type="VARCHAR" length="16"/>
+      </field>
+      <field name="matchesInspected">
+        <column name="MATCHES_INSPECTED" jdbc-type="BIGINT"/>
+      </field>
+      <field name="matchesRedacted">
+        <column name="MATCHES_REDACTED" jdbc-type="BIGINT"/>
+      </field>
+      <field name="matchesFlagged">
+        <column name="MATCHES_FLAGGED" jdbc-type="BIGINT"/>
+      </field>
+      <field name="releaseReason">
+        <column name="RELEASE_REASON" length="4000" jdbc-type="VARCHAR" allows-null="true"/>
+      </field>
+    </class>
+
+    <!-- §4.8 normalised identity index for the subject-keyed inverse audit.
+         One row per (run, identity value); the IDENTITY_VALUE index turns
+         AUDIT BY IDENTITY VALUES into an indexed exact-match lookup instead
+         of a substring scan over the parent's serialised IDENTITY_VALUES. -->
+    <class name="MErasureRunAuditIdentity" table="ERASURE_RUN_AUDIT_IDENTITY" identity-type="datastore" detachable="true">
+      <datastore-identity>
+        <column name="ERAI_ID"/>
+      </datastore-identity>
+      <field name="runId">
+        <column name="RUN_ID" jdbc-type="BIGINT"/>
+      </field>
+      <field name="identityValue">
+        <column name="IDENTITY_VALUE" jdbc-type="VARCHAR" length="256"/>
+      </field>
+      <index name="ERAI_BY_IDENTITY">
+        <column name="IDENTITY_VALUE"/>
+      </index>
+    </class>
+
+    <!-- §4.7 per-table ERASE FROM TABLE run-lock. One row per tblId; the
+         acquire path refuses if a row with status RUNNING already exists.
+         Released either by the run itself on clean completion or by an
+         explicit RELEASE ERASURE LOCK ON TABLE t command. -->
+    <class name="MErasureRunLock" table="ERASURE_RUN_LOCK" identity-type="application" detachable="true">
+      <field name="tblId" primary-key="true">
+        <column name="TBL_ID" jdbc-type="BIGINT"/>
+      </field>
+      <field name="runId">
+        <column name="RUN_ID" jdbc-type="BIGINT"/>
+      </field>
+      <field name="principal">
+        <column name="PRINCIPAL" jdbc-type="VARCHAR" length="256"/>
+      </field>
+      <field name="startedTs">
+        <column name="STARTED_TS" jdbc-type="BIGINT"/>
+      </field>
+      <field name="completedTs">
+        <column name="COMPLETED_TS" jdbc-type="BIGINT"/>
+      </field>
+      <field name="releasedBy">
+        <column name="RELEASED_BY" jdbc-type="VARCHAR" length="256"/>
+      </field>
+      <field name="releasedTs">
+        <column name="RELEASED_TS" jdbc-type="BIGINT"/>
+      </field>
+      <field name="releaseReason">
+        <column name="RELEASE_REASON" jdbc-type="VARCHAR" length="1024"/>
+      </field>
+      <field name="status">
+        <column name="STATUS" jdbc-type="VARCHAR" length="32"/>
+      </field>
+    </class>
+
+    <class name="MPolicyPriv" table="POLICY_PRIVS" identity-type="datastore" detachable="true">
+      <datastore-identity>
+        <column name="POLICY_PRIV_ID"/>
+      </datastore-identity>
+      <field name="policyId">
+        <column name="POLICY_ID" jdbc-type="BIGINT"/>
+      </field>
+      <field name="principalName">
+        <column name="PRINCIPAL_NAME" jdbc-type="VARCHAR" length="256"/>
+      </field>
+      <field name="principalType">
+        <column name="PRINCIPAL_TYPE" jdbc-type="VARCHAR" length="16"/>
+      </field>
+      <field name="privilege">
+        <column name="PRIVILEGE" jdbc-type="VARCHAR" length="32"/>
+      </field>
+      <field name="createTime">
+        <column name="CREATE_TIME" jdbc-type="BIGINT"/>
+      </field>
+      <field name="grantor">
+        <column name="GRANTOR" jdbc-type="VARCHAR" length="256"/>
+      </field>
+      <field name="grantorType">
+        <column name="GRANTOR_TYPE" jdbc-type="VARCHAR" length="16"/>
+      </field>
+      <field name="grantOption">
+        <column name="GRANT_OPTION" jdbc-type="SMALLINT"/>
+      </field>
+    </class>
+
   </package>
 </jdo>
 

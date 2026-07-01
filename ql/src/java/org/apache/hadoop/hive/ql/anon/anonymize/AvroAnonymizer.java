@@ -1,0 +1,224 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.hadoop.hive.ql.anon.anonymize;
+
+import org.apache.avro.specific.SpecificRecordBase;
+import org.apache.hadoop.hive.ql.anon.policy.DataErasureRule;
+import org.apache.hadoop.hive.ql.anon.policy.DataErasureStatement;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.util.List;
+
+public class AvroAnonymizer implements Anonymizer {
+
+  public AvroAnonymizer() {
+  }
+
+  @Override
+  public Object anonymize(final Object msg, final DataErasureStatement statement) {
+    if (!(msg instanceof SpecificRecordBase)) {
+      throw new RuntimeException("Unsupported type: " + (msg == null ? "null" : msg.getClass().getName()));
+    }
+    try {
+      for (final DataErasureRule rule : statement.rules) {
+        final PathStep[] steps = PathStep.compile(rule.path);
+        anonymizeInternal((SpecificRecordBase) msg, steps, 0, steps.length - 1, rule);
+      }
+      return msg;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private void anonymizeInternal(final SpecificRecordBase msg, final PathStep[] steps, final int ix,
+                                 final int limit, final DataErasureRule rule)
+      throws InvocationTargetException, IllegalAccessException {
+    final PathStep step = steps[ix];
+    final String fieldName = step.field;
+
+    if ("*".equals(fieldName)) {
+      if (ix != limit) {
+        throw new RuntimeException("'*' wildcard must be the terminal path step: " + rule.path);
+      }
+      eraseSubObjectRecursively(msg, rule);
+      return;
+    }
+
+    final Class<?> clazz = msg.getClass();
+    Method getterMethod = null;
+    Method setterMethod = null;
+    for (final Method method : clazz.getMethods()) {
+      final int modifiers = method.getModifiers();
+      if (!Modifier.isPublic(modifiers) || Modifier.isStatic(modifiers)) {
+        continue;
+      }
+      if (method.getParameterCount() == 0 && method.getName().equalsIgnoreCase("get" + fieldName)) {
+        getterMethod = method;
+      } else if (method.getParameterCount() == 1 && method.getName().equalsIgnoreCase("set" + fieldName)) {
+        setterMethod = method;
+      }
+    }
+    if (getterMethod == null) {
+      throw new RuntimeException("methods not found for field: " + fieldName);
+    }
+
+    final Class<?> rtc = getterMethod.getReturnType();
+    switch (rtc.getSimpleName()) {
+      case "int":
+      case "short":
+      case "long":
+      case "String": {
+        if (setterMethod == null) {
+          throw new RuntimeException("set method not found for field: " + fieldName);
+        }
+        setterMethod.invoke(msg, RuleValues.scalarValueFor(rule, rtc.getSimpleName()));
+        break;
+      }
+      case "List": {
+        final List<?> lst = (List<?>) getterMethod.invoke(msg);
+        final Class<?> ptc = listElementType(clazz, fieldName);
+        final String pe = ptc.getSimpleName();
+        if ("String".equals(pe) || "CharSequence".equals(pe)) {
+          final String elem = RuleValues.stringListElementValueFor(rule);
+          if (lst != null) {
+            @SuppressWarnings("unchecked") final List<Object> ml = (List<Object>) lst;
+            for (final int i : step.selectIndices(lst)) {
+              ml.set(i, elem);
+            }
+          }
+          return;
+        }
+        if (!SpecificRecordBase.class.isAssignableFrom(ptc)) {
+          throw new RuntimeException("bad generic type: " + ptc);
+        }
+        if (ix >= limit) {
+          throw new RuntimeException(
+              "path terminates on a List of sub-objects without a ':*' wildcard: " + rule.path);
+        }
+        if (lst != null) {
+          for (final int i : step.selectIndices(lst)) {
+            final Object o = lst.get(i);
+            if (o != null) {
+              anonymizeInternal((SpecificRecordBase) o, steps, ix + 1, limit, rule);
+            }
+          }
+        }
+        break;
+      }
+      default: {
+        if (!SpecificRecordBase.class.isAssignableFrom(rtc)) {
+          throw new RuntimeException("bad field type detected: " + rtc);
+        }
+        if (ix >= limit) {
+          throw new RuntimeException(
+              "path terminates on a sub-object without a ':*' wildcard: " + rule.path);
+        }
+        final Object sub = getterMethod.invoke(msg);
+        if (sub != null) {
+          anonymizeInternal((SpecificRecordBase) sub, steps, ix + 1, limit, rule);
+        }
+      }
+    }
+  }
+
+  private void eraseSubObjectRecursively(final SpecificRecordBase obj, final DataErasureRule rule)
+      throws InvocationTargetException, IllegalAccessException {
+    final Class<?> clazz = obj.getClass();
+    final Method[] methods = clazz.getMethods();
+    for (final Method getter : methods) {
+      final String name = getter.getName();
+      if (!name.startsWith("get") || name.equals("getClass") || getter.getParameterCount() != 0) {
+        continue;
+      }
+      final int modifiers = getter.getModifiers();
+      if (!Modifier.isPublic(modifiers) || Modifier.isStatic(modifiers)) {
+        continue;
+      }
+      final String setterName = "set" + name.substring(3);
+      Method setter = null;
+      for (final Method m : methods) {
+        if (m.getName().equals(setterName) && m.getParameterCount() == 1
+            && Modifier.isPublic(m.getModifiers()) && !Modifier.isStatic(m.getModifiers())) {
+          setter = m;
+          break;
+        }
+      }
+      if (setter == null) {
+        continue;
+      }
+      final Class<?> rtc = getter.getReturnType();
+      switch (rtc.getSimpleName()) {
+        case "int":
+        case "short":
+        case "long":
+        case "String": {
+          setter.invoke(obj, RuleValues.scalarValueFor(rule, rtc.getSimpleName()));
+          break;
+        }
+        case "List": {
+          final String fieldName = Character.toLowerCase(name.charAt(3)) + name.substring(4);
+          final Class<?> ptc = listElementType(clazz, fieldName);
+          final String pe = ptc.getSimpleName();
+          if ("String".equals(pe) || "CharSequence".equals(pe)) {
+            final String elem = RuleValues.stringListElementValueFor(rule);
+            final List<?> lst = (List<?>) getter.invoke(obj);
+            if (lst != null) {
+              @SuppressWarnings("unchecked") final List<Object> ml = (List<Object>) lst;
+              for (int i = 0; i < ml.size(); i++) {
+                ml.set(i, elem);
+              }
+            }
+          } else if (SpecificRecordBase.class.isAssignableFrom(ptc)) {
+            final List<?> lst = (List<?>) getter.invoke(obj);
+            if (lst != null) {
+              for (final Object o : lst) {
+                if (o != null) {
+                  eraseSubObjectRecursively((SpecificRecordBase) o, rule);
+                }
+              }
+            }
+          }
+          break;
+        }
+        default: {
+          if (SpecificRecordBase.class.isAssignableFrom(rtc)) {
+            final Object sub = getter.invoke(obj);
+            if (sub != null) {
+              eraseSubObjectRecursively((SpecificRecordBase) sub, rule);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private static Class<?> listElementType(final Class<?> clazz, final String fieldName) {
+    try {
+      final Field f = clazz.getDeclaredField(fieldName);
+      final ParameterizedType pt = (ParameterizedType) f.getGenericType();
+      return (Class<?>) pt.getActualTypeArguments()[0];
+    } catch (NoSuchFieldException | ClassCastException e) {
+      throw new RuntimeException("cannot resolve list element type for '" + fieldName + "': " + e);
+    }
+  }
+}

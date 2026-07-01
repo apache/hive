@@ -439,6 +439,165 @@ std::ostream& operator<<(std::ostream& out, const PartitionFilterMode::type& val
 
 std::string to_string(const PartitionFilterMode::type& val);
 
+struct IndexType {
+  enum type {
+    BTREE = 1,
+    DIRECTORY = 2,
+    TABULAR = 3
+  };
+};
+
+extern const std::map<int, const char*> _IndexType_VALUES_TO_NAMES;
+
+std::ostream& operator<<(std::ostream& out, const IndexType::type& val);
+
+std::string to_string(const IndexType::type& val);
+
+struct ColumnInternalFormat {
+  enum type {
+    JSON = 1,
+    MSGPACK = 2,
+    XML = 3,
+    PROTOBUF = 4,
+    AVRO = 5
+  };
+};
+
+extern const std::map<int, const char*> _ColumnInternalFormat_VALUES_TO_NAMES;
+
+std::ostream& operator<<(std::ostream& out, const ColumnInternalFormat::type& val);
+
+std::string to_string(const ColumnInternalFormat::type& val);
+
+struct PolicyVersionStatus {
+  enum type {
+    DRAFT = 1,
+    VALIDATED = 2,
+    ACTIVE = 3,
+    SUPERSEDED = 4,
+    INACTIVE = 5
+  };
+};
+
+extern const std::map<int, const char*> _PolicyVersionStatus_VALUES_TO_NAMES;
+
+std::ostream& operator<<(std::ostream& out, const PolicyVersionStatus::type& val);
+
+std::string to_string(const PolicyVersionStatus::type& val);
+
+struct PolicyLiteralKind {
+  enum type {
+    INT = 1,
+    LONG = 2,
+    STRING = 3
+  };
+};
+
+extern const std::map<int, const char*> _PolicyLiteralKind_VALUES_TO_NAMES;
+
+std::ostream& operator<<(std::ostream& out, const PolicyLiteralKind::type& val);
+
+std::string to_string(const PolicyLiteralKind::type& val);
+
+struct PolicyActionKind {
+  enum type {
+    ERASE = 1,
+    REPLACE = 2,
+    HASH = 3,
+    TOKENIZE = 4,
+    ENCRYPT = 5,
+    GENERALIZE = 6,
+    INSPECT = 7,
+    FLAG = 8
+  };
+};
+
+extern const std::map<int, const char*> _PolicyActionKind_VALUES_TO_NAMES;
+
+std::ostream& operator<<(std::ostream& out, const PolicyActionKind::type& val);
+
+std::string to_string(const PolicyActionKind::type& val);
+
+struct PolicyResolutionMode {
+  enum type {
+    EXPLICIT = 1,
+    STRICTEST = 2
+  };
+};
+
+extern const std::map<int, const char*> _PolicyResolutionMode_VALUES_TO_NAMES;
+
+std::ostream& operator<<(std::ostream& out, const PolicyResolutionMode::type& val);
+
+std::string to_string(const PolicyResolutionMode::type& val);
+
+struct PolicyLifecycleEventType {
+  enum type {
+    VALIDATED = 1,
+    ACTIVATED = 2,
+    DEACTIVATED = 3,
+    SUPERSEDED = 4,
+    BOUND = 5,
+    UNBOUND = 6,
+    ATTACH_REJECTED = 7,
+    LOADED = 8,
+    INVALIDATED = 9
+  };
+};
+
+extern const std::map<int, const char*> _PolicyLifecycleEventType_VALUES_TO_NAMES;
+
+std::ostream& operator<<(std::ostream& out, const PolicyLifecycleEventType::type& val);
+
+std::string to_string(const PolicyLifecycleEventType::type& val);
+
+struct PolicyConflictClass {
+  enum type {
+    C1_ACTION = 1,
+    C2_VALUE = 2,
+    C3_PATH_PREFIX = 3
+  };
+};
+
+extern const std::map<int, const char*> _PolicyConflictClass_VALUES_TO_NAMES;
+
+std::ostream& operator<<(std::ostream& out, const PolicyConflictClass::type& val);
+
+std::string to_string(const PolicyConflictClass::type& val);
+
+struct ErasureRunStatus {
+  enum type {
+    SUCCEEDED = 1,
+    FAILED = 2,
+    INTERRUPTED = 3,
+    RELEASED = 4,
+    FORCE_RELEASED = 5,
+    EXTRACTED = 6,
+    INITIATED = 7
+  };
+};
+
+extern const std::map<int, const char*> _ErasureRunStatus_VALUES_TO_NAMES;
+
+std::ostream& operator<<(std::ostream& out, const ErasureRunStatus::type& val);
+
+std::string to_string(const ErasureRunStatus::type& val);
+
+struct ErasureRunLockStatus {
+  enum type {
+    RUNNING = 1,
+    COMPLETED = 2,
+    RELEASED = 3,
+    FORCE_RELEASED = 4
+  };
+};
+
+extern const std::map<int, const char*> _ErasureRunLockStatus_VALUES_TO_NAMES;
+
+std::ostream& operator<<(std::ostream& out, const ErasureRunLockStatus::type& val);
+
+std::string to_string(const ErasureRunLockStatus::type& val);
+
 class Version;
 
 class FieldSchema;
@@ -1078,6 +1237,34 @@ class GetAllWriteEventInfoRequest;
 class DeleteColumnStatisticsRequest;
 
 class ReplayedTxnsForPolicyResult;
+
+class CreateAnonPolicyRequest;
+
+class ErasurePolicy;
+
+class Index;
+
+class PolicyInfo;
+
+class ErasureRunLock;
+
+class ErasurePolicyVersion;
+
+class ErasurePolicyStatement;
+
+class ErasurePolicyRule;
+
+class ErasurePolicyBinding;
+
+class ErasurePolicyBindingMember;
+
+class ErasurePolicyBindingResolved;
+
+class ErasurePolicyLifecycleEvent;
+
+class ErasureRunAudit;
+
+class PolicyPriv;
 
 class MetaException;
 
@@ -21604,6 +21791,1429 @@ class ReplayedTxnsForPolicyResult : public virtual ::apache::thrift::TBase {
 void swap(ReplayedTxnsForPolicyResult &a, ReplayedTxnsForPolicyResult &b);
 
 std::ostream& operator<<(std::ostream& out, const ReplayedTxnsForPolicyResult& obj);
+
+typedef struct _CreateAnonPolicyRequest__isset {
+  _CreateAnonPolicyRequest__isset() : envContext(false) {}
+  bool envContext :1;
+} _CreateAnonPolicyRequest__isset;
+
+class CreateAnonPolicyRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  CreateAnonPolicyRequest(const CreateAnonPolicyRequest&);
+  CreateAnonPolicyRequest& operator=(const CreateAnonPolicyRequest&);
+  CreateAnonPolicyRequest() noexcept {
+  }
+
+  virtual ~CreateAnonPolicyRequest() noexcept;
+  ErasurePolicy policy;
+  EnvironmentContext envContext;
+
+  _CreateAnonPolicyRequest__isset __isset;
+
+  void __set_policy(const ErasurePolicy& val);
+
+  void __set_envContext(const EnvironmentContext& val);
+
+  bool operator == (const CreateAnonPolicyRequest & rhs) const
+  {
+    if (!(policy == rhs.policy))
+      return false;
+    if (__isset.envContext != rhs.__isset.envContext)
+      return false;
+    else if (__isset.envContext && !(envContext == rhs.envContext))
+      return false;
+    return true;
+  }
+  bool operator != (const CreateAnonPolicyRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CreateAnonPolicyRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(CreateAnonPolicyRequest &a, CreateAnonPolicyRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const CreateAnonPolicyRequest& obj);
+
+typedef struct _ErasurePolicy__isset {
+  _ErasurePolicy__isset() : policyName(false), policyId(false) {}
+  bool policyName :1;
+  bool policyId :1;
+} _ErasurePolicy__isset;
+
+class ErasurePolicy : public virtual ::apache::thrift::TBase {
+ public:
+
+  ErasurePolicy(const ErasurePolicy&);
+  ErasurePolicy& operator=(const ErasurePolicy&);
+  ErasurePolicy() noexcept
+                : policyName(),
+                  policyId(0) {
+  }
+
+  virtual ~ErasurePolicy() noexcept;
+  std::string policyName;
+  int64_t policyId;
+
+  _ErasurePolicy__isset __isset;
+
+  void __set_policyName(const std::string& val);
+
+  void __set_policyId(const int64_t val);
+
+  bool operator == (const ErasurePolicy & rhs) const
+  {
+    if (!(policyName == rhs.policyName))
+      return false;
+    if (__isset.policyId != rhs.__isset.policyId)
+      return false;
+    else if (__isset.policyId && !(policyId == rhs.policyId))
+      return false;
+    return true;
+  }
+  bool operator != (const ErasurePolicy &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ErasurePolicy & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ErasurePolicy &a, ErasurePolicy &b);
+
+std::ostream& operator<<(std::ostream& out, const ErasurePolicy& obj);
+
+typedef struct _Index__isset {
+  _Index__isset() : indexName(false), indexHandlerClass(false), dbName(false), origTableName(false), createTime(false), lastAccessTime(false), indexTableName(false), sd(false), deferredRebuild(false), pageSize(false), bufferPoolSize(false), pointerType(false), indexType(false) {}
+  bool indexName :1;
+  bool indexHandlerClass :1;
+  bool dbName :1;
+  bool origTableName :1;
+  bool createTime :1;
+  bool lastAccessTime :1;
+  bool indexTableName :1;
+  bool sd :1;
+  bool deferredRebuild :1;
+  bool pageSize :1;
+  bool bufferPoolSize :1;
+  bool pointerType :1;
+  bool indexType :1;
+} _Index__isset;
+
+class Index : public virtual ::apache::thrift::TBase {
+ public:
+
+  Index(const Index&);
+  Index& operator=(const Index&);
+  Index() noexcept
+        : indexName(),
+          indexHandlerClass(),
+          dbName(),
+          origTableName(),
+          createTime(0),
+          lastAccessTime(0),
+          indexTableName(),
+          deferredRebuild(0),
+          pageSize(0),
+          bufferPoolSize(0),
+          pointerType(),
+          indexType(static_cast<IndexType::type>(0)) {
+  }
+
+  virtual ~Index() noexcept;
+  std::string indexName;
+  std::string indexHandlerClass;
+  std::string dbName;
+  std::string origTableName;
+  int32_t createTime;
+  int32_t lastAccessTime;
+  std::string indexTableName;
+  StorageDescriptor sd;
+  bool deferredRebuild;
+  int32_t pageSize;
+  int32_t bufferPoolSize;
+  std::string pointerType;
+  /**
+   * 
+   * @see IndexType
+   */
+  IndexType::type indexType;
+
+  _Index__isset __isset;
+
+  void __set_indexName(const std::string& val);
+
+  void __set_indexHandlerClass(const std::string& val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_origTableName(const std::string& val);
+
+  void __set_createTime(const int32_t val);
+
+  void __set_lastAccessTime(const int32_t val);
+
+  void __set_indexTableName(const std::string& val);
+
+  void __set_sd(const StorageDescriptor& val);
+
+  void __set_deferredRebuild(const bool val);
+
+  void __set_pageSize(const int32_t val);
+
+  void __set_bufferPoolSize(const int32_t val);
+
+  void __set_pointerType(const std::string& val);
+
+  void __set_indexType(const IndexType::type val);
+
+  bool operator == (const Index & rhs) const
+  {
+    if (!(indexName == rhs.indexName))
+      return false;
+    if (!(indexHandlerClass == rhs.indexHandlerClass))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(origTableName == rhs.origTableName))
+      return false;
+    if (!(createTime == rhs.createTime))
+      return false;
+    if (!(lastAccessTime == rhs.lastAccessTime))
+      return false;
+    if (!(indexTableName == rhs.indexTableName))
+      return false;
+    if (!(sd == rhs.sd))
+      return false;
+    if (!(deferredRebuild == rhs.deferredRebuild))
+      return false;
+    if (!(pageSize == rhs.pageSize))
+      return false;
+    if (!(bufferPoolSize == rhs.bufferPoolSize))
+      return false;
+    if (!(pointerType == rhs.pointerType))
+      return false;
+    if (!(indexType == rhs.indexType))
+      return false;
+    return true;
+  }
+  bool operator != (const Index &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Index & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(Index &a, Index &b);
+
+std::ostream& operator<<(std::ostream& out, const Index& obj);
+
+typedef struct _PolicyInfo__isset {
+  _PolicyInfo__isset() : name(false), doc(false) {}
+  bool name :1;
+  bool doc :1;
+} _PolicyInfo__isset;
+
+class PolicyInfo : public virtual ::apache::thrift::TBase {
+ public:
+
+  PolicyInfo(const PolicyInfo&);
+  PolicyInfo& operator=(const PolicyInfo&);
+  PolicyInfo() noexcept
+             : name(),
+               doc() {
+  }
+
+  virtual ~PolicyInfo() noexcept;
+  std::string name;
+  std::string doc;
+
+  _PolicyInfo__isset __isset;
+
+  void __set_name(const std::string& val);
+
+  void __set_doc(const std::string& val);
+
+  bool operator == (const PolicyInfo & rhs) const
+  {
+    if (!(name == rhs.name))
+      return false;
+    if (!(doc == rhs.doc))
+      return false;
+    return true;
+  }
+  bool operator != (const PolicyInfo &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const PolicyInfo & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(PolicyInfo &a, PolicyInfo &b);
+
+std::ostream& operator<<(std::ostream& out, const PolicyInfo& obj);
+
+typedef struct _ErasureRunLock__isset {
+  _ErasureRunLock__isset() : tblId(false), runId(false), principal(false), startedTs(false), completedTs(false), releasedBy(false), releasedTs(false), releaseReason(false), status(false) {}
+  bool tblId :1;
+  bool runId :1;
+  bool principal :1;
+  bool startedTs :1;
+  bool completedTs :1;
+  bool releasedBy :1;
+  bool releasedTs :1;
+  bool releaseReason :1;
+  bool status :1;
+} _ErasureRunLock__isset;
+
+class ErasureRunLock : public virtual ::apache::thrift::TBase {
+ public:
+
+  ErasureRunLock(const ErasureRunLock&);
+  ErasureRunLock& operator=(const ErasureRunLock&);
+  ErasureRunLock() noexcept
+                 : tblId(0),
+                   runId(0),
+                   principal(),
+                   startedTs(0),
+                   completedTs(0),
+                   releasedBy(),
+                   releasedTs(0),
+                   releaseReason(),
+                   status(static_cast<ErasureRunLockStatus::type>(0)) {
+  }
+
+  virtual ~ErasureRunLock() noexcept;
+  int64_t tblId;
+  int64_t runId;
+  std::string principal;
+  int64_t startedTs;
+  int64_t completedTs;
+  std::string releasedBy;
+  int64_t releasedTs;
+  std::string releaseReason;
+  /**
+   * 
+   * @see ErasureRunLockStatus
+   */
+  ErasureRunLockStatus::type status;
+
+  _ErasureRunLock__isset __isset;
+
+  void __set_tblId(const int64_t val);
+
+  void __set_runId(const int64_t val);
+
+  void __set_principal(const std::string& val);
+
+  void __set_startedTs(const int64_t val);
+
+  void __set_completedTs(const int64_t val);
+
+  void __set_releasedBy(const std::string& val);
+
+  void __set_releasedTs(const int64_t val);
+
+  void __set_releaseReason(const std::string& val);
+
+  void __set_status(const ErasureRunLockStatus::type val);
+
+  bool operator == (const ErasureRunLock & rhs) const
+  {
+    if (!(tblId == rhs.tblId))
+      return false;
+    if (!(runId == rhs.runId))
+      return false;
+    if (!(principal == rhs.principal))
+      return false;
+    if (!(startedTs == rhs.startedTs))
+      return false;
+    if (__isset.completedTs != rhs.__isset.completedTs)
+      return false;
+    else if (__isset.completedTs && !(completedTs == rhs.completedTs))
+      return false;
+    if (__isset.releasedBy != rhs.__isset.releasedBy)
+      return false;
+    else if (__isset.releasedBy && !(releasedBy == rhs.releasedBy))
+      return false;
+    if (__isset.releasedTs != rhs.__isset.releasedTs)
+      return false;
+    else if (__isset.releasedTs && !(releasedTs == rhs.releasedTs))
+      return false;
+    if (__isset.releaseReason != rhs.__isset.releaseReason)
+      return false;
+    else if (__isset.releaseReason && !(releaseReason == rhs.releaseReason))
+      return false;
+    if (!(status == rhs.status))
+      return false;
+    return true;
+  }
+  bool operator != (const ErasureRunLock &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ErasureRunLock & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ErasureRunLock &a, ErasureRunLock &b);
+
+std::ostream& operator<<(std::ostream& out, const ErasureRunLock& obj);
+
+typedef struct _ErasurePolicyVersion__isset {
+  _ErasurePolicyVersion__isset() : versionId(false), policyName(false), versionLabel(false), status(false), identityFieldName(false), identityFieldType(false), schemaType(false), sourcePath(false), sourceChecksum(false), validatedBy(false), validatedTs(false), activatedBy(false), activatedTs(false), deactivatedBy(false), deactivatedTs(false), sourceText(false) {}
+  bool versionId :1;
+  bool policyName :1;
+  bool versionLabel :1;
+  bool status :1;
+  bool identityFieldName :1;
+  bool identityFieldType :1;
+  bool schemaType :1;
+  bool sourcePath :1;
+  bool sourceChecksum :1;
+  bool validatedBy :1;
+  bool validatedTs :1;
+  bool activatedBy :1;
+  bool activatedTs :1;
+  bool deactivatedBy :1;
+  bool deactivatedTs :1;
+  bool sourceText :1;
+} _ErasurePolicyVersion__isset;
+
+class ErasurePolicyVersion : public virtual ::apache::thrift::TBase {
+ public:
+
+  ErasurePolicyVersion(const ErasurePolicyVersion&);
+  ErasurePolicyVersion& operator=(const ErasurePolicyVersion&);
+  ErasurePolicyVersion() noexcept
+                       : versionId(0),
+                         policyName(),
+                         versionLabel(),
+                         status(static_cast<PolicyVersionStatus::type>(0)),
+                         identityFieldName(),
+                         identityFieldType(static_cast<PolicyLiteralKind::type>(0)),
+                         schemaType(static_cast<PolicyLiteralKind::type>(0)),
+                         sourcePath(),
+                         sourceChecksum(),
+                         validatedBy(),
+                         validatedTs(0),
+                         activatedBy(),
+                         activatedTs(0),
+                         deactivatedBy(),
+                         deactivatedTs(0),
+                         sourceText() {
+  }
+
+  virtual ~ErasurePolicyVersion() noexcept;
+  int64_t versionId;
+  std::string policyName;
+  std::string versionLabel;
+  /**
+   * 
+   * @see PolicyVersionStatus
+   */
+  PolicyVersionStatus::type status;
+  std::string identityFieldName;
+  /**
+   * 
+   * @see PolicyLiteralKind
+   */
+  PolicyLiteralKind::type identityFieldType;
+  /**
+   * 
+   * @see PolicyLiteralKind
+   */
+  PolicyLiteralKind::type schemaType;
+  std::string sourcePath;
+  std::string sourceChecksum;
+  std::string validatedBy;
+  int64_t validatedTs;
+  std::string activatedBy;
+  int64_t activatedTs;
+  std::string deactivatedBy;
+  int64_t deactivatedTs;
+  std::string sourceText;
+
+  _ErasurePolicyVersion__isset __isset;
+
+  void __set_versionId(const int64_t val);
+
+  void __set_policyName(const std::string& val);
+
+  void __set_versionLabel(const std::string& val);
+
+  void __set_status(const PolicyVersionStatus::type val);
+
+  void __set_identityFieldName(const std::string& val);
+
+  void __set_identityFieldType(const PolicyLiteralKind::type val);
+
+  void __set_schemaType(const PolicyLiteralKind::type val);
+
+  void __set_sourcePath(const std::string& val);
+
+  void __set_sourceChecksum(const std::string& val);
+
+  void __set_validatedBy(const std::string& val);
+
+  void __set_validatedTs(const int64_t val);
+
+  void __set_activatedBy(const std::string& val);
+
+  void __set_activatedTs(const int64_t val);
+
+  void __set_deactivatedBy(const std::string& val);
+
+  void __set_deactivatedTs(const int64_t val);
+
+  void __set_sourceText(const std::string& val);
+
+  bool operator == (const ErasurePolicyVersion & rhs) const
+  {
+    if (!(versionId == rhs.versionId))
+      return false;
+    if (!(policyName == rhs.policyName))
+      return false;
+    if (!(versionLabel == rhs.versionLabel))
+      return false;
+    if (!(status == rhs.status))
+      return false;
+    if (!(identityFieldName == rhs.identityFieldName))
+      return false;
+    if (!(identityFieldType == rhs.identityFieldType))
+      return false;
+    if (!(schemaType == rhs.schemaType))
+      return false;
+    if (__isset.sourcePath != rhs.__isset.sourcePath)
+      return false;
+    else if (__isset.sourcePath && !(sourcePath == rhs.sourcePath))
+      return false;
+    if (__isset.sourceChecksum != rhs.__isset.sourceChecksum)
+      return false;
+    else if (__isset.sourceChecksum && !(sourceChecksum == rhs.sourceChecksum))
+      return false;
+    if (__isset.validatedBy != rhs.__isset.validatedBy)
+      return false;
+    else if (__isset.validatedBy && !(validatedBy == rhs.validatedBy))
+      return false;
+    if (__isset.validatedTs != rhs.__isset.validatedTs)
+      return false;
+    else if (__isset.validatedTs && !(validatedTs == rhs.validatedTs))
+      return false;
+    if (__isset.activatedBy != rhs.__isset.activatedBy)
+      return false;
+    else if (__isset.activatedBy && !(activatedBy == rhs.activatedBy))
+      return false;
+    if (__isset.activatedTs != rhs.__isset.activatedTs)
+      return false;
+    else if (__isset.activatedTs && !(activatedTs == rhs.activatedTs))
+      return false;
+    if (__isset.deactivatedBy != rhs.__isset.deactivatedBy)
+      return false;
+    else if (__isset.deactivatedBy && !(deactivatedBy == rhs.deactivatedBy))
+      return false;
+    if (__isset.deactivatedTs != rhs.__isset.deactivatedTs)
+      return false;
+    else if (__isset.deactivatedTs && !(deactivatedTs == rhs.deactivatedTs))
+      return false;
+    if (__isset.sourceText != rhs.__isset.sourceText)
+      return false;
+    else if (__isset.sourceText && !(sourceText == rhs.sourceText))
+      return false;
+    return true;
+  }
+  bool operator != (const ErasurePolicyVersion &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ErasurePolicyVersion & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ErasurePolicyVersion &a, ErasurePolicyVersion &b);
+
+std::ostream& operator<<(std::ostream& out, const ErasurePolicyVersion& obj);
+
+typedef struct _ErasurePolicyStatement__isset {
+  _ErasurePolicyStatement__isset() : statementId(false), versionId(false), schemaValue(false), ordinal(false) {}
+  bool statementId :1;
+  bool versionId :1;
+  bool schemaValue :1;
+  bool ordinal :1;
+} _ErasurePolicyStatement__isset;
+
+class ErasurePolicyStatement : public virtual ::apache::thrift::TBase {
+ public:
+
+  ErasurePolicyStatement(const ErasurePolicyStatement&);
+  ErasurePolicyStatement& operator=(const ErasurePolicyStatement&);
+  ErasurePolicyStatement() noexcept
+                         : statementId(0),
+                           versionId(0),
+                           schemaValue(),
+                           ordinal(0) {
+  }
+
+  virtual ~ErasurePolicyStatement() noexcept;
+  int64_t statementId;
+  int64_t versionId;
+  std::string schemaValue;
+  int32_t ordinal;
+
+  _ErasurePolicyStatement__isset __isset;
+
+  void __set_statementId(const int64_t val);
+
+  void __set_versionId(const int64_t val);
+
+  void __set_schemaValue(const std::string& val);
+
+  void __set_ordinal(const int32_t val);
+
+  bool operator == (const ErasurePolicyStatement & rhs) const
+  {
+    if (!(statementId == rhs.statementId))
+      return false;
+    if (!(versionId == rhs.versionId))
+      return false;
+    if (!(schemaValue == rhs.schemaValue))
+      return false;
+    if (!(ordinal == rhs.ordinal))
+      return false;
+    return true;
+  }
+  bool operator != (const ErasurePolicyStatement &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ErasurePolicyStatement & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ErasurePolicyStatement &a, ErasurePolicyStatement &b);
+
+std::ostream& operator<<(std::ostream& out, const ErasurePolicyStatement& obj);
+
+typedef struct _ErasurePolicyRule__isset {
+  _ErasurePolicyRule__isset() : ruleId(false), statementId(false), fieldPath(false), action(false), literalValue(false), literalType(false), params(false), ordinal(false) {}
+  bool ruleId :1;
+  bool statementId :1;
+  bool fieldPath :1;
+  bool action :1;
+  bool literalValue :1;
+  bool literalType :1;
+  bool params :1;
+  bool ordinal :1;
+} _ErasurePolicyRule__isset;
+
+class ErasurePolicyRule : public virtual ::apache::thrift::TBase {
+ public:
+
+  ErasurePolicyRule(const ErasurePolicyRule&);
+  ErasurePolicyRule& operator=(const ErasurePolicyRule&);
+  ErasurePolicyRule() noexcept
+                    : ruleId(0),
+                      statementId(0),
+                      fieldPath(),
+                      action(static_cast<PolicyActionKind::type>(0)),
+                      literalValue(),
+                      literalType(static_cast<PolicyLiteralKind::type>(0)),
+                      params(),
+                      ordinal(0) {
+  }
+
+  virtual ~ErasurePolicyRule() noexcept;
+  int64_t ruleId;
+  int64_t statementId;
+  std::string fieldPath;
+  /**
+   * 
+   * @see PolicyActionKind
+   */
+  PolicyActionKind::type action;
+  std::string literalValue;
+  /**
+   * 
+   * @see PolicyLiteralKind
+   */
+  PolicyLiteralKind::type literalType;
+  std::string params;
+  int32_t ordinal;
+
+  _ErasurePolicyRule__isset __isset;
+
+  void __set_ruleId(const int64_t val);
+
+  void __set_statementId(const int64_t val);
+
+  void __set_fieldPath(const std::string& val);
+
+  void __set_action(const PolicyActionKind::type val);
+
+  void __set_literalValue(const std::string& val);
+
+  void __set_literalType(const PolicyLiteralKind::type val);
+
+  void __set_params(const std::string& val);
+
+  void __set_ordinal(const int32_t val);
+
+  bool operator == (const ErasurePolicyRule & rhs) const
+  {
+    if (!(ruleId == rhs.ruleId))
+      return false;
+    if (!(statementId == rhs.statementId))
+      return false;
+    if (!(fieldPath == rhs.fieldPath))
+      return false;
+    if (!(action == rhs.action))
+      return false;
+    if (__isset.literalValue != rhs.__isset.literalValue)
+      return false;
+    else if (__isset.literalValue && !(literalValue == rhs.literalValue))
+      return false;
+    if (__isset.literalType != rhs.__isset.literalType)
+      return false;
+    else if (__isset.literalType && !(literalType == rhs.literalType))
+      return false;
+    if (__isset.params != rhs.__isset.params)
+      return false;
+    else if (__isset.params && !(params == rhs.params))
+      return false;
+    if (!(ordinal == rhs.ordinal))
+      return false;
+    return true;
+  }
+  bool operator != (const ErasurePolicyRule &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ErasurePolicyRule & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ErasurePolicyRule &a, ErasurePolicyRule &b);
+
+std::ostream& operator<<(std::ostream& out, const ErasurePolicyRule& obj);
+
+typedef struct _ErasurePolicyBinding__isset {
+  _ErasurePolicyBinding__isset() : bindingId(false), tblId(false), columnName(false), schemaField(false), rowLocator(false), columnFormat(false), resolutionMode(false), createdBy(false), createdTs(false) {}
+  bool bindingId :1;
+  bool tblId :1;
+  bool columnName :1;
+  bool schemaField :1;
+  bool rowLocator :1;
+  bool columnFormat :1;
+  bool resolutionMode :1;
+  bool createdBy :1;
+  bool createdTs :1;
+} _ErasurePolicyBinding__isset;
+
+class ErasurePolicyBinding : public virtual ::apache::thrift::TBase {
+ public:
+
+  ErasurePolicyBinding(const ErasurePolicyBinding&);
+  ErasurePolicyBinding& operator=(const ErasurePolicyBinding&);
+  ErasurePolicyBinding() noexcept
+                       : bindingId(0),
+                         tblId(0),
+                         columnName(),
+                         schemaField(),
+                         rowLocator(),
+                         columnFormat(static_cast<ColumnInternalFormat::type>(0)),
+                         resolutionMode(static_cast<PolicyResolutionMode::type>(0)),
+                         createdBy(),
+                         createdTs(0) {
+  }
+
+  virtual ~ErasurePolicyBinding() noexcept;
+  int64_t bindingId;
+  int64_t tblId;
+  std::string columnName;
+  std::string schemaField;
+  std::string rowLocator;
+  /**
+   * 
+   * @see ColumnInternalFormat
+   */
+  ColumnInternalFormat::type columnFormat;
+  /**
+   * 
+   * @see PolicyResolutionMode
+   */
+  PolicyResolutionMode::type resolutionMode;
+  std::string createdBy;
+  int64_t createdTs;
+
+  _ErasurePolicyBinding__isset __isset;
+
+  void __set_bindingId(const int64_t val);
+
+  void __set_tblId(const int64_t val);
+
+  void __set_columnName(const std::string& val);
+
+  void __set_schemaField(const std::string& val);
+
+  void __set_rowLocator(const std::string& val);
+
+  void __set_columnFormat(const ColumnInternalFormat::type val);
+
+  void __set_resolutionMode(const PolicyResolutionMode::type val);
+
+  void __set_createdBy(const std::string& val);
+
+  void __set_createdTs(const int64_t val);
+
+  bool operator == (const ErasurePolicyBinding & rhs) const
+  {
+    if (!(bindingId == rhs.bindingId))
+      return false;
+    if (!(tblId == rhs.tblId))
+      return false;
+    if (!(columnName == rhs.columnName))
+      return false;
+    if (!(schemaField == rhs.schemaField))
+      return false;
+    if (!(rowLocator == rhs.rowLocator))
+      return false;
+    if (!(columnFormat == rhs.columnFormat))
+      return false;
+    if (!(resolutionMode == rhs.resolutionMode))
+      return false;
+    if (!(createdBy == rhs.createdBy))
+      return false;
+    if (!(createdTs == rhs.createdTs))
+      return false;
+    return true;
+  }
+  bool operator != (const ErasurePolicyBinding &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ErasurePolicyBinding & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ErasurePolicyBinding &a, ErasurePolicyBinding &b);
+
+std::ostream& operator<<(std::ostream& out, const ErasurePolicyBinding& obj);
+
+typedef struct _ErasurePolicyBindingMember__isset {
+  _ErasurePolicyBindingMember__isset() : bindingId(false), policyId(false), ordinal(false) {}
+  bool bindingId :1;
+  bool policyId :1;
+  bool ordinal :1;
+} _ErasurePolicyBindingMember__isset;
+
+class ErasurePolicyBindingMember : public virtual ::apache::thrift::TBase {
+ public:
+
+  ErasurePolicyBindingMember(const ErasurePolicyBindingMember&) noexcept;
+  ErasurePolicyBindingMember& operator=(const ErasurePolicyBindingMember&) noexcept;
+  ErasurePolicyBindingMember() noexcept
+                             : bindingId(0),
+                               policyId(0),
+                               ordinal(0) {
+  }
+
+  virtual ~ErasurePolicyBindingMember() noexcept;
+  int64_t bindingId;
+  int64_t policyId;
+  int32_t ordinal;
+
+  _ErasurePolicyBindingMember__isset __isset;
+
+  void __set_bindingId(const int64_t val);
+
+  void __set_policyId(const int64_t val);
+
+  void __set_ordinal(const int32_t val);
+
+  bool operator == (const ErasurePolicyBindingMember & rhs) const
+  {
+    if (!(bindingId == rhs.bindingId))
+      return false;
+    if (!(policyId == rhs.policyId))
+      return false;
+    if (!(ordinal == rhs.ordinal))
+      return false;
+    return true;
+  }
+  bool operator != (const ErasurePolicyBindingMember &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ErasurePolicyBindingMember & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ErasurePolicyBindingMember &a, ErasurePolicyBindingMember &b);
+
+std::ostream& operator<<(std::ostream& out, const ErasurePolicyBindingMember& obj);
+
+typedef struct _ErasurePolicyBindingResolved__isset {
+  _ErasurePolicyBindingResolved__isset() : resolvedId(false), bindingId(false), schemaValue(false), fieldPath(false), action(false), literalValue(false), literalType(false), params(false), contributingPolicies(false), resolutionNote(false) {}
+  bool resolvedId :1;
+  bool bindingId :1;
+  bool schemaValue :1;
+  bool fieldPath :1;
+  bool action :1;
+  bool literalValue :1;
+  bool literalType :1;
+  bool params :1;
+  bool contributingPolicies :1;
+  bool resolutionNote :1;
+} _ErasurePolicyBindingResolved__isset;
+
+class ErasurePolicyBindingResolved : public virtual ::apache::thrift::TBase {
+ public:
+
+  ErasurePolicyBindingResolved(const ErasurePolicyBindingResolved&);
+  ErasurePolicyBindingResolved& operator=(const ErasurePolicyBindingResolved&);
+  ErasurePolicyBindingResolved() noexcept
+                               : resolvedId(0),
+                                 bindingId(0),
+                                 schemaValue(),
+                                 fieldPath(),
+                                 action(static_cast<PolicyActionKind::type>(0)),
+                                 literalValue(),
+                                 literalType(static_cast<PolicyLiteralKind::type>(0)),
+                                 params(),
+                                 contributingPolicies(),
+                                 resolutionNote() {
+  }
+
+  virtual ~ErasurePolicyBindingResolved() noexcept;
+  int64_t resolvedId;
+  int64_t bindingId;
+  std::string schemaValue;
+  std::string fieldPath;
+  /**
+   * 
+   * @see PolicyActionKind
+   */
+  PolicyActionKind::type action;
+  std::string literalValue;
+  /**
+   * 
+   * @see PolicyLiteralKind
+   */
+  PolicyLiteralKind::type literalType;
+  std::string params;
+  std::string contributingPolicies;
+  std::string resolutionNote;
+
+  _ErasurePolicyBindingResolved__isset __isset;
+
+  void __set_resolvedId(const int64_t val);
+
+  void __set_bindingId(const int64_t val);
+
+  void __set_schemaValue(const std::string& val);
+
+  void __set_fieldPath(const std::string& val);
+
+  void __set_action(const PolicyActionKind::type val);
+
+  void __set_literalValue(const std::string& val);
+
+  void __set_literalType(const PolicyLiteralKind::type val);
+
+  void __set_params(const std::string& val);
+
+  void __set_contributingPolicies(const std::string& val);
+
+  void __set_resolutionNote(const std::string& val);
+
+  bool operator == (const ErasurePolicyBindingResolved & rhs) const
+  {
+    if (!(resolvedId == rhs.resolvedId))
+      return false;
+    if (!(bindingId == rhs.bindingId))
+      return false;
+    if (!(schemaValue == rhs.schemaValue))
+      return false;
+    if (!(fieldPath == rhs.fieldPath))
+      return false;
+    if (!(action == rhs.action))
+      return false;
+    if (__isset.literalValue != rhs.__isset.literalValue)
+      return false;
+    else if (__isset.literalValue && !(literalValue == rhs.literalValue))
+      return false;
+    if (__isset.literalType != rhs.__isset.literalType)
+      return false;
+    else if (__isset.literalType && !(literalType == rhs.literalType))
+      return false;
+    if (__isset.params != rhs.__isset.params)
+      return false;
+    else if (__isset.params && !(params == rhs.params))
+      return false;
+    if (!(contributingPolicies == rhs.contributingPolicies))
+      return false;
+    if (__isset.resolutionNote != rhs.__isset.resolutionNote)
+      return false;
+    else if (__isset.resolutionNote && !(resolutionNote == rhs.resolutionNote))
+      return false;
+    return true;
+  }
+  bool operator != (const ErasurePolicyBindingResolved &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ErasurePolicyBindingResolved & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ErasurePolicyBindingResolved &a, ErasurePolicyBindingResolved &b);
+
+std::ostream& operator<<(std::ostream& out, const ErasurePolicyBindingResolved& obj);
+
+typedef struct _ErasurePolicyLifecycleEvent__isset {
+  _ErasurePolicyLifecycleEvent__isset() : eventId(false), versionId(false), eventType(false), principal(false), eventTs(false), note(false), conflictClass(false), bindingId(false) {}
+  bool eventId :1;
+  bool versionId :1;
+  bool eventType :1;
+  bool principal :1;
+  bool eventTs :1;
+  bool note :1;
+  bool conflictClass :1;
+  bool bindingId :1;
+} _ErasurePolicyLifecycleEvent__isset;
+
+class ErasurePolicyLifecycleEvent : public virtual ::apache::thrift::TBase {
+ public:
+
+  ErasurePolicyLifecycleEvent(const ErasurePolicyLifecycleEvent&);
+  ErasurePolicyLifecycleEvent& operator=(const ErasurePolicyLifecycleEvent&);
+  ErasurePolicyLifecycleEvent() noexcept
+                              : eventId(0),
+                                versionId(0),
+                                eventType(static_cast<PolicyLifecycleEventType::type>(0)),
+                                principal(),
+                                eventTs(0),
+                                note(),
+                                conflictClass(static_cast<PolicyConflictClass::type>(0)),
+                                bindingId(0) {
+  }
+
+  virtual ~ErasurePolicyLifecycleEvent() noexcept;
+  int64_t eventId;
+  int64_t versionId;
+  /**
+   * 
+   * @see PolicyLifecycleEventType
+   */
+  PolicyLifecycleEventType::type eventType;
+  std::string principal;
+  int64_t eventTs;
+  std::string note;
+  /**
+   * 
+   * @see PolicyConflictClass
+   */
+  PolicyConflictClass::type conflictClass;
+  int64_t bindingId;
+
+  _ErasurePolicyLifecycleEvent__isset __isset;
+
+  void __set_eventId(const int64_t val);
+
+  void __set_versionId(const int64_t val);
+
+  void __set_eventType(const PolicyLifecycleEventType::type val);
+
+  void __set_principal(const std::string& val);
+
+  void __set_eventTs(const int64_t val);
+
+  void __set_note(const std::string& val);
+
+  void __set_conflictClass(const PolicyConflictClass::type val);
+
+  void __set_bindingId(const int64_t val);
+
+  bool operator == (const ErasurePolicyLifecycleEvent & rhs) const
+  {
+    if (!(eventId == rhs.eventId))
+      return false;
+    if (!(versionId == rhs.versionId))
+      return false;
+    if (!(eventType == rhs.eventType))
+      return false;
+    if (!(principal == rhs.principal))
+      return false;
+    if (!(eventTs == rhs.eventTs))
+      return false;
+    if (__isset.note != rhs.__isset.note)
+      return false;
+    else if (__isset.note && !(note == rhs.note))
+      return false;
+    if (__isset.conflictClass != rhs.__isset.conflictClass)
+      return false;
+    else if (__isset.conflictClass && !(conflictClass == rhs.conflictClass))
+      return false;
+    if (__isset.bindingId != rhs.__isset.bindingId)
+      return false;
+    else if (__isset.bindingId && !(bindingId == rhs.bindingId))
+      return false;
+    return true;
+  }
+  bool operator != (const ErasurePolicyLifecycleEvent &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ErasurePolicyLifecycleEvent & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ErasurePolicyLifecycleEvent &a, ErasurePolicyLifecycleEvent &b);
+
+std::ostream& operator<<(std::ostream& out, const ErasurePolicyLifecycleEvent& obj);
+
+typedef struct _ErasureRunAudit__isset {
+  _ErasureRunAudit__isset() : runId(false), tblId(false), columnName(false), bindingId(false), principal(false), startedTs(false), completedTs(false), identityValues(false), policyVersions(false), resolvedRulesSnapshotId(false), filesRewritten(false), bytesBefore(false), bytesAfter(false), status(false), matchesInspected(false), matchesRedacted(false), matchesFlagged(false), releaseReason(false) {}
+  bool runId :1;
+  bool tblId :1;
+  bool columnName :1;
+  bool bindingId :1;
+  bool principal :1;
+  bool startedTs :1;
+  bool completedTs :1;
+  bool identityValues :1;
+  bool policyVersions :1;
+  bool resolvedRulesSnapshotId :1;
+  bool filesRewritten :1;
+  bool bytesBefore :1;
+  bool bytesAfter :1;
+  bool status :1;
+  bool matchesInspected :1;
+  bool matchesRedacted :1;
+  bool matchesFlagged :1;
+  bool releaseReason :1;
+} _ErasureRunAudit__isset;
+
+class ErasureRunAudit : public virtual ::apache::thrift::TBase {
+ public:
+
+  ErasureRunAudit(const ErasureRunAudit&);
+  ErasureRunAudit& operator=(const ErasureRunAudit&);
+  ErasureRunAudit() noexcept
+                  : runId(0),
+                    tblId(0),
+                    columnName(),
+                    bindingId(0),
+                    principal(),
+                    startedTs(0),
+                    completedTs(0),
+                    identityValues(),
+                    policyVersions(),
+                    resolvedRulesSnapshotId(0),
+                    filesRewritten(0),
+                    bytesBefore(0),
+                    bytesAfter(0),
+                    status(static_cast<ErasureRunStatus::type>(0)),
+                    matchesInspected(0),
+                    matchesRedacted(0),
+                    matchesFlagged(0),
+                    releaseReason() {
+  }
+
+  virtual ~ErasureRunAudit() noexcept;
+  int64_t runId;
+  int64_t tblId;
+  std::string columnName;
+  int64_t bindingId;
+  std::string principal;
+  int64_t startedTs;
+  int64_t completedTs;
+  std::string identityValues;
+  std::string policyVersions;
+  int64_t resolvedRulesSnapshotId;
+  int32_t filesRewritten;
+  int64_t bytesBefore;
+  int64_t bytesAfter;
+  /**
+   * 
+   * @see ErasureRunStatus
+   */
+  ErasureRunStatus::type status;
+  int64_t matchesInspected;
+  int64_t matchesRedacted;
+  int64_t matchesFlagged;
+  std::string releaseReason;
+
+  _ErasureRunAudit__isset __isset;
+
+  void __set_runId(const int64_t val);
+
+  void __set_tblId(const int64_t val);
+
+  void __set_columnName(const std::string& val);
+
+  void __set_bindingId(const int64_t val);
+
+  void __set_principal(const std::string& val);
+
+  void __set_startedTs(const int64_t val);
+
+  void __set_completedTs(const int64_t val);
+
+  void __set_identityValues(const std::string& val);
+
+  void __set_policyVersions(const std::string& val);
+
+  void __set_resolvedRulesSnapshotId(const int64_t val);
+
+  void __set_filesRewritten(const int32_t val);
+
+  void __set_bytesBefore(const int64_t val);
+
+  void __set_bytesAfter(const int64_t val);
+
+  void __set_status(const ErasureRunStatus::type val);
+
+  void __set_matchesInspected(const int64_t val);
+
+  void __set_matchesRedacted(const int64_t val);
+
+  void __set_matchesFlagged(const int64_t val);
+
+  void __set_releaseReason(const std::string& val);
+
+  bool operator == (const ErasureRunAudit & rhs) const
+  {
+    if (!(runId == rhs.runId))
+      return false;
+    if (!(tblId == rhs.tblId))
+      return false;
+    if (!(columnName == rhs.columnName))
+      return false;
+    if (!(bindingId == rhs.bindingId))
+      return false;
+    if (!(principal == rhs.principal))
+      return false;
+    if (!(startedTs == rhs.startedTs))
+      return false;
+    if (__isset.completedTs != rhs.__isset.completedTs)
+      return false;
+    else if (__isset.completedTs && !(completedTs == rhs.completedTs))
+      return false;
+    if (__isset.identityValues != rhs.__isset.identityValues)
+      return false;
+    else if (__isset.identityValues && !(identityValues == rhs.identityValues))
+      return false;
+    if (__isset.policyVersions != rhs.__isset.policyVersions)
+      return false;
+    else if (__isset.policyVersions && !(policyVersions == rhs.policyVersions))
+      return false;
+    if (__isset.resolvedRulesSnapshotId != rhs.__isset.resolvedRulesSnapshotId)
+      return false;
+    else if (__isset.resolvedRulesSnapshotId && !(resolvedRulesSnapshotId == rhs.resolvedRulesSnapshotId))
+      return false;
+    if (__isset.filesRewritten != rhs.__isset.filesRewritten)
+      return false;
+    else if (__isset.filesRewritten && !(filesRewritten == rhs.filesRewritten))
+      return false;
+    if (__isset.bytesBefore != rhs.__isset.bytesBefore)
+      return false;
+    else if (__isset.bytesBefore && !(bytesBefore == rhs.bytesBefore))
+      return false;
+    if (__isset.bytesAfter != rhs.__isset.bytesAfter)
+      return false;
+    else if (__isset.bytesAfter && !(bytesAfter == rhs.bytesAfter))
+      return false;
+    if (!(status == rhs.status))
+      return false;
+    if (__isset.matchesInspected != rhs.__isset.matchesInspected)
+      return false;
+    else if (__isset.matchesInspected && !(matchesInspected == rhs.matchesInspected))
+      return false;
+    if (__isset.matchesRedacted != rhs.__isset.matchesRedacted)
+      return false;
+    else if (__isset.matchesRedacted && !(matchesRedacted == rhs.matchesRedacted))
+      return false;
+    if (__isset.matchesFlagged != rhs.__isset.matchesFlagged)
+      return false;
+    else if (__isset.matchesFlagged && !(matchesFlagged == rhs.matchesFlagged))
+      return false;
+    if (__isset.releaseReason != rhs.__isset.releaseReason)
+      return false;
+    else if (__isset.releaseReason && !(releaseReason == rhs.releaseReason))
+      return false;
+    return true;
+  }
+  bool operator != (const ErasureRunAudit &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ErasureRunAudit & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ErasureRunAudit &a, ErasureRunAudit &b);
+
+std::ostream& operator<<(std::ostream& out, const ErasureRunAudit& obj);
+
+typedef struct _PolicyPriv__isset {
+  _PolicyPriv__isset() : policyPrivId(false), policyId(false), principalName(false), principalType(false), privilege(false), createTime(false), grantor(false), grantorType(false), grantOption(false) {}
+  bool policyPrivId :1;
+  bool policyId :1;
+  bool principalName :1;
+  bool principalType :1;
+  bool privilege :1;
+  bool createTime :1;
+  bool grantor :1;
+  bool grantorType :1;
+  bool grantOption :1;
+} _PolicyPriv__isset;
+
+class PolicyPriv : public virtual ::apache::thrift::TBase {
+ public:
+
+  PolicyPriv(const PolicyPriv&);
+  PolicyPriv& operator=(const PolicyPriv&);
+  PolicyPriv() noexcept
+             : policyPrivId(0),
+               policyId(0),
+               principalName(),
+               principalType(),
+               privilege(),
+               createTime(0),
+               grantor(),
+               grantorType(),
+               grantOption(0) {
+  }
+
+  virtual ~PolicyPriv() noexcept;
+  int64_t policyPrivId;
+  int64_t policyId;
+  std::string principalName;
+  std::string principalType;
+  std::string privilege;
+  int64_t createTime;
+  std::string grantor;
+  std::string grantorType;
+  bool grantOption;
+
+  _PolicyPriv__isset __isset;
+
+  void __set_policyPrivId(const int64_t val);
+
+  void __set_policyId(const int64_t val);
+
+  void __set_principalName(const std::string& val);
+
+  void __set_principalType(const std::string& val);
+
+  void __set_privilege(const std::string& val);
+
+  void __set_createTime(const int64_t val);
+
+  void __set_grantor(const std::string& val);
+
+  void __set_grantorType(const std::string& val);
+
+  void __set_grantOption(const bool val);
+
+  bool operator == (const PolicyPriv & rhs) const
+  {
+    if (!(policyPrivId == rhs.policyPrivId))
+      return false;
+    if (!(policyId == rhs.policyId))
+      return false;
+    if (!(principalName == rhs.principalName))
+      return false;
+    if (!(principalType == rhs.principalType))
+      return false;
+    if (!(privilege == rhs.privilege))
+      return false;
+    if (!(createTime == rhs.createTime))
+      return false;
+    if (__isset.grantor != rhs.__isset.grantor)
+      return false;
+    else if (__isset.grantor && !(grantor == rhs.grantor))
+      return false;
+    if (__isset.grantorType != rhs.__isset.grantorType)
+      return false;
+    else if (__isset.grantorType && !(grantorType == rhs.grantorType))
+      return false;
+    if (!(grantOption == rhs.grantOption))
+      return false;
+    return true;
+  }
+  bool operator != (const PolicyPriv &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const PolicyPriv & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(PolicyPriv &a, PolicyPriv &b);
+
+std::ostream& operator<<(std::ostream& out, const PolicyPriv& obj);
 
 typedef struct _MetaException__isset {
   _MetaException__isset() : message(false) {}

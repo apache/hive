@@ -572,6 +572,243 @@ class PartitionFilterMode(object):
     }
 
 
+class IndexType(object):
+    BTREE = 1
+    DIRECTORY = 2
+    TABULAR = 3
+
+    _VALUES_TO_NAMES = {
+        1: "BTREE",
+        2: "DIRECTORY",
+        3: "TABULAR",
+    }
+
+    _NAMES_TO_VALUES = {
+        "BTREE": 1,
+        "DIRECTORY": 2,
+        "TABULAR": 3,
+    }
+
+
+class ColumnInternalFormat(object):
+    JSON = 1
+    MSGPACK = 2
+    XML = 3
+    PROTOBUF = 4
+    AVRO = 5
+
+    _VALUES_TO_NAMES = {
+        1: "JSON",
+        2: "MSGPACK",
+        3: "XML",
+        4: "PROTOBUF",
+        5: "AVRO",
+    }
+
+    _NAMES_TO_VALUES = {
+        "JSON": 1,
+        "MSGPACK": 2,
+        "XML": 3,
+        "PROTOBUF": 4,
+        "AVRO": 5,
+    }
+
+
+class PolicyVersionStatus(object):
+    DRAFT = 1
+    VALIDATED = 2
+    ACTIVE = 3
+    SUPERSEDED = 4
+    INACTIVE = 5
+
+    _VALUES_TO_NAMES = {
+        1: "DRAFT",
+        2: "VALIDATED",
+        3: "ACTIVE",
+        4: "SUPERSEDED",
+        5: "INACTIVE",
+    }
+
+    _NAMES_TO_VALUES = {
+        "DRAFT": 1,
+        "VALIDATED": 2,
+        "ACTIVE": 3,
+        "SUPERSEDED": 4,
+        "INACTIVE": 5,
+    }
+
+
+class PolicyLiteralKind(object):
+    INT = 1
+    LONG = 2
+    STRING = 3
+
+    _VALUES_TO_NAMES = {
+        1: "INT",
+        2: "LONG",
+        3: "STRING",
+    }
+
+    _NAMES_TO_VALUES = {
+        "INT": 1,
+        "LONG": 2,
+        "STRING": 3,
+    }
+
+
+class PolicyActionKind(object):
+    ERASE = 1
+    REPLACE = 2
+    HASH = 3
+    TOKENIZE = 4
+    ENCRYPT = 5
+    GENERALIZE = 6
+    INSPECT = 7
+    FLAG = 8
+
+    _VALUES_TO_NAMES = {
+        1: "ERASE",
+        2: "REPLACE",
+        3: "HASH",
+        4: "TOKENIZE",
+        5: "ENCRYPT",
+        6: "GENERALIZE",
+        7: "INSPECT",
+        8: "FLAG",
+    }
+
+    _NAMES_TO_VALUES = {
+        "ERASE": 1,
+        "REPLACE": 2,
+        "HASH": 3,
+        "TOKENIZE": 4,
+        "ENCRYPT": 5,
+        "GENERALIZE": 6,
+        "INSPECT": 7,
+        "FLAG": 8,
+    }
+
+
+class PolicyResolutionMode(object):
+    EXPLICIT = 1
+    STRICTEST = 2
+
+    _VALUES_TO_NAMES = {
+        1: "EXPLICIT",
+        2: "STRICTEST",
+    }
+
+    _NAMES_TO_VALUES = {
+        "EXPLICIT": 1,
+        "STRICTEST": 2,
+    }
+
+
+class PolicyLifecycleEventType(object):
+    VALIDATED = 1
+    ACTIVATED = 2
+    DEACTIVATED = 3
+    SUPERSEDED = 4
+    BOUND = 5
+    UNBOUND = 6
+    ATTACH_REJECTED = 7
+    LOADED = 8
+    INVALIDATED = 9
+
+    _VALUES_TO_NAMES = {
+        1: "VALIDATED",
+        2: "ACTIVATED",
+        3: "DEACTIVATED",
+        4: "SUPERSEDED",
+        5: "BOUND",
+        6: "UNBOUND",
+        7: "ATTACH_REJECTED",
+        8: "LOADED",
+        9: "INVALIDATED",
+    }
+
+    _NAMES_TO_VALUES = {
+        "VALIDATED": 1,
+        "ACTIVATED": 2,
+        "DEACTIVATED": 3,
+        "SUPERSEDED": 4,
+        "BOUND": 5,
+        "UNBOUND": 6,
+        "ATTACH_REJECTED": 7,
+        "LOADED": 8,
+        "INVALIDATED": 9,
+    }
+
+
+class PolicyConflictClass(object):
+    C1_ACTION = 1
+    C2_VALUE = 2
+    C3_PATH_PREFIX = 3
+
+    _VALUES_TO_NAMES = {
+        1: "C1_ACTION",
+        2: "C2_VALUE",
+        3: "C3_PATH_PREFIX",
+    }
+
+    _NAMES_TO_VALUES = {
+        "C1_ACTION": 1,
+        "C2_VALUE": 2,
+        "C3_PATH_PREFIX": 3,
+    }
+
+
+class ErasureRunStatus(object):
+    SUCCEEDED = 1
+    FAILED = 2
+    INTERRUPTED = 3
+    RELEASED = 4
+    FORCE_RELEASED = 5
+    EXTRACTED = 6
+    INITIATED = 7
+
+    _VALUES_TO_NAMES = {
+        1: "SUCCEEDED",
+        2: "FAILED",
+        3: "INTERRUPTED",
+        4: "RELEASED",
+        5: "FORCE_RELEASED",
+        6: "EXTRACTED",
+        7: "INITIATED",
+    }
+
+    _NAMES_TO_VALUES = {
+        "SUCCEEDED": 1,
+        "FAILED": 2,
+        "INTERRUPTED": 3,
+        "RELEASED": 4,
+        "FORCE_RELEASED": 5,
+        "EXTRACTED": 6,
+        "INITIATED": 7,
+    }
+
+
+class ErasureRunLockStatus(object):
+    RUNNING = 1
+    COMPLETED = 2
+    RELEASED = 3
+    FORCE_RELEASED = 4
+
+    _VALUES_TO_NAMES = {
+        1: "RUNNING",
+        2: "COMPLETED",
+        3: "RELEASED",
+        4: "FORCE_RELEASED",
+    }
+
+    _NAMES_TO_VALUES = {
+        "RUNNING": 1,
+        "COMPLETED": 2,
+        "RELEASED": 3,
+        "FORCE_RELEASED": 4,
+    }
+
+
 class Version(object):
     """
     Attributes:
@@ -31481,6 +31718,1898 @@ class ReplayedTxnsForPolicyResult(object):
         return not (self == other)
 
 
+class CreateAnonPolicyRequest(object):
+    """
+    Attributes:
+     - policy
+     - envContext
+
+    """
+
+
+    def __init__(self, policy=None, envContext=None,):
+        self.policy = policy
+        self.envContext = envContext
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.policy = ErasurePolicy()
+                    self.policy.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.envContext = EnvironmentContext()
+                    self.envContext.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('CreateAnonPolicyRequest')
+        if self.policy is not None:
+            oprot.writeFieldBegin('policy', TType.STRUCT, 1)
+            self.policy.write(oprot)
+            oprot.writeFieldEnd()
+        if self.envContext is not None:
+            oprot.writeFieldBegin('envContext', TType.STRUCT, 2)
+            self.envContext.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        if self.policy is None:
+            raise TProtocolException(message='Required field policy is unset!')
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class ErasurePolicy(object):
+    """
+    Attributes:
+     - policyName
+     - policyId
+
+    """
+
+
+    def __init__(self, policyName=None, policyId=None,):
+        self.policyName = policyName
+        self.policyId = policyId
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.policyName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.I64:
+                    self.policyId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('ErasurePolicy')
+        if self.policyName is not None:
+            oprot.writeFieldBegin('policyName', TType.STRING, 1)
+            oprot.writeString(self.policyName.encode('utf-8') if sys.version_info[0] == 2 else self.policyName)
+            oprot.writeFieldEnd()
+        if self.policyId is not None:
+            oprot.writeFieldBegin('policyId', TType.I64, 3)
+            oprot.writeI64(self.policyId)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class Index(object):
+    """
+    Attributes:
+     - indexName
+     - indexHandlerClass
+     - dbName
+     - origTableName
+     - createTime
+     - lastAccessTime
+     - indexTableName
+     - sd
+     - deferredRebuild
+     - pageSize
+     - bufferPoolSize
+     - pointerType
+     - indexType
+
+    """
+
+
+    def __init__(self, indexName=None, indexHandlerClass=None, dbName=None, origTableName=None, createTime=None, lastAccessTime=None, indexTableName=None, sd=None, deferredRebuild=None, pageSize=None, bufferPoolSize=None, pointerType=None, indexType=None,):
+        self.indexName = indexName
+        self.indexHandlerClass = indexHandlerClass
+        self.dbName = dbName
+        self.origTableName = origTableName
+        self.createTime = createTime
+        self.lastAccessTime = lastAccessTime
+        self.indexTableName = indexTableName
+        self.sd = sd
+        self.deferredRebuild = deferredRebuild
+        self.pageSize = pageSize
+        self.bufferPoolSize = bufferPoolSize
+        self.pointerType = pointerType
+        self.indexType = indexType
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.indexName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.indexHandlerClass = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.dbName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.STRING:
+                    self.origTableName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.I32:
+                    self.createTime = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.I32:
+                    self.lastAccessTime = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.STRING:
+                    self.indexTableName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 8:
+                if ftype == TType.STRUCT:
+                    self.sd = StorageDescriptor()
+                    self.sd.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 9:
+                if ftype == TType.BOOL:
+                    self.deferredRebuild = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 10:
+                if ftype == TType.I32:
+                    self.pageSize = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 11:
+                if ftype == TType.I32:
+                    self.bufferPoolSize = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 12:
+                if ftype == TType.STRING:
+                    self.pointerType = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 13:
+                if ftype == TType.I32:
+                    self.indexType = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('Index')
+        if self.indexName is not None:
+            oprot.writeFieldBegin('indexName', TType.STRING, 1)
+            oprot.writeString(self.indexName.encode('utf-8') if sys.version_info[0] == 2 else self.indexName)
+            oprot.writeFieldEnd()
+        if self.indexHandlerClass is not None:
+            oprot.writeFieldBegin('indexHandlerClass', TType.STRING, 2)
+            oprot.writeString(self.indexHandlerClass.encode('utf-8') if sys.version_info[0] == 2 else self.indexHandlerClass)
+            oprot.writeFieldEnd()
+        if self.dbName is not None:
+            oprot.writeFieldBegin('dbName', TType.STRING, 3)
+            oprot.writeString(self.dbName.encode('utf-8') if sys.version_info[0] == 2 else self.dbName)
+            oprot.writeFieldEnd()
+        if self.origTableName is not None:
+            oprot.writeFieldBegin('origTableName', TType.STRING, 4)
+            oprot.writeString(self.origTableName.encode('utf-8') if sys.version_info[0] == 2 else self.origTableName)
+            oprot.writeFieldEnd()
+        if self.createTime is not None:
+            oprot.writeFieldBegin('createTime', TType.I32, 5)
+            oprot.writeI32(self.createTime)
+            oprot.writeFieldEnd()
+        if self.lastAccessTime is not None:
+            oprot.writeFieldBegin('lastAccessTime', TType.I32, 6)
+            oprot.writeI32(self.lastAccessTime)
+            oprot.writeFieldEnd()
+        if self.indexTableName is not None:
+            oprot.writeFieldBegin('indexTableName', TType.STRING, 7)
+            oprot.writeString(self.indexTableName.encode('utf-8') if sys.version_info[0] == 2 else self.indexTableName)
+            oprot.writeFieldEnd()
+        if self.sd is not None:
+            oprot.writeFieldBegin('sd', TType.STRUCT, 8)
+            self.sd.write(oprot)
+            oprot.writeFieldEnd()
+        if self.deferredRebuild is not None:
+            oprot.writeFieldBegin('deferredRebuild', TType.BOOL, 9)
+            oprot.writeBool(self.deferredRebuild)
+            oprot.writeFieldEnd()
+        if self.pageSize is not None:
+            oprot.writeFieldBegin('pageSize', TType.I32, 10)
+            oprot.writeI32(self.pageSize)
+            oprot.writeFieldEnd()
+        if self.bufferPoolSize is not None:
+            oprot.writeFieldBegin('bufferPoolSize', TType.I32, 11)
+            oprot.writeI32(self.bufferPoolSize)
+            oprot.writeFieldEnd()
+        if self.pointerType is not None:
+            oprot.writeFieldBegin('pointerType', TType.STRING, 12)
+            oprot.writeString(self.pointerType.encode('utf-8') if sys.version_info[0] == 2 else self.pointerType)
+            oprot.writeFieldEnd()
+        if self.indexType is not None:
+            oprot.writeFieldBegin('indexType', TType.I32, 13)
+            oprot.writeI32(self.indexType)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class PolicyInfo(object):
+    """
+    Attributes:
+     - name
+     - doc
+
+    """
+
+
+    def __init__(self, name=None, doc=None,):
+        self.name = name
+        self.doc = doc
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.name = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.doc = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('PolicyInfo')
+        if self.name is not None:
+            oprot.writeFieldBegin('name', TType.STRING, 1)
+            oprot.writeString(self.name.encode('utf-8') if sys.version_info[0] == 2 else self.name)
+            oprot.writeFieldEnd()
+        if self.doc is not None:
+            oprot.writeFieldBegin('doc', TType.STRING, 2)
+            oprot.writeString(self.doc.encode('utf-8') if sys.version_info[0] == 2 else self.doc)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class ErasureRunLock(object):
+    """
+    Attributes:
+     - tblId
+     - runId
+     - principal
+     - startedTs
+     - completedTs
+     - releasedBy
+     - releasedTs
+     - releaseReason
+     - status
+
+    """
+
+
+    def __init__(self, tblId=None, runId=None, principal=None, startedTs=None, completedTs=None, releasedBy=None, releasedTs=None, releaseReason=None, status=None,):
+        self.tblId = tblId
+        self.runId = runId
+        self.principal = principal
+        self.startedTs = startedTs
+        self.completedTs = completedTs
+        self.releasedBy = releasedBy
+        self.releasedTs = releasedTs
+        self.releaseReason = releaseReason
+        self.status = status
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.tblId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I64:
+                    self.runId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.principal = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.I64:
+                    self.startedTs = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.I64:
+                    self.completedTs = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.STRING:
+                    self.releasedBy = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.I64:
+                    self.releasedTs = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 8:
+                if ftype == TType.STRING:
+                    self.releaseReason = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 9:
+                if ftype == TType.I32:
+                    self.status = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('ErasureRunLock')
+        if self.tblId is not None:
+            oprot.writeFieldBegin('tblId', TType.I64, 1)
+            oprot.writeI64(self.tblId)
+            oprot.writeFieldEnd()
+        if self.runId is not None:
+            oprot.writeFieldBegin('runId', TType.I64, 2)
+            oprot.writeI64(self.runId)
+            oprot.writeFieldEnd()
+        if self.principal is not None:
+            oprot.writeFieldBegin('principal', TType.STRING, 3)
+            oprot.writeString(self.principal.encode('utf-8') if sys.version_info[0] == 2 else self.principal)
+            oprot.writeFieldEnd()
+        if self.startedTs is not None:
+            oprot.writeFieldBegin('startedTs', TType.I64, 4)
+            oprot.writeI64(self.startedTs)
+            oprot.writeFieldEnd()
+        if self.completedTs is not None:
+            oprot.writeFieldBegin('completedTs', TType.I64, 5)
+            oprot.writeI64(self.completedTs)
+            oprot.writeFieldEnd()
+        if self.releasedBy is not None:
+            oprot.writeFieldBegin('releasedBy', TType.STRING, 6)
+            oprot.writeString(self.releasedBy.encode('utf-8') if sys.version_info[0] == 2 else self.releasedBy)
+            oprot.writeFieldEnd()
+        if self.releasedTs is not None:
+            oprot.writeFieldBegin('releasedTs', TType.I64, 7)
+            oprot.writeI64(self.releasedTs)
+            oprot.writeFieldEnd()
+        if self.releaseReason is not None:
+            oprot.writeFieldBegin('releaseReason', TType.STRING, 8)
+            oprot.writeString(self.releaseReason.encode('utf-8') if sys.version_info[0] == 2 else self.releaseReason)
+            oprot.writeFieldEnd()
+        if self.status is not None:
+            oprot.writeFieldBegin('status', TType.I32, 9)
+            oprot.writeI32(self.status)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class ErasurePolicyVersion(object):
+    """
+    Attributes:
+     - versionId
+     - policyName
+     - versionLabel
+     - status
+     - identityFieldName
+     - identityFieldType
+     - schemaType
+     - sourcePath
+     - sourceChecksum
+     - validatedBy
+     - validatedTs
+     - activatedBy
+     - activatedTs
+     - deactivatedBy
+     - deactivatedTs
+     - sourceText
+
+    """
+
+
+    def __init__(self, versionId=None, policyName=None, versionLabel=None, status=None, identityFieldName=None, identityFieldType=None, schemaType=None, sourcePath=None, sourceChecksum=None, validatedBy=None, validatedTs=None, activatedBy=None, activatedTs=None, deactivatedBy=None, deactivatedTs=None, sourceText=None,):
+        self.versionId = versionId
+        self.policyName = policyName
+        self.versionLabel = versionLabel
+        self.status = status
+        self.identityFieldName = identityFieldName
+        self.identityFieldType = identityFieldType
+        self.schemaType = schemaType
+        self.sourcePath = sourcePath
+        self.sourceChecksum = sourceChecksum
+        self.validatedBy = validatedBy
+        self.validatedTs = validatedTs
+        self.activatedBy = activatedBy
+        self.activatedTs = activatedTs
+        self.deactivatedBy = deactivatedBy
+        self.deactivatedTs = deactivatedTs
+        self.sourceText = sourceText
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.versionId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.policyName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.versionLabel = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.I32:
+                    self.status = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.STRING:
+                    self.identityFieldName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.I32:
+                    self.identityFieldType = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.I32:
+                    self.schemaType = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 8:
+                if ftype == TType.STRING:
+                    self.sourcePath = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 9:
+                if ftype == TType.STRING:
+                    self.sourceChecksum = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 10:
+                if ftype == TType.STRING:
+                    self.validatedBy = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 11:
+                if ftype == TType.I64:
+                    self.validatedTs = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 12:
+                if ftype == TType.STRING:
+                    self.activatedBy = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 13:
+                if ftype == TType.I64:
+                    self.activatedTs = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 14:
+                if ftype == TType.STRING:
+                    self.deactivatedBy = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 15:
+                if ftype == TType.I64:
+                    self.deactivatedTs = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 16:
+                if ftype == TType.STRING:
+                    self.sourceText = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('ErasurePolicyVersion')
+        if self.versionId is not None:
+            oprot.writeFieldBegin('versionId', TType.I64, 1)
+            oprot.writeI64(self.versionId)
+            oprot.writeFieldEnd()
+        if self.policyName is not None:
+            oprot.writeFieldBegin('policyName', TType.STRING, 2)
+            oprot.writeString(self.policyName.encode('utf-8') if sys.version_info[0] == 2 else self.policyName)
+            oprot.writeFieldEnd()
+        if self.versionLabel is not None:
+            oprot.writeFieldBegin('versionLabel', TType.STRING, 3)
+            oprot.writeString(self.versionLabel.encode('utf-8') if sys.version_info[0] == 2 else self.versionLabel)
+            oprot.writeFieldEnd()
+        if self.status is not None:
+            oprot.writeFieldBegin('status', TType.I32, 4)
+            oprot.writeI32(self.status)
+            oprot.writeFieldEnd()
+        if self.identityFieldName is not None:
+            oprot.writeFieldBegin('identityFieldName', TType.STRING, 5)
+            oprot.writeString(self.identityFieldName.encode('utf-8') if sys.version_info[0] == 2 else self.identityFieldName)
+            oprot.writeFieldEnd()
+        if self.identityFieldType is not None:
+            oprot.writeFieldBegin('identityFieldType', TType.I32, 6)
+            oprot.writeI32(self.identityFieldType)
+            oprot.writeFieldEnd()
+        if self.schemaType is not None:
+            oprot.writeFieldBegin('schemaType', TType.I32, 7)
+            oprot.writeI32(self.schemaType)
+            oprot.writeFieldEnd()
+        if self.sourcePath is not None:
+            oprot.writeFieldBegin('sourcePath', TType.STRING, 8)
+            oprot.writeString(self.sourcePath.encode('utf-8') if sys.version_info[0] == 2 else self.sourcePath)
+            oprot.writeFieldEnd()
+        if self.sourceChecksum is not None:
+            oprot.writeFieldBegin('sourceChecksum', TType.STRING, 9)
+            oprot.writeString(self.sourceChecksum.encode('utf-8') if sys.version_info[0] == 2 else self.sourceChecksum)
+            oprot.writeFieldEnd()
+        if self.validatedBy is not None:
+            oprot.writeFieldBegin('validatedBy', TType.STRING, 10)
+            oprot.writeString(self.validatedBy.encode('utf-8') if sys.version_info[0] == 2 else self.validatedBy)
+            oprot.writeFieldEnd()
+        if self.validatedTs is not None:
+            oprot.writeFieldBegin('validatedTs', TType.I64, 11)
+            oprot.writeI64(self.validatedTs)
+            oprot.writeFieldEnd()
+        if self.activatedBy is not None:
+            oprot.writeFieldBegin('activatedBy', TType.STRING, 12)
+            oprot.writeString(self.activatedBy.encode('utf-8') if sys.version_info[0] == 2 else self.activatedBy)
+            oprot.writeFieldEnd()
+        if self.activatedTs is not None:
+            oprot.writeFieldBegin('activatedTs', TType.I64, 13)
+            oprot.writeI64(self.activatedTs)
+            oprot.writeFieldEnd()
+        if self.deactivatedBy is not None:
+            oprot.writeFieldBegin('deactivatedBy', TType.STRING, 14)
+            oprot.writeString(self.deactivatedBy.encode('utf-8') if sys.version_info[0] == 2 else self.deactivatedBy)
+            oprot.writeFieldEnd()
+        if self.deactivatedTs is not None:
+            oprot.writeFieldBegin('deactivatedTs', TType.I64, 15)
+            oprot.writeI64(self.deactivatedTs)
+            oprot.writeFieldEnd()
+        if self.sourceText is not None:
+            oprot.writeFieldBegin('sourceText', TType.STRING, 16)
+            oprot.writeString(self.sourceText.encode('utf-8') if sys.version_info[0] == 2 else self.sourceText)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class ErasurePolicyStatement(object):
+    """
+    Attributes:
+     - statementId
+     - versionId
+     - schemaValue
+     - ordinal
+
+    """
+
+
+    def __init__(self, statementId=None, versionId=None, schemaValue=None, ordinal=None,):
+        self.statementId = statementId
+        self.versionId = versionId
+        self.schemaValue = schemaValue
+        self.ordinal = ordinal
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.statementId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I64:
+                    self.versionId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.schemaValue = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.I32:
+                    self.ordinal = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('ErasurePolicyStatement')
+        if self.statementId is not None:
+            oprot.writeFieldBegin('statementId', TType.I64, 1)
+            oprot.writeI64(self.statementId)
+            oprot.writeFieldEnd()
+        if self.versionId is not None:
+            oprot.writeFieldBegin('versionId', TType.I64, 2)
+            oprot.writeI64(self.versionId)
+            oprot.writeFieldEnd()
+        if self.schemaValue is not None:
+            oprot.writeFieldBegin('schemaValue', TType.STRING, 3)
+            oprot.writeString(self.schemaValue.encode('utf-8') if sys.version_info[0] == 2 else self.schemaValue)
+            oprot.writeFieldEnd()
+        if self.ordinal is not None:
+            oprot.writeFieldBegin('ordinal', TType.I32, 4)
+            oprot.writeI32(self.ordinal)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class ErasurePolicyRule(object):
+    """
+    Attributes:
+     - ruleId
+     - statementId
+     - fieldPath
+     - action
+     - literalValue
+     - literalType
+     - params
+     - ordinal
+
+    """
+
+
+    def __init__(self, ruleId=None, statementId=None, fieldPath=None, action=None, literalValue=None, literalType=None, params=None, ordinal=None,):
+        self.ruleId = ruleId
+        self.statementId = statementId
+        self.fieldPath = fieldPath
+        self.action = action
+        self.literalValue = literalValue
+        self.literalType = literalType
+        self.params = params
+        self.ordinal = ordinal
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.ruleId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I64:
+                    self.statementId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.fieldPath = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.I32:
+                    self.action = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.STRING:
+                    self.literalValue = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.I32:
+                    self.literalType = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.STRING:
+                    self.params = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 8:
+                if ftype == TType.I32:
+                    self.ordinal = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('ErasurePolicyRule')
+        if self.ruleId is not None:
+            oprot.writeFieldBegin('ruleId', TType.I64, 1)
+            oprot.writeI64(self.ruleId)
+            oprot.writeFieldEnd()
+        if self.statementId is not None:
+            oprot.writeFieldBegin('statementId', TType.I64, 2)
+            oprot.writeI64(self.statementId)
+            oprot.writeFieldEnd()
+        if self.fieldPath is not None:
+            oprot.writeFieldBegin('fieldPath', TType.STRING, 3)
+            oprot.writeString(self.fieldPath.encode('utf-8') if sys.version_info[0] == 2 else self.fieldPath)
+            oprot.writeFieldEnd()
+        if self.action is not None:
+            oprot.writeFieldBegin('action', TType.I32, 4)
+            oprot.writeI32(self.action)
+            oprot.writeFieldEnd()
+        if self.literalValue is not None:
+            oprot.writeFieldBegin('literalValue', TType.STRING, 5)
+            oprot.writeString(self.literalValue.encode('utf-8') if sys.version_info[0] == 2 else self.literalValue)
+            oprot.writeFieldEnd()
+        if self.literalType is not None:
+            oprot.writeFieldBegin('literalType', TType.I32, 6)
+            oprot.writeI32(self.literalType)
+            oprot.writeFieldEnd()
+        if self.params is not None:
+            oprot.writeFieldBegin('params', TType.STRING, 7)
+            oprot.writeString(self.params.encode('utf-8') if sys.version_info[0] == 2 else self.params)
+            oprot.writeFieldEnd()
+        if self.ordinal is not None:
+            oprot.writeFieldBegin('ordinal', TType.I32, 8)
+            oprot.writeI32(self.ordinal)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class ErasurePolicyBinding(object):
+    """
+    Attributes:
+     - bindingId
+     - tblId
+     - columnName
+     - schemaField
+     - rowLocator
+     - columnFormat
+     - resolutionMode
+     - createdBy
+     - createdTs
+
+    """
+
+
+    def __init__(self, bindingId=None, tblId=None, columnName=None, schemaField=None, rowLocator=None, columnFormat=None, resolutionMode=None, createdBy=None, createdTs=None,):
+        self.bindingId = bindingId
+        self.tblId = tblId
+        self.columnName = columnName
+        self.schemaField = schemaField
+        self.rowLocator = rowLocator
+        self.columnFormat = columnFormat
+        self.resolutionMode = resolutionMode
+        self.createdBy = createdBy
+        self.createdTs = createdTs
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.bindingId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I64:
+                    self.tblId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.columnName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.STRING:
+                    self.schemaField = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.STRING:
+                    self.rowLocator = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.I32:
+                    self.columnFormat = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.I32:
+                    self.resolutionMode = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 8:
+                if ftype == TType.STRING:
+                    self.createdBy = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 9:
+                if ftype == TType.I64:
+                    self.createdTs = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('ErasurePolicyBinding')
+        if self.bindingId is not None:
+            oprot.writeFieldBegin('bindingId', TType.I64, 1)
+            oprot.writeI64(self.bindingId)
+            oprot.writeFieldEnd()
+        if self.tblId is not None:
+            oprot.writeFieldBegin('tblId', TType.I64, 2)
+            oprot.writeI64(self.tblId)
+            oprot.writeFieldEnd()
+        if self.columnName is not None:
+            oprot.writeFieldBegin('columnName', TType.STRING, 3)
+            oprot.writeString(self.columnName.encode('utf-8') if sys.version_info[0] == 2 else self.columnName)
+            oprot.writeFieldEnd()
+        if self.schemaField is not None:
+            oprot.writeFieldBegin('schemaField', TType.STRING, 4)
+            oprot.writeString(self.schemaField.encode('utf-8') if sys.version_info[0] == 2 else self.schemaField)
+            oprot.writeFieldEnd()
+        if self.rowLocator is not None:
+            oprot.writeFieldBegin('rowLocator', TType.STRING, 5)
+            oprot.writeString(self.rowLocator.encode('utf-8') if sys.version_info[0] == 2 else self.rowLocator)
+            oprot.writeFieldEnd()
+        if self.columnFormat is not None:
+            oprot.writeFieldBegin('columnFormat', TType.I32, 6)
+            oprot.writeI32(self.columnFormat)
+            oprot.writeFieldEnd()
+        if self.resolutionMode is not None:
+            oprot.writeFieldBegin('resolutionMode', TType.I32, 7)
+            oprot.writeI32(self.resolutionMode)
+            oprot.writeFieldEnd()
+        if self.createdBy is not None:
+            oprot.writeFieldBegin('createdBy', TType.STRING, 8)
+            oprot.writeString(self.createdBy.encode('utf-8') if sys.version_info[0] == 2 else self.createdBy)
+            oprot.writeFieldEnd()
+        if self.createdTs is not None:
+            oprot.writeFieldBegin('createdTs', TType.I64, 9)
+            oprot.writeI64(self.createdTs)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class ErasurePolicyBindingMember(object):
+    """
+    Attributes:
+     - bindingId
+     - policyId
+     - ordinal
+
+    """
+
+
+    def __init__(self, bindingId=None, policyId=None, ordinal=None,):
+        self.bindingId = bindingId
+        self.policyId = policyId
+        self.ordinal = ordinal
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.bindingId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I64:
+                    self.policyId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.I32:
+                    self.ordinal = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('ErasurePolicyBindingMember')
+        if self.bindingId is not None:
+            oprot.writeFieldBegin('bindingId', TType.I64, 1)
+            oprot.writeI64(self.bindingId)
+            oprot.writeFieldEnd()
+        if self.policyId is not None:
+            oprot.writeFieldBegin('policyId', TType.I64, 2)
+            oprot.writeI64(self.policyId)
+            oprot.writeFieldEnd()
+        if self.ordinal is not None:
+            oprot.writeFieldBegin('ordinal', TType.I32, 3)
+            oprot.writeI32(self.ordinal)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class ErasurePolicyBindingResolved(object):
+    """
+    Attributes:
+     - resolvedId
+     - bindingId
+     - schemaValue
+     - fieldPath
+     - action
+     - literalValue
+     - literalType
+     - params
+     - contributingPolicies
+     - resolutionNote
+
+    """
+
+
+    def __init__(self, resolvedId=None, bindingId=None, schemaValue=None, fieldPath=None, action=None, literalValue=None, literalType=None, params=None, contributingPolicies=None, resolutionNote=None,):
+        self.resolvedId = resolvedId
+        self.bindingId = bindingId
+        self.schemaValue = schemaValue
+        self.fieldPath = fieldPath
+        self.action = action
+        self.literalValue = literalValue
+        self.literalType = literalType
+        self.params = params
+        self.contributingPolicies = contributingPolicies
+        self.resolutionNote = resolutionNote
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.resolvedId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I64:
+                    self.bindingId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.schemaValue = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.STRING:
+                    self.fieldPath = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.I32:
+                    self.action = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.STRING:
+                    self.literalValue = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.I32:
+                    self.literalType = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 8:
+                if ftype == TType.STRING:
+                    self.params = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 9:
+                if ftype == TType.STRING:
+                    self.contributingPolicies = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 10:
+                if ftype == TType.STRING:
+                    self.resolutionNote = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('ErasurePolicyBindingResolved')
+        if self.resolvedId is not None:
+            oprot.writeFieldBegin('resolvedId', TType.I64, 1)
+            oprot.writeI64(self.resolvedId)
+            oprot.writeFieldEnd()
+        if self.bindingId is not None:
+            oprot.writeFieldBegin('bindingId', TType.I64, 2)
+            oprot.writeI64(self.bindingId)
+            oprot.writeFieldEnd()
+        if self.schemaValue is not None:
+            oprot.writeFieldBegin('schemaValue', TType.STRING, 3)
+            oprot.writeString(self.schemaValue.encode('utf-8') if sys.version_info[0] == 2 else self.schemaValue)
+            oprot.writeFieldEnd()
+        if self.fieldPath is not None:
+            oprot.writeFieldBegin('fieldPath', TType.STRING, 4)
+            oprot.writeString(self.fieldPath.encode('utf-8') if sys.version_info[0] == 2 else self.fieldPath)
+            oprot.writeFieldEnd()
+        if self.action is not None:
+            oprot.writeFieldBegin('action', TType.I32, 5)
+            oprot.writeI32(self.action)
+            oprot.writeFieldEnd()
+        if self.literalValue is not None:
+            oprot.writeFieldBegin('literalValue', TType.STRING, 6)
+            oprot.writeString(self.literalValue.encode('utf-8') if sys.version_info[0] == 2 else self.literalValue)
+            oprot.writeFieldEnd()
+        if self.literalType is not None:
+            oprot.writeFieldBegin('literalType', TType.I32, 7)
+            oprot.writeI32(self.literalType)
+            oprot.writeFieldEnd()
+        if self.params is not None:
+            oprot.writeFieldBegin('params', TType.STRING, 8)
+            oprot.writeString(self.params.encode('utf-8') if sys.version_info[0] == 2 else self.params)
+            oprot.writeFieldEnd()
+        if self.contributingPolicies is not None:
+            oprot.writeFieldBegin('contributingPolicies', TType.STRING, 9)
+            oprot.writeString(self.contributingPolicies.encode('utf-8') if sys.version_info[0] == 2 else self.contributingPolicies)
+            oprot.writeFieldEnd()
+        if self.resolutionNote is not None:
+            oprot.writeFieldBegin('resolutionNote', TType.STRING, 10)
+            oprot.writeString(self.resolutionNote.encode('utf-8') if sys.version_info[0] == 2 else self.resolutionNote)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class ErasurePolicyLifecycleEvent(object):
+    """
+    Attributes:
+     - eventId
+     - versionId
+     - eventType
+     - principal
+     - eventTs
+     - note
+     - conflictClass
+     - bindingId
+
+    """
+
+
+    def __init__(self, eventId=None, versionId=None, eventType=None, principal=None, eventTs=None, note=None, conflictClass=None, bindingId=None,):
+        self.eventId = eventId
+        self.versionId = versionId
+        self.eventType = eventType
+        self.principal = principal
+        self.eventTs = eventTs
+        self.note = note
+        self.conflictClass = conflictClass
+        self.bindingId = bindingId
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.eventId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I64:
+                    self.versionId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.I32:
+                    self.eventType = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.STRING:
+                    self.principal = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.I64:
+                    self.eventTs = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.STRING:
+                    self.note = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.I32:
+                    self.conflictClass = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 8:
+                if ftype == TType.I64:
+                    self.bindingId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('ErasurePolicyLifecycleEvent')
+        if self.eventId is not None:
+            oprot.writeFieldBegin('eventId', TType.I64, 1)
+            oprot.writeI64(self.eventId)
+            oprot.writeFieldEnd()
+        if self.versionId is not None:
+            oprot.writeFieldBegin('versionId', TType.I64, 2)
+            oprot.writeI64(self.versionId)
+            oprot.writeFieldEnd()
+        if self.eventType is not None:
+            oprot.writeFieldBegin('eventType', TType.I32, 3)
+            oprot.writeI32(self.eventType)
+            oprot.writeFieldEnd()
+        if self.principal is not None:
+            oprot.writeFieldBegin('principal', TType.STRING, 4)
+            oprot.writeString(self.principal.encode('utf-8') if sys.version_info[0] == 2 else self.principal)
+            oprot.writeFieldEnd()
+        if self.eventTs is not None:
+            oprot.writeFieldBegin('eventTs', TType.I64, 5)
+            oprot.writeI64(self.eventTs)
+            oprot.writeFieldEnd()
+        if self.note is not None:
+            oprot.writeFieldBegin('note', TType.STRING, 6)
+            oprot.writeString(self.note.encode('utf-8') if sys.version_info[0] == 2 else self.note)
+            oprot.writeFieldEnd()
+        if self.conflictClass is not None:
+            oprot.writeFieldBegin('conflictClass', TType.I32, 7)
+            oprot.writeI32(self.conflictClass)
+            oprot.writeFieldEnd()
+        if self.bindingId is not None:
+            oprot.writeFieldBegin('bindingId', TType.I64, 8)
+            oprot.writeI64(self.bindingId)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class ErasureRunAudit(object):
+    """
+    Attributes:
+     - runId
+     - tblId
+     - columnName
+     - bindingId
+     - principal
+     - startedTs
+     - completedTs
+     - identityValues
+     - policyVersions
+     - resolvedRulesSnapshotId
+     - filesRewritten
+     - bytesBefore
+     - bytesAfter
+     - status
+     - matchesInspected
+     - matchesRedacted
+     - matchesFlagged
+     - releaseReason
+
+    """
+
+
+    def __init__(self, runId=None, tblId=None, columnName=None, bindingId=None, principal=None, startedTs=None, completedTs=None, identityValues=None, policyVersions=None, resolvedRulesSnapshotId=None, filesRewritten=None, bytesBefore=None, bytesAfter=None, status=None, matchesInspected=None, matchesRedacted=None, matchesFlagged=None, releaseReason=None,):
+        self.runId = runId
+        self.tblId = tblId
+        self.columnName = columnName
+        self.bindingId = bindingId
+        self.principal = principal
+        self.startedTs = startedTs
+        self.completedTs = completedTs
+        self.identityValues = identityValues
+        self.policyVersions = policyVersions
+        self.resolvedRulesSnapshotId = resolvedRulesSnapshotId
+        self.filesRewritten = filesRewritten
+        self.bytesBefore = bytesBefore
+        self.bytesAfter = bytesAfter
+        self.status = status
+        self.matchesInspected = matchesInspected
+        self.matchesRedacted = matchesRedacted
+        self.matchesFlagged = matchesFlagged
+        self.releaseReason = releaseReason
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.runId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I64:
+                    self.tblId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.columnName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.I64:
+                    self.bindingId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.STRING:
+                    self.principal = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.I64:
+                    self.startedTs = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.I64:
+                    self.completedTs = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 8:
+                if ftype == TType.STRING:
+                    self.identityValues = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 9:
+                if ftype == TType.STRING:
+                    self.policyVersions = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 10:
+                if ftype == TType.I64:
+                    self.resolvedRulesSnapshotId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 11:
+                if ftype == TType.I32:
+                    self.filesRewritten = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 12:
+                if ftype == TType.I64:
+                    self.bytesBefore = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 13:
+                if ftype == TType.I64:
+                    self.bytesAfter = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 14:
+                if ftype == TType.I32:
+                    self.status = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 15:
+                if ftype == TType.I64:
+                    self.matchesInspected = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 16:
+                if ftype == TType.I64:
+                    self.matchesRedacted = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 17:
+                if ftype == TType.I64:
+                    self.matchesFlagged = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 18:
+                if ftype == TType.STRING:
+                    self.releaseReason = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('ErasureRunAudit')
+        if self.runId is not None:
+            oprot.writeFieldBegin('runId', TType.I64, 1)
+            oprot.writeI64(self.runId)
+            oprot.writeFieldEnd()
+        if self.tblId is not None:
+            oprot.writeFieldBegin('tblId', TType.I64, 2)
+            oprot.writeI64(self.tblId)
+            oprot.writeFieldEnd()
+        if self.columnName is not None:
+            oprot.writeFieldBegin('columnName', TType.STRING, 3)
+            oprot.writeString(self.columnName.encode('utf-8') if sys.version_info[0] == 2 else self.columnName)
+            oprot.writeFieldEnd()
+        if self.bindingId is not None:
+            oprot.writeFieldBegin('bindingId', TType.I64, 4)
+            oprot.writeI64(self.bindingId)
+            oprot.writeFieldEnd()
+        if self.principal is not None:
+            oprot.writeFieldBegin('principal', TType.STRING, 5)
+            oprot.writeString(self.principal.encode('utf-8') if sys.version_info[0] == 2 else self.principal)
+            oprot.writeFieldEnd()
+        if self.startedTs is not None:
+            oprot.writeFieldBegin('startedTs', TType.I64, 6)
+            oprot.writeI64(self.startedTs)
+            oprot.writeFieldEnd()
+        if self.completedTs is not None:
+            oprot.writeFieldBegin('completedTs', TType.I64, 7)
+            oprot.writeI64(self.completedTs)
+            oprot.writeFieldEnd()
+        if self.identityValues is not None:
+            oprot.writeFieldBegin('identityValues', TType.STRING, 8)
+            oprot.writeString(self.identityValues.encode('utf-8') if sys.version_info[0] == 2 else self.identityValues)
+            oprot.writeFieldEnd()
+        if self.policyVersions is not None:
+            oprot.writeFieldBegin('policyVersions', TType.STRING, 9)
+            oprot.writeString(self.policyVersions.encode('utf-8') if sys.version_info[0] == 2 else self.policyVersions)
+            oprot.writeFieldEnd()
+        if self.resolvedRulesSnapshotId is not None:
+            oprot.writeFieldBegin('resolvedRulesSnapshotId', TType.I64, 10)
+            oprot.writeI64(self.resolvedRulesSnapshotId)
+            oprot.writeFieldEnd()
+        if self.filesRewritten is not None:
+            oprot.writeFieldBegin('filesRewritten', TType.I32, 11)
+            oprot.writeI32(self.filesRewritten)
+            oprot.writeFieldEnd()
+        if self.bytesBefore is not None:
+            oprot.writeFieldBegin('bytesBefore', TType.I64, 12)
+            oprot.writeI64(self.bytesBefore)
+            oprot.writeFieldEnd()
+        if self.bytesAfter is not None:
+            oprot.writeFieldBegin('bytesAfter', TType.I64, 13)
+            oprot.writeI64(self.bytesAfter)
+            oprot.writeFieldEnd()
+        if self.status is not None:
+            oprot.writeFieldBegin('status', TType.I32, 14)
+            oprot.writeI32(self.status)
+            oprot.writeFieldEnd()
+        if self.matchesInspected is not None:
+            oprot.writeFieldBegin('matchesInspected', TType.I64, 15)
+            oprot.writeI64(self.matchesInspected)
+            oprot.writeFieldEnd()
+        if self.matchesRedacted is not None:
+            oprot.writeFieldBegin('matchesRedacted', TType.I64, 16)
+            oprot.writeI64(self.matchesRedacted)
+            oprot.writeFieldEnd()
+        if self.matchesFlagged is not None:
+            oprot.writeFieldBegin('matchesFlagged', TType.I64, 17)
+            oprot.writeI64(self.matchesFlagged)
+            oprot.writeFieldEnd()
+        if self.releaseReason is not None:
+            oprot.writeFieldBegin('releaseReason', TType.STRING, 18)
+            oprot.writeString(self.releaseReason.encode('utf-8') if sys.version_info[0] == 2 else self.releaseReason)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class PolicyPriv(object):
+    """
+    Attributes:
+     - policyPrivId
+     - policyId
+     - principalName
+     - principalType
+     - privilege
+     - createTime
+     - grantor
+     - grantorType
+     - grantOption
+
+    """
+
+
+    def __init__(self, policyPrivId=None, policyId=None, principalName=None, principalType=None, privilege=None, createTime=None, grantor=None, grantorType=None, grantOption=None,):
+        self.policyPrivId = policyPrivId
+        self.policyId = policyId
+        self.principalName = principalName
+        self.principalType = principalType
+        self.privilege = privilege
+        self.createTime = createTime
+        self.grantor = grantor
+        self.grantorType = grantorType
+        self.grantOption = grantOption
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.policyPrivId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I64:
+                    self.policyId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.principalName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.STRING:
+                    self.principalType = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.STRING:
+                    self.privilege = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.I64:
+                    self.createTime = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.STRING:
+                    self.grantor = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 8:
+                if ftype == TType.STRING:
+                    self.grantorType = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 9:
+                if ftype == TType.BOOL:
+                    self.grantOption = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('PolicyPriv')
+        if self.policyPrivId is not None:
+            oprot.writeFieldBegin('policyPrivId', TType.I64, 1)
+            oprot.writeI64(self.policyPrivId)
+            oprot.writeFieldEnd()
+        if self.policyId is not None:
+            oprot.writeFieldBegin('policyId', TType.I64, 2)
+            oprot.writeI64(self.policyId)
+            oprot.writeFieldEnd()
+        if self.principalName is not None:
+            oprot.writeFieldBegin('principalName', TType.STRING, 3)
+            oprot.writeString(self.principalName.encode('utf-8') if sys.version_info[0] == 2 else self.principalName)
+            oprot.writeFieldEnd()
+        if self.principalType is not None:
+            oprot.writeFieldBegin('principalType', TType.STRING, 4)
+            oprot.writeString(self.principalType.encode('utf-8') if sys.version_info[0] == 2 else self.principalType)
+            oprot.writeFieldEnd()
+        if self.privilege is not None:
+            oprot.writeFieldBegin('privilege', TType.STRING, 5)
+            oprot.writeString(self.privilege.encode('utf-8') if sys.version_info[0] == 2 else self.privilege)
+            oprot.writeFieldEnd()
+        if self.createTime is not None:
+            oprot.writeFieldBegin('createTime', TType.I64, 6)
+            oprot.writeI64(self.createTime)
+            oprot.writeFieldEnd()
+        if self.grantor is not None:
+            oprot.writeFieldBegin('grantor', TType.STRING, 7)
+            oprot.writeString(self.grantor.encode('utf-8') if sys.version_info[0] == 2 else self.grantor)
+            oprot.writeFieldEnd()
+        if self.grantorType is not None:
+            oprot.writeFieldBegin('grantorType', TType.STRING, 8)
+            oprot.writeString(self.grantorType.encode('utf-8') if sys.version_info[0] == 2 else self.grantorType)
+            oprot.writeFieldEnd()
+        if self.grantOption is not None:
+            oprot.writeFieldBegin('grantOption', TType.BOOL, 9)
+            oprot.writeBool(self.grantOption)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
 class MetaException(TException):
     """
     Attributes:
@@ -35236,6 +37365,176 @@ all_structs.append(ReplayedTxnsForPolicyResult)
 ReplayedTxnsForPolicyResult.thrift_spec = (
     None,  # 0
     (1, TType.MAP, 'replTxnMapEntry', (TType.STRING, 'UTF8', TType.STRING, 'UTF8', False), None, ),  # 1
+)
+all_structs.append(CreateAnonPolicyRequest)
+CreateAnonPolicyRequest.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'policy', [ErasurePolicy, None], None, ),  # 1
+    (2, TType.STRUCT, 'envContext', [EnvironmentContext, None], None, ),  # 2
+)
+all_structs.append(ErasurePolicy)
+ErasurePolicy.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'policyName', 'UTF8', None, ),  # 1
+    None,  # 2
+    (3, TType.I64, 'policyId', None, None, ),  # 3
+)
+all_structs.append(Index)
+Index.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'indexName', 'UTF8', None, ),  # 1
+    (2, TType.STRING, 'indexHandlerClass', 'UTF8', None, ),  # 2
+    (3, TType.STRING, 'dbName', 'UTF8', None, ),  # 3
+    (4, TType.STRING, 'origTableName', 'UTF8', None, ),  # 4
+    (5, TType.I32, 'createTime', None, None, ),  # 5
+    (6, TType.I32, 'lastAccessTime', None, None, ),  # 6
+    (7, TType.STRING, 'indexTableName', 'UTF8', None, ),  # 7
+    (8, TType.STRUCT, 'sd', [StorageDescriptor, None], None, ),  # 8
+    (9, TType.BOOL, 'deferredRebuild', None, None, ),  # 9
+    (10, TType.I32, 'pageSize', None, None, ),  # 10
+    (11, TType.I32, 'bufferPoolSize', None, None, ),  # 11
+    (12, TType.STRING, 'pointerType', 'UTF8', None, ),  # 12
+    (13, TType.I32, 'indexType', None, None, ),  # 13
+)
+all_structs.append(PolicyInfo)
+PolicyInfo.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'name', 'UTF8', None, ),  # 1
+    (2, TType.STRING, 'doc', 'UTF8', None, ),  # 2
+)
+all_structs.append(ErasureRunLock)
+ErasureRunLock.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'tblId', None, None, ),  # 1
+    (2, TType.I64, 'runId', None, None, ),  # 2
+    (3, TType.STRING, 'principal', 'UTF8', None, ),  # 3
+    (4, TType.I64, 'startedTs', None, None, ),  # 4
+    (5, TType.I64, 'completedTs', None, None, ),  # 5
+    (6, TType.STRING, 'releasedBy', 'UTF8', None, ),  # 6
+    (7, TType.I64, 'releasedTs', None, None, ),  # 7
+    (8, TType.STRING, 'releaseReason', 'UTF8', None, ),  # 8
+    (9, TType.I32, 'status', None, None, ),  # 9
+)
+all_structs.append(ErasurePolicyVersion)
+ErasurePolicyVersion.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'versionId', None, None, ),  # 1
+    (2, TType.STRING, 'policyName', 'UTF8', None, ),  # 2
+    (3, TType.STRING, 'versionLabel', 'UTF8', None, ),  # 3
+    (4, TType.I32, 'status', None, None, ),  # 4
+    (5, TType.STRING, 'identityFieldName', 'UTF8', None, ),  # 5
+    (6, TType.I32, 'identityFieldType', None, None, ),  # 6
+    (7, TType.I32, 'schemaType', None, None, ),  # 7
+    (8, TType.STRING, 'sourcePath', 'UTF8', None, ),  # 8
+    (9, TType.STRING, 'sourceChecksum', 'UTF8', None, ),  # 9
+    (10, TType.STRING, 'validatedBy', 'UTF8', None, ),  # 10
+    (11, TType.I64, 'validatedTs', None, None, ),  # 11
+    (12, TType.STRING, 'activatedBy', 'UTF8', None, ),  # 12
+    (13, TType.I64, 'activatedTs', None, None, ),  # 13
+    (14, TType.STRING, 'deactivatedBy', 'UTF8', None, ),  # 14
+    (15, TType.I64, 'deactivatedTs', None, None, ),  # 15
+    (16, TType.STRING, 'sourceText', 'UTF8', None, ),  # 16
+)
+all_structs.append(ErasurePolicyStatement)
+ErasurePolicyStatement.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'statementId', None, None, ),  # 1
+    (2, TType.I64, 'versionId', None, None, ),  # 2
+    (3, TType.STRING, 'schemaValue', 'UTF8', None, ),  # 3
+    (4, TType.I32, 'ordinal', None, None, ),  # 4
+)
+all_structs.append(ErasurePolicyRule)
+ErasurePolicyRule.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'ruleId', None, None, ),  # 1
+    (2, TType.I64, 'statementId', None, None, ),  # 2
+    (3, TType.STRING, 'fieldPath', 'UTF8', None, ),  # 3
+    (4, TType.I32, 'action', None, None, ),  # 4
+    (5, TType.STRING, 'literalValue', 'UTF8', None, ),  # 5
+    (6, TType.I32, 'literalType', None, None, ),  # 6
+    (7, TType.STRING, 'params', 'UTF8', None, ),  # 7
+    (8, TType.I32, 'ordinal', None, None, ),  # 8
+)
+all_structs.append(ErasurePolicyBinding)
+ErasurePolicyBinding.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'bindingId', None, None, ),  # 1
+    (2, TType.I64, 'tblId', None, None, ),  # 2
+    (3, TType.STRING, 'columnName', 'UTF8', None, ),  # 3
+    (4, TType.STRING, 'schemaField', 'UTF8', None, ),  # 4
+    (5, TType.STRING, 'rowLocator', 'UTF8', None, ),  # 5
+    (6, TType.I32, 'columnFormat', None, None, ),  # 6
+    (7, TType.I32, 'resolutionMode', None, None, ),  # 7
+    (8, TType.STRING, 'createdBy', 'UTF8', None, ),  # 8
+    (9, TType.I64, 'createdTs', None, None, ),  # 9
+)
+all_structs.append(ErasurePolicyBindingMember)
+ErasurePolicyBindingMember.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'bindingId', None, None, ),  # 1
+    (2, TType.I64, 'policyId', None, None, ),  # 2
+    (3, TType.I32, 'ordinal', None, None, ),  # 3
+)
+all_structs.append(ErasurePolicyBindingResolved)
+ErasurePolicyBindingResolved.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'resolvedId', None, None, ),  # 1
+    (2, TType.I64, 'bindingId', None, None, ),  # 2
+    (3, TType.STRING, 'schemaValue', 'UTF8', None, ),  # 3
+    (4, TType.STRING, 'fieldPath', 'UTF8', None, ),  # 4
+    (5, TType.I32, 'action', None, None, ),  # 5
+    (6, TType.STRING, 'literalValue', 'UTF8', None, ),  # 6
+    (7, TType.I32, 'literalType', None, None, ),  # 7
+    (8, TType.STRING, 'params', 'UTF8', None, ),  # 8
+    (9, TType.STRING, 'contributingPolicies', 'UTF8', None, ),  # 9
+    (10, TType.STRING, 'resolutionNote', 'UTF8', None, ),  # 10
+)
+all_structs.append(ErasurePolicyLifecycleEvent)
+ErasurePolicyLifecycleEvent.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'eventId', None, None, ),  # 1
+    (2, TType.I64, 'versionId', None, None, ),  # 2
+    (3, TType.I32, 'eventType', None, None, ),  # 3
+    (4, TType.STRING, 'principal', 'UTF8', None, ),  # 4
+    (5, TType.I64, 'eventTs', None, None, ),  # 5
+    (6, TType.STRING, 'note', 'UTF8', None, ),  # 6
+    (7, TType.I32, 'conflictClass', None, None, ),  # 7
+    (8, TType.I64, 'bindingId', None, None, ),  # 8
+)
+all_structs.append(ErasureRunAudit)
+ErasureRunAudit.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'runId', None, None, ),  # 1
+    (2, TType.I64, 'tblId', None, None, ),  # 2
+    (3, TType.STRING, 'columnName', 'UTF8', None, ),  # 3
+    (4, TType.I64, 'bindingId', None, None, ),  # 4
+    (5, TType.STRING, 'principal', 'UTF8', None, ),  # 5
+    (6, TType.I64, 'startedTs', None, None, ),  # 6
+    (7, TType.I64, 'completedTs', None, None, ),  # 7
+    (8, TType.STRING, 'identityValues', 'UTF8', None, ),  # 8
+    (9, TType.STRING, 'policyVersions', 'UTF8', None, ),  # 9
+    (10, TType.I64, 'resolvedRulesSnapshotId', None, None, ),  # 10
+    (11, TType.I32, 'filesRewritten', None, None, ),  # 11
+    (12, TType.I64, 'bytesBefore', None, None, ),  # 12
+    (13, TType.I64, 'bytesAfter', None, None, ),  # 13
+    (14, TType.I32, 'status', None, None, ),  # 14
+    (15, TType.I64, 'matchesInspected', None, None, ),  # 15
+    (16, TType.I64, 'matchesRedacted', None, None, ),  # 16
+    (17, TType.I64, 'matchesFlagged', None, None, ),  # 17
+    (18, TType.STRING, 'releaseReason', 'UTF8', None, ),  # 18
+)
+all_structs.append(PolicyPriv)
+PolicyPriv.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'policyPrivId', None, None, ),  # 1
+    (2, TType.I64, 'policyId', None, None, ),  # 2
+    (3, TType.STRING, 'principalName', 'UTF8', None, ),  # 3
+    (4, TType.STRING, 'principalType', 'UTF8', None, ),  # 4
+    (5, TType.STRING, 'privilege', 'UTF8', None, ),  # 5
+    (6, TType.I64, 'createTime', None, None, ),  # 6
+    (7, TType.STRING, 'grantor', 'UTF8', None, ),  # 7
+    (8, TType.STRING, 'grantorType', 'UTF8', None, ),  # 8
+    (9, TType.BOOL, 'grantOption', None, None, ),  # 9
 )
 all_structs.append(MetaException)
 MetaException.thrift_spec = (

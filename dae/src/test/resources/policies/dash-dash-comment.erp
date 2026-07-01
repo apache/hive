@@ -1,0 +1,4 @@
+-- legacy SQL comment
+IDENTITY userId TYPE INT
+SCHEMA TYPE STRING
+FOR SCHEMA 'a' ERASE x

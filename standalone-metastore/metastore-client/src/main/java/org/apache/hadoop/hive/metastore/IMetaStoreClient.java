@@ -4999,4 +4999,132 @@ public interface IMetaStoreClient extends AutoCloseable {
       String mapPredicate, String... selection) throws TException {
     throw new UnsupportedOperationException();
   }
+
+  /* anonymization extensions */
+
+  void createErasurePolicy(ErasurePolicy policy) throws AlreadyExistsException, TException;
+
+  void dropErasurePolicy(String policyName, boolean ifExists) throws TException;
+
+  void createIndex(Index index, Table table) throws TException;
+
+  void dropAnonIndex(String indexName) throws TException;
+
+  ErasurePolicy getErasurePolicy(String policyName) throws TException;
+
+  Index getIndex(String dbName, String tblName, String indexName) throws TException;
+
+  boolean dropIndex(String db_name, String tbl_name, String name, boolean deleteData, boolean ifExists) throws NoSuchObjectException, MetaException, TException;
+
+  List<Index> listIndexes(String db_name, String tbl_name, short max) throws NoSuchObjectException, MetaException, TException;
+
+  List<PolicyInfo> getAllErasurePolicyNames() throws MetaException, TException;
+
+  /* erasure policy governance: §5 versioning, binding, lifecycle audit, run audit, priv grants */
+
+  ErasurePolicyVersion addErasurePolicyVersion(ErasurePolicyVersion version)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, TException;
+
+  ErasurePolicyVersion getErasurePolicyVersion(String policyName, String versionLabel)
+      throws NoSuchObjectException, MetaException, TException;
+
+  List<ErasurePolicyVersion> listErasurePolicyVersions(String policyName)
+      throws NoSuchObjectException, MetaException, TException;
+
+  void updateErasurePolicyVersionStatus(long versionId, PolicyVersionStatus newStatus,
+      String principal)
+      throws NoSuchObjectException, InvalidObjectException, MetaException, TException;
+
+  ErasurePolicyVersion getActiveErasurePolicyVersion(String policyName)
+      throws NoSuchObjectException, MetaException, TException;
+
+  List<ErasurePolicyStatement> getErasurePolicyStatements(long versionId)
+      throws NoSuchObjectException, MetaException, TException;
+
+  List<ErasurePolicyRule> getErasurePolicyRules(long statementId)
+      throws NoSuchObjectException, MetaException, TException;
+
+  ErasurePolicyBinding addErasurePolicyBinding(ErasurePolicyBinding binding)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, TException;
+
+  ErasurePolicyBinding getErasurePolicyBinding(long tblId, String columnName)
+      throws NoSuchObjectException, MetaException, TException;
+
+  void dropErasurePolicyBinding(long bindingId)
+      throws NoSuchObjectException, MetaException, TException;
+
+  void updateErasurePolicyBindingSettings(long bindingId, PolicyResolutionMode resolutionMode,
+      ColumnInternalFormat columnFormat)
+      throws NoSuchObjectException, MetaException, TException;
+
+  void attachPolicyToBinding(long bindingId, long policyId, int ordinal)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, TException;
+
+  void detachPolicyFromBinding(long bindingId, long policyId)
+      throws NoSuchObjectException, MetaException, TException;
+
+  List<ErasurePolicyBindingMember> getBindingMembers(long bindingId)
+      throws NoSuchObjectException, MetaException, TException;
+
+  void replaceBindingResolvedRules(long bindingId, List<ErasurePolicyBindingResolved> resolved)
+      throws NoSuchObjectException, MetaException, TException;
+
+  List<ErasurePolicyBindingResolved> getBindingResolvedRules(long bindingId)
+      throws NoSuchObjectException, MetaException, TException;
+
+  void recordLifecycleEvent(ErasurePolicyLifecycleEvent evt) throws MetaException, TException;
+
+  List<ErasurePolicyLifecycleEvent> getLifecycleEventsForPolicy(String policyName, long fromTs,
+      long untilTs) throws NoSuchObjectException, MetaException, TException;
+
+  List<ErasurePolicyLifecycleEvent> getLifecycleEventsForBinding(long bindingId, long fromTs,
+      long untilTs) throws NoSuchObjectException, MetaException, TException;
+
+  List<ErasurePolicyLifecycleEvent> getAttachRejectedEvents(long fromTs, long untilTs)
+      throws MetaException, TException;
+
+  void recordErasureRun(ErasureRunAudit run) throws MetaException, TException;
+
+  List<ErasureRunAudit> getErasureRunsForTable(long tblId, long fromTs, long untilTs,
+      String byUser, String forIdentity) throws MetaException, TException;
+
+  void updateErasureRunCompletion(long tblId, long startedTs, long completedTs,
+      ErasureRunStatus status, long matchesInspected, long matchesRedacted, long matchesFlagged)
+      throws NoSuchObjectException, MetaException, TException;
+
+  // -----------------------------------------------------------------------
+  // §4.7 ERASE FROM TABLE per-table run-lock. Backed by the ErasureRunLock
+  // thrift struct and the four service methods declared in
+  // hive_metastore.thrift. The ObjectStore-side implementation operates on
+  // the MErasureRunLock JDO entity.
+  // -----------------------------------------------------------------------
+
+  /** Acquire the per-table erasure run-lock. Throws if another run holds it. */
+  ErasureRunLock acquireErasureRunLock(long tblId, long runId, String principal)
+      throws MetaException, TException;
+
+  /** Read the current lock state for {@code tblId}, or null if none. */
+  ErasureRunLock getErasureRunLock(long tblId)
+      throws MetaException, TException;
+
+  /** Mark the lock as COMPLETED on clean run exit. Returns true if matched. */
+  boolean completeErasureRunLock(long tblId, long runId)
+      throws MetaException, TException;
+
+  /** Manually release the lock via RELEASE ERASE LOCK ON TABLE. */
+  ErasureRunLock manuallyReleaseErasureRunLock(long tblId, String releasedBy,
+      String releaseReason, boolean force)
+      throws NoSuchObjectException, MetaException, TException;
+
+  /** List every lock row in the metastore (powering SHOW ERASURE LOCKS). */
+  java.util.List<ErasureRunLock> listErasureRunLocks()
+      throws MetaException, TException;
+
+  void grantPolicyPriv(PolicyPriv priv)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, TException;
+
+  void revokePolicyPriv(long policyPrivId) throws NoSuchObjectException, MetaException, TException;
+
+  List<PolicyPriv> listPolicyPrivs(long policyId, String principalName)
+      throws MetaException, TException;
 }

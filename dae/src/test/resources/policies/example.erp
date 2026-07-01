@@ -1,0 +1,19 @@
+# Policy:   player_pii
+# Owner:    data-protection@company.com
+# Reviewed: 2024-11-14
+
+IDENTITY userId TYPE INT
+SCHEMA TYPE STRING
+
+FOR SCHEMA 'user_info_v1'
+    ERASE   telephone,
+            ipList
+    REPLACE country = 'UNKNOWN',
+            city    = 'UNKNOWN'
+
+FOR SCHEMA 'user_profile_v2'
+    ERASE   email,
+            profile:firstName,
+            profile:lastName,
+            addresses[*]:postcode,
+            sessions[type='guest']:deviceId

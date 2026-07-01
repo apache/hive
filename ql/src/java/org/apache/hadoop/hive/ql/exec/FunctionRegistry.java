@@ -369,6 +369,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("field", GenericUDFField.class);
     system.registerUDF("find_in_set", UDFFindInSet.class, false);
     system.registerGenericUDF("initcap", GenericUDFInitCap.class);
+    system.registerGenericUDF("xmltest", GenericUDFXmlTest.class);
 
     system.registerUDF("like", UDFLike.class, true);
     system.registerGenericUDF("likeany", GenericUDFLikeAny.class);
@@ -660,6 +661,7 @@ public final class FunctionRegistry {
     system.registerGenericUDTF("get_splits", GenericUDTFGetSplits.class);
     system.registerGenericUDTF("get_llap_splits", GenericUDTFGetSplits2.class);
     system.registerGenericUDTF("get_sql_schema", GenericUDTFGetSQLSchema.class);
+    system.registerGenericUDTF("umfo", GenericUDTFUmfo.class);
 
     //PTF declarations
     system.registerGenericUDF(LEAD_FUNC_NAME, GenericUDFLead.class);

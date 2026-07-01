@@ -78,6 +78,7 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -2772,6 +2773,114 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     return client.partition_name_to_spec(name);
   }
 
+  /**
+   * @param partition
+   * @return
+   */
+  protected Partition deepCopy(Partition partition) {
+    Partition copy = null;
+    if (partition != null) {
+      copy = new Partition(partition);
+    }
+    return copy;
+  }
+
+  private Database deepCopy(Database database) {
+    Database copy = null;
+    if (database != null) {
+      copy = new Database(database);
+    }
+    return copy;
+  }
+
+  protected Table deepCopy(Table table) {
+    Table copy = null;
+    if (table != null) {
+      copy = new Table(table);
+    }
+    return copy;
+  }
+
+  private Type deepCopy(Type type) {
+    Type copy = null;
+    if (type != null) {
+      copy = new Type(type);
+    }
+    return copy;
+  }
+
+  private FieldSchema deepCopy(FieldSchema schema) {
+    FieldSchema copy = null;
+    if (schema != null) {
+      copy = new FieldSchema(schema);
+    }
+    return copy;
+  }
+
+  private Function deepCopy(Function func) {
+    Function copy = null;
+    if (func != null) {
+      copy = new Function(func);
+    }
+    return copy;
+  }
+
+  protected PrincipalPrivilegeSet deepCopy(PrincipalPrivilegeSet pps) {
+    PrincipalPrivilegeSet copy = null;
+    if (pps != null) {
+      copy = new PrincipalPrivilegeSet(pps);
+    }
+    return copy;
+  }
+
+  protected List<Partition> deepCopyPartitions(List<Partition> partitions) {
+    return deepCopyPartitions(partitions, null);
+  }
+
+  private List<Partition> deepCopyPartitions(
+     Collection<Partition> src, List<Partition> dest) {
+    if (src == null) {
+      return dest;
+    }
+    if (dest == null) {
+      dest = new ArrayList<Partition>(src.size());
+    }
+    for (Partition part : src) {
+      dest.add(deepCopy(part));
+    }
+    return dest;
+  }
+
+  private List<Table> deepCopyTables(List<Table> tables) {
+    List<Table> copy = null;
+    if (tables != null) {
+      copy = new ArrayList<Table>();
+      for (Table tab : tables) {
+        copy.add(deepCopy(tab));
+      }
+    }
+    return copy;
+  }
+
+  protected List<FieldSchema> deepCopyFieldSchemas(List<FieldSchema> schemas) {
+    List<FieldSchema> copy = null;
+    if (schemas != null) {
+      copy = new ArrayList<FieldSchema>();
+      for (FieldSchema schema : schemas) {
+        copy.add(deepCopy(schema));
+      }
+    }
+    return copy;
+  }
+
+  private Index deepCopy(Index index) {
+    Index copy = null;
+    if (index != null) {
+      copy = new Index(index);
+    }
+    return copy;
+  }
+
   @Override
   public boolean grant_role(String roleName, String userName,
       PrincipalType principalType, String grantor, PrincipalType grantorType,
@@ -4009,5 +4118,251 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
   @VisibleForTesting
   public URI[] getMetastoreUris() {
     return metastoreUris;
+  }
+
+  /* anonymization extensions */
+
+  @Override
+  public void createErasurePolicy(ErasurePolicy policy) throws TException {
+    client.create_erasure_policy(policy);
+  }
+
+  @Override
+  public void dropErasurePolicy(String policyName, boolean ifExists) throws TException {
+    client.drop_erasure_policy(policyName, ifExists);
+  }
+
+  @Override
+  public void createIndex(Index index, Table table) throws TException {
+    client.add_index(index, table);
+  }
+
+  @Override
+  public void dropAnonIndex(String indexName) throws TException {
+    client.drop_anon_index(indexName);
+  }
+
+  @Override
+  public ErasurePolicy getErasurePolicy(String policyName) throws TException {
+    return client.get_erasure_policy(policyName);
+  }
+
+  @Override
+  public Index getIndex(String dbName, String tblName, String indexName) throws TException {
+    return deepCopy(client.get_index_by_name(dbName, tblName, indexName));
+  }
+
+  @Override
+  public boolean dropIndex(String dbName, String tblName, String name, boolean deleteData, boolean ifExists) throws NoSuchObjectException, MetaException, TException {
+    return client.drop_index_by_name(dbName, tblName, name, deleteData, ifExists);
+  }
+
+  @Override
+  public List<Index> listIndexes(String dbName, String tblName, short max) throws NoSuchObjectException, MetaException, TException {
+    return client.get_indexes(dbName, tblName, max);
+  }
+
+  @Override
+  public List<PolicyInfo> getAllErasurePolicyNames() throws TException {
+    return client.get_all_erasure_policies();
+  }
+
+  /* erasure policy governance: §5 versioning, binding, lifecycle audit, run audit, priv grants */
+
+  @Override
+  public ErasurePolicyVersion addErasurePolicyVersion(ErasurePolicyVersion version)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
+    return client.add_erasure_policy_version(version);
+  }
+
+  @Override
+  public ErasurePolicyVersion getErasurePolicyVersion(String policyName, String versionLabel)
+      throws NoSuchObjectException, MetaException, TException {
+    return client.get_erasure_policy_version(policyName, versionLabel);
+  }
+
+  @Override
+  public List<ErasurePolicyVersion> listErasurePolicyVersions(String policyName)
+      throws NoSuchObjectException, MetaException, TException {
+    return client.list_erasure_policy_versions(policyName);
+  }
+
+  @Override
+  public void updateErasurePolicyVersionStatus(long versionId, PolicyVersionStatus newStatus,
+      String principal)
+      throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
+    client.update_erasure_policy_version_status(versionId, newStatus, principal);
+  }
+
+  @Override
+  public ErasurePolicyVersion getActiveErasurePolicyVersion(String policyName)
+      throws NoSuchObjectException, MetaException, TException {
+    return client.get_active_erasure_policy_version(policyName);
+  }
+
+  @Override
+  public List<ErasurePolicyStatement> getErasurePolicyStatements(long versionId)
+      throws NoSuchObjectException, MetaException, TException {
+    return client.get_erasure_policy_statements(versionId);
+  }
+
+  @Override
+  public List<ErasurePolicyRule> getErasurePolicyRules(long statementId)
+      throws NoSuchObjectException, MetaException, TException {
+    return client.get_erasure_policy_rules(statementId);
+  }
+
+  @Override
+  public ErasurePolicyBinding addErasurePolicyBinding(ErasurePolicyBinding binding)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
+    return client.add_erasure_policy_binding(binding);
+  }
+
+  @Override
+  public ErasurePolicyBinding getErasurePolicyBinding(long tblId, String columnName)
+      throws NoSuchObjectException, MetaException, TException {
+    return client.get_erasure_policy_binding(tblId, columnName);
+  }
+
+  @Override
+  public void dropErasurePolicyBinding(long bindingId)
+      throws NoSuchObjectException, MetaException, TException {
+    client.drop_erasure_policy_binding(bindingId);
+  }
+
+  @Override
+  public void updateErasurePolicyBindingSettings(long bindingId,
+      PolicyResolutionMode resolutionMode, ColumnInternalFormat columnFormat)
+      throws NoSuchObjectException, MetaException, TException {
+    client.update_erasure_policy_binding_settings(bindingId, resolutionMode, columnFormat);
+  }
+
+  @Override
+  public void attachPolicyToBinding(long bindingId, long policyId, int ordinal)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
+    client.attach_policy_to_binding(bindingId, policyId, ordinal);
+  }
+
+  @Override
+  public void detachPolicyFromBinding(long bindingId, long policyId)
+      throws NoSuchObjectException, MetaException, TException {
+    client.detach_policy_from_binding(bindingId, policyId);
+  }
+
+  @Override
+  public List<ErasurePolicyBindingMember> getBindingMembers(long bindingId)
+      throws NoSuchObjectException, MetaException, TException {
+    return client.get_binding_members(bindingId);
+  }
+
+  @Override
+  public void replaceBindingResolvedRules(long bindingId,
+      List<ErasurePolicyBindingResolved> resolved)
+      throws NoSuchObjectException, MetaException, TException {
+    client.replace_binding_resolved_rules(bindingId, resolved);
+  }
+
+  @Override
+  public List<ErasurePolicyBindingResolved> getBindingResolvedRules(long bindingId)
+      throws NoSuchObjectException, MetaException, TException {
+    return client.get_binding_resolved_rules(bindingId);
+  }
+
+  @Override
+  public void recordLifecycleEvent(ErasurePolicyLifecycleEvent evt)
+      throws MetaException, TException {
+    client.record_lifecycle_event(evt);
+  }
+
+  @Override
+  public List<ErasurePolicyLifecycleEvent> getLifecycleEventsForPolicy(String policyName,
+      long fromTs, long untilTs) throws NoSuchObjectException, MetaException, TException {
+    return client.get_lifecycle_events_for_policy(policyName, fromTs, untilTs);
+  }
+
+  @Override
+  public List<ErasurePolicyLifecycleEvent> getLifecycleEventsForBinding(long bindingId,
+      long fromTs, long untilTs) throws NoSuchObjectException, MetaException, TException {
+    return client.get_lifecycle_events_for_binding(bindingId, fromTs, untilTs);
+  }
+
+  @Override
+  public List<ErasurePolicyLifecycleEvent> getAttachRejectedEvents(long fromTs, long untilTs)
+      throws MetaException, TException {
+    return client.get_attach_rejected_events(fromTs, untilTs);
+  }
+
+  @Override
+  public void recordErasureRun(ErasureRunAudit run) throws MetaException, TException {
+    client.record_erasure_run(run);
+  }
+
+  @Override
+  public List<ErasureRunAudit> getErasureRunsForTable(long tblId, long fromTs, long untilTs,
+      String byUser, String forIdentity) throws MetaException, TException {
+    return client.get_erasure_runs_for_table(tblId, fromTs, untilTs, byUser, forIdentity);
+  }
+
+  @Override
+  public void updateErasureRunCompletion(long tblId, long startedTs, long completedTs,
+      ErasureRunStatus status, long matchesInspected, long matchesRedacted, long matchesFlagged)
+      throws NoSuchObjectException, MetaException, TException {
+    client.update_erasure_run_completion(tblId, startedTs, completedTs, status,
+        matchesInspected, matchesRedacted, matchesFlagged);
+  }
+
+  // -----------------------------------------------------------------------
+  // §4.7 ERASE FROM TABLE per-table run-lock client wrappers.
+  // Backed by the ErasureRunLock thrift struct and the four service methods
+  // declared in hive_metastore.thrift.
+  // -----------------------------------------------------------------------
+
+  @Override
+  public ErasureRunLock acquireErasureRunLock(long tblId, long runId, String principal)
+      throws MetaException, TException {
+    return client.acquire_erasure_run_lock(tblId, runId, principal);
+  }
+
+  @Override
+  public ErasureRunLock getErasureRunLock(long tblId)
+      throws MetaException, TException {
+    return client.get_erasure_run_lock(tblId);
+  }
+
+  @Override
+  public boolean completeErasureRunLock(long tblId, long runId)
+      throws MetaException, TException {
+    return client.complete_erasure_run_lock(tblId, runId);
+  }
+
+  @Override
+  public ErasureRunLock manuallyReleaseErasureRunLock(long tblId, String releasedBy,
+      String releaseReason, boolean force)
+      throws NoSuchObjectException, MetaException, TException {
+    return client.manually_release_erasure_run_lock(tblId, releasedBy, releaseReason, force);
+  }
+
+  @Override
+  public java.util.List<ErasureRunLock> listErasureRunLocks()
+      throws MetaException, TException {
+    return client.list_erasure_run_locks();
+  }
+
+  @Override
+  public void grantPolicyPriv(PolicyPriv priv)
+      throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
+    client.grant_policy_priv(priv);
+  }
+
+  @Override
+  public void revokePolicyPriv(long policyPrivId)
+      throws NoSuchObjectException, MetaException, TException {
+    client.revoke_policy_priv(policyPrivId);
+  }
+
+  @Override
+  public List<PolicyPriv> listPolicyPrivs(long policyId, String principalName)
+      throws MetaException, TException {
+    return client.list_policy_privs(policyId, principalName);
   }
 }
