@@ -37,9 +37,9 @@ import org.slf4j.LoggerFactory;
  * A {@link CuratorFramework} client is cached per HiveCluster and reused across
  * scale-downs; it is closed when the cluster is deleted or ZK config changes.
  */
-public final class TezAmZkDeregistrar {
+public final class TezAmZkDeregister {
 
-  private static final Logger LOG = LoggerFactory.getLogger(TezAmZkDeregistrar.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TezAmZkDeregister.class);
   private static final String PATH_SEPARATOR = "/";
 
   private record ZkClientRecord(String zkQuorum, int connTimeoutMs, int sessionTimeoutMs,
@@ -47,7 +47,7 @@ public final class TezAmZkDeregistrar {
 
   private static final ConcurrentHashMap<String, ZkClientRecord> ZK_CLIENTS = new ConcurrentHashMap<>();
 
-  private TezAmZkDeregistrar() {}
+  private TezAmZkDeregister() {}
 
   public static void deregisterIdlePods(String namespace, String clusterName, String zkQuorum, String llapName,
       List<String> idlePodNames, Map<String, String> hiveSiteConfig) {

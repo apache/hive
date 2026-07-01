@@ -113,7 +113,7 @@ public class HiveClusterAutoscaler {
     autoscalers.keySet().removeIf(k -> k.startsWith(prefix));
     lastScaleTimes.keySet().removeIf(k -> k.startsWith(prefix));
     pendingScaleDowns.keySet().removeIf(k -> k.startsWith(prefix));
-    TezAmZkDeregistrar.cleanupCluster(namespace, clusterName);
+    TezAmZkDeregister.cleanupCluster(namespace, clusterName);
     LOG.info("Cleaned up autoscaler state for {}/{}", namespace, clusterName);
   }
 
@@ -258,7 +258,7 @@ public class HiveClusterAutoscaler {
         PendingScaleDown pending = pendingScaleDowns.get(tezKey);
         if (pending != null) {
           if (Duration.between(pending.annotatedAt(), Instant.now()).toSeconds() >= 2) {
-            TezAmZkDeregistrar.deregisterIdlePods(namespace, clusterName,
+            TezAmZkDeregister.deregisterIdlePods(namespace, clusterName,
                 cluster.getSpec().zookeeper().quorum(), llapSpec.name(), pending.podsToDeregister(),
                 cluster.getSpec().hiveServer2().configOverrides());
             patches.put(tezAmComponentKey, pending.targetReplicas());
