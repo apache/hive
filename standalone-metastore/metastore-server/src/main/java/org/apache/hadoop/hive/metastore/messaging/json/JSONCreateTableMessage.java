@@ -36,7 +36,7 @@ import com.google.common.collect.Lists;
 public class JSONCreateTableMessage extends CreateTableMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableType, tableObjJson;
+  String server, servicePrincipal, cat, db, table, tableType, tableObjJson;
   @JsonProperty
   Long timestamp;
   @JsonProperty
@@ -48,10 +48,11 @@ public class JSONCreateTableMessage extends CreateTableMessage {
   public JSONCreateTableMessage() {
   }
 
-  public JSONCreateTableMessage(String server, String servicePrincipal, String db, String table,
+  public JSONCreateTableMessage(String server, String servicePrincipal, String cat, String db, String table,
       String tableType, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
+    this.cat = cat;
     this.db = db;
     this.table = table;
     this.tableType = tableType;
@@ -59,14 +60,14 @@ public class JSONCreateTableMessage extends CreateTableMessage {
     checkValid();
   }
 
-  public JSONCreateTableMessage(String server, String servicePrincipal, String db, String table,
+  public JSONCreateTableMessage(String server, String servicePrincipal, String cat, String db, String table,
       Long timestamp) {
-    this(server, servicePrincipal, db, table, null, timestamp);
+    this(server, servicePrincipal, cat, db, table, null, timestamp);
   }
 
   public JSONCreateTableMessage(String server, String servicePrincipal, Table tableObj,
       Iterator<String> fileIter, Long timestamp) {
-    this(server, servicePrincipal, tableObj.getDbName(), tableObj.getTableName(),
+    this(server, servicePrincipal, tableObj.getCatName(), tableObj.getDbName(), tableObj.getTableName(),
         tableObj.getTableType(), timestamp);
     try {
       this.tableObjJson = MessageBuilder.createTableObjJson(tableObj);
@@ -84,6 +85,11 @@ public class JSONCreateTableMessage extends CreateTableMessage {
   @Override
   public String getServicePrincipal() {
     return servicePrincipal;
+  }
+
+  @Override
+  public String getCat() {
+    return cat;
   }
 
   @Override

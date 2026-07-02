@@ -43,10 +43,10 @@ public class AbortedTxnHandler implements QueryHandler<Set<CompactionInfo>> {
   //language=SQL
   @Override
   public String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
-    return databaseProduct.addLimitClause(fetchSize, " \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", " +
-        "MIN(\"TXN_STARTED\"), COUNT(*) FROM \"TXNS\", \"TXN_COMPONENTS\" " +
+    return databaseProduct.addLimitClause(fetchSize, " \"TC_CATALOG\", \"TC_DATABASE\", \"TC_TABLE\", " +
+        "\"TC_PARTITION\", MIN(\"TXN_STARTED\"), COUNT(*) FROM \"TXNS\", \"TXN_COMPONENTS\" " +
         " WHERE \"TXN_ID\" = \"TC_TXNID\" AND \"TXN_STATE\" = :state " +
-        "GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" ");
+        "GROUP BY \"TC_CATALOG\", \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" ");
   }
 
   @Override
@@ -59,13 +59,14 @@ public class AbortedTxnHandler implements QueryHandler<Set<CompactionInfo>> {
   public Set<CompactionInfo> extractData(ResultSet rs) throws SQLException, DataAccessException {
     Set<CompactionInfo> response = new HashSet<>();
     while (rs.next()) {
-      boolean pastTimeThreshold = checkAbortedTimeThreshold && rs.getLong(4) + abortedTimeThreshold < systemTime;
-      int numAbortedTxns = rs.getInt(5);
+      boolean pastTimeThreshold = checkAbortedTimeThreshold && rs.getLong(5) + abortedTimeThreshold < systemTime;
+      int numAbortedTxns = rs.getInt(6);
       if (numAbortedTxns > abortedThreshold || pastTimeThreshold) {
         CompactionInfo candidate = new CompactionInfo();
-        candidate.dbname = rs.getString(1);
-        candidate.tableName = rs.getString(2);
-        candidate.partName = rs.getString(3);
+        candidate.catName = rs.getString(1);
+        candidate.dbname = rs.getString(2);
+        candidate.tableName = rs.getString(3);
+        candidate.partName = rs.getString(4);
         candidate.tooManyAborts = numAbortedTxns > abortedThreshold;
         candidate.hasOldAbort = pastTimeThreshold;
         response.add(candidate);

@@ -30,6 +30,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Add Partition
+      cat name: hive
       db name: default
       partitions:
           Partition

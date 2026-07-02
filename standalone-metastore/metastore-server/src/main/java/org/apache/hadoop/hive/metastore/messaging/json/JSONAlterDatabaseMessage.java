@@ -31,7 +31,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class JSONAlterDatabaseMessage extends AlterDatabaseMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, dbObjBeforeJson, dbObjAfterJson;
+  String server, servicePrincipal, cat, db, dbObjBeforeJson, dbObjAfterJson;
 
   @JsonProperty
   Long timestamp;
@@ -46,6 +46,7 @@ public class JSONAlterDatabaseMessage extends AlterDatabaseMessage {
                                   Database dbObjBefore, Database dbObjAfter, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
+    this.cat = dbObjBefore.getCatalogName();
     this.db = dbObjBefore.getName();
     this.timestamp = timestamp;
     try {
@@ -65,6 +66,11 @@ public class JSONAlterDatabaseMessage extends AlterDatabaseMessage {
   @Override
   public String getServicePrincipal() {
     return servicePrincipal;
+  }
+
+  @Override
+  public String getCat() {
+    return cat;
   }
 
   @Override

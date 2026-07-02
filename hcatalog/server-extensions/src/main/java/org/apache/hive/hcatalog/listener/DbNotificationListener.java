@@ -668,7 +668,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       return;
     }
     CommitTxnMessage msg =
-        MessageBuilder.getInstance().buildCommitTxnMessage(commitTxnEvent.getTxnId(), commitTxnEvent.getDatabases(), commitTxnEvent.getWriteId());
+        MessageBuilder.getInstance().buildCommitTxnMessage(commitTxnEvent.getTxnId(), commitTxnEvent.getCatalogs(), commitTxnEvent.getDatabases(), commitTxnEvent.getWriteId());
 
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.COMMIT_TXN.toString(),
@@ -840,11 +840,12 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
    */
   @Override
   public void onDropConstraint(DropConstraintEvent dropConstraintEvent) throws MetaException {
+    String catName = dropConstraintEvent.getCatName();
     String dbName = dropConstraintEvent.getDbName();
     String tableName = dropConstraintEvent.getTableName();
     String constraintName = dropConstraintEvent.getConstraintName();
     DropConstraintMessage msg = MessageBuilder.getInstance()
-        .buildDropConstraintMessage(dbName, tableName, constraintName);
+        .buildDropConstraintMessage(catName, dbName, tableName, constraintName);
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.DROP_CONSTRAINT.toString(),
             msgEncoder.getSerializer().serialize(msg));
@@ -863,8 +864,9 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
           throws MetaException {
     String tableName = allocWriteIdEvent.getTableName();
     String dbName = allocWriteIdEvent.getDbName();
+    String catName = allocWriteIdEvent.getCatName();
     AllocWriteIdMessage msg = MessageBuilder.getInstance()
-        .buildAllocWriteIdMessage(allocWriteIdEvent.getTxnToWriteIdList(), dbName, tableName);
+        .buildAllocWriteIdMessage(allocWriteIdEvent.getTxnToWriteIdList(), catName, dbName, tableName);
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.ALLOC_WRITE_ID.toString(),
             msgEncoder.getSerializer().serialize(msg)
@@ -914,6 +916,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       NotificationEvent event = new NotificationEvent(0, now(), EventType.ACID_WRITE.toString(),
               msgEncoder.getSerializer().serialize(msg));
       event.setMessageFormat(msgEncoder.getMessageFormat());
+      event.setCatName(batchAcidWriteEvent.getCatalog(i));
       event.setDbName(batchAcidWriteEvent.getDatabase(i));
       event.setTableName(batchAcidWriteEvent.getTable(i));
       eventBatch.add(event);
@@ -946,8 +949,8 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   @Override
   public void onDeleteTableColumnStat(DeleteTableColumnStatEvent deleteTableColumnStatEvent) throws MetaException {
     DeleteTableColumnStatMessage msg = MessageBuilder.getInstance()
-            .buildDeleteTableColumnStatMessage(deleteTableColumnStatEvent.getDBName(),
-                    deleteTableColumnStatEvent.getColName());
+            .buildDeleteTableColumnStatMessage(deleteTableColumnStatEvent.getCatName(),
+                deleteTableColumnStatEvent.getDBName(), deleteTableColumnStatEvent.getColName());
     NotificationEvent event = new NotificationEvent(0, now(), EventType.DELETE_TABLE_COLUMN_STAT.toString(),
                     msgEncoder.getSerializer().serialize(msg));
     event.setCatName(deleteTableColumnStatEvent.getCatName());
@@ -1008,9 +1011,9 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   @Override
   public void onDeletePartitionColumnStat(DeletePartitionColumnStatEvent deletePartColStatEvent) throws MetaException {
     DeletePartitionColumnStatMessage msg = MessageBuilder.getInstance()
-            .buildDeletePartitionColumnStatMessage(deletePartColStatEvent.getDBName(),
-                    deletePartColStatEvent.getColName(), deletePartColStatEvent.getPartName(),
-                    deletePartColStatEvent.getPartVals());
+            .buildDeletePartitionColumnStatMessage(deletePartColStatEvent.getCatName(),
+                deletePartColStatEvent.getDBName(), deletePartColStatEvent.getColName(),
+                deletePartColStatEvent.getPartName(), deletePartColStatEvent.getPartVals());
     NotificationEvent event = new NotificationEvent(0, now(), EventType.DELETE_PARTITION_COLUMN_STAT.toString(),
                     msgEncoder.getSerializer().serialize(msg));
     event.setCatName(deletePartColStatEvent.getCatName());
@@ -1205,25 +1208,28 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     ResultSet rs = null;
     String select = sqlGenerator.addForUpdateClause("select \"WNL_ID\", \"WNL_FILES\" from" +
             " \"TXN_WRITE_NOTIFICATION_LOG\" " +
-            "where \"WNL_DATABASE\" = ? " +
+            "where \"WNL_CATALOG\" = ? " +
+            "and \"WNL_DATABASE\" = ? " +
             "and \"WNL_TABLE\" = ? " + " and (\"WNL_PARTITION\" = ? OR (? IS NULL AND \"WNL_PARTITION\" IS NULL)) " +
             "and \"WNL_TXNID\" = ? ");
     List<Integer> insertList = new ArrayList<>();
     Map<Integer, Pair<Long, String>> updateMap = new HashMap<>();
     try (PreparedStatement pst = dbConn.prepareStatement(select)) {
       for (int i = 0; i < acidWriteEventList.size(); i++) {
+        String catName = acidWriteEventList.get(i).getCatalog();
         String dbName = acidWriteEventList.get(i).getDatabase();
         String tblName = acidWriteEventList.get(i).getTable();
         String partition = acidWriteEventList.get(i).getPartition();
         Long txnId = acidWriteEventList.get(i).getTxnId();
 
         LOG.debug("Going to execute query <" + select.replaceAll("\\?", "{}") + ">",
-                quoteString(dbName), quoteString(tblName), quoteString(partition));
-        pst.setString(1, dbName);
-        pst.setString(2, tblName);
-        pst.setString(3, partition);
+                quoteString(catName), quoteString(dbName), quoteString(tblName), quoteString(partition));
+        pst.setString(1, catName);
+        pst.setString(2, dbName);
+        pst.setString(3, tblName);
         pst.setString(4, partition);
-        pst.setLong(5, txnId);
+        pst.setString(5, partition);
+        pst.setLong(6, txnId);
         rs = pst.executeQuery();
         if (!rs.next()) {
           insertList.add(i);
@@ -1244,15 +1250,16 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
               "org.apache.hadoop.hive.metastore.model.MTxnWriteNotificationLog", insertList.size());
 
       String insert = "insert into \"TXN_WRITE_NOTIFICATION_LOG\" " +
-              "(\"WNL_ID\", \"WNL_TXNID\", \"WNL_WRITEID\", \"WNL_DATABASE\", \"WNL_TABLE\", " +
+              "(\"WNL_ID\", \"WNL_TXNID\", \"WNL_WRITEID\", \"WNL_CATALOG\", \"WNL_DATABASE\", \"WNL_TABLE\", " +
               "\"WNL_PARTITION\", \"WNL_TABLE_OBJ\", \"WNL_PARTITION_OBJ\", " +
-              "\"WNL_FILES\", \"WNL_EVENT_TIME\") VALUES (?,?,?,?,?,?,?,?,?,?)";
+              "\"WNL_FILES\", \"WNL_EVENT_TIME\") VALUES (?,?,?,?,?,?,?,?,?,?,?)";
       try (PreparedStatement pst = dbConn.prepareStatement(sqlGenerator.addEscapeCharacters(insert))) {
         numRows = 0;
         for (int idx : insertList) {
           String tableObj = msgBatch.get(idx).getTableObjStr();
           String partitionObj = msgBatch.get(idx).getPartitionObjStr();
           String files = ReplChangeManager.joinWithSeparator(msgBatch.get(idx).getFiles());
+          String catName = acidWriteEventList.get(idx).getCatalog();
           String dbName = acidWriteEventList.get(idx).getDatabase();
           String tblName = acidWriteEventList.get(idx).getTable();
           String partition = acidWriteEventList.get(idx).getPartition();
@@ -1261,16 +1268,17 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
           pst.setLong(1, nextNLId++);
           pst.setLong(2, acidWriteEventList.get(idx).getTxnId());
           pst.setLong(3, acidWriteEventList.get(idx).getWriteId());
-          pst.setString(4, dbName);
-          pst.setString(5, tblName);
-          pst.setString(6, partition);
-          pst.setString(7, tableObj);
-          pst.setString(8, partitionObj);
-          pst.setString(9, files);
-          pst.setInt(10, currentTime);
+          pst.setString(4, catName);
+          pst.setString(5, dbName);
+          pst.setString(6, tblName);
+          pst.setString(7, partition);
+          pst.setString(8, tableObj);
+          pst.setString(9, partitionObj);
+          pst.setString(10, files);
+          pst.setInt(11, currentTime);
           LOG.debug("Going to execute insert <" + insert.replaceAll("\\?", "{}") + ">", nextNLId
                   , acidWriteEventList.get(idx).getTxnId(), acidWriteEventList.get(idx).getWriteId()
-                  , quoteString(dbName), quoteString(tblName),
+                  , quoteString(catName), quoteString(dbName), quoteString(tblName),
                   quoteString(partition), quoteString(tableObj), quoteString(partitionObj), quoteString(files), currentTime);
           pst.addBatch();
           numRows++;

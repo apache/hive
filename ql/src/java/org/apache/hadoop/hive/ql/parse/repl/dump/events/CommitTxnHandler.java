@@ -109,8 +109,10 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
   }
 
   private List<WriteEventInfo> getAllWriteEventInfo(Context withinContext) throws Exception {
+    String contextCatName = StringUtils.normalizeIdentifier(withinContext.replScope.getCatName());
     String contextDbName = StringUtils.normalizeIdentifier(withinContext.replScope.getDbName());
     GetAllWriteEventInfoRequest request = new GetAllWriteEventInfoRequest(eventMessage.getTxnId());
+    request.setCatName(contextCatName);
     request.setDbName(contextDbName);
     List<WriteEventInfo> writeEventInfoList = withinContext.db.getMSC().getAllWriteEventInfo(request);
     return ((writeEventInfoList == null)

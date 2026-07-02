@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore.client;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.GetAllWriteEventInfoRequest;
@@ -52,6 +53,7 @@ public class TestGetAllWriteEventInfo extends MetaStoreClientTest {
   private IMetaStoreClient client = null;
   private MTxnWriteNotificationLog notificationLog = null;
 
+  private static final String CAT_NAME = Warehouse.DEFAULT_CATALOG_NAME;
   private static final String DB_NAME = "test_db";
   private static final String TABLE_NAME = "test_table";
   private static final long TXN_ID = 1;
@@ -75,7 +77,7 @@ public class TestGetAllWriteEventInfo extends MetaStoreClientTest {
 
     createDB(DB_NAME);
     createTable(DB_NAME, TABLE_NAME);
-    notificationLog = insertTxnWriteNotificationLog(TXN_ID, WRITE_ID, DB_NAME, TABLE_NAME);
+    notificationLog = insertTxnWriteNotificationLog(TXN_ID, WRITE_ID, CAT_NAME, DB_NAME, TABLE_NAME);
   }
 
   @After
@@ -120,11 +122,11 @@ public class TestGetAllWriteEventInfo extends MetaStoreClientTest {
   }
 
   private MTxnWriteNotificationLog insertTxnWriteNotificationLog(
-      long txnId, long writeId, String dbName, String tableName) {
+      long txnId, long writeId, String catName, String dbName, String tableName) {
     // We use objectStore to insert record directly into DB so that we don't need DbNotificationListener,
     // which will introduce cyclic dependency.
     PersistenceManager pm = objectStore.getPersistenceManager();
-    MTxnWriteNotificationLog log = new MTxnWriteNotificationLog(txnId, writeId, 1, dbName, tableName, "", "", "", "");
+    MTxnWriteNotificationLog log = new MTxnWriteNotificationLog(txnId, writeId, 1, catName, dbName, tableName, "", "", "", "");
     return pm.makePersistent(log);
   }
 
@@ -136,6 +138,7 @@ public class TestGetAllWriteEventInfo extends MetaStoreClientTest {
     Assert.assertEquals(1, writeEventInfoList.size());
     WriteEventInfo writeEventInfo = writeEventInfoList.get(0);
     Assert.assertEquals(TXN_ID, writeEventInfo.getWriteId());
+    Assert.assertEquals(Warehouse.DEFAULT_CATALOG_NAME, writeEventInfo.getCatalog());
     Assert.assertEquals(DB_NAME, writeEventInfo.getDatabase());
     Assert.assertEquals(TABLE_NAME, writeEventInfo.getTable());
   }
@@ -144,12 +147,14 @@ public class TestGetAllWriteEventInfo extends MetaStoreClientTest {
   public void testGetByTxnIdAndTableName() throws Exception {
     GetAllWriteEventInfoRequest req = new GetAllWriteEventInfoRequest();
     req.setTxnId(TXN_ID);
+    req.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     req.setDbName(DB_NAME);
     req.setTableName(TABLE_NAME);
     List<WriteEventInfo> writeEventInfoList = client.getAllWriteEventInfo(req);
     Assert.assertEquals(1, writeEventInfoList.size());
     WriteEventInfo writeEventInfo = writeEventInfoList.get(0);
     Assert.assertEquals(TXN_ID, writeEventInfo.getWriteId());
+    Assert.assertEquals(Warehouse.DEFAULT_CATALOG_NAME, writeEventInfo.getCatalog());
     Assert.assertEquals(DB_NAME, writeEventInfo.getDatabase());
     Assert.assertEquals(TABLE_NAME, writeEventInfo.getTable());
   }
@@ -166,6 +171,7 @@ public class TestGetAllWriteEventInfo extends MetaStoreClientTest {
   public void testGetByWrongDB() throws Exception {
     GetAllWriteEventInfoRequest req = new GetAllWriteEventInfoRequest();
     req.setTxnId(TXN_ID);
+    req.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     req.setDbName("wrong_db");
     List<WriteEventInfo> writeEventInfoList = client.getAllWriteEventInfo(req);
     Assert.assertTrue(writeEventInfoList.isEmpty());
@@ -175,6 +181,7 @@ public class TestGetAllWriteEventInfo extends MetaStoreClientTest {
   public void testGetByWrongTable() throws Exception {
     GetAllWriteEventInfoRequest req = new GetAllWriteEventInfoRequest();
     req.setTxnId(TXN_ID);
+    req.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     req.setDbName(DB_NAME);
     req.setTableName("wrong_table");
     List<WriteEventInfo> writeEventInfoList = client.getAllWriteEventInfo(req);

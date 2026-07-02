@@ -80,6 +80,11 @@ public class JSONOpenTxnMessage extends OpenTxnMessage {
   }
 
   @Override
+  public String getCat() {
+    return null;
+  }
+
+  @Override
   public String getDB() {
     return null;
   }

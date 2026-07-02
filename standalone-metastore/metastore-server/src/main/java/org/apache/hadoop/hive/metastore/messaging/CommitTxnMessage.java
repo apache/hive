@@ -42,6 +42,8 @@ public abstract class CommitTxnMessage extends EventMessage {
 
   public abstract List<Long> getWriteIds();
 
+  public abstract List<String> getCatalogs();
+
   public abstract List<String> getDatabases();
 
   public abstract List<String> getTables();

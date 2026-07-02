@@ -21,6 +21,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -117,9 +118,10 @@ public class TestCleanerWithReplication extends CompactorTest {
     addDeltaFile(t, null, 23L, 24L, 2);
     addBaseFile(t, null, 25L, 25);
 
-    burnThroughTransactions(dbName, "camtc", 25);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, dbName, "camtc", 25);
 
     CompactionRequest rqst = new CompactionRequest(dbName, "camtc", CompactionType.MAJOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     compactInTxn(rqst);
 
     assertCleanerActions(6);
@@ -135,9 +137,10 @@ public class TestCleanerWithReplication extends CompactorTest {
     addDeltaFile(t, p, 23L, 24L, 2);
     addBaseFile(t, p, 25L, 25);
 
-    burnThroughTransactions(dbName, "campc", 25);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, dbName, "campc", 25);
 
     CompactionRequest rqst = new CompactionRequest(dbName, "campc", CompactionType.MAJOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setPartitionname("ds=today");
     compactInTxn(rqst);
 
@@ -153,9 +156,10 @@ public class TestCleanerWithReplication extends CompactorTest {
     addDeltaFile(t, null, 23L, 24L, 2);
     addDeltaFile(t, null, 21L, 24L, 4);
 
-    burnThroughTransactions(dbName, "camitc", 24);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, dbName, "camitc", 24);
 
     CompactionRequest rqst = new CompactionRequest(dbName, "camitc", CompactionType.MINOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     compactInTxn(rqst);
 
     assertCleanerActions(4);
@@ -171,9 +175,10 @@ public class TestCleanerWithReplication extends CompactorTest {
     addDeltaFile(t, p, 23L, 24L, 2);
     addDeltaFile(t, p, 21L, 24L, 4);
 
-    burnThroughTransactions(dbName, "camipc", 24);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, dbName, "camipc", 24);
 
     CompactionRequest rqst = new CompactionRequest(dbName, "camipc", CompactionType.MINOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setPartitionname("ds=today");
     compactInTxn(rqst);
 

@@ -175,7 +175,7 @@ public class TestSemanticAnalyzer {
     materializedView.getSd().setCols(sourceTable.getCols());
 
     MaterializedViewMetadata metadata = new MaterializedViewMetadata(
-        MetaStoreUtils.getDefaultCatalog(conf),
+        sourceTable.getCatName(),
         sourceTable.getDbName(),
         materializedViewName,
         Sets.newHashSet(sourceTable.createSourceTable()),

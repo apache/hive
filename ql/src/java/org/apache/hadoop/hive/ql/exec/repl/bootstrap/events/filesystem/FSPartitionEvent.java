@@ -69,8 +69,8 @@ public class FSPartitionEvent implements PartitionEvent {
   }
 
   @Override
-  public ImportTableDesc tableDesc(String dbName) throws SemanticException {
-    return tableEvent.tableDesc(dbName);
+  public ImportTableDesc tableDesc(String catName, String dbName) throws SemanticException {
+    return tableEvent.tableDesc(catName, dbName);
   }
 
   @Override

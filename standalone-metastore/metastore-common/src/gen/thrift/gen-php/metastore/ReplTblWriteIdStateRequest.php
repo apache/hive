@@ -55,6 +55,11 @@ class ReplTblWriteIdStateRequest
                 'type' => TType::STRING,
                 ),
         ),
+        7 => array(
+            'var' => 'catName',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -81,6 +86,10 @@ class ReplTblWriteIdStateRequest
      * @var string[]
      */
     public $partNames = null;
+    /**
+     * @var string
+     */
+    public $catName = "hive";
 
     public function __construct($vals = null)
     {
@@ -102,6 +111,9 @@ class ReplTblWriteIdStateRequest
             }
             if (isset($vals['partNames'])) {
                 $this->partNames = $vals['partNames'];
+            }
+            if (isset($vals['catName'])) {
+                $this->catName = $vals['catName'];
             }
         }
     }
@@ -176,6 +188,13 @@ class ReplTblWriteIdStateRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 7:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->catName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -225,6 +244,11 @@ class ReplTblWriteIdStateRequest
                 $xfer += $output->writeString($iter752);
             }
             $output->writeListEnd();
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->catName !== null) {
+            $xfer += $output->writeFieldBegin('catName', TType::STRING, 7);
+            $xfer += $output->writeString($this->catName);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

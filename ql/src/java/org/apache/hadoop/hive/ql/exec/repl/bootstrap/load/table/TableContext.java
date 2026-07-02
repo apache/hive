@@ -20,10 +20,12 @@ package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.table;
 import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 
 public class TableContext {
+  final String catName;
   final String dbNameToLoadIn;
   private final TaskTracker parentTracker;
 
-  public TableContext(TaskTracker parentTracker, String dbNameToLoadIn) {
+  public TableContext(TaskTracker parentTracker, String catName, String dbNameToLoadIn) {
+    this.catName = catName;
     this.dbNameToLoadIn = dbNameToLoadIn;
     this.parentTracker = parentTracker;
   }

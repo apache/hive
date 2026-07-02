@@ -44,35 +44,37 @@ public class ReadyToCleanAbortHandler implements QueryHandler<List<CompactionInf
   // Three inner sub-queries which are under left-join to fetch the required data for aborted txns.
   //language=SQL
   private static final String SELECT_ABORTS_WITH_MIN_OPEN_WRITETXN_QUERY =
-      " \"res1\".\"TC_DATABASE\" AS \"DB\", \"res1\".\"TC_TABLE\" AS \"TBL\", \"res1\".\"TC_PARTITION\" AS \"PART\", " +
+      " \"res1\".\"TC_CATALOG\" AS \"CAT\", \"res1\".\"TC_DATABASE\" AS \"DB\", \"res1\".\"TC_TABLE\" AS \"TBL\", \"res1\".\"TC_PARTITION\" AS \"PART\", " +
           " \"res1\".\"MIN_TXN_START_TIME\" AS \"MIN_TXN_START_TIME\", \"res1\".\"ABORTED_TXN_COUNT\" AS \"ABORTED_TXN_COUNT\", " +
           " \"res2\".\"MIN_OPEN_WRITE_TXNID\" AS \"MIN_OPEN_WRITE_TXNID\", \"res3\".\"RETRY_RETENTION\" AS \"RETRY_RETENTION\", " +
           " \"res3\".\"ID\" AS \"RETRY_CQ_ID\" " +
           " FROM " +
           // First sub-query - Gets the aborted txns with min txn start time, number of aborted txns
           // for corresponding db, table, partition.
-          " ( SELECT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", MIN(\"TXN_STARTED\") AS \"MIN_TXN_START_TIME\", " +
+          " ( SELECT \"TC_CATALOG\", \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", MIN(\"TXN_STARTED\") AS \"MIN_TXN_START_TIME\", " +
           " COUNT(*) AS \"ABORTED_TXN_COUNT\" FROM \"TXNS\", \"TXN_COMPONENTS\" " +
           " WHERE \"TXN_ID\" = \"TC_TXNID\" AND \"TXN_STATE\" = :abortedState" +
-          " GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" %s ) \"res1\" " +
+          " GROUP BY \"TC_CATALOG\", \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" %s ) \"res1\" " +
           " LEFT JOIN" +
           // Second sub-query - Gets the min open txn id for corresponding db, table, partition.
-          "( SELECT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", MIN(\"TC_TXNID\") AS \"MIN_OPEN_WRITE_TXNID\" " +
+          "( SELECT \"TC_CATALOG\", \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", MIN(\"TC_TXNID\") AS \"MIN_OPEN_WRITE_TXNID\" " +
           " FROM \"TXNS\", \"TXN_COMPONENTS\" " +
           " WHERE \"TXN_ID\" = \"TC_TXNID\" AND \"TXN_STATE\" = :openState" +
-          " GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" ) \"res2\"" +
-          " ON \"res1\".\"TC_DATABASE\" = \"res2\".\"TC_DATABASE\"" +
+          " GROUP BY \"TC_CATALOG\", \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" ) \"res2\"" +
+          " ON \"res1\".\"TC_CATALOG\" = \"res2\".\"TC_CATALOG\"" +
+          " AND \"res1\".\"TC_DATABASE\" = \"res2\".\"TC_DATABASE\"" +
           " AND \"res1\".\"TC_TABLE\" = \"res2\".\"TC_TABLE\"" +
           " AND (\"res1\".\"TC_PARTITION\" = \"res2\".\"TC_PARTITION\" " +
           " OR (\"res1\".\"TC_PARTITION\" IS NULL AND \"res2\".\"TC_PARTITION\" IS NULL)) " +
           " LEFT JOIN " +
           // Third sub-query - Gets the retry entries for corresponding db, table, partition.
-          "( SELECT \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", MAX(\"CQ_ID\") AS \"ID\", " +
+          "( SELECT \"CQ_CATALOG\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", MAX(\"CQ_ID\") AS \"ID\", " +
           " MAX(\"CQ_RETRY_RETENTION\") AS \"RETRY_RETENTION\", " +
           " MIN(\"CQ_COMMIT_TIME\") - %s + MAX(\"CQ_RETRY_RETENTION\") AS \"RETRY_RECORD_CHECK\" FROM \"COMPACTION_QUEUE\" " +
           " WHERE \"CQ_TYPE\" = :type" +
-          " GROUP BY \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\") \"res3\" " +
-          " ON \"res1\".\"TC_DATABASE\" = \"res3\".\"CQ_DATABASE\" " +
+          " GROUP BY \"CQ_CATALOG\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\") \"res3\" " +
+          " ON \"res1\".\"TC_CATALOG\" = \"res3\".\"CQ_CATALOG\" " +
+          " AND \"res1\".\"TC_DATABASE\" = \"res3\".\"CQ_DATABASE\" " +
           " AND \"res1\".\"TC_TABLE\" = \"res3\".\"CQ_TABLE\" " +
           " AND (\"res1\".\"TC_PARTITION\" = \"res3\".\"CQ_PARTITION\" " +
           " OR (\"res1\".\"TC_PARTITION\" IS NULL AND \"res3\".\"CQ_PARTITION\" IS NULL))" +
@@ -108,6 +110,7 @@ public class ReadyToCleanAbortHandler implements QueryHandler<List<CompactionInf
       int numAbortedTxns = rs.getInt("ABORTED_TXN_COUNT");
       if (numAbortedTxns > abortedThreshold || pastTimeThreshold) {
         CompactionInfo info = new CompactionInfo();
+        info.catName = rs.getString("CAT");
         info.dbname = rs.getString("DB");
         info.tableName = rs.getString("TBL");
         info.partName = rs.getString("PART");

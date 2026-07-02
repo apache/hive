@@ -2268,7 +2268,7 @@ public class HMSHandler extends PrivilegeHandler {
       // Fallback to metastore for Avro Schema
       if (AVRO_SERDE_CLASS.equals(serdeLib)) {
         LOG.warn(
-            "Unable to read schema from storage for AvroSerDe table '{}.{}'. Returning metastore SD columns " + 
+            "Unable to read schema from storage for AvroSerDe table '{}.{}'. Returning metastore SD columns " +
                 "as fallback; schema may be stale.",
             db, tableName, e);
         return tbl.getSd().getCols();
@@ -2276,7 +2276,7 @@ public class HMSHandler extends PrivilegeHandler {
       throw e;
     }
   }
-  
+
   @Override
   public GetFieldsResponse get_fields_req(GetFieldsRequest req)
       throws MetaException, UnknownTableException, UnknownDBException {
@@ -4541,7 +4541,8 @@ public Package find_package(GetPackageRequest request) throws MetaException, NoS
     Exception ex = null;
     try {
       List<WriteEventInfo> writeEventInfoList =
-          getMS().getAllWriteEventInfo(request.getTxnId(), request.getDbName(), request.getTableName());
+          getMS().getAllWriteEventInfo(request.getTxnId(), request.getCatName(),
+              request.getDbName(), request.getTableName());
       return writeEventInfoList == null ? Collections.emptyList() : writeEventInfoList;
     } catch (Exception e) {
       LOG.error("Caught exception", e);

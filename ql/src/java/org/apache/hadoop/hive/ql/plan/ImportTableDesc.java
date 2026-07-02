@@ -45,16 +45,18 @@ import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
  *
  */
 public class ImportTableDesc {
+  private String catName = null;
   private String dbName = null;
   private CreateTableDesc createTblDesc = null;
 
-  public ImportTableDesc(String dbName, Table table) throws Exception {
+  public ImportTableDesc(String catName, String dbName, Table table) throws Exception {
     if (table.getTableType() == TableType.VIRTUAL_VIEW || table.getTableType() == TableType.MATERIALIZED_VIEW) {
       throw new IllegalStateException("Trying to import view or materialized view: " + table.getTableName());
     }
 
+    this.catName = catName;
     this.dbName = dbName;
-    TableName tableName = HiveTableName.ofNullable(table.getTableName(), dbName);
+    TableName tableName = HiveTableName.ofNullable(catName, table.getTableName(), dbName, null);
 
     this.createTblDesc = new CreateTableDesc(tableName,
         false, // isExternal: set to false here, can be overwritten by the IMPORT stmt
@@ -112,6 +114,10 @@ public class ImportTableDesc {
 
   public String getTableName() throws SemanticException {
     return createTblDesc.getFullTableName().getTable();
+  }
+
+  public String getCatName() {
+    return createTblDesc.getFullTableName().getCat();
   }
 
   public List<FieldSchema> getPartCols() {

@@ -117,6 +117,11 @@ class CompactionInfoStruct
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        20 => array(
+            'var' => 'catName',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -195,6 +200,10 @@ class CompactionInfoStruct
      * @var string
      */
     public $orderByClause = null;
+    /**
+     * @var string
+     */
+    public $catName = "hive";
 
     public function __construct($vals = null)
     {
@@ -255,6 +264,9 @@ class CompactionInfoStruct
             }
             if (isset($vals['orderByClause'])) {
                 $this->orderByClause = $vals['orderByClause'];
+            }
+            if (isset($vals['catName'])) {
+                $this->catName = $vals['catName'];
             }
         }
     }
@@ -411,6 +423,13 @@ class CompactionInfoStruct
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 20:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->catName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -518,6 +537,11 @@ class CompactionInfoStruct
         if ($this->orderByClause !== null) {
             $xfer += $output->writeFieldBegin('orderByClause', TType::STRING, 19);
             $xfer += $output->writeString($this->orderByClause);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->catName !== null) {
+            $xfer += $output->writeFieldBegin('catName', TType::STRING, 20);
+            $xfer += $output->writeString($this->catName);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

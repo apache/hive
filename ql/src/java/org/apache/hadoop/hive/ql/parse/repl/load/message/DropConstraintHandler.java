@@ -35,9 +35,10 @@ public class DropConstraintHandler extends AbstractMessageHandler {
   public List<Task<?>> handle(Context context)
       throws SemanticException {
     DropConstraintMessage msg = deserializer.getDropConstraintMessage(context.dmd.getPayload());
+    final String actualCatName = context.isCatNameEmpty() ? msg.getCat() : context.catName;
     final String actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;
     final String actualTblName = msg.getTable();
-    final TableName tName = HiveTableName.ofNullable(actualTblName, actualDbName);
+    final TableName tName = HiveTableName.ofNullable(actualCatName, actualTblName, actualDbName, null);
     String constraintName = msg.getConstraint();
 
     AlterTableDropConstraintDesc dropConstraintsDesc =

@@ -37,7 +37,7 @@ import com.google.common.collect.Lists;
 public class JSONInsertMessage extends InsertMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableType, tableObjJson, ptnObjJson;
+  String server, servicePrincipal, cat, db, table, tableType, tableObjJson, ptnObjJson;
 
   @JsonProperty
   Long timestamp;
@@ -63,6 +63,7 @@ public class JSONInsertMessage extends InsertMessage {
       throw new IllegalArgumentException("Table not valid.");
     }
 
+    this.cat = tableObj.getCatName();
     this.db = tableObj.getDbName();
     this.table = tableObj.getTableName();
     this.tableType = tableObj.getTableType();
@@ -112,6 +113,11 @@ public class JSONInsertMessage extends InsertMessage {
   @Override
   public String getServicePrincipal() {
     return servicePrincipal;
+  }
+
+  @Override
+  public String getCat() {
+    return cat;
   }
 
   @Override

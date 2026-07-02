@@ -45,12 +45,13 @@ public class RemoveDuplicateCompleteTxnComponentsCommand implements Parameterize
         return "DELETE tc " +
             "FROM \"COMPLETED_TXN_COMPONENTS\" tc " +
             "INNER JOIN (" +
-            "    SELECT \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\"," +
+            "    SELECT \"CTC_CATALOG\", \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\"," +
             "        MAX(\"CTC_WRITEID\") highestWriteId," +
             "        MAX(CASE WHEN \"CTC_UPDATE_DELETE\" = 'Y' THEN \"CTC_WRITEID\" END) updateWriteId" +
             "    FROM \"COMPLETED_TXN_COMPONENTS\"" +
-            "    GROUP BY \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\"" +
+            "    GROUP BY \"CTC_CATALOG\", \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\"" +
             ") c ON " +
+            "      tc.\"CTC_CATALOG\" = c.\"CTC_CATALOG\" " +
             "      tc.\"CTC_DATABASE\" = c.\"CTC_DATABASE\" " +
             "      AND tc.\"CTC_TABLE\" = c.\"CTC_TABLE\"" +
             "      AND (tc.\"CTC_PARTITION\" = c.\"CTC_PARTITION\" OR (tc.\"CTC_PARTITION\" IS NULL AND c.\"CTC_PARTITION\" IS NULL)) " +
@@ -67,7 +68,8 @@ public class RemoveDuplicateCompleteTxnComponentsCommand implements Parameterize
           "EXISTS (" +
           "    SELECT 1" +
           "    FROM \"COMPLETED_TXN_COMPONENTS\" c" +
-          "    WHERE tc.\"CTC_DATABASE\" = c.\"CTC_DATABASE\"" +
+          "    WHERE tc.\"CTC_CATALOG\" = c.\"CTC_CATALOG\"" +
+          "      AND tc.\"CTC_DATABASE\" = c.\"CTC_DATABASE\"" +
           "      AND tc.\"CTC_TABLE\" = c.\"CTC_TABLE\"" +
           "      AND %s" +
           "      AND (tc.\"CTC_UPDATE_DELETE\" = 'N' OR c.\"CTC_UPDATE_DELETE\" = 'Y')" +

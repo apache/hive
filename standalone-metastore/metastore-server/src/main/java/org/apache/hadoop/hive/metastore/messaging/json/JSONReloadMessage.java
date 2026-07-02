@@ -41,7 +41,7 @@ public class JSONReloadMessage extends ReloadMessage {
     private Long timestamp;
 
     @JsonProperty
-    private String server, servicePrincipal, db, table, tableObjJson, ptnObjJson, refreshEvent;
+    private String server, servicePrincipal, cat, db, table, tableObjJson, ptnObjJson, refreshEvent;
 
     @JsonProperty
     List<String> partitionListJson;
@@ -61,6 +61,7 @@ public class JSONReloadMessage extends ReloadMessage {
             throw new IllegalArgumentException("Table not valid.");
         }
 
+        this.cat = tableObj.getCatName();
         this.db = tableObj.getDbName();
         this.table = tableObj.getTableName();
 
@@ -104,6 +105,11 @@ public class JSONReloadMessage extends ReloadMessage {
     @Override
     public String getServicePrincipal() {
         return servicePrincipal;
+    }
+
+    @Override
+    public String getCat() {
+        return cat;
     }
 
     @Override

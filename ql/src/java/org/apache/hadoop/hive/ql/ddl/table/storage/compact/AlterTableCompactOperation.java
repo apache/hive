@@ -94,6 +94,7 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
 
     CompactionRequest compactionRequest = new CompactionRequest(table.getDbName(), table.getTableName(),
         compactionTypeStr2ThriftType(desc.getCompactionType()));
+    compactionRequest.setCatName(table.getCatName());
 
     String poolName = ObjectUtils.defaultIfNull(desc.getPoolName(),
         CompactorUtil.getPoolName(context.getConf(), table.getTTable(), metadataCache));

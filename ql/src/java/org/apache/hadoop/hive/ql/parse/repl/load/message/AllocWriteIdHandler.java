@@ -44,13 +44,14 @@ public class AllocWriteIdHandler extends AbstractMessageHandler {
     AllocWriteIdMessage msg =
         deserializer.getAllocWriteIdMessage(context.dmd.getPayload());
 
+    String catName = (context.catName != null && !context.catName.isEmpty() ? context.catName : msg.getCat());
     String dbName = (context.dbName != null && !context.dbName.isEmpty() ? context.dbName : msg.getDB());
 
     // We need table name for alloc write id and that is received from source.
     String tableName = msg.getTableName();
 
     // Repl policy should be created based on the table name in context.
-    ReplTxnWork work = new ReplTxnWork(HiveUtils.getReplPolicy(context.dbName), dbName, tableName,
+    ReplTxnWork work = new ReplTxnWork(HiveUtils.getReplPolicy(context.dbName), catName, dbName, tableName,
         ReplTxnWork.OperationType.REPL_ALLOC_WRITE_ID, msg.getTxnToWriteIdList(), context.eventOnlyReplicationSpec(),
             context.getDumpDirectory(), context.getMetricCollector());
 
