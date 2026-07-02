@@ -100,6 +100,7 @@ import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.txn.CompactionMetricsDataConverter;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.jdbc.functions.ReplAbortedWriteCompactionScheduler;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.FilterUtils;
 import org.apache.thrift.TException;
@@ -249,7 +250,9 @@ public abstract class TransactionHandler extends DeprecatedHandler {
 
   @Override
   public void repl_tbl_writeid_state(ReplTblWriteIdStateRequest rqst) throws TException {
-    getTxnHandler().replTableWriteIdState(rqst);
+    if (getTxnHandler().replTableWriteIdState(rqst)) {
+      ReplAbortedWriteCompactionScheduler.scheduleMajorCompactions(getTxnHandler(), rqst);
+    }
   }
 
   @Override

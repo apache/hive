@@ -661,8 +661,8 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * @throws MetaException
    */
   @Override
-  public void replTableWriteIdState(ReplTblWriteIdStateRequest rqst) throws MetaException {
-    new ReplTableWriteIdStateFunction(rqst, mutexAPI, transactionalListeners).execute(jdbcResource);
+  public boolean replTableWriteIdState(ReplTblWriteIdStateRequest rqst) throws MetaException {
+    return new ReplTableWriteIdStateFunction(rqst, transactionalListeners).execute(jdbcResource);
   }
 
   /**
