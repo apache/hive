@@ -20,6 +20,7 @@ package org.apache.hive.service.server;
 
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hive.http.HttpServer;
 import org.apache.hive.service.cli.CLIService;
@@ -31,7 +32,6 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -127,5 +127,45 @@ public class TestHiveServer2 {
     HiveConf builderConf = (HiveConf) confField.get(builder);
     assertNotNull("Builder.conf must be set after createHttpServerBuilder", builderConf);
     assertNotNull("startcode must be exists", builderConf.get("startcode"));
+  }
+
+  /**
+   * {@code hive.server2.webui.auth.method=CUSTOM} (case-insensitive) must
+   * resolve to {@link HiveServer2.WebUIAuthMethod#CUSTOM}; unknown / null /
+   * empty values fall back to NONE. This is the gate that lets the CUSTOM
+   * branch in {@code init()} run.
+   */
+  @Test
+  public void testGetWebUIAuthMethod() {
+    assertEquals(HiveServer2.WebUIAuthMethod.NONE,
+        HiveServer2.getWebUIAuthMethod(null));
+    assertEquals(HiveServer2.WebUIAuthMethod.NONE,
+        HiveServer2.getWebUIAuthMethod(""));
+    assertEquals(HiveServer2.WebUIAuthMethod.NONE,
+        HiveServer2.getWebUIAuthMethod("NONE"));
+    assertEquals(HiveServer2.WebUIAuthMethod.LDAP,
+        HiveServer2.getWebUIAuthMethod("LDAP"));
+    assertEquals("lower-case input must resolve the same as upper-case",
+        HiveServer2.WebUIAuthMethod.LDAP, HiveServer2.getWebUIAuthMethod("ldap"));
+    assertEquals(HiveServer2.WebUIAuthMethod.CUSTOM,
+        HiveServer2.getWebUIAuthMethod("CUSTOM"));
+    assertEquals("lower-case input must resolve the same as upper-case",
+        HiveServer2.WebUIAuthMethod.CUSTOM, HiveServer2.getWebUIAuthMethod("custom"));
+    assertEquals("unknown values fall back to NONE",
+        HiveServer2.WebUIAuthMethod.NONE, HiveServer2.getWebUIAuthMethod("bogus"));
+  }
+
+  /**
+   * Sanity check that the conf carries the CUSTOM mode end-to-end: writing
+   * the ConfVar with the string "CUSTOM" must round-trip through HiveConf
+   * and through {@link HiveServer2#getWebUIAuthMethod} without coercion.
+   */
+  @Test
+  public void testWebUIAuthMethodFromHiveConfRoundTrip() {
+    HiveConf conf = new HiveConf();
+    conf.setVar(ConfVars.HIVE_SERVER2_WEBUI_AUTH_METHOD, "CUSTOM");
+    assertEquals(HiveServer2.WebUIAuthMethod.CUSTOM,
+        HiveServer2.getWebUIAuthMethod(
+            conf.getVar(ConfVars.HIVE_SERVER2_WEBUI_AUTH_METHOD)));
   }
 }
