@@ -82,6 +82,9 @@ public record HiveClusterSpec(
         + "(e.g., mounting a GCS key file at /etc/gcs/key.json)")
     @SchemaFrom(type = Object[].class) @PreserveUnknownFields
     List<VolumeMount> volumeMounts,
+    @JsonPropertyDescription("Kubernetes ServiceAccount name for all component pods. "
+        + "If not specified, pods use the namespace default service account.")
+    String serviceAccountName,
     @JsonPropertyDescription("Auto-suspend configuration. When enabled and all components "
         + "are idle for the configured timeout, the cluster scales to 0 replicas.")
     AutoSuspendSpec autoSuspend,

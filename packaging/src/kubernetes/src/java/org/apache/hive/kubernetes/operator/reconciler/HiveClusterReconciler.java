@@ -30,9 +30,11 @@ import java.util.Set;
 
 import io.fabric8.kubernetes.api.model.Condition;
 import io.fabric8.kubernetes.api.model.HasMetadata;
+import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
+import io.fabric8.kubernetes.api.model.discovery.v1.EndpointSlice;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.api.reconciler.Cleaner;
@@ -312,7 +314,7 @@ public class HiveClusterReconciler
             ? perLlapTezAm.autoscaling().minReplicas()
             : perLlapTezAm.replicas();
         tezAmStatuses.put(llapSpec.name(),
-            buildComponentStatus(context, StatefulSet.class, tezAmSsName,
+            buildComponentStatus(context, Deployment.class, tezAmSsName,
                 perLlapTezAm.replicas(), tezAmMin));
       }
       status.setTezAmClusters(tezAmStatuses);
@@ -562,8 +564,7 @@ public class HiveClusterReconciler
       workloadName = resource.getMetadata().getName() + "-" + component;
     }
     try {
-      if (component.startsWith(ConfigUtils.COMPONENT_LLAP + "-")
-          || component.startsWith(ConfigUtils.COMPONENT_TEZAM + "-")) {
+      if (component.startsWith(ConfigUtils.COMPONENT_LLAP + "-")) {
         client.apps().statefulSets().inNamespace(namespace).withName(workloadName).scale(replicas);
       } else {
         client.apps().deployments().inNamespace(namespace).withName(workloadName).scale(replicas);
@@ -586,7 +587,8 @@ public class HiveClusterReconciler
               oldSpec.hiveServer2(), oldSpec.llapClusters(), oldSpec.llapClusterRouting(),
               oldSpec.tezAm(), oldSpec.zookeeper(),
               oldSpec.hadoop(), oldSpec.envVars(), oldSpec.externalJars(),
-              oldSpec.volumes(), oldSpec.volumeMounts(), oldSpec.autoSuspend(), suspend);
+              oldSpec.volumes(), oldSpec.volumeMounts(), oldSpec.serviceAccountName(),
+              oldSpec.autoSuspend(), suspend);
           hc.setSpec(newSpec);
           return hc;
         });
@@ -642,10 +644,11 @@ public class HiveClusterReconciler
         client.services().inNamespace(ns)
             .resource(LlapResourceBuilder.buildTezAmService(resource, llapSpec))
             .serverSideApply();
-        client.apps().statefulSets().inNamespace(ns)
-            .resource(LlapResourceBuilder.buildTezAmStatefulSet(resource, llapSpec, tezAmReplicas))
+        client.apps().deployments().inNamespace(ns)
+            .resource(LlapResourceBuilder.buildTezAmDeployment(resource, llapSpec, tezAmReplicas))
             .forceConflicts()
             .serverSideApply();
+        reconcileTezAmEndpointSlice(resource, client, llapSpec);
         if (llapSpec.tezAm().autoscaling().isEnabled()) {
           client.policy().v1().podDisruptionBudget().inNamespace(ns)
               .resource(LlapResourceBuilder.buildTezAmPdb(resource, llapSpec))
@@ -743,22 +746,54 @@ public class HiveClusterReconciler
         Labels.APP_INSTANCE, clusterName,
         Labels.APP_COMPONENT, ConfigUtils.COMPONENT_TEZAM);
 
-    client.apps().statefulSets().inNamespace(ns).withLabels(tezamSelector).list().getItems()
+    client.apps().deployments().inNamespace(ns).withLabels(tezamSelector).list().getItems()
         .stream()
-        .filter(ss -> {
-          String llapName = ss.getMetadata().getLabels().get(Labels.LLAP_CLUSTER);
+        .filter(d -> {
+          String llapName = d.getMetadata().getLabels().get(Labels.LLAP_CLUSTER);
           return llapName != null && !desiredNames.contains(llapName);
         })
-        .forEach(ss -> {
-          String llapName = ss.getMetadata().getLabels().get(Labels.LLAP_CLUSTER);
+        .forEach(d -> {
+          String llapName = d.getMetadata().getLabels().get(Labels.LLAP_CLUSTER);
           LOG.info("Garbage-collecting TezAM for LLAP cluster '{}' in {}/{}", llapName, ns, clusterName);
-          client.apps().statefulSets().inNamespace(ns).withName(ss.getMetadata().getName()).delete();
-          client.services().inNamespace(ns).withName(ss.getMetadata().getName()).delete();
+          client.apps().deployments().inNamespace(ns).withName(d.getMetadata().getName()).delete();
+          client.services().inNamespace(ns).withName(d.getMetadata().getName()).delete();
           client.configMaps().inNamespace(ns)
-              .withName(ss.getMetadata().getName() + "-config").delete();
+              .withName(d.getMetadata().getName() + "-config").delete();
           client.policy().v1().podDisruptionBudget().inNamespace(ns)
-              .withName(ss.getMetadata().getName() + "-pdb").delete();
+              .withName(d.getMetadata().getName() + "-pdb").delete();
+          client.discovery().v1().endpointSlices().inNamespace(ns)
+              .withName(d.getMetadata().getName() + "-hostnames").delete();
         });
+  }
+
+  /**
+   * Maintains an operator-managed EndpointSlice for the TezAM headless Service.
+   * The default EndpointSlice controller does not set the {@code hostname} field for
+   * Deployment pods, so per-pod DNS records are not created by CoreDNS. This method
+   * creates/updates an EndpointSlice (with managed-by=hive-kubernetes-operator)
+   * that includes {@code hostname} for each ready TezAM pod, giving CoreDNS the data
+   * it needs to serve {@code <pod>.<svc>.<ns>.svc.cluster.local} A-records.
+   */
+  private void reconcileTezAmEndpointSlice(HiveCluster resource, KubernetesClient client, LlapSpec llapSpec) {
+    String ns = resource.getMetadata().getNamespace();
+    Map<String, String> selector = Labels.selectorForTezAmCluster(resource, llapSpec.name());
+    List<Pod> pods = client.pods().inNamespace(ns).withLabels(selector).list().getItems();
+    EndpointSlice slice = LlapResourceBuilder.buildTezAmEndpointSlice(resource, llapSpec, pods);
+    String sliceName = LlapResourceBuilder.tezAmEndpointSliceName(resource, llapSpec);
+    if (slice == null) {
+      client.discovery().v1().endpointSlices().inNamespace(ns).withName(sliceName).delete();
+      return;
+    }
+    var existing = client.discovery().v1().endpointSlices().inNamespace(ns).withName(sliceName).get();
+    if (existing != null && existing.getAddressType() != null
+        && !existing.getAddressType().equals(slice.getAddressType())) {
+      client.discovery().v1().endpointSlices().inNamespace(ns).withName(sliceName).withGracePeriod(0L).delete();
+    }
+    
+    client.discovery().v1().endpointSlices().inNamespace(ns)
+        .resource(slice)
+        .forceConflicts()
+        .serverSideApply();
   }
 
   // --- Auto-Suspend / Wake ---
@@ -829,7 +864,7 @@ public class HiveClusterReconciler
     if (spec.tezAm().isEnabled()) {
       for (var llap : spec.llapClusters()) {
         if (llap.isEnabled()
-            && !isAtMinReplicas(client, ns, name + "-tezam-" + llap.name(), true,
+            && !isAtMinReplicas(client, ns, name + "-tezam-" + llap.name(), false,
                 llap.tezAm().autoscaling().minReplicas())) {
           return false;
         }

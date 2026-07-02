@@ -251,6 +251,7 @@ public class HiveServer2DeploymentDependent
               .addToAnnotations("hive.apache.org/config-hash", configHash)
             .endMetadata()
             .withNewSpec()
+              .withServiceAccountName(spec.serviceAccountName())
               .withInitContainers(initContainers)
               .addNewContainer()
                 .withName(COMPONENT)
