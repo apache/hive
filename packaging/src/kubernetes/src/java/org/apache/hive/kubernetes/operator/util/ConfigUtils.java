@@ -77,6 +77,9 @@ public final class ConfigUtils {
 
   public static final String HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS_KEY = "hive.server2.tez.use.external.sessions";
 
+  public static final String HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS_KEY =
+      "hive.server2.tez.initialize.default.sessions";
+
   public static final String HIVE_SERVER2_TEZ_EXTERNAL_SESSIONS_NAMESPACE_KEY =
       "hive.server2.tez.external.sessions.namespace";
 
