@@ -721,7 +721,7 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
         throw new MetaException("Partition does not belong to target table "
             + dbName + "." + tblName + ": " + part);
       }
-      MPartition mpart = convertToMPart(part, table);
+      MPartition mpart = convertToMPart(part, table, baseStore);
       mParts.add(mpart);
       int now = (int) (System.currentTimeMillis() / 1000);
       List<MPartitionPrivilege> mPartPrivileges = new ArrayList<>();
@@ -1901,7 +1901,8 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
     catName = normalizeIdentifier(catName);
     name = normalizeIdentifier(name);
     dbname = normalizeIdentifier(dbname);
-    MPartition newp = convertToMPart(newPart, table);
+    // TODO: Should we perform descriptor reuse in this path?
+    MPartition newp = convertToMPart(newPart, table, baseStore);
     MColumnDescriptor oldCD = null;
     MStorageDescriptor oldSD = oldp.getSd();
     if (oldSD != null) {
