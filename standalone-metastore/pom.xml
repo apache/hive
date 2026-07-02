@@ -85,7 +85,7 @@
     </dropwizard-metrics-hadoop-metrics2-reporter.version>
     <dropwizard.version>3.1.0</dropwizard.version>
     <guava.version>22.0</guava.version>
-    <hadoop.version>3.4.2</hadoop.version>
+    <hadoop.version>3.5.0</hadoop.version>
     <hikaricp.version>4.0.3</hikaricp.version>
     <jackson.version>2.18.6</jackson.version>
     <jexl.version>3.3</jexl.version>
@@ -125,6 +125,7 @@
     <jetty.version>9.4.57.v20241219</jetty.version>
     <javax.annotation-api.version>1.3.2</javax.annotation-api.version>
     <keycloak.version>26.0.6</keycloak.version>
+    <keycloak.admin.client.jee.version>25.0.6</keycloak.admin.client.jee.version>
     <!-- If upgrading, upgrade atlas as well in ql/pom.xml, which brings in some springframework dependencies transitively -->
     <spring.version>5.3.39</spring.version>
     <spring-boot.version>2.7.18</spring-boot.version>
@@ -547,8 +548,9 @@
       </dependency>
       <dependency>
         <groupId>org.keycloak</groupId>
-        <artifactId>keycloak-admin-client</artifactId>
-        <version>${keycloak.version}</version>
+        <artifactId>keycloak-admin-client-jee</artifactId>
+        <version>${keycloak.admin.client.jee.version}</version>
+        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.testcontainers</groupId>
