@@ -90,6 +90,7 @@ import org.apache.orc.OrcConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -924,7 +925,8 @@ public class SortedDynPartitionOptimizer extends Transform {
      * Computes the partition cardinality based on column NDV statistics.
      * @return positive value = estimated cardinality, 0 = no partition columns, -1 = stats unavailable
      */
-    private long computePartCardinality(List<Integer> partitionPos,
+    @VisibleForTesting
+    long computePartCardinality(List<Integer> partitionPos,
         List<Function<List<ExprNodeDesc>, ExprNodeDesc>> customPartitionExprs,
         Statistics tStats, Operator<? extends OperatorDesc> fsParent,
         ArrayList<ExprNodeDesc> allRSCols) {
@@ -935,7 +937,8 @@ public class SortedDynPartitionOptimizer extends Transform {
         for (Integer idx : partitionPos) {
           ColumnInfo ci = fsParent.getSchema().getSignature().get(idx);
           ColStatistics partStats = tStats.getColumnStatisticsFromColName(ci.getInternalName());
-          if (partStats == null) {
+          // countDistinct < 0 means "unknown" - same path as missing stats
+          if (partStats == null || partStats.getCountDistint() < 0) {
             return -1;
           }
           partCardinality *= partStats.getCountDistint();
@@ -950,7 +953,8 @@ public class SortedDynPartitionOptimizer extends Transform {
           // implementations on UDFs (e.g. iceberg_bucket reports min(inputNDV, numBuckets))
           ColStatistics exprStats = StatsUtils.getColStatisticsFromExpression(
               this.parseCtx.getConf(), tStats, resolved);
-          if (exprStats == null) {
+          // countDistinct < 0 means "unknown" - same path as missing stats
+          if (exprStats == null || exprStats.getCountDistint() < 0) {
             return -1;
           }
           partCardinality *= exprStats.getCountDistint();

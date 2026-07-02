@@ -824,7 +824,7 @@ public class StatsUtils {
     } else if (colTypeLowerCase.equals(serdeConstants.STRING_TYPE_NAME)
         || colTypeLowerCase.startsWith(serdeConstants.CHAR_TYPE_NAME)
         || colTypeLowerCase.startsWith(serdeConstants.VARCHAR_TYPE_NAME)) {
-      cs.setCountDistint(csd.getStringStats().getNumDVs());
+      cs.setCountDistint(csd.getStringStats().isSetNumDVs() ? csd.getStringStats().getNumDVs() : -1);
       cs.setNumNulls(csd.getStringStats().getNumNulls());
       cs.setAvgColLen(csd.getStringStats().getAvgColLen());
       cs.setBitVectors(csd.getStringStats().getBitVectors());
@@ -848,9 +848,12 @@ public class StatsUtils {
     } else if (colTypeLowerCase.equals(serdeConstants.BINARY_TYPE_NAME)) {
       cs.setAvgColLen(csd.getBinaryStats().getAvgColLen());
       cs.setNumNulls(csd.getBinaryStats().getNumNulls());
+      // BinaryColumnStatsData has no numDVs field - the metastore does not track NDV
+      // for binary columns, so it is genuinely unknown
+      cs.setCountDistint(-1);
     } else if (colTypeLowerCase.equals(serdeConstants.TIMESTAMP_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().lengthOfTimestamp());
-      cs.setCountDistint(csd.getTimestampStats().getNumDVs());
+      cs.setCountDistint(csd.getTimestampStats().isSetNumDVs() ? csd.getTimestampStats().getNumDVs() : -1);
       cs.setNumNulls(csd.getTimestampStats().getNumNulls());
       Long lowVal = (csd.getTimestampStats().getLowValue() != null) ? csd.getTimestampStats().getLowValue()
           .getSecondsSinceEpoch() : null;
@@ -863,7 +866,7 @@ public class StatsUtils {
       cs.setAvgColLen(JavaDataModel.get().lengthOfTimestamp());
     } else if (colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().lengthOfDecimal());
-      cs.setCountDistint(csd.getDecimalStats().getNumDVs());
+      cs.setCountDistint(csd.getDecimalStats().isSetNumDVs() ? csd.getDecimalStats().getNumDVs() : -1);
       cs.setNumNulls(csd.getDecimalStats().getNumNulls());
       Decimal highValue = csd.getDecimalStats().getHighValue();
       Decimal lowValue = csd.getDecimalStats().getLowValue();
@@ -882,7 +885,7 @@ public class StatsUtils {
       cs.setHistogram(csd.getDecimalStats().getHistogram());
     } else if (colTypeLowerCase.equals(serdeConstants.DATE_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().lengthOfDate());
-      cs.setCountDistint(csd.getDateStats().getNumDVs());
+      cs.setCountDistint(csd.getDateStats().isSetNumDVs() ? csd.getDateStats().getNumDVs() : -1);
       cs.setNumNulls(csd.getDateStats().getNumNulls());
       Long lowVal = (csd.getDateStats().getLowValue() != null) ? csd.getDateStats().getLowValue()
           .getDaysSinceEpoch() : null;
@@ -911,7 +914,7 @@ public class StatsUtils {
 
   private static void fillColStatisticsFromLongStatsData(ColStatistics cs, LongColumnStatsData longStats,
       double avgColLen) {
-    cs.setCountDistint(longStats.getNumDVs());
+    cs.setCountDistint(longStats.isSetNumDVs() ? longStats.getNumDVs() : -1);
     cs.setNumNulls(longStats.getNumNulls());
     cs.setAvgColLen(avgColLen);
     Long lowVal = longStats.isSetLowValue() ? longStats.getLowValue() : null;
@@ -923,7 +926,7 @@ public class StatsUtils {
 
   private static void fillColStatisticsFromDoubleStatsData(ColStatistics cs, DoubleColumnStatsData doubleStats,
       double avgColLen) {
-    cs.setCountDistint(doubleStats.getNumDVs());
+    cs.setCountDistint(doubleStats.isSetNumDVs() ? doubleStats.getNumDVs() : -1);
     cs.setNumNulls(doubleStats.getNumNulls());
     cs.setAvgColLen(avgColLen);
     Double lowVal = doubleStats.isSetLowValue() ? doubleStats.getLowValue() : null;
@@ -1701,6 +1704,9 @@ public class StatsUtils {
     // Exponential back-off for NDVs.
     // 1) Descending order sort of NDVs
     // 2) denominator = NDV1 * (NDV2 ^ (1/2)) * (NDV3 ^ (1/4))) * ....
+    if (containsUnknownNDV(distinctVals)) {
+      return -1L;
+    }
     distinctVals.sort(Collections.reverseOrder());
 
     long denom = distinctVals.get(0);
@@ -1727,6 +1733,10 @@ public class StatsUtils {
       for (String col : engfd.getCols()) {
         ColStatistics stats = parentStats.getColumnStatisticsFromColName(col);
         if (stats != null) {
+          // countDistinct < 0 means "unknown"
+          if (stats.getCountDistint() < 0) {
+            return -1L;
+          }
           ndvs.add(stats.getCountDistint());
         }
       }
@@ -2047,20 +2057,23 @@ public class StatsUtils {
       for (ColStatistics cs : colStats) {
         long oldDV = cs.getCountDistint();
         if (affectedColumns.contains(cs.getColumnName())) {
-          long newDV = oldDV;
-
-          // if ratio is greater than 1, then number of rows increases. This can happen
-          // when some operators like GROUPBY duplicates the input rows in which case
-          // number of distincts should not change. Update the distinct count only when
-          // the output number of rows is less than input number of rows.
-          if (ratio <= 1.0) {
-            newDV = (long) Math.ceil(ratio * oldDV);
-          }
-          cs.setCountDistint(newDV);
           cs.setFilterColumn();
-          oldDV = newDV;
+          // countDistinct < 0 means "unknown" - skip the NDV math
+          if (oldDV >= 0) {
+            long newDV = oldDV;
+
+            // if ratio is greater than 1, then number of rows increases. This can happen
+            // when some operators like GROUPBY duplicates the input rows in which case
+            // number of distincts should not change. Update the distinct count only when
+            // the output number of rows is less than input number of rows.
+            if (ratio <= 1.0) {
+              newDV = (long) Math.ceil(ratio * oldDV);
+            }
+            cs.setCountDistint(newDV);
+            oldDV = newDV;
+          }
         }
-        if (oldDV > newNumRows) {
+        if (oldDV >= 0 && oldDV > newNumRows) {
           cs.setCountDistint(newNumRows);
         }
         // numNulls < 0 means "unknown" - preserve the sentinel value
@@ -2091,7 +2104,8 @@ public class StatsUtils {
       if (cs.getNumNulls() >= 0) {
         cs.setNumNulls(StatsUtils.safeMult(cs.getNumNulls(), factor));
       }
-      if (factor < 1.0) {
+      // countDistinct < 0 means "unknown" - preserve the sentinel value
+      if (factor < 1.0 && cs.getCountDistint() >= 0) {
         final double newNDV = Math.ceil(cs.getCountDistint() * factor);
         cs.setCountDistint(newNDV > Long.MAX_VALUE ? Long.MAX_VALUE : (long) newNDV);
       }
@@ -2103,7 +2117,8 @@ public class StatsUtils {
     List<Long> ndvValues =
         extractNDVGroupingColumns(colStats, parentStats);
     if (ndvValues == null) {
-      return 0L;
+      // unknown: a grouping column has NDV<0 or stats are missing on a partial state
+      return -1L;
     }
     if (ndvValues.isEmpty()) {
       // No grouping columns, one row
@@ -2123,6 +2138,11 @@ public class StatsUtils {
     for (ColStatistics cs : colStats) {
       if (cs != null) {
         long ndv = cs.getCountDistint();
+        // countDistinct < 0 means "unknown" - signal it like a missing entry
+        if (ndv < 0) {
+          ndvValues = null;
+          break;
+        }
         if (cs.getNumNulls() > 0) {
           ndv = StatsUtils.safeAdd(ndv, 1);
         }
@@ -2144,5 +2164,14 @@ public class StatsUtils {
     }
 
     return ndvValues;
+  }
+
+  /**
+   * Returns true if any value in the given list is the negative NDV "unknown"
+   * sentinel established by HIVE-29438 / HIVE-29625. Used by aggregators that
+   * must propagate unknown when any contributor is unknown.
+   */
+  public static boolean containsUnknownNDV(List<Long> distinctVals) {
+    return distinctVals.stream().anyMatch(v -> v < 0);
   }
 }
