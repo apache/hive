@@ -98,12 +98,7 @@ public class GetTableTypesOperation extends MetadataOperation {
    */
   @Override
   public RowSet getNextRowSet(FetchOrientation orientation, long maxRows) throws HiveSQLException {
-    assertState(Collections.singleton(OperationState.FINISHED));
-    validateDefaultFetchOrientation(orientation);
-    if (orientation.equals(FetchOrientation.FETCH_FIRST)) {
-      rowSet.setStartOffset(0);
-    }
-    return rowSet.extractSubset((int)maxRows);
+    return extractSubsetRowSet(orientation, maxRows, rowSet);
   }
 
 }
