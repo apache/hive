@@ -2191,6 +2191,17 @@ public class HiveConf extends Configuration {
         "Whether to use former Java date/time APIs to convert between timezones when writing timestamps in " +
         "Avro files. Once data are written to the file the effect is permanent (also reflected in the metadata)." +
         "Changing the value of this property affects only new data written to the file."),
+    HIVE_AVRO_SCHEMA_URL_ALLOWED_SCHEMES("hive.avro.schema.url.allowed.schemes",
+        "hdfs,s3,s3a,s3n,abfs,abfss,gs,wasb,wasbs,viewfs,o3fs,ofs",
+        "Comma-separated list of URI schemes permitted for avro.schema.url when loading schemas from a remote " +
+            "location. HTTP/HTTPS and file:// are never allowed via this setting. A URI with no scheme is " +
+            "resolved against the default filesystem."),
+    HIVE_AVRO_SCHEMA_URL_REMOTE_HTTP_ENABLED("hive.avro.schema.url.remote.http.enabled", false,
+        "Whether to allow avro.schema.url values that use http or https. When enabled, the host must also appear " +
+            "in hive.avro.schema.url.http.allowed.hosts. Disabled by default to prevent server-side request forgery."),
+    HIVE_AVRO_SCHEMA_URL_HTTP_ALLOWED_HOSTS("hive.avro.schema.url.http.allowed.hosts", "",
+        "Comma-separated list of hosts permitted for avro.schema.url when hive.avro.schema.url.remote.http.enabled " +
+            "is true. HTTP/HTTPS schema fetch is rejected when this list is empty."),
     HIVE_INT_TIMESTAMP_CONVERSION_IN_SECONDS("hive.int.timestamp.conversion.in.seconds", false,
         "Boolean/tinyint/smallint/int/bigint value is interpreted as milliseconds during the timestamp conversion.\n" +
         "Set this flag to true to interpret the value as seconds to be consistent with float/double." ),

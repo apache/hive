@@ -17,11 +17,17 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.classification.InterfaceAudience.LimitedPrivate;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
@@ -31,12 +37,15 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrincipalDesc;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrivilegeDesc;
 import org.apache.hadoop.hive.ql.ddl.privilege.PrivilegeObjectDesc;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.Entity.Type;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity.WriteType;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizationTranslator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal.HivePrincipalType;
@@ -46,6 +55,9 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
+import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils.AvroTableProperties;
+import org.apache.hadoop.hive.serde2.avro.AvroSerDe;
 
 /**
  * Utility code shared by hive internal code and sql standard authorization plugin implementation
@@ -305,6 +317,85 @@ public class AuthorizationUtils {
       }
     }
     return actionType;
+  }
+
+  /**
+   * When a table or partition is read, add a DFS ReadEntity for its avro.schema.url if the
+   * schema would be fetched from a filesystem location at query time.
+   */
+  public static void addAvroSchemaUrlInputForReadEntity(Collection<ReadEntity> inputs,
+      ReadEntity readEntity) throws SemanticException {
+    if (readEntity == null || !readEntity.isDirect() || readEntity.isUpdateOrDelete()) {
+      return;
+    }
+    switch (readEntity.getTyp()) {
+    case TABLE:
+      if (readEntity.getTable() != null) {
+        addAvroSchemaUrlInputIfNeeded(inputs, readEntity.getTable());
+      }
+      break;
+    case PARTITION:
+    case DUMMYPARTITION:
+      if (readEntity.getPartition() != null) {
+        addAvroSchemaUrlInputIfNeeded(inputs, readEntity.getPartition().getTable());
+      }
+      break;
+    default:
+      break;
+    }
+  }
+
+  public static void addAvroSchemaUrlInputIfNeeded(Collection<ReadEntity> inputs, Table table)
+      throws SemanticException {
+    String schemaUrl = getFilesystemAvroSchemaUrlToAuthorize(table);
+    if (schemaUrl == null) {
+      return;
+    }
+    ReadEntity schemaUrlInput = toAvroSchemaUrlReadEntity(schemaUrl);
+    if (inputs instanceof Set) {
+      PlanUtils.addInput((Set<ReadEntity>) inputs, schemaUrlInput);
+    } else if (!inputs.contains(schemaUrlInput)) {
+      inputs.add(schemaUrlInput);
+    }
+  }
+
+  private static ReadEntity toAvroSchemaUrlReadEntity(String schemaUrl) {
+    Path path = new Path(schemaUrl);
+    return new ReadEntity(path, isLocalFilesystemSchemaUrl(schemaUrl));
+  }
+
+  private static boolean isLocalFilesystemSchemaUrl(String schemaUrl) {
+    try {
+      String scheme = new URI(schemaUrl).getScheme();
+      return scheme != null && "file".equalsIgnoreCase(scheme);
+    } catch (URISyntaxException e) {
+      return false;
+    }
+  }
+
+  /**
+   * Returns the avro.schema.url when it refers to a filesystem location that will be read to
+   * resolve the schema, or null when no schema-url authorization is required.
+   */
+  public static String getFilesystemAvroSchemaUrlToAuthorize(Table table) {
+    if (table == null || table.isTemporary()) {
+      return null;
+    }
+    if (!AvroSerDe.class.getName().equals(table.getSerializationLib())) {
+      return null;
+    }
+    String literal = table.getProperty(AvroTableProperties.SCHEMA_LITERAL.getPropName());
+    if (StringUtils.isNotEmpty(literal) && !AvroSerdeUtils.SCHEMA_NONE.equals(literal)) {
+      return null;
+    }
+    String schemaUrl = table.getProperty(AvroTableProperties.SCHEMA_URL.getPropName());
+    if (StringUtils.isEmpty(schemaUrl) || AvroSerdeUtils.SCHEMA_NONE.equals(schemaUrl)) {
+      return null;
+    }
+    if (!AvroSerdeUtils.isFilesystemSchemaUrl(schemaUrl)) {
+      return null;
+    }
+    return schemaUrl;
   }
 
 }
