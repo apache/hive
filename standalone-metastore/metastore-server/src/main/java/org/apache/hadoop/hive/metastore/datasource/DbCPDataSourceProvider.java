@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.metastore.datasource;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Collections;
-import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -32,7 +31,6 @@ import org.apache.commons.dbcp2.PoolingDataSource;
 import org.apache.commons.pool2.impl.BaseObjectPoolConfig;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,12 +70,6 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
     dbcpDs.setPassword(passwd);
     dbcpDs.setDefaultReadOnly(false);
     dbcpDs.setDefaultAutoCommit(true);
-
-    DatabaseProduct dbProduct =  DatabaseProduct.determineDatabaseProduct(driverUrl, hdpConfig);
-    Map<String, String> props = dbProduct.getDataSourceProperties();
-    for (Map.Entry<String, String> kv : props.entrySet()) {
-      dbcpDs.setConnectionProperties(kv.getKey() + "=" + kv.getValue());
-    }
 
     long connectionTimeout = hdpConfig.getLong(CONNECTION_TIMEOUT_PROPERTY, 30000L);
     int connectionMaxIlde = hdpConfig.getInt(CONNECTION_MAX_IDLE_PROPERTY, 8);
@@ -127,10 +119,16 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
         objectPool.setSoftMinEvictableIdleDuration(Duration.ofMillis(600 * 1000));
       }
     }
-    String stmt = dbProduct.getPrepareTxnStmt();
-    if (stmt != null) {
-      poolableConnFactory.setConnectionInitSql(Collections.singletonList(stmt));
-    }
+    StringBuilder connectionProperties = new StringBuilder();
+    DataSourceProvider.preparePool(hdpConfig,
+        stmt -> poolableConnFactory.setConnectionInitSql(Collections.singletonList(stmt)),
+        kv -> {
+          if (connectionProperties.length() > 0) {
+            connectionProperties.append(';');
+          }
+          connectionProperties.append(kv.getKey()).append('=').append(kv.getValue());
+          dbcpDs.setConnectionProperties(connectionProperties.toString());
+        });
     return new PoolingDataSource(objectPool);
   }
 

@@ -21,7 +21,6 @@ import com.codahale.metrics.MetricRegistry;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.slf4j.Logger;
@@ -29,7 +28,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
-import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -77,19 +75,8 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
       config.setMinimumIdle(Math.min(maxPoolSize, minimumIdle));
     }
 
-    DatabaseProduct dbProduct =  DatabaseProduct.determineDatabaseProduct(driverUrl, hdpConfig);
-
-    String s = dbProduct.getPrepareTxnStmt();
-    if (s!= null) {
-      config.setConnectionInitSql(s);
-    }
-
-    Map<String, String> props = dbProduct.getDataSourceProperties();
-
-    for ( Map.Entry<String, String> kv : props.entrySet()) {
-      config.addDataSourceProperty(kv.getKey(), kv.getValue());
-    }
-
+    DataSourceProvider.preparePool(hdpConfig, s -> config.setConnectionInitSql(s),
+        entry ->  config.addDataSourceProperty(entry.getKey(), entry.getValue()));
     return new HikariDataSource(initMetrics(config));
   }
 

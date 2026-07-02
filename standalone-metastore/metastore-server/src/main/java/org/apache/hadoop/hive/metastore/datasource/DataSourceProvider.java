@@ -20,11 +20,14 @@ package org.apache.hadoop.hive.metastore.datasource;
 import java.io.Closeable;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.Properties;
+import java.util.function.Consumer;
 import javax.sql.DataSource;
 
 import com.google.common.collect.Iterables;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 
 public interface DataSourceProvider {
@@ -77,11 +80,26 @@ public interface DataSourceProvider {
   }
 
   static String getMetastoreJdbcDriverUrl(Configuration conf) throws SQLException {
+    if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_PROFILE_JDBC_EXECUTION)) {
+      return MetastoreDriver.getMetastoreDbUrl(conf);
+    }
     return MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY);
   }
 
   static String getDataSourceName(Configuration conf) {
     return conf.get(DataSourceNameConfigurator.DATA_SOURCE_NAME);
+  }
+
+  static void preparePool(Configuration configuration, Consumer<String> initSql,
+      Consumer<Map.Entry<String, String>> dataSourceProps) {
+    String url = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.CONNECT_URL_KEY);
+    DatabaseProduct dbProduct =  DatabaseProduct.determineDatabaseProduct(url, configuration);
+    String s = dbProduct.getPrepareTxnStmt();
+    if (s != null) {
+      initSql.accept(s);
+    }
+    Map<String, String> properties = dbProduct.getDataSourceProperties();
+    properties.entrySet().forEach(dataSourceProps);
   }
 
   class DataSourceNameConfigurator implements Closeable {
