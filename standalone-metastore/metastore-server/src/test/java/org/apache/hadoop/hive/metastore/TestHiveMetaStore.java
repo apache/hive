@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.dataconnector.jdbc.AbstractJDBCConnectorProvider;
 import org.apache.hadoop.hive.metastore.handler.AddPartitionsHandler;
+import org.apache.hadoop.hive.metastore.metastore.impl.ColStatsStoreImpl;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetastoreVersionInfo;
@@ -3609,9 +3610,9 @@ public abstract class TestHiveMetaStore {
 
       List<String> expectedCols = Lists.newArrayList();
       expectedCols.add("name");
-      ObjectStore objStore = new ObjectStore();
+      ColStatsStoreImpl impl = new ColStatsStoreImpl();
       try {
-        objStore.validateTableCols(tbl, expectedCols);
+        impl.validateTableCols(tbl, expectedCols);
       } catch (MetaException ex) {
         throw new RuntimeException(ex);
       }
@@ -3619,7 +3620,7 @@ public abstract class TestHiveMetaStore {
       expectedCols.add("doesntExist");
       boolean exceptionFound = false;
       try {
-        objStore.validateTableCols(tbl, expectedCols);
+        impl.validateTableCols(tbl, expectedCols);
       } catch (MetaException ex) {
         assertEquals(ex.getMessage(),
             "Column doesntExist doesn't exist in table comptbl in database compdb");

@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.CheckConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -118,6 +119,10 @@ import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
+import org.apache.hadoop.hive.metastore.metastore.iface.ColStatsStore;
+import org.apache.hadoop.hive.metastore.metastore.iface.ConstraintStore;
+import org.apache.hadoop.hive.metastore.metastore.iface.TokenStore;
+import org.apache.hadoop.hive.metastore.metastore.iface.WMStore;
 import org.apache.hadoop.hive.metastore.model.MDatabase;
 import org.apache.hadoop.hive.metastore.model.MPartition;
 import org.apache.hadoop.hive.metastore.model.MTable;
@@ -1046,7 +1051,7 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException no such partition
    * @throws MetaException error accessing the RDBMS
    */
- default PrincipalPrivilegeSet getPartitionPrivilegeSet (String catName, String dbName, String tableName,
+ default PrincipalPrivilegeSet getPartitionPrivilegeSet(String catName, String dbName, String tableName,
       String partition, String userName, List<String> groupNames) throws InvalidObjectException, MetaException {
    return unwrap(PrivilegeStore.class).getPartitionPrivilegeSet(new TableName(catName, dbName, tableName), partition, userName, groupNames);
  }
@@ -1280,8 +1285,10 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException the stats object is invalid
    * @throws InvalidInputException unable to record the stats for the table
    */
-  Map<String, String> updateTableColumnStatistics(ColumnStatistics colStats, String validWriteIds, long writeId)
-      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
+  default Map<String, String> updateTableColumnStatistics(ColumnStatistics colStats, String validWriteIds, long writeId)
+      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    return unwrap(ColStatsStore.class).updateTableColumnStatistics(colStats, validWriteIds, writeId);
+  }
 
   /** Persists the given column statistics object to the metastore
    * @deprecated Use {@link #updatePartitionColumnStatistics(Table, MTable, ColumnStatistics, List, String, long)} instead
@@ -1294,14 +1301,23 @@ public interface RawStore extends Configurable {
    * @throws InvalidInputException unable to record the stats for the table
    */
   @Deprecated
-  Map<String, String> updatePartitionColumnStatistics(ColumnStatistics statsObj,
+  default Map<String, String> updatePartitionColumnStatistics(ColumnStatistics statsObj,
       List<String> partVals, String validWriteIds, long writeId)
-      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
+      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    ColumnStatisticsDesc statsDesc = statsObj.getStatsDesc();
+    String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : MetaStoreUtils.getDefaultCatalog(getConf());
+    Table table = unwrap(TableStore.class)
+        .getTable(new TableName(catName, statsDesc.getDbName(), statsDesc.getTableName()), null, -1);
+    MTable mTable = ensureGetMTable(statsDesc.getCatName(), statsDesc.getDbName(), statsDesc.getTableName());
+    return updatePartitionColumnStatistics(table, mTable, statsObj, partVals, validWriteIds, writeId);
+  }
 
-  Map<String, String> updatePartitionColumnStatistics(Table table, MTable mTable,
+  default Map<String, String> updatePartitionColumnStatistics(Table table, MTable mTable,
       ColumnStatistics statsObj, List<String> partVals,
       String validWriteIds, long writeId)
-      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
+      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    return unwrap(ColStatsStore.class).updatePartitionColumnStatistics(table, mTable, statsObj, partVals, validWriteIds, writeId);
+  }
 
   /**
    * Returns the relevant column statistics for a given column in a given table in a given database
@@ -1315,8 +1331,10 @@ public interface RawStore extends Configurable {
    * @throws MetaException error accessing the RDBMS
    *
    */
-  List<ColumnStatistics> getTableColumnStatistics(String catName, String dbName, String tableName,
-    List<String> colName) throws MetaException, NoSuchObjectException;
+  default List<ColumnStatistics> getTableColumnStatistics(String catName, String dbName, String tableName,
+    List<String> colName) throws MetaException, NoSuchObjectException {
+    return unwrap(ColStatsStore.class).getTableColumnStatistics(new TableName(catName, dbName, tableName), colName);
+  }
 
   /**
    * Returns the relevant column statistics for a given column in a given table in a given database
@@ -1331,8 +1349,11 @@ public interface RawStore extends Configurable {
    * @throws MetaException error accessing the RDBMS
    *
    */
-  ColumnStatistics getTableColumnStatistics(String catName, String dbName, String tableName,
-    List<String> colName, String engine) throws MetaException, NoSuchObjectException;
+  default ColumnStatistics getTableColumnStatistics(String catName, String dbName, String tableName,
+    List<String> colName, String engine) throws MetaException, NoSuchObjectException {
+    return unwrap(ColStatsStore.class)
+        .getTableColumnStatistics(new TableName(catName, dbName, tableName), colName, engine);
+  }
 
   /**
    * Returns the relevant column statistics for a given column in a given table in a given database
@@ -1348,10 +1369,13 @@ public interface RawStore extends Configurable {
    * @throws MetaException error accessing the RDBMS
    *
    */
-  ColumnStatistics getTableColumnStatistics(
+  default ColumnStatistics getTableColumnStatistics(
     String catName, String dbName, String tableName,
     List<String> colName, String engine, String writeIdList)
-      throws MetaException, NoSuchObjectException;
+      throws MetaException, NoSuchObjectException {
+    return unwrap(ColStatsStore.class)
+        .getTableColumnStatistics(new TableName(catName, dbName, tableName), colName, engine, writeIdList);
+  }
 
   /**
    * Get statistics for a partition for a set of columns.
@@ -1364,9 +1388,12 @@ public interface RawStore extends Configurable {
    * @throws MetaException error accessing the RDBMS
    * @throws NoSuchObjectException no such partition.
    */
-  List<List<ColumnStatistics>> getPartitionColumnStatistics(
+  default List<List<ColumnStatistics>> getPartitionColumnStatistics(
       String catName, String dbName, String tblName, List<String> partNames, List<String> colNames)
-      throws MetaException, NoSuchObjectException;
+      throws MetaException, NoSuchObjectException {
+    return unwrap(ColStatsStore.class)
+        .getPartitionColumnStatistics(new TableName(catName, dbName, tblName), partNames, colNames);
+  }
 
   /**
    * Get statistics for a partition for a set of columns.
@@ -1380,9 +1407,12 @@ public interface RawStore extends Configurable {
    * @throws MetaException error accessing the RDBMS
    * @throws NoSuchObjectException no such partition.
    */
-  List<ColumnStatistics> getPartitionColumnStatistics(
+  default List<ColumnStatistics> getPartitionColumnStatistics(
      String catName, String dbName, String tblName, List<String> partNames, List<String> colNames,
-     String engine) throws MetaException, NoSuchObjectException;
+     String engine) throws MetaException, NoSuchObjectException {
+    return unwrap(ColStatsStore.class)
+        .getPartitionColumnStatistics(new TableName(catName, dbName, tblName), partNames, colNames, engine);
+  }
 
   /**
    * Get statistics for a partition for a set of columns.
@@ -1397,11 +1427,14 @@ public interface RawStore extends Configurable {
    * @throws MetaException error accessing the RDBMS
    * @throws NoSuchObjectException no such partition.
    */
-  List<ColumnStatistics> getPartitionColumnStatistics(
+  default List<ColumnStatistics> getPartitionColumnStatistics(
       String catName, String dbName, String tblName,
       List<String> partNames, List<String> colNames,
       String engine, String writeIdList)
-      throws MetaException, NoSuchObjectException;
+      throws MetaException, NoSuchObjectException {
+    return unwrap(ColStatsStore.class)
+        .getPartitionColumnStatistics(new TableName(catName, dbName, tblName), partNames, colNames, engine, writeIdList);
+  }
 
   /**
    * Deletes column statistics if present associated with a given db, table, partition and a list of cols. If
@@ -1419,9 +1452,12 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException error dropping the stats
    * @throws InvalidInputException bad input, such as null table or database name.
    */
-  boolean deletePartitionColumnStatistics(String catName, String dbName, String tableName,
+  default boolean deletePartitionColumnStatistics(String catName, String dbName, String tableName,
     List<String> partNames, List<String> colNames, String engine)
-    throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
+    throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    return unwrap(ColStatsStore.class)
+        .deletePartitionColumnStatistics(new TableName(catName, dbName, tableName), partNames, colNames, engine);
+  }
 
   /**
    * Delete statistics for a single column, a list of columns or all columns in a table.
@@ -1436,28 +1472,46 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException error dropping the stats
    * @throws InvalidInputException bad inputs, such as null table name.
    */
-  boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
+  default boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
     List<String> colNames, String engine)
-    throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
+    throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    return unwrap(ColStatsStore.class).deleteTableColumnStatistics(new TableName(catName, dbName, tableName), colNames, engine);
+  }
 
   long cleanupEvents();
 
-  boolean addToken(String tokenIdentifier, String delegationToken);
+  default boolean addToken(String tokenIdentifier, String delegationToken) {
+    return unwrap(TokenStore.class).addToken(tokenIdentifier, delegationToken);
+  }
 
-  boolean removeToken(String tokenIdentifier);
+  default boolean removeToken(String tokenIdentifier) {
+    return unwrap(TokenStore.class).removeToken(tokenIdentifier);
+  }
 
-  String getToken(String tokenIdentifier);
+  default String getToken(String tokenIdentifier) {
+    return unwrap(TokenStore.class).getToken(tokenIdentifier);
+  }
 
-  List<String> getAllTokenIdentifiers();
+  default List<String> getAllTokenIdentifiers() {
+    return unwrap(TokenStore.class).getAllTokenIdentifiers();
+  }
 
-  int addMasterKey(String key) throws MetaException;
+  default int addMasterKey(String key) throws MetaException {
+    return unwrap(TokenStore.class).addMasterKey(key);
+  }
 
-  void updateMasterKey(Integer seqNo, String key)
-     throws NoSuchObjectException, MetaException;
+  default void updateMasterKey(Integer seqNo, String key)
+     throws NoSuchObjectException, MetaException {
+    unwrap(TokenStore.class).updateMasterKey(seqNo, key);
+  }
 
-  boolean removeMasterKey(Integer keySeq);
+  default boolean removeMasterKey(Integer keySeq) {
+    return unwrap(TokenStore.class).removeMasterKey(keySeq);
+  }
 
-  String[] getMasterKeys();
+  default String[] getMasterKeys() {
+    return unwrap(TokenStore.class).getMasterKeys();
+  }
 
   void verifySchema() throws MetaException;
 
@@ -1691,8 +1745,11 @@ public interface RawStore extends Configurable {
    * @throws MetaException error accessing RDBMS
    * @throws NoSuchObjectException no such table or partition
    */
-  AggrStats get_aggr_stats_for(String catName, String dbName, String tblName,
-    List<String> partNames, List<String> colNames, String engine) throws MetaException, NoSuchObjectException;
+  default AggrStats get_aggr_stats_for(String catName, String dbName, String tblName,
+    List<String> partNames, List<String> colNames, String engine) throws MetaException, NoSuchObjectException {
+    return unwrap(ColStatsStore.class)
+        .get_aggr_stats_for(new TableName(catName, dbName, tblName), partNames, colNames, engine);
+  }
 
   /**
    * Get aggregated stats for a table or partition(s).
@@ -1708,10 +1765,13 @@ public interface RawStore extends Configurable {
    * @throws MetaException error accessing RDBMS
    * @throws NoSuchObjectException no such table or partition
    */
-  AggrStats get_aggr_stats_for(String catName, String dbName, String tblName,
+  default AggrStats get_aggr_stats_for(String catName, String dbName, String tblName,
     List<String> partNames, List<String> colNames,
     String engine, String writeIdList)
-      throws MetaException, NoSuchObjectException;
+      throws MetaException, NoSuchObjectException {
+    return unwrap(ColStatsStore.class)
+        .get_aggr_stats_for(new TableName(catName, dbName, tblName), partNames, colNames, engine, writeIdList);
+  }
 
   /**
    * Get column stats for all partitions of all tables in the database
@@ -1721,8 +1781,10 @@ public interface RawStore extends Configurable {
    * @throws MetaException error accessing RDBMS
    * @throws NoSuchObjectException no such database
    */
-  List<ColStatsObjWithSourceInfo> getPartitionColStatsForDatabase(String catName, String dbName)
-      throws MetaException, NoSuchObjectException;
+  default List<ColStatsObjWithSourceInfo> getPartitionColStatsForDatabase(String catName, String dbName)
+      throws MetaException, NoSuchObjectException {
+    return unwrap(ColStatsStore.class).getPartitionColStatsForDatabase(catName, dbName);
+  }
 
     /**
    * Get the next notification event.
@@ -1860,8 +1922,10 @@ public interface RawStore extends Configurable {
    * @return list of primary key columns or an empty list if the table does not have a primary key
    * @throws MetaException error accessing the RDBMS
    */
-  List<SQLPrimaryKey> getPrimaryKeys(PrimaryKeysRequest request)
-      throws MetaException;
+  default List<SQLPrimaryKey> getPrimaryKeys(PrimaryKeysRequest request)
+      throws MetaException {
+    return unwrap(ConstraintStore.class).getPrimaryKeys(request);
+  }
 
   /**
    * SQLForeignKey represents a single foreign key column.
@@ -1872,8 +1936,10 @@ public interface RawStore extends Configurable {
    * matches the arguments the results here will be all mixed together into a single list.
    * @throws MetaException error access the RDBMS.
    */
-  List<SQLForeignKey> getForeignKeys(ForeignKeysRequest request)
-      throws MetaException;
+  default List<SQLForeignKey> getForeignKeys(ForeignKeysRequest request)
+      throws MetaException {
+    return unwrap(ConstraintStore.class).getForeignKeys(request);
+  }
 
   /**
    * SQLUniqueConstraint represents a single unique constraint column.
@@ -1883,7 +1949,9 @@ public interface RawStore extends Configurable {
    * @return list of unique constraints
    * @throws MetaException error access the RDBMS.
    */
-  List<SQLUniqueConstraint> getUniqueConstraints(UniqueConstraintsRequest request) throws MetaException;
+  default List<SQLUniqueConstraint> getUniqueConstraints(UniqueConstraintsRequest request) throws MetaException {
+    return unwrap(ConstraintStore.class).getUniqueConstraints(request);
+  }
 
   /**
    * SQLNotNullConstraint represents a single not null constraint column.
@@ -1893,7 +1961,9 @@ public interface RawStore extends Configurable {
    * @return list of not null constraints
    * @throws MetaException error accessing the RDBMS.
    */
-  List<SQLNotNullConstraint> getNotNullConstraints(NotNullConstraintsRequest request) throws MetaException;
+  default List<SQLNotNullConstraint> getNotNullConstraints(NotNullConstraintsRequest request) throws MetaException {
+    return unwrap(ConstraintStore.class).getNotNullConstraints(request);
+  }
 
   /**
    * SQLDefaultConstraint represents a single default constraint column.
@@ -1903,7 +1973,9 @@ public interface RawStore extends Configurable {
    * @return list of default values defined on the table.
    * @throws MetaException error accessing the RDBMS
    */
-  List<SQLDefaultConstraint> getDefaultConstraints(DefaultConstraintsRequest request) throws MetaException;
+  default List<SQLDefaultConstraint> getDefaultConstraints(DefaultConstraintsRequest request) throws MetaException {
+    return unwrap(ConstraintStore.class).getDefaultConstraints(request);
+  }
 
   /**
    * SQLCheckConstraint represents a single check constraint column.
@@ -1913,7 +1985,9 @@ public interface RawStore extends Configurable {
    * @return ccheck constraints for this table
    * @throws MetaException error accessing the RDBMS
    */
-  List<SQLCheckConstraint> getCheckConstraints(CheckConstraintsRequest request) throws MetaException;
+  default List<SQLCheckConstraint> getCheckConstraints(CheckConstraintsRequest request) throws MetaException {
+    return unwrap(ConstraintStore.class).getCheckConstraints(request);
+  }
 
   /**
    * Get table constraints
@@ -1922,8 +1996,10 @@ public interface RawStore extends Configurable {
    * @throws MetaException
    * @throws NoSuchObjectException
    */
-  SQLAllTableConstraints getAllTableConstraints(AllTableConstraintsRequest request)
-      throws MetaException, NoSuchObjectException;
+  default SQLAllTableConstraints getAllTableConstraints(AllTableConstraintsRequest request)
+      throws MetaException, NoSuchObjectException {
+    return unwrap(ConstraintStore.class).getAllTableConstraints(request);
+  }
 
   /**
    * Create a table with constraints
@@ -1933,7 +2009,10 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException one of the provided objects is malformed.
    * @throws MetaException error accessing the RDBMS
    */
-  SQLAllTableConstraints createTableWithConstraints(Table tbl, SQLAllTableConstraints constraints) throws InvalidObjectException, MetaException;
+  default SQLAllTableConstraints createTableWithConstraints(Table tbl, SQLAllTableConstraints constraints)
+      throws InvalidObjectException, MetaException {
+    return unwrap(ConstraintStore.class).createTableWithConstraints(tbl, constraints);
+  }
 
   /**
    * Drop a constraint, any constraint.  I have no idea why add and get each have separate
@@ -1960,8 +2039,10 @@ public interface RawStore extends Configurable {
    *                  false and there is no constraint of this name an exception will be thrown.
    * @throws NoSuchObjectException no constraint of this name exists and missingOk = false
    */
-  void dropConstraint(String catName, String dbName, String tableName, String constraintName,
-                      boolean missingOk) throws NoSuchObjectException;
+  default void dropConstraint(String catName, String dbName, String tableName, String constraintName,
+                      boolean missingOk) throws NoSuchObjectException {
+    unwrap(ConstraintStore.class).dropConstraint(new TableName(catName, dbName, tableName), constraintName, missingOk);
+  }
 
   /**
    * Add a primary key to a table.
@@ -1970,7 +2051,9 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException The SQLPrimaryKeys list is malformed
    * @throws MetaException error accessing the RDMBS
    */
-  List<SQLPrimaryKey> addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException, MetaException;
+  default List<SQLPrimaryKey> addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException, MetaException {
+    return unwrap(ConstraintStore.class).addPrimaryKeys(pks);
+  }
 
   /**
    * Add a foreign key to a table.
@@ -1979,7 +2062,9 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException the specification is malformed.
    * @throws MetaException error accessing the RDBMS.
    */
-  List<SQLForeignKey> addForeignKeys(List<SQLForeignKey> fks) throws InvalidObjectException, MetaException;
+  default List<SQLForeignKey> addForeignKeys(List<SQLForeignKey> fks) throws InvalidObjectException, MetaException {
+    return unwrap(ConstraintStore.class).addForeignKeys(fks);
+  }
 
   /**
    * Add unique constraints to a table.
@@ -1988,7 +2073,9 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException the specification is malformed.
    * @throws MetaException error accessing the RDBMS.
    */
-  List<SQLUniqueConstraint> addUniqueConstraints(List<SQLUniqueConstraint> uks) throws InvalidObjectException, MetaException;
+  default List<SQLUniqueConstraint> addUniqueConstraints(List<SQLUniqueConstraint> uks) throws InvalidObjectException, MetaException {
+    return unwrap(ConstraintStore.class).addUniqueConstraints(uks);
+  }
 
   /**
    * Add not null constraints to a table.
@@ -1997,7 +2084,10 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException the specification is malformed.
    * @throws MetaException error accessing the RDBMS.
    */
-  List<SQLNotNullConstraint> addNotNullConstraints(List<SQLNotNullConstraint> nns) throws InvalidObjectException, MetaException;
+  default List<SQLNotNullConstraint> addNotNullConstraints(List<SQLNotNullConstraint> nns)
+      throws InvalidObjectException, MetaException {
+    return unwrap(ConstraintStore.class).addNotNullConstraints(nns);
+  }
 
   /**
    * Add default values to a table definition.
@@ -2006,8 +2096,10 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException the specification is malformed.
    * @throws MetaException error accessing the RDBMS.
    */
-  List<SQLDefaultConstraint> addDefaultConstraints(List<SQLDefaultConstraint> dv)
-      throws InvalidObjectException, MetaException;
+  default List<SQLDefaultConstraint> addDefaultConstraints(List<SQLDefaultConstraint> dv)
+      throws InvalidObjectException, MetaException {
+    return unwrap(ConstraintStore.class).addDefaultConstraints(dv);
+  }
 
   /**
    * Add check constraints to a table.
@@ -2016,7 +2108,10 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException the specification is malformed
    * @throws MetaException error accessing the RDBMS
    */
-  List<SQLCheckConstraint> addCheckConstraints(List<SQLCheckConstraint> cc) throws InvalidObjectException, MetaException;
+  default List<SQLCheckConstraint> addCheckConstraints(List<SQLCheckConstraint> cc)
+      throws InvalidObjectException, MetaException {
+    return unwrap(ConstraintStore.class).addCheckConstraints(cc);
+  }
 
   /**
    * Gets the unique id of the backing datastore for the metadata.
@@ -2025,60 +2120,96 @@ public interface RawStore extends Configurable {
    */
   String getMetastoreDbUuid() throws MetaException;
 
-  void createResourcePlan(WMResourcePlan resourcePlan, String copyFrom, int defaultPoolSize)
-      throws AlreadyExistsException, MetaException, InvalidObjectException, NoSuchObjectException;
+  default void createResourcePlan(WMResourcePlan resourcePlan, String copyFrom, int defaultPoolSize)
+      throws AlreadyExistsException, MetaException, InvalidObjectException, NoSuchObjectException {
+    unwrap(WMStore.class).createResourcePlan(resourcePlan, copyFrom, defaultPoolSize);
+  }
 
-  WMFullResourcePlan getResourcePlan(String name, String string) throws NoSuchObjectException, MetaException;
+  default WMFullResourcePlan getResourcePlan(String name, String string) throws NoSuchObjectException, MetaException {
+    return unwrap(WMStore.class).getResourcePlan(name, string);
+  }
 
-  List<WMResourcePlan> getAllResourcePlans(String string) throws MetaException;
+  default List<WMResourcePlan> getAllResourcePlans(String string) throws MetaException {
+    return unwrap(WMStore.class).getAllResourcePlans(string);
+  }
 
-  WMFullResourcePlan alterResourcePlan(String name, String ns, WMNullableResourcePlan resourcePlan,
+  default WMFullResourcePlan alterResourcePlan(String name, String ns, WMNullableResourcePlan resourcePlan,
       boolean canActivateDisabled, boolean canDeactivate, boolean isReplace)
       throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
-          MetaException;
+          MetaException {
+    return unwrap(WMStore.class).alterResourcePlan(name, ns, resourcePlan, canActivateDisabled, canDeactivate, isReplace);
+  }
 
-  WMFullResourcePlan getActiveResourcePlan(String ns) throws MetaException;
+  default WMFullResourcePlan getActiveResourcePlan(String ns) throws MetaException {
+    return unwrap(WMStore.class).getActiveResourcePlan(ns);
+  }
 
-  WMValidateResourcePlanResponse validateResourcePlan(String name, String ns)
-      throws NoSuchObjectException, InvalidObjectException, MetaException;
+  default WMValidateResourcePlanResponse validateResourcePlan(String name, String ns)
+      throws NoSuchObjectException, InvalidObjectException, MetaException {
+    return unwrap(WMStore.class).validateResourcePlan(name, ns);
+  }
 
-  void dropResourcePlan(String name, String ns) throws NoSuchObjectException, MetaException;
+  default void dropResourcePlan(String name, String ns) throws NoSuchObjectException, MetaException {
+    unwrap(WMStore.class).dropResourcePlan(name, ns);
+  }
 
-  void createWMTrigger(WMTrigger trigger)
+  default void createWMTrigger(WMTrigger trigger)
       throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
-          MetaException;
+          MetaException {
+    unwrap(WMStore.class).createWMTrigger(trigger);
+  }
 
-  void alterWMTrigger(WMTrigger trigger)
-      throws NoSuchObjectException, InvalidOperationException, MetaException;
+  default void alterWMTrigger(WMTrigger trigger)
+      throws NoSuchObjectException, InvalidOperationException, MetaException {
+    unwrap(WMStore.class).alterWMTrigger(trigger);
+  }
 
-  void dropWMTrigger(String resourcePlanName, String triggerName, String ns)
-      throws NoSuchObjectException, InvalidOperationException, MetaException;
+  default void dropWMTrigger(String resourcePlanName, String triggerName, String ns)
+      throws NoSuchObjectException, InvalidOperationException, MetaException {
+    unwrap(WMStore.class).dropWMTrigger(resourcePlanName, triggerName, ns);
+  }
 
-  List<WMTrigger> getTriggersForResourcePlan(String resourcePlanName, String ns)
-      throws NoSuchObjectException, MetaException;
+  default List<WMTrigger> getTriggersForResourcePlan(String resourcePlanName, String ns)
+      throws NoSuchObjectException, MetaException {
+    return unwrap(WMStore.class).getTriggersForResourcePlan(resourcePlanName, ns);
+  }
 
-  void createPool(WMPool pool) throws AlreadyExistsException, NoSuchObjectException,
-      InvalidOperationException, MetaException;
+  default void createPool(WMPool pool) throws AlreadyExistsException, NoSuchObjectException,
+      InvalidOperationException, MetaException {
+    unwrap(WMStore.class).createPool(pool);
+  }
 
-  void alterPool(WMNullablePool pool, String poolPath) throws AlreadyExistsException,
-      NoSuchObjectException, InvalidOperationException, MetaException;
+  default void alterPool(WMNullablePool pool, String poolPath) throws AlreadyExistsException,
+      NoSuchObjectException, InvalidOperationException, MetaException {
+    unwrap(WMStore.class).alterPool(pool, poolPath);
+  }
 
-  void dropWMPool(String resourcePlanName, String poolPath, String ns)
-      throws NoSuchObjectException, InvalidOperationException, MetaException;
+  default void dropWMPool(String resourcePlanName, String poolPath, String ns)
+      throws NoSuchObjectException, InvalidOperationException, MetaException {
+    unwrap(WMStore.class).dropWMPool(resourcePlanName, poolPath, ns);
+  }
 
-  void createOrUpdateWMMapping(WMMapping mapping, boolean update)
+  default void createOrUpdateWMMapping(WMMapping mapping, boolean update)
       throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
-          MetaException;
+          MetaException {
+    unwrap(WMStore.class).createOrUpdateWMMapping(mapping, update);
+  }
 
-  void dropWMMapping(WMMapping mapping)
-      throws NoSuchObjectException, InvalidOperationException, MetaException;
+  default void dropWMMapping(WMMapping mapping)
+      throws NoSuchObjectException, InvalidOperationException, MetaException {
+    unwrap(WMStore.class).dropWMMapping(mapping);
+  }
 
-  void createWMTriggerToPoolMapping(String resourcePlanName, String triggerName, String poolPath, String ns)
+  default void createWMTriggerToPoolMapping(String resourcePlanName, String triggerName, String poolPath, String ns)
       throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
-          MetaException;
+          MetaException {
+    unwrap(WMStore.class).createWMTriggerToPoolMapping(resourcePlanName, triggerName, poolPath, ns);
+  }
 
-  void dropWMTriggerToPoolMapping(String resourcePlanName, String triggerName, String poolPath, String ns)
-      throws NoSuchObjectException, InvalidOperationException, MetaException;
+  default void dropWMTriggerToPoolMapping(String resourcePlanName, String triggerName, String poolPath, String ns)
+      throws NoSuchObjectException, InvalidOperationException, MetaException {
+    unwrap(WMStore.class).dropWMTriggerToPoolMapping(resourcePlanName, triggerName, poolPath, ns);
+  }
 
   /**
    * Create a new ISchema.
@@ -2213,20 +2344,32 @@ public interface RawStore extends Configurable {
   void addSerde(SerDeInfo serde) throws AlreadyExistsException, MetaException;
 
   /** Adds a RuntimeStat for persistence. */
-  void addRuntimeStat(RuntimeStat stat) throws MetaException;
+  default void addRuntimeStat(RuntimeStat stat) throws MetaException {
+    unwrap(WMStore.class).addRuntimeStat(stat);
+  }
 
   /** Reads runtime statistic entries. */
-  List<RuntimeStat> getRuntimeStats(int maxEntries, int maxCreateTime) throws MetaException;
+  default List<RuntimeStat> getRuntimeStats(int maxEntries, int maxCreateTime) throws MetaException {
+    return unwrap(WMStore.class).getRuntimeStats(maxEntries, maxCreateTime);
+  }
 
   /** Removes outdated statistics. */
-  int deleteRuntimeStats(int maxRetainSecs) throws MetaException;
+  default int deleteRuntimeStats(int maxRetainSecs) throws MetaException {
+    return unwrap(WMStore.class).deleteRuntimeStats(maxRetainSecs);
+  }
 
-  List<TableName> getTableNamesWithStats() throws MetaException, NoSuchObjectException;
+  default List<TableName> getTableNamesWithStats() throws MetaException, NoSuchObjectException {
+    return unwrap(ColStatsStore.class).getTableNamesWithStats();
+  }
 
-  List<TableName> getAllTableNamesForStats() throws MetaException, NoSuchObjectException;
+  default List<TableName> getAllTableNamesForStats() throws MetaException, NoSuchObjectException {
+    return unwrap(ColStatsStore.class).getAllTableNamesForStats();
+  }
 
-  Map<String, List<String>> getPartitionColsWithStats(String catName, String dbName,
-      String tableName) throws MetaException, NoSuchObjectException;
+  default Map<String, List<String>> getPartitionColsWithStats(String catName, String dbName,
+      String tableName) throws MetaException, NoSuchObjectException {
+    return unwrap(ColStatsStore.class).getPartitionColsWithStats(new TableName(catName, dbName, tableName));
+  }
 
   /**
    * Remove older notification events.
@@ -2295,11 +2438,13 @@ public interface RawStore extends Configurable {
    */
   ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest replicationMetricsRequest);
 
-  Map<String, Map<String, String>> updatePartitionColumnStatisticsInBatch(
+  default Map<String, Map<String, String>> updatePartitionColumnStatisticsInBatch(
           Map<String, ColumnStatistics> partColStatsMap,
           Table tbl, List<TransactionalMetaStoreEventListener> listeners,
           String validWriteIds, long writeId)
-          throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
+          throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
+    return unwrap(ColStatsStore.class).updatePartitionColumnStatisticsInBatch(partColStatsMap, tbl, listeners, validWriteIds, writeId);
+  }
 
   int deleteReplicationMetrics(int maxRetainSecs);
 
@@ -2307,7 +2452,10 @@ public interface RawStore extends Configurable {
 
   int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException, MetaException;
 
-  void deleteAllPartitionColumnStatistics(TableName tn, String writeIdList);
+  default void deleteAllPartitionColumnStatistics(TableName tn, String writeIdList)
+      throws MetaException, NoSuchObjectException {
+    unwrap(ColStatsStore.class).deleteAllPartitionColumnStatistics(tn, writeIdList);
+  }
 
   void createOrUpdateStoredProcedure(StoredProcedure proc) throws NoSuchObjectException, MetaException;
 

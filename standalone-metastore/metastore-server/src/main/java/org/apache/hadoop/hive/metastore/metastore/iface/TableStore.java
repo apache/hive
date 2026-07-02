@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
+import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
 import org.apache.hadoop.hive.metastore.model.MPartition;
 import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.metastore.MetaDescriptor;
@@ -474,4 +475,18 @@ public interface TableStore {
       throws MetaException, NoSuchObjectException;
 
   MPartition ensureGetMPartition(TableName tableName, List<String> partVals) throws MetaException;
+
+  class AttachedMTableInfo {
+    public MTable mtbl;
+    public MColumnDescriptor mcd;
+
+    public AttachedMTableInfo() {}
+
+    public AttachedMTableInfo(MTable mtbl, MColumnDescriptor mcd) {
+      this.mtbl = mtbl;
+      this.mcd = mcd;
+    }
+  }
+
+  AttachedMTableInfo getMTable(TableName tableName, boolean retrieveCD);
 }
