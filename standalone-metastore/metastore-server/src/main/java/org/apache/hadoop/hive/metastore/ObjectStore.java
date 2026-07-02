@@ -258,7 +258,7 @@ import com.google.common.collect.Sets;
  * to be made into a interface that can read both from a database and a
  * filestore.
  */
-public class ObjectStore implements RawStore, Configurable {
+public class ObjectStore implements RawStore, ColumnDescriptorSupplier, Configurable {
   protected int batchSize = NO_BATCHING;
 
   private static final DateTimeFormatter YMDHMS_FORMAT = DateTimeFormatter.ofPattern(
@@ -1821,11 +1821,11 @@ public class ObjectStore implements RawStore, Configurable {
    * @param cols the columns the column descriptor contains
    * @return a new column descriptor db-backed object
    */
-  private static MColumnDescriptor createNewMColumnDescriptor(List<MFieldSchema> cols) {
+  private static MColumnDescriptor createNewMColumnDescriptor(List<FieldSchema> cols) {
     if (cols == null) {
       return null;
     }
-    return new MColumnDescriptor(cols);
+    return new MColumnDescriptor(convertToMFieldSchemas(cols));
   }
 
   private static StorageDescriptor convertToStorageDescriptor(
@@ -1929,7 +1929,28 @@ public class ObjectStore implements RawStore, Configurable {
     if (sd == null) {
       return null;
     }
-    MColumnDescriptor mcd = createNewMColumnDescriptor(convertToMFieldSchemas(sd.getCols()));
+    MColumnDescriptor mcd = createNewMColumnDescriptor(sd.getCols());
+    return convertToMStorageDescriptor(sd, mcd);
+  }
+
+  /**
+   * Converts a storage descriptor to a db-backed storage descriptor.  Creates a
+   * new db-backed column descriptor object for this SD, unless a matching one already
+   * exists for the given table.
+   * @param sd the storage descriptor to wrap in a db-backed object
+   * @param mt the table to search for existing column descriptors, may be null
+   * @return the storage descriptor db-backed object
+   */
+  private static MStorageDescriptor convertToMStorageDescriptor(StorageDescriptor sd, MTable mt,  ColumnDescriptorSupplier cds)
+      throws MetaException {
+    if (sd == null) {
+      return null;
+    }
+
+    MColumnDescriptor mcd = (mt != null) ? cds.getColumnDescriptor(sd.getCols(), mt) : null;
+    if (mcd == null) {
+      mcd = createNewMColumnDescriptor(sd.getCols());
+    }
     return convertToMStorageDescriptor(sd, mcd);
   }
 
@@ -1958,6 +1979,55 @@ public class ObjectStore implements RawStore, Configurable {
         covertToMapMStringList((null == sd.getSkewedInfo()) ? null : sd.getSkewedInfo()
             .getSkewedColValueLocationMaps()), sd.isStoredAsSubDirectories());
   }
+
+  @Override
+  public MColumnDescriptor getColumnDescriptor(List<FieldSchema> cols, MTable mt)
+      throws MetaException {
+    if (cols == null || cols.isEmpty()) {
+      return null;
+    }
+
+    // First check to see if partition and tables column descriptor match
+    // that's the easy and relatively fast-check since does not require
+    // round-tripe to the database
+    List<FieldSchema> tableSchema = mt.getSd() != null && mt.getSd().getCD() != null && mt.getSd()
+        .getCD()
+        .getCols() != null ? convertToFieldSchemas(mt.getSd()
+        .getCD()
+        .getCols()) : null;
+    if (cols.equals(tableSchema)) {
+      return mt.getSd().getCD();
+    }
+
+    String catName = mt.getDatabase().getCatalogName();
+    String dbName = mt.getDatabase().getName();
+    String tblName = mt.getTableName();
+    long tblId = mt.getId();
+    try {
+      return new GetHelper<MColumnDescriptor>(catName, dbName, tblName, true, true) {
+        @Override
+        protected String describeResult() {
+          return "Matching column descriptor";
+        }
+
+        @Override
+        protected MColumnDescriptor getSqlResult(GetHelper<MColumnDescriptor> ctx)
+            throws MetaException {
+          // TODO: Need to make this configurable via property cause it may be too expensive for general use
+          return directSql.getColumnDescriptor(cols, tblId);
+        }
+
+        @Override
+        protected MColumnDescriptor getJdoResult(GetHelper<MColumnDescriptor> ctx) {
+          // Return null basically means allocate a new column descriptor
+          return null;
+        }
+      }.run(false);
+    } catch (NoSuchObjectException e) {
+      return null;
+    }
+  }
+
 
   public static MCreationMetadata convertToMCreationMetadata(CreationMetadata m, RawStore base)
       throws MetaException {
@@ -2066,7 +2136,7 @@ public class ObjectStore implements RawStore, Configurable {
    * @param mt the parent table object
    * @return the model partition object, and null if the input partition is null.
    */
-  public static MPartition convertToMPart(Partition part, MTable mt)
+  public static MPartition convertToMPart(Partition part, MTable mt, RawStore base)
       throws InvalidObjectException, MetaException {
     // NOTE: we don't set writeId in this method. Write ID is only set after validating the
     //       existing write ID against the caller's valid list.
@@ -2078,19 +2148,12 @@ public class ObjectStore implements RawStore, Configurable {
           "Partition doesn't have a valid table or database name");
     }
 
-    // If this partition's set of columns is the same as the parent table's,
-    // use the parent table's, so we do not create a duplicate column descriptor,
-    // thereby saving space
-    MStorageDescriptor msd;
-    if (mt.getSd() != null && mt.getSd().getCD() != null &&
-        mt.getSd().getCD().getCols() != null &&
-        part.getSd() != null &&
-        convertToFieldSchemas(mt.getSd().getCD().getCols()).
-        equals(part.getSd().getCols())) {
-      msd = convertToMStorageDescriptor(part.getSd(), mt.getSd().getCD());
-    } else {
-      msd = convertToMStorageDescriptor(part.getSd());
+    ColumnDescriptorSupplier cds = (s, t) -> null;
+    if (base instanceof ColumnDescriptorSupplier) {
+      cds = (ColumnDescriptorSupplier) base;
     }
+
+    MStorageDescriptor msd = convertToMStorageDescriptor(part.getSd(), mt, cds);
 
     return new MPartition(Warehouse.makePartName(convertToFieldSchemas(mt
         .getPartitionKeys()), part.getValues()), mt, part.getValues(), part
@@ -6239,7 +6302,7 @@ public class ObjectStore implements RawStore, Configurable {
         normalizeIdentifier(schemaVersion.getSchema().getSchemaName())),
         schemaVersion.getVersion(),
         schemaVersion.getCreatedAt(),
-        createNewMColumnDescriptor(convertToMFieldSchemas(schemaVersion.getCols())),
+        createNewMColumnDescriptor(schemaVersion.getCols()),
         schemaVersion.isSetState() ? schemaVersion.getState().getValue() : 0,
         schemaVersion.isSetDescription() ? schemaVersion.getDescription() : null,
         schemaVersion.isSetSchemaText() ? schemaVersion.getSchemaText() : null,

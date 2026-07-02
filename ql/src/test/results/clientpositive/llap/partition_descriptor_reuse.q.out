@@ -1,0 +1,70 @@
+PREHOOK: query: create table person(id string, fname string) partitioned by (birthyear string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@person
+POSTHOOK: query: create table person(id string, fname string) partitioned by (birthyear string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@person
+PREHOOK: query: alter table person add partition (birthyear='1987')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@person
+POSTHOOK: query: alter table person add partition (birthyear='1987')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@person
+POSTHOOK: Output: default@person@birthyear=1987
+PREHOOK: query: alter table person add partition (birthyear='1988')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@person
+POSTHOOK: query: alter table person add partition (birthyear='1988')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@person
+POSTHOOK: Output: default@person@birthyear=1988
+PREHOOK: query: alter table person add partition (birthyear='1989')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@person
+POSTHOOK: query: alter table person add partition (birthyear='1989')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@person
+POSTHOOK: Output: default@person@birthyear=1989
+PREHOOK: query: alter table person add partition (birthyear='1990')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@person
+POSTHOOK: query: alter table person add partition (birthyear='1990')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@person
+POSTHOOK: Output: default@person@birthyear=1990
+PREHOOK: query: alter table person add partition (birthyear='1991')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@person
+POSTHOOK: query: alter table person add partition (birthyear='1991')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@person
+POSTHOOK: Output: default@person@birthyear=1991
+PREHOOK: query: alter table person partition (birthyear='1989') add columns (lname string)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@person
+PREHOOK: Output: default@person@birthyear=1989
+POSTHOOK: query: alter table person partition (birthyear='1989') add columns (lname string)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@person
+POSTHOOK: Input: default@person@birthyear=1989
+POSTHOOK: Output: default@person@birthyear=1989
+PREHOOK: query: alter table person partition (birthyear='1990') add columns (lname string)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@person
+PREHOOK: Output: default@person@birthyear=1990
+POSTHOOK: query: alter table person partition (birthyear='1990') add columns (lname string)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@person
+POSTHOOK: Input: default@person@birthyear=1990
+POSTHOOK: Output: default@person@birthyear=1990
+PREHOOK: query: alter table person partition (birthyear='1991') change column fname fullname string
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@person
+PREHOOK: Output: default@person@birthyear=1991
+POSTHOOK: query: alter table person partition (birthyear='1991') change column fname fullname string
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@person
+POSTHOOK: Input: default@person@birthyear=1991
+POSTHOOK: Output: default@person@birthyear=1991
