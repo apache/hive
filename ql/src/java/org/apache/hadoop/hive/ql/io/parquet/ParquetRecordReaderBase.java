@@ -37,10 +37,10 @@ import org.apache.parquet.hadoop.ParquetInputSplit;
 import org.apache.parquet.hadoop.api.InitContext;
 import org.apache.parquet.hadoop.api.ReadSupport;
 import org.apache.parquet.hadoop.metadata.BlockMetaData;
+import org.apache.parquet.hadoop.metadata.ColumnChunkMetaData;
 import org.apache.parquet.hadoop.metadata.FileMetaData;
 import org.apache.parquet.hadoop.metadata.ParquetMetadata;
 import org.apache.parquet.schema.MessageType;
-import org.apache.parquet.schema.MessageTypeParser;
 import org.apache.parquet.schema.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -120,8 +120,8 @@ public abstract class ParquetRecordReaderBase {
       serDeStats.setRawDataSize(serDeStats.getRawDataSize() + bmd.getTotalByteSize());
     }
 
-    schemaSize = MessageTypeParser.parseMessageType(readContext.getReadSupportMetadata()
-      .get(DataWritableReadSupport.HIVE_TABLE_AS_PARQUET_SCHEMA)).getFieldCount();
+    schemaSize = DataWritableReadSupport.getTableParquetSchema(jobConf, fileMetaData.getSchema(),
+        readContext.getReadSupportMetadata()).getFieldCount();
     final List<BlockMetaData> splitGroup = new ArrayList<BlockMetaData>();
     final long splitStart = fileSplit.getStart();
     final long splitLength = fileSplit.getLength();
@@ -164,16 +164,27 @@ public abstract class ParquetRecordReaderBase {
       legacyConversionEnabled =
           DataWritableReadSupport.getZoneConversionLegacy(fileMetaData.getKeyValueMetaData(), conf);
 
-    split = new ParquetInputSplit(finalPath,
-      splitStart,
-      splitLength,
-      fileSplit.getLocations(),
-      filteredBlocks,
-      readContext.getRequestedSchema().toString(),
-      fileMetaData.getSchema().toString(),
-      fileMetaData.getKeyValueMetaData(),
-      readContext.getReadSupportMetadata());
+    split = buildParquetInputSplit(finalPath, readContext.getRequestedSchema());
     return split;
+  }
+
+  private ParquetInputSplit buildParquetInputSplit(final Path finalPath, final MessageType requestedSchema)
+      throws IOException {
+    long filteredSize = 0;
+    for (BlockMetaData block : filteredBlocks) {
+      for (ColumnChunkMetaData column : block.getColumns()) {
+        if (requestedSchema.containsPath(column.getPath().toArray())) {
+          filteredSize += column.getTotalSize();
+        }
+      }
+    }
+
+    long[] rowGroupOffsets = new long[filteredBlocks.size()];
+    for (int i = 0; i < rowGroupOffsets.length; i++) {
+      rowGroupOffsets[i] = filteredBlocks.get(i).getStartingPos();
+    }
+    return new ParquetInputSplit(finalPath, fileSplit.getStart(), filteredSize, fileSplit.getLength(),
+        fileSplit.getLocations(), rowGroupOffsets);
   }
 
   @SuppressWarnings("deprecation")
