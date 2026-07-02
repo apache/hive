@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore.metastore.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -3331,24 +3332,79 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
           "Partition doesn't have a valid table or database name");
     }
 
-    // If this partition's set of columns is the same as the parent table's,
-    // use the parent table's, so we do not create a duplicate column descriptor,
-    // thereby saving space
-    MStorageDescriptor msd;
-    if (mt.getSd() != null && mt.getSd().getCD() != null &&
-        mt.getSd().getCD().getCols() != null &&
-        part.getSd() != null &&
-        convertToFieldSchemas(mt.getSd().getCD().getCols()).
-            equals(part.getSd().getCols())) {
-      msd = convertToMStorageDescriptor(part.getSd(), mt.getSd().getCD());
-    } else {
-      msd = convertToMStorageDescriptor(part.getSd());
-    }
+    MStorageDescriptor msd = convertToMStorageDescriptor(part.getSd(), mt);
 
     return new MPartition(Warehouse.makePartName(convertToFieldSchemas(mt
         .getPartitionKeys()), part.getValues()), mt, part.getValues(), part
         .getCreateTime(), part.getLastAccessTime(),
         msd, part.getParameters());
+  }
+
+  /**
+   * Converts a storage descriptor to a db-backed storage descriptor.  Creates a
+   * new db-backed column descriptor object for this SD, unless a matching one already
+   * exists for the given table.
+   * @param sd the storage descriptor to wrap in a db-backed object
+   * @param mt the table to search for existing column descriptors, may be null
+   * @return the storage descriptor db-backed object
+   */
+  private MStorageDescriptor convertToMStorageDescriptor(StorageDescriptor sd, MTable mt)
+      throws MetaException {
+    if (sd == null) {
+      return null;
+    }
+
+    MColumnDescriptor mcd = (mt != null) ? getColumnDescriptor(sd.getCols(), mt) : null;
+    if (mcd == null) {
+      mcd = createNewMColumnDescriptor(convertToMFieldSchemas(sd.getCols()));
+    }
+    return convertToMStorageDescriptor(sd, mcd);
+  }
+
+  @VisibleForTesting
+  public MColumnDescriptor getColumnDescriptor(List<FieldSchema> cols, MTable mt)
+      throws MetaException {
+    if (cols == null || cols.isEmpty()) {
+      return null;
+    }
+
+    // First check to see if partition and tables column descriptor match
+    // that's the easy and relatively fast-check since does not require
+    // round-tripe to the database
+    List<FieldSchema> tableSchema = mt.getSd() != null && mt.getSd().getCD() != null && mt.getSd()
+        .getCD()
+        .getCols() != null ? convertToFieldSchemas(mt.getSd()
+        .getCD()
+        .getCols()) : null;
+    if (cols.equals(tableSchema)) {
+      return mt.getSd().getCD();
+    }
+
+    String catName = mt.getDatabase().getCatalogName();
+    String dbName = mt.getDatabase().getName();
+    String tblName = mt.getTableName();
+    long tblId = mt.getId();
+    try {
+      return new GetHelper<TableName, MColumnDescriptor>(this, new TableName(catName, dbName, tblName)) {
+        @Override
+        protected String describeResult() {
+          return "Matching column descriptor";
+        }
+
+        @Override
+        protected MColumnDescriptor getSqlResult() throws MetaException {
+            return getDirectSql().getColumnDescriptor(cols, tblId);
+        }
+
+        @Override
+        protected MColumnDescriptor getJdoResult()
+            throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
+          return null;
+        }
+      }.run(false);
+    } catch (NoSuchObjectException e) {
+      return null;
+    }
   }
 
   private Partition convertToPart(String catName, String dbName, String tblName,

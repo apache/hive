@@ -107,6 +107,7 @@ import org.apache.hadoop.hive.metastore.api.TableParamsUpdate;
 import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
 import org.apache.hadoop.hive.metastore.model.MConstraint;
 import org.apache.hadoop.hive.metastore.model.MCreationMetadata;
 import org.apache.hadoop.hive.metastore.model.MDatabase;
@@ -534,6 +535,64 @@ public class MetaStoreDirectSql {
     directSqlInsertPart.addPartitions(parts, partPrivilegesList, partColPrivilegesList);
   }
 
+  public MColumnDescriptor getColumnDescriptor(List<FieldSchema> cols, long tblId)
+      throws MetaException {
+    if (cols == null || cols.isEmpty()) {
+      return null;
+    }
+    Query<?> query = null;
+    try {
+      // TODO: Is there a more efficient query? Should we add a limit?
+      String findDesciptorsSql = "SELECT DISTINCT \"SDS\".\"CD_ID\" FROM \"SDS\" "
+              + "INNER JOIN \"COLUMNS_V2\" ON \"SDS\".\"CD_ID\" = \"COLUMNS_V2\".\"CD_ID\" "
+              + "WHERE \"SDS\".\"SD_ID\" IN ("
+              + "SELECT \"SD_ID\" FROM \"PARTITIONS\" WHERE \"TBL_ID\" = ?"
+              + ") GROUP BY \"SDS\".\"CD_ID\", \"SDS\".\"SD_ID\" HAVING COUNT(*) = ?";
+      query = pm.newQuery("javax.jdo.query.SQL", findDesciptorsSql);
+      List<Long> candidateIds = executeWithArray(query, new Object[]{tblId, cols.size()}, findDesciptorsSql);
+      if (candidateIds == null || candidateIds.isEmpty()) {
+        return null;
+      }
+
+      for (Long cdId : candidateIds) {
+        if (descriptorHasColumns(cdId, cols)) {
+          return pm.getObjectById(MColumnDescriptor.class, cdId);
+        }
+      }
+    } finally {
+      if (query != null) {
+        query.closeAll();
+      }
+    }
+    return null;
+  }
+
+  private boolean descriptorHasColumns(Long cdId, List<FieldSchema> cols) throws MetaException {
+    String findColumnSql = "SELECT \"COLUMN_NAME\", \"TYPE_NAME\", \"COMMENT\" FROM \"COLUMNS_V2\" "
+        + "WHERE \"CD_ID\" = ? ORDER BY \"INTEGER_IDX\"";
+    Query query = null;
+    try {
+      query = pm.newQuery("javax.jdo.query.SQL", findColumnSql);
+      List<Object[]> rows = executeWithArray(query, new Object[] {cdId}, findColumnSql);
+      if (rows != null && rows.size() == cols.size()) {
+        boolean match = true;
+        for (int i = 0; i < cols.size(); i++) {
+          Object[] row = rows.get(i);
+          FieldSchema col = new FieldSchema(String.valueOf(row[0]), String.valueOf(row[1]), String.valueOf(row[2]));
+          if (!cols.get(i).equals(col)) {
+            match = false;
+            break;
+          }
+        }
+        return match;
+      }
+      return false;
+    } finally {
+      if (query != null) {
+        query.closeAll();
+      }
+    }
+  }
   /**
    * Alter partitions in batch using direct SQL
    * @param table the target table
