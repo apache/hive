@@ -517,7 +517,8 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
     RelMetadataQuery mq = aggregate.getCluster().getMetadataQuery();
 
     final Set<ImmutableBitSet> uniqueKeys = mq.getUniqueKeys(input, false);
-    if (uniqueKeys == null || uniqueKeys.isEmpty()) {
+    if (uniqueKeys == null || uniqueKeys.isEmpty() ||
+        (uniqueKeys.size() == 1 && uniqueKeys.iterator().next().isEmpty())) {
       return generateGroupSetIfCardinalitySame(aggregate, originalGroupSet, fieldsUsed);
     }
 
@@ -549,9 +550,8 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
    */
   private Aggregate rewriteGBConstantKeys(Aggregate aggregate, ImmutableBitSet fieldsUsed,
       ImmutableBitSet aggCallFields) {
-    if ((aggregate.getIndicatorCount() > 0)
-        || (aggregate.getGroupSet().isEmpty())
-        || fieldsUsed.contains(aggregate.getGroupSet())) {
+    if (aggregate.getGroupSet().isEmpty()
+        || fieldsUsed.intersects(aggregate.getGroupSet())) {
       return aggregate;
     }
 

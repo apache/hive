@@ -353,10 +353,15 @@
                       <pattern>io.netty</pattern>
                       <shadedPattern>org.apache.hive.druid.io.netty</shadedPattern>
                     </relocation>
+                    <!-- Calcite is intentionally NOT included or relocated here. Druid 0.17.1 uses Calcite APIs
+                    that are compatible with Hive's Calcite 1.42+. Including calcite-core in the shade caused
+                    SqlFunctions.class to exceed the JVM 64KB method limit after relocation. If Druid is upgraded
+                    to a version with an incompatible Calcite, this relocation must be restored (excluding SqlFunctions,
+                    or splitting the class via a source-level patch to Calcite).
                     <relocation>
                       <pattern>org.apache.calcite</pattern>
                       <shadedPattern>org.apache.hive.druid.org.apache.calcite</shadedPattern>
-                    </relocation>
+                    </relocation> -->
                     <relocation>
                       <pattern>org.jboss.netty</pattern>
                       <shadedPattern>org.apache.hive.druid.org.jboss.netty</shadedPattern>
@@ -379,7 +384,8 @@
                       <include>org.apache.druid:*</include>
                       <include>org.apache.druid.extensions:*</include>
                       <include>io.netty:*</include>
-                      <include>org.apache.calcite:*</include>
+                      <!-- See comment above about Calcite not being relocated & included -->
+                      <!-- <include>org.apache.calcite:*</include> -->
                       <include>com.fasterxml.jackson.core:*</include>
                       <include>com.fasterxml.jackson.datatype:*</include>
                       <include>com.fasterxml.jackson.dataformat:*</include>

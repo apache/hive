@@ -108,7 +108,7 @@ public class HiveSqlSumAggFunction extends SqlAggFunction {
         break;
       case 2:
         node = rexBuilder.makeCall(SqlStdOperatorTable.MULTIPLY, merges);
-        node = rexBuilder.makeAbstractCast(aggregateCall.type, node);
+        node = rexBuilder.makeAbstractCast(aggregateCall.type, node, false);
         break;
       default:
         throw new AssertionError("unexpected count " + merges);
@@ -120,6 +120,7 @@ public class HiveSqlSumAggFunction extends SqlAggFunction {
           false,
           false,
           false,
+          List.of(),
           ImmutableList.of(ordinal),
           -1,
           aggregateCall.distinctKeys,
