@@ -1105,6 +1105,34 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
   }
 
   /**
+   * When estimated rows already exceed {@link ConfVars#XPROD_SMALL_TABLE_ROWS_THRESHOLD}, still allow
+   * cross-product map join if {@link #computeOnlineDataSize} fits within the unconditional map-join
+   * byte budget ({@link ConfVars#HIVE_CONVERT_JOIN_NOCONDITIONAL_TASK_THRESHOLD}). NDV-based cardinality
+   * can overshoot row counts on tiny tables while bytes remain broadcast-safe.
+   */
+  @VisibleForTesting
+  boolean crossProductBuildSideWithinBroadcastBudgetAfterRowCheck(Statistics parentStats,
+      long xprodRowThreshold, long noconditionalMaxBytes) {
+    long onlineBytes = computeOnlineDataSize(parentStats);
+    if (onlineBytes <= 0) {
+      LOG.debug(
+          "Cross-product map join: row estimate {} exceeds {} but online size unavailable; not applying byte fallback",
+          parentStats.getNumRows(), xprodRowThreshold);
+      return false;
+    }
+    if (onlineBytes <= noconditionalMaxBytes) {
+      LOG.info(
+          "Cross-product map join: row estimate {} exceeds {} but online size {} within broadcast budget {}; allowing map join",
+          parentStats.getNumRows(), xprodRowThreshold, onlineBytes, noconditionalMaxBytes);
+      return true;
+    }
+    LOG.debug(
+        "Cross-product map join: row estimate {} exceeds {} and online size {} exceeds budget {}",
+        parentStats.getNumRows(), xprodRowThreshold, onlineBytes, noconditionalMaxBytes);
+    return false;
+  }
+
+  /**
    * Return result for getMapJoinConversion method.
    */
   public static class MapJoinConversion {
@@ -1324,14 +1352,21 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     boolean cartesianProductEdgeEnabled =
       HiveConf.getBoolVar(context.conf, HiveConf.ConfVars.TEZ_CARTESIAN_PRODUCT_EDGE_ENABLED);
     if (cartesianProductEdgeEnabled && !hasOuterJoin(joinOp) && isCrossProduct(joinOp)) {
+      final long xprodRowThreshold =
+          HiveConf.getIntVar(context.conf, HiveConf.ConfVars.XPROD_SMALL_TABLE_ROWS_THRESHOLD);
+      final long noconditionalBroadcastBudget =
+          HiveConf.getLongVar(context.conf, HiveConf.ConfVars.HIVE_CONVERT_JOIN_NOCONDITIONAL_TASK_THRESHOLD);
       for (int i = 0 ; i < joinOp.getParentOperators().size(); i ++) {
         if (i != bigTablePosition) {
           Statistics parentStats = joinOp.getParentOperators().get(i).getStatistics();
-          if (parentStats.getNumRows() >
-            HiveConf.getIntVar(context.conf, HiveConf.ConfVars.XPROD_SMALL_TABLE_ROWS_THRESHOLD)) {
-            // if any of smaller side is estimated to generate more than
-            // threshold rows we would disable mapjoin
-            return null;
+          if (parentStats.getNumRows() > xprodRowThreshold) {
+            // NDV-based filters often estimate a few rows on tiny lookups (e.g. 2 vs 1); row count
+            // alone can reject a safe broadcast. If estimated online size still fits the same
+            // unconditional map-join byte budget, allow conversion (same knob as noconditionaltask).
+            if (!crossProductBuildSideWithinBroadcastBudgetAfterRowCheck(parentStats, xprodRowThreshold,
+                noconditionalBroadcastBudget)) {
+              return null;
+            }
           }
         }
       }
