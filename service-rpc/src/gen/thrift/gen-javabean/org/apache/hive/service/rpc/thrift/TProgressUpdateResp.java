@@ -17,6 +17,7 @@ package org.apache.hive.service.rpc.thrift;
   private static final org.apache.thrift.protocol.TField STATUS_FIELD_DESC = new org.apache.thrift.protocol.TField("status", org.apache.thrift.protocol.TType.I32, (short)4);
   private static final org.apache.thrift.protocol.TField FOOTER_SUMMARY_FIELD_DESC = new org.apache.thrift.protocol.TField("footerSummary", org.apache.thrift.protocol.TType.STRING, (short)5);
   private static final org.apache.thrift.protocol.TField START_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("startTime", org.apache.thrift.protocol.TType.I64, (short)6);
+  private static final org.apache.thrift.protocol.TField QUEUE_METRICS_FIELD_DESC = new org.apache.thrift.protocol.TField("queueMetrics", org.apache.thrift.protocol.TType.STRING, (short)7);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new TProgressUpdateRespStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new TProgressUpdateRespTupleSchemeFactory();
@@ -27,6 +28,7 @@ package org.apache.hive.service.rpc.thrift;
   private @org.apache.thrift.annotation.Nullable TJobExecutionStatus status; // required
   private @org.apache.thrift.annotation.Nullable java.lang.String footerSummary; // required
   private long startTime; // required
+  private @org.apache.thrift.annotation.Nullable java.lang.String queueMetrics; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -39,7 +41,8 @@ package org.apache.hive.service.rpc.thrift;
      */
     STATUS((short)4, "status"),
     FOOTER_SUMMARY((short)5, "footerSummary"),
-    START_TIME((short)6, "startTime");
+    START_TIME((short)6, "startTime"),
+    QUEUE_METRICS((short)7, "queueMetrics");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -67,6 +70,8 @@ package org.apache.hive.service.rpc.thrift;
           return FOOTER_SUMMARY;
         case 6: // START_TIME
           return START_TIME;
+        case 7: // QUEUE_METRICS
+          return QUEUE_METRICS;
         default:
           return null;
       }
@@ -129,6 +134,8 @@ package org.apache.hive.service.rpc.thrift;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.START_TIME, new org.apache.thrift.meta_data.FieldMetaData("startTime", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.QUEUE_METRICS, new org.apache.thrift.meta_data.FieldMetaData("queueMetrics", org.apache.thrift.TFieldRequirementType.OPTIONAL,
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(TProgressUpdateResp.class, metaDataMap);
   }
@@ -152,7 +159,6 @@ package org.apache.hive.service.rpc.thrift;
     this.status = status;
     this.footerSummary = footerSummary;
     this.startTime = startTime;
-    setStartTimeIsSet(true);
   }
 
   /**
@@ -180,6 +186,9 @@ package org.apache.hive.service.rpc.thrift;
       this.footerSummary = other.footerSummary;
     }
     this.startTime = other.startTime;
+    if (other.isSetQueueMetrics()) {
+      this.queueMetrics = other.queueMetrics;
+    }
   }
 
   public TProgressUpdateResp deepCopy() {
@@ -196,6 +205,7 @@ package org.apache.hive.service.rpc.thrift;
     this.footerSummary = null;
     setStartTimeIsSet(false);
     this.startTime = 0;
+    this.queueMetrics = null;
   }
 
   public int getHeaderNamesSize() {
@@ -378,6 +388,30 @@ package org.apache.hive.service.rpc.thrift;
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __STARTTIME_ISSET_ID, value);
   }
 
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getQueueMetrics() {
+    return this.queueMetrics;
+  }
+
+  public void setQueueMetrics(@org.apache.thrift.annotation.Nullable java.lang.String queueMetrics) {
+    this.queueMetrics = queueMetrics;
+  }
+
+  public void unsetQueueMetrics() {
+    this.queueMetrics = null;
+  }
+
+  /** Returns true if field queueMetrics is set (has been assigned a value) and false otherwise */
+  public boolean isSetQueueMetrics() {
+    return this.queueMetrics != null;
+  }
+
+  public void setQueueMetricsIsSet(boolean value) {
+    if (!value) {
+      this.queueMetrics = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case HEADER_NAMES:
@@ -428,6 +462,14 @@ package org.apache.hive.service.rpc.thrift;
       }
       break;
 
+    case QUEUE_METRICS:
+      if (value == null) {
+        unsetQueueMetrics();
+      } else {
+        setQueueMetrics((java.lang.String)value);
+      }
+      break;
+
     }
   }
 
@@ -452,6 +494,9 @@ package org.apache.hive.service.rpc.thrift;
     case START_TIME:
       return getStartTime();
 
+    case QUEUE_METRICS:
+      return getQueueMetrics();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -475,6 +520,8 @@ package org.apache.hive.service.rpc.thrift;
       return isSetFooterSummary();
     case START_TIME:
       return isSetStartTime();
+    case QUEUE_METRICS:
+      return isSetQueueMetrics();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -546,6 +593,15 @@ package org.apache.hive.service.rpc.thrift;
         return false;
     }
 
+    boolean this_present_queueMetrics = true && this.isSetQueueMetrics();
+    boolean that_present_queueMetrics = true && that.isSetQueueMetrics();
+    if (this_present_queueMetrics || that_present_queueMetrics) {
+      if (!(this_present_queueMetrics && that_present_queueMetrics))
+        return false;
+      if (!this.queueMetrics.equals(that.queueMetrics))
+        return false;
+    }
+
     return true;
   }
 
@@ -572,6 +628,10 @@ package org.apache.hive.service.rpc.thrift;
       hashCode = hashCode * 8191 + footerSummary.hashCode();
 
     hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(startTime);
+
+    hashCode = hashCode * 8191 + ((isSetQueueMetrics()) ? 131071 : 524287);
+    if (isSetQueueMetrics())
+      hashCode = hashCode * 8191 + queueMetrics.hashCode();
 
     return hashCode;
   }
@@ -851,6 +911,14 @@ package org.apache.hive.service.rpc.thrift;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 7: // QUEUE_METRICS
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.queueMetrics = iprot.readString();
+              struct.setQueueMetricsIsSet(true);
+            } else {
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -911,6 +979,11 @@ package org.apache.hive.service.rpc.thrift;
       oprot.writeFieldBegin(START_TIME_FIELD_DESC);
       oprot.writeI64(struct.startTime);
       oprot.writeFieldEnd();
+      if (struct.queueMetrics != null) {
+        oprot.writeFieldBegin(QUEUE_METRICS_FIELD_DESC);
+        oprot.writeString(struct.queueMetrics);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }

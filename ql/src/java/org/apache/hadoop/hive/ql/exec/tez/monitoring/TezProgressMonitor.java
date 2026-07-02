@@ -17,7 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez.monitoring;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hive.common.log.InPlaceUpdate;
 import org.apache.hadoop.hive.common.log.ProgressMonitor;
+import org.apache.hadoop.hive.ql.exec.tez.YarnQueueMetricsCollector;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.tez.dag.api.TezException;
@@ -40,10 +43,12 @@ import static org.apache.tez.dag.api.client.DAGStatus.State.KILLED;
 
 public class TezProgressMonitor implements ProgressMonitor {
   private static final int COLUMN_1_WIDTH = 16;
+  private static final String QUEUE_UNAVAILABLE_MSG = "QUEUE: unavailable";
   private final List<BaseWork> topSortedWork;
   private final SessionState.LogHelper console;
   private final long executionStartTime;
   private final DAGStatus status;
+  private final YarnQueueMetricsCollector metricsCollector;
   Map<String, VertexStatus> vertexStatusMap = new HashMap<>();
   Map<String, VertexProgress> progressCountsMap = new HashMap<>();
 
@@ -54,10 +59,18 @@ public class TezProgressMonitor implements ProgressMonitor {
   TezProgressMonitor(DAGClient dagClient, DAGStatus status, List<BaseWork> topSortedWork,
       Map<String, Progress> progressMap, SessionState.LogHelper console, long executionStartTime)
       throws IOException, TezException {
+    this(dagClient, status, topSortedWork, progressMap, console, executionStartTime, null);
+  }
+
+  TezProgressMonitor(DAGClient dagClient, DAGStatus status, List<BaseWork> topSortedWork,
+      Map<String, Progress> progressMap, SessionState.LogHelper console, long executionStartTime,
+      YarnQueueMetricsCollector metricsCollector)
+      throws IOException, TezException {
     this.status = status;
     this.topSortedWork = topSortedWork;
     this.console = console;
     this.executionStartTime = executionStartTime;
+    this.metricsCollector = metricsCollector;
     for (Map.Entry<String, Progress> entry : progressMap.entrySet()) {
       String vertexName = entry.getKey();
       progressCountsMap.put(vertexName, new VertexProgress(entry.getValue(), status.getState()));
@@ -324,6 +337,62 @@ public class TezProgressMonitor implements ProgressMonitor {
       result = 31 * result + runningTaskCount;
       result = 31 * result + dagState.hashCode();
       return result;
+    }
+  }
+
+  @Override
+  public String queueMetrics() {
+    if (metricsCollector == null) {
+      return "";
+    }
+
+    try {
+      YarnQueueMetricsCollector.QueueMetricsSnapshot snapshot = metricsCollector.getLatestSnapshot();
+      if (snapshot == null) {
+        return QUEUE_UNAVAILABLE_MSG;
+      }
+
+      // Truncate queue name if too long (leave room for "QUEUE: " prefix)
+      String displayQueueName = metricsCollector.getQueueName();
+      int maxQueueNameLength = InPlaceUpdate.MIN_TERMINAL_WIDTH - "QUEUE: ".length();
+      if (displayQueueName.length() > maxQueueNameLength) {
+        displayQueueName = StringUtils.abbreviate(displayQueueName, maxQueueNameLength);
+      }
+
+      // Line 1: Queue name
+      String lineQueueHeader = "QUEUE: " + displayQueueName;
+
+      // Line 2: Memory + VCores (resource usage)
+      String lineQueueResources = String.format(
+          "MEMORY: %.1f/%.1f GB (%s used) | VCORES: %d/%d (%s used)",
+          snapshot.getMemoryUsedGB(),
+          snapshot.getMemoryTotalGB(),
+          snapshot.getMemoryPercentage(),
+          snapshot.getVCoresUsed(),
+          snapshot.getVCoresTotal(),
+          snapshot.getVCoresPercentage()
+      );
+
+      // Line 3: Capacity (current usage and allocated capacity)
+      String lineCapacity = String.format(
+          "CAPACITY: %.2f%% (used), %.2f%% (allocated)",
+          snapshot.getCurrentCapacityPercentage(),
+          snapshot.getCapacityPercentage()
+      );
+
+      // Line 4: Apps and Containers
+      String lineAppsAndContainers = String.format(
+          "APPS: %d running, %d pending | CONTAINERS: %d allocated, %d pending",
+          snapshot.getRunningApps(),
+          snapshot.getPendingApps(),
+          snapshot.getAllocatedContainers(),
+          snapshot.getPendingContainers()
+      );
+
+      return lineQueueHeader + "\n" + lineQueueResources + "\n" + lineCapacity + "\n" + lineAppsAndContainers;
+    } catch (Exception e) {
+      console.printInfo("Error formatting queue metrics: " + e.getMessage());
+      return QUEUE_UNAVAILABLE_MSG;
     }
   }
 

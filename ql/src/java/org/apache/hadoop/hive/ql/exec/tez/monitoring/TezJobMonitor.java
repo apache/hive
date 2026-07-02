@@ -42,6 +42,8 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.TezSession;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.exec.tez.Utils;
+import org.apache.hadoop.hive.ql.exec.tez.YarnQueueMetricsCollector;
+import org.apache.hadoop.yarn.client.api.YarnClient;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -119,6 +121,7 @@ public class TezJobMonitor {
   private final RenderStrategy.UpdateFunction updateFunction;
   // compile time tez counters
   private final TezCounters counters;
+  private YarnQueueMetricsCollector metricsCollector;
 
   public TezJobMonitor(TezSession session, List<BaseWork> topSortedWorks, final DAGClient dagClient, HiveConf conf,
       DAG dag, Context ctx, final TezCounters counters, PerfLogger perfLogger) {
@@ -134,6 +137,9 @@ public class TezJobMonitor {
     this.counters = counters;
     this.shouldCollectSummaryString = conf.getBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED) &&
         conf.getBoolVar(ConfVars.HIVE_QUERY_HISTORY_EXEC_SUMMARY_ENABLED);
+
+    // Initialize YARN queue metrics collector if enabled
+    this.metricsCollector = initializeMetricsCollector();
   }
 
   private RenderStrategy.UpdateFunction updateFunction() {
@@ -142,6 +148,52 @@ public class TezJobMonitor {
         && !SessionState.get().isHiveServerQuery()
         ? new RenderStrategy.InPlaceUpdateFunction(this, perfLogger)
         : new RenderStrategy.LogToFileFunction(this, perfLogger);
+  }
+
+  private YarnQueueMetricsCollector initializeMetricsCollector() {
+    // Get refresh interval - controls whether the feature is enabled.
+    // interval <= 0 means disabled (default is 0s = disabled).
+    long refreshInterval = HiveConf.getTimeVar(hiveConf,
+        ConfVars.HIVE_TEZ_QUEUE_METRICS_REFRESH_INTERVAL, TimeUnit.MILLISECONDS);
+
+    if (refreshInterval <= 0) {
+      LOG.debug("Queue metrics collection disabled (refresh interval: {}ms)", refreshInterval);
+      return null;
+    }
+
+    try {
+      // Get YarnClient from session
+      YarnClient yarnClient = session.getYarnClient();
+      if (yarnClient == null) {
+        LOG.warn("YarnClient not available, skipping queue metrics collection");
+        return null;
+      }
+
+      // Get queue name, default to "default" if not specified
+      String queueName = session.getQueueName();
+      if (queueName == null || queueName.trim().isEmpty()) {
+        queueName = "default";
+        LOG.info("Queue name not specified. For metrics monitoring, using 'default' as queue name");
+      }
+
+      // Validate minimum refresh interval (at least 1 second)
+      if (refreshInterval < 1000) {
+        LOG.warn("Queue metrics refresh interval {}ms is less than minimum 1000ms, using 1000ms",
+            refreshInterval);
+        refreshInterval = 1000;
+      }
+
+      // Get query ID from DAG name
+      String queryId = dag.getName();
+
+      LOG.info("Initializing YARN queue metrics collector for queue: {}, refresh interval: {}ms",
+          queueName, refreshInterval);
+
+      return new YarnQueueMetricsCollector(yarnClient, queueName, refreshInterval, queryId);
+    } catch (Exception e) {
+      LOG.warn("Unable to initialize YARN queue metrics collector", e);
+      return null;
+    }
   }
 
   private boolean isProfilingEnabled() {
@@ -312,6 +364,16 @@ public class TezJobMonitor {
           synchronized (shutdownList) {
             shutdownList.remove(dagClient);
           }
+
+          // Shutdown metrics collector if it was initialized
+          if (metricsCollector != null) {
+            try {
+              metricsCollector.shutdown();
+            } catch (Exception e) {
+              LOG.warn("Error shutting down queue metrics collector", e);
+            }
+          }
+
           break;
         }
       }
@@ -530,7 +592,7 @@ public class TezJobMonitor {
   ProgressMonitor progressMonitor(DAGStatus status, Map<String, Progress> progressMap) {
     try {
       return new TezProgressMonitor(dagClient, status, topSortedWorks, progressMap, console,
-          executionStartTime);
+          executionStartTime, metricsCollector);
     } catch (IOException | TezException e) {
       console.printInfo("Getting  Progress Information: " + e.getMessage() + " stack trace: " +
           ExceptionUtils.getStackTrace(e));

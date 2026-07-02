@@ -63,8 +63,9 @@ class RenderStrategy {
 
     @Override
     public void update(DAGStatus status, Map<String, Progress> vertexProgressMap) {
-      renderProgress(monitor.progressMonitor(status, vertexProgressMap));
-      String report = getReport(vertexProgressMap);
+      ProgressMonitor progressMonitor = monitor.progressMonitor(status, vertexProgressMap);
+      renderProgress(progressMonitor);
+      String report = getReport(vertexProgressMap, progressMonitor);
       if (showReport(report)) {
         renderReport(report);
         lastReport = report;
@@ -83,58 +84,86 @@ class RenderStrategy {
           Map 1: 0(+1)/1	Reducer 2: 0/1
           Map 1: 1/1	Reducer 2: 0(+1)/1
           Map 1: 1/1	Reducer 2: 1/1
+       When YARN queue metrics are available, they are appended after the vertex progress, e.g.:
+          Map 1: 1/1	Reducer 2: 1/1	QUEUE: default | MEMORY: 1.5/5.4 GB (27.78% used) |
+              VCORES: 3/7 (42.86% used) | CAPACITY: 46.30% (used), 60.00% (allocated) |
+              APPS: 1 running, 0 pending | CONTAINERS: 4 allocated, 0 pending
      */
-    private String getReport(Map<String, Progress> progressMap) {
+    private String getReport(Map<String, Progress> progressMap, ProgressMonitor progressMonitor) {
       StringWriter reportBuffer = new StringWriter();
 
       SortedSet<String> keys = new TreeSet<>(progressMap.keySet());
       for (String s : keys) {
         Progress progress = progressMap.get(s);
-        final int complete = progress.getSucceededTaskCount();
-        final int total = progress.getTotalTaskCount();
-        final int running = progress.getRunningTaskCount();
-        final int failed = progress.getFailedTaskAttemptCount();
-        if (total <= 0) {
-          reportBuffer.append(String.format("%s: -/-\t", s));
-        } else {
-          if (complete == total) {
-          /*
-           * We may have missed the start of the vertex due to the 3 seconds interval
-           */
-            if (!perfLogger.startTimeHasMethod(PerfLogger.TEZ_RUN_VERTEX + s)) {
-              perfLogger.perfLogBegin(TezJobMonitor.CLASS_NAME, PerfLogger.TEZ_RUN_VERTEX + s);
-            }
-
-            if (!perfLogger.endTimeHasMethod(PerfLogger.TEZ_RUN_VERTEX + s)) {
-              perfLogger.perfLogEnd(TezJobMonitor.CLASS_NAME, PerfLogger.TEZ_RUN_VERTEX + s);
-            }
-          }
-          if (complete < total && (complete > 0 || running > 0 || failed > 0)) {
-
-            if (!perfLogger.startTimeHasMethod(PerfLogger.TEZ_RUN_VERTEX + s)) {
-              perfLogger.perfLogBegin(TezJobMonitor.CLASS_NAME, PerfLogger.TEZ_RUN_VERTEX + s);
-            }
-
-          /* vertex is started, but not complete */
-            if (failed > 0) {
-              reportBuffer.append(
-                  String.format("%s: %d(+%d,-%d)/%d\t", s, complete, running, failed, total));
-            } else {
-              reportBuffer.append(String.format("%s: %d(+%d)/%d\t", s, complete, running, total));
-            }
-          } else {
-          /* vertex is waiting for input/slots or complete */
-            if (failed > 0) {
-            /* tasks finished but some failed */
-              reportBuffer.append(String.format("%s: %d(-%d)/%d\t", s, complete, failed, total));
-            } else {
-              reportBuffer.append(String.format("%s: %d/%d\t", s, complete, total));
-            }
-          }
-        }
+        appendVertexProgress(reportBuffer, s, progress);
       }
 
+      appendQueueMetrics(reportBuffer, progressMonitor);
+
       return reportBuffer.toString();
+    }
+
+    private void appendVertexProgress(StringWriter reportBuffer, String vertexName, Progress progress) {
+      final int complete = progress.getSucceededTaskCount();
+      final int total = progress.getTotalTaskCount();
+      final int running = progress.getRunningTaskCount();
+      final int failed = progress.getFailedTaskAttemptCount();
+
+      if (total <= 0) {
+        reportBuffer.append(String.format("%s: -/-\t", vertexName));
+        return;
+      }
+
+      handlePerfLogging(vertexName, complete, total, running, failed);
+      appendProgressString(reportBuffer, vertexName, complete, total, running, failed);
+    }
+
+    private void handlePerfLogging(String vertexName, int complete, int total, int running, int failed) {
+      String vertexKey = PerfLogger.TEZ_RUN_VERTEX + vertexName;
+
+      if (complete == total) {
+        // We may have missed the start of the vertex due to the 3 seconds interval
+        if (!perfLogger.startTimeHasMethod(vertexKey)) {
+          perfLogger.perfLogBegin(TezJobMonitor.CLASS_NAME, vertexKey);
+        }
+        if (!perfLogger.endTimeHasMethod(vertexKey)) {
+          perfLogger.perfLogEnd(TezJobMonitor.CLASS_NAME, vertexKey);
+        }
+      } else if (complete < total && (complete > 0 || running > 0 || failed > 0)) {
+        // Vertex is started, but not complete
+        if (!perfLogger.startTimeHasMethod(vertexKey)) {
+          perfLogger.perfLogBegin(TezJobMonitor.CLASS_NAME, vertexKey);
+        }
+      }
+    }
+
+    private void appendProgressString(StringWriter reportBuffer, String vertexName,
+                                       int complete, int total, int running, int failed) {
+      if (complete < total && (complete > 0 || running > 0 || failed > 0)) {
+        // Vertex is started, but not complete
+        if (failed > 0) {
+          reportBuffer.append(String.format("%s: %d(+%d,-%d)/%d\t", vertexName, complete, running, failed, total));
+        } else {
+          reportBuffer.append(String.format("%s: %d(+%d)/%d\t", vertexName, complete, running, total));
+        }
+      } else {
+        // Vertex is waiting for input/slots or complete
+        if (failed > 0) {
+          reportBuffer.append(String.format("%s: %d(-%d)/%d\t", vertexName, complete, failed, total));
+        } else {
+          reportBuffer.append(String.format("%s: %d/%d\t", vertexName, complete, total));
+        }
+      }
+    }
+
+    private void appendQueueMetrics(StringWriter reportBuffer, ProgressMonitor progressMonitor) {
+      if (progressMonitor != null) {
+        String queueMetrics = progressMonitor.queueMetrics();
+        if (queueMetrics != null && !queueMetrics.isEmpty()) {
+          // Replace newlines with spaces so the whole report stays on a single log line
+          reportBuffer.append("\t").append(queueMetrics.replace("\n", " | "));
+        }
+      }
     }
 
     abstract void renderProgress(ProgressMonitor progressMonitor);
