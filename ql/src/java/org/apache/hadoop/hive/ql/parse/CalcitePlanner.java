@@ -643,9 +643,19 @@ public class CalcitePlanner extends SemanticAnalyzer {
           LOG.info("CBO Succeeded; optimized logical plan.");
           this.ctx.setCboInfo(getOptimizedByCboInfo());
           this.ctx.setCboSucceeded(true);
-          if (this.ctx.isExplainPlan()) {
+
+          boolean needExplainPlan = this.ctx.isExplainPlan() || this.conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT);
+          if (needExplainPlan) {
             // Enrich explain with information derived from CBO
+            // ensure the context gets a CBO plan if HIVE_LOG_EXPLAIN_OUTPUT is true
             ExplainConfiguration explainConfig = this.ctx.getExplainConfig();
+            if (explainConfig == null) {
+              explainConfig = new ExplainConfiguration();
+              explainConfig.setCbo(true);
+              explainConfig.setCboJoinCost(true);
+              explainConfig.setFormatted(true);
+            }
+
             if (explainConfig.isCbo()) {
               if (!explainConfig.isCboJoinCost()) {
                 // Include cost as provided by Calcite
