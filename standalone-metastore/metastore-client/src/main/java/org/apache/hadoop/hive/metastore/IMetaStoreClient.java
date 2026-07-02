@@ -865,6 +865,7 @@ public interface IMetaStoreClient extends AutoCloseable {
   /**
    * Updates the creation metadata for the materialized view.
    */
+  @Deprecated
   default void updateCreationMetadata(String dbName, String tableName, CreationMetadata cm)
       throws TException {
     throw new UnsupportedOperationException("MetaStore client does not support updating creation metadata");
@@ -3639,6 +3640,7 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @param tableName table to which the write ID to be allocated
    * @throws TException
    */
+  @Deprecated
   default long allocateTableWriteId(long txnId, String dbName, String tableName) throws TException {
      throw new UnsupportedOperationException("MetaStore client does not support allocating table write IDs");
   }
@@ -3651,9 +3653,36 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @param reallocate should we reallocate already mapped writeId (if true) or reuse (if false)
    * @throws TException
    */
+  @Deprecated
   default long allocateTableWriteId(long txnId, String dbName, String tableName, boolean reallocate) throws TException {
      throw new UnsupportedOperationException("MetaStore client does not support allocating table write IDs " +
          "with reallocate option");
+  }
+
+  /**
+   * Allocate a per table write ID and associate it with the given transaction.
+   * @param txnId id of transaction to which the allocated write ID to be associated.
+   * @param catName name of catalog in which the table belongs.
+   * @param dbName name of DB in which the table belongs.
+   * @param tableName table to which the write ID to be allocated
+   * @throws TException
+   */
+  default long allocateTableWriteId(long txnId, String catName, String dbName, String tableName) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support allocating table write IDs");
+  }
+
+  /**
+   * Allocate a per table write ID and associate it with the given transaction.
+   * @param txnId id of transaction to which the allocated write ID to be associated.
+   * @param catName name of catalog in which the table belongs.
+   * @param dbName name of DB in which the table belongs.
+   * @param tableName table to which the write ID to be allocated
+   * @param reallocate should we reallocate already mapped writeId (if true) or reuse (if false)
+   * @throws TException
+   */
+  default long allocateTableWriteId(long txnId, String catName, String dbName, String tableName, boolean reallocate) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support allocating table write IDs " +
+        "with reallocate option");
   }
 
   /**
@@ -3664,8 +3693,24 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @param partNames List of partitions being written.
    * @throws TException in case of failure to replicate the writeid state
    */
+  @Deprecated
   default void replTableWriteIdState(String validWriteIdList, String dbName, String tableName, List<String> partNames)
           throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support replicating table write IDs state");
+  }
+
+  /**
+   * Replicate Table Write Ids state to mark aborted write ids and writeid high water mark.
+   * @param validWriteIdList Snapshot of writeid list when the table/partition is dumped.
+   * @param catName Catalog name
+   * @param dbName Database name
+   * @param tableName Table which is written.
+   * @param partNames List of partitions being written.
+   * @throws TException in case of failure to replicate the writeid state
+   */
+  default void replTableWriteIdState(String validWriteIdList, String catName, String dbName, String tableName,
+                                     List<String> partNames)
+      throws TException {
     throw new UnsupportedOperationException("MetaStore client does not support replicating table write IDs state");
   }
 
@@ -3676,9 +3721,24 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @param tableName table to which the write ID to be allocated
    * @throws TException
    */
+  @Deprecated
   default List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String dbName, String tableName)
       throws TException {
      throw new UnsupportedOperationException("MetaStore client does not support allocating table write IDs in batch");
+  }
+
+  /**
+   * Allocate a per table write ID and associate it with the given transaction.
+   * @param txnIds ids of transaction batchto which the allocated write ID to be associated.
+   * @param catName name of catalog in which the table belongs.
+   * @param dbName name of DB in which the table belongs.
+   * @param tableName table to which the write ID to be allocated
+   * @throws TException
+   */
+  default List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String catName, String dbName,
+                                                        String tableName)
+      throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support allocating table write IDs in batch");
   }
 
   /**
@@ -3689,10 +3749,25 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @param srcTxnToWriteIdList List of txn to write id map sent from the source cluster.
    * @throws TException
    */
+  @Deprecated
   default List<TxnToWriteId> replAllocateTableWriteIdsBatch(String dbName, String tableName, String replPolicy,
                                                     List<TxnToWriteId> srcTxnToWriteIdList) throws TException {
      throw new UnsupportedOperationException("MetaStore client does not support replicating allocating table write " +
          "IDs in batch");
+  }
+
+  /**
+   * Allocate a per table write ID and associate it with the given transaction. Used by replication load task.
+   * @param dbName name of DB in which the table belongs.
+   * @param tableName table to which the write ID to be allocated
+   * @param replPolicy Used by replication task to identify the source cluster.
+   * @param srcTxnToWriteIdList List of txn to write id map sent from the source cluster.
+   * @throws TException
+   */
+  default List<TxnToWriteId> replAllocateTableWriteIdsBatch(String catName, String dbName, String tableName, String replPolicy,
+                                                            List<TxnToWriteId> srcTxnToWriteIdList) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support replicating allocating table write " +
+        "IDs in batch");
   }
 
   /**
@@ -3702,8 +3777,21 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @return the maximum allocated writeId
    * @throws TException
    */
+  @Deprecated
   default long getMaxAllocatedWriteId(String dbName, String tableName) throws TException {
      throw new UnsupportedOperationException("MetaStore client does not support getting maximum allocated write IDs");
+  }
+
+  /**
+   * Get the maximum allocated writeId for the given table
+   * @param catName name of catalog in which the table belongs.
+   * @param dbName name of DB in which the table belongs.
+   * @param tableName table from which the writeId is queried
+   * @return the maximum allocated writeId
+   * @throws TException
+   */
+  default long getMaxAllocatedWriteId(String catName, String dbName, String tableName) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support getting maximum allocated write IDs");
   }
 
   /**
@@ -3713,7 +3801,20 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @param seedWriteId the start value of writeId
    * @throws TException
    */
+  @Deprecated
   default void seedWriteId(String dbName, String tableName, long seedWriteId) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support seeding write IDs");
+  }
+
+  /**
+   * Seed an ACID table with the given writeId. If the table already contains writes it will fail.
+   * @param catName name of catalog in which the table belongs.
+   * @param dbName name of DB in which the table belongs.
+   * @param tableName table to which the writeId will be set
+   * @param seedWriteId the start value of writeId
+   * @throws TException
+   */
+  default void seedWriteId(String catName, String dbName, String tableName, long seedWriteId) throws TException {
     throw new UnsupportedOperationException("MetaStore client does not support seeding write IDs");
   }
 
@@ -3937,9 +4038,27 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @param partNames partition name, as constructed by Warehouse.makePartName
    * @throws TException
    */
+  @Deprecated
   default void addDynamicPartitions(long txnId, long writeId, String dbName, String tableName, List<String> partNames,
                             DataOperationType operationType)
     throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support adding dynamic partitions");
+  }
+
+  /**
+   * Send a list of partitions to the metastore to indicate which partitions were loaded
+   * dynamically.
+   * @param txnId id of the transaction
+   * @param writeId table write id for this txn
+   * @param catName  catalog name
+   * @param dbName database name
+   * @param tableName table name
+   * @param partNames partition name, as constructed by Warehouse.makePartName
+   * @throws TException
+   */
+  default void addDynamicPartitions(long txnId, long writeId, String catName, String dbName, String tableName,
+                                    List<String> partNames, DataOperationType operationType)
+      throws TException {
     throw new UnsupportedOperationException("MetaStore client does not support adding dynamic partitions");
   }
 

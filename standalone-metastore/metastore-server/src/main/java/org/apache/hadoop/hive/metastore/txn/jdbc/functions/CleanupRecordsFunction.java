@@ -54,16 +54,19 @@ public class CleanupRecordsFunction implements TransactionalFunction<Void> {
       new LinkedHashMap<BiFunction<HiveObjectType, Boolean, Boolean>, String>() {{
         put((hiveObjectType, keepTxnToWriteIdMetaData) -> HIVE_OBJECT_TYPES.contains(hiveObjectType),
             "DELETE FROM \"TXN_COMPONENTS\" WHERE " +
+                "\"TC_CATALOG\" = :catName AND " +
                 "\"TC_DATABASE\" = :dbName AND " +
                 "(\"TC_TABLE\" = :tableName OR :tableName IS NULL) AND " +
                 "(\"TC_PARTITION\" = :partName OR :partName IS NULL)");
         put((hiveObjectType, keepTxnToWriteIdMetaData) -> HIVE_OBJECT_TYPES.contains(hiveObjectType),
             "DELETE FROM \"COMPLETED_TXN_COMPONENTS\" WHERE " +
+                "(\"CTC_CATALOG\" = :catName) AND " +
                 "(\"CTC_DATABASE\" = :dbName) AND " +
                 "(\"CTC_TABLE\" = :tableName OR :tableName IS NULL) AND " +
                 "(\"CTC_PARTITION\" = :partName OR :partName IS NULL)");
         put((hiveObjectType, keepTxnToWriteIdMetaData) -> HIVE_OBJECT_TYPES.contains(hiveObjectType),
             "DELETE FROM \"COMPACTION_QUEUE\" WHERE " +
+                "\"CQ_CATALOG\" = :catName AND " +
                 "\"CQ_DATABASE\" = :dbName AND " +
                 "(\"CQ_TABLE\" = :tableName OR :tableName IS NULL) AND " +
                 "(\"CQ_PARTITION\" = :partName OR :partName IS NULL) AND " +
@@ -71,21 +74,25 @@ public class CleanupRecordsFunction implements TransactionalFunction<Void> {
                 "(\"CQ_TYPE\" != :cType)");
         put((hiveObjectType, keepTxnToWriteIdMetaData) -> HIVE_OBJECT_TYPES.contains(hiveObjectType),
             "DELETE FROM \"COMPLETED_COMPACTIONS\" WHERE " +
+                "\"CC_CATALOG\" = :catName AND " +
                 "\"CC_DATABASE\" = :dbName AND " +
                 "(\"CC_TABLE\" = :tableName OR :tableName IS NULL) AND " +
                 "(\"CC_PARTITION\" = :partName OR :partName IS NULL)");
         put((hiveObjectType, keepTxnToWriteIdMetaData) -> HiveObjectType.DATABASE.equals(hiveObjectType) ||
                 (HiveObjectType.TABLE.equals(hiveObjectType) && !keepTxnToWriteIdMetaData),
             "DELETE FROM \"TXN_TO_WRITE_ID\" WHERE " +
+                "\"T2W_CATALOG\" = :catName AND " +
                 "\"T2W_DATABASE\" = :dbName AND " +
                 "(\"T2W_TABLE\" = :tableName OR :tableName IS NULL)");
         put((hiveObjectType, keepTxnToWriteIdMetaData) -> HiveObjectType.DATABASE.equals(hiveObjectType) ||
                 HiveObjectType.TABLE.equals(hiveObjectType) && !keepTxnToWriteIdMetaData,
             "DELETE FROM \"NEXT_WRITE_ID\" WHERE " +
+                "\"NWI_CATALOG\" = :catName AND " +
                 "\"NWI_DATABASE\" = :dbName AND " +
                 "(\"NWI_TABLE\" = :tableName OR :tableName IS NULL)");
         put((hiveObjectType, keepTxnToWriteIdMetaData) -> HIVE_OBJECT_TYPES.contains(hiveObjectType),
             "DELETE FROM \"COMPACTION_METRICS_CACHE\" WHERE " +
+                "\"CMC_CATALOG\" = :catName AND " +
                 "\"CMC_DATABASE\" = :dbName AND " +
                 "(\"CMC_TABLE\" = :tableName OR :tableName IS NULL) AND " +
                 "(\"CMC_PARTITION\" = :partName OR :partName IS NULL)");
@@ -122,6 +129,7 @@ public class CleanupRecordsFunction implements TransactionalFunction<Void> {
           return null;
         }
         paramSources.add(new MapSqlParameterSource()
+            .addValue("catName", db.getCatalogName().toLowerCase())
             .addValue("dbName", db.getName().toLowerCase())
             .addValue("tableName", null, Types.VARCHAR)
             .addValue("partName", null, Types.VARCHAR)
@@ -136,6 +144,7 @@ public class CleanupRecordsFunction implements TransactionalFunction<Void> {
           return null;
         }
         paramSources.add(new MapSqlParameterSource()
+            .addValue("catName", table.getCatName().toLowerCase())
             .addValue("dbName", table.getDbName().toLowerCase())
             .addValue("tableName", table.getTableName().toLowerCase(), Types.VARCHAR)
             .addValue("partName", null, Types.VARCHAR)
@@ -155,6 +164,7 @@ public class CleanupRecordsFunction implements TransactionalFunction<Void> {
           Partition partition = partitionIterator.next();
           partVals = partition.getValues();
           paramSources.add(new MapSqlParameterSource()
+              .addValue("catName", table.getCatName().toLowerCase())
               .addValue("dbName", table.getDbName().toLowerCase())
               .addValue("tableName", table.getTableName().toLowerCase(), Types.VARCHAR)
               .addValue("partName", Warehouse.makePartName(partCols, partVals), Types.VARCHAR)

@@ -226,9 +226,9 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
         """, OperationType.UPDATE, OperationType.DELETE);
     String writeSetInsertSql = """
         INSERT INTO "WRITE_SET"
-          ("WS_DATABASE", "WS_TABLE", "WS_PARTITION", "WS_TXNID", "WS_COMMIT_ID", "WS_OPERATION_TYPE")
+          ("WS_CATALOG", "WS_DATABASE", "WS_TABLE", "WS_PARTITION", "WS_TXNID", "WS_COMMIT_ID", "WS_OPERATION_TYPE")
         SELECT DISTINCT
-          "TC_DATABASE", "TC_TABLE", "TC_PARTITION", "TC_TXNID",
+          "TC_CATALOG", "TC_DATABASE", "TC_TABLE", "TC_PARTITION", "TC_TXNID",
           :commitId,
           "TC_OPERATION_TYPE"
         """;
@@ -308,10 +308,10 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
       throws MetaException {
     String writeConflictQuery = jdbcResource.getSqlGenerator().addLimitClause(1, 
         "\"COMMITTED\".\"WS_TXNID\", \"COMMITTED\".\"WS_COMMIT_ID\", " +
-        "\"COMMITTED\".\"WS_DATABASE\", \"COMMITTED\".\"WS_TABLE\", \"COMMITTED\".\"WS_PARTITION\", " +
+        "\"COMMITTED\".\"WS_CATALOG\", \"COMMITTED\".\"WS_DATABASE\", \"COMMITTED\".\"WS_TABLE\", \"COMMITTED\".\"WS_PARTITION\", " +
         "\"CUR\".\"WS_OPERATION_TYPE\" \"CUR_OP\", \"COMMITTED\".\"WS_OPERATION_TYPE\" \"COMMITTED_OP\" " +
         "FROM \"WRITE_SET\" \"COMMITTED\" INNER JOIN \"WRITE_SET\" \"CUR\" " +
-        "ON \"COMMITTED\".\"WS_DATABASE\"=\"CUR\".\"WS_DATABASE\" AND \"COMMITTED\".\"WS_TABLE\"=\"CUR\".\"WS_TABLE\" " +
+        "ON \"COMMITTED\".\"WS_CATALOG\"=\"CUR\".\"WS_CATALOG\" AND \"COMMITTED\".\"WS_DATABASE\"=\"CUR\".\"WS_DATABASE\" AND \"COMMITTED\".\"WS_TABLE\"=\"CUR\".\"WS_TABLE\" " +
         //For partitioned table we always track writes at partition level (never at table)
         //and for non partitioned - always at table level, thus the same table should never
         //have entries with partition key and w/o
@@ -340,7 +340,8 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
             ? new WriteSetInfo(
                 rs.getLong("WS_TXNID"), rs.getLong("WS_COMMIT_ID"),
                 rs.getString("CUR_OP"), rs.getString("COMMITTED_OP"),
-                rs.getString("WS_DATABASE"), rs.getString("WS_TABLE"), rs.getString("WS_PARTITION")
+                rs.getString("WS_CATALOG"), rs.getString("WS_DATABASE"),
+                rs.getString("WS_TABLE"), rs.getString("WS_PARTITION")
               )
             : null);
   }
@@ -386,9 +387,9 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
   private void moveTxnComponentsToCompleted(MultiDataSourceJdbcResource jdbcResource, long txnid, char isUpdateDelete) {
     // Move the record from txn_components into completed_txn_components so that the compactor
     // knows where to look to compact.
-    String query = "INSERT INTO \"COMPLETED_TXN_COMPONENTS\" (\"CTC_TXNID\", \"CTC_DATABASE\", " +
+    String query = "INSERT INTO \"COMPLETED_TXN_COMPONENTS\" (\"CTC_TXNID\", \"CTC_CATALOG\", \"CTC_DATABASE\", " +
         "\"CTC_TABLE\", \"CTC_PARTITION\", \"CTC_WRITEID\", \"CTC_UPDATE_DELETE\") SELECT \"TC_TXNID\", " +
-        "\"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_WRITEID\", :flag FROM \"TXN_COMPONENTS\" " +
+        "\"TC_CATALOG\", \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_WRITEID\", :flag FROM \"TXN_COMPONENTS\" " +
         "WHERE \"TC_TXNID\" = :txnid AND \"TC_OPERATION_TYPE\" <> :type";
     //we only track compactor activity in TXN_COMPONENTS to handle the case where the
     //compactor txn aborts - so don't bother copying it to COMPLETED_TXN_COMPONENTS
@@ -714,7 +715,7 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
   
   private record WriteSetInfo(
       long txnId, long commitId, String currOpType, String opType,
-      String database, String table, String partition) {
+      String catalog, String database, String table, String partition) {
   }
 
   private record CommitInfo(

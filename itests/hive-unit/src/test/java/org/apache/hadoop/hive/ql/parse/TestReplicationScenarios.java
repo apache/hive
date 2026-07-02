@@ -528,7 +528,7 @@ public class TestReplicationScenarios {
     return validator.hasTask(rootTask);
   }
 
-  private Task getReplLoadRootTask(String sourceDb, String replicadb, boolean isIncrementalDump,
+  private Task getReplLoadRootTask(String sourceCat, String sourceDb, String replicadb, boolean isIncrementalDump,
                                    Tuple tuple) throws Throwable {
     HiveConf confTemp = driverMirror.getConf();
     Path loadPath = new Path(tuple.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
@@ -544,7 +544,7 @@ public class TestReplicationScenarios {
        run only database creation task, and only in next iteration of Repl Load Task execution, remaining tasks will be
        executed. Hence disabling this to perform the test on task optimization.  */
     confTemp.setBoolVar(HiveConf.ConfVars.REPL_RETAIN_CUSTOM_LOCATIONS_FOR_DB_ON_TARGET, false);
-    ReplLoadWork replLoadWork = new ReplLoadWork(confTemp, loadPath.toString(), sourceDb, replicadb,
+    ReplLoadWork replLoadWork = new ReplLoadWork(confTemp, loadPath.toString(), sourceCat, sourceDb, replicadb,
             null, null, isIncrementalDump, Long.valueOf(tuple.lastReplId),
         0L, metricCollector, false);
     Task replLoadTask = TaskFactory.get(replLoadWork, confTemp);
@@ -565,7 +565,7 @@ public class TestReplicationScenarios {
     Tuple dump = replDumpDb(dbName);
 
     //bootstrap load should not have move task
-    Task task = getReplLoadRootTask(dbName, dbNameReplica, false, dump);
+    Task task = getReplLoadRootTask(Warehouse.DEFAULT_CATALOG_NAME, dbName, dbNameReplica, false, dump);
     assertEquals(false, hasMoveTask(task));
     assertEquals(true, hasPartitionTask(task));
 
@@ -579,7 +579,7 @@ public class TestReplicationScenarios {
 
     // Partition level statistics gets updated as part of the INSERT above. So we see a partition
     // task corresponding to an ALTER_PARTITION event.
-    task = getReplLoadRootTask(dbName, dbNameReplica, true, dump);
+    task = getReplLoadRootTask(Warehouse.DEFAULT_CATALOG_NAME, dbName, dbNameReplica, true, dump);
     assertEquals(true, hasMoveTask(task));
     assertEquals(true, hasPartitionTask(task));
 
@@ -592,7 +592,7 @@ public class TestReplicationScenarios {
     dump = replDumpDb(dbName);
 
     //no move task should be added as the operation is adding a dynamic partition
-    task = getReplLoadRootTask(dbName, dbNameReplica, true, dump);
+    task = getReplLoadRootTask(Warehouse.DEFAULT_CATALOG_NAME, dbName, dbNameReplica, true, dump);
     assertEquals(false, hasMoveTask(task));
     assertEquals(true, hasPartitionTask(task));
   }

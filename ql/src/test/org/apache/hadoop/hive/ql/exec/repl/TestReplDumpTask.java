@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.repl;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.repl.util.FileList;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -108,7 +109,7 @@ public class TestReplDumpTask {
     try (MockedStatic<Utils> utilsMockedStatic = mockStatic(Utils.class)) {
       List<String> tableList = Arrays.asList("a1", "a2");
       String dbRandomKey = "akeytoberandom";
-      ReplScope replScope = new ReplScope("default");
+      ReplScope replScope = new ReplScope(Warehouse.DEFAULT_CATALOG_NAME, "default");
 
       utilsMockedStatic.when(() -> Utils.matchesDb(same(hive), eq("default"))).thenReturn(Collections.singletonList("default"));
       utilsMockedStatic.when(() -> Utils.getAllTables(same(hive), eq("default"), eq(replScope))).thenReturn(tableList);

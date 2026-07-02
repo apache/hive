@@ -36,6 +36,11 @@ class GetAllWriteEventInfoRequest
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        4 => array(
+            'var' => 'catName',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -50,6 +55,10 @@ class GetAllWriteEventInfoRequest
      * @var string
      */
     public $tableName = null;
+    /**
+     * @var string
+     */
+    public $catName = "hive";
 
     public function __construct($vals = null)
     {
@@ -62,6 +71,9 @@ class GetAllWriteEventInfoRequest
             }
             if (isset($vals['tableName'])) {
                 $this->tableName = $vals['tableName'];
+            }
+            if (isset($vals['catName'])) {
+                $this->catName = $vals['catName'];
             }
         }
     }
@@ -106,6 +118,13 @@ class GetAllWriteEventInfoRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 4:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->catName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -133,6 +152,11 @@ class GetAllWriteEventInfoRequest
         if ($this->tableName !== null) {
             $xfer += $output->writeFieldBegin('tableName', TType::STRING, 3);
             $xfer += $output->writeString($this->tableName);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->catName !== null) {
+            $xfer += $output->writeFieldBegin('catName', TType::STRING, 4);
+            $xfer += $output->writeString($this->catName);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

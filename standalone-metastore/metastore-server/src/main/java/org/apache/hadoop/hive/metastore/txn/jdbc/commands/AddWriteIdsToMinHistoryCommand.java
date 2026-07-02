@@ -33,7 +33,7 @@ import java.util.function.Function;
 public class AddWriteIdsToMinHistoryCommand implements ParameterizedBatchCommand<Object[]>, ConditionalCommand {
 
   private static final String MIN_HISTORY_WRITE_ID_INSERT_QUERY = "INSERT INTO \"MIN_HISTORY_WRITE_ID\" (\"MH_TXNID\", " +
-      "\"MH_DATABASE\", \"MH_TABLE\", \"MH_WRITEID\") VALUES (?, ?, ?, ?)";
+      "\"MH_CATALOG\", \"MH_DATABASE\", \"MH_TABLE\", \"MH_WRITEID\") VALUES (?, ?, ?, ?, ?)";
   
   private final List<Object[]> params;
 
@@ -41,7 +41,7 @@ public class AddWriteIdsToMinHistoryCommand implements ParameterizedBatchCommand
     this.params = new ArrayList<>();
     for (Map.Entry<String, Long> validWriteId : minOpenWriteIds.entrySet()) {
       String[] names = TxnUtils.getDbTableName(validWriteId.getKey());
-      params.add(new Object[]{ txnId, names[0], names[1], validWriteId.getValue() });
+      params.add(new Object[]{ txnId, names[0], names[1], names[2], validWriteId.getValue() });
     }
   }
 
@@ -61,7 +61,8 @@ public class AddWriteIdsToMinHistoryCommand implements ParameterizedBatchCommand
       ps.setLong(1, (Long)argument[0]);
       ps.setString(2, argument[1].toString());
       ps.setString(3, argument[2].toString());
-      ps.setLong(4, (Long)argument[3]);
+      ps.setString(4, argument[3].toString());
+      ps.setLong(5, (Long)argument[4]);
     };
   }
 

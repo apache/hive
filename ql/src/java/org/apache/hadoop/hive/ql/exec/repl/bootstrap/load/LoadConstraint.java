@@ -69,25 +69,28 @@ public class LoadConstraint {
   private static final Logger LOG = LoggerFactory.getLogger(LoadFunction.class);
   private Context context;
   private final ConstraintEvent event;
+  private final String catName;
   private final String dbNameToLoadIn;
   private final TaskTracker tracker;
   private final MessageDeserializer deserializer = JSONMessageEncoder.getInstance().getDeserializer();
   String dumpDirectory;
   private transient ReplicationMetricCollector metricCollector;
 
-  public LoadConstraint(Context context, ConstraintEvent event, String dbNameToLoadIn,
+  public LoadConstraint(Context context, ConstraintEvent event, String catName, String dbNameToLoadIn,
       TaskTracker existingTracker) {
     this.context = context;
     this.event = event;
+    this.catName = catName;
     this.dbNameToLoadIn = dbNameToLoadIn;
     this.tracker = new TaskTracker(existingTracker);
   }
 
-  public LoadConstraint(Context context, ConstraintEvent event, String dbNameToLoadIn,
+  public LoadConstraint(Context context, ConstraintEvent event, String catName, String dbNameToLoadIn,
                         TaskTracker existingTracker, String dumpDirectory,
                         ReplicationMetricCollector metricCollector) {
     this.context = context;
     this.event = event;
+    this.catName = catName;
     this.dbNameToLoadIn = dbNameToLoadIn;
     this.tracker = new TaskTracker(existingTracker);
     this.dumpDirectory = dumpDirectory;
@@ -117,7 +120,7 @@ public class LoadConstraint {
         pkDumpMetaData.setPayload(pksString);
         tasks.addAll(pkHandler.handle(
             new MessageHandler.Context(
-                dbNameToLoadIn, fromPath.toString(), null, pkDumpMetaData, context.hiveConf,
+                catName, dbNameToLoadIn, fromPath.toString(), null, pkDumpMetaData, context.hiveConf,
                 context.hiveDb, context.nestedContext, LOG, dumpDirectory, metricCollector)));
       }
 
@@ -128,7 +131,7 @@ public class LoadConstraint {
         ukDumpMetaData.setPayload(uksString);
         tasks.addAll(ukHandler.handle(
             new MessageHandler.Context(
-                dbNameToLoadIn, fromPath.toString(), null, ukDumpMetaData, context.hiveConf,
+                catName, dbNameToLoadIn, fromPath.toString(), null, ukDumpMetaData, context.hiveConf,
                 context.hiveDb, context.nestedContext, LOG, dumpDirectory, metricCollector)));
       }
 
@@ -139,7 +142,7 @@ public class LoadConstraint {
         nnDumpMetaData.setPayload(nnsString);
         tasks.addAll(nnHandler.handle(
             new MessageHandler.Context(
-                dbNameToLoadIn, fromPath.toString(), null, nnDumpMetaData, context.hiveConf,
+                catName, dbNameToLoadIn, fromPath.toString(), null, nnDumpMetaData, context.hiveConf,
                 context.hiveDb, context.nestedContext, LOG, dumpDirectory, metricCollector)));
       }
 
@@ -150,7 +153,7 @@ public class LoadConstraint {
         dkDumpMetaData.setPayload(dksString);
         tasks.addAll(dkHandler.handle(
             new MessageHandler.Context(
-                dbNameToLoadIn, fromPath.toString(), null, dkDumpMetaData, context.hiveConf,
+                catName, dbNameToLoadIn, fromPath.toString(), null, dkDumpMetaData, context.hiveConf,
                 context.hiveDb, context.nestedContext, LOG, dumpDirectory, metricCollector)));
       }
 
@@ -161,7 +164,7 @@ public class LoadConstraint {
         dkDumpMetaData.setPayload(cksString);
         tasks.addAll(ckHandler.handle(
             new MessageHandler.Context(
-                dbNameToLoadIn, fromPath.toString(), null, dkDumpMetaData, context.hiveConf,
+                catName, dbNameToLoadIn, fromPath.toString(), null, dkDumpMetaData, context.hiveConf,
                 context.hiveDb, context.nestedContext, LOG, dumpDirectory, metricCollector)));
       }
 
@@ -172,7 +175,7 @@ public class LoadConstraint {
         fkDumpMetaData.setPayload(fksString);
         tasks.addAll(fkHandler.handle(
             new MessageHandler.Context(
-                dbNameToLoadIn, fromPath.toString(), null, fkDumpMetaData, context.hiveConf,
+                catName, dbNameToLoadIn, fromPath.toString(), null, fkDumpMetaData, context.hiveConf,
                 context.hiveDb, context.nestedContext, LOG, dumpDirectory, metricCollector)));
       }
 

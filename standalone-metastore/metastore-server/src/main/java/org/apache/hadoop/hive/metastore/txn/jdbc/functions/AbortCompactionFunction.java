@@ -51,7 +51,7 @@ public class AbortCompactionFunction implements TransactionalFunction<AbortCompa
 
   public static final String SELECT_COMPACTION_QUEUE_BY_COMPID =
       "SELECT XX.* FROM ( SELECT " +
-          "   \"CQ_ID\" AS \"CC_ID\", \"CQ_DATABASE\" AS \"CC_DATABASE\", \"CQ_TABLE\" AS \"CC_TABLE\", \"CQ_PARTITION\" AS \"CC_PARTITION\", " +
+          "   \"CQ_ID\" AS \"CC_ID\", \"CQ_CATALOG\" AS \"CC_CATALOG\", \"CQ_DATABASE\" AS \"CC_DATABASE\", \"CQ_TABLE\" AS \"CC_TABLE\", \"CQ_PARTITION\" AS \"CC_PARTITION\", " +
           "   \"CQ_STATE\" AS \"CC_STATE\", \"CQ_TYPE\" AS \"CC_TYPE\", \"CQ_TBLPROPERTIES\" AS \"CC_TBLPROPERTIES\", \"CQ_WORKER_ID\" AS \"CC_WORKER_ID\", " +
           "   \"CQ_START\" AS \"CC_START\", \"CQ_RUN_AS\" AS \"CC_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\" AS \"CC_HIGHEST_WRITE_ID\", \"CQ_META_INFO\" AS \"CC_META_INFO\"," +
           "   \"CQ_HADOOP_JOB_ID\" AS \"CC_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\" AS \"CC_ERROR_MESSAGE\",  \"CQ_ENQUEUE_TIME\" AS \"CC_ENQUEUE_TIME\"," +
@@ -63,7 +63,7 @@ public class AbortCompactionFunction implements TransactionalFunction<AbortCompa
           "   \"COMPACTION_QUEUE\" " +
           "   UNION ALL " +
           "   SELECT " +
-          "   \"CC_ID\", \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\", \"CC_TYPE\", " +
+          "   \"CC_ID\", \"CC_CATALOG\", \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\", \"CC_TYPE\", " +
           "   \"CC_TBLPROPERTIES\", \"CC_WORKER_ID\", \"CC_START\", \"CC_RUN_AS\", " +
           "   \"CC_HIGHEST_WRITE_ID\", \"CC_META_INFO\", \"CC_HADOOP_JOB_ID\", \"CC_ERROR_MESSAGE\", " +
           "   \"CC_ENQUEUE_TIME\", \"CC_WORKER_VERSION\", \"CC_INITIATOR_ID\", \"CC_INITIATOR_VERSION\", " +

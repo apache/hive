@@ -7437,8 +7437,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return result;
   }
 
-  private void setStatsForNonNativeTable(String dbName, String tableName) throws SemanticException {
-    TableName qTableName = HiveTableName.ofNullable(tableName, dbName);
+  private void setStatsForNonNativeTable(String catName, String dbName, String tableName) throws SemanticException {
+    TableName qTableName = HiveTableName.ofNullable(catName, tableName, dbName, null);
     Map<String, String> mapProp = new HashMap<>();
     mapProp.put(StatsSetupConst.COLUMN_STATS_ACCURATE, null);
     AlterTableUnsetPropertiesDesc alterTblDesc = new AlterTableUnsetPropertiesDesc(qTableName, null, null, false,
@@ -7671,7 +7671,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       } else {
         // This is a non-native table.
         // We need to set stats as inaccurate.
-        setStatsForNonNativeTable(destinationTable.getDbName(), destinationTable.getTableName());
+        setStatsForNonNativeTable(destinationTable.getCatName(), destinationTable.getDbName(), destinationTable.getTableName());
         // true if it is insert overwrite.
         boolean overwrite = !qb.getParseInfo().isInsertIntoTable(destinationTable.getDbName(), destinationTable.getTableName(),
             destinationTable.getSnapshotRef());
@@ -8105,7 +8105,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         } else {
           // This is a non-native table.
           // We need to set stats as inaccurate.
-          setStatsForNonNativeTable(tableDescriptor.getDbName(), tableDescriptor.getTableName());
+          setStatsForNonNativeTable(tableDescriptor.getCatName(), tableDescriptor.getDbName(),
+              tableDescriptor.getTableName());
           ltd = new LoadTableDesc(queryTmpdir, tableDescriptor, dpCtx.getPartSpec());
           ltd.setInsertOverwrite(false);
           ltd.setLoadFileType(LoadFileType.KEEP_EXISTING);
@@ -15194,7 +15195,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     var transactionalTables = tablesFromReadEntities(inputs)
         .stream()
         .filter(AcidUtils::isTransactionalTable)
-        .map(Table::getFullyQualifiedName)
+        .map(Table::getCatalogQualifiedName)
         .toList();
 
     if (transactionalTables.isEmpty()) {

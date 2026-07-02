@@ -105,19 +105,20 @@ public class CheckLockFunction implements TransactionalFunction<LockResponse> {
       }
 
 
-      Object[] args = new Object[writeSet.size() * 4 + 1];
+      Object[] args = new Object[writeSet.size() * 5 + 1];
       int index = 0;
       args[index++] = writeSet.get(0).getTxnId();
-      StringBuilder sb = new StringBuilder(" \"WS_DATABASE\", \"WS_TABLE\", \"WS_PARTITION\", " +
+      StringBuilder sb = new StringBuilder(" \"WS_CATALOG\", \"WS_DATABASE\", \"WS_TABLE\", \"WS_PARTITION\", " +
           "\"WS_TXNID\", \"WS_COMMIT_ID\" " +
           "FROM \"WRITE_SET\" WHERE WS_COMMIT_ID >= ? AND (");//see commitTxn() for more info on this inequality
       for (int i = 0; i < writeSet.size(); i++) {
-        sb.append("(\"WS_DATABASE\" = ? AND \"WS_TABLE\" = ? AND (\"WS_PARTITION\" = ? OR ? IS NULL)");
+        sb.append("(\"WS_CATALOG\" = ? AND \"WS_DATABASE\" = ? AND \"WS_TABLE\" = ? AND (\"WS_PARTITION\" = ? OR ? IS NULL)");
         if (i < writeSet.size() - 1) {
           sb.append(" OR ");
         }
         sb.append(")");
         LockInfo info = writeSet.get(i);
+        args[index++] = info.getCat();
         args[index++] = info.getDb();
         args[index++] = info.getTable();
         args[index++] = info.getPartition();
@@ -128,6 +129,7 @@ public class CheckLockFunction implements TransactionalFunction<LockResponse> {
         WriteSetInfo info = null;
         if (rs.next()) {
           info = new WriteSetInfo();
+          info.catalog = rs.getString("WS_CATALOG");
           info.database = rs.getString("WS_DATABASE");
           info.table = rs.getString("WS_TABLE");
           info.partition = rs.getString("WS_PARTITION");
@@ -333,6 +335,7 @@ public class CheckLockFunction implements TransactionalFunction<LockResponse> {
   }
 
   static class WriteSetInfo {
+    String catalog;
     String database;
     String table;
     String partition;

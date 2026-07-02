@@ -1053,6 +1053,10 @@ public class Table implements Serializable {
     return Warehouse.getQualifiedName(tTable);
   }
 
+  public String getCatalogQualifiedName() {
+    return Warehouse.getCatalogQualifiedTableName(tTable);
+  }
+
   /**
    * @return include the db name
    */

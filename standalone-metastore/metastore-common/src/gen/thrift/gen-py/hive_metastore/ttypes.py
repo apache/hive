@@ -13332,11 +13332,12 @@ class WriteEventInfo(object):
      - partition
      - tableObj
      - partitionObj
+     - catalog
 
     """
 
 
-    def __init__(self, writeId=None, database=None, table=None, files=None, partition=None, tableObj=None, partitionObj=None,):
+    def __init__(self, writeId=None, database=None, table=None, files=None, partition=None, tableObj=None, partitionObj=None, catalog="hive",):
         self.writeId = writeId
         self.database = database
         self.table = table
@@ -13344,6 +13345,7 @@ class WriteEventInfo(object):
         self.partition = partition
         self.tableObj = tableObj
         self.partitionObj = partitionObj
+        self.catalog = catalog
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -13389,6 +13391,11 @@ class WriteEventInfo(object):
                     self.partitionObj = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 8:
+                if ftype == TType.STRING:
+                    self.catalog = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -13426,6 +13433,10 @@ class WriteEventInfo(object):
         if self.partitionObj is not None:
             oprot.writeFieldBegin('partitionObj', TType.STRING, 7)
             oprot.writeString(self.partitionObj.encode('utf-8') if sys.version_info[0] == 2 else self.partitionObj)
+            oprot.writeFieldEnd()
+        if self.catalog is not None:
+            oprot.writeFieldBegin('catalog', TType.STRING, 8)
+            oprot.writeString(self.catalog.encode('utf-8') if sys.version_info[0] == 2 else self.catalog)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -13809,17 +13820,19 @@ class ReplTblWriteIdStateRequest(object):
      - dbName
      - tableName
      - partNames
+     - catName
 
     """
 
 
-    def __init__(self, validWriteIdlist=None, user=None, hostName=None, dbName=None, tableName=None, partNames=None,):
+    def __init__(self, validWriteIdlist=None, user=None, hostName=None, dbName=None, tableName=None, partNames=None, catName="hive",):
         self.validWriteIdlist = validWriteIdlist
         self.user = user
         self.hostName = hostName
         self.dbName = dbName
         self.tableName = tableName
         self.partNames = partNames
+        self.catName = catName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -13865,6 +13878,11 @@ class ReplTblWriteIdStateRequest(object):
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -13901,6 +13919,10 @@ class ReplTblWriteIdStateRequest(object):
             for iter751 in self.partNames:
                 oprot.writeString(iter751.encode('utf-8') if sys.version_info[0] == 2 else iter751)
             oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 7)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -14285,17 +14307,19 @@ class AllocateTableWriteIdsRequest(object):
      - replPolicy
      - srcTxnToWriteIdList
      - reallocate
+     - catName
 
     """
 
 
-    def __init__(self, dbName=None, tableName=None, txnIds=None, replPolicy=None, srcTxnToWriteIdList=None, reallocate=False,):
+    def __init__(self, dbName=None, tableName=None, txnIds=None, replPolicy=None, srcTxnToWriteIdList=None, reallocate=False, catName="hive",):
         self.dbName = dbName
         self.tableName = tableName
         self.txnIds = txnIds
         self.replPolicy = replPolicy
         self.srcTxnToWriteIdList = srcTxnToWriteIdList
         self.reallocate = reallocate
+        self.catName = catName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -14347,6 +14371,11 @@ class AllocateTableWriteIdsRequest(object):
                     self.reallocate = iprot.readBool()
                 else:
                     iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -14386,6 +14415,10 @@ class AllocateTableWriteIdsRequest(object):
         if self.reallocate is not None:
             oprot.writeFieldBegin('reallocate', TType.BOOL, 6)
             oprot.writeBool(self.reallocate)
+            oprot.writeFieldEnd()
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 7)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -14482,13 +14515,15 @@ class MaxAllocatedTableWriteIdRequest(object):
     Attributes:
      - dbName
      - tableName
+     - catName
 
     """
 
 
-    def __init__(self, dbName=None, tableName=None,):
+    def __init__(self, dbName=None, tableName=None, catName="hive",):
         self.dbName = dbName
         self.tableName = tableName
+        self.catName = catName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -14509,6 +14544,11 @@ class MaxAllocatedTableWriteIdRequest(object):
                     self.tableName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -14526,6 +14566,10 @@ class MaxAllocatedTableWriteIdRequest(object):
         if self.tableName is not None:
             oprot.writeFieldBegin('tableName', TType.STRING, 2)
             oprot.writeString(self.tableName.encode('utf-8') if sys.version_info[0] == 2 else self.tableName)
+            oprot.writeFieldEnd()
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 3)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -14614,14 +14658,16 @@ class SeedTableWriteIdsRequest(object):
      - dbName
      - tableName
      - seedWriteId
+     - catName
 
     """
 
 
-    def __init__(self, dbName=None, tableName=None, seedWriteId=None,):
+    def __init__(self, dbName=None, tableName=None, seedWriteId=None, catName="hive",):
         self.dbName = dbName
         self.tableName = tableName
         self.seedWriteId = seedWriteId
+        self.catName = catName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -14647,6 +14693,11 @@ class SeedTableWriteIdsRequest(object):
                     self.seedWriteId = iprot.readI64()
                 else:
                     iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -14668,6 +14719,10 @@ class SeedTableWriteIdsRequest(object):
         if self.seedWriteId is not None:
             oprot.writeFieldBegin('seedWriteId', TType.I64, 3)
             oprot.writeI64(self.seedWriteId)
+            oprot.writeFieldEnd()
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 4)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -16042,11 +16097,12 @@ class CompactionRequest(object):
      - poolName
      - numberOfBuckets
      - orderByClause
+     - catName
 
     """
 
 
-    def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, initiatorId=None, initiatorVersion=None, poolName=None, numberOfBuckets=None, orderByClause=None,):
+    def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, initiatorId=None, initiatorVersion=None, poolName=None, numberOfBuckets=None, orderByClause=None, catName="hive",):
         self.dbname = dbname
         self.tablename = tablename
         self.partitionname = partitionname
@@ -16058,6 +16114,7 @@ class CompactionRequest(object):
         self.poolName = poolName
         self.numberOfBuckets = numberOfBuckets
         self.orderByClause = orderByClause
+        self.catName = catName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -16129,6 +16186,11 @@ class CompactionRequest(object):
                     self.orderByClause = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 12:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -16187,6 +16249,10 @@ class CompactionRequest(object):
             oprot.writeFieldBegin('orderByClause', TType.STRING, 11)
             oprot.writeString(self.orderByClause.encode('utf-8') if sys.version_info[0] == 2 else self.orderByClause)
             oprot.writeFieldEnd()
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 12)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
+            oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
@@ -16233,11 +16299,12 @@ class CompactionInfoStruct(object):
      - poolname
      - numberOfBuckets
      - orderByClause
+     - catName
 
     """
 
 
-    def __init__(self, id=None, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, toomanyaborts=None, state=None, workerId=None, start=None, highestWriteId=None, errorMessage=None, hasoldabort=None, enqueueTime=None, retryRetention=None, poolname=None, numberOfBuckets=None, orderByClause=None,):
+    def __init__(self, id=None, dbname=None, tablename=None, partitionname=None, type=None, runas=None, properties=None, toomanyaborts=None, state=None, workerId=None, start=None, highestWriteId=None, errorMessage=None, hasoldabort=None, enqueueTime=None, retryRetention=None, poolname=None, numberOfBuckets=None, orderByClause=None, catName="hive",):
         self.id = id
         self.dbname = dbname
         self.tablename = tablename
@@ -16257,6 +16324,7 @@ class CompactionInfoStruct(object):
         self.poolname = poolname
         self.numberOfBuckets = numberOfBuckets
         self.orderByClause = orderByClause
+        self.catName = catName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -16362,6 +16430,11 @@ class CompactionInfoStruct(object):
                     self.orderByClause = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 20:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -16447,6 +16520,10 @@ class CompactionInfoStruct(object):
         if self.orderByClause is not None:
             oprot.writeFieldBegin('orderByClause', TType.STRING, 19)
             oprot.writeString(self.orderByClause.encode('utf-8') if sys.version_info[0] == 2 else self.orderByClause)
+            oprot.writeFieldEnd()
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 20)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -16542,11 +16619,12 @@ class CompactionMetricsDataStruct(object):
      - metricvalue
      - version
      - threshold
+     - catName
 
     """
 
 
-    def __init__(self, dbname=None, tblname=None, partitionname=None, type=None, metricvalue=None, version=None, threshold=None,):
+    def __init__(self, dbname=None, tblname=None, partitionname=None, type=None, metricvalue=None, version=None, threshold=None, catName="hive",):
         self.dbname = dbname
         self.tblname = tblname
         self.partitionname = partitionname
@@ -16554,6 +16632,7 @@ class CompactionMetricsDataStruct(object):
         self.metricvalue = metricvalue
         self.version = version
         self.threshold = threshold
+        self.catName = catName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -16599,6 +16678,11 @@ class CompactionMetricsDataStruct(object):
                     self.threshold = iprot.readI32()
                 else:
                     iprot.skip(ftype)
+            elif fid == 8:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -16636,6 +16720,10 @@ class CompactionMetricsDataStruct(object):
         if self.threshold is not None:
             oprot.writeFieldBegin('threshold', TType.I32, 7)
             oprot.writeI32(self.threshold)
+            oprot.writeFieldEnd()
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 8)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -16732,15 +16820,17 @@ class CompactionMetricsDataRequest(object):
      - tblName
      - partitionName
      - type
+     - catName
 
     """
 
 
-    def __init__(self, dbName=None, tblName=None, partitionName=None, type=None,):
+    def __init__(self, dbName=None, tblName=None, partitionName=None, type=None, catName="hive",):
         self.dbName = dbName
         self.tblName = tblName
         self.partitionName = partitionName
         self.type = type
+        self.catName = catName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -16771,6 +16861,11 @@ class CompactionMetricsDataRequest(object):
                     self.type = iprot.readI32()
                 else:
                     iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -16796,6 +16891,10 @@ class CompactionMetricsDataRequest(object):
         if self.type is not None:
             oprot.writeFieldBegin('type', TType.I32, 4)
             oprot.writeI32(self.type)
+            oprot.writeFieldEnd()
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 5)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -16929,11 +17028,12 @@ class ShowCompactRequest(object):
      - state
      - limit
      - order
+     - catName
 
     """
 
 
-    def __init__(self, id=None, poolName=None, dbName=None, tbName=None, partName=None, type=None, state=None, limit=None, order=None,):
+    def __init__(self, id=None, poolName=None, dbName=None, tbName=None, partName=None, type=None, state=None, limit=None, order=None, catName="hive",):
         self.id = id
         self.poolName = poolName
         self.dbName = dbName
@@ -16943,6 +17043,7 @@ class ShowCompactRequest(object):
         self.state = state
         self.limit = limit
         self.order = order
+        self.catName = catName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -16998,6 +17099,11 @@ class ShowCompactRequest(object):
                     self.order = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 10:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -17044,6 +17150,10 @@ class ShowCompactRequest(object):
             oprot.writeFieldBegin('order', TType.STRING, 9)
             oprot.writeString(self.order.encode('utf-8') if sys.version_info[0] == 2 else self.order)
             oprot.writeFieldEnd()
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 10)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
+            oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
@@ -17089,11 +17199,12 @@ class ShowCompactResponseElement(object):
      - txnId
      - commitTime
      - hightestWriteId
+     - catName
 
     """
 
 
-    def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, state=None, workerid=None, start=None, runAs=None, hightestTxnId=None, metaInfo=None, endTime=None, hadoopJobId="None", id=None, errorMessage=None, enqueueTime=None, workerVersion=None, initiatorId=None, initiatorVersion=None, cleanerStart=None, poolName=None, nextTxnId=None, txnId=None, commitTime=None, hightestWriteId=None,):
+    def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, state=None, workerid=None, start=None, runAs=None, hightestTxnId=None, metaInfo=None, endTime=None, hadoopJobId="None", id=None, errorMessage=None, enqueueTime=None, workerVersion=None, initiatorId=None, initiatorVersion=None, cleanerStart=None, poolName=None, nextTxnId=None, txnId=None, commitTime=None, hightestWriteId=None, catName="hive",):
         self.dbname = dbname
         self.tablename = tablename
         self.partitionname = partitionname
@@ -17118,6 +17229,7 @@ class ShowCompactResponseElement(object):
         self.txnId = txnId
         self.commitTime = commitTime
         self.hightestWriteId = hightestWriteId
+        self.catName = catName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -17248,6 +17360,11 @@ class ShowCompactResponseElement(object):
                     self.hightestWriteId = iprot.readI64()
                 else:
                     iprot.skip(ftype)
+            elif fid == 25:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -17353,6 +17470,10 @@ class ShowCompactResponseElement(object):
         if self.hightestWriteId is not None:
             oprot.writeFieldBegin('hightestWriteId', TType.I64, 24)
             oprot.writeI64(self.hightestWriteId)
+            oprot.writeFieldEnd()
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 25)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -17695,15 +17816,17 @@ class GetLatestCommittedCompactionInfoRequest(object):
      - tablename
      - partitionnames
      - lastCompactionId
+     - catName
 
     """
 
 
-    def __init__(self, dbname=None, tablename=None, partitionnames=None, lastCompactionId=None,):
+    def __init__(self, dbname=None, tablename=None, partitionnames=None, lastCompactionId=None, catName="hive",):
         self.dbname = dbname
         self.tablename = tablename
         self.partitionnames = partitionnames
         self.lastCompactionId = lastCompactionId
+        self.catName = catName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -17739,6 +17862,11 @@ class GetLatestCommittedCompactionInfoRequest(object):
                     self.lastCompactionId = iprot.readI64()
                 else:
                     iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -17767,6 +17895,10 @@ class GetLatestCommittedCompactionInfoRequest(object):
         if self.lastCompactionId is not None:
             oprot.writeFieldBegin('lastCompactionId', TType.I64, 4)
             oprot.writeI64(self.lastCompactionId)
+            oprot.writeFieldEnd()
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 5)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -17946,17 +18078,19 @@ class AddDynamicPartitions(object):
      - tablename
      - partitionnames
      - operationType
+     - catName
 
     """
 
 
-    def __init__(self, txnid=None, writeid=None, dbname=None, tablename=None, partitionnames=None, operationType=5,):
+    def __init__(self, txnid=None, writeid=None, dbname=None, tablename=None, partitionnames=None, operationType=5, catName="hive",):
         self.txnid = txnid
         self.writeid = writeid
         self.dbname = dbname
         self.tablename = tablename
         self.partitionnames = partitionnames
         self.operationType = operationType
+        self.catName = catName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -18002,6 +18136,11 @@ class AddDynamicPartitions(object):
                     self.operationType = iprot.readI32()
                 else:
                     iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -18038,6 +18177,10 @@ class AddDynamicPartitions(object):
         if self.operationType is not None:
             oprot.writeFieldBegin('operationType', TType.I32, 6)
             oprot.writeI32(self.operationType)
+            oprot.writeFieldEnd()
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 7)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -19253,17 +19396,19 @@ class WriteNotificationLogRequest(object):
      - table
      - fileInfo
      - partitionVals
+     - cat
 
     """
 
 
-    def __init__(self, txnId=None, writeId=None, db=None, table=None, fileInfo=None, partitionVals=None,):
+    def __init__(self, txnId=None, writeId=None, db=None, table=None, fileInfo=None, partitionVals=None, cat="hive",):
         self.txnId = txnId
         self.writeId = writeId
         self.db = db
         self.table = table
         self.fileInfo = fileInfo
         self.partitionVals = partitionVals
+        self.cat = cat
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -19310,6 +19455,11 @@ class WriteNotificationLogRequest(object):
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.STRING:
+                    self.cat = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -19346,6 +19496,10 @@ class WriteNotificationLogRequest(object):
             for iter988 in self.partitionVals:
                 oprot.writeString(iter988.encode('utf-8') if sys.version_info[0] == 2 else iter988)
             oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.cat is not None:
+            oprot.writeFieldBegin('cat', TType.STRING, 7)
+            oprot.writeString(self.cat.encode('utf-8') if sys.version_info[0] == 2 else self.cat)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -31196,14 +31350,16 @@ class GetAllWriteEventInfoRequest(object):
      - txnId
      - dbName
      - tableName
+     - catName
 
     """
 
 
-    def __init__(self, txnId=None, dbName=None, tableName=None,):
+    def __init__(self, txnId=None, dbName=None, tableName=None, catName="hive",):
         self.txnId = txnId
         self.dbName = dbName
         self.tableName = tableName
+        self.catName = catName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -31229,6 +31385,11 @@ class GetAllWriteEventInfoRequest(object):
                     self.tableName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -31250,6 +31411,10 @@ class GetAllWriteEventInfoRequest(object):
         if self.tableName is not None:
             oprot.writeFieldBegin('tableName', TType.STRING, 3)
             oprot.writeString(self.tableName.encode('utf-8') if sys.version_info[0] == 2 else self.tableName)
+            oprot.writeFieldEnd()
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 4)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -33757,6 +33922,7 @@ WriteEventInfo.thrift_spec = (
     (5, TType.STRING, 'partition', 'UTF8', None, ),  # 5
     (6, TType.STRING, 'tableObj', 'UTF8', None, ),  # 6
     (7, TType.STRING, 'partitionObj', 'UTF8', None, ),  # 7
+    (8, TType.STRING, 'catalog', 'UTF8', "hive", ),  # 8
 )
 all_structs.append(ReplLastIdInfo)
 ReplLastIdInfo.thrift_spec = (
@@ -33795,6 +33961,7 @@ ReplTblWriteIdStateRequest.thrift_spec = (
     (4, TType.STRING, 'dbName', 'UTF8', None, ),  # 4
     (5, TType.STRING, 'tableName', 'UTF8', None, ),  # 5
     (6, TType.LIST, 'partNames', (TType.STRING, 'UTF8', False), None, ),  # 6
+    (7, TType.STRING, 'catName', 'UTF8', "hive", ),  # 7
 )
 all_structs.append(GetValidWriteIdsRequest)
 GetValidWriteIdsRequest.thrift_spec = (
@@ -33832,6 +33999,7 @@ AllocateTableWriteIdsRequest.thrift_spec = (
     (4, TType.STRING, 'replPolicy', 'UTF8', None, ),  # 4
     (5, TType.LIST, 'srcTxnToWriteIdList', (TType.STRUCT, [TxnToWriteId, None], False), None, ),  # 5
     (6, TType.BOOL, 'reallocate', None, False, ),  # 6
+    (7, TType.STRING, 'catName', 'UTF8', "hive", ),  # 7
 )
 all_structs.append(AllocateTableWriteIdsResponse)
 AllocateTableWriteIdsResponse.thrift_spec = (
@@ -33843,6 +34011,7 @@ MaxAllocatedTableWriteIdRequest.thrift_spec = (
     None,  # 0
     (1, TType.STRING, 'dbName', 'UTF8', None, ),  # 1
     (2, TType.STRING, 'tableName', 'UTF8', None, ),  # 2
+    (3, TType.STRING, 'catName', 'UTF8', "hive", ),  # 3
 )
 all_structs.append(MaxAllocatedTableWriteIdResponse)
 MaxAllocatedTableWriteIdResponse.thrift_spec = (
@@ -33855,6 +34024,7 @@ SeedTableWriteIdsRequest.thrift_spec = (
     (1, TType.STRING, 'dbName', 'UTF8', None, ),  # 1
     (2, TType.STRING, 'tableName', 'UTF8', None, ),  # 2
     (3, TType.I64, 'seedWriteId', None, None, ),  # 3
+    (4, TType.STRING, 'catName', 'UTF8', "hive", ),  # 4
 )
 all_structs.append(SeedTxnIdRequest)
 SeedTxnIdRequest.thrift_spec = (
@@ -33981,6 +34151,7 @@ CompactionRequest.thrift_spec = (
     (9, TType.STRING, 'poolName', 'UTF8', None, ),  # 9
     (10, TType.I32, 'numberOfBuckets', None, None, ),  # 10
     (11, TType.STRING, 'orderByClause', 'UTF8', None, ),  # 11
+    (12, TType.STRING, 'catName', 'UTF8', "hive", ),  # 12
 )
 all_structs.append(CompactionInfoStruct)
 CompactionInfoStruct.thrift_spec = (
@@ -34004,6 +34175,7 @@ CompactionInfoStruct.thrift_spec = (
     (17, TType.STRING, 'poolname', 'UTF8', None, ),  # 17
     (18, TType.I32, 'numberOfBuckets', None, None, ),  # 18
     (19, TType.STRING, 'orderByClause', 'UTF8', None, ),  # 19
+    (20, TType.STRING, 'catName', 'UTF8', "hive", ),  # 20
 )
 all_structs.append(OptionalCompactionInfoStruct)
 OptionalCompactionInfoStruct.thrift_spec = (
@@ -34020,6 +34192,7 @@ CompactionMetricsDataStruct.thrift_spec = (
     (5, TType.I32, 'metricvalue', None, None, ),  # 5
     (6, TType.I32, 'version', None, None, ),  # 6
     (7, TType.I32, 'threshold', None, None, ),  # 7
+    (8, TType.STRING, 'catName', 'UTF8', "hive", ),  # 8
 )
 all_structs.append(CompactionMetricsDataResponse)
 CompactionMetricsDataResponse.thrift_spec = (
@@ -34033,6 +34206,7 @@ CompactionMetricsDataRequest.thrift_spec = (
     (2, TType.STRING, 'tblName', 'UTF8', None, ),  # 2
     (3, TType.STRING, 'partitionName', 'UTF8', None, ),  # 3
     (4, TType.I32, 'type', None, None, ),  # 4
+    (5, TType.STRING, 'catName', 'UTF8', "hive", ),  # 5
 )
 all_structs.append(CompactionResponse)
 CompactionResponse.thrift_spec = (
@@ -34054,6 +34228,7 @@ ShowCompactRequest.thrift_spec = (
     (7, TType.STRING, 'state', 'UTF8', None, ),  # 7
     (8, TType.I64, 'limit', None, None, ),  # 8
     (9, TType.STRING, 'order', 'UTF8', None, ),  # 9
+    (10, TType.STRING, 'catName', 'UTF8', "hive", ),  # 10
 )
 all_structs.append(ShowCompactResponseElement)
 ShowCompactResponseElement.thrift_spec = (
@@ -34082,6 +34257,7 @@ ShowCompactResponseElement.thrift_spec = (
     (22, TType.I64, 'txnId', None, None, ),  # 22
     (23, TType.I64, 'commitTime', None, None, ),  # 23
     (24, TType.I64, 'hightestWriteId', None, None, ),  # 24
+    (25, TType.STRING, 'catName', 'UTF8', "hive", ),  # 25
 )
 all_structs.append(ShowCompactResponse)
 ShowCompactResponse.thrift_spec = (
@@ -34114,6 +34290,7 @@ GetLatestCommittedCompactionInfoRequest.thrift_spec = (
     (2, TType.STRING, 'tablename', 'UTF8', None, ),  # 2
     (3, TType.LIST, 'partitionnames', (TType.STRING, 'UTF8', False), None, ),  # 3
     (4, TType.I64, 'lastCompactionId', None, None, ),  # 4
+    (5, TType.STRING, 'catName', 'UTF8', "hive", ),  # 5
 )
 all_structs.append(GetLatestCommittedCompactionInfoResponse)
 GetLatestCommittedCompactionInfoResponse.thrift_spec = (
@@ -34136,6 +34313,7 @@ AddDynamicPartitions.thrift_spec = (
     (4, TType.STRING, 'tablename', 'UTF8', None, ),  # 4
     (5, TType.LIST, 'partitionnames', (TType.STRING, 'UTF8', False), None, ),  # 5
     (6, TType.I32, 'operationType', None, 5, ),  # 6
+    (7, TType.STRING, 'catName', 'UTF8', "hive", ),  # 7
 )
 all_structs.append(BasicTxnInfo)
 BasicTxnInfo.thrift_spec = (
@@ -34237,6 +34415,7 @@ WriteNotificationLogRequest.thrift_spec = (
     (4, TType.STRING, 'table', 'UTF8', None, ),  # 4
     (5, TType.STRUCT, 'fileInfo', [InsertEventRequestData, None], None, ),  # 5
     (6, TType.LIST, 'partitionVals', (TType.STRING, 'UTF8', False), None, ),  # 6
+    (7, TType.STRING, 'cat', 'UTF8', "hive", ),  # 7
 )
 all_structs.append(WriteNotificationLogResponse)
 WriteNotificationLogResponse.thrift_spec = (
@@ -35220,6 +35399,7 @@ GetAllWriteEventInfoRequest.thrift_spec = (
     (1, TType.I64, 'txnId', None, None, ),  # 1
     (2, TType.STRING, 'dbName', 'UTF8', None, ),  # 2
     (3, TType.STRING, 'tableName', 'UTF8', None, ),  # 3
+    (4, TType.STRING, 'catName', 'UTF8', "hive", ),  # 4
 )
 all_structs.append(DeleteColumnStatisticsRequest)
 DeleteColumnStatisticsRequest.thrift_spec = (

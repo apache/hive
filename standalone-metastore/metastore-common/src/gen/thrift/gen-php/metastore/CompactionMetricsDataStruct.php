@@ -57,6 +57,11 @@ class CompactionMetricsDataStruct
             'isRequired' => true,
             'type' => TType::I32,
         ),
+        8 => array(
+            'var' => 'catName',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -87,6 +92,10 @@ class CompactionMetricsDataStruct
      * @var int
      */
     public $threshold = null;
+    /**
+     * @var string
+     */
+    public $catName = "hive";
 
     public function __construct($vals = null)
     {
@@ -111,6 +120,9 @@ class CompactionMetricsDataStruct
             }
             if (isset($vals['threshold'])) {
                 $this->threshold = $vals['threshold'];
+            }
+            if (isset($vals['catName'])) {
+                $this->catName = $vals['catName'];
             }
         }
     }
@@ -183,6 +195,13 @@ class CompactionMetricsDataStruct
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 8:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->catName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -230,6 +249,11 @@ class CompactionMetricsDataStruct
         if ($this->threshold !== null) {
             $xfer += $output->writeFieldBegin('threshold', TType::I32, 7);
             $xfer += $output->writeI32($this->threshold);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->catName !== null) {
+            $xfer += $output->writeFieldBegin('catName', TType::STRING, 8);
+            $xfer += $output->writeString($this->catName);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();
