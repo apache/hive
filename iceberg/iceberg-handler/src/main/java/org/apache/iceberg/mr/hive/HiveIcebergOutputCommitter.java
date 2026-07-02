@@ -76,6 +76,7 @@ import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hadoop.Util;
+import org.apache.iceberg.hive.HiveOperationsBase;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.OutputFile;
 import org.apache.iceberg.mr.Catalogs;
@@ -94,6 +95,8 @@ import org.apache.iceberg.relocated.com.google.common.collect.Multimaps;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.relocated.com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.iceberg.util.Tasks;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -237,7 +240,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
      * Wrapper class for storing output {@link Table} and it's context for committing changes:
      * JobContext, CommitInfo.
      */
-  private record OutputTable(String catalogName, String tableName, Table table) {
+  private record OutputTable(String catalogName, String tableName, Table table, String tableType) {
 
     @Override
     public boolean equals(Object o) {
@@ -307,18 +310,36 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
         Multimaps.newListMultimap(Maps.newHashMap(), Lists::newArrayList);
     for (JobContext jobContext : jobContextList) {
       for (String output : outputTables(jobContext.getJobConf())) {
-        Table table = SessionStateUtil.getResource(jobContext.getJobConf(), output)
-            .filter(o -> o instanceof Table).map(o -> (Table) o)
-            // fall back to getting the serialized table from the config
-            .orElseGet(() -> HiveTableUtil.deserializeTable(jobContext.getJobConf(), output));
-        if (table != null) {
-          String catalogName = catalogName(jobContext.getJobConf(), output);
-          outputs.put(new OutputTable(catalogName, output, table), jobContext);
+        Table table;
+        String tableType = "ICEBERG";
+
+        Optional<Object> resource = SessionStateUtil.getResource(jobContext.getJobConf(), output);
+        if (resource.isPresent()) {
+          if (resource.get() instanceof Catalogs.MaterializedView) {
+            tableType = HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE;
+            table = resource.map(o -> ((Catalogs.MaterializedView) o).getStorageTable()).orElse(null);
+
+          } else {
+            table = (Table) SessionStateUtil.getResource(jobContext.getJobConf(), output)
+                    .filter(Table.class::isInstance).orElse(null);
+
+          }
         } else {
-          LOG.info("Found no table object in QueryState or conf for: {}. Skipping job commit.", output);
+          // fall back to getting the serialized table from the config
+          table = HiveTableUtil.deserializeTable(jobContext.getJobConf(), output);
+
         }
+
+        if (table == null) {
+          LOG.info("No Iceberg database object found in Query state with the name {}", output);
+          continue;
+        }
+
+        String catalogName = catalogName(jobContext.getJobConf(), output);
+        outputs.put(new OutputTable(catalogName, output, table, tableType), jobContext);
       }
     }
+
     return outputs;
   }
 
@@ -440,29 +461,16 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     for (JobContext jobContext : jobContexts) {
       JobConf conf = jobContext.getJobConf();
 
-      table = Optional.ofNullable(table).orElseGet(() -> IcebergTableUtil.getTable(conf, catalogProperties));
+      table = loadTableObjectBasedOnTableType(outputTable, table, conf, catalogProperties);
       branchName = conf.get(InputFormatConfig.OUTPUT_TABLE_SNAPSHOT_REF);
       snapshotId = getSnapshotId(table, branchName);
 
-      if (filterExpr == null) {
-        filterExpr = SessionStateUtil.getConflictDetectionFilter(conf, catalogProperties.get(Catalogs.NAME))
-            .map(expr -> HiveIcebergInputFormat.getFilterExpr(conf, expr))
-            .orElse(null);
-      }
+      filterExpr = handleIcebergFilterExpression(conf, catalogProperties);
 
       LOG.info("Committing job has started for table: {}, using location: {}",
           table, HiveTableUtil.jobLocation(outputTable.table.location(), conf, jobContext.getJobID()));
 
-      int numTasks = SessionStateUtil.getCommitInfo(conf, name)
-          .map(info -> info.get(jobContext.getJobID().toString()))
-          .map(SessionStateUtil.CommitInfo::getTaskNum).orElseGet(() -> {
-            // Fallback logic, if number of tasks are not available in the config
-            // If there are reducers, then every reducer will generate a result file.
-            // If this is a map only task, then every mapper will generate a result file.
-            LOG.info("Number of tasks not available in session state for jobID: {}, table: {}. " +
-                "Falling back to jobConf numReduceTasks/numMapTasks", jobContext.getJobID(), name);
-            return conf.getNumReduceTasks() > 0 ? conf.getNumReduceTasks() : conf.getNumMapTasks();
-          });
+      int numTasks = calculateNumberOfTasks(jobContext, conf, name);
 
       FilesForCommit writeResults = collectResults(
           numTasks, executor, outputTable.table.location(), jobContext, io, true);
@@ -483,38 +491,103 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
             Collections.emptySet());
     long startTime = System.currentTimeMillis();
 
-    if (Operation.IOW != operation) {
-      if (filesForCommit.isEmpty()) {
-        LOG.info(
-            "Not creating a new commit for table: {}, jobIDs: {}, since there were no new files to add",
-            table, jobContexts.stream().map(JobContext::getJobID)
-                .map(String::valueOf).collect(Collectors.joining(",")));
-      } else {
-        commitWrite(table, branchName, snapshotId, startTime, filesForCommit, operation, filterExpr);
-      }
+    if (Operation.IOW == operation) {
+      handleIOWOperation(jobContexts, table, snapshotId, startTime, filesForCommit, branchName);
     } else {
-      RewritePolicy rewritePolicy = RewritePolicy.fromString(jobContexts.stream()
-          .findAny()
-          .map(x -> x.getJobConf().get(ConfVars.REWRITE_POLICY.varname))
-          .orElse(RewritePolicy.DEFAULT.name()));
-
-      if (rewritePolicy != RewritePolicy.DEFAULT) {
-        String partitionPath = jobContexts.stream()
-            .findAny()
-            .map(x -> x.getJobConf().get(IcebergCompactionService.PARTITION_PATH))
-            .orElse(null);
-
-        long fileSizeThreshold = jobContexts.stream()
-            .findAny()
-            .map(x -> x.getJobConf().get(CompactorContext.COMPACTION_FILE_SIZE_THRESHOLD))
-            .map(Long::parseLong)
-            .orElse(-1L);
-
-        commitCompaction(table, snapshotId, startTime, filesForCommit, partitionPath, fileSizeThreshold);
-      } else {
-        commitOverwrite(table, branchName, snapshotId, startTime, filesForCommit);
-      }
+      handleNonIOWOperation(
+          jobContexts,
+          operation,
+          filesForCommit,
+          table,
+          branchName,
+          snapshotId,
+          startTime,
+          filterExpr);
     }
+  }
+
+  private void handleNonIOWOperation(
+          Collection<JobContext> jobContexts,
+          Operation operation,
+          FilesForCommit filesForCommit,
+          Table table,
+          String branchName,
+          Long snapshotId,
+          long startTime,
+          Expression filterExpr) {
+
+    if (filesForCommit.isEmpty()) {
+      LOG.info(
+          "Not creating a new commit for table: {}, jobIDs: {}, since there were no new files to add",
+              table, jobContexts.stream().map(JobContext::getJobID)
+              .map(String::valueOf).collect(Collectors.joining(",")));
+    } else {
+      commitWrite(table, branchName, snapshotId, startTime, filesForCommit, operation, filterExpr);
+    }
+  }
+
+  private void handleIOWOperation(
+          Collection<JobContext> jobContexts,
+          Table table,
+          Long snapshotId,
+          long startTime,
+          FilesForCommit filesForCommit,
+          String branchName) {
+
+    RewritePolicy rewritePolicy = RewritePolicy.fromString(jobContexts.stream()
+        .findAny()
+        .map(x -> x.getJobConf().get(ConfVars.REWRITE_POLICY.varname))
+        .orElse(RewritePolicy.DEFAULT.name()));
+
+    if (rewritePolicy != RewritePolicy.DEFAULT) {
+      String partitionPath = jobContexts.stream()
+          .findAny()
+          .map(x -> x.getJobConf().get(IcebergCompactionService.PARTITION_PATH))
+          .orElse(null);
+
+      long fileSizeThreshold = jobContexts.stream()
+          .findAny()
+          .map(x -> x.getJobConf().get(CompactorContext.COMPACTION_FILE_SIZE_THRESHOLD))
+          .map(Long::parseLong)
+          .orElse(-1L);
+
+      commitCompaction(table, snapshotId, startTime, filesForCommit, partitionPath, fileSizeThreshold);
+    } else {
+      commitOverwrite(table, branchName, snapshotId, startTime, filesForCommit);
+    }
+  }
+
+  private static @NotNull Integer calculateNumberOfTasks(JobContext jobContext, JobConf conf, String name) {
+    return SessionStateUtil.getCommitInfo(conf, name)
+            .map(info -> info.get(jobContext.getJobID().toString()))
+            .map(SessionStateUtil.CommitInfo::getTaskNum).orElseGet(() -> {
+              // Fallback logic, if number of tasks are not available in the config
+              // If there are reducers, then every reducer will generate a result file.
+              // If this is a map only task, then every mapper will generate a result file.
+              LOG.info("Number of tasks not available in session state for jobID: {}, table: {}. " +
+                      "Falling back to jobConf numReduceTasks/numMapTasks", jobContext.getJobID(), name);
+              return conf.getNumReduceTasks() > 0 ? conf.getNumReduceTasks() : conf.getNumMapTasks();
+            });
+  }
+
+  private static @Nullable Expression handleIcebergFilterExpression(JobConf conf, Properties catalogProperties) {
+    return SessionStateUtil.getConflictDetectionFilter(conf, catalogProperties.get(Catalogs.NAME))
+          .map(expr -> HiveIcebergInputFormat.getFilterExpr(conf, expr))
+          .orElse(null);
+  }
+
+  private static Table loadTableObjectBasedOnTableType(
+          OutputTable outputTable,
+          Table table,
+          JobConf conf,
+          Properties catalogProperties
+  ) {
+    return Optional.ofNullable(table).orElseGet(() -> {
+      if (HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE.equalsIgnoreCase(outputTable.tableType)) {
+        return Catalogs.loadMaterializedView(conf, catalogProperties).getStorageTable();
+      }
+      return IcebergTableUtil.getTable(conf, catalogProperties);
+    });
   }
 
   private Long getSnapshotId(Table table, String branchName) {
@@ -559,6 +632,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
 
     if (results.deleteFiles().isEmpty() && Operation.MERGE != operation) {
       AppendFiles write = txn.newAppend();
+      addRefreshStateToMaterializedViewStorageTable(table, write);
       results.dataFiles().forEach(write::appendFile);
       if (StringUtils.isNotEmpty(branchName)) {
         write.toBranch(HiveUtils.getTableSnapshotRef(branchName));
@@ -567,6 +641,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
 
     } else {
       RowDelta write = txn.newRowDelta();
+      addRefreshStateToMaterializedViewStorageTable(table, write);
       results.dataFiles().forEach(write::addRows);
       results.deleteFiles().forEach(write::addDeletes);
       results.rewrittenDeleteFiles().forEach(write::removeDeletes);
@@ -593,6 +668,15 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     LOG.info("Write commit took {} ms for table: {} with {} data and {} delete file(s)",
         System.currentTimeMillis() - startTime, table, results.dataFiles().size(), results.deleteFiles().size());
     LOG.debug("Added files {}", results);
+  }
+
+  private static void addRefreshStateToMaterializedViewStorageTable(Table table, SnapshotUpdate snapshotUpdate) {
+    Optional<String> refreshState =
+        SessionStateUtil.getProperty(SessionState.getSessionConf(), "refresh-state");
+
+    if (refreshState != null && refreshState.isPresent()) {
+      snapshotUpdate.set("refresh-state", refreshState.get());
+    }
   }
 
   /**

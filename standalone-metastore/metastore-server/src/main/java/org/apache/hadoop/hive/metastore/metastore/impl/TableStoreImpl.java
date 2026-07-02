@@ -19,25 +19,6 @@
 package org.apache.hadoop.hive.metastore.metastore.impl;
 
 import com.google.common.base.Joiner;
-
-import javax.jdo.Query;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -48,7 +29,6 @@ import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.Batchable;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
-import org.apache.hadoop.hive.metastore.directsql.MetaStoreDirectSql;
 import org.apache.hadoop.hive.metastore.PartFilterExprUtil;
 import org.apache.hadoop.hive.metastore.PartitionExpressionProxy;
 import org.apache.hadoop.hive.metastore.PartitionProjectionEvaluator;
@@ -82,7 +62,11 @@ import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.directsql.MetaStoreDirectSql;
+import org.apache.hadoop.hive.metastore.metastore.GetHelper;
+import org.apache.hadoop.hive.metastore.metastore.GetListHelper;
 import org.apache.hadoop.hive.metastore.metastore.RawStoreAware;
+import org.apache.hadoop.hive.metastore.metastore.iface.TableStore;
 import org.apache.hadoop.hive.metastore.model.FetchGroups;
 import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
 import org.apache.hadoop.hive.metastore.model.MConstraint;
@@ -98,9 +82,6 @@ import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
-import org.apache.hadoop.hive.metastore.metastore.GetHelper;
-import org.apache.hadoop.hive.metastore.metastore.GetListHelper;
-import org.apache.hadoop.hive.metastore.metastore.iface.TableStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
@@ -108,6 +89,24 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.jdo.Query;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.commons.lang3.StringUtils.join;
 import static org.apache.hadoop.hive.metastore.Batchable.NO_BATCHING;
@@ -622,7 +621,13 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
     MTable mtable = getMTable(catName, dbName, tableName);
     tbl = convertToTable(mtable, conf);
     // Retrieve creation metadata if needed
-    if (tbl != null && TableType.MATERIALIZED_VIEW.toString().equals(tbl.getTableType())) {
+    if (
+        tbl != null &&
+        (
+          TableType.MATERIALIZED_VIEW.toString().equals(tbl.getTableType()) ||
+          TableType.EXTERNAL_MATERIALIZED_VIEW.toString().equals(tbl.getTableType())
+        )
+    ) {
       tbl.setCreationMetadata(
           convertToCreationMetadata(getCreationMetadata(catName, dbName, tableName), baseStore));
     }
@@ -1285,7 +1290,9 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
       for (Iterator iter = mtables.iterator(); iter.hasNext(); ) {
         Table tbl = convertToTable((MTable) iter.next(), conf);
         // Retrieve creation metadata if needed
-        if (TableType.MATERIALIZED_VIEW.toString().equals(tbl.getTableType())) {
+        if (TableType.MATERIALIZED_VIEW.toString().equals(tbl.getTableType()) ||
+            TableType.EXTERNAL_MATERIALIZED_VIEW.toString().equals(tbl.getTableType()))
+        {
           tbl.setCreationMetadata(
               convertToCreationMetadata(
                   getCreationMetadata(tbl.getCatName(), tbl.getDbName(), tbl.getTableName()), baseStore));
@@ -1301,6 +1308,7 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
       throws MetaException, NoSuchObjectException {
     catName = normalizeIdentifier(catName);
     List<Object> params = new ArrayList<>(Arrays.asList(catName, TableType.MATERIALIZED_VIEW.toString(), true));
+    params.addAll(Arrays.asList(catName, TableType.EXTERNAL_MATERIALIZED_VIEW.toString(), true));
     if (dbName != null) {
       params.add(normalizeIdentifier(dbName));
     }
@@ -2780,6 +2788,8 @@ public class TableStoreImpl extends RawStoreAware implements TableStore {
     query.declareParameters("java.lang.String catName, java.lang.String tt, boolean re");
     Collection<MTable> mTbls = (Collection<MTable>) query.executeWithArray(
         catName, TableType.MATERIALIZED_VIEW.toString(), true);
+    mTbls.addAll((Collection<MTable>) query.executeWithArray(
+        catName, TableType.EXTERNAL_MATERIALIZED_VIEW.toString(), true));
     for (MTable mTbl : mTbls) {
       Table tbl = convertToTable(mTbl, conf);
       tbl.setCreationMetadata(

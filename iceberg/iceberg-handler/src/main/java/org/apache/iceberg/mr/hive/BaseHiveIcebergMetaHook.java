@@ -96,8 +96,12 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
 
   protected final Configuration conf;
   protected Table icebergTable = null;
+  protected Catalogs.MaterializedView icebergMaterializedView = null;
   protected Properties tableProperties;
   protected boolean createHMSTableInHook = false;
+
+  protected String viewOriginalText;
+  protected String viewExpandedText;
 
   public enum FileFormat {
     ORC("orc"), PARQUET("parquet"), AVRO("avro");
@@ -145,9 +149,9 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     }
     this.tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
 
-    // Set the table type even for non HiveCatalog based tables
-    hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
-        BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase());
+    setTableTypeForNonHiveCatalogBasedTables(hmsTable);
+
+    storeViewTextInfoForMaterializedView(request, Enum.valueOf(TableType.class, hmsTable.getTableType()));
 
     if (!Catalogs.hiveCatalog(conf, tableProperties)) {
       if (Boolean.parseBoolean(this.tableProperties.getProperty(hive_metastoreConstants.TABLE_IS_CTLT))) {
@@ -216,6 +220,37 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     // Remove hive primary key columns from table request, as iceberg doesn't support hive primary key.
     request.setPrimaryKeys(null);
     setSortOrder(hmsTable, schema, tableProperties);
+  }
+
+  private void storeViewTextInfoForMaterializedView(CreateTableRequest request, TableType tableType) {
+    if (TableType.EXTERNAL_MATERIALIZED_VIEW.equals(tableType)) {
+
+      org.apache.hadoop.hive.metastore.api.Table tbl = request.getTable();
+      viewOriginalText = tbl.getViewOriginalText();
+      viewExpandedText = tbl.getViewExpandedText();
+
+      tbl.setViewOriginalText(null);
+      tbl.setViewExpandedText(null);
+    }
+  }
+
+  private static void setTableTypeForNonHiveCatalogBasedTables(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    switch (Enum.valueOf(TableType.class, hmsTable.getTableType())) {
+      case EXTERNAL_TABLE:
+      case MANAGED_TABLE:
+        hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
+                BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase());
+        break;
+      case VIRTUAL_VIEW:
+      case MATERIALIZED_VIEW:
+      case EXTERNAL_MATERIALIZED_VIEW:
+        hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
+                HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE.toUpperCase());
+        break;
+      default:
+        throw new UnsupportedOperationException("The database object type " + hmsTable.getTableType() +
+                " is not supported as an Iceberg object type");
+    }
   }
 
   private void preCreateIcebergView(CreateTableRequest request) {
@@ -526,8 +561,30 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
           IcebergViewSupport.enrichHmsTableFromIcebergView(hmsTable, conf);
           return;
         }
-        Table tbl = IcebergTableUtil.getTable(conf, hmsTable);
-        String formatVersion = String.valueOf(TableUtil.formatVersion(tbl));
+        Table tbl;
+        String formatVersion;
+        switch (Enum.valueOf(TableType.class, hmsTable.getTableType())) {
+          case MANAGED_TABLE,
+               EXTERNAL_TABLE,
+               MATERIALIZED_VIEW:
+            tbl = IcebergTableUtil.getTable(conf, hmsTable);
+            formatVersion = String.valueOf(TableUtil.formatVersion(tbl));
+            break;
+
+          case EXTERNAL_MATERIALIZED_VIEW:
+            Catalogs.MaterializedView mv = IcebergTableUtil.getMaterializedView(conf, hmsTable, false);
+            formatVersion = String.valueOf(TableUtil.formatVersion(mv.getStorageTable()));
+
+            hmsTable.setViewOriginalText(mv.getView().properties().get(Catalogs.MATERIALIZED_VIEW_ORIGINAL_TEXT));
+            hmsTable.setViewExpandedText(mv.getView().sqlFor("hive").sql());
+            hmsTable.getCreationMetadata().setMaterializationTime(
+                mv.getView().version(1).timestampMillis()
+            );
+            break;
+
+          default:
+            throw new UnsupportedOperationException("Unsupported table type " + hmsTable.getTableType());
+        }
         hmsTable.getParameters().put(TableProperties.FORMAT_VERSION, formatVersion);
         // Set the serde info
         hmsTable.getSd().setInputFormat(HiveIcebergInputFormat.class.getName());

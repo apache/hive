@@ -41,6 +41,7 @@ final class Constant extends \Thrift\Type\TConstant
     static protected $META_TABLE_DB;
     static protected $META_TABLE_LOCATION;
     static protected $META_TABLE_SERDE;
+    static protected $META_OBJECT_TYPE;
     static protected $META_TABLE_PARTITION_COLUMNS;
     static protected $META_TABLE_PARTITION_COLUMN_TYPES;
     static protected $FILE_INPUT_FORMAT;
@@ -176,6 +177,11 @@ final class Constant extends \Thrift\Type\TConstant
     protected static function init_META_TABLE_SERDE()
     {
         return "serde";
+    }
+
+    protected static function init_META_OBJECT_TYPE()
+    {
+        return "object_type";
     }
 
     protected static function init_META_TABLE_PARTITION_COLUMNS()
