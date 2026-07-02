@@ -149,27 +149,11 @@ public final class HiveSchemaUtil {
    *
    * @param typeInfo     The Hive type
    * @param defaultValue the default value for the column, if any
+   * @param shouldAddInitialDefault whether to set initial default for the column or not
    * @return The Iceberg type
    */
-  public static Type convert(TypeInfo typeInfo, String defaultValue) {
-    return HiveSchemaConverter.convert(typeInfo, false, defaultValue);
-  }
-
-  public static Type applyInitialDefaultsToStruct(Type type) {
-    Types.StructType struct = type.asStructType();
-    return Types.StructType.of(
-        struct.fields().stream().map(HiveSchemaUtil::applyInitialDefaultsToStructField).toList());
-  }
-
-  private static Types.NestedField applyInitialDefaultsToStructField(Types.NestedField field) {
-    Types.NestedField.Builder builder = Types.NestedField.from(field);
-    if (field.type().isStructType()) {
-      builder.ofType(applyInitialDefaultsToStruct(field.type()));
-    }
-    if (field.initialDefaultLiteral() == null && field.writeDefaultLiteral() != null) {
-      builder.withInitialDefault(field.writeDefaultLiteral());
-    }
-    return builder.build();
+  public static Type convert(TypeInfo typeInfo, String defaultValue, boolean shouldAddInitialDefault) {
+    return HiveSchemaConverter.convert(typeInfo, false, defaultValue, shouldAddInitialDefault);
   }
 
   /**

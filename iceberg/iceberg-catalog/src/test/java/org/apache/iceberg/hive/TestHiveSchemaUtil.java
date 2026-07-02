@@ -91,12 +91,12 @@ public class TestHiveSchemaUtil {
   );
 
   @Test
-  void testSimpleSchemaConvertToIcebergSchema() {
+  public void testSimpleSchemaConvertToIcebergSchema() {
     assertThat(HiveSchemaUtil.convert(SIMPLE_HIVE_SCHEMA).asStruct()).isEqualTo(SIMPLE_ICEBERG_SCHEMA.asStruct());
   }
 
   @Test
-  void testSimpleSchemaConvertToIcebergSchemaFromNameAndTypeLists() {
+  public void testSimpleSchemaConvertToIcebergSchemaFromNameAndTypeLists() {
     List<String> names = SIMPLE_HIVE_SCHEMA.stream().map(field -> field.getName()).collect(Collectors.toList());
     List<TypeInfo> types = SIMPLE_HIVE_SCHEMA.stream()
         .map(field -> TypeInfoUtils.getTypeInfoFromTypeString(field.getType()))
@@ -106,18 +106,18 @@ public class TestHiveSchemaUtil {
   }
 
   @Test
-  void testComplexSchemaConvertToIcebergSchema() {
+  public void testComplexSchemaConvertToIcebergSchema() {
     assertThat(HiveSchemaUtil.convert(COMPLEX_HIVE_SCHEMA).asStruct()).isEqualTo(COMPLEX_ICEBERG_SCHEMA.asStruct());
   }
 
   @Test
-  void testSchemaConvertToIcebergSchemaForEveryPrimitiveType() {
+  public void testSchemaConvertToIcebergSchemaForEveryPrimitiveType() {
     Schema schemaWithEveryType = HiveSchemaUtil.convert(getSupportedFieldSchemas());
     assertThat(schemaWithEveryType.asStruct()).isEqualTo(getSchemaWithSupportedTypes().asStruct());
   }
 
   @Test
-  void testNotSupportedTypes() {
+  public void testNotSupportedTypes() {
     for (FieldSchema notSupportedField : getNotSupportedFieldSchemas()) {
       assertThatThrownBy(
           () -> HiveSchemaUtil.convert(
@@ -128,17 +128,17 @@ public class TestHiveSchemaUtil {
   }
 
   @Test
-  void testSimpleSchemaConvertToHiveSchema() {
+  public void testSimpleSchemaConvertToHiveSchema() {
     assertThat(HiveSchemaUtil.convert(SIMPLE_ICEBERG_SCHEMA)).isEqualTo(SIMPLE_HIVE_SCHEMA);
   }
 
   @Test
-  void testComplexSchemaConvertToHiveSchema() {
+  public void testComplexSchemaConvertToHiveSchema() {
     assertThat(HiveSchemaUtil.convert(COMPLEX_ICEBERG_SCHEMA)).isEqualTo(COMPLEX_HIVE_SCHEMA);
   }
 
   @Test
-  void testSimpleTypeAndTypeInfoConvert() {
+  public void testSimpleTypeAndTypeInfoConvert() {
     // Test for every supported type
     List<FieldSchema> fieldSchemas = getSupportedFieldSchemas();
     List<Types.NestedField> nestedFields = getSchemaWithSupportedTypes().columns();
@@ -148,7 +148,7 @@ public class TestHiveSchemaUtil {
   }
 
   @Test
-  void testComplexTypeAndTypeInfoConvert() {
+  public void testComplexTypeAndTypeInfoConvert() {
     for (int i = 0; i < COMPLEX_HIVE_SCHEMA.size(); ++i) {
       checkConvert(TypeInfoUtils.getTypeInfoFromTypeString(COMPLEX_HIVE_SCHEMA.get(i).getType()),
           COMPLEX_ICEBERG_SCHEMA.columns().get(i).type());
@@ -156,7 +156,7 @@ public class TestHiveSchemaUtil {
   }
 
   @Test
-  void testConversionWithoutLastComment() {
+  public void testConversionWithoutLastComment() {
     Schema expected = new Schema(
         optional(1, "customer_id", Types.LongType.get(), "customer comment"),
         optional(2, "first_name", Types.StringType.get(), null)
@@ -220,7 +220,7 @@ public class TestHiveSchemaUtil {
     // Convert to TypeInfo
     assertThat(HiveSchemaUtil.convert(type)).isEqualTo(typeInfo);
     // Convert to Type
-    assertEquals(type, HiveSchemaUtil.convert(typeInfo, null));
+    assertEquals(type, HiveSchemaUtil.convert(typeInfo, null, true));
   }
 
   /**

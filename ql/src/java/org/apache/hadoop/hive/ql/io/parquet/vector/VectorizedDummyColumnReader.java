@@ -83,7 +83,9 @@ public class VectorizedDummyColumnReader extends BaseVectorizedColumnReader {
     StructColumnVector structCol = (StructColumnVector) col;
     List<String> fieldNames = structTypeInfo.getAllStructFieldNames();
     List<TypeInfo> fieldTypes = structTypeInfo.getAllStructFieldTypeInfos();
-    Map<String, Object> fieldDefaults = defaultValue instanceof Map ? (Map<String, Object>) defaultValue : Collections.emptyMap();
+    Map<String, Object> fieldDefaults = defaultValue instanceof Map ?
+        (Map<String, Object>) defaultValue :
+        Collections.emptyMap();
 
     for (int i = 0; i < fieldNames.size(); i++) {
       fillColumnWithDefault(structCol.fields[i], fieldTypes.get(i), fieldDefaults.get(fieldNames.get(i)));

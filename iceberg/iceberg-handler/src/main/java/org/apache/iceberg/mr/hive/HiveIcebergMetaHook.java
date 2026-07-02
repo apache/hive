@@ -741,18 +741,16 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
         (List<SQLDefaultConstraint>) SessionStateUtil.getResource(conf, SessionStateUtil.COLUMN_DEFAULTS).orElse(null);
     Map<String, String> defaultValues = Stream.ofNullable(sqlDefaultConstraints).flatMap(Collection::stream)
         .collect(Collectors.toMap(SQLDefaultConstraint::getColumn_name, SQLDefaultConstraint::getDefault_value));
-    boolean isORc = isOrcFileFormat(hmsTable);
+    boolean isOrc = isOrcFileFormat(hmsTable);
     for (FieldSchema addedCol : addedCols) {
       String defaultValue = defaultValues.get(addedCol.getName());
-      Type baseType = HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(addedCol.getType()), defaultValue);
-      final Type resolvedType = (!isORc && baseType.isStructType()) ?
-          HiveSchemaUtil.applyInitialDefaultsToStruct(baseType) :
-          baseType;
-      Literal<Object> defaultVal = Optional.ofNullable(defaultValue).filter(v -> !resolvedType.isStructType())
-          .map(v -> Expressions.lit(HiveSchemaUtil.getDefaultValue(v, resolvedType))).orElse(null);
+      Type type = HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(addedCol.getType()), defaultValue,
+          !isOrc);
+      Literal<Object> defaultVal = Optional.ofNullable(defaultValue).filter(v -> !type.isStructType())
+          .map(v -> Expressions.lit(HiveSchemaUtil.getDefaultValue(v, type))).orElse(null);
       // ORC doesn't have support for initialDefault from iceberg layer, we only need to set default for writeDefault.
-      updateSchema.addColumn(addedCol.getName(), resolvedType, addedCol.getComment(), isORc ? null : defaultVal);
-      if (isORc && defaultVal != null) {
+      updateSchema.addColumn(addedCol.getName(), type, addedCol.getComment(), isOrc ? null : defaultVal);
+      if (isOrc && defaultVal != null) {
         updateSchema.updateColumnDefault(addedCol.getName(), defaultVal);
       }
     }
@@ -935,7 +933,7 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
   }
 
   private Type.PrimitiveType getPrimitiveTypeOrThrow(FieldSchema field) throws MetaException {
-    Type newType = HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(field.getType()), null);
+    Type newType = HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(field.getType()), null, true);
     if (!(newType instanceof Type.PrimitiveType)) {
       throw new MetaException(String.format("Cannot promote type of column: '%s' to a non-primitive type: %s.",
           field.getName(), newType));
