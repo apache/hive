@@ -49,15 +49,15 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                       function name: inline
                       Select Operator
                         expressions: col1 (type: bigint), col2 (type: int), DATE'1999-12-05' (type: date)
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                           table:
                               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
                               output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
@@ -66,7 +66,7 @@ STAGE PLANS:
                         Select Operator
                           expressions: _col0 (type: bigint), _col1 (type: int), _col2 (type: date)
                           outputColumnNames: bigintcol, intcol, pcol
-                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: min(bigintcol), max(bigintcol), count(1), count(bigintcol), compute_bit_vector_hll(bigintcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol), min(pcol), max(pcol), count(pcol), compute_bit_vector_hll(pcol)
                             keys: iceberg_year(pcol) (type: int)
@@ -166,15 +166,15 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                       function name: inline
                       Select Operator
                         expressions: col1 (type: bigint), col2 (type: int), DATE'1999-12-26' (type: date)
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                           table:
                               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
                               output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
@@ -183,7 +183,7 @@ STAGE PLANS:
                         Select Operator
                           expressions: _col0 (type: bigint), _col1 (type: int), _col2 (type: date)
                           outputColumnNames: bigintcol, intcol, pcol
-                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: min(bigintcol), max(bigintcol), count(1), count(bigintcol), compute_bit_vector_hll(bigintcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol), min(pcol), max(pcol), count(pcol), compute_bit_vector_hll(pcol)
                             keys: iceberg_year(pcol) (type: int)
@@ -283,15 +283,15 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                       function name: inline
                       Select Operator
                         expressions: col1 (type: bigint), col2 (type: int), DATE'1999-12-12' (type: date)
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                           table:
                               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
                               output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
@@ -300,7 +300,7 @@ STAGE PLANS:
                         Select Operator
                           expressions: _col0 (type: bigint), _col1 (type: int), _col2 (type: date)
                           outputColumnNames: bigintcol, intcol, pcol
-                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: min(bigintcol), max(bigintcol), count(1), count(bigintcol), compute_bit_vector_hll(bigintcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol), min(pcol), max(pcol), count(pcol), compute_bit_vector_hll(pcol)
                             keys: iceberg_year(pcol) (type: int)
@@ -718,15 +718,15 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                       function name: inline
                       Select Operator
                         expressions: col1 (type: bigint), DATE'1999-12-31' (type: date), col2 (type: int)
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                           table:
                               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
                               output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
@@ -735,7 +735,7 @@ STAGE PLANS:
                         Select Operator
                           expressions: _col0 (type: bigint), _col1 (type: date), _col2 (type: int)
                           outputColumnNames: bigintcol, pcol, intcol
-                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: min(bigintcol), max(bigintcol), count(1), count(bigintcol), compute_bit_vector_hll(bigintcol), min(pcol), max(pcol), count(pcol), compute_bit_vector_hll(pcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
                             keys: iceberg_month(pcol) (type: int)
@@ -835,15 +835,15 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                       function name: inline
                       Select Operator
                         expressions: col1 (type: bigint), DATE'1999-12-26' (type: date), col2 (type: int)
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                           table:
                               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
                               output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
@@ -852,7 +852,7 @@ STAGE PLANS:
                         Select Operator
                           expressions: _col0 (type: bigint), _col1 (type: date), _col2 (type: int)
                           outputColumnNames: bigintcol, pcol, intcol
-                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: min(bigintcol), max(bigintcol), count(1), count(bigintcol), compute_bit_vector_hll(bigintcol), min(pcol), max(pcol), count(pcol), compute_bit_vector_hll(pcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
                             keys: iceberg_month(pcol) (type: int)
@@ -952,15 +952,15 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                       function name: inline
                       Select Operator
                         expressions: col1 (type: bigint), DATE'1999-12-12' (type: date), col2 (type: int)
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                           table:
                               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
                               output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
@@ -969,7 +969,7 @@ STAGE PLANS:
                         Select Operator
                           expressions: _col0 (type: bigint), _col1 (type: date), _col2 (type: int)
                           outputColumnNames: bigintcol, pcol, intcol
-                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: min(bigintcol), max(bigintcol), count(1), count(bigintcol), compute_bit_vector_hll(bigintcol), min(pcol), max(pcol), count(pcol), compute_bit_vector_hll(pcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
                             keys: iceberg_month(pcol) (type: int)
@@ -1387,15 +1387,15 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                       function name: inline
                       Select Operator
                         expressions: DATE'1999-12-31' (type: date), col1 (type: bigint), col2 (type: int)
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                           table:
                               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
                               output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
@@ -1404,7 +1404,7 @@ STAGE PLANS:
                         Select Operator
                           expressions: _col0 (type: date), _col1 (type: bigint), _col2 (type: int)
                           outputColumnNames: pcol, bigintcol, intcol
-                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: min(pcol), max(pcol), count(1), count(pcol), compute_bit_vector_hll(pcol), min(bigintcol), max(bigintcol), count(bigintcol), compute_bit_vector_hll(bigintcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
                             keys: iceberg_day(pcol) (type: int)
@@ -1504,15 +1504,15 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                       function name: inline
                       Select Operator
                         expressions: DATE'1999-12-26' (type: date), col1 (type: bigint), col2 (type: int)
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                           table:
                               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
                               output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
@@ -1521,7 +1521,7 @@ STAGE PLANS:
                         Select Operator
                           expressions: _col0 (type: date), _col1 (type: bigint), _col2 (type: int)
                           outputColumnNames: pcol, bigintcol, intcol
-                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: min(pcol), max(pcol), count(1), count(pcol), compute_bit_vector_hll(pcol), min(bigintcol), max(bigintcol), count(bigintcol), compute_bit_vector_hll(bigintcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
                             keys: iceberg_day(pcol) (type: int)
@@ -1621,15 +1621,15 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                       function name: inline
                       Select Operator
                         expressions: DATE'1999-12-12' (type: date), col1 (type: bigint), col2 (type: int)
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                           table:
                               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
                               output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
@@ -1638,7 +1638,7 @@ STAGE PLANS:
                         Select Operator
                           expressions: _col0 (type: date), _col1 (type: bigint), _col2 (type: int)
                           outputColumnNames: pcol, bigintcol, intcol
-                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 68 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: min(pcol), max(pcol), count(1), count(pcol), compute_bit_vector_hll(pcol), min(bigintcol), max(bigintcol), count(bigintcol), compute_bit_vector_hll(bigintcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
                             keys: iceberg_day(pcol) (type: int)
@@ -2082,15 +2082,15 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                       function name: inline
                       Select Operator
                         expressions: 'gfhutjkgkd' (type: string), col1 (type: bigint), col2 (type: int)
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 106 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 106 Basic stats: COMPLETE Column stats: COMPLETE
                           table:
                               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
                               output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
@@ -2099,7 +2099,7 @@ STAGE PLANS:
                         Select Operator
                           expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: int)
                           outputColumnNames: pcol, bigintcol, intcol
-                          Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 106 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: max(length(pcol)), avg(COALESCE(length(pcol),0)), count(1), count(pcol), compute_bit_vector_hll(pcol), min(bigintcol), max(bigintcol), count(bigintcol), compute_bit_vector_hll(bigintcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
                             keys: iceberg_truncate(pcol, 2) (type: string)
@@ -2199,15 +2199,15 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
-                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                       function name: inline
                       Select Operator
                         expressions: 'gfhyuitogh' (type: string), col1 (type: bigint), col2 (type: int)
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 106 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 106 Basic stats: COMPLETE Column stats: COMPLETE
                           table:
                               input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
                               output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
@@ -2216,7 +2216,7 @@ STAGE PLANS:
                         Select Operator
                           expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: int)
                           outputColumnNames: pcol, bigintcol, intcol
-                          Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 106 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: max(length(pcol)), avg(COALESCE(length(pcol),0)), count(1), count(pcol), compute_bit_vector_hll(pcol), min(bigintcol), max(bigintcol), count(bigintcol), compute_bit_vector_hll(bigintcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
                             keys: iceberg_truncate(pcol, 2) (type: string)

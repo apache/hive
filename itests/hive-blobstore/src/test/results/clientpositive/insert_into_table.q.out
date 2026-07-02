@@ -76,19 +76,19 @@ STAGE PLANS:
               outputColumnNames: _col0
               Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
               UDTF Operator
-                Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                 function name: inline
                 Select Operator
                   expressions: col1 (type: int)
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     bucketingVersion: 2
                     compressed: false
                     GlobalTableId: 1
                     directory: ### BLOBSTORE_STAGING_PATH ###
                     NumFilesPerFileSink: 1
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Stats Publishing Key Prefix: ### BLOBSTORE_STAGING_PATH ###
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -112,7 +112,7 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: int)
                     outputColumnNames: id
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: min(id), max(id), count(1), count(id), compute_bit_vector_hll(id)
                       minReductionHashAggr: 0.99
