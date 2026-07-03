@@ -139,7 +139,7 @@ public class ColStatsProcessor implements IStatsProcessor {
             throw new HiveException("Statistics collection failed while (hive.stats.reliable)", e);
           } else {
             failedColumns.add(columnName);
-            LOG.debug("Skip stats due to error on column {}.", columnName, e);
+            LOG.debug("Because {} is infinite or NaN, we skip stats.", columnName, e);
           }
         }
         pos += columnStatsFields.size();
