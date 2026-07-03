@@ -146,6 +146,16 @@ public final class HiveConfigBuilder {
     if (spec.hiveServer2().configOverrides() != null) {
       props.putAll(spec.hiveServer2().configOverrides());
     }
+
+    // Default Tez sessions with multi-tenancy is not supported, and the respective config would be overridden.
+    // In case of single llap cluster, default tez sessions is supported.
+    long enabledLlapClusters = spec.llapClusters().stream()
+        .filter(LlapSpec::isEnabled)
+        .count();
+    if (enabledLlapClusters > 1) {
+      props.put(ConfigUtils.HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS_KEY, "false");
+    }
+
     return props;
   }
 

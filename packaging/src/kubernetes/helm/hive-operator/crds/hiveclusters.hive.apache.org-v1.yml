@@ -692,6 +692,10 @@ spec:
                     type: string
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
+              serviceAccountName:
+                description: "Kubernetes ServiceAccount name for all component pods.\
+                  \ If not specified, pods use the namespace default service account."
+                type: string
               suspend:
                 description: "When true, the cluster is immediately suspended (all\
                   \ components scaled to 0). Set to false to wake a suspended cluster."

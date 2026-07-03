@@ -38,7 +38,8 @@ public enum LlapTaskSchedulerInfo implements MetricsInfo {
   SchedulerRunningTaskCount("Total number of running tasks"),
   SchedulerPendingPreemptionTaskCount("Total number of tasks pending for pre-emption"),
   SchedulerPreemptedTaskCount("Total number of tasks pre-empted"),
-  SchedulerCompletedDagCount("Number of DAGs completed");
+  SchedulerCompletedDagCount("Number of DAGs completed"),
+  SchedulerDagStatus("Current AM operational DAG status: 0 for IDLE, 1 for RUNNING");
 
   private final String desc;
 

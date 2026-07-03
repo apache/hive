@@ -161,6 +161,7 @@ public class MetastoreDeploymentDependent
               .addToAnnotations("hive.apache.org/config-hash", configHash)
             .endMetadata()
             .withNewSpec()
+              .withServiceAccountName(spec.serviceAccountName())
               .withInitContainers(initContainers)
               .addNewContainer()
                 .withName(COMPONENT)

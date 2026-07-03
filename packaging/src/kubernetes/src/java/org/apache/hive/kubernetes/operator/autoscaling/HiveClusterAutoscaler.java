@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.ToIntFunction;
 
 import io.fabric8.kubernetes.client.KubernetesClient;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
@@ -79,7 +80,7 @@ public class HiveClusterAutoscaler {
     MANAGED_REPLICAS.put(cacheKey(namespace, clusterName, component), replicas);
   }
 
-  private record PendingScaleDown(int targetReplicas, Instant annotatedAt) {}
+  private record PendingScaleDown(int targetReplicas, Instant annotatedAt, List<String> podsToDeregister) {}
 
   private final BackgroundMetricsScraper bgScraper;
   private final MetricsCache metricsCache;
@@ -112,6 +113,7 @@ public class HiveClusterAutoscaler {
     autoscalers.keySet().removeIf(k -> k.startsWith(prefix));
     lastScaleTimes.keySet().removeIf(k -> k.startsWith(prefix));
     pendingScaleDowns.keySet().removeIf(k -> k.startsWith(prefix));
+    TezAmZkDeregister.cleanupCluster(namespace, clusterName);
     LOG.info("Cleaned up autoscaler state for {}/{}", namespace, clusterName);
   }
 
@@ -178,8 +180,9 @@ public class HiveClusterAutoscaler {
       } else {
         // Pod deletion cost only applies to Deployments (ReplicaSet controller).
         // StatefulSets always scale down by highest ordinal regardless of this
-        // annotation. LLAP/TezAM graceful drain is handled by preStop hooks.
-        updateDeploymentPodDeletionCost(client, namespace, hs2Metrics, "hs2_open_sessions");
+        // annotation. LLAP graceful drain is handled by preStop hooks.
+        updateDeploymentPodDeletionCost(client, namespace, hs2Metrics,
+            pm -> pm.metrics().getOrDefault("hs2_open_sessions", 0.0).intValue());
 
         Map<String, Integer> hs2Patches = new HashMap<>();
         evaluateComponent(cluster, client, namespace, clusterName,
@@ -190,7 +193,7 @@ public class HiveClusterAutoscaler {
         int currentReplicas = getCurrentReplicas(client, namespace, clusterName, ConfigUtils.COMPONENT_HIVESERVER2);
         if (hs2Patch != null && hs2Patch < currentReplicas) {
           // Scale-down: defer to allow deletion-cost annotations to propagate
-          pendingScaleDowns.put(hs2Key, new PendingScaleDown(hs2Patch, Instant.now()));
+          pendingScaleDowns.put(hs2Key, new PendingScaleDown(hs2Patch, Instant.now(), null));
           LOG.info("[hiveserver2] Deferring scale-down to {} (waiting for deletion-cost propagation)",
               hs2Patch);
         } else if (hs2Patch != null) {
@@ -251,9 +254,54 @@ public class HiveClusterAutoscaler {
             tezAuto.metricsPort(), tezAuto.metricsScrapeIntervalSeconds());
         String tezKey = cacheKey(namespace, clusterName, tezAmComponentKey);
         List<PodMetrics> tezMetrics = metricsCache.getOrEmpty(tezKey, tezAuto.metricsScrapeIntervalSeconds() * 3);
-        evaluateComponent(cluster, client, namespace, clusterName,
-            tezAmComponentKey, tezAuto,
-            perLlapTezAm.replicas(), patches, statuses, tezMetrics);
+
+        int currentTezReplicas = getCurrentReplicas(client, namespace, clusterName, tezAmComponentKey);
+        PendingScaleDown pending = pendingScaleDowns.get(tezKey);
+        if (pending != null) {
+          Integer appliedTarget = null;
+          if (Duration.between(pending.annotatedAt(), Instant.now()).toSeconds() >= 2) {
+            TezAmZkDeregister.deregisterIdlePods(namespace, clusterName,
+                cluster.getSpec().zookeeper().quorum(), llapSpec.name(), pending.podsToDeregister(),
+                cluster.getSpec().hiveServer2().configOverrides());
+            appliedTarget = pending.targetReplicas();
+            patches.put(tezAmComponentKey, appliedTarget);
+            MANAGED_REPLICAS.put(tezKey, appliedTarget);
+            lastScaleTimes.put(tezKey, Instant.now().toString());
+            pendingScaleDowns.remove(tezKey);
+            LOG.info("[{}] Applying deferred scale-down to {} replicas", tezAmComponentKey, appliedTarget);
+          }
+          evaluateComponent(cluster, client, namespace, clusterName,
+              tezAmComponentKey, tezAuto, perLlapTezAm.replicas(), new HashMap<>(), statuses, tezMetrics);
+          if (pendingScaleDowns.containsKey(tezKey)) {
+            MANAGED_REPLICAS.put(tezKey, currentTezReplicas);
+          } else if (appliedTarget != null) {
+            MANAGED_REPLICAS.put(tezKey, appliedTarget);
+          }
+        } else {
+          Map<String, Integer> tezCosts = TezAmScalingStrategy.deletionCostsByPod(tezMetrics);
+          updateDeploymentPodDeletionCost(client, namespace, tezMetrics, pm -> tezCosts.get(pm.podName()));
+          
+          Map<String, Integer> tezPatches = new HashMap<>();
+          evaluateComponent(cluster, client, namespace, clusterName,
+              tezAmComponentKey, tezAuto, perLlapTezAm.replicas(), tezPatches, statuses, tezMetrics);
+
+          Integer tezPatch = tezPatches.get(tezAmComponentKey);
+          if (tezPatch != null && tezPatch < currentTezReplicas) {
+            // Scale-down: defer to allow deletion-cost annotations to propagate
+            int busyCount = countBusyPods(tezMetrics);
+            int effectivePatch = Math.max(tezPatch, busyCount);
+            int removeCount = currentTezReplicas - effectivePatch;
+            List<String> podsToDeregister = TezAmScalingStrategy.podsToRemove(tezMetrics, tezCosts, removeCount);
+            pendingScaleDowns.put(tezKey, new PendingScaleDown(effectivePatch, Instant.now(), podsToDeregister));
+            MANAGED_REPLICAS.put(tezKey, currentTezReplicas);
+            LOG.info("[{}] Deferring scale-down to {} (waiting for deletion-cost propagation)",
+                tezAmComponentKey, effectivePatch);
+          } else if (tezPatch != null) {
+            // Scale-up: apply immediately
+            patches.put(tezAmComponentKey, tezPatch);
+            MANAGED_REPLICAS.put(tezKey, tezPatch);
+          }
+        }
       }
     }
 
@@ -362,8 +410,7 @@ public class HiveClusterAutoscaler {
     } else {
       workloadName = clusterName + "-" + component;
     }
-    if (component.startsWith(ConfigUtils.COMPONENT_LLAP + "-")
-        || component.startsWith(ConfigUtils.COMPONENT_TEZAM + "-")) {
+    if (component.startsWith(ConfigUtils.COMPONENT_LLAP + "-")) {
       var ss = client.apps().statefulSets()
           .inNamespace(namespace).withName(workloadName).get();
       return ss != null && ss.getSpec().getReplicas() != null ? ss.getSpec().getReplicas() : 0;
@@ -375,17 +422,24 @@ public class HiveClusterAutoscaler {
     }
   }
 
+  /** Counts TezAM pods with active DAG work. */
+  private int countBusyPods(List<PodMetrics> tezMetrics) {
+    return (int) tezMetrics.stream()
+        .filter(pm -> TezAmScalingStrategy.hasActiveDag(pm.metrics()))
+        .count();
+  }
+
   /**
    * Patches each pod's deletion cost annotation based on its active session count.
    * Kubernetes uses this during scale-down to kill idle pods first (lower cost = killed first).
    * <p>
-   * Only meaningful for Deployments (HS2, Metastore) — the ReplicaSet controller
+   * Only meaningful for Deployments (HS2, Metastore, TezAM) — the ReplicaSet controller
    * respects this annotation. StatefulSets ignore it and always terminate by ordinal.
    */
   private void updateDeploymentPodDeletionCost(KubernetesClient client, String namespace,
-      List<PodMetrics> metrics, String metricName) {
+      List<PodMetrics> metrics, ToIntFunction<PodMetrics> costFunction) {
     for (PodMetrics pm : metrics) {
-      int sessions = pm.metrics().getOrDefault(metricName, 0.0).intValue();
+      int cost = costFunction.applyAsInt(pm);
       try {
         client.pods().inNamespace(namespace).withName(pm.podName())
             .edit(pod -> {
@@ -393,7 +447,7 @@ public class HiveClusterAutoscaler {
                 pod.getMetadata().setAnnotations(new java.util.HashMap<>());
               }
               pod.getMetadata().getAnnotations()
-                  .put("controller.kubernetes.io/pod-deletion-cost", String.valueOf(sessions));
+                  .put("controller.kubernetes.io/pod-deletion-cost", String.valueOf(cost));
               return pod;
             });
       } catch (Exception e) {

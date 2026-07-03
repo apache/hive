@@ -520,7 +520,7 @@ HS2 routes sessions to clusters server-side based on admin-defined user/group ru
 
 Each LLAP cluster is fully isolated:
 - **Separate LLAP daemon StatefulSet** with independent executor count, memory, and replicas
-- **Separate TezAM StatefulSet** (one per LLAP cluster) with its own ZooKeeper registration
+- **Separate TezAM Deployment** (one per LLAP cluster) with its own ZooKeeper registration
 - **Separate autoscaling** — each cluster scales independently based on its own metrics
 - **Shared scratch PVC** (ReadWriteMany) for HS2 ↔ TezAM coordination files
 
@@ -618,11 +618,11 @@ For the above configuration, the operator creates:
 | Resource | Name | Purpose |
 |----------|------|---------|
 | StatefulSet | `hive-production` | LLAP daemons for production cluster |
-| StatefulSet | `hive-tezam-production` | TezAM for production cluster |
+| Deployment | `hive-tezam-production` | TezAM for production cluster |
 | StatefulSet | `hive-analytics` | LLAP daemons for analytics cluster |
-| StatefulSet | `hive-tezam-analytics` | TezAM for analytics cluster |
+| Deployment | `hive-tezam-analytics` | TezAM for analytics cluster |
 | StatefulSet | `hive-dev` | LLAP daemons for dev cluster |
-| StatefulSet | `hive-tezam-dev` | TezAM for dev cluster |
+| Deployment | `hive-tezam-dev` | TezAM for dev cluster |
 | Service (headless) | `hive-production`, `hive-analytics`, `hive-dev` | LLAP daemon discovery |
 | Service (headless) | `hive-tezam-production`, `hive-tezam-analytics`, `hive-tezam-dev` | TezAM discovery |
 | ConfigMap | `hive-production-config`, etc. | `llap-daemon-site.xml` per cluster |
@@ -1391,7 +1391,7 @@ setup is needed — simply connect to HS2 and the operator wakes LLAP/TezAM as n
 
 LLAP is configured as an array (`llapClusters`) to support multi-tenant deployments with
 independent scaling. Each entry creates a separate LLAP StatefulSet, Service, ConfigMap,
-and a paired TezAM StatefulSet (when `tezAm.enabled: true`).
+and a paired TezAM Deployment (when `tezAm.enabled: true`).
 
 | Value | Default | Description |
 |-------|---------|-------------|
@@ -1419,7 +1419,7 @@ Clients connect with just their identity — no cluster-specific JDBC URL params
 
 ### Tez AM
 
-TezAM is deployed as one StatefulSet per LLAP cluster. The global `tezAm` section
+TezAM is deployed as one Deployment per LLAP cluster. The global `tezAm` section
 controls shared settings (enabled flag, scratch PVC). Per-LLAP TezAM settings
 (replicas, autoscaling) can be overridden in each `llapClusters[].tezAm` entry.
 
@@ -1587,14 +1587,14 @@ HiveClusterReconciler
   |
   +-- [Imperative] Per-LLAP-Cluster Resources (for each llapClusters[] entry):
         +-- LLAP StatefulSet + headless Service + ConfigMap + PDB
-        +-- TezAM StatefulSet + headless Service + ConfigMap (one TezAM per LLAP cluster)
+        +-- TezAM Deployment + headless Service + ConfigMap (one TezAM per LLAP cluster)
 ```
 
 LLAP clusters and their paired TezAM instances are managed imperatively by the reconciler
 (not via JOSDK workflow dependents) because the number of clusters is dynamic — determined
 at runtime from the CR spec. Each `llapClusters[]` entry produces:
 - **LLAP**: StatefulSet (`{cluster}-{name}`), headless Service, ConfigMap (`llap-daemon-site.xml`), PDB
-- **TezAM**: StatefulSet (`{cluster}-tezam-{name}`), headless Service, ConfigMap (`tez-site.xml`)
+- **TezAM**: Deployment (`{cluster}-tezam-{name}`), headless Service, ConfigMap (`tez-site.xml`)
 
 All imperative resources are applied via `serverSideApply()`. Removed LLAP clusters (and
 their TezAMs) are garbage-collected automatically using label-based discovery.

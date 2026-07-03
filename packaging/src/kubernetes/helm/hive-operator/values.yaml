@@ -47,6 +47,10 @@ cluster:
   image: "apache/hive:4.3.0-SNAPSHOT"
   imagePullPolicy: IfNotPresent
 
+  # ServiceAccount name for all component pods (HS2, Metastore, LLAP, TezAM, schema-init).
+  # If empty, pods use the namespace default service account.
+  serviceAccountName: ""
+
   # ---------------------------------------------------------------------------
   # DATABASE (Required) — RDBMS for the Hive Metastore backend
   # ---------------------------------------------------------------------------
@@ -207,7 +211,6 @@ cluster:
   # ---------------------------------------------------------------------------
   tezAm:
     enabled: true
-    replicas: 2
     scratchStorageSize: "1Gi"
     scratchStorageClassName: ""
     resources: {}
