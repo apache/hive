@@ -570,8 +570,7 @@ public class Hive implements AutoCloseable {
     conf = c;
     // turn off calcite rexnode normalization
     System.setProperty("calcite.enable.rexnode.digest.normalize", "false");
-    // update calcite default charset
-    // TODO is this the right place? It's not considered in cases like TestHiveRelJsonReader
+    // update calcite default charset, consistent with HiveTypeFactory#getDefaultCharset
     System.setProperty("calcite.default.charset", ConversionUtil.NATIVE_UTF16_CHARSET_NAME);
     System.setProperty("calcite.default.nationalcharset", ConversionUtil.NATIVE_UTF16_CHARSET_NAME);
     if (doRegisterAllFns) {

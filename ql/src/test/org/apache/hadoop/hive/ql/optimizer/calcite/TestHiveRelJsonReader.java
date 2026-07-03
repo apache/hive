@@ -58,7 +58,7 @@ class TestHiveRelJsonReader {
   @ParameterizedTest
   @MethodSource("inputJsonFiles")
   void testReadJson(Path jsonFile) throws IOException {
-    // TODO cleaner way? The current approach of setting these properties in Hive.java does not work for this test
+    // update calcite default charset, consistent with Hive.java
     System.setProperty("calcite.default.charset", ConversionUtil.NATIVE_UTF16_CHARSET_NAME);
     System.setProperty("calcite.default.nationalcharset", ConversionUtil.NATIVE_UTF16_CHARSET_NAME);
 

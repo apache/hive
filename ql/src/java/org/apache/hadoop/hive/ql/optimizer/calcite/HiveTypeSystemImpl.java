@@ -191,28 +191,27 @@ public class HiveTypeSystemImpl extends RelDataTypeSystemImpl {
   @Override
   public RelDataType deriveDecimalDivideType(RelDataTypeFactory typeFactory,
       RelDataType type1, RelDataType type2) {
-    if (SqlTypeUtil.isExactNumeric(type1) && SqlTypeUtil.isExactNumeric(type2)) {
-      if (SqlTypeUtil.isDecimal(type1) || SqlTypeUtil.isDecimal(type2)) {
-        // Java numeric will always have invalid precision/scale,
-        // use its default decimal precision/scale instead.
-        type1 = RelDataTypeFactoryImpl.isJavaType(type1) ? typeFactory.decimalOf(type1) : type1;
-        type2 = RelDataTypeFactoryImpl.isJavaType(type2) ? typeFactory.decimalOf(type2) : type2;
-        int p1 = type1.getPrecision();
-        int p2 = type2.getPrecision();
-        int s1 = type1.getScale();
-        int s2 = type2.getScale();
+    if (SqlTypeUtil.isExactNumeric(type1) && SqlTypeUtil.isExactNumeric(type2) &&
+        (SqlTypeUtil.isDecimal(type1) || SqlTypeUtil.isDecimal(type2))) {
+      // Java numeric will always have invalid precision/scale,
+      // use its default decimal precision/scale instead.
+      type1 = RelDataTypeFactoryImpl.isJavaType(type1) ? typeFactory.decimalOf(type1) : type1;
+      type2 = RelDataTypeFactoryImpl.isJavaType(type2) ? typeFactory.decimalOf(type2) : type2;
+      int p1 = type1.getPrecision();
+      int p2 = type2.getPrecision();
+      int s1 = type1.getScale();
+      int s2 = type2.getScale();
 
-        final int maxNumericPrecision = getMaxNumericPrecision();
-        int dout = Math.min(p1 - s1 + s2, maxNumericPrecision);
-        int scale = Math.max(6, s1 + p2 + 1);
-        scale = Math.min(scale, maxNumericPrecision - dout);
-        scale = Math.min(scale, getMaxNumericScale());
+      final int maxNumericPrecision = getMaxNumericPrecision();
+      int dout = Math.min(p1 - s1 + s2, maxNumericPrecision);
+      int scale = Math.max(6, s1 + p2 + 1);
+      scale = Math.min(scale, maxNumericPrecision - dout);
+      scale = Math.min(scale, getMaxNumericScale());
 
-        int precision = dout + scale;
-        assert precision <= maxNumericPrecision;
-        assert precision > 0;
-        return typeFactory.createSqlType(SqlTypeName.DECIMAL, precision, scale);
-      }
+      int precision = dout + scale;
+      assert precision <= maxNumericPrecision;
+      assert precision > 0;
+      return typeFactory.createSqlType(SqlTypeName.DECIMAL, precision, scale);
     }
     return null;
   }
