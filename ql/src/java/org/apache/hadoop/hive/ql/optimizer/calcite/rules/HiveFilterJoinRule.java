@@ -169,7 +169,7 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
       return;
     }
 
-    final List<RexNode> aboveFilters =
+    List<RexNode> aboveFilters =
         filter != null
             ? getConjunctions(filter)
             : new ArrayList<>();
@@ -185,6 +185,19 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
 
     final List<RexNode> leftFilters = new ArrayList<>();
     final List<RexNode> rightFilters = new ArrayList<>();
+
+    // Do not consider moving predicates that contain correlation variables
+    final List<RexNode> ineligible = new ArrayList<>();
+    final List<RexNode> eligible = new ArrayList<>();
+    for (RexNode f : aboveFilters) {
+      if (RexUtil.containsCorrelation(f)) {
+        ineligible.add(f);
+      } else {
+        eligible.add(f);
+      }
+    }
+    aboveFilters = eligible;
+
 
     // TODO - add logic to derive additional filters.  E.g., from
     // (t1.a = 1 AND t2.a = 2) OR (t1.b = 3 AND t2.b = 4), you can
@@ -205,6 +218,9 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
         joinFilters,
         leftFilters,
         rightFilters);
+
+    // Add back the ineligible filters
+    aboveFilters.addAll(ineligible);
 
     // Move join filters up if needed
     validateJoinFilters(aboveFilters, joinFilters, join, joinType);
