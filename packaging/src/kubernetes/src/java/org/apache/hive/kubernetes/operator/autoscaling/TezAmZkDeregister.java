@@ -51,7 +51,7 @@ public final class TezAmZkDeregister {
 
   public static void deregisterIdlePods(String namespace, String clusterName, String zkQuorum, String llapName,
       List<String> idlePodNames, Map<String, String> hiveSiteConfig) {
-    if (idlePodNames.isEmpty()) {
+    if (idlePodNames == null || idlePodNames.isEmpty()) {
       return;
     }
     ZkClientRecord zkRecord = getZKRecord(namespace, clusterName, zkQuorum, hiveSiteConfig);
