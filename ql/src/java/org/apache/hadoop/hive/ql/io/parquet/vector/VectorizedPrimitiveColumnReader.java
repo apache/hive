@@ -13,6 +13,7 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.vector;
 
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DateColumnVector;
@@ -145,6 +146,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       }
       break;
     case TIMESTAMP:
+    case TIMESTAMPLOCALTZ:
       readTimestamp(num, (TimestampColumnVector) column, rowId);
       break;
     case INTERVAL_DAY_TIME:
@@ -441,18 +443,23 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
         switch (descriptor.getType()) {
         //INT64 is not yet supported
         case INT96:
-          c.set(rowId, dataColumn.readTimestamp().toSqlTimestamp());
-          break;
         case INT64:
-          c.set(rowId, dataColumn.readTimestamp().toSqlTimestamp());
+        case BINARY:
+        case FIXED_LEN_BYTE_ARRAY:
+          Timestamp t = dataColumn.readTimestamp();
+          if (dataColumn.isValid()) {
+            c.set(rowId, t.toSqlTimestamp());
+            c.isNull[rowId] = false;
+            c.isRepeating =
+                c.isRepeating && ((c.time[0] == c.time[rowId]) && (c.nanos[0] == c.nanos[rowId]));
+          } else {
+            setNullValue(c, rowId);
+          }
           break;
         default:
           throw new IOException(
               "Unsupported parquet logical type: " + type.getLogicalTypeAnnotation().toString() + " for timestamp");
         }
-        c.isNull[rowId] = false;
-        c.isRepeating =
-            c.isRepeating && ((c.time[0] == c.time[rowId]) && (c.nanos[0] == c.nanos[rowId]));
       } else {
         setNullValue(c, rowId);
       }
@@ -638,11 +645,17 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       }
       break;
     case TIMESTAMP:
+    case TIMESTAMPLOCALTZ:
       TimestampColumnVector tsc = (TimestampColumnVector) column;
       tsc.setUsingProlepticCalendar(true);
       for (int i = rowId; i < rowId + num; ++i) {
         if (!column.isNull[i]) {
-          tsc.set(i, dictionary.readTimestamp((int) dictionaryIds.vector[i]).toSqlTimestamp());
+          Timestamp t = dictionary.readTimestamp((int) dictionaryIds.vector[i]);
+          if (dictionary.isValid()) {
+            tsc.set(i, t.toSqlTimestamp());
+          } else {
+            setNullValue(column, i);
+          }
         }
       }
       break;

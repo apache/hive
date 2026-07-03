@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.io.parquet.convert;
 import static org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory.getPrimitiveTypeInfo;
 import static org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory.stringTypeInfo;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.nio.ByteBuffer;
@@ -33,6 +34,7 @@ import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.io.parquet.convert.ETypeConverter.BinaryConverter;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
@@ -339,6 +341,34 @@ public class TestETypeConverter {
     String value = "this_is_a_value";
     Text textWritable = (Text) getWritableFromBinaryConverter(null, primitiveType, Binary.fromString(value));
     assertEquals(value, textWritable.toString());
+  }
+
+  @Test
+  public void testGetTextConverterForDate() {
+    PrimitiveType primitiveType =
+        Types.optional(PrimitiveTypeName.BINARY)
+            .as(LogicalTypeAnnotation.stringType())
+            .named("value");
+    String value = "2026-01-01";
+    DateWritableV2 dateWritable =
+        (DateWritableV2)
+            getWritableFromBinaryConverter(
+                TypeInfoFactory.dateTypeInfo, primitiveType, Binary.fromString(value));
+    assertEquals(org.apache.hadoop.hive.common.type.Date.valueOf(value), dateWritable.get());
+  }
+
+  @Test
+  public void testGetTextConverterForDateInvalid() {
+    PrimitiveType primitiveType =
+        Types.optional(PrimitiveTypeName.BINARY)
+            .as(LogicalTypeAnnotation.stringType())
+            .named("value");
+    String value = "invalid_date";
+    DateWritableV2 dateWritable =
+        (DateWritableV2)
+            getWritableFromBinaryConverter(
+                TypeInfoFactory.dateTypeInfo, primitiveType, Binary.fromString(value));
+    assertNull(dateWritable);
   }
 
   @Test
