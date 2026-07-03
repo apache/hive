@@ -53,10 +53,20 @@ import java.util.zip.ZipOutputStream;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.JavaVersionUtils;
+import org.apache.hadoop.hive.ql.anon.io.AnonInputFormat;
+import org.apache.hadoop.hive.ql.anon.io.IndexListInputFormat;
+import org.apache.hadoop.hive.ql.anon.tez.AnonProcessor;
+import org.apache.hadoop.hive.ql.anon.tez.AnonWork;
+import org.apache.hadoop.hive.ql.anon.tez.ExtractProcessor;
+import org.apache.hadoop.hive.ql.anon.tez.ExtractWork;
+import org.apache.hadoop.hive.ql.anon.tez.IndexProcessor;
+import org.apache.hadoop.hive.ql.anon.tez.IndexWork;
+import org.apache.hadoop.mapred.*;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.tez.dag.api.OutputCommitterDescriptor;
 import org.apache.tez.mapreduce.common.MRInputSplitDistributor;
 import org.apache.tez.mapreduce.hadoop.InputSplitInfo;
+import org.apache.tez.mapreduce.input.MRInput;
 import org.apache.tez.mapreduce.output.MROutput;
 import org.apache.tez.mapreduce.protos.MRRuntimeProtos;
 import org.apache.tez.runtime.library.api.Partitioner;
@@ -121,10 +131,6 @@ import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.FileOutputFormat;
-import org.apache.hadoop.mapred.InputFormat;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.yarn.api.records.LocalResource;
@@ -934,6 +940,98 @@ public class DagUtils {
     return map;
   }
 
+  private Vertex createVertexFromIndexWork(JobConf conf, IndexWork work, Path mrScratchDir, VertexType vertexType) throws IOException {
+
+    String ixInputPath = work.getInputPath();
+    DataSourceDescriptor indexListSource = MRInput.createConfigBuilder(
+        new Configuration(conf),
+        IndexListInputFormat.class,
+        ixInputPath
+      )
+      .groupSplits(false)
+      .build();
+
+    Vertex vertex = Vertex.create(
+      work.getName(),
+      ProcessorDescriptor.create(
+        IndexProcessor.class.getName()
+      ).setUserPayload(TezUtils.createUserPayloadFromConf(conf))
+      , -1, Resource.newInstance(work.getMemory(), 1)
+    );
+    vertex.addDataSource(org.apache.hadoop.hive.ql.anon.consts.AnonConst.ANON_EDGE_IDX_IN, indexListSource);
+    return vertex;
+  }
+
+  private Vertex createVertexFromAnonWork(JobConf conf, AnonWork work, Path mrScratchDir, VertexType vertexType) throws IOException {
+    final Vertex vertex = Vertex.create(
+      work.getName(),
+      ProcessorDescriptor.create(
+        AnonProcessor.class.getName()).setUserPayload(TezUtils.createUserPayloadFromConf(conf)
+      ),
+      work.getParallelism(),
+      Resource.newInstance(work.getMemory(), work.getCpu())
+    );
+
+    // When an index is found, AnonProcessor's only input is the upstream
+    // IndexProcessor connected via a SIMPLE_EDGE (see AnonStatementAnalyzer);
+    // there is no MR data source on this vertex in that case. Otherwise, the
+    // table's archive files are read directly through AnonInputFormat.
+    if (!work.isIndexFound()) {
+      final DataSourceDescriptor descriptor = MRInput.createConfigBuilder(
+          new Configuration(conf),
+          AnonInputFormat.class,
+          work.getInputDir()
+        )
+        .groupSplits(false)
+        .build();
+
+      vertex.addDataSource(org.apache.hadoop.hive.ql.anon.consts.AnonConst.ANON_EDGE_TBL, descriptor);
+    }
+    return vertex;
+  }
+
+  /**
+   * §4.8 EXTRACT vertex factory. Read-only sibling of
+   * {@link #createVertexFromAnonWork}: same vertex skeleton, same
+   * UserPayload-carried configuration, same conditional MR data
+   * source over {@link AnonInputFormat} on the no-index path. The
+   * only structural difference is the {@code ProcessorDescriptor},
+   * which names {@link ExtractProcessor} instead of
+   * {@link AnonProcessor}. Tez wiring on the indexed path identical:
+   * the upstream {@link IndexProcessor} feeds (file, offset-map)
+   * pairs through the {@code ANON_EDGE_INDEX} simple edge, and
+   * {@link ExtractProcessor#run} picks them up by the same edge
+   * name.
+   */
+  private Vertex createVertexFromExtractWork(JobConf conf, ExtractWork work,
+      Path mrScratchDir, VertexType vertexType) throws IOException {
+    final Vertex vertex = Vertex.create(
+      work.getName(),
+      ProcessorDescriptor.create(
+        ExtractProcessor.class.getName()).setUserPayload(TezUtils.createUserPayloadFromConf(conf)
+      ),
+      work.getParallelism(),
+      Resource.newInstance(work.getMemory(), work.getCpu())
+    );
+
+    // No-index fallback: scan the table's archive files directly via
+    // AnonInputFormat. The processor's no-index consume path runs the
+    // per-row identity-gate (RowProjector.matches) instead of relying
+    // on the IndexProcessor's offset map.
+    if (!work.isIndexFound()) {
+      final DataSourceDescriptor descriptor = MRInput.createConfigBuilder(
+          new Configuration(conf),
+          AnonInputFormat.class,
+          work.getInputDir()
+        )
+        .groupSplits(false)
+        .build();
+
+      vertex.addDataSource(org.apache.hadoop.hive.ql.anon.consts.AnonConst.ANON_EDGE_TBL, descriptor);
+    }
+    return vertex;
+  }
+
   /*
    * Helper function to create JobConf for specific ReduceWork.
    */
@@ -1497,6 +1595,15 @@ public class DagUtils {
       return initializeVertexConf(conf, context, (ReduceWork)work);
     } else if (work instanceof MergeJoinWork) {
       return initializeVertexConf(conf, context, (MergeJoinWork) work);
+    } else if (work instanceof IndexWork || work instanceof AnonWork
+        || work instanceof ExtractWork) {
+      // §4.7 ERASE-side anonymization works and the §4.8 EXTRACT-side
+      // ExtractWork all carry their configuration through the
+      // UserPayload set on the ProcessorDescriptor (see
+      // createVertexFromIndexWork / createVertexFromAnonWork /
+      // createVertexFromExtractWork); no vertex-specific JobConf
+      // manipulation is required here.
+      return conf;
     } else {
       assert false;
       return null;
@@ -1551,6 +1658,12 @@ public class DagUtils {
             .setUserPayload(cpConfig.toUserPayload(new TezConfiguration(conf))));
         // parallelism shouldn't be set for cartesian product vertex
       }
+    } else if (workUnit instanceof IndexWork) {
+      vertex = createVertexFromIndexWork(conf, (IndexWork) workUnit, scratchDir, vertexType);
+    } else if (workUnit instanceof AnonWork) {
+      vertex = createVertexFromAnonWork(conf, (AnonWork) workUnit, scratchDir, vertexType);
+    } else if (workUnit instanceof ExtractWork) {
+      vertex = createVertexFromExtractWork(conf, (ExtractWork) workUnit, scratchDir, vertexType);
     } else {
       // something is seriously wrong if this is happening
       throw new HiveException(ErrorMsg.GENERIC_ERROR.getErrorCodedMsg());

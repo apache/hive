@@ -1,0 +1,9 @@
+IDENTITY userId TYPE INT
+SCHEMA TYPE STRING
+FOR SCHEMA 'a'
+    ERASE   xs[0]:y,
+            xs[*]:y,
+            xs[k='v']:y,
+            xs[k!=1]:y,
+            xs[k>1]:y,
+            xs[k<=10]:y

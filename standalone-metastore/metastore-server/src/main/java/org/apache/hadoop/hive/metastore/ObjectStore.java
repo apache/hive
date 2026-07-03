@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.metastore;
 
 import static org.apache.hadoop.hive.metastore.Batchable.NO_BATCHING;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.COMPACTOR_USE_CUSTOM_POOL;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.*;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifiers;
 
@@ -41,6 +41,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -89,6 +90,7 @@ import org.apache.hadoop.hive.metastore.api.AllTableConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.CheckConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.ColumnInternalFormat;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -99,6 +101,7 @@ import org.apache.hadoop.hive.metastore.api.DefaultConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
 import org.apache.hadoop.hive.metastore.api.DatabaseType;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
+import org.apache.hadoop.hive.metastore.api.ErasurePolicy;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
 import org.apache.hadoop.hive.metastore.api.Function;
@@ -106,6 +109,11 @@ import org.apache.hadoop.hive.metastore.api.FunctionType;
 import org.apache.hadoop.hive.metastore.api.GetPackageRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
+import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
+import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
+import org.apache.hadoop.hive.metastore.api.HiveObjectType;
+import org.apache.hadoop.hive.metastore.api.Index;
+import org.apache.hadoop.hive.metastore.api.IndexType;
 import org.apache.hadoop.hive.metastore.api.ISchema;
 import org.apache.hadoop.hive.metastore.api.ISchemaName;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
@@ -120,6 +128,9 @@ import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Package;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionFilterMode;
+import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
+import org.apache.hadoop.hive.metastore.api.PartitionValuesRow;
+import org.apache.hadoop.hive.metastore.api.PolicyInfo;
 import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
@@ -176,8 +187,20 @@ import org.apache.hadoop.hive.metastore.directsql.DirectSqlAggrStats;
 import org.apache.hadoop.hive.metastore.metastore.iface.PrivilegeStore;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
+import org.apache.hadoop.hive.metastore.model.FetchGroups;
+import org.apache.hadoop.hive.metastore.model.MErasureIndex;
+import org.apache.hadoop.hive.metastore.model.MErasurePolicy;
 import org.apache.hadoop.hive.metastore.model.MCatalog;
 import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
+import org.apache.hadoop.hive.metastore.model.MErasurePolicyBinding;
+import org.apache.hadoop.hive.metastore.model.MErasurePolicyBindingMember;
+import org.apache.hadoop.hive.metastore.model.MErasurePolicyBindingResolved;
+import org.apache.hadoop.hive.metastore.model.MErasurePolicyLifecycleEvent;
+import org.apache.hadoop.hive.metastore.model.MErasurePolicyVersion;
+import org.apache.hadoop.hive.metastore.model.MErasureRunAudit;
+import org.apache.hadoop.hive.metastore.model.MErasureRunAuditIdentity;
+import org.apache.hadoop.hive.metastore.model.MErasureRunLock;
+import org.apache.hadoop.hive.metastore.model.MPolicyPriv;
 import org.apache.hadoop.hive.metastore.model.MConstraint;
 import org.apache.hadoop.hive.metastore.model.MCreationMetadata;
 import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
@@ -187,6 +210,8 @@ import org.apache.hadoop.hive.metastore.model.MDatabase;
 import org.apache.hadoop.hive.metastore.model.MDelegationToken;
 import org.apache.hadoop.hive.metastore.model.MFieldSchema;
 import org.apache.hadoop.hive.metastore.model.MFunction;
+import org.apache.hadoop.hive.metastore.model.MGlobalPrivilege;
+import org.apache.hadoop.hive.metastore.model.MIndex;
 import org.apache.hadoop.hive.metastore.model.MISchema;
 import org.apache.hadoop.hive.metastore.model.MMVSource;
 import org.apache.hadoop.hive.metastore.model.MMasterKey;
@@ -1741,8 +1766,17 @@ public class ObjectStore implements RawStore, Configurable {
     if (keys != null) {
       mkeys = new ArrayList<>(keys.size());
       for (FieldSchema part : keys) {
-        mkeys.add(new MFieldSchema(part.getName().toLowerCase(),
+//        if(part.isSetPolicy()){
+//
+//          MErasurePolicy map = getMErasurePolicy(part.getPolicy().toString());
+//          mkeys.add(new MFieldSchema(part.getName().toLowerCase(),
+//            part.getType(), part.getComment(), map));
+//        }
+//        else
+        {
+          mkeys.add(new MFieldSchema(part.getName().toLowerCase(),
             part.getType(), part.getComment()));
+        }
       }
     }
     return mkeys;
@@ -1753,8 +1787,23 @@ public class ObjectStore implements RawStore, Configurable {
     if (mkeys != null) {
       keys = new ArrayList<>();
       for (MFieldSchema part : mkeys) {
-        keys.add(new FieldSchema(part.getName(), part.getType(), part
-            .getComment()));
+
+        FieldSchema fieldSchema = new FieldSchema(part.getName(), part.getType(), part.getComment());
+//        if (part.getPolicy() != null) {
+//          MErasurePolicy policy = part.getPolicy();
+//          AnonPolicy anonPolicy = null;
+//          try {
+//            anonPolicy = getPolicy(policy.getPolicyName());
+//            if (anonPolicy == null) {
+//              throw new NoSuchObjectException("policy not found");
+//            }
+//          } catch (MetaException | InvalidInputException | InvalidObjectException | NoSuchObjectException e) {
+//            throw new RuntimeException(e);
+//          }
+//          fieldSchema.setPolicy(anonPolicy);
+//        }
+
+        keys.add(fieldSchema);
       }
     }
     return keys;
@@ -8067,4 +8116,1866 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
   }
+
+  /* anonymization extensions */
+
+  @Override
+  public void createErasurePolicy(final ErasurePolicy erasurePolicy) {
+    boolean committed = false;
+    try {
+      openTransaction();
+      final MErasurePolicy mAnonPolicy = convertToMErasurePolicy(erasurePolicy);
+      pm.makePersistent(mAnonPolicy);
+      committed = commitTransaction();
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  private MErasurePolicy convertToMErasurePolicy(final ErasurePolicy anonPolicy) {
+    if (anonPolicy == null) {
+      return null;
+    }
+    return new MErasurePolicy(anonPolicy.getPolicyName());
+  }
+
+  @Override
+  public void dropErasurePolicy(final String policyName, final boolean ifExists) throws NoSuchObjectException {
+    boolean success = false;
+    Query memberQuery = null;
+    Query versionQuery = null;
+    try {
+      openTransaction();
+      MErasurePolicy mAnonPolicy = getMErasurePolicy(policyName);
+      pm.retrieve(mAnonPolicy);
+      if (mAnonPolicy == null) {
+        throw new NoSuchObjectException("policy " + policyName + " not found");
+      }
+      // Concurrency: refuse the drop if any binding still references the
+      // policy, or if any policy version exists. The audit trail in
+      // MErasurePolicyVersion / MErasurePolicyLifecycleEvent is meaningful
+      // only as long as the policy header is around to anchor it.
+      memberQuery = pm.newQuery(MErasurePolicyBindingMember.class, "policy == p1");
+      memberQuery.declareParameters(MErasurePolicy.class.getName() + " p1");
+      memberQuery.setResult("count(this)");
+      final long memberCount = (Long) memberQuery.execute(mAnonPolicy);
+      if (memberCount > 0) {
+        throw new NoSuchObjectException(
+            "policy '" + policyName + "' is still attached to " + memberCount
+                + " binding(s); DETACH first.");
+      }
+      // A DRAFT-only policy carries no audit-relevant state, so its versions and
+      // their statements/rules/lifecycle events are removed along with the policy.
+      // If ANY version has advanced past DRAFT, refuse — the rows-never-deleted
+      // invariant protects the audit trail. (The analyzer enforces the same rule;
+      // this is the metastore-side guard, and it replaces the old blanket refusal
+      // that made DRAFT-only policies undroppable.)
+      versionQuery = pm.newQuery(MErasurePolicyVersion.class, "policy == p1");
+      versionQuery.declareParameters(MErasurePolicy.class.getName() + " p1");
+      List<MErasurePolicyVersion> versions =
+          (List<MErasurePolicyVersion>) versionQuery.execute(mAnonPolicy);
+      for (MErasurePolicyVersion v : versions) {
+        if (!"DRAFT".equals(v.getStatus())) {
+          throw new NoSuchObjectException(
+              "policy '" + policyName + "' has a non-DRAFT version (" + v.getVersionLabel()
+                  + " is " + v.getStatus() + "); refusing drop to preserve the audit trail. "
+                  + "Use DEACTIVATE ERASURE POLICY " + policyName + " for operational retirement.");
+        }
+      }
+      // All DRAFT: tear down each version's lifecycle events, then the versions.
+      // (The policy body is persisted flat in ERASURE_POLICY_VERSIONS.SOURCE_TEXT,
+      // so there are no per-version statement/rule rows to remove.)
+      for (MErasurePolicyVersion v : versions) {
+        Query lifecycleQuery = pm.newQuery(MErasurePolicyLifecycleEvent.class, "version == v1");
+        lifecycleQuery.declareParameters(MErasurePolicyVersion.class.getName() + " v1");
+        lifecycleQuery.deletePersistentAll(v);
+        lifecycleQuery.closeAll();
+      }
+      if (!versions.isEmpty()) {
+        pm.deletePersistentAll(versions);
+      }
+      // Grants (POLICY_PRIVS keys on policy_id, not a JDO relationship): a dropped
+      // policy's privileges are meaningless, so remove them with the policy.
+      Query privQuery = pm.newQuery(MPolicyPriv.class, "policyId == pid");
+      privQuery.declareParameters("long pid");
+      privQuery.deletePersistentAll(jdoId(mAnonPolicy));
+      privQuery.closeAll();
+
+      pm.deletePersistentAll(mAnonPolicy);
+
+      success = commitTransaction();
+    } finally {
+      if (memberQuery != null) memberQuery.closeAll();
+      if (versionQuery != null) versionQuery.closeAll();
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  private MErasurePolicy getMErasurePolicy(final String policyName) {
+    MErasurePolicy mAnonPolicy = null;
+    boolean commited = false;
+    Query query = null;
+    try {
+      openTransaction();
+      final String normalizedPolicyName = normalizeIdentifier(policyName);
+      query = pm.newQuery(MErasurePolicy.class, "policyName == policyName1");
+      query.declareParameters("java.lang.String policyName1");
+      query.setUnique(true);
+      mAnonPolicy = (MErasurePolicy) query.execute(normalizedPolicyName);
+      pm.retrieve(mAnonPolicy);
+      commited = commitTransaction();
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
+    return mAnonPolicy;
+  }
+
+  //region legacy indexing
+
+  @Override
+  public boolean addIndex(Index index) throws InvalidObjectException, MetaException {
+    boolean commited = false;
+    try {
+      openTransaction();
+      MIndex mIndex = convertToMIndex(index);
+      pm.makePersistent(mIndex);
+      commited = commitTransaction();
+      return true;
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+        return false;
+      }
+    }
+  }
+
+  private MIndex convertToMIndex(Index index) throws InvalidObjectException, MetaException {
+    StorageDescriptor sd = index.getSd();
+    if (sd == null) {
+      throw new InvalidObjectException("Storage descriptor is not defined for index.");
+    }
+
+    MStorageDescriptor mStorageDescriptor = this.convertToMStorageDescriptor(sd);
+    String[] parsedDbName = parseDbName(index.getDbName(), conf);
+    String catName = parsedDbName[CAT_NAME];
+    String dbName = parsedDbName[DB_NAME];
+
+    MTable mOrigTable = getMTable(catName, dbName, index.getOrigTableName());
+    if (mOrigTable == null) {
+      throw new InvalidObjectException("Original table does not exist for the given index.");
+    }
+
+//    String[] qualified = TableName.getDbTable(index.getDbName(), index.getIndexTableName());
+    MTable mIndexTable = getMTable(catName, dbName, index.getIndexTableName());
+    if (mIndexTable == null) {
+      throw new InvalidObjectException("Underlying index table does not exist for the given index.");
+    }
+
+    return new MIndex(normalizeIdentifier(index.getIndexName()), mOrigTable, index.getCreateTime(),
+      index.getLastAccessTime(), mIndexTable, mStorageDescriptor,
+      index.getIndexHandlerClass(), index.isDeferredRebuild(),
+      index.getPageSize(), index.getBufferPoolSize(),
+      index.getPointerType(), index.getIndexType().toString());
+  }
+
+  @Override
+  public Index getIndex(String dbName, String origTableName, String indexName) throws MetaException {
+    openTransaction();
+    MIndex mIndex = this.getMIndex(dbName, origTableName, indexName);
+    Index index = convertToIndex(mIndex);
+    commitTransaction();
+    return index;
+  }
+
+  private MIndex getMIndex(final String dbName, final String originalTableName, final String indexName) throws MetaException {
+    MIndex mIndex = null;
+    boolean commited = false;
+    Query query = null;
+    try {
+      openTransaction();
+      final String normalizedDbName = normalizeIdentifier(dbName);
+      final String normalizedOriginalTableName = normalizeIdentifier(originalTableName);
+      final String catName = getDefaultCatalog(conf);
+      final String normalizedIndexName = normalizeIdentifier(indexName);
+      MTable mTable = getMTable(catName, normalizedDbName, normalizedOriginalTableName);
+      if (mTable == null) {
+        commited = commitTransaction();
+        return null;
+      }
+      query = pm.newQuery(MIndex.class, "origTable.tableName == t1 && origTable.database.name == t2 && indexName == t3");
+      query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
+      query.setUnique(true);
+      mIndex = (MIndex) query.execute(normalizedOriginalTableName, normalizedDbName, normalizedIndexName);
+      pm.retrieve(mIndex);
+      commited = commitTransaction();
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
+    return mIndex;
+  }
+
+  private Index convertToIndex(final MIndex mIndex) throws MetaException {
+    if (mIndex == null) {
+      return null;
+    }
+
+    MTable mOrigTable = mIndex.getOrigTable();
+    MTable mIndexTable = mIndex.getIndexTable();
+
+    return new Index(
+      mIndex.getIndexName(),
+      mIndex.getIndexHandlerClass(),
+      mOrigTable.getDatabase().getName(),
+      mOrigTable.getTableName(),
+      mIndex.getCreateTime(),
+      mIndex.getLastAccessTime(),
+      mIndexTable.getTableName(),
+      convertToStorageDescriptor(mIndex.getSd(), false, false, conf),
+      mIndex.getDeferredRebuild(),
+      mIndex.getPageSize(), mIndex.getBufferPoolSize(),
+      mIndex.getPointerType(), IndexType.valueOf(mIndex.getIndexType()));
+  }
+
+  @Override
+  public boolean dropIndex(String dbName, String origTableName, String indexName) throws MetaException {
+    boolean success = false;
+    try {
+      openTransaction();
+      MIndex index = getMIndex(dbName, origTableName, indexName);
+      if (index != null) {
+        pm.deletePersistent(index);
+      }
+      success = commitTransaction();
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return success;
+  }
+
+  @Override
+  public List<Index> getIndexes(String dbName, String origTableName, int max) throws MetaException {
+    boolean success = false;
+    Query query = null;
+    try {
+      LOG.debug("Executing getIndexes");
+      openTransaction();
+
+      dbName = normalizeIdentifier(dbName);
+      origTableName = normalizeIdentifier(origTableName);
+      query = pm.newQuery(MIndex.class, "origTable.tableName == t1 && origTable.database.name == t2");
+      query.declareParameters("java.lang.String t1, java.lang.String t2");
+      List<MIndex> mIndexes = (List<MIndex>) query.execute(origTableName, dbName);
+      pm.retrieveAll(mIndexes);
+
+      List<Index> indexes = new ArrayList<Index>(mIndexes.size());
+      for (MIndex mIdx : mIndexes) {
+        indexes.add(this.convertToIndex(mIdx));
+      }
+      success = commitTransaction();
+      LOG.debug("Done retrieving all objects for getIndexes");
+
+      return indexes;
+    } finally {
+      rollbackAndCleanup(success, query);
+    }
+  }
+  //endregion
+
+  @Override
+  public void dropAnonIndex(final String indexName) {
+    boolean success = false;
+    try {
+      openTransaction();
+      MErasureIndex mAnonIndex = getMErasureIndex(indexName);
+      pm.retrieve(mAnonIndex);
+      if (mAnonIndex != null) {
+        pm.deletePersistentAll(mAnonIndex);
+      }
+      success = commitTransaction();
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  private MErasureIndex getMErasureIndex(final String indexName) {
+    MErasureIndex mAnonIndex = null;
+    boolean commited = false;
+    Query query = null;
+    try {
+      openTransaction();
+      final String normalizedIndexName = normalizeIdentifier(indexName);
+      query = pm.newQuery(MErasureIndex.class, "indexName == ix_name");
+      query.declareParameters("java.lang.String ix_name");
+      query.setUnique(true);
+      mAnonIndex = (MErasureIndex) query.execute(normalizedIndexName);
+      pm.retrieve(mAnonIndex);
+      commited = commitTransaction();
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
+    return mAnonIndex;
+  }
+
+  @Override
+  public ErasurePolicy getErasurePolicy(String policyName) throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
+    final MErasurePolicy mAnonPolicy = getMErasurePolicy(policyName);
+    if(mAnonPolicy == null){
+      return null;
+    }
+    final ErasurePolicy ep = new ErasurePolicy(mAnonPolicy.getPolicyName());
+    ep.setPolicyId(jdoId(mAnonPolicy));
+    return ep;
+  }
+
+  @Override
+  public List<PolicyInfo> getAllErasurePolicies() throws MetaException {
+    boolean commited = false;
+    List<PolicyInfo> policies = new ArrayList<>();
+    Query query = null;
+    try {
+      openTransaction();
+      query = pm.newQuery(MErasurePolicy.class);
+      query.setOrdering("policyName ascending");
+      List<MErasurePolicy> mAnonPolicies = (List<MErasurePolicy>) query.executeWithArray();
+      for(MErasurePolicy mAnonPolicy : mAnonPolicies){
+        PolicyInfo policyInfo = new PolicyInfo(mAnonPolicy.getPolicyName(), null);
+        policies.add(policyInfo);
+      }
+      commited = commitTransaction();
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
+    return policies;
+  }
+
+  //region erasure policy governance
+
+  private static long jdoId(Object o) {
+    Object id = javax.jdo.JDOHelper.getObjectId(o);
+    if (id == null) {
+      return 0L;
+    }
+    final String s = id.toString();
+    // DataNucleus datastore-identity toString is "<id>[OID]<class>"; older JDO
+    // implementations emit "<class>:<id>". Strip everything that is not the
+    // leading or trailing numeric component.
+    final int oidx = s.indexOf("[OID]");
+    if (oidx > 0) {
+      return Long.parseLong(s.substring(0, oidx));
+    }
+    final int cidx = s.indexOf(':');
+    if (cidx >= 0) {
+      return Long.parseLong(s.substring(cidx + 1));
+    }
+    return Long.parseLong(s);
+  }
+
+  private MErasurePolicyVersion convertToMErasurePolicyVersion(
+      org.apache.hadoop.hive.metastore.api.ErasurePolicyVersion v) {
+    if (v == null) {
+      return null;
+    }
+    MErasurePolicy policy = getMErasurePolicy(v.getPolicyName());
+    if (policy == null) {
+      return null;
+    }
+    MErasurePolicyVersion m = new MErasurePolicyVersion(policy, v.getVersionLabel(),
+        v.getStatus() == null ? null : v.getStatus().name(),
+        v.getIdentityFieldName(),
+        v.getIdentityFieldType() == null ? null : v.getIdentityFieldType().name(),
+        v.getSchemaType() == null ? null : v.getSchemaType().name(),
+        v.getSourcePath(), v.getSourceChecksum());
+    m.setSourceText(v.getSourceText());
+    m.setValidatedBy(v.getValidatedBy());
+    if (v.isSetValidatedTs()) {
+      m.setValidatedTs(v.getValidatedTs());
+    }
+    m.setActivatedBy(v.getActivatedBy());
+    if (v.isSetActivatedTs()) {
+      m.setActivatedTs(v.getActivatedTs());
+    }
+    m.setDeactivatedBy(v.getDeactivatedBy());
+    if (v.isSetDeactivatedTs()) {
+      m.setDeactivatedTs(v.getDeactivatedTs());
+    }
+    return m;
+  }
+
+  private org.apache.hadoop.hive.metastore.api.ErasurePolicyVersion convertToErasurePolicyVersion(
+      MErasurePolicyVersion m) {
+    if (m == null) {
+      return null;
+    }
+    org.apache.hadoop.hive.metastore.api.ErasurePolicyVersion v =
+        new org.apache.hadoop.hive.metastore.api.ErasurePolicyVersion();
+    v.setVersionId(jdoId(m));
+    v.setPolicyName(m.getPolicy() == null ? null : m.getPolicy().getPolicyName());
+    v.setVersionLabel(m.getVersionLabel());
+    if (m.getStatus() != null) {
+      v.setStatus(org.apache.hadoop.hive.metastore.api.PolicyVersionStatus.valueOf(m.getStatus()));
+    }
+    v.setIdentityFieldName(m.getIdentityFieldName());
+    if (m.getIdentityFieldType() != null) {
+      v.setIdentityFieldType(org.apache.hadoop.hive.metastore.api.PolicyLiteralKind.valueOf(m.getIdentityFieldType()));
+    }
+    if (m.getSchemaType() != null) {
+      v.setSchemaType(org.apache.hadoop.hive.metastore.api.PolicyLiteralKind.valueOf(m.getSchemaType()));
+    }
+    v.setSourcePath(m.getSourcePath());
+    v.setSourceChecksum(m.getSourceChecksum());
+    v.setSourceText(m.getSourceText());
+    v.setValidatedBy(m.getValidatedBy());
+    if (m.getValidatedTs() != null) {
+      v.setValidatedTs(m.getValidatedTs());
+    }
+    v.setActivatedBy(m.getActivatedBy());
+    if (m.getActivatedTs() != null) {
+      v.setActivatedTs(m.getActivatedTs());
+    }
+    v.setDeactivatedBy(m.getDeactivatedBy());
+    if (m.getDeactivatedTs() != null) {
+      v.setDeactivatedTs(m.getDeactivatedTs());
+    }
+    return v;
+  }
+
+  @Override
+  public org.apache.hadoop.hive.metastore.api.ErasurePolicyVersion addErasurePolicyVersion(
+      org.apache.hadoop.hive.metastore.api.ErasurePolicyVersion version)
+      throws InvalidObjectException, MetaException {
+    boolean committed = false;
+    try {
+      openTransaction();
+      MErasurePolicyVersion m = convertToMErasurePolicyVersion(version);
+      if (m == null) {
+        throw new InvalidObjectException("policy " + version.getPolicyName() + " not found");
+      }
+      pm.makePersistent(m);
+      pm.flush();
+      org.apache.hadoop.hive.metastore.api.ErasurePolicyVersion out = convertToErasurePolicyVersion(m);
+      committed = commitTransaction();
+      return out;
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  private MErasurePolicyVersion getMErasurePolicyVersion(String policyName, String versionLabel) {
+    Query query = null;
+    try {
+      query = pm.newQuery(MErasurePolicyVersion.class,
+          "policy.policyName == p1 && versionLabel == p2");
+      query.declareParameters("java.lang.String p1, java.lang.String p2");
+      query.setUnique(true);
+      MErasurePolicyVersion m =
+          (MErasurePolicyVersion) query.execute(normalizeIdentifier(policyName), versionLabel);
+      pm.retrieve(m);
+      return m;
+    } finally {
+      if (query != null) {
+        query.closeAll();
+      }
+    }
+  }
+
+  @Override
+  public org.apache.hadoop.hive.metastore.api.ErasurePolicyVersion getErasurePolicyVersion(
+      String policyName, String versionLabel) throws NoSuchObjectException, MetaException {
+    boolean committed = false;
+    try {
+      openTransaction();
+      MErasurePolicyVersion m = getMErasurePolicyVersion(policyName, versionLabel);
+      if (m == null) {
+        throw new NoSuchObjectException(
+            "erasure policy version " + policyName + "/" + versionLabel + " not found");
+      }
+      org.apache.hadoop.hive.metastore.api.ErasurePolicyVersion out = convertToErasurePolicyVersion(m);
+      committed = commitTransaction();
+      return out;
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  @Override
+  public List<org.apache.hadoop.hive.metastore.api.ErasurePolicyVersion> listErasurePolicyVersions(
+      String policyName) throws NoSuchObjectException, MetaException {
+    boolean committed = false;
+    Query query = null;
+    List<org.apache.hadoop.hive.metastore.api.ErasurePolicyVersion> out = new ArrayList<>();
+    try {
+      openTransaction();
+      MErasurePolicy policy = getMErasurePolicy(policyName);
+      if (policy == null) {
+        throw new NoSuchObjectException("policy " + policyName + " not found");
+      }
+      query = pm.newQuery(MErasurePolicyVersion.class, "policy.policyName == p1");
+      query.declareParameters("java.lang.String p1");
+      query.setOrdering("versionLabel ascending");
+      List<MErasurePolicyVersion> ms =
+          (List<MErasurePolicyVersion>) query.execute(normalizeIdentifier(policyName));
+      for (MErasurePolicyVersion m : ms) {
+        out.add(convertToErasurePolicyVersion(m));
+      }
+      committed = commitTransaction();
+      return out;
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+  @Override
+  public void updateErasurePolicyVersionStatus(long versionId,
+      org.apache.hadoop.hive.metastore.api.PolicyVersionStatus newStatus, String principal)
+      throws NoSuchObjectException, InvalidObjectException, MetaException {
+    boolean committed = false;
+    try {
+      openTransaction();
+      MErasurePolicyVersion m;
+      try {
+        m = pm.getObjectById(MErasurePolicyVersion.class, versionId);
+      } catch (JDOObjectNotFoundException e) {
+        throw new NoSuchObjectException("erasure policy version id=" + versionId + " not found");
+      }
+      m.setStatus(newStatus == null ? null : newStatus.name());
+      long now = System.currentTimeMillis();
+      if (newStatus != null) {
+        switch (newStatus) {
+        case VALIDATED:
+          // Single VALIDATED: refuse (and roll back) when any OTHER version of
+          // the same policy is already VALIDATED, using a serialized read in
+          // THIS transaction so two concurrent VALIDATEs of different drafts
+          // cannot both commit. The analyzer's unserialised pre-scan stays the
+          // friendly fast path; this is the race-proof backstop.
+          refuseIfOtherValidatedVersion(m, versionId);
+          m.setValidatedBy(principal);
+          m.setValidatedTs(now);
+          break;
+        case ACTIVE:
+          // Close the bind-time-only conflict gap: a binding references a policy
+          // by name, so ACTIVATE swaps the active version in transparently -- but
+          // the new version's rules may conflict with another policy already bound
+          // to the same table, a conflict the bind-time check (Section 4.6) never
+          // re-ran. Re-run it here, inside the activation transaction, over every
+          // binding that names this policy, so a conflicting activation is refused
+          // atomically rather than silently introduced.
+          refuseIfActivationConflictsWithBoundPolicies(m);
+          m.setActivatedBy(principal);
+          m.setActivatedTs(now);
+          // Single ACTIVE: atomically demote every OTHER ACTIVE
+          // version of the same policy to SUPERSEDED in THIS transaction, so
+          // ACTIVATE leaves exactly one ACTIVE row even across a crash (the
+          // prior per-version demote-then-promote across N transactions left 0
+          // ACTIVE on a crash), and a serialized read serialises concurrent
+          // ACTIVATE of the same policy so it cannot race to 2 ACTIVE.
+          supersedeOtherActiveVersions(m, versionId, principal, now);
+          break;
+        case INACTIVE:
+        case SUPERSEDED:
+          m.setDeactivatedBy(principal);
+          m.setDeactivatedTs(now);
+          break;
+        default:
+          break;
+        }
+      }
+      committed = commitTransaction();
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  /**
+   * Within the current transaction, demote every ACTIVE version of {@code
+   * candidate}'s policy other than {@code candidate} to SUPERSEDED. Issued with
+   * a serialized read (SELECT ... FOR UPDATE) so concurrent ACTIVATE commands
+   * for the same policy serialise rather than both committing an ACTIVE row.
+   * Called only while promoting {@code candidate} to ACTIVE, so the net
+   * post-commit state is exactly one ACTIVE version.
+   */
+  private void supersedeOtherActiveVersions(final MErasurePolicyVersion candidate,
+      final long candidateVersionId, final String principal, final long now) {
+    if (candidate.getPolicy() == null) {
+      return;
+    }
+    final String policyName = candidate.getPolicy().getPolicyName();
+    Query query = null;
+    try {
+      query = pm.newQuery(MErasurePolicyVersion.class,
+          "policy.policyName == p1 && status == p2");
+      query.declareParameters("java.lang.String p1, java.lang.String p2");
+      query.setSerializeRead(true);
+      @SuppressWarnings("unchecked")
+      final java.util.List<MErasurePolicyVersion> actives =
+          (java.util.List<MErasurePolicyVersion>) query.execute(policyName, "ACTIVE");
+      for (final MErasurePolicyVersion v : actives) {
+        if (jdoId(v) == candidateVersionId) {
+          continue;
+        }
+        v.setStatus(org.apache.hadoop.hive.metastore.api.PolicyVersionStatus.SUPERSEDED.name());
+        v.setDeactivatedBy(principal);
+        v.setDeactivatedTs(now);
+      }
+    } finally {
+      if (query != null) {
+        query.closeAll();
+      }
+    }
+  }
+
+  /**
+   * Within the current transaction, refuse to mark {@code candidate} VALIDATED
+   * when any OTHER version of its policy is already VALIDATED. Issued with a
+   * serialized read (SELECT ... FOR UPDATE) so concurrent VALIDATE commands
+   * for the same policy serialise rather than both committing a VALIDATED row.
+   * Unlike ACTIVATE (which supersedes), the contract here is to REFUSE: the
+   * thrown exception rolls the transaction back and the operator must
+   * INVALIDATE or ACTIVATE the pending version first.
+   */
+  private void refuseIfOtherValidatedVersion(final MErasurePolicyVersion candidate,
+      final long candidateVersionId) throws InvalidObjectException {
+    if (candidate.getPolicy() == null) {
+      return;
+    }
+    final String policyName = candidate.getPolicy().getPolicyName();
+    Query query = null;
+    try {
+      query = pm.newQuery(MErasurePolicyVersion.class,
+          "policy.policyName == p1 && status == p2");
+      query.declareParameters("java.lang.String p1, java.lang.String p2");
+      query.setSerializeRead(true);
+      @SuppressWarnings("unchecked")
+      final java.util.List<MErasurePolicyVersion> validated =
+          (java.util.List<MErasurePolicyVersion>) query.execute(policyName, "VALIDATED");
+      for (final MErasurePolicyVersion v : validated) {
+        if (jdoId(v) == candidateVersionId) {
+          continue;
+        }
+        throw new InvalidObjectException("policy '" + policyName
+            + "' already has a VALIDATED version (id=" + jdoId(v) + ", label="
+            + v.getVersionLabel() + "); INVALIDATE or ACTIVATE it first");
+      }
+    } finally {
+      if (query != null) {
+        query.closeAll();
+      }
+    }
+  }
+
+  /**
+   * Within the current activation transaction, refuse to promote {@code candidate}
+   * to ACTIVE when its rules would conflict, under EXPLICIT resolution, with
+   * another policy already bound to the same table. Bindings reference policies by
+   * name, so ACTIVATE swaps the active version in without an ALTER TABLE; the cost
+   * is that the bind-time cross-policy conflict check (Section 4.6) was never
+   * re-run, letting a new version silently introduce a conflict on an already-bound
+   * table. This re-runs it over every binding that names this policy. STRICTEST
+   * bindings tolerate overlap (the resolver deterministically picks the strictest
+   * action) and are skipped, matching ATTACH; a member with no parseable ACTIVE
+   * source makes a binding unanalysable and is skipped rather than spuriously
+   * rejected.
+   */
+  private void refuseIfActivationConflictsWithBoundPolicies(final MErasurePolicyVersion candidate)
+      throws InvalidObjectException {
+    final MErasurePolicy policy = candidate.getPolicy();
+    if (policy == null) {
+      return;
+    }
+    final String activatedName = policy.getPolicyName();
+    final String candidateSrc = candidate.getSourceText();
+    if (candidateSrc == null || candidateSrc.isEmpty()) {
+      return;
+    }
+
+    // Every distinct binding that names this policy (one member row per pair).
+    final java.util.List<MErasurePolicyBinding> bindings = new java.util.ArrayList<>();
+    final java.util.Set<Long> seen = new java.util.HashSet<>();
+    Query memberQuery = null;
+    try {
+      memberQuery = pm.newQuery(MErasurePolicyBindingMember.class, "policy == p1");
+      memberQuery.declareParameters(MErasurePolicy.class.getName() + " p1");
+      @SuppressWarnings("unchecked")
+      final java.util.List<MErasurePolicyBindingMember> members =
+          (java.util.List<MErasurePolicyBindingMember>) memberQuery.execute(policy);
+      for (final MErasurePolicyBindingMember mm : members) {
+        final MErasurePolicyBinding b = mm.getBinding();
+        if (b != null && seen.add(jdoId(b))) {
+          bindings.add(b);
+        }
+      }
+    } finally {
+      if (memberQuery != null) {
+        memberQuery.closeAll();
+      }
+    }
+
+    for (final MErasurePolicyBinding binding : bindings) {
+      // Only EXPLICIT bindings can be broken by a new conflicting version.
+      if ("STRICTEST".equalsIgnoreCase(binding.getResolutionMode())) {
+        continue;
+      }
+      // Build name -> parsed policy over the binding's members, using the
+      // CANDIDATE source for the policy being activated and each other member's
+      // ACTIVE source -- i.e. the rule set that WOULD be in force post-activation.
+      final java.util.Map<String, org.apache.hive.hep.ParsedPolicy> attached =
+          new java.util.LinkedHashMap<>();
+      boolean analysable = true;
+      Query memQ = null;
+      try {
+        memQ = pm.newQuery(MErasurePolicyBindingMember.class, "binding == b1");
+        memQ.declareParameters(MErasurePolicyBinding.class.getName() + " b1");
+        @SuppressWarnings("unchecked")
+        final java.util.List<MErasurePolicyBindingMember> bms =
+            (java.util.List<MErasurePolicyBindingMember>) memQ.execute(binding);
+        for (final MErasurePolicyBindingMember bm : bms) {
+          final MErasurePolicy mp = bm.getPolicy();
+          if (mp == null) {
+            continue;
+          }
+          final String name = mp.getPolicyName();
+          final String src = name.equals(activatedName)
+              ? candidateSrc : activeSourceTextInTxn(name);
+          if (src == null || src.isEmpty()) {
+            analysable = false;   // a member with no ACTIVE version cannot be reasoned about
+            break;
+          }
+          try {
+            attached.put(name, org.apache.hive.hep.ErasurePolicyValidator.parse(src));
+          } catch (RuntimeException pe) {
+            analysable = false;
+            break;
+          }
+        }
+      } finally {
+        if (memQ != null) {
+          memQ.closeAll();
+        }
+      }
+      if (!analysable || attached.size() < 2) {
+        continue;   // a single-policy binding can never carry a cross-policy conflict
+      }
+      final org.apache.hive.hep.PolicyConflictDetector.Report report =
+          org.apache.hive.hep.PolicyConflictDetector.analyse(
+              attached, org.apache.hive.hep.PolicyConflictDetector.ResolutionMode.EXPLICIT);
+      if (report.hasConflicts()) {
+        final StringBuilder msg = new StringBuilder("ACTIVATE ERASURE POLICY '")
+            .append(activatedName)
+            .append("' refused: the activated version conflicts (EXPLICIT resolution) with "
+                + "another policy bound to table id ").append(binding.getTblId())
+            .append(" column '").append(binding.getColumnName()).append("'. ")
+            .append(report.conflicts.size()).append(" conflict(s): ");
+        for (final org.apache.hive.hep.PolicyConflictDetector.Conflict c : report.conflicts) {
+          msg.append(c).append("; ");
+        }
+        msg.append("DETACH the binding, switch it to STRICTEST, or revise the version before activating.");
+        throw new InvalidObjectException(msg.toString());
+      }
+    }
+  }
+
+  /** ACTIVE-version source text for {@code policyName}, read in the CURRENT txn. */
+  private String activeSourceTextInTxn(final String policyName) {
+    Query q = null;
+    try {
+      q = pm.newQuery(MErasurePolicyVersion.class, "policy.policyName == p1 && status == p2");
+      q.declareParameters("java.lang.String p1, java.lang.String p2");
+      q.setUnique(true);
+      final MErasurePolicyVersion v =
+          (MErasurePolicyVersion) q.execute(normalizeIdentifier(policyName), "ACTIVE");
+      return v == null ? null : v.getSourceText();
+    } finally {
+      if (q != null) {
+        q.closeAll();
+      }
+    }
+  }
+
+  @Override
+  public org.apache.hadoop.hive.metastore.api.ErasurePolicyVersion getActiveErasurePolicyVersion(
+      String policyName) throws NoSuchObjectException, MetaException {
+    boolean committed = false;
+    Query query = null;
+    try {
+      openTransaction();
+      query = pm.newQuery(MErasurePolicyVersion.class,
+          "policy.policyName == p1 && status == p2");
+      query.declareParameters("java.lang.String p1, java.lang.String p2");
+      query.setUnique(true);
+      MErasurePolicyVersion m =
+          (MErasurePolicyVersion) query.execute(normalizeIdentifier(policyName), "ACTIVE");
+      if (m == null) {
+        throw new NoSuchObjectException("no ACTIVE version for policy " + policyName);
+      }
+      org.apache.hadoop.hive.metastore.api.ErasurePolicyVersion out = convertToErasurePolicyVersion(m);
+      committed = commitTransaction();
+      return out;
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+  @Override
+  public List<org.apache.hadoop.hive.metastore.api.ErasurePolicyStatement> getErasurePolicyStatements(
+      long versionId) throws NoSuchObjectException, MetaException {
+    // The policy body is persisted flat in ERASURE_POLICY_VERSIONS.SOURCE_TEXT;
+    // there is no per-version statement table, so this reader is always empty.
+    return java.util.Collections.emptyList();
+  }
+
+  @Override
+  public List<org.apache.hadoop.hive.metastore.api.ErasurePolicyRule> getErasurePolicyRules(
+      long statementId) throws NoSuchObjectException, MetaException {
+    // The policy body is persisted flat in ERASURE_POLICY_VERSIONS.SOURCE_TEXT;
+    // there is no per-statement rule table, so this reader is always empty.
+    return java.util.Collections.emptyList();
+  }
+
+  private MErasurePolicyBinding convertToMErasurePolicyBinding(
+      org.apache.hadoop.hive.metastore.api.ErasurePolicyBinding b) {
+    if (b == null) {
+      return null;
+    }
+    return new MErasurePolicyBinding(b.getTblId(), b.getColumnName(), b.getSchemaField(),
+        b.getRowLocator(),
+        b.getColumnFormat() == null ? null : b.getColumnFormat().name(),
+        b.getResolutionMode() == null ? null : b.getResolutionMode().name(),
+        b.getCreatedBy(), b.getCreatedTs());
+  }
+
+  private org.apache.hadoop.hive.metastore.api.ErasurePolicyBinding convertToErasurePolicyBinding(
+      MErasurePolicyBinding m) {
+    if (m == null) {
+      return null;
+    }
+    org.apache.hadoop.hive.metastore.api.ErasurePolicyBinding b =
+        new org.apache.hadoop.hive.metastore.api.ErasurePolicyBinding();
+    b.setBindingId(jdoId(m));
+    b.setTblId(m.getTblId());
+    b.setColumnName(m.getColumnName());
+    b.setSchemaField(m.getSchemaField());
+    b.setRowLocator(m.getRowLocator());
+    if (m.getColumnFormat() != null) {
+      b.setColumnFormat(org.apache.hadoop.hive.metastore.api.ColumnInternalFormat.valueOf(m.getColumnFormat()));
+    }
+    if (m.getResolutionMode() != null) {
+      b.setResolutionMode(org.apache.hadoop.hive.metastore.api.PolicyResolutionMode.valueOf(m.getResolutionMode()));
+    }
+    b.setCreatedBy(m.getCreatedBy());
+    b.setCreatedTs(m.getCreatedTs());
+    return b;
+  }
+
+  @Override
+  public org.apache.hadoop.hive.metastore.api.ErasurePolicyBinding addErasurePolicyBinding(
+      org.apache.hadoop.hive.metastore.api.ErasurePolicyBinding binding)
+      throws InvalidObjectException, MetaException {
+    boolean committed = false;
+    try {
+      openTransaction();
+      MErasurePolicyBinding m = convertToMErasurePolicyBinding(binding);
+      pm.makePersistent(m);
+      pm.flush();
+      org.apache.hadoop.hive.metastore.api.ErasurePolicyBinding out = convertToErasurePolicyBinding(m);
+      committed = commitTransaction();
+      return out;
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  @Override
+  public org.apache.hadoop.hive.metastore.api.ErasurePolicyBinding getErasurePolicyBinding(long tblId,
+      String columnName) throws NoSuchObjectException, MetaException {
+    boolean committed = false;
+    Query query = null;
+    try {
+      openTransaction();
+      query = pm.newQuery(MErasurePolicyBinding.class, "tblId == p1 && columnName == p2");
+      query.declareParameters("long p1, java.lang.String p2");
+      query.setUnique(true);
+      MErasurePolicyBinding m = (MErasurePolicyBinding) query.execute(tblId, columnName);
+      if (m == null) {
+        throw new NoSuchObjectException(
+            "binding for tblId=" + tblId + " column=" + columnName + " not found");
+      }
+      org.apache.hadoop.hive.metastore.api.ErasurePolicyBinding out = convertToErasurePolicyBinding(m);
+      committed = commitTransaction();
+      return out;
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+  @Override
+  public void dropErasurePolicyBinding(long bindingId) throws NoSuchObjectException, MetaException {
+    boolean committed = false;
+    try {
+      openTransaction();
+      MErasurePolicyBinding m;
+      try {
+        m = pm.getObjectById(MErasurePolicyBinding.class, bindingId);
+      } catch (JDOObjectNotFoundException e) {
+        throw new NoSuchObjectException("binding id=" + bindingId + " not found");
+      }
+      pm.deletePersistent(m);
+      committed = commitTransaction();
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  @Override
+  public void updateErasurePolicyBindingSettings(long bindingId,
+      org.apache.hadoop.hive.metastore.api.PolicyResolutionMode resolutionMode,
+      org.apache.hadoop.hive.metastore.api.ColumnInternalFormat columnFormat)
+      throws NoSuchObjectException, MetaException {
+    boolean committed = false;
+    Query bindQ = null;
+    try {
+      openTransaction();
+      final MErasurePolicyBinding m = lockBindingForUpdate(bindingId);
+      if (resolutionMode != null) {
+        m.setResolutionMode(resolutionMode.name());
+      }
+      if (columnFormat != null) {
+        m.setColumnFormat(columnFormat.name());
+      }
+      committed = commitTransaction();
+    } finally {
+      if (bindQ != null) bindQ.closeAll();
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  /**
+   * Acquires a write-lock on the {@code MErasurePolicyBinding} row for the
+   * given {@code bindingId} within the current transaction. Concurrent
+   * ATTACH/DETACH/ACTIVATE operations on the same binding row serialise at
+   * the database level rather than racing.
+   * <p>
+   * Implementation uses a JDO {@code Query} with {@code setSerializeRead(true)},
+   * which DataNucleus translates to {@code SELECT ... FOR UPDATE} (or the
+   * backend-specific equivalent) at the JDBC layer. The selection is by full
+   * scan of the binding table; in practice the table size is bounded by the
+   * number of governed (table, column) pairs and the full scan is fast.
+   */
+  private MErasurePolicyBinding lockBindingForUpdate(final long bindingId)
+      throws NoSuchObjectException {
+    Query q = null;
+    try {
+      q = pm.newQuery(MErasurePolicyBinding.class);
+      q.setSerializeRead(true);
+      @SuppressWarnings("unchecked")
+      final List<MErasurePolicyBinding> all = (List<MErasurePolicyBinding>) q.execute();
+      for (MErasurePolicyBinding b : all) {
+        if (jdoId(b) == bindingId) {
+          return b;
+        }
+      }
+    } finally {
+      if (q != null) q.closeAll();
+    }
+    throw new NoSuchObjectException("binding id=" + bindingId + " not found");
+  }
+
+  @Override
+  public void attachPolicyToBinding(long bindingId, long policyId, int ordinal)
+      throws InvalidObjectException, MetaException {
+    boolean committed = false;
+    try {
+      openTransaction();
+      final MErasurePolicyBinding binding;
+      final MErasurePolicy policy;
+      try {
+        binding = lockBindingForUpdate(bindingId);
+        policy = pm.getObjectById(MErasurePolicy.class, policyId);
+      } catch (NoSuchObjectException | JDOObjectNotFoundException e) {
+        throw new InvalidObjectException(
+            "binding or policy not found for binding=" + bindingId + " policy=" + policyId);
+      }
+      pm.makePersistent(new MErasurePolicyBindingMember(binding, policy, ordinal));
+      committed = commitTransaction();
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  @Override
+  public void detachPolicyFromBinding(long bindingId, long policyId)
+      throws NoSuchObjectException, MetaException {
+    boolean committed = false;
+    Query query = null;
+    try {
+      openTransaction();
+      final MErasurePolicyBinding binding = lockBindingForUpdate(bindingId);
+      final MErasurePolicy policy;
+      try {
+        policy = pm.getObjectById(MErasurePolicy.class, policyId);
+      } catch (JDOObjectNotFoundException e) {
+        throw new NoSuchObjectException(
+            "policy id=" + policyId + " not found");
+      }
+      query = pm.newQuery(MErasurePolicyBindingMember.class, "binding == b1 && policy == p1");
+      query.declareParameters(MErasurePolicyBinding.class.getName() + " b1, "
+          + MErasurePolicy.class.getName() + " p1");
+      query.setUnique(true);
+      MErasurePolicyBindingMember m =
+          (MErasurePolicyBindingMember) query.execute(binding, policy);
+      if (m == null) {
+        throw new NoSuchObjectException(
+            "binding member not found for binding=" + bindingId + " policy=" + policyId);
+      }
+      pm.deletePersistent(m);
+      committed = commitTransaction();
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+  @Override
+  public List<org.apache.hadoop.hive.metastore.api.ErasurePolicyBindingMember> getBindingMembers(
+      long bindingId) throws NoSuchObjectException, MetaException {
+    boolean committed = false;
+    Query query = null;
+    List<org.apache.hadoop.hive.metastore.api.ErasurePolicyBindingMember> out = new ArrayList<>();
+    try {
+      openTransaction();
+      MErasurePolicyBinding binding;
+      try {
+        binding = pm.getObjectById(MErasurePolicyBinding.class, bindingId);
+      } catch (JDOObjectNotFoundException e) {
+        throw new NoSuchObjectException("binding id=" + bindingId + " not found");
+      }
+      query = pm.newQuery(MErasurePolicyBindingMember.class, "binding == b1");
+      query.declareParameters(MErasurePolicyBinding.class.getName() + " b1");
+      query.setOrdering("ordinal ascending");
+      List<MErasurePolicyBindingMember> ms =
+          (List<MErasurePolicyBindingMember>) query.execute(binding);
+      for (MErasurePolicyBindingMember m : ms) {
+        org.apache.hadoop.hive.metastore.api.ErasurePolicyBindingMember mem =
+            new org.apache.hadoop.hive.metastore.api.ErasurePolicyBindingMember();
+        mem.setBindingId(bindingId);
+        mem.setPolicyId(m.getPolicy() == null ? 0L : jdoId(m.getPolicy()));
+        mem.setOrdinal(m.getOrdinal());
+        out.add(mem);
+      }
+      committed = commitTransaction();
+      return out;
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+  private MErasurePolicyBindingResolved convertToMBindingResolved(MErasurePolicyBinding binding,
+      org.apache.hadoop.hive.metastore.api.ErasurePolicyBindingResolved r) {
+    return new MErasurePolicyBindingResolved(binding, r.getSchemaValue(), r.getFieldPath(),
+        r.getAction() == null ? null : r.getAction().name(),
+        r.getLiteralValue(),
+        r.getLiteralType() == null ? null : r.getLiteralType().name(),
+        r.getParams(), r.getContributingPolicies(), r.getResolutionNote());
+  }
+
+  private org.apache.hadoop.hive.metastore.api.ErasurePolicyBindingResolved convertToBindingResolved(
+      MErasurePolicyBindingResolved m) {
+    org.apache.hadoop.hive.metastore.api.ErasurePolicyBindingResolved r =
+        new org.apache.hadoop.hive.metastore.api.ErasurePolicyBindingResolved();
+    r.setResolvedId(jdoId(m));
+    r.setBindingId(m.getBinding() == null ? 0L : jdoId(m.getBinding()));
+    r.setSchemaValue(m.getSchemaValue());
+    r.setFieldPath(m.getFieldPath());
+    if (m.getAction() != null) {
+      r.setAction(org.apache.hadoop.hive.metastore.api.PolicyActionKind.valueOf(m.getAction()));
+    }
+    r.setLiteralValue(m.getLiteralValue());
+    if (m.getLiteralType() != null) {
+      r.setLiteralType(org.apache.hadoop.hive.metastore.api.PolicyLiteralKind.valueOf(m.getLiteralType()));
+    }
+    r.setParams(m.getParams());
+    r.setContributingPolicies(m.getContributingPolicies());
+    r.setResolutionNote(m.getResolutionNote());
+    return r;
+  }
+
+  @Override
+  public void replaceBindingResolvedRules(long bindingId,
+      List<org.apache.hadoop.hive.metastore.api.ErasurePolicyBindingResolved> resolved)
+      throws NoSuchObjectException, MetaException {
+    boolean committed = false;
+    Query query = null;
+    try {
+      openTransaction();
+      final MErasurePolicyBinding binding = lockBindingForUpdate(bindingId);
+      query = pm.newQuery(MErasurePolicyBindingResolved.class, "binding == b1");
+      query.declareParameters(MErasurePolicyBinding.class.getName() + " b1");
+      query.deletePersistentAll(binding);
+      if (resolved != null) {
+        for (org.apache.hadoop.hive.metastore.api.ErasurePolicyBindingResolved r : resolved) {
+          pm.makePersistent(convertToMBindingResolved(binding, r));
+        }
+      }
+      committed = commitTransaction();
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+  @Override
+  public List<org.apache.hadoop.hive.metastore.api.ErasurePolicyBindingResolved> getBindingResolvedRules(
+      long bindingId) throws NoSuchObjectException, MetaException {
+    boolean committed = false;
+    Query query = null;
+    List<org.apache.hadoop.hive.metastore.api.ErasurePolicyBindingResolved> out = new ArrayList<>();
+    try {
+      openTransaction();
+      MErasurePolicyBinding binding;
+      try {
+        binding = pm.getObjectById(MErasurePolicyBinding.class, bindingId);
+      } catch (JDOObjectNotFoundException e) {
+        throw new NoSuchObjectException("binding id=" + bindingId + " not found");
+      }
+      query = pm.newQuery(MErasurePolicyBindingResolved.class, "binding == b1");
+      query.declareParameters(MErasurePolicyBinding.class.getName() + " b1");
+      List<MErasurePolicyBindingResolved> ms =
+          (List<MErasurePolicyBindingResolved>) query.execute(binding);
+      for (MErasurePolicyBindingResolved m : ms) {
+        out.add(convertToBindingResolved(m));
+      }
+      committed = commitTransaction();
+      return out;
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+  private org.apache.hadoop.hive.metastore.api.ErasurePolicyLifecycleEvent convertToLifecycleEvent(
+      MErasurePolicyLifecycleEvent m) {
+    org.apache.hadoop.hive.metastore.api.ErasurePolicyLifecycleEvent e =
+        new org.apache.hadoop.hive.metastore.api.ErasurePolicyLifecycleEvent();
+    e.setEventId(jdoId(m));
+    e.setVersionId(m.getVersion() == null ? 0L : jdoId(m.getVersion()));
+    if (m.getEventType() != null) {
+      e.setEventType(
+          org.apache.hadoop.hive.metastore.api.PolicyLifecycleEventType.valueOf(m.getEventType()));
+    }
+    e.setPrincipal(m.getPrincipal());
+    e.setEventTs(m.getEventTs());
+    e.setNote(m.getNote());
+    if (m.getConflictClass() != null) {
+      e.setConflictClass(
+          org.apache.hadoop.hive.metastore.api.PolicyConflictClass.valueOf(m.getConflictClass()));
+    }
+    if (m.getBinding() != null) {
+      e.setBindingId(jdoId(m.getBinding()));
+    }
+    return e;
+  }
+
+  @Override
+  public void recordLifecycleEvent(org.apache.hadoop.hive.metastore.api.ErasurePolicyLifecycleEvent evt)
+      throws MetaException {
+    boolean committed = false;
+    try {
+      openTransaction();
+      MErasurePolicyVersion version = null;
+      try {
+        version = pm.getObjectById(MErasurePolicyVersion.class, evt.getVersionId());
+      } catch (JDOObjectNotFoundException e) {
+        throw new MetaException("erasure policy version id=" + evt.getVersionId() + " not found");
+      }
+      MErasurePolicyBinding binding = null;
+      if (evt.isSetBindingId() && evt.getBindingId() > 0) {
+        try {
+          binding = pm.getObjectById(MErasurePolicyBinding.class, evt.getBindingId());
+        } catch (JDOObjectNotFoundException e) {
+          binding = null;
+        }
+      }
+      MErasurePolicyLifecycleEvent m = new MErasurePolicyLifecycleEvent(version,
+          evt.getEventType() == null ? null : evt.getEventType().name(),
+          evt.getPrincipal(), evt.getEventTs(), evt.getNote(),
+          evt.getConflictClass() == null ? null : evt.getConflictClass().name(),
+          binding);
+      pm.makePersistent(m);
+      committed = commitTransaction();
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  @Override
+  public List<org.apache.hadoop.hive.metastore.api.ErasurePolicyLifecycleEvent> getLifecycleEventsForPolicy(
+      String policyName, long fromTs, long untilTs) throws NoSuchObjectException, MetaException {
+    boolean committed = false;
+    Query query = null;
+    List<org.apache.hadoop.hive.metastore.api.ErasurePolicyLifecycleEvent> out = new ArrayList<>();
+    try {
+      openTransaction();
+      MErasurePolicy policy = getMErasurePolicy(policyName);
+      if (policy == null) {
+        throw new NoSuchObjectException("policy " + policyName + " not found");
+      }
+      query = pm.newQuery(MErasurePolicyLifecycleEvent.class,
+          "version.policy.policyName == p1 && eventTs >= p2 && eventTs <= p3");
+      query.declareParameters("java.lang.String p1, long p2, long p3");
+      query.setOrdering("eventTs ascending");
+      List<MErasurePolicyLifecycleEvent> ms = (List<MErasurePolicyLifecycleEvent>) query.execute(
+          normalizeIdentifier(policyName), fromTs, untilTs);
+      for (MErasurePolicyLifecycleEvent m : ms) {
+        out.add(convertToLifecycleEvent(m));
+      }
+      committed = commitTransaction();
+      return out;
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+  @Override
+  public List<org.apache.hadoop.hive.metastore.api.ErasurePolicyLifecycleEvent> getLifecycleEventsForBinding(
+      long bindingId, long fromTs, long untilTs) throws NoSuchObjectException, MetaException {
+    boolean committed = false;
+    Query query = null;
+    List<org.apache.hadoop.hive.metastore.api.ErasurePolicyLifecycleEvent> out = new ArrayList<>();
+    try {
+      openTransaction();
+      MErasurePolicyBinding binding;
+      try {
+        binding = pm.getObjectById(MErasurePolicyBinding.class, bindingId);
+      } catch (JDOObjectNotFoundException e) {
+        throw new NoSuchObjectException("binding id=" + bindingId + " not found");
+      }
+      query = pm.newQuery(MErasurePolicyLifecycleEvent.class,
+          "binding == b1 && eventTs >= p2 && eventTs <= p3");
+      query.declareParameters(MErasurePolicyBinding.class.getName() + " b1, long p2, long p3");
+      query.setOrdering("eventTs ascending");
+      List<MErasurePolicyLifecycleEvent> ms =
+          (List<MErasurePolicyLifecycleEvent>) query.execute(binding, fromTs, untilTs);
+      for (MErasurePolicyLifecycleEvent m : ms) {
+        out.add(convertToLifecycleEvent(m));
+      }
+      committed = commitTransaction();
+      return out;
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+  @Override
+  public List<org.apache.hadoop.hive.metastore.api.ErasurePolicyLifecycleEvent> getAttachRejectedEvents(
+      long fromTs, long untilTs) throws MetaException {
+    boolean committed = false;
+    Query query = null;
+    List<org.apache.hadoop.hive.metastore.api.ErasurePolicyLifecycleEvent> out = new ArrayList<>();
+    try {
+      openTransaction();
+      query = pm.newQuery(MErasurePolicyLifecycleEvent.class,
+          "eventType == p1 && eventTs >= p2 && eventTs <= p3");
+      query.declareParameters("java.lang.String p1, long p2, long p3");
+      query.setOrdering("eventTs ascending");
+      List<MErasurePolicyLifecycleEvent> ms =
+          (List<MErasurePolicyLifecycleEvent>) query.execute("ATTACH_REJECTED", fromTs, untilTs);
+      for (MErasurePolicyLifecycleEvent m : ms) {
+        out.add(convertToLifecycleEvent(m));
+      }
+      committed = commitTransaction();
+      return out;
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+  private org.apache.hadoop.hive.metastore.api.ErasureRunAudit convertToRunAudit(MErasureRunAudit m) {
+    org.apache.hadoop.hive.metastore.api.ErasureRunAudit r =
+        new org.apache.hadoop.hive.metastore.api.ErasureRunAudit();
+    r.setRunId(jdoId(m));
+    r.setTblId(m.getTblId());
+    r.setColumnName(m.getColumnName());
+    if (m.getBinding() != null) {
+      r.setBindingId(jdoId(m.getBinding()));
+    }
+    r.setPrincipal(m.getPrincipal());
+    r.setStartedTs(m.getStartedTs());
+    if (m.getCompletedTs() != null) {
+      r.setCompletedTs(m.getCompletedTs());
+    }
+    r.setIdentityValues(m.getIdentityValues());
+    r.setPolicyVersions(m.getPolicyVersions());
+    if (m.getResolvedRulesSnapshotId() != null) {
+      r.setResolvedRulesSnapshotId(m.getResolvedRulesSnapshotId());
+    }
+    if (m.getFilesRewritten() != null) {
+      r.setFilesRewritten(m.getFilesRewritten());
+    }
+    if (m.getBytesBefore() != null) {
+      r.setBytesBefore(m.getBytesBefore());
+    }
+    if (m.getBytesAfter() != null) {
+      r.setBytesAfter(m.getBytesAfter());
+    }
+    if (m.getStatus() != null) {
+      r.setStatus(org.apache.hadoop.hive.metastore.api.ErasureRunStatus.valueOf(m.getStatus()));
+    }
+    if (m.getMatchesInspected() != null) {
+      r.setMatchesInspected(m.getMatchesInspected());
+    }
+    if (m.getMatchesRedacted() != null) {
+      r.setMatchesRedacted(m.getMatchesRedacted());
+    }
+    if (m.getMatchesFlagged() != null) {
+      r.setMatchesFlagged(m.getMatchesFlagged());
+    }
+    if (m.getReleaseReason() != null) {
+      r.setReleaseReason(m.getReleaseReason());
+    }
+    return r;
+  }
+
+  @Override
+  public void recordErasureRun(org.apache.hadoop.hive.metastore.api.ErasureRunAudit run)
+      throws MetaException {
+    // Completion-patch path: the post-execution hook re-issues a minimal struct
+    // carrying only the gathered filesRewritten count to stamp the existing
+    // (tblId, startedTs) row written at run start. Gated on isSetFilesRewritten
+    // so every other caller (start INITIATED, RELEASE, EXTRACT) -- none of which
+    // set it -- keeps the original insert + identity-child-row behaviour and is
+    // byte-for-byte unchanged.
+    if (run.isSetFilesRewritten()) {
+      patchRunFilesRewritten(run.getTblId(), run.getStartedTs(), run.getFilesRewritten());
+      return;
+    }
+    boolean committed = false;
+    try {
+      openTransaction();
+      MErasurePolicyBinding binding = null;
+      if (run.getBindingId() > 0) {
+        try {
+          binding = pm.getObjectById(MErasurePolicyBinding.class, run.getBindingId());
+        } catch (JDOObjectNotFoundException e) {
+          binding = null;
+        }
+      }
+      MErasureRunAudit m = new MErasureRunAudit(run.getTblId(), run.getColumnName(), binding,
+          run.getPrincipal(), run.getStartedTs(),
+          run.isSetCompletedTs() ? run.getCompletedTs() : null,
+          run.getIdentityValues(), run.getPolicyVersions(),
+          run.isSetResolvedRulesSnapshotId() ? run.getResolvedRulesSnapshotId() : null,
+          run.isSetFilesRewritten() ? run.getFilesRewritten() : null,
+          run.isSetBytesBefore() ? run.getBytesBefore() : null,
+          run.isSetBytesAfter() ? run.getBytesAfter() : null,
+          run.getStatus() == null ? null : run.getStatus().name());
+      if (run.isSetReleaseReason()) {
+        m.setReleaseReason(run.getReleaseReason());
+      }
+      pm.makePersistent(m);
+      // Normalised identity index: persist one child row per distinct
+      // identity value (the serialised set is comma-joined), so AUDIT BY
+      // IDENTITY VALUES is an indexed exact-match lookup rather than a
+      // substring scan of the parent's identityValues CLOB.
+      final String iv = run.getIdentityValues();
+      if (iv != null && !iv.isEmpty()) {
+        pm.flush();                       // assign the parent run's RUN_ID
+        final long runId = jdoId(m);
+        final Set<String> distinct = new LinkedHashSet<>();
+        for (final String v : iv.split(",")) {
+          final String t = v.trim();
+          if (!t.isEmpty()) {
+            distinct.add(t);
+          }
+        }
+        for (final String v : distinct) {
+          pm.makePersistent(new MErasureRunAuditIdentity(runId, v));
+        }
+      }
+      committed = commitTransaction();
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  /**
+   * Stamp the gathered count of rewritten base files onto the audit row
+   * identified by the natural key (tblId, startedTs). Matches the same row the
+   * start-time recordErasureRun inserted; a missing row (the run was never
+   * started, or was already pruned) is logged and ignored because the file
+   * count is a best-effort enrichment, not the audit-of-record itself.
+   */
+  private void patchRunFilesRewritten(long tblId, long startedTs, int filesRewritten)
+      throws MetaException {
+    boolean committed = false;
+    Query query = null;
+    try {
+      openTransaction();
+      query = pm.newQuery(MErasureRunAudit.class, "tblId == p1 && startedTs == p2");
+      query.declareParameters("long p1, long p2");
+      query.setUnique(true);
+      final MErasureRunAudit m = (MErasureRunAudit) query.execute(tblId, startedTs);
+      if (m != null) {
+        m.setFilesRewritten(filesRewritten);
+      } else {
+        LOG.warn("recordErasureRun(filesRewritten={}): no MErasureRunAudit for tblId={} startedTs={}"
+            + " -- the file count is dropped", filesRewritten, tblId, startedTs);
+      }
+      committed = commitTransaction();
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+  @Override
+  public void updateErasureRunCompletion(long tblId, long startedTs, long completedTs,
+      org.apache.hadoop.hive.metastore.api.ErasureRunStatus status,
+      long matchesInspected, long matchesRedacted, long matchesFlagged)
+      throws NoSuchObjectException, MetaException {
+    boolean committed = false;
+    Query query = null;
+    try {
+      openTransaction();
+      query = pm.newQuery(MErasureRunAudit.class, "tblId == p1 && startedTs == p2");
+      query.declareParameters("long p1, long p2");
+      query.setUnique(true);
+      final MErasureRunAudit m = (MErasureRunAudit) query.execute(tblId, startedTs);
+      if (m == null) {
+        throw new NoSuchObjectException(
+            "no MErasureRunAudit for tblId=" + tblId + " startedTs=" + startedTs);
+      }
+      m.setCompletedTs(completedTs);
+      if (status != null) {
+        m.setStatus(status.name());
+      }
+      // INSPECT/FLAG counters: only persist when non-zero so legacy
+      // runs that did not aggregate match counts stay null in the audit
+      // row rather than reporting a spurious zero.
+      if (matchesInspected > 0) m.setMatchesInspected(matchesInspected);
+      if (matchesRedacted > 0)  m.setMatchesRedacted(matchesRedacted);
+      if (matchesFlagged > 0)   m.setMatchesFlagged(matchesFlagged);
+      committed = commitTransaction();
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+  @Override
+  public List<org.apache.hadoop.hive.metastore.api.ErasureRunAudit> getErasureRunsForTable(long tblId,
+      long fromTs, long untilTs, String byUser, String forIdentity) throws MetaException {
+    boolean committed = false;
+    Query query = null;
+    List<org.apache.hadoop.hive.metastore.api.ErasureRunAudit> out = new ArrayList<>();
+    try {
+      openTransaction();
+      // Wildcard convention: tblId == 0 drops the per-table filter so
+      // the same JDO query backs both the per-table reviewer view and the
+      // subject-keyed inverse audit (AUDIT BY IDENTITY VALUES). The MErasureRunAudit
+      // schema assigns real DB-resolved table ids (always >0), so 0 is
+      // unambiguous as a wildcard.
+      if (forIdentity != null && !forIdentity.isEmpty()) {
+        // Subject-keyed path: indexed exact-match lookup on the
+        // normalised ERASURE_RUN_AUDIT_IDENTITY child table to collect the
+        // distinct run ids that targeted the value, then fetch those parent
+        // runs by id and apply the table/time/user filters. Exact equality
+        // fixes the substring mis-match the serialised-column scan had (e.g.
+        // '1001' matching '10012').
+        query = pm.newQuery(MErasureRunAuditIdentity.class, "identityValue == pIdent");
+        query.declareParameters("java.lang.String pIdent");
+        List<MErasureRunAuditIdentity> ids =
+            (List<MErasureRunAuditIdentity>) query.execute(forIdentity);
+        final Set<Long> runIds = new LinkedHashSet<>();
+        for (final MErasureRunAuditIdentity idRow : ids) {
+          runIds.add(idRow.getRunId());
+        }
+        final List<MErasureRunAudit> matched = new ArrayList<>();
+        for (final Long rid : runIds) {
+          final MErasureRunAudit m;
+          try {
+            m = pm.getObjectById(MErasureRunAudit.class, rid);
+          } catch (JDOObjectNotFoundException e) {
+            continue;                                 // append-only: should not happen
+          }
+          if (m.getStartedTs() >= fromTs && m.getStartedTs() <= untilTs
+              && (tblId == 0L || m.getTblId() == tblId)
+              && (byUser == null || byUser.isEmpty() || byUser.equals(m.getPrincipal()))) {
+            matched.add(m);
+          }
+        }
+        matched.sort((x, y) -> Long.compare(x.getStartedTs(), y.getStartedTs()));
+        for (final MErasureRunAudit m : matched) {
+          out.add(convertToRunAudit(m));
+        }
+      } else {
+        StringBuilder filter = new StringBuilder("startedTs >= p2 && startedTs <= p3");
+        StringBuilder params = new StringBuilder("long p2, long p3");
+        List<Object> args = new ArrayList<>();
+        args.add(fromTs);
+        args.add(untilTs);
+        if (tblId != 0L) {
+          filter.append(" && tblId == pTbl");
+          params.append(", long pTbl");
+          args.add(tblId);
+        }
+        if (byUser != null && !byUser.isEmpty()) {
+          filter.append(" && principal == pUser");
+          params.append(", java.lang.String pUser");
+          args.add(byUser);
+        }
+        query = pm.newQuery(MErasureRunAudit.class, filter.toString());
+        query.declareParameters(params.toString());
+        query.setOrdering("startedTs ascending");
+        List<MErasureRunAudit> ms = (List<MErasureRunAudit>) query.executeWithArray(args.toArray());
+        for (MErasureRunAudit m : ms) {
+          out.add(convertToRunAudit(m));
+        }
+      }
+      committed = commitTransaction();
+      return out;
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+  // ===========================================================================
+  // ERASE FROM TABLE per-table run-lock (manual-release model).
+  //
+  // One MErasureRunLock row per tblId. Acquire is allowed only when no row
+  // with status RUNNING exists for the table. Release happens either by the
+  // run on clean exit (status -> COMPLETED) or by an explicit RELEASE ERASURE
+  // LOCK command (status -> RELEASED or FORCE_RELEASED).
+  // ===========================================================================
+
+  /**
+   * Acquire the per-table lock for tblId. Returns the new MErasureRunLock
+   * row on success; throws if another run already holds it.
+   *
+   * @throws MetaException if a lock with status RUNNING already exists for
+   *         this table; the message names the runId and principal holding
+   *         it so the caller can surface a clear error to the operator.
+   */
+  @Override
+  public MErasureRunLock acquireErasureRunLock(long tblId, long runId, String principal)
+      throws MetaException {
+    boolean committed = false;
+    Query query = null;
+    try {
+      openTransaction();
+      // Look up any prior row for this tblId (RUNNING or terminal).
+      // tblId is the application-identity PK, so at most one row exists.
+      query = pm.newQuery(MErasureRunLock.class, "tblId == p1");
+      query.declareParameters("long p1");
+      query.setUnique(true);
+      // Take SELECT ... FOR UPDATE on the lock row so a contending acquire blocks
+      // until this transaction commits. Without it the terminal-row takeover path
+      // (read a COMPLETED/RELEASED row, rewrite it to RUNNING in place) is a
+      // check-then-act race: two callers both read the same non-RUNNING row, both
+      // pass the !RUNNING test, and both claim the lock against the same table.
+      // The cold-start path (no prior row) still relies on the tblId primary key
+      // to reject the losing INSERT. Matches the locking-read pattern used for the
+      // other serialised metastore reads in this class.
+      query.setSerializeRead(true);
+      MErasureRunLock existing = (MErasureRunLock) query.execute(tblId);
+
+      if (existing != null
+          && MErasureRunLock.STATUS_RUNNING.equals(existing.getStatus())) {
+        throw new MetaException("erasure run lock for tblId=" + tblId
+            + " is held by runId=" + existing.getRunId()
+            + " (principal=" + existing.getPrincipal()
+            + ", started=" + existing.getStartedTs() + ")");
+      }
+
+      MErasureRunLock m;
+      if (existing != null) {
+        // Terminal-status row exists (COMPLETED, RELEASED, FORCE_RELEASED).
+        // Update in place: re-purposing the row avoids the JDO PK conflict
+        // that arises from deletePersistentAll + makePersistent in the
+        // same transaction (DataNucleus marks the row for deletion but
+        // doesn't flush before the new makePersistent observes a PK
+        // collision in the L1 cache, silently rolling back the commit).
+        // The per-run audit history is preserved in MErasureRunAudit, not
+        // here, so overwriting is fine for the active-lock snapshot.
+        existing.setRunId(runId);
+        existing.setPrincipal(principal);
+        existing.setStartedTs(System.currentTimeMillis());
+        existing.setStatus(MErasureRunLock.STATUS_RUNNING);
+        existing.setCompletedTs(null);
+        existing.setReleasedBy(null);
+        existing.setReleasedTs(null);
+        existing.setReleaseReason(null);
+        m = existing;
+      } else {
+        m = new MErasureRunLock(tblId, runId, principal,
+            System.currentTimeMillis(), MErasureRunLock.STATUS_RUNNING);
+        pm.makePersistent(m);
+      }
+      committed = commitTransaction();
+      return m;
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+  /** Read the current lock state for the table, or null if none. */
+  @Override
+  public MErasureRunLock getErasureRunLock(long tblId) {
+    boolean committed = false;
+    Query query = null;
+    try {
+      openTransaction();
+      query = pm.newQuery(MErasureRunLock.class, "tblId == p1");
+      query.declareParameters("long p1");
+      query.setUnique(true);
+      MErasureRunLock m = (MErasureRunLock) query.execute(tblId);
+      committed = commitTransaction();
+      return m;
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+  /**
+   * Mark the lock as released by the run on clean completion. The runId
+   * must match the holder; otherwise the call is a no-op (used to detect
+   * a previously-stolen lock).
+   *
+   * @return true if the lock row was found and matched the runId.
+   */
+  @Override
+  public boolean completeErasureRunLock(long tblId, long runId) {
+    boolean committed = false;
+    Query query = null;
+    try {
+      openTransaction();
+      query = pm.newQuery(MErasureRunLock.class,
+          "tblId == p1 && runId == p2 && status == p3");
+      query.declareParameters("long p1, long p2, java.lang.String p3");
+      query.setUnique(true);
+      MErasureRunLock m = (MErasureRunLock) query.execute(
+          tblId, runId, MErasureRunLock.STATUS_RUNNING);
+      boolean matched = (m != null);
+      if (matched) {
+        m.setCompletedTs(System.currentTimeMillis());
+        m.setStatus(MErasureRunLock.STATUS_COMPLETED);
+      }
+      committed = commitTransaction();
+      return matched;
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+  /**
+   * Manually release the lock via RELEASE ERASURE LOCK. The {@code force}
+   * flag distinguishes RELEASED (.anon.tmp safety check passed at the
+   * caller) from FORCE_RELEASED (caller bypassed the check).
+   *
+   * @throws NoSuchObjectException if no RUNNING lock exists for the
+   *         table; the operator's release attempt is then a no-op and
+   *         should be surfaced as an error.
+   */
+  @Override
+  public MErasureRunLock manuallyReleaseErasureRunLock(long tblId, String releasedBy,
+      String releaseReason, boolean force)
+      throws NoSuchObjectException, MetaException {
+    boolean committed = false;
+    Query query = null;
+    try {
+      openTransaction();
+      query = pm.newQuery(MErasureRunLock.class,
+          "tblId == p1 && status == p2");
+      query.declareParameters("long p1, java.lang.String p2");
+      query.setUnique(true);
+      MErasureRunLock m = (MErasureRunLock) query.execute(
+          tblId, MErasureRunLock.STATUS_RUNNING);
+      if (m == null) {
+        throw new NoSuchObjectException(
+            "no RUNNING erasure run lock for tblId=" + tblId);
+      }
+      m.setReleasedBy(releasedBy);
+      m.setReleasedTs(System.currentTimeMillis());
+      m.setReleaseReason(releaseReason);
+      m.setStatus(force
+          ? MErasureRunLock.STATUS_FORCE_RELEASED
+          : MErasureRunLock.STATUS_RELEASED);
+      committed = commitTransaction();
+      return m;
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+  @Override
+  public java.util.List<MErasureRunLock> listErasureRunLocks() {
+    boolean committed = false;
+    Query query = null;
+    try {
+      openTransaction();
+      query = pm.newQuery(MErasureRunLock.class);
+      query.setOrdering("startedTs descending");
+      @SuppressWarnings("unchecked")
+      java.util.List<MErasureRunLock> rows = (java.util.List<MErasureRunLock>) query.execute();
+      // Detach so the caller can read the rows after the PM is closed.
+      java.util.List<MErasureRunLock> detached = new java.util.ArrayList<>(rows.size());
+      for (MErasureRunLock m : rows) {
+        detached.add(pm.detachCopy(m));
+      }
+      committed = commitTransaction();
+      return detached;
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+  private org.apache.hadoop.hive.metastore.api.PolicyPriv convertToPolicyPriv(MPolicyPriv m) {
+    org.apache.hadoop.hive.metastore.api.PolicyPriv p =
+        new org.apache.hadoop.hive.metastore.api.PolicyPriv();
+    p.setPolicyPrivId(jdoId(m));
+    p.setPolicyId(m.getPolicyId());
+    p.setPrincipalName(m.getPrincipalName());
+    p.setPrincipalType(m.getPrincipalType());
+    p.setPrivilege(m.getPrivilege());
+    p.setCreateTime(m.getCreateTime());
+    p.setGrantor(m.getGrantor());
+    p.setGrantorType(m.getGrantorType());
+    p.setGrantOption(m.isGrantOption());
+    return p;
+  }
+
+  @Override
+  public void grantPolicyPriv(org.apache.hadoop.hive.metastore.api.PolicyPriv priv)
+      throws InvalidObjectException, MetaException {
+    boolean committed = false;
+    Query existing = null;
+    try {
+      openTransaction();
+      // Idempotent grant: if this (policy, principal, principalType, privilege) is
+      // already granted, do nothing instead of inserting a duplicate row. Matches
+      // built-in Hive's "no duplicate grants" rule (as a no-op rather than an
+      // error), so re-running GRANT — e.g. re-running the coverage smoke — does not
+      // accumulate duplicate POLICY_PRIVS rows.
+      existing = pm.newQuery(MPolicyPriv.class,
+          "policyId == pPid && principalName == pName && principalType == pType && privilege == pPriv");
+      existing.declareParameters(
+          "long pPid, java.lang.String pName, java.lang.String pType, java.lang.String pPriv");
+      existing.setResult("count(this)");
+      final long alreadyGranted = (Long) existing.executeWithArray(
+          priv.getPolicyId(), priv.getPrincipalName(), priv.getPrincipalType(), priv.getPrivilege());
+      if (alreadyGranted == 0) {
+        MPolicyPriv m = new MPolicyPriv(priv.getPolicyId(), priv.getPrincipalName(),
+            priv.getPrincipalType(), priv.getPrivilege(),
+            priv.getCreateTime() == 0 ? System.currentTimeMillis() : priv.getCreateTime(),
+            priv.getGrantor(), priv.getGrantorType(), priv.isGrantOption());
+        pm.makePersistent(m);
+      }
+      committed = commitTransaction();
+    } finally {
+      if (existing != null) {
+        existing.closeAll();
+      }
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  @Override
+  public void revokePolicyPriv(long policyPrivId) throws NoSuchObjectException, MetaException {
+    boolean committed = false;
+    try {
+      openTransaction();
+      MPolicyPriv m;
+      try {
+        m = pm.getObjectById(MPolicyPriv.class, policyPrivId);
+      } catch (JDOObjectNotFoundException e) {
+        throw new NoSuchObjectException("policy priv id=" + policyPrivId + " not found");
+      }
+      pm.deletePersistent(m);
+      committed = commitTransaction();
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  @Override
+  public List<org.apache.hadoop.hive.metastore.api.PolicyPriv> listPolicyPrivs(long policyId,
+      String principalName) throws MetaException {
+    boolean committed = false;
+    Query query = null;
+    List<org.apache.hadoop.hive.metastore.api.PolicyPriv> out = new ArrayList<>();
+    try {
+      openTransaction();
+      StringBuilder filter = new StringBuilder();
+      StringBuilder params = new StringBuilder();
+      List<Object> args = new ArrayList<>();
+      // A positive policyId matches that policy plus any policy_id == 0 org-wide
+      // grants. policyId == 0 from the caller is the "all policies" wildcard
+      // (SHOW ERASURE GRANT / SHOW ERASURE GRANT FOR <user>): drop the policyId
+      // predicate entirely. The old else used "policyId == 0L", which matches
+      // only the effectively-never-present org-wide rows, so every real grant was
+      // hidden; a constant policyId comparison as the sole/AND-ed clause matched
+      // nothing here regardless.
+      if (policyId > 0) {
+        filter.append("policyId == p1 || policyId == 0L");
+        params.append("long p1");
+        args.add(policyId);
+      }
+      if (principalName != null && !principalName.isEmpty()) {
+        if (filter.length() > 0) {
+          filter.insert(0, "(").append(") && ");
+        }
+        filter.append("principalName == pPrincipal");
+        if (params.length() > 0) {
+          params.append(", ");
+        }
+        params.append("java.lang.String pPrincipal");
+        args.add(principalName);
+      }
+      List<MPolicyPriv> ms;
+      if (filter.length() == 0) {
+        // Full wildcard (no policy, no principal): every grant. A candidate-class
+        // query with execute() — not executeWithArray on an empty array — is the
+        // reliable "all instances" form.
+        query = pm.newQuery(MPolicyPriv.class);
+        query.setOrdering("createTime ascending");
+        ms = (List<MPolicyPriv>) query.execute();
+      } else {
+        query = pm.newQuery(MPolicyPriv.class, filter.toString());
+        query.declareParameters(params.toString());
+        query.setOrdering("createTime ascending");
+        ms = (List<MPolicyPriv>) query.executeWithArray(args.toArray());
+      }
+      for (MPolicyPriv m : ms) {
+        out.add(convertToPolicyPriv(m));
+      }
+      committed = commitTransaction();
+      return out;
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+  //endregion erasure policy governance
 }

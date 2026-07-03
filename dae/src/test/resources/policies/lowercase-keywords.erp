@@ -1,0 +1,3 @@
+identity userId type INT
+SCHEMA TYPE STRING
+FOR SCHEMA 'a' ERASE x

@@ -2912,4 +2912,233 @@ public class CachedStore implements RawStore, Configurable {
   public <T> T unwrap(Class<T> iface) {
     return rawStore.unwrap(iface);
   }
+
+  @Override
+  public void createErasurePolicy(final ErasurePolicy erasurePolicy) throws InvalidObjectException, MetaException {
+    rawStore.createErasurePolicy(erasurePolicy);
+  }
+
+  @Override
+  public void dropErasurePolicy(final String policyName, final boolean ifExists) throws InvalidInputException, NoSuchObjectException, InvalidObjectException, MetaException {
+    rawStore.dropErasurePolicy(policyName, ifExists);
+  }
+
+  @Override
+  public boolean addIndex(final Index index) throws InvalidObjectException, MetaException {
+    return rawStore.addIndex(index);
+  }
+
+  @Override
+  public Index getIndex(final String dbName, final String origTableName, final String indexName) throws MetaException {
+    return rawStore.getIndex(dbName, origTableName, indexName);
+  }
+
+  @Override
+  public void dropAnonIndex(String indexName) throws InvalidInputException, NoSuchObjectException, InvalidObjectException, MetaException {
+    rawStore.dropAnonIndex(indexName);
+  }
+
+  @Override
+  public ErasurePolicy getErasurePolicy(String policyName) throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
+    return rawStore.getErasurePolicy(policyName);
+  }
+
+  @Override
+  public boolean dropIndex(String dbName, String origTableName, String indexName) throws MetaException {
+    return rawStore.dropIndex(dbName, origTableName, indexName);
+  }
+
+  @Override
+  public List<Index> getIndexes(String dbName, String origTableName, int max) throws MetaException {
+    return rawStore.getIndexes(dbName, origTableName, max);
+  }
+
+  @Override
+  public List<PolicyInfo> getAllErasurePolicies() throws MetaException {
+    return rawStore.getAllErasurePolicies();
+  }
+
+  @Override
+  public ErasurePolicyVersion addErasurePolicyVersion(ErasurePolicyVersion version)
+      throws InvalidObjectException, MetaException {
+    return rawStore.addErasurePolicyVersion(version);
+  }
+
+  @Override
+  public ErasurePolicyVersion getErasurePolicyVersion(String policyName, String versionLabel)
+      throws NoSuchObjectException, MetaException {
+    return rawStore.getErasurePolicyVersion(policyName, versionLabel);
+  }
+
+  @Override
+  public List<ErasurePolicyVersion> listErasurePolicyVersions(String policyName)
+      throws NoSuchObjectException, MetaException {
+    return rawStore.listErasurePolicyVersions(policyName);
+  }
+
+  @Override
+  public void updateErasurePolicyVersionStatus(long versionId, PolicyVersionStatus newStatus,
+      String principal) throws NoSuchObjectException, InvalidObjectException, MetaException {
+    rawStore.updateErasurePolicyVersionStatus(versionId, newStatus, principal);
+  }
+
+  @Override
+  public ErasurePolicyVersion getActiveErasurePolicyVersion(String policyName)
+      throws NoSuchObjectException, MetaException {
+    return rawStore.getActiveErasurePolicyVersion(policyName);
+  }
+
+  @Override
+  public List<ErasurePolicyStatement> getErasurePolicyStatements(long versionId)
+      throws NoSuchObjectException, MetaException {
+    return rawStore.getErasurePolicyStatements(versionId);
+  }
+
+  @Override
+  public List<ErasurePolicyRule> getErasurePolicyRules(long statementId)
+      throws NoSuchObjectException, MetaException {
+    return rawStore.getErasurePolicyRules(statementId);
+  }
+
+  @Override
+  public ErasurePolicyBinding addErasurePolicyBinding(ErasurePolicyBinding binding)
+      throws InvalidObjectException, MetaException {
+    return rawStore.addErasurePolicyBinding(binding);
+  }
+
+  @Override
+  public ErasurePolicyBinding getErasurePolicyBinding(long tblId, String columnName)
+      throws NoSuchObjectException, MetaException {
+    return rawStore.getErasurePolicyBinding(tblId, columnName);
+  }
+
+  @Override
+  public void dropErasurePolicyBinding(long bindingId)
+      throws NoSuchObjectException, MetaException {
+    rawStore.dropErasurePolicyBinding(bindingId);
+  }
+
+  @Override
+  public void updateErasurePolicyBindingSettings(long bindingId,
+      PolicyResolutionMode resolutionMode, ColumnInternalFormat columnFormat)
+      throws NoSuchObjectException, MetaException {
+    rawStore.updateErasurePolicyBindingSettings(bindingId, resolutionMode, columnFormat);
+  }
+
+  @Override
+  public void attachPolicyToBinding(long bindingId, long policyId, int ordinal)
+      throws InvalidObjectException, MetaException {
+    rawStore.attachPolicyToBinding(bindingId, policyId, ordinal);
+  }
+
+  @Override
+  public void detachPolicyFromBinding(long bindingId, long policyId)
+      throws NoSuchObjectException, MetaException {
+    rawStore.detachPolicyFromBinding(bindingId, policyId);
+  }
+
+  @Override
+  public List<ErasurePolicyBindingMember> getBindingMembers(long bindingId)
+      throws NoSuchObjectException, MetaException {
+    return rawStore.getBindingMembers(bindingId);
+  }
+
+  @Override
+  public void replaceBindingResolvedRules(long bindingId,
+      List<ErasurePolicyBindingResolved> resolved)
+      throws NoSuchObjectException, MetaException {
+    rawStore.replaceBindingResolvedRules(bindingId, resolved);
+  }
+
+  @Override
+  public List<ErasurePolicyBindingResolved> getBindingResolvedRules(long bindingId)
+      throws NoSuchObjectException, MetaException {
+    return rawStore.getBindingResolvedRules(bindingId);
+  }
+
+  @Override
+  public void recordLifecycleEvent(ErasurePolicyLifecycleEvent evt) throws MetaException {
+    rawStore.recordLifecycleEvent(evt);
+  }
+
+  @Override
+  public List<ErasurePolicyLifecycleEvent> getLifecycleEventsForPolicy(String policyName,
+      long fromTs, long untilTs) throws NoSuchObjectException, MetaException {
+    return rawStore.getLifecycleEventsForPolicy(policyName, fromTs, untilTs);
+  }
+
+  @Override
+  public List<ErasurePolicyLifecycleEvent> getLifecycleEventsForBinding(long bindingId,
+      long fromTs, long untilTs) throws NoSuchObjectException, MetaException {
+    return rawStore.getLifecycleEventsForBinding(bindingId, fromTs, untilTs);
+  }
+
+  @Override
+  public List<ErasurePolicyLifecycleEvent> getAttachRejectedEvents(long fromTs, long untilTs)
+      throws MetaException {
+    return rawStore.getAttachRejectedEvents(fromTs, untilTs);
+  }
+
+  @Override
+  public void recordErasureRun(ErasureRunAudit run) throws MetaException {
+    rawStore.recordErasureRun(run);
+  }
+
+  @Override
+  public List<ErasureRunAudit> getErasureRunsForTable(long tblId, long fromTs, long untilTs,
+      String byUser, String forIdentity) throws MetaException {
+    return rawStore.getErasureRunsForTable(tblId, fromTs, untilTs, byUser, forIdentity);
+  }
+
+  @Override
+  public void updateErasureRunCompletion(long tblId, long startedTs, long completedTs,
+      ErasureRunStatus status, long matchesInspected, long matchesRedacted, long matchesFlagged)
+      throws NoSuchObjectException, MetaException {
+    rawStore.updateErasureRunCompletion(tblId, startedTs, completedTs, status,
+        matchesInspected, matchesRedacted, matchesFlagged);
+  }
+
+  @Override
+  public void grantPolicyPriv(PolicyPriv priv) throws InvalidObjectException, MetaException {
+    rawStore.grantPolicyPriv(priv);
+  }
+
+  @Override
+  public void revokePolicyPriv(long policyPrivId) throws NoSuchObjectException, MetaException {
+    rawStore.revokePolicyPriv(policyPrivId);
+  }
+
+  @Override
+  public List<PolicyPriv> listPolicyPrivs(long policyId, String principalName)
+      throws MetaException {
+    return rawStore.listPolicyPrivs(policyId, principalName);
+  }
+
+  @Override
+  public org.apache.hadoop.hive.metastore.model.MErasureRunLock acquireErasureRunLock(long tblId,
+      long runId, String principal) throws MetaException {
+    return rawStore.acquireErasureRunLock(tblId, runId, principal);
+  }
+
+  @Override
+  public org.apache.hadoop.hive.metastore.model.MErasureRunLock getErasureRunLock(long tblId) {
+    return rawStore.getErasureRunLock(tblId);
+  }
+
+  @Override
+  public boolean completeErasureRunLock(long tblId, long runId) {
+    return rawStore.completeErasureRunLock(tblId, runId);
+  }
+
+  @Override
+  public org.apache.hadoop.hive.metastore.model.MErasureRunLock manuallyReleaseErasureRunLock(
+      long tblId, String releasedBy, String releaseReason, boolean force)
+      throws NoSuchObjectException, MetaException {
+    return rawStore.manuallyReleaseErasureRunLock(tblId, releasedBy, releaseReason, force);
+  }
+
+  @Override
+  public java.util.List<org.apache.hadoop.hive.metastore.model.MErasureRunLock> listErasureRunLocks() {
+    return rawStore.listErasureRunLocks();
+  }
 }

@@ -33,6 +33,7 @@ public enum AlterTableType {
   DROP_COLUMN("drop column"),
   REPLACE_COLUMNS("replace columns"),
   RENAME_COLUMN("rename column"),
+  ALTER_COLUMN("alter column"),
   UPDATE_COLUMNS("update columns"),
   // partition
   ADDPARTITION("add partition"),

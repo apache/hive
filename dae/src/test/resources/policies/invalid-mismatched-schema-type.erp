@@ -1,0 +1,4 @@
+IDENTITY userId TYPE INT
+SCHEMA TYPE INT
+FOR SCHEMA 'wrong_type'
+    ERASE email

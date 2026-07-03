@@ -4761,6 +4761,668 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_replayed_txns_for_policy failed: unknown result')
     end
 
+    def create_erasure_policy(erasurePolicy)
+      send_create_erasure_policy(erasurePolicy)
+      recv_create_erasure_policy()
+    end
+
+    def send_create_erasure_policy(erasurePolicy)
+      send_message('create_erasure_policy', Create_erasure_policy_args, :erasurePolicy => erasurePolicy)
+    end
+
+    def recv_create_erasure_policy()
+      result = receive_message(Create_erasure_policy_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      return
+    end
+
+    def drop_erasure_policy(policyName, ifExists)
+      send_drop_erasure_policy(policyName, ifExists)
+      recv_drop_erasure_policy()
+    end
+
+    def send_drop_erasure_policy(policyName, ifExists)
+      send_message('drop_erasure_policy', Drop_erasure_policy_args, :policyName => policyName, :ifExists => ifExists)
+    end
+
+    def recv_drop_erasure_policy()
+      result = receive_message(Drop_erasure_policy_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o3 unless result.o3.nil?
+      return
+    end
+
+    def drop_anon_index(indexName)
+      send_drop_anon_index(indexName)
+      recv_drop_anon_index()
+    end
+
+    def send_drop_anon_index(indexName)
+      send_message('drop_anon_index', Drop_anon_index_args, :indexName => indexName)
+    end
+
+    def recv_drop_anon_index()
+      result = receive_message(Drop_anon_index_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
+    def get_erasure_policy(policyName)
+      send_get_erasure_policy(policyName)
+      return recv_get_erasure_policy()
+    end
+
+    def send_get_erasure_policy(policyName)
+      send_message('get_erasure_policy', Get_erasure_policy_args, :policyName => policyName)
+    end
+
+    def recv_get_erasure_policy()
+      result = receive_message(Get_erasure_policy_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_erasure_policy failed: unknown result')
+    end
+
+    def add_index(new_index, index_table)
+      send_add_index(new_index, index_table)
+      recv_add_index()
+    end
+
+    def send_add_index(new_index, index_table)
+      send_message('add_index', Add_index_args, :new_index => new_index, :index_table => index_table)
+    end
+
+    def recv_add_index()
+      result = receive_message(Add_index_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      return
+    end
+
+    def get_index_by_name(db_name, tbl_name, index_name)
+      send_get_index_by_name(db_name, tbl_name, index_name)
+      return recv_get_index_by_name()
+    end
+
+    def send_get_index_by_name(db_name, tbl_name, index_name)
+      send_message('get_index_by_name', Get_index_by_name_args, :db_name => db_name, :tbl_name => tbl_name, :index_name => index_name)
+    end
+
+    def recv_get_index_by_name()
+      result = receive_message(Get_index_by_name_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_index_by_name failed: unknown result')
+    end
+
+    def drop_index_by_name(db_name, tbl_name, index_name, deleteData, ifExists)
+      send_drop_index_by_name(db_name, tbl_name, index_name, deleteData, ifExists)
+      return recv_drop_index_by_name()
+    end
+
+    def send_drop_index_by_name(db_name, tbl_name, index_name, deleteData, ifExists)
+      send_message('drop_index_by_name', Drop_index_by_name_args, :db_name => db_name, :tbl_name => tbl_name, :index_name => index_name, :deleteData => deleteData, :ifExists => ifExists)
+    end
+
+    def recv_drop_index_by_name()
+      result = receive_message(Drop_index_by_name_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'drop_index_by_name failed: unknown result')
+    end
+
+    def get_indexes(db_name, tbl_name, max_indexes)
+      send_get_indexes(db_name, tbl_name, max_indexes)
+      return recv_get_indexes()
+    end
+
+    def send_get_indexes(db_name, tbl_name, max_indexes)
+      send_message('get_indexes', Get_indexes_args, :db_name => db_name, :tbl_name => tbl_name, :max_indexes => max_indexes)
+    end
+
+    def recv_get_indexes()
+      result = receive_message(Get_indexes_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_indexes failed: unknown result')
+    end
+
+    def get_all_erasure_policies()
+      send_get_all_erasure_policies()
+      return recv_get_all_erasure_policies()
+    end
+
+    def send_get_all_erasure_policies()
+      send_message('get_all_erasure_policies', Get_all_erasure_policies_args)
+    end
+
+    def recv_get_all_erasure_policies()
+      result = receive_message(Get_all_erasure_policies_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_all_erasure_policies failed: unknown result')
+    end
+
+    def add_erasure_policy_version(version)
+      send_add_erasure_policy_version(version)
+      return recv_add_erasure_policy_version()
+    end
+
+    def send_add_erasure_policy_version(version)
+      send_message('add_erasure_policy_version', Add_erasure_policy_version_args, :version => version)
+    end
+
+    def recv_add_erasure_policy_version()
+      result = receive_message(Add_erasure_policy_version_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'add_erasure_policy_version failed: unknown result')
+    end
+
+    def get_erasure_policy_version(policyName, versionLabel)
+      send_get_erasure_policy_version(policyName, versionLabel)
+      return recv_get_erasure_policy_version()
+    end
+
+    def send_get_erasure_policy_version(policyName, versionLabel)
+      send_message('get_erasure_policy_version', Get_erasure_policy_version_args, :policyName => policyName, :versionLabel => versionLabel)
+    end
+
+    def recv_get_erasure_policy_version()
+      result = receive_message(Get_erasure_policy_version_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_erasure_policy_version failed: unknown result')
+    end
+
+    def list_erasure_policy_versions(policyName)
+      send_list_erasure_policy_versions(policyName)
+      return recv_list_erasure_policy_versions()
+    end
+
+    def send_list_erasure_policy_versions(policyName)
+      send_message('list_erasure_policy_versions', List_erasure_policy_versions_args, :policyName => policyName)
+    end
+
+    def recv_list_erasure_policy_versions()
+      result = receive_message(List_erasure_policy_versions_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'list_erasure_policy_versions failed: unknown result')
+    end
+
+    def update_erasure_policy_version_status(versionId, newStatus, principal)
+      send_update_erasure_policy_version_status(versionId, newStatus, principal)
+      recv_update_erasure_policy_version_status()
+    end
+
+    def send_update_erasure_policy_version_status(versionId, newStatus, principal)
+      send_message('update_erasure_policy_version_status', Update_erasure_policy_version_status_args, :versionId => versionId, :newStatus => newStatus, :principal => principal)
+    end
+
+    def recv_update_erasure_policy_version_status()
+      result = receive_message(Update_erasure_policy_version_status_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      return
+    end
+
+    def get_active_erasure_policy_version(policyName)
+      send_get_active_erasure_policy_version(policyName)
+      return recv_get_active_erasure_policy_version()
+    end
+
+    def send_get_active_erasure_policy_version(policyName)
+      send_message('get_active_erasure_policy_version', Get_active_erasure_policy_version_args, :policyName => policyName)
+    end
+
+    def recv_get_active_erasure_policy_version()
+      result = receive_message(Get_active_erasure_policy_version_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_active_erasure_policy_version failed: unknown result')
+    end
+
+    def get_erasure_policy_statements(versionId)
+      send_get_erasure_policy_statements(versionId)
+      return recv_get_erasure_policy_statements()
+    end
+
+    def send_get_erasure_policy_statements(versionId)
+      send_message('get_erasure_policy_statements', Get_erasure_policy_statements_args, :versionId => versionId)
+    end
+
+    def recv_get_erasure_policy_statements()
+      result = receive_message(Get_erasure_policy_statements_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_erasure_policy_statements failed: unknown result')
+    end
+
+    def get_erasure_policy_rules(statementId)
+      send_get_erasure_policy_rules(statementId)
+      return recv_get_erasure_policy_rules()
+    end
+
+    def send_get_erasure_policy_rules(statementId)
+      send_message('get_erasure_policy_rules', Get_erasure_policy_rules_args, :statementId => statementId)
+    end
+
+    def recv_get_erasure_policy_rules()
+      result = receive_message(Get_erasure_policy_rules_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_erasure_policy_rules failed: unknown result')
+    end
+
+    def add_erasure_policy_binding(binding)
+      send_add_erasure_policy_binding(binding)
+      return recv_add_erasure_policy_binding()
+    end
+
+    def send_add_erasure_policy_binding(binding)
+      send_message('add_erasure_policy_binding', Add_erasure_policy_binding_args, :binding => binding)
+    end
+
+    def recv_add_erasure_policy_binding()
+      result = receive_message(Add_erasure_policy_binding_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'add_erasure_policy_binding failed: unknown result')
+    end
+
+    def get_erasure_policy_binding(tblId, columnName)
+      send_get_erasure_policy_binding(tblId, columnName)
+      return recv_get_erasure_policy_binding()
+    end
+
+    def send_get_erasure_policy_binding(tblId, columnName)
+      send_message('get_erasure_policy_binding', Get_erasure_policy_binding_args, :tblId => tblId, :columnName => columnName)
+    end
+
+    def recv_get_erasure_policy_binding()
+      result = receive_message(Get_erasure_policy_binding_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_erasure_policy_binding failed: unknown result')
+    end
+
+    def drop_erasure_policy_binding(bindingId)
+      send_drop_erasure_policy_binding(bindingId)
+      recv_drop_erasure_policy_binding()
+    end
+
+    def send_drop_erasure_policy_binding(bindingId)
+      send_message('drop_erasure_policy_binding', Drop_erasure_policy_binding_args, :bindingId => bindingId)
+    end
+
+    def recv_drop_erasure_policy_binding()
+      result = receive_message(Drop_erasure_policy_binding_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
+    def update_erasure_policy_binding_settings(bindingId, resolutionMode, columnFormat)
+      send_update_erasure_policy_binding_settings(bindingId, resolutionMode, columnFormat)
+      recv_update_erasure_policy_binding_settings()
+    end
+
+    def send_update_erasure_policy_binding_settings(bindingId, resolutionMode, columnFormat)
+      send_message('update_erasure_policy_binding_settings', Update_erasure_policy_binding_settings_args, :bindingId => bindingId, :resolutionMode => resolutionMode, :columnFormat => columnFormat)
+    end
+
+    def recv_update_erasure_policy_binding_settings()
+      result = receive_message(Update_erasure_policy_binding_settings_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
+    def attach_policy_to_binding(bindingId, policyId, ordinal)
+      send_attach_policy_to_binding(bindingId, policyId, ordinal)
+      recv_attach_policy_to_binding()
+    end
+
+    def send_attach_policy_to_binding(bindingId, policyId, ordinal)
+      send_message('attach_policy_to_binding', Attach_policy_to_binding_args, :bindingId => bindingId, :policyId => policyId, :ordinal => ordinal)
+    end
+
+    def recv_attach_policy_to_binding()
+      result = receive_message(Attach_policy_to_binding_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      return
+    end
+
+    def detach_policy_from_binding(bindingId, policyId)
+      send_detach_policy_from_binding(bindingId, policyId)
+      recv_detach_policy_from_binding()
+    end
+
+    def send_detach_policy_from_binding(bindingId, policyId)
+      send_message('detach_policy_from_binding', Detach_policy_from_binding_args, :bindingId => bindingId, :policyId => policyId)
+    end
+
+    def recv_detach_policy_from_binding()
+      result = receive_message(Detach_policy_from_binding_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
+    def get_binding_members(bindingId)
+      send_get_binding_members(bindingId)
+      return recv_get_binding_members()
+    end
+
+    def send_get_binding_members(bindingId)
+      send_message('get_binding_members', Get_binding_members_args, :bindingId => bindingId)
+    end
+
+    def recv_get_binding_members()
+      result = receive_message(Get_binding_members_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_binding_members failed: unknown result')
+    end
+
+    def replace_binding_resolved_rules(bindingId, resolved)
+      send_replace_binding_resolved_rules(bindingId, resolved)
+      recv_replace_binding_resolved_rules()
+    end
+
+    def send_replace_binding_resolved_rules(bindingId, resolved)
+      send_message('replace_binding_resolved_rules', Replace_binding_resolved_rules_args, :bindingId => bindingId, :resolved => resolved)
+    end
+
+    def recv_replace_binding_resolved_rules()
+      result = receive_message(Replace_binding_resolved_rules_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
+    def get_binding_resolved_rules(bindingId)
+      send_get_binding_resolved_rules(bindingId)
+      return recv_get_binding_resolved_rules()
+    end
+
+    def send_get_binding_resolved_rules(bindingId)
+      send_message('get_binding_resolved_rules', Get_binding_resolved_rules_args, :bindingId => bindingId)
+    end
+
+    def recv_get_binding_resolved_rules()
+      result = receive_message(Get_binding_resolved_rules_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_binding_resolved_rules failed: unknown result')
+    end
+
+    def record_lifecycle_event(evt)
+      send_record_lifecycle_event(evt)
+      recv_record_lifecycle_event()
+    end
+
+    def send_record_lifecycle_event(evt)
+      send_message('record_lifecycle_event', Record_lifecycle_event_args, :evt => evt)
+    end
+
+    def recv_record_lifecycle_event()
+      result = receive_message(Record_lifecycle_event_result)
+      raise result.o1 unless result.o1.nil?
+      return
+    end
+
+    def get_lifecycle_events_for_policy(policyName, fromTs, untilTs)
+      send_get_lifecycle_events_for_policy(policyName, fromTs, untilTs)
+      return recv_get_lifecycle_events_for_policy()
+    end
+
+    def send_get_lifecycle_events_for_policy(policyName, fromTs, untilTs)
+      send_message('get_lifecycle_events_for_policy', Get_lifecycle_events_for_policy_args, :policyName => policyName, :fromTs => fromTs, :untilTs => untilTs)
+    end
+
+    def recv_get_lifecycle_events_for_policy()
+      result = receive_message(Get_lifecycle_events_for_policy_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_lifecycle_events_for_policy failed: unknown result')
+    end
+
+    def get_lifecycle_events_for_binding(bindingId, fromTs, untilTs)
+      send_get_lifecycle_events_for_binding(bindingId, fromTs, untilTs)
+      return recv_get_lifecycle_events_for_binding()
+    end
+
+    def send_get_lifecycle_events_for_binding(bindingId, fromTs, untilTs)
+      send_message('get_lifecycle_events_for_binding', Get_lifecycle_events_for_binding_args, :bindingId => bindingId, :fromTs => fromTs, :untilTs => untilTs)
+    end
+
+    def recv_get_lifecycle_events_for_binding()
+      result = receive_message(Get_lifecycle_events_for_binding_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_lifecycle_events_for_binding failed: unknown result')
+    end
+
+    def get_attach_rejected_events(fromTs, untilTs)
+      send_get_attach_rejected_events(fromTs, untilTs)
+      return recv_get_attach_rejected_events()
+    end
+
+    def send_get_attach_rejected_events(fromTs, untilTs)
+      send_message('get_attach_rejected_events', Get_attach_rejected_events_args, :fromTs => fromTs, :untilTs => untilTs)
+    end
+
+    def recv_get_attach_rejected_events()
+      result = receive_message(Get_attach_rejected_events_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_attach_rejected_events failed: unknown result')
+    end
+
+    def record_erasure_run(run)
+      send_record_erasure_run(run)
+      recv_record_erasure_run()
+    end
+
+    def send_record_erasure_run(run)
+      send_message('record_erasure_run', Record_erasure_run_args, :run => run)
+    end
+
+    def recv_record_erasure_run()
+      result = receive_message(Record_erasure_run_result)
+      raise result.o1 unless result.o1.nil?
+      return
+    end
+
+    def get_erasure_runs_for_table(tblId, fromTs, untilTs, byUser, forIdentity)
+      send_get_erasure_runs_for_table(tblId, fromTs, untilTs, byUser, forIdentity)
+      return recv_get_erasure_runs_for_table()
+    end
+
+    def send_get_erasure_runs_for_table(tblId, fromTs, untilTs, byUser, forIdentity)
+      send_message('get_erasure_runs_for_table', Get_erasure_runs_for_table_args, :tblId => tblId, :fromTs => fromTs, :untilTs => untilTs, :byUser => byUser, :forIdentity => forIdentity)
+    end
+
+    def recv_get_erasure_runs_for_table()
+      result = receive_message(Get_erasure_runs_for_table_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_erasure_runs_for_table failed: unknown result')
+    end
+
+    def update_erasure_run_completion(tblId, startedTs, completedTs, status, matchesInspected, matchesRedacted, matchesFlagged)
+      send_update_erasure_run_completion(tblId, startedTs, completedTs, status, matchesInspected, matchesRedacted, matchesFlagged)
+      recv_update_erasure_run_completion()
+    end
+
+    def send_update_erasure_run_completion(tblId, startedTs, completedTs, status, matchesInspected, matchesRedacted, matchesFlagged)
+      send_message('update_erasure_run_completion', Update_erasure_run_completion_args, :tblId => tblId, :startedTs => startedTs, :completedTs => completedTs, :status => status, :matchesInspected => matchesInspected, :matchesRedacted => matchesRedacted, :matchesFlagged => matchesFlagged)
+    end
+
+    def recv_update_erasure_run_completion()
+      result = receive_message(Update_erasure_run_completion_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
+    def acquire_erasure_run_lock(tblId, runId, principal)
+      send_acquire_erasure_run_lock(tblId, runId, principal)
+      return recv_acquire_erasure_run_lock()
+    end
+
+    def send_acquire_erasure_run_lock(tblId, runId, principal)
+      send_message('acquire_erasure_run_lock', Acquire_erasure_run_lock_args, :tblId => tblId, :runId => runId, :principal => principal)
+    end
+
+    def recv_acquire_erasure_run_lock()
+      result = receive_message(Acquire_erasure_run_lock_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'acquire_erasure_run_lock failed: unknown result')
+    end
+
+    def get_erasure_run_lock(tblId)
+      send_get_erasure_run_lock(tblId)
+      return recv_get_erasure_run_lock()
+    end
+
+    def send_get_erasure_run_lock(tblId)
+      send_message('get_erasure_run_lock', Get_erasure_run_lock_args, :tblId => tblId)
+    end
+
+    def recv_get_erasure_run_lock()
+      result = receive_message(Get_erasure_run_lock_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_erasure_run_lock failed: unknown result')
+    end
+
+    def complete_erasure_run_lock(tblId, runId)
+      send_complete_erasure_run_lock(tblId, runId)
+      return recv_complete_erasure_run_lock()
+    end
+
+    def send_complete_erasure_run_lock(tblId, runId)
+      send_message('complete_erasure_run_lock', Complete_erasure_run_lock_args, :tblId => tblId, :runId => runId)
+    end
+
+    def recv_complete_erasure_run_lock()
+      result = receive_message(Complete_erasure_run_lock_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'complete_erasure_run_lock failed: unknown result')
+    end
+
+    def manually_release_erasure_run_lock(tblId, releasedBy, releaseReason, force)
+      send_manually_release_erasure_run_lock(tblId, releasedBy, releaseReason, force)
+      return recv_manually_release_erasure_run_lock()
+    end
+
+    def send_manually_release_erasure_run_lock(tblId, releasedBy, releaseReason, force)
+      send_message('manually_release_erasure_run_lock', Manually_release_erasure_run_lock_args, :tblId => tblId, :releasedBy => releasedBy, :releaseReason => releaseReason, :force => force)
+    end
+
+    def recv_manually_release_erasure_run_lock()
+      result = receive_message(Manually_release_erasure_run_lock_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'manually_release_erasure_run_lock failed: unknown result')
+    end
+
+    def list_erasure_run_locks()
+      send_list_erasure_run_locks()
+      return recv_list_erasure_run_locks()
+    end
+
+    def send_list_erasure_run_locks()
+      send_message('list_erasure_run_locks', List_erasure_run_locks_args)
+    end
+
+    def recv_list_erasure_run_locks()
+      result = receive_message(List_erasure_run_locks_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'list_erasure_run_locks failed: unknown result')
+    end
+
+    def grant_policy_priv(priv)
+      send_grant_policy_priv(priv)
+      recv_grant_policy_priv()
+    end
+
+    def send_grant_policy_priv(priv)
+      send_message('grant_policy_priv', Grant_policy_priv_args, :priv => priv)
+    end
+
+    def recv_grant_policy_priv()
+      result = receive_message(Grant_policy_priv_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      return
+    end
+
+    def revoke_policy_priv(policyPrivId)
+      send_revoke_policy_priv(policyPrivId)
+      recv_revoke_policy_priv()
+    end
+
+    def send_revoke_policy_priv(policyPrivId)
+      send_message('revoke_policy_priv', Revoke_policy_priv_args, :policyPrivId => policyPrivId)
+    end
+
+    def recv_revoke_policy_priv()
+      result = receive_message(Revoke_policy_priv_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
+    def list_policy_privs(policyId, principalName)
+      send_list_policy_privs(policyId, principalName)
+      return recv_list_policy_privs()
+    end
+
+    def send_list_policy_privs(policyId, principalName)
+      send_message('list_policy_privs', List_policy_privs_args, :policyId => policyId, :principalName => principalName)
+    end
+
+    def recv_list_policy_privs()
+      result = receive_message(List_policy_privs_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'list_policy_privs failed: unknown result')
+    end
+
   end
 
   class Processor < ::FacebookService::Processor 
@@ -8317,6 +8979,520 @@ module ThriftHiveMetastore
         result.o1 = o1
       end
       write_result(result, oprot, 'get_replayed_txns_for_policy', seqid)
+    end
+
+    def process_create_erasure_policy(seqid, iprot, oprot)
+      args = read_args(iprot, Create_erasure_policy_args)
+      result = Create_erasure_policy_result.new()
+      begin
+        @handler.create_erasure_policy(args.erasurePolicy)
+      rescue ::AlreadyExistsException => o1
+        result.o1 = o1
+      rescue ::InvalidObjectException => o2
+        result.o2 = o2
+      rescue ::MetaException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'create_erasure_policy', seqid)
+    end
+
+    def process_drop_erasure_policy(seqid, iprot, oprot)
+      args = read_args(iprot, Drop_erasure_policy_args)
+      result = Drop_erasure_policy_result.new()
+      begin
+        @handler.drop_erasure_policy(args.policyName, args.ifExists)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'drop_erasure_policy', seqid)
+    end
+
+    def process_drop_anon_index(seqid, iprot, oprot)
+      args = read_args(iprot, Drop_anon_index_args)
+      result = Drop_anon_index_result.new()
+      begin
+        @handler.drop_anon_index(args.indexName)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'drop_anon_index', seqid)
+    end
+
+    def process_get_erasure_policy(seqid, iprot, oprot)
+      args = read_args(iprot, Get_erasure_policy_args)
+      result = Get_erasure_policy_result.new()
+      begin
+        result.success = @handler.get_erasure_policy(args.policyName)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_erasure_policy', seqid)
+    end
+
+    def process_add_index(seqid, iprot, oprot)
+      args = read_args(iprot, Add_index_args)
+      result = Add_index_result.new()
+      begin
+        @handler.add_index(args.new_index, args.index_table)
+      rescue ::InvalidObjectException => o1
+        result.o1 = o1
+      rescue ::AlreadyExistsException => o2
+        result.o2 = o2
+      rescue ::MetaException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'add_index', seqid)
+    end
+
+    def process_get_index_by_name(seqid, iprot, oprot)
+      args = read_args(iprot, Get_index_by_name_args)
+      result = Get_index_by_name_result.new()
+      begin
+        result.success = @handler.get_index_by_name(args.db_name, args.tbl_name, args.index_name)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      rescue ::NoSuchObjectException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_index_by_name', seqid)
+    end
+
+    def process_drop_index_by_name(seqid, iprot, oprot)
+      args = read_args(iprot, Drop_index_by_name_args)
+      result = Drop_index_by_name_result.new()
+      begin
+        result.success = @handler.drop_index_by_name(args.db_name, args.tbl_name, args.index_name, args.deleteData, args.ifExists)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'drop_index_by_name', seqid)
+    end
+
+    def process_get_indexes(seqid, iprot, oprot)
+      args = read_args(iprot, Get_indexes_args)
+      result = Get_indexes_result.new()
+      begin
+        result.success = @handler.get_indexes(args.db_name, args.tbl_name, args.max_indexes)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_indexes', seqid)
+    end
+
+    def process_get_all_erasure_policies(seqid, iprot, oprot)
+      args = read_args(iprot, Get_all_erasure_policies_args)
+      result = Get_all_erasure_policies_result.new()
+      begin
+        result.success = @handler.get_all_erasure_policies()
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_all_erasure_policies', seqid)
+    end
+
+    def process_add_erasure_policy_version(seqid, iprot, oprot)
+      args = read_args(iprot, Add_erasure_policy_version_args)
+      result = Add_erasure_policy_version_result.new()
+      begin
+        result.success = @handler.add_erasure_policy_version(args.version)
+      rescue ::AlreadyExistsException => o1
+        result.o1 = o1
+      rescue ::InvalidObjectException => o2
+        result.o2 = o2
+      rescue ::MetaException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'add_erasure_policy_version', seqid)
+    end
+
+    def process_get_erasure_policy_version(seqid, iprot, oprot)
+      args = read_args(iprot, Get_erasure_policy_version_args)
+      result = Get_erasure_policy_version_result.new()
+      begin
+        result.success = @handler.get_erasure_policy_version(args.policyName, args.versionLabel)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_erasure_policy_version', seqid)
+    end
+
+    def process_list_erasure_policy_versions(seqid, iprot, oprot)
+      args = read_args(iprot, List_erasure_policy_versions_args)
+      result = List_erasure_policy_versions_result.new()
+      begin
+        result.success = @handler.list_erasure_policy_versions(args.policyName)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'list_erasure_policy_versions', seqid)
+    end
+
+    def process_update_erasure_policy_version_status(seqid, iprot, oprot)
+      args = read_args(iprot, Update_erasure_policy_version_status_args)
+      result = Update_erasure_policy_version_status_result.new()
+      begin
+        @handler.update_erasure_policy_version_status(args.versionId, args.newStatus, args.principal)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::InvalidObjectException => o2
+        result.o2 = o2
+      rescue ::MetaException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'update_erasure_policy_version_status', seqid)
+    end
+
+    def process_get_active_erasure_policy_version(seqid, iprot, oprot)
+      args = read_args(iprot, Get_active_erasure_policy_version_args)
+      result = Get_active_erasure_policy_version_result.new()
+      begin
+        result.success = @handler.get_active_erasure_policy_version(args.policyName)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_active_erasure_policy_version', seqid)
+    end
+
+    def process_get_erasure_policy_statements(seqid, iprot, oprot)
+      args = read_args(iprot, Get_erasure_policy_statements_args)
+      result = Get_erasure_policy_statements_result.new()
+      begin
+        result.success = @handler.get_erasure_policy_statements(args.versionId)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_erasure_policy_statements', seqid)
+    end
+
+    def process_get_erasure_policy_rules(seqid, iprot, oprot)
+      args = read_args(iprot, Get_erasure_policy_rules_args)
+      result = Get_erasure_policy_rules_result.new()
+      begin
+        result.success = @handler.get_erasure_policy_rules(args.statementId)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_erasure_policy_rules', seqid)
+    end
+
+    def process_add_erasure_policy_binding(seqid, iprot, oprot)
+      args = read_args(iprot, Add_erasure_policy_binding_args)
+      result = Add_erasure_policy_binding_result.new()
+      begin
+        result.success = @handler.add_erasure_policy_binding(args.binding)
+      rescue ::AlreadyExistsException => o1
+        result.o1 = o1
+      rescue ::InvalidObjectException => o2
+        result.o2 = o2
+      rescue ::MetaException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'add_erasure_policy_binding', seqid)
+    end
+
+    def process_get_erasure_policy_binding(seqid, iprot, oprot)
+      args = read_args(iprot, Get_erasure_policy_binding_args)
+      result = Get_erasure_policy_binding_result.new()
+      begin
+        result.success = @handler.get_erasure_policy_binding(args.tblId, args.columnName)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_erasure_policy_binding', seqid)
+    end
+
+    def process_drop_erasure_policy_binding(seqid, iprot, oprot)
+      args = read_args(iprot, Drop_erasure_policy_binding_args)
+      result = Drop_erasure_policy_binding_result.new()
+      begin
+        @handler.drop_erasure_policy_binding(args.bindingId)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'drop_erasure_policy_binding', seqid)
+    end
+
+    def process_update_erasure_policy_binding_settings(seqid, iprot, oprot)
+      args = read_args(iprot, Update_erasure_policy_binding_settings_args)
+      result = Update_erasure_policy_binding_settings_result.new()
+      begin
+        @handler.update_erasure_policy_binding_settings(args.bindingId, args.resolutionMode, args.columnFormat)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'update_erasure_policy_binding_settings', seqid)
+    end
+
+    def process_attach_policy_to_binding(seqid, iprot, oprot)
+      args = read_args(iprot, Attach_policy_to_binding_args)
+      result = Attach_policy_to_binding_result.new()
+      begin
+        @handler.attach_policy_to_binding(args.bindingId, args.policyId, args.ordinal)
+      rescue ::AlreadyExistsException => o1
+        result.o1 = o1
+      rescue ::InvalidObjectException => o2
+        result.o2 = o2
+      rescue ::MetaException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'attach_policy_to_binding', seqid)
+    end
+
+    def process_detach_policy_from_binding(seqid, iprot, oprot)
+      args = read_args(iprot, Detach_policy_from_binding_args)
+      result = Detach_policy_from_binding_result.new()
+      begin
+        @handler.detach_policy_from_binding(args.bindingId, args.policyId)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'detach_policy_from_binding', seqid)
+    end
+
+    def process_get_binding_members(seqid, iprot, oprot)
+      args = read_args(iprot, Get_binding_members_args)
+      result = Get_binding_members_result.new()
+      begin
+        result.success = @handler.get_binding_members(args.bindingId)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_binding_members', seqid)
+    end
+
+    def process_replace_binding_resolved_rules(seqid, iprot, oprot)
+      args = read_args(iprot, Replace_binding_resolved_rules_args)
+      result = Replace_binding_resolved_rules_result.new()
+      begin
+        @handler.replace_binding_resolved_rules(args.bindingId, args.resolved)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'replace_binding_resolved_rules', seqid)
+    end
+
+    def process_get_binding_resolved_rules(seqid, iprot, oprot)
+      args = read_args(iprot, Get_binding_resolved_rules_args)
+      result = Get_binding_resolved_rules_result.new()
+      begin
+        result.success = @handler.get_binding_resolved_rules(args.bindingId)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_binding_resolved_rules', seqid)
+    end
+
+    def process_record_lifecycle_event(seqid, iprot, oprot)
+      args = read_args(iprot, Record_lifecycle_event_args)
+      result = Record_lifecycle_event_result.new()
+      begin
+        @handler.record_lifecycle_event(args.evt)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'record_lifecycle_event', seqid)
+    end
+
+    def process_get_lifecycle_events_for_policy(seqid, iprot, oprot)
+      args = read_args(iprot, Get_lifecycle_events_for_policy_args)
+      result = Get_lifecycle_events_for_policy_result.new()
+      begin
+        result.success = @handler.get_lifecycle_events_for_policy(args.policyName, args.fromTs, args.untilTs)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_lifecycle_events_for_policy', seqid)
+    end
+
+    def process_get_lifecycle_events_for_binding(seqid, iprot, oprot)
+      args = read_args(iprot, Get_lifecycle_events_for_binding_args)
+      result = Get_lifecycle_events_for_binding_result.new()
+      begin
+        result.success = @handler.get_lifecycle_events_for_binding(args.bindingId, args.fromTs, args.untilTs)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_lifecycle_events_for_binding', seqid)
+    end
+
+    def process_get_attach_rejected_events(seqid, iprot, oprot)
+      args = read_args(iprot, Get_attach_rejected_events_args)
+      result = Get_attach_rejected_events_result.new()
+      begin
+        result.success = @handler.get_attach_rejected_events(args.fromTs, args.untilTs)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_attach_rejected_events', seqid)
+    end
+
+    def process_record_erasure_run(seqid, iprot, oprot)
+      args = read_args(iprot, Record_erasure_run_args)
+      result = Record_erasure_run_result.new()
+      begin
+        @handler.record_erasure_run(args.run)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'record_erasure_run', seqid)
+    end
+
+    def process_get_erasure_runs_for_table(seqid, iprot, oprot)
+      args = read_args(iprot, Get_erasure_runs_for_table_args)
+      result = Get_erasure_runs_for_table_result.new()
+      begin
+        result.success = @handler.get_erasure_runs_for_table(args.tblId, args.fromTs, args.untilTs, args.byUser, args.forIdentity)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_erasure_runs_for_table', seqid)
+    end
+
+    def process_update_erasure_run_completion(seqid, iprot, oprot)
+      args = read_args(iprot, Update_erasure_run_completion_args)
+      result = Update_erasure_run_completion_result.new()
+      begin
+        @handler.update_erasure_run_completion(args.tblId, args.startedTs, args.completedTs, args.status, args.matchesInspected, args.matchesRedacted, args.matchesFlagged)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'update_erasure_run_completion', seqid)
+    end
+
+    def process_acquire_erasure_run_lock(seqid, iprot, oprot)
+      args = read_args(iprot, Acquire_erasure_run_lock_args)
+      result = Acquire_erasure_run_lock_result.new()
+      begin
+        result.success = @handler.acquire_erasure_run_lock(args.tblId, args.runId, args.principal)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'acquire_erasure_run_lock', seqid)
+    end
+
+    def process_get_erasure_run_lock(seqid, iprot, oprot)
+      args = read_args(iprot, Get_erasure_run_lock_args)
+      result = Get_erasure_run_lock_result.new()
+      begin
+        result.success = @handler.get_erasure_run_lock(args.tblId)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_erasure_run_lock', seqid)
+    end
+
+    def process_complete_erasure_run_lock(seqid, iprot, oprot)
+      args = read_args(iprot, Complete_erasure_run_lock_args)
+      result = Complete_erasure_run_lock_result.new()
+      begin
+        result.success = @handler.complete_erasure_run_lock(args.tblId, args.runId)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'complete_erasure_run_lock', seqid)
+    end
+
+    def process_manually_release_erasure_run_lock(seqid, iprot, oprot)
+      args = read_args(iprot, Manually_release_erasure_run_lock_args)
+      result = Manually_release_erasure_run_lock_result.new()
+      begin
+        result.success = @handler.manually_release_erasure_run_lock(args.tblId, args.releasedBy, args.releaseReason, args.force)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'manually_release_erasure_run_lock', seqid)
+    end
+
+    def process_list_erasure_run_locks(seqid, iprot, oprot)
+      args = read_args(iprot, List_erasure_run_locks_args)
+      result = List_erasure_run_locks_result.new()
+      begin
+        result.success = @handler.list_erasure_run_locks()
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'list_erasure_run_locks', seqid)
+    end
+
+    def process_grant_policy_priv(seqid, iprot, oprot)
+      args = read_args(iprot, Grant_policy_priv_args)
+      result = Grant_policy_priv_result.new()
+      begin
+        @handler.grant_policy_priv(args.priv)
+      rescue ::AlreadyExistsException => o1
+        result.o1 = o1
+      rescue ::InvalidObjectException => o2
+        result.o2 = o2
+      rescue ::MetaException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'grant_policy_priv', seqid)
+    end
+
+    def process_revoke_policy_priv(seqid, iprot, oprot)
+      args = read_args(iprot, Revoke_policy_priv_args)
+      result = Revoke_policy_priv_result.new()
+      begin
+        @handler.revoke_policy_priv(args.policyPrivId)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'revoke_policy_priv', seqid)
+    end
+
+    def process_list_policy_privs(seqid, iprot, oprot)
+      args = read_args(iprot, List_policy_privs_args)
+      result = List_policy_privs_result.new()
+      begin
+        result.success = @handler.list_policy_privs(args.policyId, args.principalName)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'list_policy_privs', seqid)
     end
 
   end
@@ -18757,6 +19933,1504 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::ReplayedTxnsForPolicyResult},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Create_erasure_policy_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    ERASUREPOLICY = 1
+
+    FIELDS = {
+      ERASUREPOLICY => {:type => ::Thrift::Types::STRUCT, :name => 'erasurePolicy', :class => ::ErasurePolicy}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Create_erasure_policy_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::AlreadyExistsException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::InvalidObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_erasure_policy_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    POLICYNAME = 1
+    IFEXISTS = 2
+
+    FIELDS = {
+      POLICYNAME => {:type => ::Thrift::Types::STRING, :name => 'policyName'},
+      IFEXISTS => {:type => ::Thrift::Types::BOOL, :name => 'ifExists'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_erasure_policy_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O3 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_anon_index_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    INDEXNAME = 1
+
+    FIELDS = {
+      INDEXNAME => {:type => ::Thrift::Types::STRING, :name => 'indexName'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_anon_index_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_erasure_policy_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    POLICYNAME = 1
+
+    FIELDS = {
+      POLICYNAME => {:type => ::Thrift::Types::STRING, :name => 'policyName'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_erasure_policy_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::ErasurePolicy},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_index_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    NEW_INDEX = 1
+    INDEX_TABLE = 2
+
+    FIELDS = {
+      NEW_INDEX => {:type => ::Thrift::Types::STRUCT, :name => 'new_index', :class => ::Index},
+      INDEX_TABLE => {:type => ::Thrift::Types::STRUCT, :name => 'index_table', :class => ::Table}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_index_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::InvalidObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::AlreadyExistsException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_index_by_name_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DB_NAME = 1
+    TBL_NAME = 2
+    INDEX_NAME = 3
+
+    FIELDS = {
+      DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
+      TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
+      INDEX_NAME => {:type => ::Thrift::Types::STRING, :name => 'index_name'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_index_by_name_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::Index},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_index_by_name_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DB_NAME = 1
+    TBL_NAME = 2
+    INDEX_NAME = 3
+    DELETEDATA = 4
+    IFEXISTS = 5
+
+    FIELDS = {
+      DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
+      TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
+      INDEX_NAME => {:type => ::Thrift::Types::STRING, :name => 'index_name'},
+      DELETEDATA => {:type => ::Thrift::Types::BOOL, :name => 'deleteData'},
+      IFEXISTS => {:type => ::Thrift::Types::BOOL, :name => 'ifExists'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_index_by_name_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_indexes_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DB_NAME = 1
+    TBL_NAME = 2
+    MAX_INDEXES = 3
+
+    FIELDS = {
+      DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
+      TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
+      MAX_INDEXES => {:type => ::Thrift::Types::I16, :name => 'max_indexes', :default => -1}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_indexes_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Index}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_all_erasure_policies_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+
+    FIELDS = {
+
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_all_erasure_policies_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::PolicyInfo}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_erasure_policy_version_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    VERSION = 1
+
+    FIELDS = {
+      VERSION => {:type => ::Thrift::Types::STRUCT, :name => 'version', :class => ::ErasurePolicyVersion}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_erasure_policy_version_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::ErasurePolicyVersion},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::AlreadyExistsException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::InvalidObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_erasure_policy_version_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    POLICYNAME = 1
+    VERSIONLABEL = 2
+
+    FIELDS = {
+      POLICYNAME => {:type => ::Thrift::Types::STRING, :name => 'policyName'},
+      VERSIONLABEL => {:type => ::Thrift::Types::STRING, :name => 'versionLabel'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_erasure_policy_version_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::ErasurePolicyVersion},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class List_erasure_policy_versions_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    POLICYNAME = 1
+
+    FIELDS = {
+      POLICYNAME => {:type => ::Thrift::Types::STRING, :name => 'policyName'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class List_erasure_policy_versions_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ErasurePolicyVersion}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Update_erasure_policy_version_status_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    VERSIONID = 1
+    NEWSTATUS = 2
+    PRINCIPAL = 3
+
+    FIELDS = {
+      VERSIONID => {:type => ::Thrift::Types::I64, :name => 'versionId'},
+      NEWSTATUS => {:type => ::Thrift::Types::I32, :name => 'newStatus', :enum_class => ::PolicyVersionStatus},
+      PRINCIPAL => {:type => ::Thrift::Types::STRING, :name => 'principal'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+      unless @newStatus.nil? || ::PolicyVersionStatus::VALID_VALUES.include?(@newStatus)
+        raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field newStatus!')
+      end
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Update_erasure_policy_version_status_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::InvalidObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_active_erasure_policy_version_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    POLICYNAME = 1
+
+    FIELDS = {
+      POLICYNAME => {:type => ::Thrift::Types::STRING, :name => 'policyName'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_active_erasure_policy_version_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::ErasurePolicyVersion},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_erasure_policy_statements_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    VERSIONID = 1
+
+    FIELDS = {
+      VERSIONID => {:type => ::Thrift::Types::I64, :name => 'versionId'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_erasure_policy_statements_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ErasurePolicyStatement}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_erasure_policy_rules_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    STATEMENTID = 1
+
+    FIELDS = {
+      STATEMENTID => {:type => ::Thrift::Types::I64, :name => 'statementId'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_erasure_policy_rules_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ErasurePolicyRule}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_erasure_policy_binding_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    BINDING = 1
+
+    FIELDS = {
+      BINDING => {:type => ::Thrift::Types::STRUCT, :name => 'binding', :class => ::ErasurePolicyBinding}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_erasure_policy_binding_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::ErasurePolicyBinding},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::AlreadyExistsException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::InvalidObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_erasure_policy_binding_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    TBLID = 1
+    COLUMNNAME = 2
+
+    FIELDS = {
+      TBLID => {:type => ::Thrift::Types::I64, :name => 'tblId'},
+      COLUMNNAME => {:type => ::Thrift::Types::STRING, :name => 'columnName'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_erasure_policy_binding_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::ErasurePolicyBinding},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_erasure_policy_binding_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    BINDINGID = 1
+
+    FIELDS = {
+      BINDINGID => {:type => ::Thrift::Types::I64, :name => 'bindingId'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_erasure_policy_binding_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Update_erasure_policy_binding_settings_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    BINDINGID = 1
+    RESOLUTIONMODE = 2
+    COLUMNFORMAT = 3
+
+    FIELDS = {
+      BINDINGID => {:type => ::Thrift::Types::I64, :name => 'bindingId'},
+      RESOLUTIONMODE => {:type => ::Thrift::Types::I32, :name => 'resolutionMode', :enum_class => ::PolicyResolutionMode},
+      COLUMNFORMAT => {:type => ::Thrift::Types::I32, :name => 'columnFormat', :enum_class => ::ColumnInternalFormat}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+      unless @resolutionMode.nil? || ::PolicyResolutionMode::VALID_VALUES.include?(@resolutionMode)
+        raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field resolutionMode!')
+      end
+      unless @columnFormat.nil? || ::ColumnInternalFormat::VALID_VALUES.include?(@columnFormat)
+        raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field columnFormat!')
+      end
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Update_erasure_policy_binding_settings_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Attach_policy_to_binding_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    BINDINGID = 1
+    POLICYID = 2
+    ORDINAL = 3
+
+    FIELDS = {
+      BINDINGID => {:type => ::Thrift::Types::I64, :name => 'bindingId'},
+      POLICYID => {:type => ::Thrift::Types::I64, :name => 'policyId'},
+      ORDINAL => {:type => ::Thrift::Types::I32, :name => 'ordinal'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Attach_policy_to_binding_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::AlreadyExistsException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::InvalidObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Detach_policy_from_binding_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    BINDINGID = 1
+    POLICYID = 2
+
+    FIELDS = {
+      BINDINGID => {:type => ::Thrift::Types::I64, :name => 'bindingId'},
+      POLICYID => {:type => ::Thrift::Types::I64, :name => 'policyId'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Detach_policy_from_binding_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_binding_members_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    BINDINGID = 1
+
+    FIELDS = {
+      BINDINGID => {:type => ::Thrift::Types::I64, :name => 'bindingId'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_binding_members_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ErasurePolicyBindingMember}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Replace_binding_resolved_rules_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    BINDINGID = 1
+    RESOLVED = 2
+
+    FIELDS = {
+      BINDINGID => {:type => ::Thrift::Types::I64, :name => 'bindingId'},
+      RESOLVED => {:type => ::Thrift::Types::LIST, :name => 'resolved', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ErasurePolicyBindingResolved}}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Replace_binding_resolved_rules_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_binding_resolved_rules_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    BINDINGID = 1
+
+    FIELDS = {
+      BINDINGID => {:type => ::Thrift::Types::I64, :name => 'bindingId'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_binding_resolved_rules_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ErasurePolicyBindingResolved}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Record_lifecycle_event_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    EVT = 1
+
+    FIELDS = {
+      EVT => {:type => ::Thrift::Types::STRUCT, :name => 'evt', :class => ::ErasurePolicyLifecycleEvent}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Record_lifecycle_event_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_lifecycle_events_for_policy_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    POLICYNAME = 1
+    FROMTS = 2
+    UNTILTS = 3
+
+    FIELDS = {
+      POLICYNAME => {:type => ::Thrift::Types::STRING, :name => 'policyName'},
+      FROMTS => {:type => ::Thrift::Types::I64, :name => 'fromTs'},
+      UNTILTS => {:type => ::Thrift::Types::I64, :name => 'untilTs'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_lifecycle_events_for_policy_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ErasurePolicyLifecycleEvent}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_lifecycle_events_for_binding_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    BINDINGID = 1
+    FROMTS = 2
+    UNTILTS = 3
+
+    FIELDS = {
+      BINDINGID => {:type => ::Thrift::Types::I64, :name => 'bindingId'},
+      FROMTS => {:type => ::Thrift::Types::I64, :name => 'fromTs'},
+      UNTILTS => {:type => ::Thrift::Types::I64, :name => 'untilTs'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_lifecycle_events_for_binding_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ErasurePolicyLifecycleEvent}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_attach_rejected_events_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    FROMTS = 1
+    UNTILTS = 2
+
+    FIELDS = {
+      FROMTS => {:type => ::Thrift::Types::I64, :name => 'fromTs'},
+      UNTILTS => {:type => ::Thrift::Types::I64, :name => 'untilTs'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_attach_rejected_events_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ErasurePolicyLifecycleEvent}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Record_erasure_run_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RUN = 1
+
+    FIELDS = {
+      RUN => {:type => ::Thrift::Types::STRUCT, :name => 'run', :class => ::ErasureRunAudit}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Record_erasure_run_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_erasure_runs_for_table_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    TBLID = 1
+    FROMTS = 2
+    UNTILTS = 3
+    BYUSER = 4
+    FORIDENTITY = 5
+
+    FIELDS = {
+      TBLID => {:type => ::Thrift::Types::I64, :name => 'tblId'},
+      FROMTS => {:type => ::Thrift::Types::I64, :name => 'fromTs'},
+      UNTILTS => {:type => ::Thrift::Types::I64, :name => 'untilTs'},
+      BYUSER => {:type => ::Thrift::Types::STRING, :name => 'byUser'},
+      FORIDENTITY => {:type => ::Thrift::Types::STRING, :name => 'forIdentity'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_erasure_runs_for_table_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ErasureRunAudit}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Update_erasure_run_completion_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    TBLID = 1
+    STARTEDTS = 2
+    COMPLETEDTS = 3
+    STATUS = 4
+    MATCHESINSPECTED = 5
+    MATCHESREDACTED = 6
+    MATCHESFLAGGED = 7
+
+    FIELDS = {
+      TBLID => {:type => ::Thrift::Types::I64, :name => 'tblId'},
+      STARTEDTS => {:type => ::Thrift::Types::I64, :name => 'startedTs'},
+      COMPLETEDTS => {:type => ::Thrift::Types::I64, :name => 'completedTs'},
+      STATUS => {:type => ::Thrift::Types::I32, :name => 'status', :enum_class => ::ErasureRunStatus},
+      MATCHESINSPECTED => {:type => ::Thrift::Types::I64, :name => 'matchesInspected'},
+      MATCHESREDACTED => {:type => ::Thrift::Types::I64, :name => 'matchesRedacted'},
+      MATCHESFLAGGED => {:type => ::Thrift::Types::I64, :name => 'matchesFlagged'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+      unless @status.nil? || ::ErasureRunStatus::VALID_VALUES.include?(@status)
+        raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field status!')
+      end
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Update_erasure_run_completion_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Acquire_erasure_run_lock_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    TBLID = 1
+    RUNID = 2
+    PRINCIPAL = 3
+
+    FIELDS = {
+      TBLID => {:type => ::Thrift::Types::I64, :name => 'tblId'},
+      RUNID => {:type => ::Thrift::Types::I64, :name => 'runId'},
+      PRINCIPAL => {:type => ::Thrift::Types::STRING, :name => 'principal'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Acquire_erasure_run_lock_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::ErasureRunLock},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_erasure_run_lock_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    TBLID = 1
+
+    FIELDS = {
+      TBLID => {:type => ::Thrift::Types::I64, :name => 'tblId'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_erasure_run_lock_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::ErasureRunLock},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Complete_erasure_run_lock_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    TBLID = 1
+    RUNID = 2
+
+    FIELDS = {
+      TBLID => {:type => ::Thrift::Types::I64, :name => 'tblId'},
+      RUNID => {:type => ::Thrift::Types::I64, :name => 'runId'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Complete_erasure_run_lock_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Manually_release_erasure_run_lock_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    TBLID = 1
+    RELEASEDBY = 2
+    RELEASEREASON = 3
+    FORCE = 4
+
+    FIELDS = {
+      TBLID => {:type => ::Thrift::Types::I64, :name => 'tblId'},
+      RELEASEDBY => {:type => ::Thrift::Types::STRING, :name => 'releasedBy'},
+      RELEASEREASON => {:type => ::Thrift::Types::STRING, :name => 'releaseReason'},
+      FORCE => {:type => ::Thrift::Types::BOOL, :name => 'force'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Manually_release_erasure_run_lock_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::ErasureRunLock},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class List_erasure_run_locks_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+
+    FIELDS = {
+
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class List_erasure_run_locks_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::ErasureRunLock}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Grant_policy_priv_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    PRIV = 1
+
+    FIELDS = {
+      PRIV => {:type => ::Thrift::Types::STRUCT, :name => 'priv', :class => ::PolicyPriv}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Grant_policy_priv_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::AlreadyExistsException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::InvalidObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Revoke_policy_priv_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    POLICYPRIVID = 1
+
+    FIELDS = {
+      POLICYPRIVID => {:type => ::Thrift::Types::I64, :name => 'policyPrivId'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Revoke_policy_priv_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class List_policy_privs_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    POLICYID = 1
+    PRINCIPALNAME = 2
+
+    FIELDS = {
+      POLICYID => {:type => ::Thrift::Types::I64, :name => 'policyId'},
+      PRINCIPALNAME => {:type => ::Thrift::Types::STRING, :name => 'principalName'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class List_policy_privs_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::PolicyPriv}},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 

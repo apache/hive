@@ -5,3 +5,4 @@ org.apache.hadoop.hive.ql.io.ORCFileStorageFormatDescriptor
 org.apache.hadoop.hive.ql.io.ParquetFileStorageFormatDescriptor
 org.apache.hadoop.hive.ql.io.AvroStorageFormatDescriptor
 org.apache.hadoop.hive.ql.io.JsonFileStorageFormatDescriptor
+org.apache.hadoop.hive.ql.io.BtreeStorageFormatDescriptor

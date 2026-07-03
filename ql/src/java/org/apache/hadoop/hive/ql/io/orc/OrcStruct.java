@@ -48,11 +48,12 @@ final public class OrcStruct implements Writable {
 
   private Object[] fields;
 
-  OrcStruct(int children) {
+  public OrcStruct(int children) {
     fields = new Object[children];
   }
 
-  Object getFieldValue(int fieldIndex) {
+  /* temporary public modifier */
+  public Object getFieldValue(int fieldIndex) {
     return fields[fieldIndex];
   }
 

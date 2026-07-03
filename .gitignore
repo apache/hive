@@ -28,3 +28,6 @@ dependency-reduced-pom.xml
 **/.mvn/.develocity*
 packaging/cache
 standalone-metastore/packaging/cache
+
+**/fb303.thrift
+apache*.tar.gz

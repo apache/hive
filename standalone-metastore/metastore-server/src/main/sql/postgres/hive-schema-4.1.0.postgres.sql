@@ -47,7 +47,6 @@ CREATE TABLE "COLUMNS_V2" (
     "INTEGER_IDX" integer NOT NULL
 );
 
-
 --
 -- Name: DATABASE_PARAMS; Type: TABLE; Schema: public; Owner: hiveuser; Tablespace:
 --
@@ -394,6 +393,7 @@ CREATE TABLE "TBLS" (
     "IS_REWRITE_ENABLED" boolean NOT NULL DEFAULT false,
     "WRITE_ID" bigint DEFAULT 0
 );
+
 
 --
 -- Name: MV_CREATION_METADATA; Type: TABLE; Schema: public; Owner: hiveuser; Tablespace:

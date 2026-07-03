@@ -58,6 +58,8 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Batchable;
+import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -7166,5 +7168,580 @@ private void constructOneLBLocationMap(FileStatus fSta,
   @Override
   public void close() throws Exception {
     close(true);
+  }
+  //region legacy indexing
+
+  public Index getIndex(String baseTableName, String indexName) throws HiveException {
+    String[] names = Utilities.getDbTableName(baseTableName);
+    return this.getIndex(names[0], names[1], indexName);
+  }
+
+  public Index getIndex(String dbName, String baseTableName, String indexName) throws HiveException {
+    try {
+      return this.getMSC().getIndex(dbName, baseTableName, indexName);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void createIndex(final String tableName, final String indexName, final String indexedColumn,
+                          final String indexTblName, final String inputFormat, final String outputFormat,
+                          final String serde, final String location, final String storageHandler,
+                          final int pageSize, final int bufferPoolSize, final String pointerType,
+                          final IndexType indexType, final boolean ifNotExists) throws HiveException, AlreadyExistsException {
+
+    try {
+      String tdname = Utilities.getDatabaseName(tableName);
+      String idname = Utilities.getDatabaseName(indexTblName);
+      if (!idname.equals(tdname)) {
+        throw new HiveException("Index on different database (" + idname + ") from base table (" + tdname + ") is not supported.");
+      }
+
+      Index old_index = null;
+      try {
+        old_index = getIndex(tableName, indexName);
+      } catch (Exception e) {
+        LOG.warn(e.getMessage());
+      }
+      if (old_index != null) {
+        throw new AlreadyExistsException("Index " + indexName + " already exists on table " + tableName);
+      }
+
+      org.apache.hadoop.hive.metastore.api.Table baseTbl = getTable(tableName).getTTable();
+      org.apache.hadoop.hive.metastore.api.Table temp = null;
+      try {
+        temp = getTable(indexTblName).getTTable();
+      } catch (Exception e) {
+      }
+      if (temp != null) {
+        throw new HiveException("Table name " + indexTblName + " already exists. Choose another name.");
+      }
+
+      SerDeInfo serdeInfo = new SerDeInfo();
+      serdeInfo.setName(indexTblName);
+
+      if (serde != null) {
+        serdeInfo.setSerializationLib(serde);
+      }
+
+      serdeInfo.setParameters(new HashMap<>());
+
+      List<FieldSchema> indexTblCols = new ArrayList<>();
+      List<Order> sortCols = new ArrayList<>();
+      int k = 0;
+      Table metaBaseTbl = new Table(baseTbl);
+
+      // CREATE IDENTITY INDEX needs the bound column metadata
+      // (row-locator name, schema-id column name, identity-field type),
+      // read from the ErasurePolicyBinding row that the ATTACH path
+      // writes. Iterate the base table's columns; the first one with a
+      // binding gives us the metadata.
+      org.apache.hadoop.hive.metastore.api.ErasurePolicyBinding b = null;
+      final long tblIdLocal = (baseTbl.isSetId()) ? baseTbl.getId() : 0L;
+      for (FieldSchema fs : metaBaseTbl.getCols()) {
+        try {
+          b = getErasurePolicyBinding(tblIdLocal, fs.getName());
+        } catch (HiveException ignored) { /* try next */ }
+        if (b != null && b.isSetSchemaField() && b.isSetRowLocator()) break;
+        b = null;
+      }
+      if (b == null) {
+        throw new HiveException("CREATE IDENTITY INDEX: no erasure-policy "
+            + "binding found on table " + tableName + ". Run ATTACH DATA "
+            + "ERASURE POLICY <name> ON TABLE " + tableName + " COLUMN <col> "
+            + "WITH (SCHEMA FIELD (sf), ROW LOCATOR (rl), COLUMN FORMAT (ft)) "
+            + "RESOLUTION (EXPLICIT) first.");
+      }
+      String rowLocatorName   = b.getRowLocator();
+      String schemaColumnName = b.getSchemaField();
+      // Identity field type comes from the active version row, not
+      // the binding. Resolve via the binding's first member.
+      String identityFieldType = null;
+      for (org.apache.hadoop.hive.metastore.api.ErasurePolicyBindingMember m
+          : getBindingMembers(b.getBindingId())) {
+        org.apache.hadoop.hive.metastore.api.ErasurePolicy ep = null;
+        for (org.apache.hadoop.hive.metastore.api.PolicyInfo pi : getAllErasurePolicyNames()) {
+          ep = getErasurePolicy(pi.getName());
+          if (ep != null && ep.isSetPolicyId() && ep.getPolicyId() == m.getPolicyId()) {
+            break;
+          }
+          ep = null;
+        }
+        if (ep == null) continue;
+        org.apache.hadoop.hive.metastore.api.ErasurePolicyVersion av =
+            getActiveErasurePolicyVersion(ep.getPolicyName());
+        if (av != null && av.isSetIdentityFieldType()) {
+          identityFieldType = av.getIdentityFieldType().name().toLowerCase();
+          break;
+        }
+      }
+      if (identityFieldType == null) {
+        throw new HiveException("CREATE IDENTITY INDEX: bound policy on "
+            + tableName + " has no resolvable active version (identity "
+            + "field type missing). ACTIVATE the policy first.");
+      }
+      // PolicyLiteralKind.LONG lowercases to "long", which is not a Hive
+      // column type; the index table's key column must be "bigint".
+      if ("long".equals(identityFieldType)) {
+        identityFieldType = "bigint";
+      }
+      indexTblCols.add(new FieldSchema("key", identityFieldType, ""));
+
+      String offsetType = "";
+      String msgIdType = "";
+      List<FieldSchema> cols = metaBaseTbl.getCols();
+      for (FieldSchema fieldSchema : cols) {
+        if (fieldSchema.getName().equalsIgnoreCase(rowLocatorName)) {
+          offsetType = fieldSchema.getType();
+        }
+        if (fieldSchema.getName().equalsIgnoreCase(schemaColumnName)) {
+          msgIdType = fieldSchema.getType();
+        }
+      }
+
+      String valueType = String.format("array<struct<v1: string, v2:array<struct<v1: %s, v2: %s>>>>", offsetType, msgIdType);
+      indexTblCols.add(new FieldSchema("vs", valueType, ""));
+
+      int time = (int) (System.currentTimeMillis() / 1000);
+      org.apache.hadoop.hive.metastore.api.Table indexTable = null;
+      String indexTName = Utilities.getTableName(indexTblName);
+      {
+        indexTable = new org.apache.hadoop.hive.ql.metadata.Table(idname, indexTName).getTTable();
+        List<FieldSchema> partKeys = baseTbl.getPartitionKeys();
+        indexTable.setPartitionKeys(partKeys);
+        indexTable.setTableType(TableType.INDEX_TABLE.toString());
+
+      }
+
+      StorageDescriptor indexSd = new StorageDescriptor(
+        indexTblCols,
+        location,
+        inputFormat,
+        outputFormat,
+        false/*compressed - not used*/,
+        -1/*numBuckets - default is -1 when the table has no buckets*/,
+        serdeInfo,
+        null/*bucketCols*/,
+        sortCols,
+        null/*parameters*/);
+
+      String tTableName = Utilities.getTableName(tableName);
+      Index index = new Index(indexName, "", tdname, tTableName, time, time,
+        indexTName, indexSd, true, pageSize, bufferPoolSize, pointerType, indexType);
+
+      analyzeIndexDefinition(baseTbl, index, indexTable);
+      this.getMSC().createIndex(index, indexTable);
+    } catch (AlreadyExistsException e) {
+      if (!ifNotExists) {
+        throw e;
+      }
+    }
+    catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void analyzeIndexDefinition(org.apache.hadoop.hive.metastore.api.Table baseTable, Index index,
+                                     org.apache.hadoop.hive.metastore.api.Table indexTable) throws HiveException {
+    StorageDescriptor storageDesc = index.getSd();
+    if (indexTable != null) {
+      StorageDescriptor indexTableSd = storageDesc.deepCopy();
+      List<FieldSchema> indexTblCols = indexTableSd.getCols();
+      indexTable.setSd(indexTableSd);
+    }
+  }
+
+  public boolean dropIndex(String baseTableName, String index_name, boolean throwException, boolean deleteData) throws HiveException {
+    String[] names = Utilities.getDbTableName(baseTableName);
+    return dropIndex(names[0], names[1], index_name, throwException, deleteData);
+  }
+
+  public boolean dropIndex(String db_name, String tbl_name, String index_name, boolean throwException, boolean deleteData) throws HiveException {
+    try {
+      return getMSC().dropIndex(db_name, tbl_name, index_name, deleteData, false);
+    } catch (NoSuchObjectException e) {
+      if (throwException) {
+        throw new HiveException("Index " + index_name + " doesn't exist. ", e);
+      }
+      return false;
+    } catch (Exception e) {
+      throw new HiveException(e.getMessage(), e);
+    }
+  }
+
+  public List<Index> getIndexes(String dbName, String tblName, short max) throws HiveException {
+    List<Index> indexes = null;
+    try {
+      indexes = getMSC().listIndexes(dbName, tblName, max);
+    } catch (Exception e) {
+      LOG.error(StringUtils.stringifyException(e));
+      throw new HiveException(e);
+    }
+    return indexes;
+  }
+
+  //endregion
+
+  public void createErasurePolicy(final ErasurePolicy erasurePolicy, final boolean ifNotExists) throws HiveException, AlreadyExistsException {
+    try {
+      getMSC().createErasurePolicy(erasurePolicy);
+    } catch (AlreadyExistsException e) {
+      if (!ifNotExists) {
+        throw e;
+      }
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void dropErasurePolicy(final String policyName, final boolean throwException) throws HiveException {
+    try {
+      getMSC().dropErasurePolicy(policyName, throwException);
+    } catch (NoSuchObjectException nsoe) {
+      if (throwException) {
+        // Propagate the metastore's actual reason (not found, still attached,
+        // non-DRAFT version, ...) rather than masking it as "does not exist".
+        throw new HiveException(nsoe.getMessage(), nsoe);
+      }
+    } catch (Exception e) {
+      throw new HiveException(e.getMessage(), e);
+    }
+  }
+
+  public List<PolicyInfo> getAllErasurePolicyNames() throws HiveException {
+    try {
+      return getMSC().getAllErasurePolicyNames();
+    } catch (NoSuchObjectException e) {
+      return null;
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public ErasurePolicy getErasurePolicy(final String policyName) throws HiveException{
+    try {
+      return getMSC().getErasurePolicy(policyName);
+    } catch (NoSuchObjectException e) {
+      return null;
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  /* erasure policy governance: versioning, binding, lifecycle audit, run audit, priv grants */
+
+  public ErasurePolicyVersion addErasurePolicyVersion(ErasurePolicyVersion version)
+      throws HiveException {
+    try {
+      return getMSC().addErasurePolicyVersion(version);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public ErasurePolicyVersion getErasurePolicyVersion(String policyName, String versionLabel)
+      throws HiveException {
+    try {
+      return getMSC().getErasurePolicyVersion(policyName, versionLabel);
+    } catch (NoSuchObjectException e) {
+      return null;
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public List<ErasurePolicyVersion> listErasurePolicyVersions(String policyName)
+      throws HiveException {
+    try {
+      return getMSC().listErasurePolicyVersions(policyName);
+    } catch (NoSuchObjectException e) {
+      return null;
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void updateErasurePolicyVersionStatus(long versionId, PolicyVersionStatus newStatus,
+      String principal) throws HiveException {
+    try {
+      getMSC().updateErasurePolicyVersionStatus(versionId, newStatus, principal);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public ErasurePolicyVersion getActiveErasurePolicyVersion(String policyName)
+      throws HiveException {
+    try {
+      return getMSC().getActiveErasurePolicyVersion(policyName);
+    } catch (NoSuchObjectException e) {
+      return null;
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public List<ErasurePolicyStatement> getErasurePolicyStatements(long versionId)
+      throws HiveException {
+    try {
+      return getMSC().getErasurePolicyStatements(versionId);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public List<ErasurePolicyRule> getErasurePolicyRules(long statementId) throws HiveException {
+    try {
+      return getMSC().getErasurePolicyRules(statementId);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public ErasurePolicyBinding addErasurePolicyBinding(ErasurePolicyBinding binding)
+      throws HiveException {
+    try {
+      return getMSC().addErasurePolicyBinding(binding);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public ErasurePolicyBinding getErasurePolicyBinding(long tblId, String columnName)
+      throws HiveException {
+    try {
+      return getMSC().getErasurePolicyBinding(tblId, columnName);
+    } catch (NoSuchObjectException e) {
+      return null;
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void dropErasurePolicyBinding(long bindingId) throws HiveException {
+    try {
+      getMSC().dropErasurePolicyBinding(bindingId);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void updateErasurePolicyBindingSettings(long bindingId,
+      PolicyResolutionMode resolutionMode, ColumnInternalFormat columnFormat)
+      throws HiveException {
+    try {
+      getMSC().updateErasurePolicyBindingSettings(bindingId, resolutionMode, columnFormat);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void attachPolicyToBinding(long bindingId, long policyId, int ordinal)
+      throws HiveException {
+    try {
+      getMSC().attachPolicyToBinding(bindingId, policyId, ordinal);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void detachPolicyFromBinding(long bindingId, long policyId) throws HiveException {
+    try {
+      getMSC().detachPolicyFromBinding(bindingId, policyId);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public List<ErasurePolicyBindingMember> getBindingMembers(long bindingId) throws HiveException {
+    try {
+      return getMSC().getBindingMembers(bindingId);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void replaceBindingResolvedRules(long bindingId,
+      List<ErasurePolicyBindingResolved> resolved) throws HiveException {
+    try {
+      getMSC().replaceBindingResolvedRules(bindingId, resolved);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public List<ErasurePolicyBindingResolved> getBindingResolvedRules(long bindingId)
+      throws HiveException {
+    try {
+      return getMSC().getBindingResolvedRules(bindingId);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void recordLifecycleEvent(ErasurePolicyLifecycleEvent evt) throws HiveException {
+    try {
+      getMSC().recordLifecycleEvent(evt);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public List<ErasurePolicyLifecycleEvent> getLifecycleEventsForPolicy(String policyName,
+      long fromTs, long untilTs) throws HiveException {
+    try {
+      return getMSC().getLifecycleEventsForPolicy(policyName, fromTs, untilTs);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public List<ErasurePolicyLifecycleEvent> getLifecycleEventsForBinding(long bindingId,
+      long fromTs, long untilTs) throws HiveException {
+    try {
+      return getMSC().getLifecycleEventsForBinding(bindingId, fromTs, untilTs);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public List<ErasurePolicyLifecycleEvent> getAttachRejectedEvents(long fromTs, long untilTs)
+      throws HiveException {
+    try {
+      return getMSC().getAttachRejectedEvents(fromTs, untilTs);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void recordErasureRun(ErasureRunAudit run) throws HiveException {
+    try {
+      getMSC().recordErasureRun(run);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void updateErasureRunCompletion(long tblId, long startedTs, long completedTs,
+      ErasureRunStatus status) throws HiveException {
+    updateErasureRunCompletion(tblId, startedTs, completedTs, status, 0L, 0L, 0L);
+  }
+
+  public void updateErasureRunCompletion(long tblId, long startedTs, long completedTs,
+      ErasureRunStatus status, long matchesInspected, long matchesRedacted, long matchesFlagged)
+      throws HiveException {
+    try {
+      getMSC().updateErasureRunCompletion(tblId, startedTs, completedTs, status,
+          matchesInspected, matchesRedacted, matchesFlagged);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public List<ErasureRunAudit> getErasureRunsForTable(long tblId, long fromTs, long untilTs,
+      String byUser, String forIdentity) throws HiveException {
+    try {
+      return getMSC().getErasureRunsForTable(tblId, fromTs, untilTs, byUser, forIdentity);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void grantPolicyPriv(PolicyPriv priv) throws HiveException {
+    try {
+      getMSC().grantPolicyPriv(priv);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public void revokePolicyPriv(long policyPrivId) throws HiveException {
+    try {
+      getMSC().revokePolicyPriv(policyPrivId);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public List<PolicyPriv> listPolicyPrivs(long policyId, String principalName)
+      throws HiveException {
+    try {
+      return getMSC().listPolicyPrivs(policyId, principalName);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // ERASE FROM TABLE per-table run-lock wrappers. Backed by the
+  // ErasureRunLock thrift struct (declared in hive_metastore.thrift) and the
+  // ObjectStore-side MErasureRunLock JDO entity.
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Acquire the per-table erasure run-lock for {@code tblId}. Throws
+   * HiveException if another run already holds the lock, naming the
+   * holder so the analyzer can surface a clear error.
+   */
+  public ErasureRunLock acquireErasureRunLock(final long tblId, final long runId,
+      final String principal) throws HiveException {
+    try {
+      return getMSC().acquireErasureRunLock(tblId, runId, principal);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  /**
+   * Read the current lock row for {@code tblId}, or null if none exists.
+   */
+  public ErasureRunLock getErasureRunLock(final long tblId) throws HiveException {
+    try {
+      return getMSC().getErasureRunLock(tblId);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  /**
+   * Mark the lock as COMPLETED on clean run exit. The runId must match
+   * the holder; mismatch is a no-op signalling the lock was previously
+   * reclaimed by an operator.
+   */
+  public boolean completeErasureRunLock(final long tblId, final long runId)
+      throws HiveException {
+    try {
+      return getMSC().completeErasureRunLock(tblId, runId);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  /**
+   * Manually release the lock via {@code RELEASE ERASURE LOCK ON TABLE}.
+   * The {@code force} flag distinguishes a soft release (operator
+   * confirmed the .anon.tmp safety check) from a forced release that
+   * bypasses the check.
+   */
+  public ErasureRunLock manuallyReleaseErasureRunLock(final long tblId,
+      final String releasedBy, final String reason, final boolean force)
+      throws HiveException {
+    try {
+      return getMSC().manuallyReleaseErasureRunLock(tblId, releasedBy, reason, force);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  /**
+   * Global inventory of erasure run-lock rows across the metastore, powering
+   * {@code SHOW ERASURE LOCKS}.
+   */
+  public java.util.List<ErasureRunLock> listErasureRunLocks() throws HiveException {
+    try {
+      return getMSC().listErasureRunLocks();
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
   }
 }
