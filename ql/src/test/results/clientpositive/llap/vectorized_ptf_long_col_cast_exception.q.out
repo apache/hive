@@ -1,0 +1,45 @@
+PREHOOK: query: CREATE TABLE repro_ptf_long (
+  id STRING,
+  total BIGINT
+) STORED AS ORC TBLPROPERTIES ('orc.compress'='ZLIB')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repro_ptf_long
+POSTHOOK: query: CREATE TABLE repro_ptf_long (
+  id STRING,
+  total BIGINT
+) STORED AS ORC TBLPROPERTIES ('orc.compress'='ZLIB')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repro_ptf_long
+PREHOOK: query: INSERT INTO repro_ptf_long VALUES ('req1', 5), ('req1', 10), ('req2', 10)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@repro_ptf_long
+POSTHOOK: query: INSERT INTO repro_ptf_long VALUES ('req1', 5), ('req1', 10), ('req2', 10)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@repro_ptf_long
+POSTHOOK: Lineage: repro_ptf_long.id SCRIPT []
+POSTHOOK: Lineage: repro_ptf_long.total SCRIPT []
+_col0	_col1
+PREHOOK: query: SELECT
+  id,
+  total,
+  SUM(total + total + total) OVER (ORDER BY total DESC, id ASC) AS total_sum
+FROM repro_ptf_long
+PREHOOK: type: QUERY
+PREHOOK: Input: default@repro_ptf_long
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  id,
+  total,
+  SUM(total + total + total) OVER (ORDER BY total DESC, id ASC) AS total_sum
+FROM repro_ptf_long
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@repro_ptf_long
+#### A masked pattern was here ####
+id	total	total_sum
+req1	10	30
+req2	10	60
+req1	5	75

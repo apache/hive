@@ -140,9 +140,7 @@ class VectorSpillBlockContainer {
     boolean[] isLastGroupBatch;
 
     /**
-     * Stores the isInputExpressionEvaluated property for buffered/spilled batches.
      */
-    boolean[] isInputExpressionEvaluated;
     /**
      * <pre>
       * Deserializer needs to know which columns to put the deserialized values into. Basically,
@@ -165,7 +163,6 @@ class VectorSpillBlockContainer {
       startBatchIndex = blockIndex * blockSize;
       startRowIndex = new int[blockSize];
       isLastGroupBatch = new boolean[blockSize];
-      isInputExpressionEvaluated = new boolean[blockSize];
     }
 
     void releaseRowBytesContainer() {

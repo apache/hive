@@ -50,7 +50,6 @@ public class VectorPTFEvaluatorStreamingLongAvg extends VectorPTFEvaluatorBase {
   public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
-    evaluateInputExpr(batch);
 
     // Sum all non-null long column values for avg; maintain isGroupResultNull; after last row of
     // last group batch compute the group avg when sum is non-null.

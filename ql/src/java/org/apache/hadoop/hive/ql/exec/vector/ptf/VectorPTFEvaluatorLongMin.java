@@ -45,7 +45,6 @@ public class VectorPTFEvaluatorLongMin extends VectorPTFEvaluatorBase {
   public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
-    evaluateInputExpr(batch);
 
     // Determine minimum of all non-null long column values; maintain isGroupResultNull.
 

@@ -50,7 +50,6 @@ public class VectorPTFEvaluatorDecimalLastValue extends VectorPTFEvaluatorBase {
   public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
-    evaluateInputExpr(batch);
 
     // Last row of last batch determines isGroupResultNull and decimal lastValue.
 

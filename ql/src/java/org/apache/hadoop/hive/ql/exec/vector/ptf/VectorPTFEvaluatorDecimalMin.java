@@ -46,7 +46,6 @@ public class VectorPTFEvaluatorDecimalMin extends VectorPTFEvaluatorBase {
   public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
-    evaluateInputExpr(batch);
 
     // Determine minimum of all non-null decimal column values; maintain isGroupResultNull.
 

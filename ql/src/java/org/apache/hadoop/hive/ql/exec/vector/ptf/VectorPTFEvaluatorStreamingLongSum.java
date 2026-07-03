@@ -45,7 +45,6 @@ public class VectorPTFEvaluatorStreamingLongSum extends VectorPTFEvaluatorBase {
   public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
-    evaluateInputExpr(batch);
 
     // Sum all non-null long column values; maintain isNull.
 
