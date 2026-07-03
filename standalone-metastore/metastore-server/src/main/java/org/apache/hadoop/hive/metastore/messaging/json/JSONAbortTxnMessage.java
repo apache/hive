@@ -72,6 +72,11 @@ public class JSONAbortTxnMessage extends AbortTxnMessage {
   }
 
   @Override
+  public String getCat() {
+    return null;
+  }
+
+  @Override
   public String getDB() {
     return null;
   }

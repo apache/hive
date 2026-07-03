@@ -51,6 +51,8 @@ hive_metastoreConstants::hive_metastoreConstants() {
 
   META_TABLE_NAME = "name";
 
+  META_TABLE_CAT = "cat";
+
   META_TABLE_DB = "db";
 
   META_TABLE_LOCATION = "location";

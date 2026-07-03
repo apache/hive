@@ -25,6 +25,7 @@ public class MTxnWriteNotificationLog {
   private long txnId;
   private long writeId;
   private int eventTime;
+  private String catalog;
   private String database;
   private String table;
   private String partition;
@@ -35,11 +36,12 @@ public class MTxnWriteNotificationLog {
   public MTxnWriteNotificationLog() {
   }
 
-  public MTxnWriteNotificationLog(long txnId, long writeId, int eventTime, String database, String table,
+  public MTxnWriteNotificationLog(long txnId, long writeId, int eventTime, String catalog, String database, String table,
                                String partition, String tableObject, String partObject, String files) {
     this.txnId = txnId;
     this.writeId = writeId;
     this.eventTime = eventTime;
+    this.catalog = catalog;
     this.database = database;
     this.table = table;
     this.partition = partition;
@@ -70,6 +72,14 @@ public class MTxnWriteNotificationLog {
 
   public void setEventTime(int eventTime) {
     this.eventTime = eventTime;
+  }
+
+  public String getCatalog() {
+    return catalog;
+  }
+
+  public void setCatalog(String catalog) {
+    this.catalog = catalog;
   }
 
   public String getDatabase() {

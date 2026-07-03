@@ -67,6 +67,11 @@ class ShowCompactRequest
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        10 => array(
+            'var' => 'catName',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -105,6 +110,10 @@ class ShowCompactRequest
      * @var string
      */
     public $order = null;
+    /**
+     * @var string
+     */
+    public $catName = "hive";
 
     public function __construct($vals = null)
     {
@@ -135,6 +144,9 @@ class ShowCompactRequest
             }
             if (isset($vals['order'])) {
                 $this->order = $vals['order'];
+            }
+            if (isset($vals['catName'])) {
+                $this->catName = $vals['catName'];
             }
         }
     }
@@ -221,6 +233,13 @@ class ShowCompactRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 10:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->catName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -278,6 +297,11 @@ class ShowCompactRequest
         if ($this->order !== null) {
             $xfer += $output->writeFieldBegin('order', TType::STRING, 9);
             $xfer += $output->writeString($this->order);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->catName !== null) {
+            $xfer += $output->writeFieldBegin('catName', TType::STRING, 10);
+            $xfer += $output->writeString($this->catName);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

@@ -31,7 +31,7 @@ public class JSONDeleteTableColumnStatMessage extends DeleteTableColumnStatMessa
   private Long timestamp;
 
   @JsonProperty
-  private String server, servicePrincipal, database, colName;
+  private String server, servicePrincipal, catalog, database, colName;
 
   /**
    * Default constructor, needed for Jackson.
@@ -40,10 +40,11 @@ public class JSONDeleteTableColumnStatMessage extends DeleteTableColumnStatMessa
   }
 
   public JSONDeleteTableColumnStatMessage(String server, String servicePrincipal, Long timestamp,
-                                          String dbName, String colName) {
+                                          String catName, String dbName, String colName) {
     this.timestamp = timestamp;
     this.server = server;
     this.servicePrincipal = servicePrincipal;
+    this.catalog = catName;
     this.database = dbName;
     this.colName = colName;
   }
@@ -51,6 +52,11 @@ public class JSONDeleteTableColumnStatMessage extends DeleteTableColumnStatMessa
   @Override
   public Long getTimestamp() {
     return timestamp;
+  }
+
+  @Override
+  public String getCat() {
+    return catalog;
   }
 
   @Override

@@ -42,7 +42,7 @@ public class GetWriteIdsMappingForTxnIdsHandler  implements QueryHandler<List<Tx
 
     @Override
     public String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
-        return "SELECT DISTINCT \"T2W_TXNID\", \"T2W_DATABASE\", \"T2W_WRITEID\" FROM \"TXN_TO_WRITE_ID\" \"COMMITTED\" WHERE \"T2W_TXNID\" IN (:txnIds)";
+        return "SELECT DISTINCT \"T2W_TXNID\", \"T2W_CATALOG\", \"T2W_DATABASE\", \"T2W_WRITEID\" FROM \"TXN_TO_WRITE_ID\" \"COMMITTED\" WHERE \"T2W_TXNID\" IN (:txnIds)";
     }
 
     @Override
@@ -54,7 +54,7 @@ public class GetWriteIdsMappingForTxnIdsHandler  implements QueryHandler<List<Tx
     public List<TxnWriteDetails> extractData(ResultSet rs) throws SQLException, DataAccessException {
         List<TxnWriteDetails> dbsUpdated = new ArrayList<>();
         while (rs.next()) {
-            TxnWriteDetails entry = new TxnWriteDetails(rs.getLong(1), rs.getString(2), rs.getLong(3));
+            TxnWriteDetails entry = new TxnWriteDetails(rs.getLong(1), rs.getString(2), rs.getString(3), rs.getLong(4));
             dbsUpdated.add(entry);
         }
         return dbsUpdated;

@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.api.Package;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
@@ -864,7 +865,13 @@ public abstract class MetaStoreClientWrapper extends BaseMetaStoreClient {
   @Override
   public long allocateTableWriteId(long txnId, String dbName, String tableName, boolean reallocate)
       throws TException {
-    return delegate.allocateTableWriteId(txnId, dbName, tableName, reallocate);
+    return delegate.allocateTableWriteId(txnId, Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, reallocate);
+  }
+
+  @Override
+  public long allocateTableWriteId(long txnId, String catName, String dbName, String tableName, boolean reallocate)
+      throws TException {
+    return delegate.allocateTableWriteId(txnId, catName, dbName, tableName, reallocate);
   }
 
   @Override
@@ -874,25 +881,53 @@ public abstract class MetaStoreClientWrapper extends BaseMetaStoreClient {
   }
 
   @Override
+  public void replTableWriteIdState(String validWriteIdList, String catName, String dbName, String tableName,
+                                    List<String> partNames) throws TException {
+    delegate.replTableWriteIdState(validWriteIdList, catName, dbName, tableName, partNames);
+  }
+
+  @Override
   public List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String dbName, String tableName)
       throws TException {
-    return delegate.allocateTableWriteIdsBatch(txnIds, dbName, tableName);
+    return allocateTableWriteIdsBatch(txnIds, Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName);
+  }
+
+  @Override
+  public List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String catName, String dbName, String tableName)
+      throws TException {
+    return delegate.allocateTableWriteIdsBatch(txnIds, catName, dbName, tableName);
   }
 
   @Override
   public List<TxnToWriteId> replAllocateTableWriteIdsBatch(String dbName, String tableName, String replPolicy,
       List<TxnToWriteId> srcTxnToWriteIdList) throws TException {
-    return delegate.replAllocateTableWriteIdsBatch(dbName, tableName, replPolicy, srcTxnToWriteIdList);
+    return replAllocateTableWriteIdsBatch(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, replPolicy, srcTxnToWriteIdList);
+  }
+
+  @Override
+  public List<TxnToWriteId> replAllocateTableWriteIdsBatch(String catName, String dbName, String tableName, String replPolicy,
+                                                           List<TxnToWriteId> srcTxnToWriteIdList) throws TException {
+    return delegate.replAllocateTableWriteIdsBatch(catName, dbName, tableName, replPolicy, srcTxnToWriteIdList);
   }
 
   @Override
   public long getMaxAllocatedWriteId(String dbName, String tableName) throws TException {
-    return delegate.getMaxAllocatedWriteId(dbName, tableName);
+    return getMaxAllocatedWriteId(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName);
+  }
+
+  @Override
+  public long getMaxAllocatedWriteId(String catName, String dbName, String tableName) throws TException {
+    return delegate.getMaxAllocatedWriteId(catName, dbName, tableName);
   }
 
   @Override
   public void seedWriteId(String dbName, String tableName, long seedWriteId) throws TException {
-    delegate.seedWriteId(dbName, tableName, seedWriteId);
+    seedWriteId(Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, seedWriteId);
+  }
+
+  @Override
+  public void seedWriteId(String catName, String dbName, String tableName, long seedWriteId) throws TException {
+    delegate.seedWriteId(catName, dbName, tableName, seedWriteId);
   }
 
   @Override
@@ -959,9 +994,16 @@ public abstract class MetaStoreClientWrapper extends BaseMetaStoreClient {
   }
 
   @Override
+  @Deprecated
   public void addDynamicPartitions(long txnId, long writeId, String dbName, String tableName,
       List<String> partNames, DataOperationType operationType) throws TException {
-    delegate.addDynamicPartitions(txnId, writeId, dbName, tableName, partNames, operationType);
+    addDynamicPartitions(txnId, writeId, Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName, partNames, operationType);
+  }
+
+  @Override
+  public void addDynamicPartitions(long txnId, long writeId, String catName, String dbName, String tableName,
+                                   List<String> partNames, DataOperationType operationType) throws TException {
+    delegate.addDynamicPartitions(txnId, writeId, catName, dbName, tableName, partNames, operationType);
   }
 
   @Override

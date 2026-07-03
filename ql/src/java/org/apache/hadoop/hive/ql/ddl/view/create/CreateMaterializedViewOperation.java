@@ -71,7 +71,7 @@ public class CreateMaterializedViewOperation extends DDLOperation<CreateMaterial
           sourceTables.add(context.getDb().getTable(tableName).createSourceTable());
         }
         MaterializedViewMetadata metadata = new MaterializedViewMetadata(
-                MetaStoreUtils.getDefaultCatalog(context.getConf()),
+                tbl.getCatName(),
                 tbl.getDbName(),
                 tbl.getTableName(),
                 sourceTables,

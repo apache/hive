@@ -82,5 +82,5 @@ public interface NotificationStore {
    * @param dbName the name of db for which dump is being taken
    * @param tableName the name of the table for which the dump is being taken
    */
-  List<WriteEventInfo> getAllWriteEventInfo(long txnId, String dbName, String tableName) throws MetaException;
+  List<WriteEventInfo> getAllWriteEventInfo(long txnId, String catName, String dbName, String tableName) throws MetaException;
 }

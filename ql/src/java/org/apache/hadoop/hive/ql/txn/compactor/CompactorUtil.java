@@ -338,6 +338,7 @@ public class CompactorUtil {
   private static CompactionResponse requestCompaction(CompactionInfo ci, String runAs, String hostname,
       TxnStore txnHandler) throws MetaException {
     CompactionRequest compactionRequest = new CompactionRequest(ci.dbname, ci.tableName, ci.type);
+    compactionRequest.setCatName(ci.catName);
     if (ci.partName != null)
       compactionRequest.setPartitionname(ci.partName);
     compactionRequest.setRunas(runAs);
@@ -463,8 +464,8 @@ public class CompactorUtil {
       deltaSizes.put(delta.getPath(), getDirSize(fs, delta));
     }
     long deltaSize = deltaSizes.values().stream().reduce(0L, Long::sum);
-    AcidMetricService.updateMetricsFromInitiator(ci.dbname, ci.tableName, ci.partName, conf, txnHandler, baseSize,
-        deltaSizes, acidDirectory.getObsolete());
+    AcidMetricService.updateMetricsFromInitiator(ci.catName, ci.dbname, ci.tableName, ci.partName,
+        conf, txnHandler, baseSize, deltaSizes, acidDirectory.getObsolete());
 
     if (runJobAsSelf(runAs)) {
       return determineCompactionType(ci, acidDirectory, tblProperties, baseSize, deltaSize, conf);
@@ -492,7 +493,7 @@ public class CompactorUtil {
       throws NoSuchTxnException, MetaException {
     ValidTxnList validTxnList = ValidReadTxnList.fromValue(conf.get(ValidTxnList.VALID_TXNS_KEY));
     // The response will have one entry per table and hence we get only one ValidWriteIdList
-    String fullTableName = TxnUtils.getFullTableName(t.getDbName(), t.getTableName());
+    String fullTableName = TxnUtils.getFullTableName(t.getCatName(), t.getDbName(), t.getTableName());
     GetValidWriteIdsRequest validWriteIdsRequest =
         new GetValidWriteIdsRequest(Collections.singletonList(fullTableName));
     validWriteIdsRequest.setValidTxnList(validTxnList.writeToString());
@@ -538,7 +539,7 @@ public class CompactorUtil {
     conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
     CompactionResponse compactionResponse;
     CompactionInfo compactionInfo =
-        new CompactionInfo(table.getDbName(), table.getTableName(), compactionRequest.getPartitionname(),
+        new CompactionInfo(table.getCatName(), table.getDbName(), table.getTableName(), compactionRequest.getPartitionname(),
             compactionRequest.getType());
     compactionInfo.initiatorId = compactionRequest.getInitiatorId();
     compactionInfo.orderByClause = compactionRequest.getOrderByClause();

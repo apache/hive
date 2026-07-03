@@ -49,14 +49,14 @@ public class GetLatestCommittedCompactionInfoHandler implements QueryHandler<Get
   public String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
     return 
         "SELECT * FROM ( " +
-          "SELECT \"CC_ID\", \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_TYPE\" FROM \"COMPLETED_COMPACTIONS\" " +
+          "SELECT \"CC_ID\", \"CC_CATALOG\", \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_TYPE\" FROM \"COMPLETED_COMPACTIONS\" " +
           "   WHERE \"CC_STATE\" = :succeeded " + 
           "UNION ALL " +
-          "SELECT \"CQ_ID\" AS \"CC_ID\", \"CQ_DATABASE\" AS \"CC_DATABASE\", \"CQ_TABLE\" AS \"CC_TABLE\", " +
+          "SELECT \"CQ_ID\" AS \"CC_ID\", \"CQ_CATALOG\" AS \"CC_CATALOG\" \"CQ_DATABASE\" AS \"CC_DATABASE\", \"CQ_TABLE\" AS \"CC_TABLE\", " +
           "\"CQ_PARTITION\" AS \"CC_PARTITION\", \"CQ_TYPE\" AS \"CC_TYPE\" FROM \"COMPACTION_QUEUE\" " +
           "   WHERE \"CQ_STATE\" = :readyForCleaning) AS compactions " +
         "WHERE " +
-            "\"CC_DATABASE\" = :dbName AND \"CC_TABLE\" = :tableName AND " +
+            "\"CC_CATALOG\" = :catName AND \"CC_DATABASE\" = :dbName AND \"CC_TABLE\" = :tableName AND " +
             "(\"CC_PARTITION\" IN (:partitionNames) OR :emptyPartitionNames = TRUE) AND " +
             "(\"CC_ID\" > :id OR :id IS NULL) " +
         "ORDER BY \"CC_ID\" DESC";
@@ -67,6 +67,7 @@ public class GetLatestCommittedCompactionInfoHandler implements QueryHandler<Get
     return new MapSqlParameterSource()
         .addValue("succeeded", CompactionState.SUCCEEDED.getSqlConst(), Types.CHAR)
         .addValue("readyForCleaning", CompactionState.READY_FOR_CLEANING.getSqlConst(), Types.CHAR)
+        .addValue("catName", rqst.getCatName())
         .addValue("dbName", rqst.getDbname())
         .addValue("tableName", rqst.getTablename())
         .addValue("emptyPartitionNames", CollectionUtils.isEmpty(rqst.getPartitionnames()), Types.BOOLEAN)
@@ -81,13 +82,14 @@ public class GetLatestCommittedCompactionInfoHandler implements QueryHandler<Get
     while (rs.next()) {
       CompactionInfoStruct lci = new CompactionInfoStruct();
       lci.setId(rs.getLong(1));
-      lci.setDbname(rs.getString(2));
-      lci.setTablename(rs.getString(3));
-      String partition = rs.getString(4);
+      lci.setCatName(rs.getString(2));
+      lci.setDbname(rs.getString(3));
+      lci.setTablename(rs.getString(4));
+      String partition = rs.getString(5);
       if (!rs.wasNull()) {
         lci.setPartitionname(partition);
       }
-      lci.setType(TxnUtils.dbCompactionType2ThriftType(rs.getString(5).charAt(0)));
+      lci.setType(TxnUtils.dbCompactionType2ThriftType(rs.getString(6).charAt(0)));
       // Only put the latest record of each partition into response
       if (!partitionSet.contains(partition)) {
         response.addToCompactions(lci);

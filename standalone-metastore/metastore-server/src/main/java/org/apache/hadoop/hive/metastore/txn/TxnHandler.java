@@ -540,6 +540,9 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     List<Long> writeIds = txnWriteDetails.stream()
         .map(TxnWriteDetails::getWriteId)
         .toList();
+    List<String> catalogs = txnWriteDetails.stream()
+        .map(TxnWriteDetails::getCatName)
+        .toList();
     List<String> databases = txnWriteDetails.stream()
         .map(TxnWriteDetails::getDbName)
         .toList();
@@ -547,7 +550,7 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     if (eventType.equals(EventMessage.EventType.ABORT_TXN)) {
       txnEvent = new AbortTxnEvent(txnId, txnType, null, databases, writeIds);
     } else {
-      txnEvent = new CommitTxnEvent(txnId, txnType, null, databases, writeIds);
+      txnEvent = new CommitTxnEvent(txnId, txnType, null, catalogs, databases, writeIds);
     }
     MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
         eventType, txnEvent, dbConn, sqlGenerator);
@@ -705,8 +708,9 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     // The initial value for write id should be 1 and hence we add 1 with number of write ids
     // allocated here
     jdbcResource.getJdbcTemplate().update(
-        "INSERT INTO \"NEXT_WRITE_ID\" (\"NWI_DATABASE\", \"NWI_TABLE\", \"NWI_NEXT\") VALUES (:db, :table, :writeId)",
+        "INSERT INTO \"NEXT_WRITE_ID\" (\"NWI_CATALOG\", \"NWI_DATABASE\", \"NWI_TABLE\", \"NWI_NEXT\") VALUES (:cat, :db, :table, :writeId)",
         new MapSqlParameterSource()
+            .addValue("cat", rqst.getCatName())
             .addValue("db", rqst.getDbName())
             .addValue("table", rqst.getTableName())
             .addValue("writeId", rqst.getSeedWriteId() + 1));
@@ -911,7 +915,12 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   @Override
   public long getTxnIdForWriteId(String dbName, String tblName, long writeId) throws MetaException {
-    return jdbcResource.execute(new TxnIdForWriteIdHandler(writeId, dbName, tblName));
+    return getTxnIdForWriteId(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName, writeId);
+  }
+
+  @Override
+  public long getTxnIdForWriteId(String catName, String dbName, String tblName, long writeId) throws MetaException {
+    return jdbcResource.execute(new TxnIdForWriteIdHandler(writeId, catName, dbName, tblName));
   }
 
   @Override
@@ -968,9 +977,10 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
     jdbcResource.execute(new InsertTxnComponentsCommand(rqst));
     jdbcResource.getJdbcTemplate().update("DELETE FROM \"TXN_COMPONENTS\" " +
-            "WHERE \"TC_TXNID\" = :txnId AND \"TC_DATABASE\" = :dbName AND \"TC_TABLE\" = :tableName AND \"TC_PARTITION\" IS NULL",
+            "WHERE \"TC_TXNID\" = :txnId AND \"TC_CATALOG\" = :catName AND \"TC_DATABASE\" = :dbName AND \"TC_TABLE\" = :tableName AND \"TC_PARTITION\" IS NULL",
         new MapSqlParameterSource()
             .addValue("txnId", rqst.getTxnid())
+            .addValue("catName", org.apache.commons.lang3.StringUtils.lowerCase(rqst.getCatName()))
             .addValue("dbName", org.apache.commons.lang3.StringUtils.lowerCase(rqst.getDbname()))
             .addValue("tableName", org.apache.commons.lang3.StringUtils.lowerCase(rqst.getTablename())));
   }

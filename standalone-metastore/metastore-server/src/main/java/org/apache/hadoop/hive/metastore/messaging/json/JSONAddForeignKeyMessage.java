@@ -74,6 +74,11 @@ public class JSONAddForeignKeyMessage extends AddForeignKeyMessage {
   }
 
   @Override
+  public String getCat() {
+    return null;
+  }
+
+  @Override
   public String getDB() {
     return null;
   }

@@ -54,27 +54,31 @@ public class LoadFunction {
   private Context context;
   private ReplLogger replLogger;
   private final FunctionEvent event;
+  private final String catName;
   private final String dbNameToLoadIn;
   private final TaskTracker tracker;
   String dumpDirectory;
   private final ReplicationMetricCollector metricCollector;
 
   public LoadFunction(Context context, ReplLogger replLogger, FunctionEvent event,
-                      String dbNameToLoadIn, TaskTracker existingTracker, ReplicationMetricCollector metricCollector) {
+                      String catName, String dbNameToLoadIn, TaskTracker existingTracker,
+                      ReplicationMetricCollector metricCollector) {
     this.context = context;
     this.replLogger = replLogger;
     this.event = event;
+    this.catName = catName;
     this.dbNameToLoadIn = dbNameToLoadIn;
     this.tracker = new TaskTracker(existingTracker);
     this.metricCollector = metricCollector;
   }
 
   public LoadFunction(Context context, ReplLogger replLogger, FunctionEvent event,
-                      String dbNameToLoadIn, TaskTracker existingTracker,
+                      String catName, String dbNameToLoadIn, TaskTracker existingTracker,
                       String dumpDirectory, ReplicationMetricCollector metricCollector) {
     this.context = context;
     this.replLogger = replLogger;
     this.event = event;
+    this.catName = catName;
     this.dbNameToLoadIn = dbNameToLoadIn;
     this.tracker = new TaskTracker(existingTracker);
     this.dumpDirectory = dumpDirectory;
@@ -100,7 +104,7 @@ public class LoadFunction {
       CreateFunctionHandler handler = new CreateFunctionHandler();
       List<Task<?>> tasks = handler.handle(
           new MessageHandler.Context(
-              dbNameToLoadIn, fromPath.toString(), null, null, context.hiveConf,
+              catName, dbNameToLoadIn, fromPath.toString(), null, null, context.hiveConf,
               context.hiveDb, context.nestedContext, LOG, dumpDirectory, metricCollector)
       );
       createFunctionReplLogTask(tasks, handler.getFunctionName());

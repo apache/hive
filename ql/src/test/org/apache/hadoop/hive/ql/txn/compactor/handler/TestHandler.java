@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.txn.compactor.handler;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
@@ -55,9 +56,10 @@ public class TestHandler extends TestCleaner {
     addDeltaFile(t, p, 23L, 24L, 2);
     addBaseFile(t, p, 25L, 25);
 
-    burnThroughTransactions(t.getDbName(), t.getTableName(), 25);
+    burnThroughTransactions(t.getCatName(), t.getDbName(), t.getTableName(), 25);
 
     CompactionRequest rqst = new CompactionRequest(t.getDbName(), t.getTableName(), CompactionType.MAJOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setPartitionname("ds=today");
     compactInTxn(rqst);
     MetadataCache metadataCache = new MetadataCache(true);
@@ -84,9 +86,10 @@ public class TestHandler extends TestCleaner {
     addBaseFile(t, null, 20L, 20);
     addDeltaFile(t, null, 21L, 22L, 2);
     addDeltaFile(t, null, 23L, 24L, 2);
-    burnThroughTransactions("default", "retry_test", 25);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, "default", "retry_test", 25);
 
     CompactionRequest rqst = new CompactionRequest("default", "retry_test", CompactionType.MAJOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     long compactTxn = compactInTxn(rqst);
     addBaseFile(t, null, 25L, 25, compactTxn);
 

@@ -38,7 +38,7 @@ public final class HiveTableName extends TableName {
    * @throws SemanticException
    */
   public static TableName of(Table table) throws SemanticException {
-    return ofNullable(table.getTableName(), table.getDbName(), table.getSnapshotRef());
+    return ofNullable(table.getCatName(), table.getTableName(), table.getDbName(), table.getSnapshotRef());
   }
 
   /**
@@ -48,60 +48,19 @@ public final class HiveTableName extends TableName {
    * @throws SemanticException
    */
   public static void setFrom(String dbTable, Table table) throws SemanticException{
-    TableName name = ofNullable(dbTable);
+    TableName name = ofNullable(SessionState.get().getCurrentCatalog(), dbTable,
+        SessionState.get().getCurrentDatabase(), null);
     table.setTableName(name.getTable());
     table.setDbName(name.getDb());
+    table.setCatalogName(name.getCat());
   }
 
-  /**
-   * Accepts qualified name which is in the form of table, dbname.tablename or catalog.dbname.tablename and returns a
-   * {@link TableName}. All parts can be null.
-   *
-   * @param dbTableName
-   * @return a {@link TableName}
-   * @throws SemanticException
-   * @deprecated use {@link #of(String)} or {@link #fromString(String, String, String)}
-   */
-  // to be @Deprecated
-  public static TableName ofNullable(String dbTableName) throws SemanticException {
-    return ofNullable(dbTableName, SessionState.get().getCurrentDatabase());
-  }
-
-  /**
-   * Accepts qualified name which is in the form of table, dbname.tablename or catalog.dbname.tablename and returns a
-   * {@link TableName}. All parts can be null. This method won't try to find the default db based on the session state.
-   *
-   * @param dbTableName
-   * @return a {@link TableName}
-   * @throws SemanticException
-   * @deprecated use {@link #of(String)} or {@link #fromString(String, String, String)}
-   */
-  // to be @Deprecated
-  public static TableName ofNullableWithNoDefault(String dbTableName) throws SemanticException {
-    return ofNullable(dbTableName, null);
-  }
-
-  /**
-   * Accepts qualified name which is in the form of table, dbname.tablename or catalog.dbname.tablename and returns a
-   * {@link TableName}. All parts can be null.
-   *
-   * @param dbTableName
-   * @param defaultDb
-   * @return a {@link TableName}
-   * @throws SemanticException
-   * @deprecated use {@link #of(String)} or {@link #fromString(String, String, String)}
-   */
-  // to be @Deprecated
-  public static TableName ofNullable(String dbTableName, String defaultDb) throws SemanticException {
-    return ofNullable(dbTableName, defaultDb, null);
-  }
-
-  public static TableName ofNullable(String dbTableName, String defaultDb, String tableMetaRef) throws SemanticException {
+  public static TableName ofNullable(String catName, String dbTableName, String defaultDb, String tableMetaRef) throws SemanticException {
     if (dbTableName == null) {
       return new TableName(null, null, null);
     } else {
       try {
-        return fromString(dbTableName, SessionState.get().getCurrentCatalog(), defaultDb, tableMetaRef);
+        return fromString(dbTableName, catName, defaultDb, tableMetaRef);
       } catch (IllegalArgumentException e) {
         throw new SemanticException(e);
       }

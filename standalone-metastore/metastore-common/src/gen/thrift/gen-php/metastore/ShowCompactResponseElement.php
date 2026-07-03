@@ -142,6 +142,11 @@ class ShowCompactResponseElement
             'isRequired' => false,
             'type' => TType::I64,
         ),
+        25 => array(
+            'var' => 'catName',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -240,6 +245,10 @@ class ShowCompactResponseElement
      * @var int
      */
     public $hightestWriteId = null;
+    /**
+     * @var string
+     */
+    public $catName = "hive";
 
     public function __construct($vals = null)
     {
@@ -315,6 +324,9 @@ class ShowCompactResponseElement
             }
             if (isset($vals['hightestWriteId'])) {
                 $this->hightestWriteId = $vals['hightestWriteId'];
+            }
+            if (isset($vals['catName'])) {
+                $this->catName = $vals['catName'];
             }
         }
     }
@@ -506,6 +518,13 @@ class ShowCompactResponseElement
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 25:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->catName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -638,6 +657,11 @@ class ShowCompactResponseElement
         if ($this->hightestWriteId !== null) {
             $xfer += $output->writeFieldBegin('hightestWriteId', TType::I64, 24);
             $xfer += $output->writeI64($this->hightestWriteId);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->catName !== null) {
+            $xfer += $output->writeFieldBegin('catName', TType::STRING, 25);
+            $xfer += $output->writeString($this->catName);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

@@ -340,8 +340,8 @@ public abstract class TransactionHandler extends DeprecatedHandler {
     AllocateTableWriteIdsResponse response = getTxnHandler().allocateTableWriteIds(rqst);
     if (listeners != null && !listeners.isEmpty()) {
       MetaStoreListenerNotifier.notifyEvent(listeners, EventMessage.EventType.ALLOC_WRITE_ID,
-          new AllocWriteIdEvent(response.getTxnToWriteIds(), rqst.getDbName(),
-              rqst.getTableName(), this));
+          new AllocWriteIdEvent(response.getTxnToWriteIds(), rqst.getCatName(),
+              rqst.getDbName(), rqst.getTableName(), this));
     }
     return response;
   }
