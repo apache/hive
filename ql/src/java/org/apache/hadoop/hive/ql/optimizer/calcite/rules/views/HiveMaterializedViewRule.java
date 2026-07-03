@@ -72,7 +72,6 @@ public class HiveMaterializedViewRule {
    * the root of the plan.
    */
   private static final HepProgram PROGRAM = new HepProgramBuilder()
-      // .addRuleInstance(HiveHepExtractRelNodeRule.INSTANCE)
       .addRuleInstance(HiveVolcanoExtractRelNodeRule.INSTANCE)
       .addRuleInstance(HiveTableScanProjectInsert.INSTANCE)
       .addRuleCollection(
@@ -122,6 +121,7 @@ public class HiveMaterializedViewRule {
       super(relBuilderFactory, generateUnionRewriting, unionRewritingPullProgram);
     }
 
+    // Overridden to avoid CALCITE-7641; TODO remove this once fixed.
     @Override protected @Nullable RelNode rewriteQuery(
         RelBuilder relBuilder,
         RexBuilder rexBuilder,
@@ -150,6 +150,7 @@ public class HiveMaterializedViewRule {
       super(relBuilderFactory, generateUnionRewriting, unionRewritingPullProgram);
     }
 
+    // Overridden to avoid CALCITE-7641; TODO remove this once fixed.
     @Override protected @Nullable RelNode rewriteQuery(
         RelBuilder relBuilder,
         RexBuilder rexBuilder,
@@ -179,6 +180,7 @@ public class HiveMaterializedViewRule {
       super(relBuilderFactory, generateUnionRewriting, unionRewritingPullProgram, fastBailOut);
     }
 
+    // Overridden to avoid CALCITE-7641; TODO remove this once fixed.
     @Override protected @Nullable RelNode rewriteQuery(
         RelBuilder relBuilder,
         RexBuilder rexBuilder,
@@ -203,6 +205,7 @@ public class HiveMaterializedViewRule {
       super(relBuilderFactory, generateUnionRewriting, unionRewritingPullProgram, fastBailOut);
     }
 
+    // Overridden to avoid CALCITE-7641; TODO remove this once fixed.
     @Override protected @Nullable RelNode rewriteQuery(
         RelBuilder relBuilder,
         RexBuilder rexBuilder,
@@ -227,6 +230,7 @@ public class HiveMaterializedViewRule {
       super(relBuilderFactory, generateUnionRewriting, unionRewritingPullProgram, fastBailOut);
     }
 
+    // Overridden to avoid CALCITE-7641; TODO remove this once fixed.
     @Override protected @Nullable RelNode rewriteQuery(
         RelBuilder relBuilder,
         RexBuilder rexBuilder,
@@ -251,6 +255,7 @@ public class HiveMaterializedViewRule {
       super(relBuilderFactory, generateUnionRewriting, unionRewritingPullProgram, fastBailOut);
     }
 
+    // Overridden to avoid CALCITE-7641; TODO remove this once fixed.
     @Override protected @Nullable RelNode rewriteQuery(
         RelBuilder relBuilder,
         RexBuilder rexBuilder,
@@ -266,29 +271,6 @@ public class HiveMaterializedViewRule {
       RelNode unwrappedNode = HiveCalciteUtil.stripHepVertices(node);
       return super.rewriteQuery(relBuilder, rexBuilder, simplify, mq, compensationColumnsEquiPred,
           otherCompensationPred, topProject, unwrappedNode, viewToQueryTableMapping, viewEC, queryEC);
-    }
-  }
-
-  /**
-   * This rule is used within the PROGRAM that rewrites the query for
-   * partial rewritings. Its goal is to extract the RelNode from the
-   * HepRelVertex node so the rest of the rules in the PROGRAM can be
-   * applied correctly.
-   */
-  // TODO remove
-  private static class HiveHepExtractRelNodeRule extends RelOptRule {
-
-    private static final HiveHepExtractRelNodeRule INSTANCE =
-        new HiveHepExtractRelNodeRule();
-
-    private HiveHepExtractRelNodeRule() {
-      super(operand(HepRelVertex.class, any()));
-    }
-
-    @Override
-    public void onMatch(RelOptRuleCall call) {
-      final HepRelVertex rel = call.rel(0);
-      call.transformTo(rel.getCurrentRel());
     }
   }
 
