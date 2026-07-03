@@ -70,6 +70,7 @@ public class TestHMSColumnDescriptorReuse {
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.AUTO_CREATE_ALL, false);
 
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.ADD_PARTITION_REUSE_EXISTING_COLUMN_DESCRIPTORS, true);
 
     MetaStoreTestUtils.setConfForStandloneMode(conf);
 

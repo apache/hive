@@ -135,6 +135,7 @@ import static org.apache.hadoop.hive.metastore.ObjectStore.getPartQueryWithParam
 import static org.apache.hadoop.hive.metastore.ObjectStore.isCurrentStatsValidForTheQuery;
 import static org.apache.hadoop.hive.metastore.ObjectStore.makeParameterDeclarationString;
 import static org.apache.hadoop.hive.metastore.ObjectStore.verifyStatsChangeCtx;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.ADD_PARTITION_REUSE_EXISTING_COLUMN_DESCRIPTORS;
 import static org.apache.hadoop.hive.metastore.metastore.impl.PrivilegeStoreImpl.getPrincipalTypeFromStr;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.newMetaException;
@@ -3393,7 +3394,12 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
 
         @Override
         protected MColumnDescriptor getSqlResult() throws MetaException {
+          if (MetastoreConf.getBoolVar(conf, ADD_PARTITION_REUSE_EXISTING_COLUMN_DESCRIPTORS)) {
             return getDirectSql().getColumnDescriptor(cols, tblId);
+          }
+
+          // Return null basically means allocate a new column descriptor
+          return null;
         }
 
         @Override

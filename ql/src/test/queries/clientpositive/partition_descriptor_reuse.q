@@ -4,6 +4,9 @@
 -- 3. Connect to the dockerized database and check the state of the metadata
 -- docker exec -it CONTAINER_NAME psql -U test -d hivedb
 -- TODO: Probably not gonna need this file at the end so drop it
+
+set metastore.add.partition.reuse.existing.column.descriptors=true;
+
 create table person(id string, fname string) partitioned by (birthyear string);
 alter table person add partition (birthyear='1987');
 alter table person add partition (birthyear='1988');
