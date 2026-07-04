@@ -31,6 +31,7 @@
     <module>metastore-server</module>
     <module>metastore-tools</module>
     <module>metastore-rest-catalog</module>
+    <module>metastore-search</module>
     <module>packaging</module>
   </modules>
   <properties>
