@@ -3924,7 +3924,7 @@ public class HiveConf extends Configuration {
             "     (Use with property hive.server2.webui.custom.auth.filter)"),
     HIVE_SERVER2_WEBUI_CUSTOM_AUTH_FILTER("hive.server2.webui.custom.auth.filter", "",
         "Filter class name to apply to the Web UI when " + "hive.server2.webui.auth.method" +
-            "=CUSTOM. The filter should be a standard javax servlet Filter. " +
+            "=CUSTOM. The filter should be a standard javax.servlet.Filter. " +
             "Filter parameters can also be specified in the configuration, by setting config entries of the form " +
             "hive.server2.webui.custom.auth.filter.param.<param name>=<value>"),
     HIVE_SERVER2_SHOW_OPERATION_DRILLDOWN_LINK("hive.server2.show.operation.drilldown.link", false,

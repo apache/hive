@@ -433,7 +433,7 @@ public class HiveServer2 extends CompositeService {
             String paramPrefix = ConfVars.HIVE_SERVER2_WEBUI_CUSTOM_AUTH_FILTER.varname + ".param.";
             Map<String, String> params = hiveConf.getPropsWithPrefix(paramPrefix);
             builder.addGlobalFilter("custom-auth-filter", "/*", authFilter, params);
-            LOG.info("WebUI will use Custom Auth Filter: {}  params: {}", authFilter, params);
+            LOG.info("WebUI will use Custom Auth Filter: {} with init param kyes: {}", authFilter, params.keySet());
           }
           webServer = builder.build();
           webServer.addServlet("query_page", "/query_page.html", QueryProfileServlet.class);
