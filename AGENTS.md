@@ -33,9 +33,10 @@ the operator.
 Read **[SECURITY.md](SECURITY.md)** for how to report.
 
 ### Key scoping facts (see THREAT_MODEL.md)
-- The **HiveServer2** SQL front door is the primary untrusted boundary; the
-  Metastore and execution cluster are assumed to run inside an
-  operator-controlled perimeter.
+- The **HiveServer2** SQL front door and directly exposed **Hive Metastore**
+  endpoints are the primary untrusted boundaries; execution clusters and
+  internal service dependencies are assumed to run inside an operator-controlled
+  perimeter.
 - **UDFs, SerDes, custom InputFormats, and `TRANSFORM` scripts are
   code-execution by design**, not a sandbox — running authorized code is a
   feature, not a vulnerability.

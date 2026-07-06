@@ -25,6 +25,11 @@
 > against `master`; revise on a new public-facing surface (a new server
 > endpoint, auth mechanism, file format, or execution engine), not on
 > internal refactors.
+>
+> As of the PMC's 2026-07 review, **this in-repo model is the canonical Hive
+> security model**. Security information scattered across
+> <https://hive.apache.org/> predates it and may be out of date; where they
+> disagree, this document wins. *(maintainer — okumin, §14 Q14)*
 
 ## §1 — Purpose and consumers
 
@@ -91,10 +96,13 @@ used), and a KDC for Kerberos — all treated as trusted dependencies.
 
 - **Client → HiveServer2** is the primary boundary. The session is
   authenticated (Kerberos / LDAP / PAM / custom / none) and every statement is
-  authorization-checked before execution *(inferred — §14 Q6)*. Whether the SQL
-  text, JDBC connection properties, and session-configuration overrides are
-  treated as untrusted at this boundary is the load-bearing question for
-  triage.
+  authorization-checked before execution. From HS2's point of view the **SQL
+  text, JDBC connection properties, and session-configuration overrides are all
+  untrusted**; Hive rejects non-acceptable operations through the authorization
+  plugin or through the configured deny lists — `hive.conf.restricted.list`
+  (settings an untrusted user may not change), `hive.conf.locked.list`, and
+  `hive.conf.hidden.list` (secret values an untrusted user may not read).
+  *(maintainer — okumin, §14 Q6)*
 - **HiveServer2 → Metastore** and **HS2 → execution engine / HDFS** are
   intra-cluster boundaries. The Metastore is protected at the **application
   level** (it enforces caller authorization), because external services such as
@@ -104,32 +112,58 @@ used), and a KDC for Kerberos — all treated as trusted dependencies.
 - **`doAs` impersonation:** when enabled, HS2 executes work as the connected
   end user against HDFS rather than as the Hive service principal; when
   disabled, all access runs as the Hive principal and authorization is fully
-  delegated to the SQL-layer authorizer *(inferred — §14 Q7)*. The two modes
-  have materially different blast radii and which is "the" supported posture
-  is a §14 question.
+  delegated to the SQL-layer authorizer. Because the recommended posture uses
+  an authorization plugin (typically Apache Ranger), **`hive.server2.enable.doAs=false`
+  is the typical / expected configuration**: HS2 enforces authorization itself
+  rather than pushing it down to per-user HDFS permissions. *(maintainer —
+  okumin, §14 Q7)*
 
 ## §5 — What Hive upholds (given §3/§4 assumptions)
 
-*(all inferred — §14 Q8)*
+Given valid input and a secure configuration, Hive is expected to uphold the
+following. **These properties are configuration-dependent** — they hold when the
+operator has configured authentication, authorization, and transport protection
+per §6/§8, not by default. *(maintainer — okumin, §14 Q8)*
 
-- **Authentication** of the HS2 session via the configured mechanism before any
-  statement runs.
-- **Authorization** of each statement against the configured model (Ranger /
-  SQL-standard / storage-based), scoped to the principal's granted privileges
-  on the named objects.
+- **Authentication.** HiveServer2 and the Hive Metastore can require clients to
+  authenticate using the configured mechanism (e.g. Kerberos, LDAP), depending
+  on the endpoint.
+- **Authorization scoping.** Requests are authorized as the authenticated Hive
+  session / metastore user through the configured authorization manager
+  (typically Apache Ranger). Decisions are scoped to Hive objects and operations
+  — databases, tables, partitions, columns, functions, and the relevant metadata
+  operations.
+- **Metastore authorization.** When the Hive Metastore is directly exposed to
+  clients, metastore-side authorization can be enforced through
+  `HiveMetaStoreAuthorizer` as a pre-event listener, and metadata read/list
+  results can be filtered server-side via the metastore filter hook.
+- **Transport protection.** HiveServer2, the Hive Metastore, and the HS2 Web UI
+  can protect traffic confidentiality and integrity when TLS/SSL is enabled and
+  correctly configured.
+- **Configuration protection.** Sensitive or security-critical configuration
+  values can be restricted, locked, or hidden (§4/§8 deny lists) so untrusted
+  users cannot change security posture at runtime or read secret values.
+- **Credential handling.** Secrets can be externalized through Hadoop credential
+  providers rather than stored in cleartext configuration files.
 - **Memory safety on well-formed input** to the extent the JVM provides it;
   Hive is Java, so classic memory-corruption is out of the language model.
 
+Hive does **not** by itself guarantee authorization for a caller who bypasses
+Hive and accesses the underlying storage or metastore database directly; those
+paths must be protected separately by HDFS / object-store / IAM / database
+controls. *(maintainer — okumin)*
+
 ## §6 — What Hive leaves to the operator
 
-*(inferred — §14 Q9)*
+*(maintainer — okumin, §14 Q9)*
 
-- **Transport security (TLS)** on the HS2 and Metastore endpoints, and the KDC
-  / LDAP server's own security.
-- **Choosing and configuring an authorization model.** Storage-based and
-  SQL-standard and Ranger give materially different guarantees; the default
-  posture (and whether "no authorization configured" is a supported production
-  mode) is the operator's call.
+- **Transport security (TLS)** on the HS2, Metastore, and HS2 Web UI endpoints,
+  and the KDC / LDAP server's own security.
+- **Choosing and configuring an authorization model.** **Apache Ranger is the
+  primary authorization plugin** for Hive; storage-based and SQL-standard
+  authorization give materially different guarantees. The operator owns the
+  choice (and whether "no authorization configured" is a supported production
+  mode — it is not, for an internet- or multi-tenant-exposed deployment).
 - **Network isolation** of the Metastore, the metastore RDBMS, and the
   execution cluster from untrusted networks.
 - **Vetting UDFs / SerDes / aux JARs.** Adding a function or SerDe is adding
@@ -137,7 +171,7 @@ used), and a KDC for Kerberos — all treated as trusted dependencies.
 
 ## §7 — Properties Hive does *not* uphold (by design)
 
-*(inferred — §14 Q10)*
+*(maintainer — okumin, §14 Q10: confirmed)*
 
 - **A sandbox around UDFs, SerDes, custom InputFormats, or `TRANSFORM`/script
   operators.** Code a principal is authorized to register or invoke runs with
@@ -175,22 +209,79 @@ used), and a KDC for Kerberos — all treated as trusted dependencies.
 
 ## §8 — Key configuration levers (load-bearing)
 
-*(all inferred — §14 Q12; confirm names + defaults)*
+The security posture is configuration-dependent; the levers below are what an
+operator sets to reach the §5 properties. Organized by component per the PMC's
+structure preference (§14 Q15). *(maintainer — okumin, §14 Q12)*
 
-| Lever | Why it matters |
-| --- | --- |
-| Authentication mode (`hive.server2.authentication`) | `NONE` vs `KERBEROS`/`LDAP` decides whether the front door is open. |
-| Authorization model (Ranger / SQL-std / storage-based / none) | decides whether statements are access-controlled at all. |
-| `doAs` (`hive.server2.enable.doAs`) | decides whether HDFS access runs as the end user or the Hive principal. |
-| TLS on HS2 / HMS transports | decides whether sessions + metadata are on the wire in clear. |
-| UDF/SerDe allow-listing, `hive.security.authorization.sqlstd.confwhitelist` | decides which session config + functions an untrusted client may set/use. |
-| Built-in UDF blacklist (`hive.server2.builtin.udf.blacklist`) | blocks code-exec built-ins (`reflect`, `reflect2`, `java_method`, `in_file`); Ranger configures it *(maintainer — okumin)*. |
-| `TRANSFORM` disable (`DisallowTransformHook` in `hive.exec.pre.hooks`) | prohibits `TRANSFORM`/script operators in secure deployments *(maintainer — okumin)*. |
+### §8.1 — HiveServer2
+
+- **Authentication:** `hive.server2.authentication` and the more-specific
+  `hive.server2.authentication.*` parameters must be configured properly.
+- **Authorization:** `hive.security.authorization.enabled=true` and
+  `hive.security.authorization.manager` (typically Apache Ranger). With Ranger,
+  `hive.security.authenticator.manager` should be
+  `org.apache.hadoop.hive.ql.security.SessionStateUserAuthenticator` to authorize
+  as the HS2 session user, and `hive.server2.enable.doAs` is typically `false`.
+- **TLS:** `hive.server2.use.SSL=true` plus the more-specific TLS parameters.
+- **Config protection:** a Hive administrator should protect security-related
+  settings via `hive.conf.restricted.list`, `hive.conf.locked.list`, and
+  `hive.conf.hidden.list` so untrusted users cannot update sensitive settings or
+  view secret values.
+- **Code-execution levers:** built-in UDF blacklist
+  `hive.server2.builtin.udf.blacklist` blocks the code-exec built-ins
+  (`reflect`, `reflect2`, `java_method`, `in_file`); `DisallowTransformHook` in
+  `hive.exec.pre.hooks` prohibits `TRANSFORM`/script operators. Major
+  authorization plugins (e.g. Ranger) configure both.
+
+Reference: <https://hive.apache.org/docs/latest/admin/setting-up-hiveserver2/#authenticationsecurity-configuration>
+
+### §8.2 — HiveServer2 Web UI
+
+If the UI port (default `10002`) is exposed to untrusted users:
+
+- **Authentication:** at least one of `hive.server2.webui.use.spnego=true`,
+  `hive.server2.webui.use.pam=true`, or `hive.server2.webui.auth.method=LDAP`
+  (plus the more-specific parameters).
+- **TLS:** `hive.server2.webui.use.ssl=true` plus the more-specific TLS
+  parameters.
+
+### §8.3 — Hive Metastore
+
+If a Hive administrator exposes the Metastore to untrusted users or systems
+(e.g. Spark, Flink):
+
+- **Authentication:** `metastore.authentication` (e.g. `KERBEROS` or `LDAP`)
+  plus the more-specific parameters (`metastore.sasl.enabled`,
+  `metastore.kerberos.*` / `metastore.authentication.*`).
+- **Authorization:** `hive.security.authorization.manager` set to
+  `RangerHiveAuthorizerFactory` (typical), `metastore.pre.event.listeners`
+  including
+  `org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthorizer`,
+  and `metastore.server.filter.enabled=true` with `metastore.filter.hook` set to
+  the same `HiveMetaStoreAuthorizer` for server-side result filtering.
+- **TLS:** `metastore.use.SSL` plus the more-specific TLS parameters.
+
+### §8.4 — Credentials (all components)
+
+All credentials / secrets should be managed through the Hadoop
+`CredentialProviderAPI`, configured via `hadoop.security.credential.provider.path`
+(<https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/CredentialProviderAPI.html>).
+Hive does **not** guarantee that the content of `hive-site.xml`,
+`metastore-site.xml`, environment variables, or system properties is never
+exposed — secrets placed there are the administrator's risk (see §11a).
+*(maintainer — okumin)*
 
 ## §11a — Known non-findings (seed for scanner/AI triage)
 
-These are the dispositions the PMC most likely wants pre-recorded; confirm and
-extend *(inferred — §14 Q13)*:
+These are the dispositions the PMC has recorded; confirm and extend
+*(maintainer — okumin, §14 Q13)*:
+
+- **"Secrets are exposed in `hive-site.xml` / `metastore-site.xml` / environment
+  variables / system properties."** By design not a Hive defect — a Hive
+  administrator who stores secrets in those places has chosen the wrong
+  mechanism. Secrets should be managed through the Hadoop `CredentialProviderAPI`
+  (§8.4). Hive does not guarantee the content of those config surfaces is never
+  exposed. `OUT-OF-MODEL: operator responsibility`. *(maintainer — okumin.)*
 
 - **"A UDF / `TRANSFORM` script / custom SerDe can run arbitrary code."**
   By design — registering or invoking code is an authorized operation, not a
@@ -258,45 +349,56 @@ Grouped in waves; answer inline (a few at a time is fine). Each promotes an
    admins doing authorized actions, are out of model.~~
 
 **Wave 2 — trust boundaries & auth**
-6. At the client→HS2 boundary, are SQL text, JDBC connection properties, and
-   session-config overrides all treated as untrusted (subject to the conf
-   whitelist)?
-7. *(PMC reviewing — okumin expects `hive.server2.enable.doAs=false` is the
-   intended posture, since HiveServer2 can enforce policies itself; asked for a
-   second PMC member to double-check before we finalize.)* Which `doAs` posture
-   is the supported/recommended one, and how does it change the authorization
-   story?
-8. What properties does Hive claim to uphold given valid input (auth, authz
-   scoping, others)?
+6. *(Answered — okumin: from HS2's point of view SQL text, JDBC connection
+   properties, and session config are untrusted; Hive rejects non-acceptable
+   operations via the authz plugin or the deny lists
+   (`hive.conf.restricted.list` / `hive.conf.locked.list` /
+   `hive.conf.hidden.list`). Folded into §4.)* ~~At the client→HS2 boundary, are
+   SQL text, JDBC connection properties, and session-config overrides all
+   treated as untrusted (subject to the conf whitelist)?~~
+7. *(Answered — okumin: because the recommended posture uses an authorization
+   plugin (Apache Ranger), `hive.server2.enable.doAs=false` is the typical /
+   expected configuration; HS2 enforces authorization itself. Folded into §4 /
+   §8.1.)* ~~Which `doAs` posture is the supported/recommended one, and how does
+   it change the authorization story?~~
+8. *(Answered — okumin: authentication, authorization scoping, metastore
+   authorization, transport protection, configuration protection, credential
+   handling — all configuration-dependent; no guarantee for callers who bypass
+   Hive and hit storage / the metastore DB directly. Folded into §5.)* ~~What
+   properties does Hive claim to uphold given valid input (auth, authz scoping,
+   others)?~~
 
 **Wave 3 — disclaimed properties & defaults**
-9. *(Partially — okumin notes HMS is protected at the application level rather
-   than the network level (reflected in §3.3/§4), and is still considering
-   whether to treat Ranger as the only supported authorization system.)*
-   Confirm the operator-owned list in §6 (TLS, authz-model choice, network
-   isolation, UDF vetting). Anything mis-assigned?
-10. Confirm the by-design non-guarantees in §7.
+9. *(Answered — okumin: Apache Ranger is the primary authorization plugin; the
+   §6 operator-owned list stands. Folded into §6.)* ~~Confirm the operator-owned
+   list in §6 (TLS, authz-model choice, network isolation, UDF vetting).~~
+10. *(Answered — okumin: confirmed ("OK"). §7 by-design non-guarantees stand.)*
+    ~~Confirm the by-design non-guarantees in §7.~~
 11. *(Answered — okumin: the operator's job, not a Hive bug — Hive accepts
     arbitrary HiveQL; operators bound it with HS2 limits (e.g.
     `hive.query.max.length`) + YARN pools, and separate HS2 instances / clusters
     for stronger isolation. Folded into §7.)* ~~Is super-linear resource use / a
     hang on a pathological query a bug, or is bounding it the operator's job
     (YARN queues / HS2 limits)?~~
-12. *(PMC reviewing — okumin is checking the exact TLS configuration parameter
-    names on the Hive side; §8 TLS lever left unnamed pending that.)* Confirm
-    the real names + shipped defaults of the §8 levers (especially
-    `hive.server2.authentication` and the default authorization model).
-13. What do scanners/fuzzers/researchers most often report that you consider a
-    non-finding? (Feeds §11a.)
+12. *(Answered — okumin: supplied the real parameter names + secure-config
+    recipes for HiveServer2, the HS2 Web UI, and the Hive Metastore, plus the
+    Hadoop `CredentialProviderAPI`. Folded into §8.1–§8.4.)* ~~Confirm the real
+    names + shipped defaults of the §8 levers.~~
+13. *(Answered — okumin: secret exposure when an admin stores secrets in
+    `hive-site.xml` / `metastore-site.xml` / env vars / system properties
+    instead of using the Hadoop `CredentialProviderAPI`. Folded into §11a.)*
+    ~~What do scanners/fuzzers/researchers most often report that you consider a
+    non-finding?~~
 
 **Wave 4 — meta**
-14. Hive has no in-repo `SECURITY.md`/`THREAT_MODEL.md` today; this PR adds
-    them and wires `AGENTS.md → SECURITY.md → THREAT_MODEL.md`. Confirm this
-    in-repo model is canonical (vs the cwiki security pages), how it should
-    reference those pages, and who owns revisions.
-15. *(Raised by okumin.)* HiveServer2 and the Hive Metastore have **different
-    security models and parameters** — should HMS get its **own**
-    `THREAT_MODEL.md` (e.g. `THREAT_MODEL.md` for HS2 + a separate one for HMS,
-    each discoverable), rather than one combined document? Leaning toward
-    splitting if it makes the per-component scope cleaner for both triagers and
-    scan agents; the PMC's call on structure.
+14. *(Answered — okumin: as of today this in-repo model is the canonical page.
+    Some security information is scattered across <https://hive.apache.org/> and
+    may not be up to date; the in-repo model supersedes it. Reflected in §1.)*
+    ~~Confirm this in-repo model is canonical (vs the cwiki security pages).~~
+15. *(Answered — okumin: keep **one file**, split into clearly-labelled
+    HiveServer2 and Hive Metastore sections rather than two separate files.
+    Applied: §8 is now organized into §8.1 HiveServer2 / §8.2 HS2 Web UI / §8.3
+    Hive Metastore / §8.4 Credentials, and the component boundaries are labelled
+    in §2/§3/§4. If deeper per-component scope/adversary subsections would help,
+    say so and we'll extend — the structure is the PMC's call.)* ~~Should HMS
+    get its own separate `THREAT_MODEL.md`?~~
