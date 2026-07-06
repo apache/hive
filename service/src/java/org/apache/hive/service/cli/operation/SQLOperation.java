@@ -177,6 +177,12 @@ public class SQLOperation extends ExecuteStatementOperation {
         timeoutExecutor = Executors.newSingleThreadScheduledExecutor();
         timeoutExecutor.schedule(() -> {
           try {
+            // The query may have already finished, failed, or been cancelled before this task
+            // fires (the executor is only shut down when the operation is closed). Skip in that
+            // case so we don't overwrite a real result/exception with a spurious timeout message.
+            if (getState().isTerminal()) {
+              return null;
+            }
             final String queryId = queryState.getQueryId();
             log.info("Query timed out after: {} seconds. Cancelling the execution now: {}", queryTimeout, queryId);
             setOperationException(new HiveSQLException(

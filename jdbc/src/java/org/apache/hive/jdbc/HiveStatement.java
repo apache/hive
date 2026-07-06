@@ -399,32 +399,19 @@ public class HiveStatement implements java.sql.Statement {
   }
 
   /**
-   * Returns the timeout message for a {@code TIMEDOUT_STATE} response.
-   * Uses the server error message when the SQL state is {@code HYT00} ("timeout expired"),
-   * which indicates that the server set a precise message. Otherwise falls back to a
-   * locally derived message from {@link #setQueryTimeout(int)} or the URL-seeded
-   * {@code hive.query.timeout.seconds} value on the connection.
+   * Returns the timeout message for a {@code TIMEDOUT_STATE} response. The server is authoritative:
+   * when the SQL state is {@code HYT00} ("timeout expired") it has set a precise message that
+   * already reflects the effective {@code hive.query.timeout.seconds}, so it is used verbatim.
+   * Otherwise (e.g. an older server) falls back to the per-statement {@link #setQueryTimeout(int)}.
    */
   private String sqlTimeoutMessageForTimedOutState(String serverMessage, String sqlState) {
     if ("HYT00".equals(sqlState) && StringUtils.isNotBlank(serverMessage)) {
       return serverMessage;
     }
-    long effectiveSec = resolveEffectiveTimeoutSecondsForMessage();
-    if (effectiveSec > 0) {
-      return "Query timed out after " + effectiveSec + " seconds";
+    if (queryTimeout > 0) {
+      return "Query timed out after " + queryTimeout + " seconds";
     }
     return "Query timed out";
-  }
-
-  private long resolveEffectiveTimeoutSecondsForMessage() {
-    if (queryTimeout > 0) {
-      return queryTimeout;
-    }
-    long tracked = connection.getSessionQueryTimeoutSeconds();
-    if (tracked > 0) {
-      return tracked;
-    }
-    return 0L;
   }
 
   /**
