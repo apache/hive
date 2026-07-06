@@ -113,7 +113,7 @@ Stage-0
       File Output Operator [FS_10]
         Select Operator [SEL_9] (rows=1 width=520)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-          Map Join Operator [MAPJOIN_45] (rows=1 width=336)
+          Map Join Operator [MAPJOIN_25] (rows=1 width=336)
             BucketMapJoin:true,Conds:SEL_2._col0, _col1=RS_7._col0, _col1(Inner),Output:["_col0","_col1","_col2","_col3"]
           <-Map 2 [CUSTOM_EDGE] llap
             MULTICAST [RS_7]
@@ -176,7 +176,7 @@ Stage-0
       File Output Operator [FS_14]
         Select Operator [SEL_13] (rows=1 width=520)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-          Map Join Operator [MAPJOIN_49] (rows=1 width=336)
+          Map Join Operator [MAPJOIN_39] (rows=1 width=336)
             BucketMapJoin:true,Conds:RS_10._col0, _col1=GBY_8._col0, _col1(Inner),Output:["_col0","_col1","_col2","_col3"]
           <-Map 1 [CUSTOM_SIMPLE_EDGE] llap
             PARTITION_ONLY_SHUFFLE [RS_10]
@@ -194,12 +194,10 @@ Stage-0
                 PartitionCols:_col0, _col1
                 Group By Operator [GBY_6] (rows=1 width=168)
                   Output:["_col0","_col1"],keys:date_col, decimal_col
-                  Select Operator [SEL_5] (rows=1 width=168)
-                    Output:["date_col","decimal_col"]
-                    Filter Operator [FIL_18] (rows=1 width=168)
-                      predicate:((CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null)
-                      TableScan [TS_3] (rows=1 width=168)
-                        default@source_table,source_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","decimal_col"]
+                  Filter Operator [FIL_18] (rows=1 width=168)
+                    predicate:((CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null)
+                    TableScan [TS_3] (rows=1 width=168)
+                      default@source_table,source_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","decimal_col"]
 
 PREHOOK: query: select * from target_table inner join
 (select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
@@ -246,7 +244,7 @@ Stage-0
       File Output Operator [FS_10]
         Select Operator [SEL_9] (rows=1 width=520)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-          Map Join Operator [MAPJOIN_45] (rows=1 width=336)
+          Map Join Operator [MAPJOIN_25] (rows=1 width=336)
             Conds:SEL_2._col0, _col1=RS_7._col0, _col1(Inner),Output:["_col0","_col1","_col2","_col3"]
           <-Map 2 [BROADCAST_EDGE] llap
             BROADCAST [RS_7]
@@ -309,7 +307,7 @@ Stage-0
       File Output Operator [FS_14]
         Select Operator [SEL_13] (rows=1 width=520)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-          Map Join Operator [MAPJOIN_49] (rows=1 width=336)
+          Map Join Operator [MAPJOIN_39] (rows=1 width=336)
             Conds:RS_10._col0, _col1=GBY_8._col0, _col1(Inner),Output:["_col0","_col1","_col2","_col3"]
           <-Map 1 [BROADCAST_EDGE] llap
             BROADCAST [RS_10]
@@ -327,12 +325,10 @@ Stage-0
                 PartitionCols:_col0, _col1
                 Group By Operator [GBY_6] (rows=1 width=168)
                   Output:["_col0","_col1"],keys:date_col, decimal_col
-                  Select Operator [SEL_5] (rows=1 width=168)
-                    Output:["date_col","decimal_col"]
-                    Filter Operator [FIL_18] (rows=1 width=168)
-                      predicate:((CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null)
-                      TableScan [TS_3] (rows=1 width=168)
-                        default@source_table,source_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","decimal_col"]
+                  Filter Operator [FIL_18] (rows=1 width=168)
+                    predicate:((CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null)
+                    TableScan [TS_3] (rows=1 width=168)
+                      default@source_table,source_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","decimal_col"]
 
 PREHOOK: query: select * from target_table inner join
 (select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
@@ -376,23 +372,23 @@ Stage-0
     limit:-1
     Stage-1
       Map 1 vectorized, llap
-      File Output Operator [FS_54]
-        Select Operator [SEL_53] (rows=1 width=520)
+      File Output Operator [FS_34]
+        Select Operator [SEL_33] (rows=1 width=520)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-          Map Join Operator [MAPJOIN_52] (rows=1 width=336)
-            BucketMapJoin:true,Conds:SEL_51._col0, _col1=RS_49._col0, _col1(Inner),Output:["_col0","_col1","_col2","_col3"]
+          Map Join Operator [MAPJOIN_32] (rows=1 width=336)
+            BucketMapJoin:true,Conds:SEL_31._col0, _col1=RS_29._col0, _col1(Inner),Output:["_col0","_col1","_col2","_col3"]
           <-Map 2 [CUSTOM_EDGE] vectorized, llap
-            MULTICAST [RS_49]
+            MULTICAST [RS_29]
               PartitionCols:_col1
-              Select Operator [SEL_48] (rows=1 width=168)
+              Select Operator [SEL_28] (rows=1 width=168)
                 Output:["_col0","_col1"]
-                Filter Operator [FIL_47] (rows=1 width=168)
+                Filter Operator [FIL_27] (rows=1 width=168)
                   predicate:((CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null)
                   TableScan [TS_3] (rows=1 width=168)
                     default@source_table,source_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","decimal_col"]
-          <-Select Operator [SEL_51] (rows=1 width=168)
+          <-Select Operator [SEL_31] (rows=1 width=168)
               Output:["_col0","_col1"]
-              Filter Operator [FIL_50] (rows=1 width=252)
+              Filter Operator [FIL_30] (rows=1 width=252)
                 predicate:((string_col = 'pipeline') and (CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null)
                 TableScan [TS_0] (rows=1 width=252)
                   default@target_table,target_table,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:7,Grouping Partition Columns:["decimal_col"],Output:["date_col","string_col","decimal_col"]
@@ -439,33 +435,31 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 3 vectorized, llap
-      File Output Operator [FS_61]
-        Select Operator [SEL_60] (rows=1 width=520)
+      File Output Operator [FS_50]
+        Select Operator [SEL_49] (rows=1 width=520)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-          Map Join Operator [MAPJOIN_59] (rows=1 width=336)
-            BucketMapJoin:true,Conds:RS_57._col0, _col1=GBY_58._col0, _col1(Inner),Output:["_col0","_col1","_col2","_col3"]
+          Map Join Operator [MAPJOIN_48] (rows=1 width=336)
+            BucketMapJoin:true,Conds:RS_46._col0, _col1=GBY_47._col0, _col1(Inner),Output:["_col0","_col1","_col2","_col3"]
           <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized, llap
-            PARTITION_ONLY_SHUFFLE [RS_57]
+            PARTITION_ONLY_SHUFFLE [RS_46]
               PartitionCols:_col0, _col1
-              Select Operator [SEL_56] (rows=1 width=168)
+              Select Operator [SEL_45] (rows=1 width=168)
                 Output:["_col0","_col1"]
-                Filter Operator [FIL_55] (rows=1 width=252)
+                Filter Operator [FIL_44] (rows=1 width=252)
                   predicate:((string_col = 'pipeline') and (CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null)
                   TableScan [TS_0] (rows=1 width=252)
                     default@target_table,target_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","string_col","decimal_col"]
-          <-Group By Operator [GBY_58] (rows=1 width=168)
+          <-Group By Operator [GBY_47] (rows=1 width=168)
               Output:["_col0","_col1"],keys:KEY._col0, KEY._col1
             <-Map 2 [SIMPLE_EDGE] vectorized, llap
-              SHUFFLE [RS_54]
+              SHUFFLE [RS_43]
                 PartitionCols:_col0, _col1
-                Group By Operator [GBY_53] (rows=1 width=168)
+                Group By Operator [GBY_42] (rows=1 width=168)
                   Output:["_col0","_col1"],keys:date_col, decimal_col
-                  Select Operator [SEL_52] (rows=1 width=168)
-                    Output:["date_col","decimal_col"]
-                    Filter Operator [FIL_51] (rows=1 width=168)
-                      predicate:((CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null)
-                      TableScan [TS_3] (rows=1 width=168)
-                        default@source_table,source_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","decimal_col"]
+                  Filter Operator [FIL_41] (rows=1 width=168)
+                    predicate:((CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null)
+                    TableScan [TS_3] (rows=1 width=168)
+                      default@source_table,source_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","decimal_col"]
 
 PREHOOK: query: select * from target_table inner join
 (select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
@@ -509,23 +503,23 @@ Stage-0
     limit:-1
     Stage-1
       Map 1 vectorized, llap
-      File Output Operator [FS_54]
-        Select Operator [SEL_53] (rows=1 width=520)
+      File Output Operator [FS_34]
+        Select Operator [SEL_33] (rows=1 width=520)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-          Map Join Operator [MAPJOIN_52] (rows=1 width=336)
-            Conds:SEL_51._col0, _col1=RS_49._col0, _col1(Inner),Output:["_col0","_col1","_col2","_col3"]
+          Map Join Operator [MAPJOIN_32] (rows=1 width=336)
+            Conds:SEL_31._col0, _col1=RS_29._col0, _col1(Inner),Output:["_col0","_col1","_col2","_col3"]
           <-Map 2 [BROADCAST_EDGE] vectorized, llap
-            BROADCAST [RS_49]
+            BROADCAST [RS_29]
               PartitionCols:_col0, _col1
-              Select Operator [SEL_48] (rows=1 width=168)
+              Select Operator [SEL_28] (rows=1 width=168)
                 Output:["_col0","_col1"]
-                Filter Operator [FIL_47] (rows=1 width=168)
+                Filter Operator [FIL_27] (rows=1 width=168)
                   predicate:((CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null)
                   TableScan [TS_3] (rows=1 width=168)
                     default@source_table,source_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","decimal_col"]
-          <-Select Operator [SEL_51] (rows=1 width=168)
+          <-Select Operator [SEL_31] (rows=1 width=168)
               Output:["_col0","_col1"]
-              Filter Operator [FIL_50] (rows=1 width=252)
+              Filter Operator [FIL_30] (rows=1 width=252)
                 predicate:((string_col = 'pipeline') and (CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null)
                 TableScan [TS_0] (rows=1 width=252)
                   default@target_table,target_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","string_col","decimal_col"]
@@ -572,33 +566,31 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 3 vectorized, llap
-      File Output Operator [FS_61]
-        Select Operator [SEL_60] (rows=1 width=520)
+      File Output Operator [FS_50]
+        Select Operator [SEL_49] (rows=1 width=520)
           Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-          Map Join Operator [MAPJOIN_59] (rows=1 width=336)
-            Conds:RS_57._col0, _col1=GBY_58._col0, _col1(Inner),Output:["_col0","_col1","_col2","_col3"]
+          Map Join Operator [MAPJOIN_48] (rows=1 width=336)
+            Conds:RS_46._col0, _col1=GBY_47._col0, _col1(Inner),Output:["_col0","_col1","_col2","_col3"]
           <-Map 1 [BROADCAST_EDGE] vectorized, llap
-            BROADCAST [RS_57]
+            BROADCAST [RS_46]
               PartitionCols:_col0, _col1
-              Select Operator [SEL_56] (rows=1 width=168)
+              Select Operator [SEL_45] (rows=1 width=168)
                 Output:["_col0","_col1"]
-                Filter Operator [FIL_55] (rows=1 width=252)
+                Filter Operator [FIL_44] (rows=1 width=252)
                   predicate:((string_col = 'pipeline') and (CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null)
                   TableScan [TS_0] (rows=1 width=252)
                     default@target_table,target_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","string_col","decimal_col"]
-          <-Group By Operator [GBY_58] (rows=1 width=168)
+          <-Group By Operator [GBY_47] (rows=1 width=168)
               Output:["_col0","_col1"],keys:KEY._col0, KEY._col1
             <-Map 2 [SIMPLE_EDGE] vectorized, llap
-              SHUFFLE [RS_54]
+              SHUFFLE [RS_43]
                 PartitionCols:_col0, _col1
-                Group By Operator [GBY_53] (rows=1 width=168)
+                Group By Operator [GBY_42] (rows=1 width=168)
                   Output:["_col0","_col1"],keys:date_col, decimal_col
-                  Select Operator [SEL_52] (rows=1 width=168)
-                    Output:["date_col","decimal_col"]
-                    Filter Operator [FIL_51] (rows=1 width=168)
-                      predicate:((CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null)
-                      TableScan [TS_3] (rows=1 width=168)
-                        default@source_table,source_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","decimal_col"]
+                  Filter Operator [FIL_41] (rows=1 width=168)
+                    predicate:((CAST( decimal_col AS STRING) = '50000000000000000005905545593') and date_col is not null)
+                    TableScan [TS_3] (rows=1 width=168)
+                      default@source_table,source_table,Tbl:COMPLETE,Col:COMPLETE,Output:["date_col","decimal_col"]
 
 PREHOOK: query: select * from target_table inner join
 (select distinct date_col, 'pipeline' string_col, decimal_col from source_table where coalesce(decimal_col,'') = '50000000000000000005905545593') s
