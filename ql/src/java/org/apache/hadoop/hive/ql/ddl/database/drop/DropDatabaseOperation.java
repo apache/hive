@@ -53,7 +53,7 @@ public class DropDatabaseOperation extends DDLOperation<DropDatabaseDesc> {
 
       if (LlapHiveUtils.isLlapMode(context.getConf())) {
         ProactiveEviction.Request.Builder llapEvictRequestBuilder = ProactiveEviction.Request.Builder.create();
-        llapEvictRequestBuilder.addDb(dbName); // TODO catalog. add catalog for the cache. Depend on HIVE-29281
+        llapEvictRequestBuilder.addDb(catName, dbName);
         ProactiveEviction.evict(context.getConf(), llapEvictRequestBuilder.build());
       }
       // Unregister the functions as well

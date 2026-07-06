@@ -155,7 +155,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
   public ExpectedException expectedException = ExpectedException.none();
   
   @Override
-  void initHiveConf() {
+  protected void initHiveConf() {
     super.initHiveConf();
     //TestTxnCommands2WithSplitUpdateAndVectorization has the vectorized version
     //of these tests.

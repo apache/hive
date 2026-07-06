@@ -181,12 +181,8 @@ public class PartitionPruner extends Transform {
       LOG.trace("prune Expression = " + (prunerExpr == null ? "" : prunerExpr));
     }
 
-    String key = tab.getFullyQualifiedName() + ";";
-    if (tab.getMetaTable() != null) {
-      key = tab.getFullyQualifiedName() + "." + tab.getMetaTable() + ";";
-    } else if (tab.getSnapshotRef() != null) {
-      key = tab.getFullyQualifiedName() + "." + tab.getSnapshotRef() + ";";
-    }
+    String qualifier = tab.getQualifier();
+    String key = tab.getFullyQualifiedName() + (qualifier.isEmpty() ? "" : "." + qualifier) + ";";
 
     if (!tab.isPartitioned()) {
       // If the table is not partitioned, return empty list.
@@ -441,7 +437,7 @@ public class PartitionPruner extends Transform {
     return false;
   }
 
-  private static PrunedPartitionList getPartitionsFromServer(Table tab, String key, ExprNodeDesc compactExpr, 
+  private static PrunedPartitionList getPartitionsFromServer(Table tab, String key, ExprNodeDesc compactExpr,
       HiveConf conf, Set<String> partColsUsedInFilter, boolean isPruningByExactFilter) 
       throws SemanticException {
     try {
@@ -567,7 +563,7 @@ public class PartitionPruner extends Transform {
       Warehouse.makeValsFromName(partName, values);
 
       List<Object> convertedValues = new ArrayList<>(values.size());
-      for(int i=0; i<values.size(); i++) {
+      for (int i = 0; i < values.size(); i++) {
         String partitionValue = values.get(i);
         PrimitiveTypeInfo typeInfo = partColumnTypeInfos.get(i);
 

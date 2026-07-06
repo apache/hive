@@ -32,6 +32,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -1353,6 +1354,12 @@ public class Table implements Serializable {
 
   public void setSnapshotRef(String snapshotRef) {
     this.snapshotRef = snapshotRef;
+  }
+
+  public String getQualifier() {
+    return Stream.of(metaTable, snapshotRef, asOfVersion, asOfTimestamp)
+        .filter(Objects::nonNull).findFirst()
+        .orElse("");
   }
 
   public SourceTable createSourceTable() {

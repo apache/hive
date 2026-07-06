@@ -113,6 +113,10 @@ public class MetastoreConf {
           "metastore.authentication.ldap.userMembershipKey";
   public static final String METASTORE_RETRYING_HANDLER_CLASS =
           "org.apache.hadoop.hive.metastore.RetryingHMSHandler";
+  public static final String  ACID_TABLE_OPTIMIZER_CLASS =
+      "org.apache.hadoop.hive.ql.txn.compactor.AcidTableOptimizer";
+  public static final String  ICEBERG_TABLE_OPTIMIZER_CLASS =
+      "org.apache.iceberg.mr.hive.compaction.IcebergTableOptimizer";
 
   private static final Map<String, ConfVars> metaConfs = new HashMap<>();
   private static volatile URL hiveSiteURL = null;
@@ -663,8 +667,7 @@ public class MetastoreConf {
       "Enable table caching in the initiator. Currently the cache is cleaned after each cycle."),
     COMPACTOR_INITIATOR_TABLE_OPTIMIZERS("compactor.table.optimizers",
         "hive.compactor.table.optimizers",
-        "org.apache.hadoop.hive.ql.txn.compactor.AcidTableOptimizer," +
-            "org.apache.iceberg.mr.hive.compaction.IcebergTableOptimizer",
+        ACID_TABLE_OPTIMIZER_CLASS + "," + ICEBERG_TABLE_OPTIMIZER_CLASS,
         "Comma separated list of table optimizers executed by compaction Initiator."),
     COMPACTOR_WORKER_THREADS("metastore.compactor.worker.threads",
         "hive.compactor.worker.threads", 0,
@@ -1291,6 +1294,20 @@ public class MetastoreConf {
       "metastore.partition.management.table.pattern", "*",
       "Automatic partition management will look for tables using the specified table pattern"),
 
+    COLUMN_STATISTICS_MANAGEMENT_TASK_FREQUENCY("metastore.column.statistics.management.task.frequency",
+        "metastore.column.statistics.management.task.frequency",
+        0, TimeUnit.DAYS,
+        "Frequency at which the statistics management task runs to automatically delete expired " +
+            "column statistics. A value of 0 (the default) disables the task entirely. " +
+            "Set to a positive duration (e.g. 7d) to enable periodic deletion. " +
+            "Rows whose lastAnalyzed timestamp is older than " +
+            "'metastore.column.statistics.retention.period' will be deleted."),
+
+    COLUMN_STATISTICS_RETENTION_PERIOD("metastore.column.statistics.retention.period",
+        "metastore.column.statistics.retention.period", 365, TimeUnit.DAYS,
+        "The retention period for column statistics. Statistics older than this period " +
+            "will be deleted when the statistics management task is enabled."),
+
     METASTORE_METADATA_TRANSFORMER_CLASS("metastore.metadata.transformer.class", "metastore.metadata.transformer.class",
         "org.apache.hadoop.hive.metastore.MetastoreDefaultTransformer",
         "Fully qualified class name for the metastore metadata transformer class \n"
@@ -1477,6 +1494,10 @@ public class MetastoreConf {
             "Metastore SSL certificate truststore type."),
     SSL_TRUSTMANAGERFACTORY_ALGORITHM("metastore.trustmanagerfactory.algorithm", "hive.metastore.trustmanagerfactory.algorithm", "",
             "Metastore SSL certificate truststore algorithm."),
+    SSL_INCLUDE_PROTOCOLS("metastore.include.protocols", "hive.metastore.include.protocols", "",
+        "Comma-separated list of SSL protocols to include for the Metastore."),
+    SSL_INCLUDE_CIPHERSUITES("metastore.include.ciphersuites", "hive.metastore.include.ciphersuites", "",
+        "Colon-separated list of cipher suite names to include for the Metastore."),
     STATS_AUTO_GATHER("metastore.stats.autogather", "hive.stats.autogather", true,
         "A flag to gather statistics (only basic) automatically during the INSERT OVERWRITE command."),
     STATS_FETCH_BITVECTOR("metastore.stats.fetch.bitvector", "hive.stats.fetch.bitvector", false,
@@ -1526,7 +1547,8 @@ public class MetastoreConf {
             ACID_METRICS_TASK_CLASS + "," + ACID_METRICS_LOGGER_CLASS + "," +
             "org.apache.hadoop.hive.metastore.HiveProtoEventsCleanerTask" + ","
             + "org.apache.hadoop.hive.metastore.ScheduledQueryExecutionsMaintTask" + ","
-            + "org.apache.hadoop.hive.metastore.ReplicationMetricsMaintTask",
+            + "org.apache.hadoop.hive.metastore.ReplicationMetricsMaintTask" + ","
+            + "org.apache.hadoop.hive.metastore.StatisticsManagementTask",
         "Comma separated list of tasks that will be started in separate threads.  These will " +
             "always be started, regardless of whether the metastore is running in embedded mode " +
             "or in server mode.  They must implement " + METASTORE_TASK_THREAD_CLASS),
@@ -1993,6 +2015,8 @@ public class MetastoreConf {
         "The maximum non-native tables allowed per table type during collecting the summary."),
     METADATA_SUMMARY_NONNATIVE_THREADS("hive.metatool.summary.nonnative.threads", "hive.metatool.summary.nonnative.threads", 20,
         "Number of threads to be allocated for MetaToolTaskMetadataSummary for collecting the non-native table's summary."),
+    METASTORE_SUPPORT_ACID("metastore.support.acid", "hive.metastore.support.acid", true,
+        "Whether to support acid functionality in Hive metastore server."),
 
     // These are all values that we put here just for testing
     STR_TEST_ENTRY("test.str", "hive.test.str", "defaultval", "comment"),

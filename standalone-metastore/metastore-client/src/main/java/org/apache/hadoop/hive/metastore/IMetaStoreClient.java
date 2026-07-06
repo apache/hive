@@ -65,11 +65,12 @@ public interface IMetaStoreClient extends AutoCloseable {
 
   /**
    * Returns true if the current client is using an in process metastore (local metastore).
+   * Default false, as in real production the client should always connect to a remote meta service
    *
    * @return
    */
-  default boolean isLocalMetaStore(){
-    throw new UnsupportedOperationException("MetaStore client does not support checking if metastore is local");
+  default boolean isLocalMetaStore() {
+    return false;
   }
 
   /**

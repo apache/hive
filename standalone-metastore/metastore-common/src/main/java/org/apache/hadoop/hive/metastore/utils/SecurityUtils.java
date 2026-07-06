@@ -25,6 +25,9 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import javax.net.ssl.SSLContext;
+
+import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.security.DelegationTokenIdentifier;
 import org.apache.hadoop.hive.metastore.security.DelegationTokenSelector;
@@ -62,7 +65,6 @@ import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.security.KeyStore;
 
 import java.util.ArrayList;
@@ -70,6 +72,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class SecurityUtils {
   private static final Logger LOG = LoggerFactory.getLogger(SecurityUtils.class);
@@ -278,17 +282,61 @@ public class SecurityUtils {
     return new TServerSocket(serverAddress);
   }
 
+  public static String[] parseIncludeProtocols(String protocols) {
+    return Iterables.toArray(Splitter.on(",").trimResults().omitEmptyStrings()
+        .split(protocols), String.class);
+  }
+
+  public static String[] parseIncludeCipherSuites(String cipherSuites) {
+    return Iterables.toArray(Splitter.on(":").trimResults().omitEmptyStrings()
+        .split(cipherSuites), String.class);
+  }
+
+  private static String[] filterEnabledProtocols(String[] enabledProtocols,
+      String includeProtocols) throws TTransportException {
+    String[] filteredProtocols = enabledProtocols;
+    String[] parsedIncludeProtocols = parseIncludeProtocols(includeProtocols);
+    if (parsedIncludeProtocols.length > 0) {
+      Set<String> protocolsLowerCase = Arrays.stream(parsedIncludeProtocols).map(String::toLowerCase)
+          .collect(Collectors.toSet());
+      filteredProtocols = Arrays.stream(enabledProtocols).filter(protocol ->
+          protocolsLowerCase.contains(protocol.toLowerCase())).toArray(String[]::new);
+    }
+    if (filteredProtocols.length == 0) {
+      throw new TTransportException("No TLS protocols to enable. "
+          + "Protocols configured to include: " + Arrays.toString(parsedIncludeProtocols)
+          + ", Protocols allowed to enable: " + Arrays.toString(enabledProtocols));
+    }
+    return filteredProtocols;
+  }
+
+  private static TSSLTransportFactory.TSSLTransportParameters getSSLTransportParameters(boolean isKeyStore,
+      String storePath, String storePassword, String storeAlgorithm, String storeType, String includeCipherSuites) {
+    TSSLTransportFactory.TSSLTransportParameters params;
+    String[] parsedCipherSuites = parseIncludeCipherSuites(includeCipherSuites);
+    if (parsedCipherSuites.length > 0) {
+      params = new TSSLTransportFactory.TSSLTransportParameters("TLS", parsedCipherSuites);
+    } else {
+      params = new TSSLTransportFactory.TSSLTransportParameters();
+    }
+    if (isKeyStore) {
+      params.setKeyStore(storePath, storePassword, storeAlgorithm, storeType);
+    } else {
+      params.setTrustStore(storePath, storePassword, storeAlgorithm, storeType);
+      params.requireClientAuth(true);
+    }
+    return params;
+  }
+
   public static TServerSocket getServerSSLSocket(String hiveHost, int portNum, String keyStorePath,
-      String keyStorePassWord, String keyStoreType, String keyStoreAlgorithm, List<String> sslVersionBlacklist)
-      throws TTransportException, UnknownHostException {
-    TSSLTransportFactory.TSSLTransportParameters params =
-        new TSSLTransportFactory.TSSLTransportParameters();
-    String kStoreType = keyStoreType.isEmpty()? KeyStore.getDefaultType() : keyStoreType;
-    String kStoreAlgorithm = keyStoreAlgorithm.isEmpty()?
-            KeyManagerFactory.getDefaultAlgorithm() : keyStoreAlgorithm;
-    params.setKeyStore(keyStorePath, keyStorePassWord, kStoreAlgorithm, kStoreType);
+      String keyStorePassWord, String keyStoreType, String keyStoreAlgorithm, List<String> sslVersionBlacklist,
+      String includeProtocols, String includeCipherSuites) throws TTransportException {
+    TSSLTransportFactory.TSSLTransportParameters params = getSSLTransportParameters(true,
+        keyStorePath, keyStorePassWord,
+        keyStoreAlgorithm.isEmpty() ? KeyManagerFactory.getDefaultAlgorithm() : keyStoreAlgorithm,
+        keyStoreType.isEmpty() ? KeyStore.getDefaultType() : keyStoreType, includeCipherSuites);
     InetSocketAddress serverAddress;
-    if (hiveHost == null || hiveHost.isEmpty()) {
+    if (StringUtils.isEmpty(hiveHost)) {
       // Wildcard bind
       serverAddress = new InetSocketAddress(portNum);
     } else {
@@ -310,7 +358,12 @@ public class SecurityUtils {
           enabledProtocols.add(protocol);
         }
       }
-      sslServerSocket.setEnabledProtocols(enabledProtocols.toArray(new String[0]));
+      if (enabledProtocols.isEmpty()) {
+        throw new TTransportException("No TLS protocols to enable after discarding configured blacklist protocols. "
+            + "Protocols allowed to enable: " + Arrays.toString(sslServerSocket.getEnabledProtocols()));
+      }
+      sslServerSocket.setEnabledProtocols(filterEnabledProtocols(enabledProtocols.toArray(String[]::new),
+          includeProtocols));
       LOG.info("SSL Server Socket Enabled Protocols: "
           + Arrays.toString(sslServerSocket.getEnabledProtocols()));
     }
@@ -319,18 +372,16 @@ public class SecurityUtils {
 
   public static TTransport getSSLSocket(String host, int port, int socketTimeout, int connectionTimeout,
       String trustStorePath, String trustStorePassWord, String trustStoreType,
-      String trustStoreAlgorithm) throws TTransportException {
-    TSSLTransportFactory.TSSLTransportParameters params =
-        new TSSLTransportFactory.TSSLTransportParameters();
-    String tStoreType = trustStoreType.isEmpty()? KeyStore.getDefaultType() : trustStoreType;
-    String tStoreAlgorithm = trustStoreAlgorithm.isEmpty()?
-        TrustManagerFactory.getDefaultAlgorithm() : trustStoreAlgorithm;
-    params.setTrustStore(trustStorePath, trustStorePassWord,
-        tStoreAlgorithm, tStoreType);
-    params.requireClientAuth(true);
+      String trustStoreAlgorithm, String includeProtocols, String includeCipherSuites) throws TTransportException {
+    TSSLTransportFactory.TSSLTransportParameters params = getSSLTransportParameters(false,
+        trustStorePath, trustStorePassWord,
+        trustStoreAlgorithm.isEmpty() ? TrustManagerFactory.getDefaultAlgorithm() : trustStoreAlgorithm,
+        trustStoreType.isEmpty() ? KeyStore.getDefaultType() : trustStoreType, includeCipherSuites);
     // The underlying SSLSocket object is bound to host:port with the given SO_TIMEOUT and
     // connection timeout and SSLContext created with the given params
     TSocket tSSLSocket = TSSLTransportFactory.getClientSocket(host, port, socketTimeout, params);
+    SSLSocket sslSocket = (SSLSocket) (tSSLSocket.getSocket());
+    sslSocket.setEnabledProtocols(filterEnabledProtocols(sslSocket.getEnabledProtocols(), includeProtocols));
     tSSLSocket.setConnectTimeout(connectionTimeout);
     return getSSLSocketWithHttps(tSSLSocket);
   }
@@ -341,12 +392,16 @@ public class SecurityUtils {
    */
   public static THttpClient getThriftHttpsClient(String httpsUrl, String trustStorePath,
       String trustStorePasswd, String trustStoreAlgorithm, String trustStoreType,
+      String includeProtocols, String includeCipherSuites,
       HttpClientBuilder underlyingHttpClientBuilder) throws TTransportException, IOException,
       KeyStoreException, NoSuchAlgorithmException, CertificateException,
       KeyManagementException {
     Preconditions.checkNotNull(underlyingHttpClientBuilder, "httpClientBuilder should not be null");
     if (trustStoreType == null || trustStoreType.isEmpty()) {
       trustStoreType = KeyStore.getDefaultType();
+    }
+    if (trustStoreAlgorithm.isEmpty()) {
+      trustStoreAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
     }
     KeyStore sslTrustStore = KeyStore.getInstance(trustStoreType);
     try (FileInputStream fis = new FileInputStream(trustStorePath)) {
@@ -356,8 +411,18 @@ public class SecurityUtils {
     SSLContext sslContext =
         SSLContexts.custom().setTrustManagerFactoryAlgorithm(trustStoreAlgorithm).
             loadTrustMaterial(sslTrustStore, null).build();
+    String[] protocols = null;
+    String[] parsedProtocols = parseIncludeProtocols(includeProtocols);
+    if (parsedProtocols.length > 0) {
+      protocols = parsedProtocols;
+    }
+    String[] ciphers = null;
+    String[] parsedCipherSuites = parseIncludeCipherSuites(includeCipherSuites);
+    if (parsedCipherSuites.length > 0) {
+      ciphers = parsedCipherSuites;
+    }
     SSLConnectionSocketFactory socketFactory =
-        new SSLConnectionSocketFactory(sslContext, new DefaultHostnameVerifier(null));
+        new SSLConnectionSocketFactory(sslContext, protocols, ciphers, new DefaultHostnameVerifier(null));
     final Registry<ConnectionSocketFactory> registry =
         RegistryBuilder.<ConnectionSocketFactory> create().register("https", socketFactory)
             .build();

@@ -27,6 +27,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.DagUtils;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
@@ -74,18 +75,21 @@ public final class LlapHiveUtils {
     return part;
   }
 
-  public static CacheTag getDbAndTableNameForMetrics(Path path, boolean includeParts,
-      PartitionDesc part) {
-
-    // Fallback to legacy cache tag creation logic.
+  /**
+   * Builds a {@link CacheTag} for the given path and partition descriptor.
+   * The catalog name is derived from the {@link PartitionDesc} when available, falling back
+   * to {@link Warehouse#DEFAULT_CATALOG_NAME} when {@code part} is null.
+   */
+  public static CacheTag getCacheTag(Path path, boolean includeParts, PartitionDesc part) {
     if (part == null) {
-      return CacheTag.build(LlapUtil.getDbAndTableNameForMetrics(path, includeParts));
+      return CacheTag.build(
+          Warehouse.DEFAULT_CATALOG_NAME, LlapUtil.getDbAndTableNameForMetrics(path, includeParts));
     }
-
+    String catalogName = part.getCatalogName();
     if (!includeParts || !part.isPartitioned()) {
-      return CacheTag.build(part.getTableName());
+      return CacheTag.build(catalogName, part.getTableName());
     } else {
-      return CacheTag.build(part.getTableName(), part.getPartSpec());
+      return CacheTag.build(catalogName, part.getTableName(), part.getPartSpec());
     }
   }
 

@@ -26,6 +26,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -62,6 +63,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
+import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
@@ -113,6 +115,8 @@ import javax.management.MBeanInfo;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETENTION_TIME;
+
 /**
  * Super class for all of the compactor test modules.
  */
@@ -143,8 +147,12 @@ public abstract class CompactorTest {
     MetastoreConf.setBoolVar(conf, ConfVars.COMPACTOR_INITIATOR_ON, true);
     MetastoreConf.setBoolVar(conf, ConfVars.COMPACTOR_CLEANER_ON, true);
     MetastoreConf.setBoolVar(conf, ConfVars.TXN_USE_MIN_HISTORY_WRITE_ID, useMinHistoryWriteId());
+    TxnHandler.ConfVars.setUseMinHistoryWriteId(useMinHistoryWriteId());
     MetastoreConf.setVar(conf, ConfVars.COMPACTOR_INITIATOR_TABLE_OPTIMIZERS,
         "org.apache.hadoop.hive.ql.txn.compactor.AcidTableOptimizer");
+    if (useMinHistoryWriteId()) {
+      HiveConf.setTimeVar(conf, HIVE_COMPACTOR_CLEANER_RETENTION_TIME, 0, TimeUnit.SECONDS);
+    }
     // Set this config to true in the base class, there are extended test classes which set this config to false.
     MetastoreConf.setBoolVar(conf, ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER, true);
     TestTxnDbUtil.setConfValues(conf);
@@ -171,6 +179,12 @@ public abstract class CompactorTest {
 
   protected void startCleaner() throws Exception {
     runOneLoopOfCompactorThread(CompactorThreadType.CLEANER);
+  }
+
+  void startCleaner(long retentionTime, TimeUnit timeUnit) throws Exception {
+    HiveConf.setTimeVar(conf,
+        HIVE_COMPACTOR_CLEANER_RETENTION_TIME, retentionTime, timeUnit);
+    startCleaner();
   }
 
   protected void runAcidMetricService() {
@@ -388,7 +402,7 @@ public abstract class CompactorTest {
         txnHandler.commitTxn(new CommitTxnRequest(tid));
       } else if (open.contains(tid) && useMinHistoryWriteId()){
         txnHandler.addWriteIdsToMinHistory(tid,
-          Collections.singletonMap(dbName + "." + tblName, minOpenWriteId));
+            Map.of(dbName + "." + tblName, minOpenWriteId));
       }
     }
   }
@@ -754,20 +768,27 @@ public abstract class CompactorTest {
     ci.runAs = rqst.getRunas() == null ? System.getProperty("user.name") : rqst.getRunas();
 
     long compactorTxnId = openTxn(TxnType.COMPACTION);
+    String fullTableName = ci.getFullTableName().toLowerCase();
 
     // Need to create a valid writeIdList to set the highestWriteId in ci
     ValidTxnList validTxnList = TxnCommonUtils.createValidReadTxnList(
-        txnHandler.getOpenTxns(Collections.singletonList(TxnType.READ_ONLY)), compactorTxnId);
+        txnHandler.getOpenTxns(List.of(TxnType.READ_ONLY)), compactorTxnId);
 
-    GetValidWriteIdsRequest writeIdsRequest = new GetValidWriteIdsRequest(
-        Collections.singletonList(
-            ci.getFullTableName().toLowerCase()));
+    GetValidWriteIdsRequest writeIdsRequest = new GetValidWriteIdsRequest(List.of(fullTableName));
     writeIdsRequest.setValidTxnList(validTxnList.writeToString());
 
     // with this ValidWriteIdList is capped at whatever HWM validTxnList has
     ValidCompactorWriteIdList tblValidWriteIds = TxnUtils.createValidCompactWriteIdList(
         txnHandler.getValidWriteIds(writeIdsRequest).getTblValidWriteIds()
             .getFirst());
+
+    if (useMinHistoryWriteId()) {
+      ValidTxnWriteIdList txnWriteIds = new ValidTxnWriteIdList(compactorTxnId);
+      txnWriteIds.addTableValidWriteIdList(tblValidWriteIds);
+
+      txnHandler.addWriteIdsToMinHistory(compactorTxnId,
+          Map.of(fullTableName, txnWriteIds.getMinOpenWriteId(fullTableName)));
+    }
 
     ci.highestWriteId = tblValidWriteIds.getHighWatermark();
     txnHandler.updateCompactorState(ci, compactorTxnId);

@@ -18,11 +18,9 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -37,7 +35,7 @@ public class PrunedPartitionList {
   private final Table source;
 
   /** Key to identify this partition list. */
-  private final Optional<String> ppListKey;
+  private final String ppListKey;
 
   /** Partitions that either satisfy the partition criteria, or may satisfy it. */
   private final Set<Partition> partitions;
@@ -56,7 +54,7 @@ public class PrunedPartitionList {
   public PrunedPartitionList(Table source, String key, Set<Partition> partitions,
       List<String> referred, boolean hasUnknowns) {
     this.source = Objects.requireNonNull(source);
-    this.ppListKey = Optional.ofNullable(key);
+    this.ppListKey = key;
     this.referred = Objects.requireNonNull(referred);
     this.partitions = Objects.requireNonNull(partitions);
     this.hasUnknowns = hasUnknowns;
@@ -66,7 +64,7 @@ public class PrunedPartitionList {
     return source;
   }
 
-  public Optional<String> getKey() {
+  public String getKey() {
     return ppListKey;
   }
 
@@ -82,7 +80,7 @@ public class PrunedPartitionList {
    * @return all partitions.
    */
   public List<Partition> getNotDeniedPartns() {
-    return Collections.unmodifiableList(new ArrayList<>(partitions));
+    return List.copyOf(partitions);
   }
 
   /**

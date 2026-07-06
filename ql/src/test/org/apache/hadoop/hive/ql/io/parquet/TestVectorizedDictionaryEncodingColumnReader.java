@@ -96,4 +96,19 @@ public class TestVectorizedDictionaryEncodingColumnReader extends VectorizedColu
     decimalRead(isDictionaryEncoding);
     stringReadDecimal(isDictionaryEncoding);
   }
+
+  @Test
+  public void testDecimal64Read() throws Exception {
+    decimal64Read(isDictionaryEncoding);
+  }
+
+  @Test
+  public void testDecimal64ReadInt32() throws Exception {
+    decimal64ReadInt32();
+  }
+
+  @Test
+  public void testDecimal64ReadInt64() throws Exception {
+    decimal64ReadInt64();
+  }
 }

@@ -1080,6 +1080,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     writeLock.lock();
     try {
       dagRunning = false;
+      if (metrics != null) {
+        metrics.setDagRunning(false);
+      }
       dagStats = new StatsPerDag();
       int pendingCount = 0;
       for (Entry<Priority, List<TaskInfo>> entry : pendingTasks.entrySet()) {
@@ -1173,6 +1176,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         metrics.setDagId(id.getDAGID().toString());
       }
       dagRunning = true;
+      if (metrics != null) {
+        metrics.setDagRunning(true);
+      }
     }
     dagStats.registerTaskRequest(hosts, racks);
     addPendingTask(taskInfo);
@@ -1194,6 +1200,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         metrics.setDagId(id.getDAGID().toString());
       }
       dagRunning = true;
+      if (metrics != null) {
+        metrics.setDagRunning(true);
+      }
     }
     dagStats.registerTaskRequest(null, null);
     addPendingTask(taskInfo);

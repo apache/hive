@@ -419,7 +419,7 @@ public abstract class AbstractFilterStringColLikeStringScalar extends VectorExpr
     FastUTF8Decoder decoder;
 
     public ComplexChecker(String pattern) {
-      compiledPattern = Pattern.compile(pattern);
+      compiledPattern = Pattern.compile(pattern, Pattern.DOTALL);
       matcher = compiledPattern.matcher("");
       decoder = new FastUTF8Decoder();
     }

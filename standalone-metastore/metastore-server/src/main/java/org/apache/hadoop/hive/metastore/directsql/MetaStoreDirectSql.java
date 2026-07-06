@@ -738,7 +738,7 @@ public class MetaStoreDirectSql {
     return Batchable.runBatched(batchSize, partNames, new Batchable<String, Partition>() {
       @Override
       public List<Partition> run(List<String> input) throws MetaException {
-        return getPartitionsByNames(catName, dbName, tblName, partNames, false, args);
+        return getPartitionsByNames(catName, dbName, tblName, input, false, args);
       }
     });
   }
@@ -1028,9 +1028,7 @@ public class MetaStoreDirectSql {
       throws MetaException {
     // Get most of the fields for the partNames provided.
     // Assume db and table names are the same for all partition, as provided in arguments.
-    String quotedPartNames = partNameList.stream()
-        .map(DirectSqlUpdatePart::quoteString)
-        .collect(Collectors.joining(","));
+    String partNameParams = makeParams(partNameList.size());
 
     String queryText =
         "select " + PARTITIONS + ".\"PART_ID\"," + SDS + ".\"SD_ID\"," + SDS + ".\"CD_ID\","
@@ -1043,11 +1041,18 @@ public class MetaStoreDirectSql {
         + " left outer join " + SERDES + " on " + SDS + ".\"SERDE_ID\" = " + SERDES + ".\"SERDE_ID\" "
         + " inner join " + TBLS + " on " + TBLS + ".\"TBL_ID\" = " + PARTITIONS + ".\"TBL_ID\" "
         + " inner join " + DBS + " on " + DBS + ".\"DB_ID\" = " + TBLS + ".\"DB_ID\" "
-        + " where \"PART_NAME\" in (" + quotedPartNames + ") "
+        + " where " + PARTITIONS + ".\"PART_NAME\" in (" + partNameParams + ") "
         + " and " + TBLS + ".\"TBL_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + DBS
         + ".\"CTLG_NAME\" = ? order by \"PART_NAME\" asc";
 
-    Object[] params = new Object[]{tblName, dbName, catName};
+    Object[] params = new Object[partNameList.size() + 3];
+    int i = 0;
+    for (String partName : partNameList) {
+      params[i++] = partName;
+    }
+    params[i++] = tblName;
+    params[i++] = dbName;
+    params[i] = catName;
     return getPartitionsByQuery(catName, dbName, tblName, queryText, params, isAcidTable, args);
   }
 

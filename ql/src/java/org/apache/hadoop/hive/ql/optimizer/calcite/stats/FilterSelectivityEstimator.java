@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import com.google.common.collect.BoundType;
 import com.google.common.collect.Range;
@@ -44,16 +45,17 @@ import org.apache.calcite.rex.RexUnknownAs;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.ImmutableBitSet;
+import org.apache.calcite.util.Sarg;
 import org.apache.datasketches.kll.KllFloatsSketch;
 import org.apache.datasketches.memory.Memory;
 import org.apache.datasketches.quantilescommon.QuantileSearchCriteria;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
-import org.apache.hadoop.hive.ql.optimizer.calcite.SearchTransformer;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
@@ -64,6 +66,8 @@ import org.slf4j.LoggerFactory;
 public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
 
   protected static final Logger LOG = LoggerFactory.getLogger(FilterSelectivityEstimator.class);
+
+  private static final double DEFAULT_COMPARISON_SELECTIVITY = 1.0 / 3.0;
 
   private final RelNode childRel;
   private final double  childCardinality;
@@ -114,7 +118,8 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       break;
     }
     case SEARCH:
-      return new SearchTransformer<>(rexBuilder, call, RexUnknownAs.FALSE).transform().accept(this);
+      selectivity = computeSearchSelectivity(call);
+      break;
     case OR: {
       selectivity = computeDisjunctionSelectivity(call);
       break;
@@ -159,7 +164,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     case GREATER_THAN_OR_EQUAL:
     case LESS_THAN:
     case GREATER_THAN: {
-      selectivity = computeRangePredicateSelectivity(call, call.getKind());
+      selectivity = computeComparisonPredicateSelectivity(call, call.getKind());
       break;
     }
 
@@ -405,8 +410,8 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     return lower > upper ? Range.closedOpen(0f, 0f) : Range.range(lower, BoundType.CLOSED, upper, upperType);
   }
 
-  private double computeRangePredicateSelectivity(RexCall call, SqlKind op) {
-    double defaultSelectivity = ((double) 1 / (double) 3);
+  private double computeComparisonPredicateSelectivity(RexCall call, SqlKind op) {
+    double defaultSelectivity = DEFAULT_COMPARISON_SELECTIVITY;
     if (!(childRel instanceof HiveTableScan)) {
       return defaultSelectivity;
     }
@@ -440,34 +445,56 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     boundaryValues[boundaryIdx] = value;
     inclusive[boundaryIdx] = openBound ? BoundType.OPEN : BoundType.CLOSED;
     Range<Float> boundaries = Range.range(boundaryValues[0], inclusive[0], boundaryValues[1], inclusive[1]);
-
-    // extract the column index from the other operator
-    final HiveTableScan scan = (HiveTableScan) childRel;
     int inputRefOpIndex = 1 - literalOpIdx;
     RexNode node = operands.get(inputRefOpIndex);
-    if (isRemovableCast(node, scan)) {
-      Range<Float> typeRange = getRangeOfType(node.getType());
-      boundaries = adjustRangeToType(boundaries, node.getType(), typeRange);
+    return computeRangePredicateSelectivity(() -> defaultSelectivity, node, boundaries);
+  }
 
-      node = RexUtil.removeCast(node);
+  private Double computeRangePredicateSelectivity(Supplier<Double> defaultSelectivity, RexNode operand,
+      Range<Float> boundaries) {
+    return computeRangePredicateSelectivity(defaultSelectivity, operand, boundaries, false);
+  }
+
+  /**
+   * Computes the selectivity of an operand in a certain range trying to leverage the histogram information.
+   * Returns the default selectivity if the histogram is not available.
+   */
+  private Double computeRangePredicateSelectivity(Supplier<Double> defaultSelectivity, RexNode operand,
+      Range<Float> boundaries, boolean inverseBool /* true only for NOT_BETWEEN */) {
+    if (!(childRel instanceof HiveTableScan)) {
+      return defaultSelectivity.get();
+    }
+
+    final HiveTableScan scan = (HiveTableScan) childRel;
+    Range<Float> typeRange = inverseBool ? Range.closed(Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY) : null;
+    if (isRemovableCast(operand, scan)) {
+      typeRange = getRangeOfType(operand.getType());
+      boundaries = adjustRangeToType(boundaries, operand.getType(), typeRange);
+      operand = RexUtil.removeCast(operand);
     }
 
     int inputRefIndex = -1;
-    if (node.getKind().equals(SqlKind.INPUT_REF)) {
-      inputRefIndex = ((RexInputRef) node).getIndex();
+    if (operand.getKind().equals(SqlKind.INPUT_REF)) {
+      inputRefIndex = ((RexInputRef) operand).getIndex();
     }
 
     if (inputRefIndex < 0) {
-      return defaultSelectivity;
+      return defaultSelectivity.get();
     }
 
     final List<ColStatistics> colStats = scan.getColStat(Collections.singletonList(inputRefIndex));
     if (colStats.isEmpty() || !isHistogramAvailable(colStats.get(0))) {
-      return defaultSelectivity;
+      return defaultSelectivity.get();
     }
 
     final KllFloatsSketch kll = KllFloatsSketch.heapify(Memory.wrap(colStats.get(0).getHistogram()));
     double rawSelectivity = rangedSelectivity(kll, boundaries);
+    if (inverseBool) {
+      // when inverseBool == true, this is a NOT_BETWEEN and selectivity must be inverted
+      // if there's a cast, the inversion is with respect to its codomain (range of the values of the cast)
+      double typeRangeSelectivity = rangedSelectivity(kll, typeRange);
+      rawSelectivity = typeRangeSelectivity - rawSelectivity;
+    }
     return scaleSelectivityToNullableValues(kll, rawSelectivity, scan);
   }
 
@@ -511,7 +538,6 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     Optional<Float> rightLiteral = extractLiteral(operands.get(3));
 
     if (hasLiteralBool && leftLiteral.isPresent() && rightLiteral.isPresent()) {
-      final HiveTableScan scan = (HiveTableScan) childRel;
       float leftValue = leftLiteral.get();
       float rightValue = rightLiteral.get();
 
@@ -522,36 +548,9 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       }
 
       Range<Float> rangeBoundaries = makeRange(leftValue, rightValue, BoundType.CLOSED);
-      Range<Float> typeBoundaries = inverseBool ? Range.closed(Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY) : null;
-
       RexNode expr = operands.get(1); // expr to be checked by the BETWEEN
-      if (isRemovableCast(expr, scan)) {
-        typeBoundaries = getRangeOfType(expr.getType());
-        rangeBoundaries = adjustRangeToType(rangeBoundaries, expr.getType(), typeBoundaries);
-        expr = RexUtil.removeCast(expr);
-      }
-
-      int inputRefIndex = -1;
-      if (expr.getKind().equals(SqlKind.INPUT_REF)) {
-        inputRefIndex = ((RexInputRef) expr).getIndex();
-      }
-
-      if (inputRefIndex < 0) {
-        return computeFunctionSelectivity(call);
-      }
-
-      final List<ColStatistics> colStats = scan.getColStat(Collections.singletonList(inputRefIndex));
-      if (!colStats.isEmpty() && isHistogramAvailable(colStats.get(0))) {
-        final KllFloatsSketch kll = KllFloatsSketch.heapify(Memory.wrap(colStats.get(0).getHistogram()));
-        double rawSelectivity = rangedSelectivity(kll, rangeBoundaries);
-        if (inverseBool) {
-          // when inverseBool == true, this is a NOT_BETWEEN and selectivity must be inverted
-          // if there's a cast, the inversion is with respect to its codomain (range of the values of the cast)
-          double typeRangeSelectivity = rangedSelectivity(kll, typeBoundaries);
-          rawSelectivity = typeRangeSelectivity - rawSelectivity;
-        }
-        return scaleSelectivityToNullableValues(kll, rawSelectivity, scan);
-      }
+      return computeRangePredicateSelectivity(() -> computeFunctionSelectivity(call), expr, rangeBoundaries,
+          inverseBool);
     }
     return computeFunctionSelectivity(call);
   }
@@ -603,6 +602,106 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     return Optional.of(value);
   }
 
+  private double computeSearchSelectivity(RexCall search) {
+    return new SearchSelectivityHelper<>(search).compute();
+  }
+
+  /**
+   * Auxiliary class to compute the selectivity of a SEARCH expression.
+   */
+  private final class SearchSelectivityHelper<C extends Comparable<C>> {
+    private final RexNode ref;
+    private final Sarg<C> sarg;
+    private final RelDataType operandType;
+
+    private SearchSelectivityHelper(RexCall search) {
+      ref = search.getOperands().get(0);
+      RexLiteral literal = (RexLiteral) search.operands.get(1);
+      sarg = Objects.requireNonNull(literal.getValueAs(Sarg.class), "Sarg");
+      operandType = literal.getType();
+    }
+
+    private RexNode makeLiteral(C value) {
+      return rexBuilder.makeLiteral(value, operandType, true, true);
+    }
+
+    private double compute() {
+      final List<RexNode> inLiterals = new ArrayList<>();
+      final List<Double> rangeSelectivities = new ArrayList<>();
+      for (Range<C> range : sarg.rangeSet.asRanges()) {
+        if (!range.hasLowerBound() && !range.hasUpperBound()) {
+          return 1.0; // "all" range
+        }
+        processRangeSelectivity(range, rangeSelectivities, inLiterals);
+      }
+
+      final List<Double> searchSelectivities = new ArrayList<>();
+      if (!rangeSelectivities.isEmpty() && rangeSelectivities.stream().noneMatch(Objects::isNull)) {
+        // Aggregate all ranges selectivity, respecting the max value of 1
+        double total = Math.min(1.0, rangeSelectivities.stream().mapToDouble(Double::doubleValue).sum());
+        if (total == 1.0) {
+          return 1.0;
+        }
+        searchSelectivities.add(total);
+      } else {
+        searchSelectivities.addAll(rangeSelectivities);
+      }
+
+      if (!inLiterals.isEmpty()) {
+        if (inLiterals.size() == 1) {
+          searchSelectivities.add(rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, ref, inLiterals.get(0))
+              .accept(FilterSelectivityEstimator.this));
+        } else {
+          List<RexNode> operands = new ArrayList<>(inLiterals.size() + 1);
+          operands.add(ref);
+          operands.addAll(inLiterals);
+          searchSelectivities.add(rexBuilder.makeCall(HiveIn.INSTANCE, operands).accept(FilterSelectivityEstimator.this));
+        }
+      }
+
+      if (sarg.nullAs == RexUnknownAs.TRUE) {
+        searchSelectivities.add(
+            rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, ref).accept(FilterSelectivityEstimator.this));
+      }
+
+      return searchSelectivities.size() == 1 ? searchSelectivities.get(0) : computeDisjunctionSelectivity(searchSelectivities);
+    }
+
+    private void processRangeSelectivity(Range<C> range, List<Double> rangeSelectivities, List<RexNode> inLiterals) {
+      final boolean hasLower = range.hasLowerBound();
+      final boolean hasUpper = range.hasUpperBound();
+
+      final BoundType lowerBoundType = hasLower ? range.lowerBoundType() : BoundType.CLOSED;
+      final BoundType upperBoundType = hasUpper ? range.upperBoundType() : BoundType.CLOSED;
+
+      final RexNode lowerRex = hasLower ? makeLiteral(range.lowerEndpoint()) : null;
+      final RexNode upperRex = hasUpper ? makeLiteral(range.upperEndpoint()) : null;
+
+      // map missing bounds to infinity
+      final Optional<Float> lowerLiteral = hasLower ? extractLiteral(lowerRex) : Optional.of(Float.NEGATIVE_INFINITY);
+      final Optional<Float> upperLiteral = hasUpper ? extractLiteral(upperRex) : Optional.of(Float.POSITIVE_INFINITY);
+
+      // check for single value ranges
+      if (hasLower && hasUpper && lowerBoundType == BoundType.CLOSED && upperBoundType == BoundType.CLOSED
+          && lowerLiteral.equals(upperLiteral)) {
+        inLiterals.add(lowerRex);
+        return;
+      }
+
+      // map the range to a selectivity
+      final Supplier<Double> defaultSelectivity =
+          hasLower && hasUpper ? () -> computeFunctionSelectivity(List.of(ref, lowerRex, upperRex))
+              : () -> DEFAULT_COMPARISON_SELECTIVITY;
+
+      if (lowerLiteral.isEmpty() || upperLiteral.isEmpty()) {
+        rangeSelectivities.add(defaultSelectivity.get());
+      } else {
+        rangeSelectivities.add(computeRangePredicateSelectivity(defaultSelectivity, ref,
+            Range.range(lowerLiteral.get(), lowerBoundType, upperLiteral.get(), upperBoundType)));
+      }
+    }
+  }
+
   /**
    * NDV of "f1(x, y, z) != f2(p, q, r)" ->
    * "(maxNDV(x,y,z,p,q,r) - 1)/maxNDV(x,y,z,p,q,r)".
@@ -633,7 +732,11 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * @return
    */
   private Double computeFunctionSelectivity(RexCall call) {
-    Double tmpNDV = getMaxNDV(call);
+    return computeFunctionSelectivity(call.getOperands());
+  }
+
+  private Double computeFunctionSelectivity(List<RexNode> operands) {
+    Double tmpNDV = getMaxNDV(operands);
     if (tmpNDV == null) {
       // Could not be computed
       return null;
@@ -653,12 +756,20 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * @return
    */
   private Double computeDisjunctionSelectivity(RexCall call) {
+    List<Double> selectivityList = new ArrayList<>(call.getOperands().size());
+    for (RexNode dje : call.getOperands()) {
+      selectivityList.add(dje.accept(this));
+    }
+    return computeDisjunctionSelectivity(selectivityList);
+  }
+
+  private double computeDisjunctionSelectivity(List<Double> selectivityList) {
     Double tmpCardinality;
     Double tmpSelectivity;
     double selectivity = 1;
 
-    for (RexNode dje : call.getOperands()) {
-      tmpSelectivity = dje.accept(this);
+    for (Double sel : selectivityList) {
+      tmpSelectivity = sel;
       if (tmpSelectivity == null) {
         tmpSelectivity = 0.99;
       }
@@ -729,10 +840,14 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
   }
 
   private Double getMaxNDV(RexCall call) {
+    return getMaxNDV(call.getOperands());
+  }
+
+  private Double getMaxNDV(List<RexNode> operands) {
     Double tmpNDV;
     double maxNDV = 1.0;
     InputReferencedVisitor irv;
-    for (RexNode op : call.getOperands()) {
+    for (RexNode op : operands) {
       if (op instanceof RexInputRef) {
         tmpNDV = HiveRelMdDistinctRowCount.getDistinctRowCount(this.childRel, mq,
             ((RexInputRef) op).getIndex());

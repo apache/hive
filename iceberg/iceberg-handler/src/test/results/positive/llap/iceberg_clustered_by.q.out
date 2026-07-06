@@ -41,7 +41,6 @@ Table Parameters:
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"id\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"name\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"age\",\"required\":false,\"type\":\"int\"}]}
 	format-version      	2                   
-	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
 	numFiles            	#Masked#                   
 	numRows             	0                   
@@ -285,7 +284,6 @@ Table Parameters:
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"customer_id\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"order_id\",\"required\":false,\"type\":\"long\"},{\"id\":3,\"name\":\"product\",\"required\":false,\"type\":\"string\"}]}
 	format-version      	2                   
-	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
 	numFiles            	#Masked#                   
 	numRows             	0                   
@@ -496,7 +494,6 @@ Table Parameters:
 	current-snapshot-summary	{\"added-data-files\":\"2\",\"added-records\":\"2\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"2\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	#Masked#                   
 	numRows             	2                   

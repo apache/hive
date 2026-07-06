@@ -535,6 +535,9 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     Map<String, String> headers = new HashMap<>();
     String keyValuePairs = MetastoreConf.getVar(conf,
         MetastoreConf.ConfVars.METASTORE_CLIENT_ADDITIONAL_HEADERS);
+    if (keyValuePairs.isEmpty()) {
+      return headers;
+    }
     try {
       String[] headerKeyValues = keyValuePairs.split(",");
       for (String header : headerKeyValues) {
@@ -575,9 +578,11 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
         String trustStorePassword = MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PASSWORD);
         String trustStoreType = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_TYPE).trim();
         String trustStoreAlgorithm = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_TRUSTMANAGERFACTORY_ALGORITHM).trim();
+        String includeProtocols = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_INCLUDE_PROTOCOLS);
+        String includeCipherSuites = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_INCLUDE_CIPHERSUITES);
         tHttpClient =
             SecurityUtils.getThriftHttpsClient(httpUrl, trustStorePath, trustStorePassword, trustStoreAlgorithm,
-                trustStoreType, httpClientBuilder);
+                trustStoreType, includeProtocols, includeCipherSuites, httpClientBuilder);
       } else {
         tHttpClient = new THttpClient(httpUrl, httpClientBuilder.build());
       }
@@ -659,8 +664,11 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
             MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_TYPE).trim();
         String trustStoreAlgorithm =
             MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_TRUSTMANAGERFACTORY_ALGORITHM).trim();
+        String includeProtocols = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_INCLUDE_PROTOCOLS);
+        String includeCipherSuites = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_INCLUDE_CIPHERSUITES);
         binaryTransport = SecurityUtils.getSSLSocket(store.getHost(), store.getPort(), clientSocketTimeout,
-            connectionTimeout, trustStorePath, trustStorePassword, trustStoreType, trustStoreAlgorithm);
+            connectionTimeout, trustStorePath, trustStorePassword, trustStoreType, trustStoreAlgorithm,
+            includeProtocols, includeCipherSuites);
       } else {
         binaryTransport = new TSocket(new TConfiguration(), store.getHost(), store.getPort(),
             clientSocketTimeout, connectionTimeout);
@@ -827,7 +835,6 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     TTransport transport = underlyingTransport;
     boolean useFramedTransport =
         MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_THRIFT_FRAMED_TRANSPORT);
-    boolean useSSL = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_SSL);
     boolean useSasl = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_THRIFT_SASL);
     String clientAuthMode = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_AUTH_MODE);
     boolean usePasswordAuth = false;
@@ -865,9 +872,9 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     } else if (useSasl) {
       // Wrap thrift connection with SASL for secure connection.
       try {
-        HadoopThriftAuthBridge.Client authBridge =
-            HadoopThriftAuthBridge.getBridge().createClient();
-
+        HadoopThriftAuthBridge bridge = HadoopThriftAuthBridge.getBridge();
+        Map<String, String> saslProperties = bridge.getHadoopSaslProperties(conf);
+        HadoopThriftAuthBridge.Client authBridge = bridge.createClient();
         // check if we should use delegation tokens to authenticate
         // the call below gets hold of the tokens if they are set up by hadoop
         // this should happen on the map/reduce tasks if the client added the
@@ -881,15 +888,14 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
           LOG.debug("HMSC::open(): Found delegation token. Creating DIGEST-based thrift connection.");
           // authenticate using delegation tokens via the "DIGEST" mechanism
           transport = authBridge.createClientTransport(null, store.getHost(),
-              "DIGEST", tokenStrForm, underlyingTransport,
-              MetaStoreUtils.getMetaStoreSaslProperties(conf, useSSL));
+              "DIGEST", tokenStrForm, underlyingTransport, saslProperties);
         } else {
           LOG.debug("HMSC::open(): Could not find delegation token. Creating KERBEROS-based thrift connection.");
           String principalConfig =
               MetastoreConf.getVar(conf, MetastoreConf.ConfVars.KERBEROS_PRINCIPAL);
           transport = authBridge.createClientTransport(
               principalConfig, store.getHost(), "KERBEROS", null,
-              underlyingTransport, MetaStoreUtils.getMetaStoreSaslProperties(conf, useSSL));
+              underlyingTransport, saslProperties);
         }
       } catch (IOException ioe) {
         LOG.error("Failed to create client transport", ioe);

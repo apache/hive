@@ -99,6 +99,8 @@
     <maven.exec.plugin.version>3.1.0</maven.exec.plugin.version>
     <maven.versions.plugin.version>2.16.0</maven.versions.plugin.version>
     <maven.shade.plugin.version>3.6.0</maven.shade.plugin.version>
+    <josdk.version>5.3.4</josdk.version>
+    <fabric8.version>7.7.0</fabric8.version>
     <maven.surefire.plugin.version>3.5.3</maven.surefire.plugin.version>
     <maven.cyclonedx.plugin.version>2.7.10</maven.cyclonedx.plugin.version>
     <maven.license.plugin.version>2.3.0</maven.license.plugin.version>
@@ -112,10 +114,10 @@
     <avro.version>1.12.0</avro.version>
     <bcprov-jdk18on.version>1.82</bcprov-jdk18on.version>
     <calcite.version>1.33.0</calcite.version>
-    <datanucleus-api-jdo.version>6.0.3</datanucleus-api-jdo.version>
-    <datanucleus-core.version>6.0.10</datanucleus-core.version>
+    <datanucleus-api-jdo.version>6.0.5</datanucleus-api-jdo.version>
+    <datanucleus-core.version>6.0.11</datanucleus-core.version>
     <datanucleus-jdo.version>3.2.0-release</datanucleus-jdo.version>
-    <datanucleus-rdbms.version>6.0.10</datanucleus-rdbms.version>
+    <datanucleus-rdbms.version>6.0.11</datanucleus-rdbms.version>
     <checkstyle.version>11.1.0</checkstyle.version>
     <commons-cli.version>1.5.0</commons-cli.version>
     <commons-codec.version>1.15</commons-codec.version>

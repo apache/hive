@@ -31,7 +31,6 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Pattern;
-import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.tree.Tree;
 import org.antlr.runtime.tree.TreeVisitor;
@@ -132,7 +131,6 @@ import org.apache.calcite.util.CompositeList;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.ImmutableNullableList;
 import org.apache.calcite.util.Pair;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.CteSuggesterType;
@@ -144,7 +142,6 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableAnalyzer;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -319,7 +316,6 @@ import org.apache.hadoop.hive.ql.parse.type.TypeCheckCtx;
 import org.apache.hadoop.hive.ql.parse.type.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.mapper.EmptyStatsSource;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
@@ -338,7 +334,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.joda.time.Interval;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
@@ -1041,59 +1036,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
   }
 
   @Override
-  boolean isCBOSupportedLateralView(ASTNode lateralView) {
-    // LATERAL VIEW OUTER not supported in CBO
-    return lateralView.getToken().getType() != HiveParser.TOK_LATERAL_VIEW_OUTER;
+  boolean isCBOSupportedLateralView() {
+    // Both LATERAL VIEW and LATERAL VIEW OUTER are supported in CBO.
+    return !this.conf.getBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP);
   }
 
   @Override
   boolean continueJoinMerge() {
     return !(runCBO && disableSemJoinReordering);
-  }
-
-  @Override
-  Table materializeCTE(String cteName, CTEClause cte) throws HiveException {
-
-    ASTNode createTable = new ASTNode(new ClassicToken(HiveParser.TOK_CREATETABLE));
-
-    ASTNode tableName = new ASTNode(new ClassicToken(HiveParser.TOK_TABNAME));
-    tableName.addChild(new ASTNode(new ClassicToken(HiveParser.Identifier, cteName)));
-
-    ASTNode temporary = new ASTNode(new ClassicToken(HiveParser.KW_TEMPORARY, MATERIALIZATION_MARKER));
-
-    createTable.addChild(tableName);
-    createTable.addChild(temporary);
-    createTable.addChild(cte.cteNode);
-
-    CreateTableAnalyzer analyzer = new CreateTableAnalyzer(queryState);
-    analyzer.initCtx(ctx);
-    analyzer.init(false);
-
-    // should share cte contexts
-    analyzer.aliasToCTEs.putAll(aliasToCTEs);
-
-    HiveOperation operation = queryState.getHiveOperation();
-    try {
-      analyzer.analyzeInternal(createTable);
-    } finally {
-      queryState.setCommandType(operation);
-    }
-
-    Table table = analyzer.tableDesc.toTable(conf);
-    Path location = table.getDataLocation();
-    try {
-      location.getFileSystem(conf).mkdirs(location);
-    } catch (IOException e) {
-      throw new HiveException(e);
-    }
-    table.setMaterializedTable(true);
-
-    LOG.info(cteName + " will be materialized into " + location);
-    cte.source = analyzer;
-
-    ctx.addMaterializedTable(cteName, table, getMaterializedTableStats(analyzer.getSinkOp()));
-
-    return table;
   }
 
   @Override
@@ -2980,7 +2930,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         leftRel = aliasToRel.get(leftTableAlias);
       } else if (SemanticAnalyzer.isJoinToken(left)) {
         leftRel = genJoinLogicalPlan(qb, left, aliasToRel, outerNameToPosMap, outerRR);
-      } else if (left.getToken().getType() == HiveParser.TOK_LATERAL_VIEW) {
+      } else if (isASTNodeLateralView(left)) {
         leftRel = genLateralViewPlans(qb, left, aliasToRel);
       } else {
         assert (false);
@@ -2994,7 +2944,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           || (right.getToken().getType() == HiveParser.TOK_PTBLFUNCTION)) {
         rightTableAlias = getTableAlias(right);
         rightRel = aliasToRel.get(rightTableAlias);
-      } else if (right.getToken().getType() == HiveParser.TOK_LATERAL_VIEW) {
+      } else if (isASTNodeLateralView(right)) {
         rightRel = genLateralViewPlans(qb, right, aliasToRel);
       }  else {
         assert (false);
@@ -3220,8 +3170,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
             fullyQualifiedTabName.add(tabMetaData.getDbName());
           }
           fullyQualifiedTabName.add(tabMetaData.getTableName());
-          if (tabMetaData.getSnapshotRef() != null) {
-            fullyQualifiedTabName.add(tabMetaData.getSnapshotRef());
+          // Include time-travel qualifier (snapshotRef / asOfVersion / asOfTimestamp)
+          // in the table identity so two scans at different snapshots stay distinct.
+          String qualifier = tabMetaData.getQualifier();
+          if (!qualifier.isEmpty()) {
+            fullyQualifiedTabName.add(qualifier);
           }
           optTable = new RelOptHiveTable(relOptSchema, relOptSchema.getTypeFactory(), fullyQualifiedTabName,
               rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
@@ -3374,7 +3327,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // next token is either the table alias name or another lateral view (which we will call
       // recursively)
-      RelNode inputRel = next.getToken().getType() == HiveParser.TOK_LATERAL_VIEW
+      RelNode inputRel = isASTNodeLateralView(next)
           ? genLateralViewPlans(qb, next, aliasToRel)
           : aliasToRel.get(getTableAlias(next));
 

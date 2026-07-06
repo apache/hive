@@ -34,7 +34,7 @@ public class TestTxnCommands2WithSplitUpdateAndVectorization extends TestTxnComm
   }
 
   @Override
-  void initHiveConf() {
+  protected void initHiveConf() {
     super.initHiveConf();
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
   }

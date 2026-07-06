@@ -1737,6 +1737,15 @@ public class HiveConf extends Configuration {
         "How many rows in the right-most join operand Hive should buffer before emitting the join result."),
     HIVE_JOIN_CACHE_SIZE("hive.join.cache.size", 25000,
         "How many rows in the joining tables (except the streaming table) should be cached in memory."),
+    HIVE_MERGE_JOIN_SKEW_THRESHOLD("hive.merge.join.skew.threshold", -1L,
+        "Maximum number of rows allowed per join key in a single sort-merge join task before a "
+        + "skew event is reported."),
+    HIVE_MERGE_JOIN_SKEW_ABORT("hive.merge.join.skew.abort", false,
+        "When set to true and the row count is equal to hive.merge.join.skew.threshold, the task will be aborted."),
+    HIVE_MERGE_JOIN_SKEW_CHECK_INTERVAL("hive.merge.join.skew.check.interval", 10000L,
+        "Number of rows added to a join-key group between consecutive skew checks. "
+        + "A lower value detects skew earlier but adds slightly more overhead. "
+        + "Only effective when hive.merge.join.skew.threshold is set to a positive value."),
     HIVE_PUSH_RESIDUAL_INNER("hive.join.inner.residual", false,
         "Whether to push non-equi filter predicates within inner joins. This can improve efficiency in "
         + "the evaluation of certain joins, since we will not be emitting rows which are thrown away by "
@@ -3856,6 +3865,10 @@ public class HiveConf extends Configuration {
         "SSL certificate keystore location for HiveServer2 WebUI."),
     HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PASSWORD("hive.server2.webui.keystore.password", "",
         "SSL certificate keystore password for HiveServer2 WebUI."),
+    HIVE_SERVER2_WEBUI_SSL_KEYSTORE_RELOAD_INTERVAL("hive.server2.webui.keystore.reload.interval", "0",
+        new TimeValidator(TimeUnit.MILLISECONDS),
+        "Interval at which HiveServer2 WebUI checks the SSL keystore file for changes; " +
+        "set to 0 to disable auto-reload. The default is 0."),
     HIVE_SERVER2_WEBUI_SSL_KEYSTORE_TYPE("hive.server2.webui.keystore.type", "",
         "SSL certificate keystore type for HiveServer2 WebUI."),
     HIVE_SERVER2_WEBUI_SSL_INCLUDE_CIPHERSUITES("hive.server2.webui.include.ciphersuites", "",
@@ -5102,6 +5115,11 @@ public class HiveConf extends Configuration {
     LLAP_ZK_REGISTRY_NAMESPACE("hive.llap.zk.registry.namespace", null,
         "In the LLAP ZooKeeper-based registry, overrides the ZK path namespace. Note that\n" +
         "using this makes the path management (e.g. setting correct ACLs) your responsibility."),
+    LLAP_CLUSTER_ROUTING_RULES("hive.llap.cluster.routing.rules", "",
+        "Comma-separated rules mapping users/groups to LLAP cluster names.\n" +
+        "Format: user:<name>=<cluster>,group:<name>=<cluster>,default=<cluster>.\n" +
+        "Per-cluster configs are read from hive.llap.cluster.<cluster>.sessions.namespace\n" +
+        "and hive.llap.cluster.<cluster>.registry.namespace."),
     // Note: do not rename to ..service.acl; Hadoop generates .hosts setting name from this,
     // resulting in a collision with existing hive.llap.daemon.service.hosts and bizarre errors.
     // These are read by Hadoop IPC, so you should check the usage and naming conventions (e.g.
@@ -5556,7 +5574,8 @@ public class HiveConf extends Configuration {
             "hive.iceberg.allow.datafiles.in.table.location.only," +
             "hive.hook.proto.base-directory," +
             "hive.rewrite.data.policy," +
-            "hive.query.history.enabled", // Query History service is initialized on HS2 startup (HIVE-29170)
+            "hive.query.history.enabled," + // Query History service is initialized on HS2 startup (HIVE-29170)
+            "hive.llap.cluster.routing.rules",
         "Comma separated list of configuration options which are immutable at runtime"),
     HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
         METASTORE_PWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname

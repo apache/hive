@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
@@ -614,6 +615,14 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
 
   }
 
+  private void validateIfAcidTablePermitted(Table table) throws MetaException {
+    if (!MetastoreConf.getBoolVar(hmsHandler.getConf(), ConfVars.METASTORE_SUPPORT_ACID) &&
+        TxnUtils.isTransactionalTable(table)) {
+      throw new MetaException("ACID tables are not permitted when the "
+          + ConfVars.METASTORE_SUPPORT_ACID.getHiveName() + " property is set to false");
+    }
+  }
+
   @Override
   public Table transformCreateTable(Table table, List<String> processorCapabilities, String processorId) throws MetaException {
     if (!defaultCatalog.equalsIgnoreCase(table.getCatName())) {
@@ -624,9 +633,10 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     Table newTable = new Table(table);
     LOG.info("Starting translation for CreateTable for processor " + processorId + " with " + processorCapabilities
         + " on table " + newTable.getTableName());
-    Map<String, String> params = table.getParameters();
+    Map<String, String> params = newTable.getParameters();
     if (params == null) {
       params = new HashMap<>();
+      newTable.setParameters(params);
     }
     String tableType = newTable.getTableType();
     String dbName = table.getDbName();
@@ -647,7 +657,6 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
         params.put(HiveMetaHook.EXTERNAL, "TRUE");
         params.put(EXTERNAL_TABLE_PURGE, "TRUE");
         params.put(HiveMetaHook.TRANSLATED_TO_EXTERNAL, "TRUE");
-        newTable.setParameters(params);
         LOG.info("Modified table params are:" + params.toString());
 
         if (getLocation(table) == null) {
@@ -663,6 +672,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
           // should we check tbl directory existence?
         }
       } else { // ACID table
+        validateIfAcidTablePermitted(newTable);
         // if the property 'EXTERNAL_TABLES_ONLY'='true' is set on the database, then creating managed/ACID tables are prohibited. See HIVE-25724 for more details.
         if (db.getParameters().containsKey(EXTERNALTABLESONLY) &&
                 db.getParameters().get(EXTERNALTABLESONLY).equalsIgnoreCase("true")) {
@@ -673,8 +683,8 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
           throw new MetaException("Processor has no capabilities, cannot create an ACID table.");
         }
 
-        newTable = validateTablePaths(table);
-        if (MetaStoreUtils.isInsertOnlyTableParam(table.getParameters())) { // MICRO_MANAGED Tables
+        validateTablePaths(newTable);
+        if (MetaStoreUtils.isInsertOnlyTableParam(newTable.getParameters())) { // MICRO_MANAGED Tables
           if (processorCapabilities.contains(HIVEMANAGEDINSERTWRITE)) {
             LOG.debug("Processor has required capabilities to be able to create INSERT-only tables");
             return newTable;
@@ -694,7 +704,8 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
       }
     } else if (TableType.EXTERNAL_TABLE.name().equals(tableType)) {
       LOG.debug("Table to be created is of type " + tableType);
-      newTable = validateTablePaths(table);
+      params.put(HiveMetaHook.EXTERNAL, "TRUE");
+      validateTablePaths(newTable);
     }
     LOG.info("Transformer returning table:" + newTable.toString());
     return newTable;
@@ -734,7 +745,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     LOG.info("Starting translation for Alter table for processor " + processorId + " with " + processorCapabilities
         + " on table " + newTable.getTableName());
 
-
+    validateIfAcidTablePermitted(newTable);
     if (tableLocationChanged(oldTable, newTable)) {
       validateTablePaths(newTable);
     }

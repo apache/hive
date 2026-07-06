@@ -1,0 +1,242 @@
+PREHOOK: query: CREATE TABLE showcrt_tab_src (val1 string COMMENT 'val	1', 
+                             val2 string COMMENT 'val
+                                                2', 
+                             val3 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@showcrt_tab_src
+POSTHOOK: query: CREATE TABLE showcrt_tab_src (val1 string COMMENT 'val	1', 
+                             val2 string COMMENT 'val
+                                                2', 
+                             val3 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@showcrt_tab_src
+PREHOOK: query: INSERT INTO showcrt_tab_src VALUES ('a1	', 'b1', 'c1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@showcrt_tab_src
+POSTHOOK: query: INSERT INTO showcrt_tab_src VALUES ('a1	', 'b1', 'c1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@showcrt_tab_src
+POSTHOOK: Lineage: showcrt_tab_src.val1 SCRIPT []
+POSTHOOK: Lineage: showcrt_tab_src.val2 SCRIPT []
+POSTHOOK: Lineage: showcrt_tab_src.val3 SCRIPT []
+PREHOOK: query: CREATE VIEW showcrt_tab_src_v AS SELECT * FROM showcrt_tab_src 
+	WHERE val1	= 'a1	'       
+	AND val2	= 'b1'
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@showcrt_tab_src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@showcrt_tab_src_v
+POSTHOOK: query: CREATE VIEW showcrt_tab_src_v AS SELECT * FROM showcrt_tab_src 
+	WHERE val1	= 'a1	'       
+	AND val2	= 'b1'
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@showcrt_tab_src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@showcrt_tab_src_v
+POSTHOOK: Lineage: showcrt_tab_src_v.val1 SIMPLE []
+POSTHOOK: Lineage: showcrt_tab_src_v.val2 SIMPLE []
+POSTHOOK: Lineage: showcrt_tab_src_v.val3 SIMPLE [(showcrt_tab_src)showcrt_tab_src.FieldSchema(name:val3, type:string, comment:null), ]
+PREHOOK: query: SHOW CREATE TABLE showcrt_tab_src_v
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@showcrt_tab_src_v
+POSTHOOK: query: SHOW CREATE TABLE showcrt_tab_src_v
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@showcrt_tab_src_v
+CREATE VIEW `showcrt_tab_src_v` AS SELECT `showcrt_tab_src`.`val1`, `showcrt_tab_src`.`val2`, `showcrt_tab_src`.`val3` FROM `default`.`showcrt_tab_src` 
+	WHERE `showcrt_tab_src`.`val1`	= 'a1	'       
+	AND `showcrt_tab_src`.`val2`	= 'b1'
+PREHOOK: query: SELECT * FROM showcrt_tab_src_v
+PREHOOK: type: QUERY
+PREHOOK: Input: default@showcrt_tab_src
+PREHOOK: Input: default@showcrt_tab_src_v
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM showcrt_tab_src_v
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@showcrt_tab_src
+POSTHOOK: Input: default@showcrt_tab_src_v
+#### A masked pattern was here ####
+a1		b1	c1
+PREHOOK: query: SHOW CREATE TABLE showcrt_tab_src
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@showcrt_tab_src
+POSTHOOK: query: SHOW CREATE TABLE showcrt_tab_src
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@showcrt_tab_src
+CREATE TABLE `showcrt_tab_src`(
+  `val1` string COMMENT 'val\t1', 
+  `val2` string COMMENT 'val\n                                                2', 
+  `val3` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: CREATE VIEW showcrt_tab_src_v2 AS SELECT 'before
+	after' AS col1
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@showcrt_tab_src_v2
+POSTHOOK: query: CREATE VIEW showcrt_tab_src_v2 AS SELECT 'before
+	after' AS col1
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@showcrt_tab_src_v2
+POSTHOOK: Lineage: showcrt_tab_src_v2.col1 SIMPLE []
+PREHOOK: query: SHOW CREATE TABLE showcrt_tab_src_v2
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@showcrt_tab_src_v2
+POSTHOOK: query: SHOW CREATE TABLE showcrt_tab_src_v2
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@showcrt_tab_src_v2
+CREATE VIEW `showcrt_tab_src_v2` AS SELECT 'before
+	after' AS `col1`
+PREHOOK: query: CREATE VIEW showcrt_tab_src_v3 AS SELECT '	a		b 	c		' AS col1
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@showcrt_tab_src_v3
+POSTHOOK: query: CREATE VIEW showcrt_tab_src_v3 AS SELECT '	a		b 	c		' AS col1
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@showcrt_tab_src_v3
+POSTHOOK: Lineage: showcrt_tab_src_v3.col1 SIMPLE []
+PREHOOK: query: SHOW CREATE TABLE showcrt_tab_src_v3
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@showcrt_tab_src_v3
+POSTHOOK: query: SHOW CREATE TABLE showcrt_tab_src_v3
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@showcrt_tab_src_v3
+CREATE VIEW `showcrt_tab_src_v3` AS SELECT '	a		b 	c		' AS `col1`
+PREHOOK: query: CREATE VIEW showcrt_tab_src_v4 AS SELECT 'a\\tb\tc' AS col1
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@showcrt_tab_src_v4
+POSTHOOK: query: CREATE VIEW showcrt_tab_src_v4 AS SELECT 'a\\tb\tc' AS col1
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@showcrt_tab_src_v4
+POSTHOOK: Lineage: showcrt_tab_src_v4.col1 SIMPLE []
+PREHOOK: query: SHOW CREATE TABLE showcrt_tab_src_v4
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@showcrt_tab_src_v4
+POSTHOOK: query: SHOW CREATE TABLE showcrt_tab_src_v4
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@showcrt_tab_src_v4
+CREATE VIEW `showcrt_tab_src_v4` AS SELECT 'a\\tb\tc' AS `col1`
+PREHOOK: query: CREATE VIEW showcrt_tab_src_v5 AS SELECT val1 FROM showcrt_tab_src WHERE val1 LIKE 'a%	'
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@showcrt_tab_src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@showcrt_tab_src_v5
+POSTHOOK: query: CREATE VIEW showcrt_tab_src_v5 AS SELECT val1 FROM showcrt_tab_src WHERE val1 LIKE 'a%	'
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@showcrt_tab_src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@showcrt_tab_src_v5
+POSTHOOK: Lineage: showcrt_tab_src_v5.val1 SIMPLE [(showcrt_tab_src)showcrt_tab_src.FieldSchema(name:val1, type:string, comment:val	1), ]
+PREHOOK: query: SHOW CREATE TABLE showcrt_tab_src_v5
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@showcrt_tab_src_v5
+POSTHOOK: query: SHOW CREATE TABLE showcrt_tab_src_v5
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@showcrt_tab_src_v5
+CREATE VIEW `showcrt_tab_src_v5` AS SELECT `showcrt_tab_src`.`val1` FROM `default`.`showcrt_tab_src` WHERE `showcrt_tab_src`.`val1` LIKE 'a%	'
+PREHOOK: query: CREATE VIEW showcrt_tab_src_v6 AS SELECT "Nested	'string	with	tab' "
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@showcrt_tab_src_v6
+POSTHOOK: query: CREATE VIEW showcrt_tab_src_v6 AS SELECT "Nested	'string	with	tab' "
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@showcrt_tab_src_v6
+POSTHOOK: Lineage: showcrt_tab_src_v6._c0 SIMPLE []
+PREHOOK: query: SHOW CREATE TABLE showcrt_tab_src_v6
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@showcrt_tab_src_v6
+POSTHOOK: query: SHOW CREATE TABLE showcrt_tab_src_v6
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@showcrt_tab_src_v6
+CREATE VIEW `showcrt_tab_src_v6` AS SELECT "Nested	'string	with	tab' "
+PREHOOK: query: SELECT * FROM showcrt_tab_src_v6
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@showcrt_tab_src_v6
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM showcrt_tab_src_v6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@showcrt_tab_src_v6
+#### A masked pattern was here ####
+Nested	'string	with	tab' 
+PREHOOK: query: CREATE TABLE showcrt_tab_src2 (`col	with	tab` string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@showcrt_tab_src2
+POSTHOOK: query: CREATE TABLE showcrt_tab_src2 (`col	with	tab` string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@showcrt_tab_src2
+PREHOOK: query: INSERT INTO showcrt_tab_src2 VALUES ('a1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@showcrt_tab_src2
+POSTHOOK: query: INSERT INTO showcrt_tab_src2 VALUES ('a1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@showcrt_tab_src2
+POSTHOOK: Lineage: showcrt_tab_src2.col	with	tab SCRIPT []
+PREHOOK: query: SELECT * FROM showcrt_tab_src2 WHERE `col	with	tab` = 'a1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@showcrt_tab_src2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM showcrt_tab_src2 WHERE `col	with	tab` = 'a1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@showcrt_tab_src2
+#### A masked pattern was here ####
+a1
+PREHOOK: query: CREATE VIEW showcrt_tab_src_v7 AS SELECT `col	with	tab` FROM showcrt_tab_src2 WHERE `col	with	tab` = 'a1'
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@showcrt_tab_src2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@showcrt_tab_src_v7
+POSTHOOK: query: CREATE VIEW showcrt_tab_src_v7 AS SELECT `col	with	tab` FROM showcrt_tab_src2 WHERE `col	with	tab` = 'a1'
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@showcrt_tab_src2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@showcrt_tab_src_v7
+POSTHOOK: Lineage: showcrt_tab_src_v7.col	with	tab SIMPLE []
+PREHOOK: query: SHOW CREATE TABLE showcrt_tab_src_v7
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@showcrt_tab_src_v7
+POSTHOOK: query: SHOW CREATE TABLE showcrt_tab_src_v7
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@showcrt_tab_src_v7
+CREATE VIEW `showcrt_tab_src_v7` AS SELECT `showcrt_tab_src2`.`col	with	tab` FROM `default`.`showcrt_tab_src2` WHERE `showcrt_tab_src2`.`col	with	tab` = 'a1'
+PREHOOK: query: SELECT * FROM showcrt_tab_src_v7
+PREHOOK: type: QUERY
+PREHOOK: Input: default@showcrt_tab_src2
+PREHOOK: Input: default@showcrt_tab_src_v7
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM showcrt_tab_src_v7
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@showcrt_tab_src2
+POSTHOOK: Input: default@showcrt_tab_src_v7
+#### A masked pattern was here ####
+a1

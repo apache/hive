@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.ql.txn.compactor.CompactorContext;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorFactory;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorPipeline;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil.ThrowingRunnable;
 import org.apache.hadoop.hive.ql.txn.compactor.QueryCompactor;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.Ref;
@@ -125,57 +126,56 @@ public class AcidCompactionService extends CompactionService {
   
   public Boolean compact(Table table, CompactionInfo ci) throws Exception {
 
-    try (CompactionTxn compactionTxn = new CompactionTxn()) {
+    if (ci.isRebalanceCompaction() && table.getSd().getNumBuckets() > 0) {
+      LOG.error("Cannot execute rebalancing compaction on bucketed tables.");
+      ci.errorMessage = "Cannot execute rebalancing compaction on bucketed tables.";
+      msc.markRefused(CompactionInfo.compactionInfoToStruct(ci));
+      return false;
+    }
 
-      if (ci.isRebalanceCompaction() && table.getSd().getNumBuckets() > 0) {
-        LOG.error("Cannot execute rebalancing compaction on bucketed tables.");
-        ci.errorMessage = "Cannot execute rebalancing compaction on bucketed tables.";
+    if (!ci.type.equals(CompactionType.REBALANCE) && ci.numberOfBuckets > 0) {
+      if (LOG.isWarnEnabled()) {
+        LOG.warn("Only the REBALANCE compaction accepts the number of buckets clause (CLUSTERED INTO {N} BUCKETS). " +
+            "Since the compaction request is {}, it will be ignored.", ci.type);
+      }
+    }
+
+    String fullTableName = TxnUtils.getFullTableName(table.getDbName(), table.getTableName());
+
+    // Find the partition we will be working with, if there is one.
+    Partition p;
+    try {
+      p = CompactorUtil.resolvePartition(conf, msc, ci.dbname, ci.tableName, ci.partName,
+          CompactorUtil.METADATA_FETCH_MODE.REMOTE);
+      if (p == null && ci.partName != null) {
+        ci.errorMessage = "Unable to find partition " + ci.getFullPartitionName() + ", assuming it was dropped and moving on.";
+        LOG.warn(ci.errorMessage + " Compaction info: {}", ci);
         msc.markRefused(CompactionInfo.compactionInfoToStruct(ci));
         return false;
       }
+    } catch (Exception e) {
+      LOG.error("Unexpected error during resolving partition.", e);
+      ci.errorMessage = e.getMessage();
+      msc.markFailed(CompactionInfo.compactionInfoToStruct(ci));
+      return false;
+    }
 
-      if (!ci.type.equals(CompactionType.REBALANCE) && ci.numberOfBuckets > 0) {
-        if (LOG.isWarnEnabled()) {
-          LOG.warn("Only the REBALANCE compaction accepts the number of buckets clause (CLUSTERED INTO {N} BUCKETS). " +
-              "Since the compaction request is {}, it will be ignored.", ci.type);
-        }
-      }
+    CompactorUtil.checkInterrupt(CLASS_NAME);
 
-      String fullTableName = TxnUtils.getFullTableName(table.getDbName(), table.getTableName());
+    // Find the appropriate storage descriptor
+    sd =  CompactorUtil.resolveStorageDescriptor(table, p);
 
-      // Find the partition we will be working with, if there is one.
-      Partition p;
-      try {
-        p = CompactorUtil.resolvePartition(conf, msc, ci.dbname, ci.tableName, ci.partName,
-            CompactorUtil.METADATA_FETCH_MODE.REMOTE);
-        if (p == null && ci.partName != null) {
-          ci.errorMessage = "Unable to find partition " + ci.getFullPartitionName() + ", assuming it was dropped and moving on.";
-          LOG.warn(ci.errorMessage + " Compaction info: {}", ci);
-          msc.markRefused(CompactionInfo.compactionInfoToStruct(ci));
-          return false;
-        }
-      } catch (Exception e) {
-        LOG.error("Unexpected error during resolving partition.", e);
-        ci.errorMessage = e.getMessage();
-        msc.markFailed(CompactionInfo.compactionInfoToStruct(ci));
-        return false;
-      }
+    if (isTableSorted(sd, ci)) {
+      return false;
+    }
 
-      CompactorUtil.checkInterrupt(CLASS_NAME);
+    if (ci.runAs == null) {
+      ci.runAs = TxnUtils.findUserToRunAs(sd.getLocation(), table, conf);
+    }
 
-      // Find the appropriate storage descriptor
-      sd =  CompactorUtil.resolveStorageDescriptor(table, p);
+    CompactorUtil.checkInterrupt(CLASS_NAME);
 
-      if (isTableSorted(sd, ci)) {
-        return false;
-      }
-
-      if (ci.runAs == null) {
-        ci.runAs = TxnUtils.findUserToRunAs(sd.getLocation(), table, conf);
-      }
-
-      CompactorUtil.checkInterrupt(CLASS_NAME);
-
+    try (CompactionTxn compactionTxn = new CompactionTxn()) {
       /*
        * we cannot have Worker use HiveTxnManager (which is on ThreadLocal) since
        * then the Driver would already have the an open txn but then this txn would have
@@ -198,6 +198,10 @@ public class AcidCompactionService extends CompactionService {
       txnWriteIds.addTableValidWriteIdList(tblValidWriteIds);
       conf.set(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY, txnWriteIds.toString());
 
+      // Register in MIN_HISTORY_WRITE_ID so the per-table cleaner admission blocks while open.
+      msc.addWriteIdsToMinHistory(compactionTxn.getTxnId(),
+          Map.of(fullTableName, txnWriteIds.getMinOpenWriteId(fullTableName)));
+
       ci.highestWriteId = tblValidWriteIds.getHighWatermark();
       //this writes TXN_COMPONENTS to ensure that if compactorTxnId fails, we keep metadata about
       //it until after any data written by it are physically removed
@@ -207,32 +211,30 @@ public class AcidCompactionService extends CompactionService {
 
       // Don't start compaction or cleaning if not necessary
       if (isDynPartAbort(table, ci)) {
-        msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
-        compactionTxn.wasSuccessful();
+        compactionTxn.commit(() ->
+            msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci)));
         return false;
       }
       dir = getAcidStateForWorker(ci, sd, tblValidWriteIds);
       if (!isEnoughToCompact(ci, dir, sd)) {
         if (needsCleaning(dir, sd)) {
-          msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
+          compactionTxn.commit(() ->
+              msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci)));
         } else {
           // do nothing
           ci.errorMessage = "None of the compaction thresholds met, compaction request is refused!";
           LOG.debug(ci.errorMessage + " Compaction info: {}", ci);
-          msc.markRefused(CompactionInfo.compactionInfoToStruct(ci));
+          compactionTxn.commit(() ->
+              msc.markRefused(CompactionInfo.compactionInfoToStruct(ci)));
         }
-        compactionTxn.wasSuccessful();
         return false;
       }
       if (!ci.isMajorCompaction() && !CompactorUtil.isMinorCompactionSupported(conf, table.getParameters(), dir)) {
         ci.errorMessage = "Query based Minor compaction is not possible for full acid tables having raw format " +
             "(non-acid) data in them.";
         LOG.error(ci.errorMessage + " Compaction info: {}", ci);
-        try {
-          msc.markRefused(CompactionInfo.compactionInfoToStruct(ci));
-        } catch (Throwable tr) {
-          LOG.error("Caught an exception while trying to mark compaction {} as failed: {}", ci, tr);
-        }
+        compactionTxn.commit(() ->
+            msc.markRefused(CompactionInfo.compactionInfoToStruct(ci)));
         return false;
       }
       CompactorUtil.checkInterrupt(CLASS_NAME);
@@ -240,12 +242,12 @@ public class AcidCompactionService extends CompactionService {
       try {
         failCompactionIfSetForTest();
 
-      /*
-      First try to run compaction via HiveQL queries.
-      Compaction for MM tables happens here, or run compaction for Crud tables if query-based compaction is enabled.
-      todo Find a more generic approach to collecting files in the same logical bucket to compact within the same
-      task (currently we're using Tez split grouping).
-      */
+        /*
+        First try to run compaction via HiveQL queries.
+        Compaction for MM tables happens here, or run compaction for Crud tables if query-based compaction is enabled.
+        todo Find a more generic approach to collecting files in the same logical bucket to compact within the same
+        task (currently we're using Tez split grouping).
+        */
         CompactorPipeline compactorPipeline = compactorFactory.getCompactorPipeline(table, conf, ci, msc);
         computeStats = (compactorPipeline.isMRCompaction() && collectMrStats) || collectGenericStats;
 
@@ -257,8 +259,8 @@ public class AcidCompactionService extends CompactionService {
 
         LOG.info("Completed " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + " in "
             + compactionTxn + ", marking as compacted.");
-        msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
-        compactionTxn.wasSuccessful();
+        compactionTxn.commit(() ->
+            msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci)));
 
         AcidMetricService.updateMetricsFromWorker(ci.dbname, ci.tableName, ci.partName, ci.type,
             dir.getCurrentDirectories().size(), dir.getDeleteDeltas().size(), conf, msc);
@@ -268,9 +270,6 @@ public class AcidCompactionService extends CompactionService {
       }
 
       return true;
-    } catch (Exception e) {
-      LOG.error("Caught exception in " + CLASS_NAME + " while trying to compact " + ci, e);
-      throw e;
     }
   }
 
@@ -342,7 +341,8 @@ public class AcidCompactionService extends CompactionService {
     private long lockId = 0;
 
     private TxnStatus status = TxnStatus.UNKNOWN;
-    private boolean successfulCompaction = false;
+    private boolean rollbackOnly = true;
+    private ThrowingRunnable<?> onCommitSuccess;
 
     /**
      * Try to open a new txn.
@@ -373,11 +373,9 @@ public class AcidCompactionService extends CompactionService {
       return CompactorUtil.createLockRequest(conf, ci, txnId, lockAndOpType.getKey(), lockAndOpType.getValue());
     }
 
-    /**
-     * Mark compaction as successful. This means the txn will be committed; otherwise it will be aborted.
-     */
-    void wasSuccessful() {
-      this.successfulCompaction = true;
+    void commit(ThrowingRunnable<?> postAction) {
+      this.rollbackOnly = false;
+      this.onCommitSuccess = postAction;
     }
 
     /**
@@ -392,8 +390,11 @@ public class AcidCompactionService extends CompactionService {
         //the transaction is about to close, we can stop heartbeating regardless of it's state
         CompactionHeartbeatService.getInstance(conf).stopHeartbeat(txnId);
       } finally {
-        if (successfulCompaction) {
+        if (!rollbackOnly) {
           commit();
+          if (onCommitSuccess != null) {
+            onCommitSuccess.run();
+          }
         } else {
           abort();
         }

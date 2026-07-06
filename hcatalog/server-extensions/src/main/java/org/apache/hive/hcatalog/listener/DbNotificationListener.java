@@ -1410,10 +1410,13 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
 
         event.setEventId(nextEventId);
         // Set the DB_NOTIFICATION_EVENT_ID for future reference by other listeners.
-        if (event.isSetEventId()) {
+        if (event.isSetEventId()
+            && !listenerEvent
+                .getParameters()
+                .containsKey(MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME)) {
           listenerEvent.putParameter(
-                  MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME,
-                  Long.toString(event.getEventId()));
+              MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME,
+              Long.toString(event.getEventId()));
         }
         nextNLId++;
         nextEventId++;
@@ -1431,17 +1434,19 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
    * Process this notification by adding it to metastore DB.
    *
    * @param event NotificationEvent is the object written to the metastore DB.
-   * @param listenerEvent ListenerEvent (from which NotificationEvent was based) used only to set the
-   *                      DB_NOTIFICATION_EVENT_ID_KEY_NAME for future reference by other listeners.
+   * @param listenerEvent ListenerEvent (from which NotificationEvent was based) used only to set
+   *     the DB_NOTIFICATION_EVENT_ID_KEY_NAME for future reference by other listeners.
    */
   private void process(NotificationEvent event, ListenerEvent listenerEvent) throws MetaException {
     event.setMessageFormat(msgEncoder.getMessageFormat());
-    LOG.debug("DbNotificationListener: Processing : {}:{}", event.getEventId(),
-        event.getMessage());
+    LOG.debug("DbNotificationListener: Processing : {}:{}", event.getEventId(), event.getMessage());
     HMSHandler.getMSForConf(conf).addNotificationEvent(event);
 
     // Set the DB_NOTIFICATION_EVENT_ID for future reference by other listeners.
-    if (event.isSetEventId()) {
+    if (event.isSetEventId()
+        && !listenerEvent
+            .getParameters()
+            .containsKey(MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME)) {
       listenerEvent.putParameter(
           MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME,
           Long.toString(event.getEventId()));

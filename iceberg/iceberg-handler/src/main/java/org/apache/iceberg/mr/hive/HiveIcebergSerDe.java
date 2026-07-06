@@ -143,7 +143,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     this.projectedSchema =
         projectedSchema(conf, serDeProperties.getProperty(Catalogs.NAME), tableSchema, jobConf);
 
-    if (!IcebergTableUtil.isFanoutEnabled(Maps.fromProperties(serDeProperties))) {
+    if (!IcebergTableUtil.isFanoutEnabled(serDeProperties::getProperty)) {
       // ClusteredWriter requires that records are ordered by partition keys.
       // Here we ensure that SortedDynPartitionOptimizer will kick in and do the sorting.
       HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_OPT_SORT_DYNAMIC_PARTITION_THRESHOLD, 1);

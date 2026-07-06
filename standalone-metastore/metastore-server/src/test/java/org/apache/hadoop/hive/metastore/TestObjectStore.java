@@ -23,6 +23,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -81,6 +82,8 @@ import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.model.MNotificationLog;
 import org.apache.hadoop.hive.metastore.model.MNotificationNextId;
 import org.apache.hadoop.hive.metastore.model.MTable;
+import org.apache.hadoop.hive.metastore.metastore.iface.TableStore;
+import org.apache.hadoop.hive.metastore.utils.DirectSqlConfigurator;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.RetryingExecutor;
 import org.junit.Assert;
@@ -149,6 +152,9 @@ public class TestObjectStore {
   private static final String USER1 = "testobjectstoreuser1";
   private static final String ROLE1 = "testobjectstorerole1";
   private static final String ROLE2 = "testobjectstorerole2";
+  private static final String SQLI_PART_NAME = "test_part_col=missing') OR 1=1 -- ";
+  private static final List<String> ALL_PART_NAMES =
+      Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2");
   private static final Logger LOG = LoggerFactory.getLogger(TestObjectStore.class.getName());
 
   private static final class LongSupplier implements Supplier<Long> {
@@ -783,23 +789,44 @@ public class TestObjectStore {
     createPartitionedTable(false, false, new HashSet<>());
     // query the partitions with JDO
     List<Partition> partitions;
-    try(AutoCloseable c = deadline()) {
-      partitions = objectStore.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
-          false, true, new GetPartitionsArgs.GetPartitionsArgsBuilder().max(10).build());
+    TableStore tableStore = objectStore.unwrap(TableStore.class);
+    try(AutoCloseable c = deadline();
+        AutoCloseable d = new DirectSqlConfigurator(objectStore.getConf(), false)) {
+      partitions = tableStore.getPartitions(new TableName(DEFAULT_CATALOG_NAME, DB1, TABLE1),
+          new GetPartitionsArgs.GetPartitionsArgsBuilder().max(10).build());
     }
     Assert.assertEquals(3, partitions.size());
 
     // drop partitions with directSql
-    try(AutoCloseable c = deadline()) {
-      objectStore.dropPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
-          Arrays.asList("test_part_col=a0", "test_part_col=a1"), true, false);
+    try(AutoCloseable c = deadline();
+        AutoCloseable d = new DirectSqlConfigurator(objectStore.getConf(), true)) {
+      tableStore.dropPartitions(new TableName(DEFAULT_CATALOG_NAME, DB1, TABLE1),
+          Arrays.asList("test_part_col=a0", "test_part_col=a1"));
     }
-    try (AutoCloseable c = deadline()) {
+    try (AutoCloseable c = deadline();
+         AutoCloseable d = new DirectSqlConfigurator(objectStore.getConf(), false)) {
       // query the partitions with JDO, checking the cache is not causing any problem
-      partitions = objectStore.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1, false, true,
+      partitions = tableStore.getPartitions(new TableName(DEFAULT_CATALOG_NAME, DB1, TABLE1),
           new GetPartitionsArgs.GetPartitionsArgsBuilder().max(10).build());
     }
     Assert.assertEquals(1, partitions.size());
+  }
+
+  @Test
+  public void testDirectSQLDropPartitionsRejectsSqlInjectionInPartName()
+      throws Exception {
+    createPartitionedTable(false, false, new HashSet<>());
+
+    try (DirectSqlConfigurator configurator = new DirectSqlConfigurator(conf, true)) {
+      objectStore.unwrap(TableStore.class).dropPartitions(new TableName(DEFAULT_CATALOG_NAME, DB1, TABLE1),
+          Collections.singletonList(SQLI_PART_NAME));
+    }
+
+    List<Partition> partitions;
+    try (AutoCloseable c = deadline()) {
+      partitions = objectStore.getPartitionsByNames(DEFAULT_CATALOG_NAME, DB1, TABLE1, ALL_PART_NAMES);
+    }
+    Assert.assertEquals(3, partitions.size());
   }
 
   /**
@@ -815,27 +842,34 @@ public class TestObjectStore {
     GetPartitionsArgs args = new GetPartitionsArgs.GetPartitionsArgsBuilder().max(10).build();
     // query the partitions with JDO in the 1st session
     List<Partition> partitions;
-    try (AutoCloseable c = deadline()) {
-      partitions = objectStore.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1, false, true, args);
+    TableStore tableStore2 = objectStore2.unwrap(TableStore.class);
+    TableStore tableStore1 = objectStore.unwrap(TableStore.class);
+    TableName targetTable = new TableName(DEFAULT_CATALOG_NAME, DB1, TABLE1);
+    try (AutoCloseable c = deadline();
+         AutoCloseable d = new DirectSqlConfigurator(conf, false)) {
+      partitions = tableStore1.getPartitions(targetTable, args);
     }
     Assert.assertEquals(3, partitions.size());
 
     // query the partitions with JDO in the 2nd session
-    try (AutoCloseable c = deadline()) {
-      partitions = objectStore2.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1, false, true, args);
+    try (AutoCloseable c = deadline();
+         AutoCloseable d = new DirectSqlConfigurator(conf, false)) {
+      partitions = tableStore2.getPartitions(targetTable, args);
     }
     Assert.assertEquals(3, partitions.size());
 
     // drop partitions with directSql in the 1st session
-    try (AutoCloseable c = deadline()) {
-      objectStore.dropPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
-          Arrays.asList("test_part_col=a0", "test_part_col=a1"), true, false);
+    try (AutoCloseable c = deadline();
+         AutoCloseable d = new DirectSqlConfigurator(conf, true)) {
+      tableStore1.dropPartitions(targetTable,
+          Arrays.asList("test_part_col=a0", "test_part_col=a1"));
     }
 
     // query the partitions with JDO in the 2nd session, checking the cache is not causing any
     // problem
-    try (AutoCloseable c = deadline()) {
-      partitions = objectStore2.getPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1, false, true, args);
+    try (AutoCloseable c = deadline();
+         AutoCloseable d = new DirectSqlConfigurator(conf, false)) {
+      partitions = tableStore2.getPartitions(targetTable, args);
     }
     Assert.assertEquals(1, partitions.size());
   }
@@ -864,9 +898,9 @@ public class TestObjectStore {
     checkBackendTableSize("SERDES", 4); // Table has a serde
 
     // drop the partitions
-    try (AutoCloseable c = deadline()) {
-      objectStore.dropPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
-	        Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"), true, false);
+    try (AutoCloseable c = deadline(); AutoCloseable d = new DirectSqlConfigurator(conf, true)) {
+      objectStore.unwrap(TableStore.class).dropPartitions(new TableName(DEFAULT_CATALOG_NAME, DB1, TABLE1),
+	        Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"));
     }
 
     // Check, if every data is dropped connected to the partitions
@@ -907,9 +941,9 @@ public class TestObjectStore {
     checkBackendTableSize("CDS", 2);
     checkBackendTableSize("COLUMNS_V2", 11);
     // drop the partitions
-    try (AutoCloseable c = deadline()) {
-      objectStore.dropPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
-          Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"), true, false);
+    try (AutoCloseable c = deadline(); AutoCloseable d = new DirectSqlConfigurator(conf, true)) {
+      objectStore.unwrap(TableStore.class).dropPartitions(new TableName(DEFAULT_CATALOG_NAME, DB1, TABLE1),
+          Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"));
     }
     // Checks if the data connected to the partitions is dropped
     checkBackendTableSize("PARTITIONS", 0);
@@ -1024,6 +1058,63 @@ public class TestObjectStore {
             List.of("test_part_col=a2"), null, "special '");
   }
 
+  @Test
+  public void testGetPartitionsByNamesRejectsSqlInjectionInPartName() throws Exception {
+    createPartitionedTable(true, true, new HashSet<>());
+    List<Partition> partitions;
+    try (AutoCloseable c = deadline()) {
+      partitions = objectStore.getPartitionsByNames(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          Collections.singletonList(SQLI_PART_NAME));
+    }
+    Assert.assertEquals(0, partitions.size());
+    try (AutoCloseable c = deadline()) {
+      partitions = objectStore.getPartitionsByNames(DEFAULT_CATALOG_NAME, DB1, TABLE1, ALL_PART_NAMES);
+    }
+    Assert.assertEquals(3, partitions.size());
+  }
+
+  @Test
+  public void testUpdatePartitionColumnStatisticsInBatchRejectsSqlInjectionInPartName()
+      throws Exception {
+    createPartitionedTable(true, true, new HashSet<>());
+    Table tbl = objectStore.getTable(DEFAULT_CATALOG_NAME, DB1, TABLE1);
+
+    List<List<ColumnStatistics>> baseline;
+    try (AutoCloseable c = deadline()) {
+      baseline = objectStore.getPartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          ALL_PART_NAMES, Collections.singletonList("test_part_col"));
+    }
+    Assert.assertEquals(1, baseline.size());
+    Assert.assertEquals(3, baseline.get(0).size());
+    long baselineNumNulls = baseline.get(0).get(0).getStatsObj().get(0).getStatsData()
+        .getLongStats().getNumNulls();
+
+    ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc(false, DB1, TABLE1);
+    statsDesc.setCatName(DEFAULT_CATALOG_NAME);
+    statsDesc.setPartName(SQLI_PART_NAME);
+    ColumnStatisticsData injectedData = new ColStatsBuilder<>(long.class).numNulls(999).numDVs(2)
+        .low(3L).high(4L).build();
+    ColumnStatisticsObj statsObj = new ColumnStatisticsObj("test_part_col", "int", injectedData);
+    ColumnStatistics maliciousStats = new ColumnStatistics(statsDesc,
+        Collections.singletonList(statsObj));
+    maliciousStats.setEngine(ENGINE);
+
+    Map<String, ColumnStatistics> statsMap = new HashMap<>();
+    statsMap.put(SQLI_PART_NAME, maliciousStats);
+    objectStore.updatePartitionColumnStatisticsInBatch(statsMap, tbl, null, null, -1);
+
+    List<List<ColumnStatistics>> after;
+    try (AutoCloseable c = deadline()) {
+      after = objectStore.getPartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          ALL_PART_NAMES, Collections.singletonList("test_part_col"));
+    }
+    Assert.assertEquals(3, after.get(0).size());
+    for (ColumnStatistics cs : after.get(0)) {
+      Assert.assertEquals(baselineNumNulls,
+          cs.getStatsObj().get(0).getStatsData().getLongStats().getNumNulls());
+    }
+  }
+
   private void setAggrConf(boolean enableBitVector, boolean enableKll, int batchSize) {
     Configuration conf2 = MetastoreConf.newMetastoreConf(conf);
     MetastoreConf.setBoolVar(conf2, ConfVars.STATS_FETCH_BITVECTOR, enableBitVector);
@@ -1050,10 +1141,10 @@ public class TestObjectStore {
 
   private void statsAggrResourceCleanup()
           throws Exception {
-    try (AutoCloseable c = deadline()) {
-      objectStore.dropPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
-              Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"), true, true);
-      objectStore.dropTable(DEFAULT_CATALOG_NAME, DB1, TABLE1);
+    try (AutoCloseable c = deadline(); AutoCloseable d = new DirectSqlConfigurator(conf, true)) {
+      objectStore.unwrap(TableStore.class).dropPartitions(new TableName(DEFAULT_CATALOG_NAME, DB1, TABLE1),
+              Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"));
+      objectStore.unwrap(TableStore.class).dropTable(new TableName(DEFAULT_CATALOG_NAME, DB1, TABLE1));
       objectStore.dropDatabase(DEFAULT_CATALOG_NAME, DB1);
     }
   }
@@ -1332,7 +1423,7 @@ public class TestObjectStore {
     spy.getAllFunctions(DEFAULT_CATALOG_NAME);
     spy.getAllTables(DEFAULT_CATALOG_NAME, DB1);
     spy.getPartitionCount();
-    Mockito.verify(spy, Mockito.times(3))
+    Mockito.verify(spy, Mockito.times(2))
         .rollbackAndCleanup(Mockito.anyBoolean(), ArgumentMatchers.<Query>any());
   }
 
@@ -1880,10 +1971,10 @@ public class TestObjectStore {
       @Override
       protected Object getSqlResult(ObjectStore.GetHelper<Object> ctx) throws MetaException {
         // drop the partitions with SQL alone
-        try (AutoCloseable c = deadline()) {
-          objectStore.dropPartitionsInternal(ctx.catName, ctx.dbName, ctx.tblName, partNames, true,
-              false);
-          Assert.assertEquals(0, objectStore.getPartitionCount());
+        try (AutoCloseable c = deadline(); AutoCloseable d = new DirectSqlConfigurator(conf, true)) {
+          objectStore.unwrap(TableStore.class)
+              .dropPartitions(new TableName(ctx.catName, ctx.dbName, ctx.tblName), partNames);
+          assertEquals(0, objectStore.getPartitionCount());
         } catch (Exception e) {
           throw new MetaException(e.getMessage());
         }
@@ -1893,10 +1984,10 @@ public class TestObjectStore {
       @Override
       protected Object getJdoResult(ObjectStore.GetHelper<Object> ctx) throws MetaException {
         // drop the partitions with JDO alone
-        try (AutoCloseable c = deadline()) {
-          Assert.assertEquals(3, objectStore.getPartitionCount());
-          objectStore.dropPartitionsInternal(ctx.catName, ctx.dbName, ctx.tblName, partNames, false,
-              true);
+        try (AutoCloseable c = deadline(); AutoCloseable d = new DirectSqlConfigurator(conf, false)) {
+          assertEquals(3, objectStore.getPartitionCount());
+          objectStore.unwrap(TableStore.class)
+              .dropPartitions(new TableName(ctx.catName, ctx.dbName, ctx.tblName), partNames);
         } catch (Exception e) {
           throw new MetaException(e.getMessage());
         }

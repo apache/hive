@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1413,11 +1414,54 @@ public abstract class BaseSemanticAnalyzer {
     }
   }
 
+  /**
+   * Holds table column {@link FieldSchema} entries and lazily derived parallel name/type string
+   * lists for analyze / column-stats compilation.
+   */
+  public static final class FieldSchemas implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    private final List<FieldSchema> schemas;
+
+    private transient List<String> colNames;
+    private transient List<String> colTypes;
+
+    public FieldSchemas(List<FieldSchema> schemas) {
+      this.schemas = schemas != null ? schemas : Collections.emptyList();
+    }
+
+    public List<FieldSchema> getSchemas() {
+      return schemas;
+    }
+
+    public int size() {
+      return schemas.size();
+    }
+
+    public FieldSchema get(int index) {
+      return schemas.get(index);
+    }
+
+    public List<String> getColName() {
+      if (colNames == null) {
+        colNames = Utilities.getColumnNamesFromFieldSchema(schemas);
+      }
+      return colNames;
+    }
+
+    public List<String> getColType() {
+      if (colTypes == null) {
+        colTypes = Utilities.getColumnTypesFromFieldSchema(schemas);
+      }
+      return colTypes;
+    }
+  }
+
   public static class AnalyzeRewriteContext {
 
     private String tableName;
-    private List<String> colName;
-    private List<String> colType;
+    private FieldSchemas fieldSchemas;
     private boolean tblLvl;
 
     public String getTableName() {
@@ -1428,12 +1472,12 @@ public abstract class BaseSemanticAnalyzer {
       this.tableName = tableName;
     }
 
-    public List<String> getColName() {
-      return colName;
+    public FieldSchemas getFieldSchemas() {
+      return fieldSchemas;
     }
 
-    public void setColName(List<String> colName) {
-      this.colName = colName;
+    public void setFieldSchemas(FieldSchemas fieldSchemas) {
+      this.fieldSchemas = fieldSchemas;
     }
 
     public boolean isTblLvl() {
@@ -1442,14 +1486,6 @@ public abstract class BaseSemanticAnalyzer {
 
     public void setTblLvl(boolean isTblLvl) {
       this.tblLvl = isTblLvl;
-    }
-
-    public List<String> getColType() {
-      return colType;
-    }
-
-    public void setColType(List<String> colType) {
-      this.colType = colType;
     }
 
   }
@@ -2008,6 +2044,16 @@ public abstract class BaseSemanticAnalyzer {
    * Create a FetchTask for a given schema.
    */
   protected FetchTask createFetchTask(String tableSchema) {
+    return createFetchTask(tableSchema, false);
+  }
+
+  /**
+   * Create a FetchTask for a given schema.
+   *
+   * @param lastColumnTakesRest when true, the last column consumes the remainder of the line.
+   *        Use for fetch results that may contain literal tab characters (e.g. SHOW CREATE TABLE).
+   */
+  protected FetchTask createFetchTask(String tableSchema, boolean lastColumnTakesRest) {
     String schema =
         "json".equals(conf.get(HiveConf.ConfVars.HIVE_DDL_OUTPUT_FORMAT.varname, "text")) ? "json#string" : tableSchema;
 
@@ -2015,6 +2061,9 @@ public abstract class BaseSemanticAnalyzer {
     // Sets delimiter to tab (ascii 9)
     prop.setProperty(serdeConstants.SERIALIZATION_FORMAT, Integer.toString(Utilities.tabCode));
     prop.setProperty(serdeConstants.SERIALIZATION_NULL_FORMAT, " ");
+    if (lastColumnTakesRest) {
+      prop.setProperty(serdeConstants.SERIALIZATION_LAST_COLUMN_TAKES_REST, "true");
+    }
     String[] colTypes = schema.split("#");
     prop.setProperty(serdeConstants.LIST_COLUMNS, colTypes[0]);
     prop.setProperty(serdeConstants.LIST_COLUMN_TYPES, colTypes[1]);

@@ -96,7 +96,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	external.table.purge	true                
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	3                   
@@ -172,7 +171,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	external.table.purge	true                
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
@@ -246,7 +244,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	external.table.purge	true                
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	1                   
@@ -322,7 +319,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	external.table.purge	true                
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
@@ -414,7 +410,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	external.table.purge	false               
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   

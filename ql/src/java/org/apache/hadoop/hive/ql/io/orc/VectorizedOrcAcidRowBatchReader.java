@@ -275,7 +275,7 @@ public class VectorizedOrcAcidRowBatchReader
       }
       PartitionDesc partitionDesc =
           LlapHiveUtils.partitionDescForPath(orcSplit.getPath(), mapWork.getPathToPartitionInfo());
-      cacheTag = LlapHiveUtils.getDbAndTableNameForMetrics(orcSplit.getPath(), true, partitionDesc);
+      cacheTag = LlapHiveUtils.getCacheTag(orcSplit.getPath(), true, partitionDesc);
     } else {
       cacheTag = null;
     }

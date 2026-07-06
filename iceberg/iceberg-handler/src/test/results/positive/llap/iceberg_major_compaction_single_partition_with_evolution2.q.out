@@ -134,7 +134,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"a\",\"transform\":\"identity\",\"source-id\":1,\"field-id\":1001}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	4                   
 	numPartitions       	2                   
@@ -228,7 +227,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"a\",\"transform\":\"identity\",\"source-id\":1,\"field-id\":1001}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	4                   
 	numPartitions       	2                   
@@ -336,7 +334,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"a\",\"transform\":\"identity\",\"source-id\":1,\"field-id\":1001}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	3                   
 	numPartitions       	2                   
@@ -444,7 +441,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"a\",\"transform\":\"identity\",\"source-id\":1,\"field-id\":1001}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	5                   
 	numPartitions       	5                   

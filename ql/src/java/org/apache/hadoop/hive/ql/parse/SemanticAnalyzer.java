@@ -117,6 +117,7 @@ import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.ddl.DDLDescWithTableProperties;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.misc.hooks.InsertCommitHookDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.preinsert.PreInsertTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.properties.AlterTableUnsetPropertiesDesc;
@@ -1568,7 +1569,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     createTable.addChild(temporary);
     createTable.addChild(cte.cteNode);
 
-    SemanticAnalyzer analyzer = new SemanticAnalyzer(queryState);
+    SemanticAnalyzer analyzer = (SemanticAnalyzer) DDLSemanticAnalyzerFactory.getAnalyzer(createTable, queryState);
     analyzer.initCtx(ctx);
     analyzer.init(false);
 
@@ -1683,8 +1684,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               "PTF invocation in a Join must have an alias"));
         }
 
-      } else if (child.getToken().getType() == HiveParser.TOK_LATERAL_VIEW ||
-          child.getToken().getType() == HiveParser.TOK_LATERAL_VIEW_OUTER) {
+      } else if (isASTNodeLateralView(child)) {
         // SELECT * FROM src1 LATERAL VIEW udtf() AS myTable JOIN src2 ...
         // is not supported. Instead, the lateral view must be in a subquery
         // SELECT * FROM (SELECT * FROM src1 LATERAL VIEW udtf() AS myTable) a
@@ -1713,9 +1713,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     int numChildren = lateralView.getChildCount();
     assert (numChildren == 2);
 
-    if (!isCBOSupportedLateralView(lateralView)) {
-      queryProperties.setCBOSupportedLateralViews(false);
-    }
+    queryProperties.setCBOSupportedLateralViews(isCBOSupportedLateralView());
 
     ASTNode next = (ASTNode) lateralView.getChild(1);
     String alias = null;
@@ -1889,8 +1887,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           processTable(qb, frm);
         } else if (frm.getToken().getType() == HiveParser.TOK_SUBQUERY) {
           processSubQuery(qb, frm);
-        } else if (frm.getToken().getType() == HiveParser.TOK_LATERAL_VIEW ||
-            frm.getToken().getType() == HiveParser.TOK_LATERAL_VIEW_OUTER) {
+        } else if (isASTNodeLateralView(frm)) {
           queryProperties.setHasLateralViews(true);
           processLateralView(qb, frm);
         } else if (isJoinToken(frm)) {
@@ -3068,14 +3065,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             && condn.getToken().getType() == HiveParser.DOT) {
           // get the semijoin rhs table name and field name
           fields1 = new ArrayList<String>();
-          int rhssize = rightAliases.size();
-          parseJoinCondPopulateAlias(joinTree, (ASTNode) condn.getChild(0),
-              leftAliases, rightAliases, null, aliasToOpInfo);
-          String rhsAlias = null;
+          List<String> scopedLeftAliases = new ArrayList<>();
+          List<String> scopedRightAliases = new ArrayList<>();
 
-          if (rightAliases.size() > rhssize) { // the new table is rhs table
-            rhsAlias = rightAliases.get(rightAliases.size() - 1);
-          }
+          parseJoinCondPopulateAlias(joinTree, (ASTNode) condn.getChild(0),
+              scopedLeftAliases, scopedRightAliases, null, aliasToOpInfo);
+
+          String rhsAlias = scopedRightAliases.isEmpty() ? null : scopedRightAliases.get(0);
+          scopedLeftAliases.forEach(alias -> {
+            if (!leftAliases.contains(alias)) {
+              leftAliases.add(alias);
+            }
+          });
+          scopedRightAliases.forEach(alias -> {
+            if (!rightAliases.contains(alias)) {
+              rightAliases.add(alias);
+            }
+          });
 
           parseJoinCondPopulateAlias(joinTree, (ASTNode) condn.getChild(1),
               leftAliases, rightAliases, fields1, aliasToOpInfo);
@@ -11123,7 +11129,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return false;
   }
 
-  boolean isCBOSupportedLateralView(ASTNode lateralView) {
+  boolean isCBOSupportedLateralView() {
     return false;
   }
 
@@ -15525,5 +15531,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_HMS_QUERY_CACHE_ENABLED)) {
       queryState.createHMSCache();
     }
+  }
+
+  /**
+   * Utility method to determine if an AST node represents a lateral view or lateral view outer.
+   * @param node AST node
+   * @return true if node is of lateral view or lateral view outer; false otherwise.
+   */
+  public static boolean isASTNodeLateralView(ASTNode node) {
+    return node.getToken().getType() == HiveParser.TOK_LATERAL_VIEW
+        || node.getToken().getType() == HiveParser.TOK_LATERAL_VIEW_OUTER;
   }
 }

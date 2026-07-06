@@ -118,6 +118,7 @@ import org.apache.iceberg.hive.HiveLock;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.HiveTableOperations;
 import org.apache.iceberg.hive.IcebergTableProperties;
+import org.apache.iceberg.hive.IcebergViewSupport;
 import org.apache.iceberg.hive.MetastoreLock;
 import org.apache.iceberg.hive.NoLock;
 import org.apache.iceberg.io.CloseableIterable;
@@ -177,12 +178,22 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
   }
 
   @Override
-  public void rollbackCreateTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    // do nothing
-  }
-
-  @Override
   public void commitCreateTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    if (isIcebergView(hmsTable)) {
+      tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
+      Map<String, String> tblProps =
+          hmsTable.getParameters() == null ? Maps.newHashMap() : Maps.newHashMap(hmsTable.getParameters());
+      String comment = tblProps.get("comment");
+      IcebergViewSupport.createOrReplaceView(
+          conf,
+          hmsTable.getDbName(),
+          hmsTable.getTableName(),
+          hmsTable.getSd().getCols(),
+          hmsTable.getViewExpandedText(),
+          tblProps,
+          comment);
+      return;
+    }
     if (icebergTable == null) {
 
       setFileFormat(tableProperties.getProperty(TableProperties.DEFAULT_FILE_FORMAT));
@@ -209,11 +220,6 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
   }
 
   @Override
-  public void preDropTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    // do nothing
-  }
-
-  @Override
   public void preDropTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, boolean deleteData) {
     this.tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
     this.deleteIcebergTable = hmsTable.getParameters() != null &&
@@ -233,11 +239,6 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
             hmsTable.getDbName(), hmsTable.getTableName(), hmsTable.getSd().getLocation(), e);
       }
     }
-  }
-
-  @Override
-  public void rollbackDropTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    // do nothing
   }
 
   @Override
@@ -265,6 +266,15 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
   @Override
   public void preAlterTable(org.apache.hadoop.hive.metastore.api.Table hmsTable, EnvironmentContext context)
       throws MetaException {
+    if (BaseHiveIcebergMetaHook.isIcebergView(hmsTable)) {
+      currentAlterTableOp = null;
+      if (commitLock == null) {
+        commitLock = new NoLock();
+      }
+      commitLock.lock();
+      tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
+      return;
+    }
     tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
     setupAlterOperationType(hmsTable, context);
     if (AlterTableType.RENAME.equals(currentAlterTableOp)) {
@@ -311,8 +321,6 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
       // If so, we will create the iceberg table in commitAlterTable and go ahead with the migration
       assertTableCanBeMigrated(hmsTable);
       isTableMigration = true;
-      // Set whether the format is ORC, to be used during vectorization.
-      setOrcOnlyFilesParam(hmsTable);
 
       StorageDescriptor sd = hmsTable.getSd();
       preAlterTableProperties = new PreAlterTableProperties();
@@ -373,13 +381,6 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
     } else {
       setWriteModeDefaults(icebergTable, hmsTable.getParameters(), context);
       assertNotCrossTableMetadataLocationChange(hmsTable.getParameters(), context);
-    }
-
-    // Migration case is already handled above, in case of migration we don't have all the properties set till this
-    // point.
-    if (!isTableMigration) {
-      // Set whether the format is ORC, to be used during vectorization.
-      setOrcOnlyFilesParam(hmsTable);
     }
 
   }
@@ -492,6 +493,21 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
       throws MetaException {
     if (commitLock == null) {
       throw new IllegalStateException("Hive commit lock should already be set");
+    }
+    if (BaseHiveIcebergMetaHook.isIcebergView(hmsTable)) {
+      tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
+      Map<String, String> tblProps =
+          hmsTable.getParameters() == null ? Maps.newHashMap() : Maps.newHashMap(hmsTable.getParameters());
+      String comment = tblProps.get("comment");
+      IcebergViewSupport.createOrReplaceView(
+          conf,
+          hmsTable.getDbName(),
+          hmsTable.getTableName(),
+          hmsTable.getSd().getCols(),
+          hmsTable.getViewExpandedText(),
+          tblProps,
+          comment);
+      return;
     }
     commitLock.unlock();
     if (isTableMigration) {
@@ -725,16 +741,16 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
         (List<SQLDefaultConstraint>) SessionStateUtil.getResource(conf, SessionStateUtil.COLUMN_DEFAULTS).orElse(null);
     Map<String, String> defaultValues = Stream.ofNullable(sqlDefaultConstraints).flatMap(Collection::stream)
         .collect(Collectors.toMap(SQLDefaultConstraint::getColumn_name, SQLDefaultConstraint::getDefault_value));
-    boolean isORc = isOrcFileFormat(hmsTable);
+    boolean isOrc = isOrcFileFormat(hmsTable);
     for (FieldSchema addedCol : addedCols) {
       String defaultValue = defaultValues.get(addedCol.getName());
-      Type type = HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(addedCol.getType()), defaultValue);
+      Type type = HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(addedCol.getType()), defaultValue,
+          !isOrc);
       Literal<Object> defaultVal = Optional.ofNullable(defaultValue).filter(v -> !type.isStructType())
           .map(v -> Expressions.lit(HiveSchemaUtil.getDefaultValue(v, type))).orElse(null);
-
       // ORC doesn't have support for initialDefault from iceberg layer, we only need to set default for writeDefault.
-      updateSchema.addColumn(addedCol.getName(), type, addedCol.getComment(), isORc ? null : defaultVal);
-      if (isORc && defaultVal != null) {
+      updateSchema.addColumn(addedCol.getName(), type, addedCol.getComment(), isOrc ? null : defaultVal);
+      if (isOrc && defaultVal != null) {
         updateSchema.updateColumnDefault(addedCol.getName(), defaultVal);
       }
     }
@@ -917,7 +933,7 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
   }
 
   private Type.PrimitiveType getPrimitiveTypeOrThrow(FieldSchema field) throws MetaException {
-    Type newType = HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(field.getType()), null);
+    Type newType = HiveSchemaUtil.convert(TypeInfoUtils.getTypeInfoFromTypeString(field.getType()), null, true);
     if (!(newType instanceof Type.PrimitiveType)) {
       throw new MetaException(String.format("Cannot promote type of column: '%s' to a non-primitive type: %s.",
           field.getName(), newType));

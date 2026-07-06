@@ -276,22 +276,23 @@ STAGE PLANS:
         Map 10 
             Map Operator Tree:
                 TableScan
-                  alias: emps_n8
-                  filterExpr: ((deptno > 10) and (deptno <= 11)) (type: boolean)
-                  Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  alias: depts_n6
+                  filterExpr: ((deptno > 10) and (deptno <= 11) and name is not null) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((deptno > 10) and (deptno <= 11)) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: ((deptno > 10) and (deptno <= 11) and name is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: deptno (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: deptno (type: int), name (type: varchar(256))
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: varchar(256))
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 11 
@@ -341,23 +342,22 @@ STAGE PLANS:
         Map 8 
             Map Operator Tree:
                 TableScan
-                  alias: depts_n6
-                  filterExpr: ((deptno > 10) and (deptno <= 11) and name is not null) (type: boolean)
-                  Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
+                  alias: emps_n8
+                  filterExpr: ((deptno > 10) and (deptno <= 11)) (type: boolean)
+                  Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((deptno > 10) and (deptno <= 11) and name is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: ((deptno > 10) and (deptno <= 11)) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: deptno (type: int), name (type: varchar(256))
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: deptno (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: varchar(256))
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
@@ -386,11 +386,11 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 _col1 (type: varchar(256))
-                  1 _col1 (type: varchar(256))
-                outputColumnNames: _col0, _col3
+                  1 _col2 (type: varchar(256))
+                outputColumnNames: _col0, _col4
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
-                  keys: _col0 (type: int), _col3 (type: int)
+                  keys: _col0 (type: int), _col4 (type: int)
                   minReductionHashAggr: 0.4
                   mode: hash
                   outputColumnNames: _col0, _col1
@@ -445,15 +445,15 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
-                outputColumnNames: _col0, _col1
+                outputColumnNames: _col1, _col2
                 Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
-                  key expressions: _col1 (type: varchar(256))
+                  key expressions: _col2 (type: varchar(256))
                   null sort order: z
                   sort order: +
-                  Map-reduce partition columns: _col1 (type: varchar(256))
+                  Map-reduce partition columns: _col2 (type: varchar(256))
                   Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col0 (type: int)
+                  value expressions: _col1 (type: int)
         Union 5 
             Vertex: Union 5
 
@@ -582,45 +582,44 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: dependents_n4
-                  filterExpr: name is not null (type: boolean)
-                  Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                  alias: emps_n8
+                  filterExpr: (((deptno > 10) and (deptno <= 11)) or ((deptno >= 19) and (deptno < 20))) (type: boolean)
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: name is not null (type: boolean)
-                    Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: (((deptno > 10) and (deptno <= 11)) or ((deptno >= 19) and (deptno < 20))) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: empid (type: int), name (type: varchar(256))
+                      expressions: deptno (type: int), salary (type: float)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col1 (type: varchar(256))
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col1 (type: varchar(256))
-                        Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: int)
-            Execution mode: vectorized, llap
-            LLAP IO: may be used (ACID table)
-        Map 10 
-            Map Operator Tree:
-                TableScan
-                  alias: depts_n6
-                  filterExpr: ((((deptno > 10) and (deptno <= 11)) or ((deptno >= 19) and (deptno < 20))) and name is not null) (type: boolean)
-                  Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: ((((deptno > 10) and (deptno <= 11)) or ((deptno >= 19) and (deptno < 20))) and name is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: deptno (type: int), name (type: varchar(256))
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: varchar(256))
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: float)
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Map 10 
+            Map Operator Tree:
+                TableScan
+                  alias: locations_n4
+                  filterExpr: name is not null (type: boolean)
+                  Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: name is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: name (type: varchar(256))
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: varchar(256))
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: varchar(256))
+                        Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 11 
@@ -651,44 +650,45 @@ STAGE PLANS:
         Map 7 
             Map Operator Tree:
                 TableScan
-                  alias: locations_n4
-                  filterExpr: name is not null (type: boolean)
-                  Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                  alias: depts_n6
+                  filterExpr: ((((deptno > 10) and (deptno <= 11)) or ((deptno >= 19) and (deptno < 20))) and name is not null) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: name is not null (type: boolean)
-                    Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: ((((deptno > 10) and (deptno <= 11)) or ((deptno >= 19) and (deptno < 20))) and name is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: name (type: varchar(256))
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: varchar(256))
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: varchar(256))
-                        Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: vectorized, llap
-            LLAP IO: may be used (ACID table)
-        Map 8 
-            Map Operator Tree:
-                TableScan
-                  alias: emps_n8
-                  filterExpr: (((deptno > 10) and (deptno <= 11)) or ((deptno >= 19) and (deptno < 20))) (type: boolean)
-                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: (((deptno > 10) and (deptno <= 11)) or ((deptno >= 19) and (deptno < 20))) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: deptno (type: int), salary (type: float)
+                      expressions: deptno (type: int), name (type: varchar(256))
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: float)
+                        Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: varchar(256))
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Map 8 
+            Map Operator Tree:
+                TableScan
+                  alias: dependents_n4
+                  filterExpr: name is not null (type: boolean)
+                  Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: name is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: empid (type: int), name (type: varchar(256))
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: varchar(256))
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: varchar(256))
+                        Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 12 
@@ -725,17 +725,17 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col1 (type: varchar(256))
-                  1 _col0 (type: varchar(256))
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col1, _col3
+                Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
-                  key expressions: _col1 (type: varchar(256))
+                  key expressions: _col3 (type: varchar(256))
                   null sort order: z
                   sort order: +
-                  Map-reduce partition columns: _col1 (type: varchar(256))
-                  Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col0 (type: int)
+                  Map-reduce partition columns: _col3 (type: varchar(256))
+                  Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col1 (type: float)
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -743,13 +743,13 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col1 (type: varchar(256))
-                  1 _col3 (type: varchar(256))
-                outputColumnNames: _col0, _col4
+                  0 _col3 (type: varchar(256))
+                  1 _col1 (type: varchar(256))
+                outputColumnNames: _col1, _col4
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
-                  aggregations: count(_col4)
-                  keys: _col0 (type: int)
+                  aggregations: count(_col1)
+                  keys: _col4 (type: int)
                   minReductionHashAggr: 0.4
                   mode: hash
                   outputColumnNames: _col0, _col1
@@ -811,17 +811,17 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col0 (type: int)
-                  1 _col0 (type: int)
-                outputColumnNames: _col1, _col3
-                Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                  0 _col1 (type: varchar(256))
+                  1 _col0 (type: varchar(256))
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
-                  key expressions: _col3 (type: varchar(256))
+                  key expressions: _col1 (type: varchar(256))
                   null sort order: z
                   sort order: +
-                  Map-reduce partition columns: _col3 (type: varchar(256))
-                  Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col1 (type: float)
+                  Map-reduce partition columns: _col1 (type: varchar(256))
+                  Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: int)
         Union 5 
             Vertex: Union 5
 
@@ -934,6 +934,27 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
+                  alias: emps_n8
+                  filterExpr: ((deptno > 0) and (deptno < 10)) (type: boolean)
+                  Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((deptno > 0) and (deptno < 10)) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: deptno (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Map 5 
+            Map Operator Tree:
+                TableScan
                   alias: depts_n6
                   filterExpr: ((deptno > 0) and (deptno < 10) and name is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
@@ -951,27 +972,6 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: varchar(256))
-            Execution mode: vectorized, llap
-            LLAP IO: may be used (ACID table)
-        Map 5 
-            Map Operator Tree:
-                TableScan
-                  alias: emps_n8
-                  filterExpr: ((deptno > 0) and (deptno < 10)) (type: boolean)
-                  Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: ((deptno > 0) and (deptno < 10)) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: deptno (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 6 
@@ -1023,13 +1023,13 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
-                outputColumnNames: _col1
+                outputColumnNames: _col2
                 Statistics: Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
-                  key expressions: _col1 (type: varchar(256))
+                  key expressions: _col2 (type: varchar(256))
                   null sort order: z
                   sort order: +
-                  Map-reduce partition columns: _col1 (type: varchar(256))
+                  Map-reduce partition columns: _col2 (type: varchar(256))
                   Statistics: Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 3 
             Execution mode: llap
@@ -1038,7 +1038,7 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col1 (type: varchar(256))
+                  0 _col2 (type: varchar(256))
                   1 _col1 (type: varchar(256))
                 outputColumnNames: _col3
                 Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE

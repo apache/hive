@@ -115,7 +115,6 @@ import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.ByteBuffers;
 import org.apache.iceberg.util.Pair;
-import org.apache.iceberg.util.PropertyUtil;
 import org.apache.iceberg.util.SnapshotUtil;
 import org.apache.iceberg.util.StructProjection;
 import org.slf4j.Logger;
@@ -436,7 +435,12 @@ public class IcebergTableUtil {
   }
 
   public static boolean isFanoutEnabled(Map<String, String> props) {
-    return PropertyUtil.propertyAsBoolean(props, InputFormatConfig.WRITE_FANOUT_ENABLED, true);
+    return isFanoutEnabled(props::getOrDefault);
+  }
+
+  public static boolean isFanoutEnabled(BinaryOperator<String> props) {
+    return Boolean.parseBoolean(
+        props.apply(InputFormatConfig.WRITE_FANOUT_ENABLED, "true"));
   }
 
   public static void performMetadataDelete(Table icebergTable, String branchName, SearchArgument sarg) {
@@ -446,6 +450,24 @@ public class IcebergTableUtil {
       deleteFiles = deleteFiles.toBranch(HiveUtils.getTableSnapshotRef(branchName));
     }
     deleteFiles.deleteFromRowFilter(exp).commit();
+  }
+
+  /**
+   * Parses an Iceberg partition path into a Hive-compatible spec map, representing null partition
+   * values with the Hive default partition name.
+   */
+  public static Map<String, String> makeSpecFromName(String partName, PartitionSpec spec, PartitionData data,
+      String defaultPartitionName) {
+    Map<String, String> partSpecMap = Maps.newLinkedHashMap();
+    Warehouse.makeSpecFromName(partSpecMap, new Path(partName), null);
+
+    List<PartitionField> fields = spec.fields();
+    for (int i = 0; i < fields.size(); i++) {
+      if (data.get(i) == null) {
+        partSpecMap.put(fields.get(i).name(), defaultPartitionName);
+      }
+    }
+    return partSpecMap;
   }
 
   public static PartitionData toPartitionData(StructLike key, Types.StructType keyType) {

@@ -183,13 +183,12 @@ public class ExprProcFactory {
     return new ColumnExprProcessor();
   }
 
-  private static boolean findSourceColumn(
+  private static boolean findSourceColumn(Operator<? extends OperatorDesc> inpOp,
       LineageCtx lctx, Predicate cond, String tabAlias, String alias) {
     for (Map.Entry<String, TableScanOperator> topOpMap: lctx.getParseCtx().getTopOps().entrySet()) {
       TableScanOperator tableScanOp = topOpMap.getValue();
       Table tbl = tableScanOp.getConf().getTableMetadata();
-      if (tbl.getTableName().equals(tabAlias)
-          || tabAlias.equals(tableScanOp.getConf().getAlias())) {
+      if (isMatchingTableScan(inpOp, tabAlias, tableScanOp, tbl)) {
         for (FieldSchema column: tbl.getCols()) {
           if (column.getName().equals(alias)) {
             TableAliasInfo table = new TableAliasInfo();
@@ -206,6 +205,16 @@ public class ExprProcFactory {
       }
     }
     return false;
+  }
+
+  private static boolean isMatchingTableScan(Operator<? extends OperatorDesc> inpOp, String tabAlias,
+      TableScanOperator tableScanOp, Table tbl) {
+    boolean operatorIdMatches = inpOp.getOperatorId().equals(tableScanOp.getOperatorId());
+
+    boolean tableNameMatches = tbl.getTableName().equals(tabAlias);
+    boolean aliasMatches = tabAlias.equals(tableScanOp.getConf().getAlias());
+
+    return operatorIdMatches && (tableNameMatches || aliasMatches);
   }
 
   /**
@@ -241,7 +250,7 @@ public class ExprProcFactory {
       }
       if (tabAlias != null && tabAlias.length() > 0
           && !tabAlias.startsWith("_") && !tabAlias.startsWith("$")) {
-        if (cond != null && !findSourceColumn(lctx, cond, tabAlias, alias) && dep != null) {
+        if (cond != null && !findSourceColumn(inpOp, lctx, cond, tabAlias, alias) && dep != null) {
           cond.getBaseCols().addAll(dep.getBaseCols());
         }
         return tabAlias + "." + alias;

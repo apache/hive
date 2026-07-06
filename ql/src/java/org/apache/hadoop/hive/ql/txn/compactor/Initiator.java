@@ -213,8 +213,10 @@ public class Initiator extends MetaStoreCompactorThread {
     checkInterval = conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CHECK_INTERVAL, TimeUnit.MILLISECONDS);
     metricsEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED) &&
         MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_ACIDMETRICS_EXT_ON);
+    boolean isSupportAcid = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_SUPPORT_ACID);
     optimizers = Arrays.stream(MetastoreConf.getTrimmedStringsVar(conf,
             MetastoreConf.ConfVars.COMPACTOR_INITIATOR_TABLE_OPTIMIZERS))
+        .filter(e -> isSupportAcid || !e.equalsIgnoreCase(MetastoreConf.ACID_TABLE_OPTIMIZER_CLASS))
         .map(this::instantiateTableOptimizer).toList();
   }
   

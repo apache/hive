@@ -85,7 +85,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	format-version      	2                   
 	hive.compactor.worker.pool	iceberg             
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	1                   
 	numRows             	4                   
@@ -199,7 +198,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	format-version      	2                   
 	hive.compactor.worker.pool	iceberg             
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	1                   
 	numRows             	4                   

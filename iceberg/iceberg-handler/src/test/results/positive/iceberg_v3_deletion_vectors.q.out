@@ -27,7 +27,6 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
   'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"id","required":false,"type":"int"}]}', 
   'format-version'='3', 
-  'iceberg.orc.files.only'='true', 
   'metadata_location'='hdfs://### HDFS PATH ###', 
   'parquet.compression'='zstd', 
   'serialization.format'='1', 
