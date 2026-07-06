@@ -124,7 +124,7 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
   
   @Override
   public List<TableName> getTableNamesWithStats() throws MetaException, NoSuchObjectException {
-    return new GetListHelper<TableName, TableName> (this, null) {
+    return new GetListHelper<TableName, TableName>(this, null) {
       @Override
       protected List<TableName> getSqlResult() throws MetaException {
         return getDirectSql().getTableNamesWithStats();
@@ -582,7 +582,12 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
       TableName tableName, final List<String> colNames, String engine) throws MetaException, NoSuchObjectException {
     final boolean enableBitVector = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_FETCH_BITVECTOR);
     final boolean enableKll = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_FETCH_KLL);
-    return new GetStatHelper(tableName, this) {
+    return new GetHelper<TableName, ColumnStatistics>(this, tableName) {
+      @Override
+      protected String describeResult() {
+        return "statistics for " + (results == null ? 0 : results.getStatsObjSize()) + " columns";
+      }
+
       @Override
       protected ColumnStatistics getSqlResult() throws MetaException {
         String catName = normalizeIdentifier(tableName.getCat());
@@ -937,8 +942,8 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
       @Override
       protected Integer getJdoResult() throws MetaException, NoSuchObjectException {
         try {
-          List<Partition> parts = baseStore.unwrap(TableStore.class).getPartitions(tn,
-              GetPartitionsArgs.getAllPartitions());
+          List<Partition> parts = baseStore.unwrap(TableStore.class)
+              .getPartitions(tn, GetPartitionsArgs.getAllPartitions());
           for (Partition part : parts) {
             Partition newPart = new Partition(part);
             StatsSetupConst.clearColumnStatsState(newPart.getParameters());
@@ -985,11 +990,10 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
   private boolean deletePartitionColumnStatisticsViaJdo(String catName, String dbName, String tableName,
       List<String> partNames, List<String> colNames, String engine)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    boolean ret = false;
     String database = org.apache.commons.lang3.StringUtils.defaultString(dbName,
         Warehouse.DEFAULT_DATABASE_NAME);
     String catalog = normalizeIdentifier(catName);
-    Batchable<String, Void> b = new Batchable<String, Void>() {
+    Batchable<String, Void> b = new Batchable<>() {
       @Override
       public List<Void> run(List<String> input) throws Exception {
         Query query = pm.newQuery(MPartitionColumnStatistics.class);
@@ -1059,7 +1063,7 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
         return Collections.emptyList();
       }
     });
-    return ret;
+    return true;
   }
 
   @Override
@@ -1173,17 +1177,6 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
       }
     } finally {
       jdoConn.close();
-    }
-  }
-
-  private abstract class GetStatHelper extends GetHelper<TableName, ColumnStatistics> {
-    public GetStatHelper(TableName tableName, RawStoreBundle baseStore) throws MetaException {
-      super(baseStore, tableName);
-    }
-
-    @Override
-    protected String describeResult() {
-      return "statistics for " + (results == null ? 0 : results.getStatsObjSize()) + " columns";
     }
   }
 

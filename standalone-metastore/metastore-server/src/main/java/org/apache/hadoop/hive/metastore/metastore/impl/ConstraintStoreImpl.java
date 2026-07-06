@@ -68,6 +68,11 @@ import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdenti
 
 public class ConstraintStoreImpl extends RawStoreBundle implements ConstraintStore {
   private Configuration conf;
+  @Override
+  public void setBaseStore(RawStore store) {
+    super.setBaseStore(store);
+    this.conf = store.getConf();
+  }
 
   @Override
   public SQLAllTableConstraints createTableWithConstraints(Table tbl, SQLAllTableConstraints constraints)
@@ -1284,11 +1289,5 @@ public class ConstraintStoreImpl extends RawStoreBundle implements ConstraintSto
       }
     }
     return -1;
-  }
-
-  @Override
-  public void setBaseStore(RawStore store) {
-    super.setBaseStore(store);
-    this.conf = store.getConf();
   }
 }

@@ -69,6 +69,13 @@ public class WMStoreImpl extends RawStoreBundle implements WMStore {
   private static final DateTimeFormatter YMDHMS_FORMAT = DateTimeFormatter.ofPattern(
       "yyyy_MM_dd_HH_mm_ss");
 
+  private Configuration conf;
+  @Override
+  public void setBaseStore(RawStore store) {
+    super.setBaseStore(store);
+    this.conf = store.getConf();
+  }
+
   private void checkForConstraintException(Exception e, String msg) throws AlreadyExistsException {
     if (getConstraintException(e) != null) {
       LOG.error(msg, e);
@@ -1042,12 +1049,5 @@ public class WMStoreImpl extends RawStoreBundle implements WMStore {
       }
       return ret;
     }
-  }
-
-  private Configuration conf;
-  @Override
-  public void setBaseStore(RawStore store) {
-    super.setBaseStore(store);
-    this.conf = store.getConf();
   }
 }

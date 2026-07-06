@@ -434,9 +434,9 @@ public class ObjectStore implements RawStore, Configurable {
       cachedImpls.put(iface, simpl);
     }
     List<Query> openQueries = new LinkedList<>();
-    if (simpl instanceof RawStoreBundle rsa) {
-      rsa.setBaseStore(this);
-      rsa.setPersistentManager(PersistenceManagerProxy.getProxy(pm, openQueries));
+    if (simpl instanceof RawStoreBundle rsb) {
+      rsb.setBaseStore(this);
+      rsb.setPersistentManager(PersistenceManagerProxy.getProxy(pm, openQueries));
     }
     return TransactionHandler.getProxy(iface, new TransactionHandler<>(this, simpl, openQueries));
   }
