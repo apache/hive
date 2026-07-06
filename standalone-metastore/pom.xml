@@ -129,7 +129,7 @@
     <spring.version>5.3.39</spring.version>
     <spring-boot.version>2.7.18</spring-boot.version>
     <spring.ldap.version>2.4.4</spring.ldap.version>
-    <testcontainers.version>1.21.3</testcontainers.version>
+    <testcontainers.version>1.21.4</testcontainers.version>
     <!-- Thrift properties -->
     <thrift.home>you-must-set-this-to-run-thrift</thrift.home>
     <thrift.gen.dir>${basedir}/src/gen/thrift</thrift.gen.dir>
