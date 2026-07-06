@@ -427,17 +427,6 @@ public class HiveStatement implements java.sql.Statement {
     return 0L;
   }
 
-  private SQLException sqlExceptionForCanceledState(TGetOperationStatusResp statusResp) {
-    final String errMsg = statusResp.getErrorMessage();
-    final String fullErrMsg;
-    if (errMsg == null || errMsg.isEmpty()) {
-      fullErrMsg = QUERY_CANCELLED_MESSAGE;
-    } else {
-      fullErrMsg = QUERY_CANCELLED_MESSAGE + " " + errMsg;
-    }
-    return new SQLException(fullErrMsg, "01000"); // SQLSTATE 01000 = warning
-  }
-
   /**
    * Handles one {@code GetOperationStatus} response: applies a progress update if in-place updates
    * are enabled, verifies the Thrift status, and dispatches on the operation state.
@@ -457,7 +446,11 @@ public class HiveStatement implements java.sql.Statement {
       isLogBeingGenerated = false;
       break;
     case CANCELED_STATE:
-      throw sqlExceptionForCanceledState(statusResp);
+      // 01000 -> warning
+      final String errMsg = statusResp.getErrorMessage();
+      final String fullErrMsg =
+          (errMsg == null || errMsg.isEmpty()) ? QUERY_CANCELLED_MESSAGE : QUERY_CANCELLED_MESSAGE + " " + errMsg;
+      throw new SQLException(fullErrMsg, "01000");
     case TIMEDOUT_STATE:
       throw new SQLTimeoutException(
           sqlTimeoutMessageForTimedOutState(statusResp.getErrorMessage(), statusResp.getSqlState()));
