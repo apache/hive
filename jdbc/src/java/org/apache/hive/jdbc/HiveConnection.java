@@ -397,7 +397,7 @@ public class HiveConnection implements java.sql.Connection {
         executeInitSql();
       }
     } else {
-      long retryInterval = readRetryIntervalMillis();
+      long retryInterval = getRetryIntervalMillis();
 
       for (int numRetries = 0;;) {
         try {
@@ -460,11 +460,11 @@ public class HiveConnection implements java.sql.Connection {
   }
 
   /**
-   * Reads {@code retries} and {@code retryInterval} from the session configuration, updating
+   * Gets {@code retries} and {@code retryInterval} from the session configuration, updating
    * {@link #maxRetries} as a side-effect, and returns the interval in milliseconds (default 1000).
    * Extracted from the constructor to keep its length within Sonar's 150-line limit.
    */
-  private long readRetryIntervalMillis() {
+  private long getRetryIntervalMillis() {
     long retryInterval = 1000L;
     try {
       String strRetries = sessConfMap.get(JdbcConnectionParams.RETRIES);
