@@ -560,6 +560,14 @@ public class Hive implements AutoCloseable {
     hiveDB.remove();
   }
 
+  public static void setCalciteSystemProperties() {
+    // turn off calcite rexnode normalization
+    System.setProperty("calcite.enable.rexnode.digest.normalize", "false");
+    // update calcite default charset, consistent with HiveTypeFactory#getDefaultCharset
+    System.setProperty("calcite.default.charset", ConversionUtil.NATIVE_UTF16_CHARSET_NAME);
+    System.setProperty("calcite.default.nationalcharset", ConversionUtil.NATIVE_UTF16_CHARSET_NAME);
+  }
+
   /**
    * Hive
    *
@@ -568,11 +576,7 @@ public class Hive implements AutoCloseable {
    */
   private Hive(HiveConf c, boolean doRegisterAllFns) throws HiveException {
     conf = c;
-    // turn off calcite rexnode normalization
-    System.setProperty("calcite.enable.rexnode.digest.normalize", "false");
-    // update calcite default charset, consistent with HiveTypeFactory#getDefaultCharset
-    System.setProperty("calcite.default.charset", ConversionUtil.NATIVE_UTF16_CHARSET_NAME);
-    System.setProperty("calcite.default.nationalcharset", ConversionUtil.NATIVE_UTF16_CHARSET_NAME);
+    setCalciteSystemProperties();
     if (doRegisterAllFns) {
       registerAllFunctionsOnce();
     }
