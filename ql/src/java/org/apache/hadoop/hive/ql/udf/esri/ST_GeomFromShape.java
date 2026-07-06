@@ -17,14 +17,15 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.Geometry;
-import com.esri.core.geometry.GeometryEngine;
-import org.apache.hadoop.hive.ql.udf.esri.GeometryUtils.OGCType;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.io.BytesWritable;
+import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 @Description(name = "ST_GeomFromShape",
     value = "_FUNC_(shape) - construct ST_Geometry from Esri shape representation of geometry\n",
@@ -40,29 +41,14 @@ import org.slf4j.LoggerFactory;
 
   public BytesWritable evaluate(BytesWritable shape, int wkid) throws UDFArgumentException {
     try {
-      Geometry geometry = GeometryEngine.geometryFromEsriShape(shape.getBytes(), Geometry.Type.Unknown);
-      switch (geometry.getType()) {
-      case Point:
-        return GeometryUtils.geometryToEsriShapeBytesWritable(geometry, wkid, OGCType.ST_POINT);
-
-      case MultiPoint:
-        return GeometryUtils.geometryToEsriShapeBytesWritable(geometry, wkid, OGCType.ST_MULTIPOINT);
-
-      case Line:
-        return GeometryUtils.geometryToEsriShapeBytesWritable(geometry, wkid, OGCType.ST_LINESTRING);
-
-      case Polyline:
-        return GeometryUtils.geometryToEsriShapeBytesWritable(geometry, wkid, OGCType.ST_MULTILINESTRING);
-
-      case Envelope:
-        return GeometryUtils.geometryToEsriShapeBytesWritable(geometry, wkid, OGCType.ST_POLYGON);
-
-      case Polygon:
-        return GeometryUtils.geometryToEsriShapeBytesWritable(geometry, wkid, OGCType.ST_MULTIPOLYGON);
-
-      default:
-        return GeometryUtils.geometryToEsriShapeBytesWritable(geometry, wkid, OGCType.UNKNOWN);
+      ByteBuffer shapeBuffer = ByteBuffer.wrap(shape.getBytes(), 0, shape.getLength())
+          .order(ByteOrder.LITTLE_ENDIAN);
+      Geometry jtsGeom = EsriShapeConverter.fromEsriShape(shapeBuffer);
+      if (jtsGeom == null) {
+        return null;
       }
+      jtsGeom.setSRID(wkid);
+      return GeometryUtils.geometryToEsriShapeBytesWritable(jtsGeom, wkid);
     } catch (Exception e) {
       LogUtils.Log_ExceptionThrown(LOG, "geom-from-shape", e);
       return null;

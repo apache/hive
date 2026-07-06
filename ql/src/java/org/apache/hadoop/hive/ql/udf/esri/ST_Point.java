@@ -17,13 +17,15 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.Point;
-import com.esri.core.geometry.ogc.OGCGeometry;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateXYM;
+import org.locationtech.jts.geom.CoordinateXYZM;
+import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,14 +66,18 @@ public class ST_Point extends ST_Geometry {
       return null;
     }
     try {
-      Point stPt = new Point(x.get(), y.get());
-      if (z != null)
-        stPt.setZ(z.get());
-      if (m != null)
-        stPt.setM(m.get());
-      BytesWritable ret =
-          GeometryUtils.geometryToEsriShapeBytesWritable(OGCGeometry.createFromEsriGeometry(stPt, null));
-      return ret;
+      Coordinate coord;
+      if (m != null && z != null) {
+        coord = new CoordinateXYZM(x.get(), y.get(), z.get(), m.get());
+      } else if (z != null) {
+        coord = new Coordinate(x.get(), y.get(), z.get());
+      } else if (m != null) {
+        coord = new CoordinateXYM(x.get(), y.get(), m.get());
+      } else {
+        coord = new Coordinate(x.get(), y.get());
+      }
+      Geometry stPt = GeometryUtils.GEOMETRY_FACTORY.createPoint(coord);
+      return GeometryUtils.geometryToEsriShapeBytesWritable(stPt);
     } catch (Exception e) {
       //LogUtils.Log_InternalError(LOG, "ST_Point: " + e);
       return null;
@@ -82,10 +88,9 @@ public class ST_Point extends ST_Geometry {
   public BytesWritable evaluate(Text wkwrap) throws UDFArgumentException {
     String wkt = wkwrap.toString();
     try {
-      OGCGeometry ogcObj = OGCGeometry.fromText(wkt);
-      ogcObj.setSpatialReference(null);
-      if (ogcObj.geometryType().equals("Point")) {
-        return GeometryUtils.geometryToEsriShapeBytesWritable(ogcObj);
+      Geometry geom = GeometryUtils.wktReader().read(wkt);
+      if (geom.getGeometryType().equals("Point")) {
+        return GeometryUtils.geometryToEsriShapeBytesWritable(geom);
       } else {
         LogUtils.Log_InvalidType(LOG, GeometryUtils.OGCType.ST_POINT, GeometryUtils.OGCType.UNKNOWN);
         return null;

@@ -17,19 +17,18 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.Geometry;
-import com.esri.core.geometry.GeometryCursor;
-import com.esri.core.geometry.ListeningGeometryCursor;
-import com.esri.core.geometry.OperatorUnion;
-import com.esri.core.geometry.SpatialReference;
-import com.esri.core.geometry.ogc.OGCGeometry;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDAF;
 import org.apache.hadoop.hive.ql.exec.UDAFEvaluator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.io.BytesWritable;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.operation.union.UnaryUnionOp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Description(name = "ST_Aggr_Union",
     value = "_FUNC_(ST_Geometry) - aggregate union of all geometries passed",
@@ -40,10 +39,8 @@ public class ST_Aggr_Union extends UDAF {
 
   public static class AggrUnionBinaryEvaluator implements UDAFEvaluator {
 
-    SpatialReference spatialRef = null;
     int firstWKID = -2;
-    ListeningGeometryCursor lgc = null;  // listening geometry cursor
-    GeometryCursor xgc = null;           // executing geometry cursor
+    List<Geometry> geomList = new ArrayList<>();
 
     /*
      * Initialize evaluator
@@ -62,32 +59,23 @@ public class ST_Aggr_Union extends UDAF {
         return false;
       }
 
-      if (xgc == null) {
+      if (firstWKID == -2) {
         firstWKID = GeometryUtils.getWKID(geomref);
-        if (firstWKID != GeometryUtils.WKID_UNKNOWN) {
-          spatialRef = SpatialReference.create(firstWKID);
-        }
-        // Need new geometry cursors both initially and after every terminatePartial(),
-        // because the geometry cursors can not be re-used after extracting the
-        // unioned geometry with GeometryCursor.next().
-        //Create an empty listener.
-        lgc = new ListeningGeometryCursor();
-        //Obtain union operator - after taking note of spatial reference.
-        xgc = OperatorUnion.local().execute(lgc, spatialRef, null);
       } else if (firstWKID != GeometryUtils.getWKID(geomref)) {
         LogUtils.Log_SRIDMismatch(LOG, geomref, firstWKID);
         return false;
       }
 
       try {
-        lgc.tick(GeometryUtils.geometryFromEsriShape(geomref).getEsriGeometry());   // push
-        xgc.tock();   // tock to match tick
+        Geometry geom = GeometryUtils.geometryFromEsriShape(geomref);
+        if (geom != null) {
+          geomList.add(geom);
+        }
         return true;
       } catch (Exception e) {
         LogUtils.Log_InternalError(LOG, "ST_Aggr_Union: " + e);
         return false;
       }
-
     }
 
     /*
@@ -102,14 +90,21 @@ public class ST_Aggr_Union extends UDAF {
      * Return a geometry that is the union of all geometries added up until this point
      */
     public BytesWritable terminatePartial() throws HiveException {
+      if (geomList.isEmpty()) {
+        return null;
+      }
       try {
-        Geometry rslt = xgc.next();
-        lgc = null;  // not reusable
-        xgc = null;  // not reusable
-        OGCGeometry ogeom = OGCGeometry.createFromEsriGeometry(rslt, spatialRef);
-        return GeometryUtils.geometryToEsriShapeBytesWritable(ogeom);
+        Geometry result = UnaryUnionOp.union(geomList);
+        if (result == null) {
+          return null;
+        }
+        int wkid = (firstWKID == -2) ? GeometryUtils.WKID_UNKNOWN : firstWKID;
+        return GeometryUtils.geometryToEsriShapeBytesWritable(result, wkid);
       } catch (Exception e) {
         LogUtils.Log_InternalError(LOG, "ST_Aggr_Union: " + e);
+      } finally {
+        geomList.clear();
+        firstWKID = -2;
       }
       return null;
     }

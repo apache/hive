@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.serde2.esriJson.serializer;
 
-import com.esri.core.geometry.Geometry.Type;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
@@ -25,11 +24,24 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 
 import java.io.IOException;
 
-public class GeometryTypeJsonSerializer extends JsonSerializer<Type> {
+/**
+ * Serializes a geometry type String (e.g. "esriGeometryPolygon") to JSON.
+ * The String is already in the Esri "esriGeometry*" form as produced by
+ * GeometryTypeJsonDeserializer; it is written verbatim.
+ */
+public class GeometryTypeJsonSerializer extends JsonSerializer<String> {
 
   @Override
-  public void serialize(Type geometryType, JsonGenerator jsonGenerator, SerializerProvider arg2)
+  public void serialize(String geometryType, JsonGenerator jsonGenerator, SerializerProvider arg2)
       throws IOException, JsonProcessingException {
-    jsonGenerator.writeString("esriGeometry" + geometryType);
+    if (geometryType == null) {
+      jsonGenerator.writeNull();
+    } else if (geometryType.startsWith("esriGeometry")) {
+      // Already in canonical form — write as-is
+      jsonGenerator.writeString(geometryType);
+    } else {
+      // Normalise bare type names (e.g. "Polygon" -> "esriGeometryPolygon")
+      jsonGenerator.writeString("esriGeometry" + geometryType);
+    }
   }
 }

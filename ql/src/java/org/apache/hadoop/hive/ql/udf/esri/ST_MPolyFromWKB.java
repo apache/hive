@@ -17,15 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.SpatialReference;
-import com.esri.core.geometry.ogc.OGCGeometry;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.io.BytesWritable;
+import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 @Description(name = "ST_MPolyFromWKB",
     value = "_FUNC_(wkb) - construct an ST_MultiPolygon from OGC well-known binary",
@@ -55,18 +53,12 @@ public class ST_MPolyFromWKB extends ST_Geometry {
   public BytesWritable evaluate(BytesWritable wkb, int wkid) throws UDFArgumentException {
 
     try {
-      SpatialReference spatialReference = null;
-      if (wkid != GeometryUtils.WKID_UNKNOWN) {
-        spatialReference = SpatialReference.create(wkid);
-      }
-      byte[] byteArr = wkb.getBytes();
-      ByteBuffer byteBuf = ByteBuffer.allocate(byteArr.length);
-      byteBuf.put(byteArr);
-      OGCGeometry ogcObj = OGCGeometry.fromBinary(byteBuf);
-      ogcObj.setSpatialReference(spatialReference);
-      String gType = ogcObj.geometryType();
+      byte[] bytes = Arrays.copyOf(wkb.getBytes(), wkb.getLength());
+      Geometry geom = GeometryUtils.wkbReader().read(bytes);
+      String gType = geom.getGeometryType();
       if (gType.equals("MultiPolygon") || gType.equals("Polygon")) {
-        return GeometryUtils.geometryToEsriShapeBytesWritable(ogcObj);
+        geom.setSRID(wkid);
+        return GeometryUtils.geometryToEsriShapeBytesWritable(geom, wkid);
       } else {
         LogUtils.Log_InvalidType(LOG, GeometryUtils.OGCType.ST_MULTIPOLYGON, GeometryUtils.OGCType.UNKNOWN);
         return null;

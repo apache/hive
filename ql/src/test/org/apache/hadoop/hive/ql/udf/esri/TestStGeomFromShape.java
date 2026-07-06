@@ -17,17 +17,15 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.Geometry;
 import com.esri.core.geometry.GeometryEngine;
 import com.esri.core.geometry.Point;
 import com.esri.core.geometry.Polygon;
 import com.esri.core.geometry.Polyline;
-import com.esri.core.geometry.SpatialReference;
-import com.esri.core.geometry.ogc.OGCGeometry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
+import org.locationtech.jts.geom.Geometry;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -166,13 +164,16 @@ public class TestStGeomFromShape {
     BytesWritable geometryAsWritable = fromShape.evaluate(shapeAsWritable, wkid);
     assertNotNull("The geometry writable must not be null!", geometryAsWritable);
 
-    OGCGeometry ogcGeometry = GeometryUtils.geometryFromEsriShape(geometryAsWritable);
-    assertNotNull("The OGC geometry must not be null!", ogcGeometry);
-
-    Geometry esriGeometry = ogcGeometry.getEsriGeometry();
-    assertNotNull("The Esri geometry must not be null!", esriGeometry);
-    assertTrue("The geometries are different!",
-        GeometryEngine.equals(line, esriGeometry, SpatialReference.create(wkid)));
+    Geometry jtsGeometry = GeometryUtils.geometryFromEsriShape(geometryAsWritable);
+    assertNotNull("The JTS geometry must not be null!", jtsGeometry);
+    assertEquals("The SRID is different!", wkid, jtsGeometry.getSRID());
+    assertEquals("Expected 2 coordinates (line start/end)!", 2, jtsGeometry.getNumPoints());
+    assertEquals("Start X differs!", createFirstLocation().getX(), jtsGeometry.getCoordinates()[0].x, Epsilon);
+    assertEquals("Start Y differs!", createFirstLocation().getY(), jtsGeometry.getCoordinates()[0].y, Epsilon);
+    assertEquals("End X differs!", createSecondLocation().getX(),
+        jtsGeometry.getCoordinates()[jtsGeometry.getNumPoints() - 1].x, Epsilon);
+    assertEquals("End Y differs!", createSecondLocation().getY(),
+        jtsGeometry.getCoordinates()[jtsGeometry.getNumPoints() - 1].y, Epsilon);
   }
 
   @Test
@@ -189,13 +190,16 @@ public class TestStGeomFromShape {
     BytesWritable geometryAsWritable = fromShape.evaluate(shapeAsWritable, wkid);
     assertNotNull("The geometry writable must not be null!", geometryAsWritable);
 
-    OGCGeometry ogcGeometry = GeometryUtils.geometryFromEsriShape(geometryAsWritable);
-    assertNotNull("The OGC geometry must not be null!", ogcGeometry);
-
-    Geometry esriGeometry = ogcGeometry.getEsriGeometry();
-    assertNotNull("The Esri geometry must not be null!", esriGeometry);
-    assertTrue("The geometries are different!",
-        GeometryEngine.equals(line, esriGeometry, SpatialReference.create(wkid)));
+    Geometry jtsGeometry = GeometryUtils.geometryFromEsriShape(geometryAsWritable);
+    assertNotNull("The JTS geometry must not be null!", jtsGeometry);
+    assertEquals("The SRID is different!", wkid, jtsGeometry.getSRID());
+    assertEquals("Expected 4 points in polyline!", 4, jtsGeometry.getNumPoints());
+    assertEquals("Start X differs!", createFirstLocation().getX(), jtsGeometry.getCoordinates()[0].x, Epsilon);
+    assertEquals("Start Y differs!", createFirstLocation().getY(), jtsGeometry.getCoordinates()[0].y, Epsilon);
+    assertEquals("End X differs!", createFourthLocation().getX(),
+        jtsGeometry.getCoordinates()[jtsGeometry.getNumPoints() - 1].x, Epsilon);
+    assertEquals("End Y differs!", createFourthLocation().getY(),
+        jtsGeometry.getCoordinates()[jtsGeometry.getNumPoints() - 1].y, Epsilon);
   }
 
   @Test
@@ -212,12 +216,12 @@ public class TestStGeomFromShape {
     BytesWritable geometryAsWritable = fromShape.evaluate(shapeAsWritable, wkid);
     assertNotNull("The geometry writable must not be null!", geometryAsWritable);
 
-    OGCGeometry ogcGeometry = GeometryUtils.geometryFromEsriShape(geometryAsWritable);
-    assertNotNull("The OGC geometry must not be null!", ogcGeometry);
-
-    Geometry esriGeometry = ogcGeometry.getEsriGeometry();
-    assertNotNull("The Esri geometry must not be null!", esriGeometry);
-    assertTrue("The geometries are different!",
-        GeometryEngine.equals(polygon, esriGeometry, SpatialReference.create(wkid)));
+    Geometry jtsGeometry = GeometryUtils.geometryFromEsriShape(geometryAsWritable);
+    assertNotNull("The JTS geometry must not be null!", jtsGeometry);
+    assertEquals("The SRID is different!", wkid, jtsGeometry.getSRID());
+    assertTrue("Expected a polygon geometry!", jtsGeometry instanceof org.locationtech.jts.geom.Polygon);
+    // Polygon has 4 vertices + closing vertex = 5 points in the exterior ring
+    assertEquals("Expected 5 coordinates in polygon ring!", 5,
+        ((org.locationtech.jts.geom.Polygon) jtsGeometry).getExteriorRing().getNumPoints());
   }
 }

@@ -17,14 +17,11 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.Geometry;
-import com.esri.core.geometry.GeometryEngine;
-import com.esri.core.geometry.SpatialReference;
-import com.esri.core.geometry.ogc.OGCGeometry;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
+import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,13 +63,11 @@ public class ST_GeomCollection extends ST_Geometry {
     String wkt = wkwrap.toString();
 
     try {
-      Geometry geomObj = GeometryEngine.geometryFromWkt(wkt, 0, Geometry.Type.Unknown);
-      SpatialReference spatialReference = null;  // Idea: OGCGeometry.setSpatialReference after .fromText
+      Geometry geom = GeometryUtils.wktReader().read(wkt);
       if (wkid != GeometryUtils.WKID_UNKNOWN) {
-        spatialReference = SpatialReference.create(wkid);
+        geom.setSRID(wkid);
       }
-      OGCGeometry ogcObj = OGCGeometry.createFromEsriGeometry(geomObj, spatialReference);
-      return GeometryUtils.geometryToEsriShapeBytesWritable(ogcObj);
+      return GeometryUtils.geometryToEsriShapeBytesWritable(geom);
     } catch (Exception e) {  // IllegalArgumentException, GeometryException
       LogUtils.Log_InvalidText(LOG, wkt);
       return null;

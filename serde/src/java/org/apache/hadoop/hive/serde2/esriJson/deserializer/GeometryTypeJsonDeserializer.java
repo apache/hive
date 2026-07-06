@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.serde2.esriJson.deserializer;
 
-import com.esri.core.geometry.Geometry;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -27,32 +26,26 @@ import java.io.IOException;
 
 /**
  *
- * Deserializes a JSON geometry type enumeration into a Geometry.Type.* enumeration
+ * Deserializes a JSON geometry type string (e.g. "esriGeometryPolygon") into a String.
+ * The raw Esri geometry type string is preserved as-is for downstream use.
  */
-public class GeometryTypeJsonDeserializer extends JsonDeserializer<Geometry.Type> {
+public class GeometryTypeJsonDeserializer extends JsonDeserializer<String> {
 
   public GeometryTypeJsonDeserializer() {
   }
 
   @Override
-  public Geometry.Type deserialize(JsonParser parser, DeserializationContext arg1)
+  public String deserialize(JsonParser parser, DeserializationContext arg1)
       throws IOException, JsonProcessingException {
-
     String type_text = parser.getText();
-
-    // geometry type enumerations coming from the JSON are prepended with "esriGeometry" (i.e. esriGeometryPolygon)
-    // while the geometry-java-api uses the form Geometry.Type.Polygon
-    if (type_text.startsWith("esriGeometry")) {
-      // cut out esriGeometry to match Geometry.Type enumeration values
-      type_text = type_text.substring(12);
-
-      try {
-        return Enum.valueOf(Geometry.Type.class, type_text);
-      } catch (Exception e) {
-        // parsing failed, fall through to unknown geometry type
-      }
+    if (type_text == null) {
+      return "esriGeometryUnknown";
     }
-
-    return Geometry.Type.Unknown;
+    // Preserve the raw esriGeometry* string (e.g. "esriGeometryPolygon").
+    // If the value is not already prefixed, normalise it.
+    if (!type_text.startsWith("esriGeometry")) {
+      return "esriGeometry" + type_text;
+    }
+    return type_text;
   }
 }

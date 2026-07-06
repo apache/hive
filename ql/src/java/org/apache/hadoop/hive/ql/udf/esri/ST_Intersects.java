@@ -17,9 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.OperatorIntersects;
-import com.esri.core.geometry.OperatorSimpleRelation;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.prep.PreparedGeometry;
 
 @Description(name = "ST_Intersects",
     value = "_FUNC_(geometry1, geometry2) - return true if geometry1 intersects geometry2",
@@ -30,8 +30,13 @@ import org.apache.hadoop.hive.ql.exec.Description;
 public class ST_Intersects extends ST_GeometryRelational {
 
   @Override
-  protected OperatorSimpleRelation getRelationOperator() {
-    return OperatorIntersects.local();
+  protected boolean executeRelation(Geometry geom1, Geometry geom2) {
+    return geom1.intersects(geom2);
+  }
+
+  @Override
+  protected boolean executeRelationPrepared(PreparedGeometry prepGeom1, Geometry geom2) {
+    return prepGeom1.intersects(geom2);
   }
 
   @Override

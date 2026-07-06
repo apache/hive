@@ -17,10 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.OperatorContains;
-import com.esri.core.geometry.OperatorSimpleRelation;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.udf.UDFType;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.prep.PreparedGeometry;
 
 @UDFType(deterministic = true) @Description(name = "ST_Contains",
     value = "_FUNC_(geometry1, geometry2) - return true if geometry1 contains geometry2",
@@ -30,8 +30,13 @@ import org.apache.hadoop.hive.ql.udf.UDFType;
     extends ST_GeometryRelational {
 
   @Override
-  protected OperatorSimpleRelation getRelationOperator() {
-    return OperatorContains.local();
+  protected boolean executeRelation(Geometry geom1, Geometry geom2) {
+    return geom1.contains(geom2);
+  }
+
+  @Override
+  protected boolean executeRelationPrepared(PreparedGeometry prepGeom1, Geometry geom2) {
+    return prepGeom1.contains(geom2);
   }
 
   @Override
@@ -39,4 +44,3 @@ import org.apache.hadoop.hive.ql.udf.UDFType;
     return String.format("returns true if %s contains %s", args[0], args[1]);
   }
 }
-

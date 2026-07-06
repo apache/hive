@@ -17,10 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.ogc.OGCGeometry;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.BytesWritable;
+import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,14 +37,13 @@ import org.slf4j.LoggerFactory;
       return null;
     }
 
-    OGCGeometry ogcGeometry = GeometryUtils.geometryFromEsriShape(geometryref1);
-    if (ogcGeometry == null) {
+    Geometry geom = GeometryUtils.geometryFromEsriShape(geometryref1);
+    if (geom == null) {
       LogUtils.Log_ArgumentsNull(LOG);
       return null;
     }
 
-    OGCGeometry bufferedGeometry = ogcGeometry.buffer(distance.get());
-    // TODO persist type information (polygon vs multipolygon)
+    Geometry bufferedGeometry = geom.buffer(distance.get(), 24);
     return GeometryUtils.geometryToEsriShapeBytesWritable(bufferedGeometry);
   }
 }

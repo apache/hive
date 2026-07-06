@@ -17,11 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri.serde;
 
-import com.esri.core.geometry.ogc.OGCGeometry;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.hadoop.hive.ql.udf.esri.GeometryUtils;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.ParseException;
 
 import java.io.IOException;
 
@@ -36,20 +38,18 @@ public class GeoJsonSerDe extends BaseJsonSerDe {
   }
 
   @Override
-  protected String outGeom(OGCGeometry geom) {
-    return geom.asGeoJson();
+  protected String outGeom(Geometry geom) {
+    return GeometryUtils.geoJsonWriter().write(geom);
   }
 
   @Override
-  protected OGCGeometry parseGeom(JsonParser parser) {
+  protected Geometry parseGeom(JsonParser parser) {
     try {
       ObjectNode node = mapper.readTree(parser);
-      return OGCGeometry.fromGeoJson(node.toString());
-    } catch (JsonProcessingException e1) {
-      e1.printStackTrace();      // TODO Auto-generated catch block
-    } catch (IOException e1) {
-      e1.printStackTrace();      // TODO Auto-generated catch block
+      return GeometryUtils.geoJsonReader().read(node.toString());
+    } catch (ParseException | IOException e1) {
+      LOG.error("Error parsing GeoJSON", e1);
     }
-    return null;  // ?
+    return null;
   }
 }

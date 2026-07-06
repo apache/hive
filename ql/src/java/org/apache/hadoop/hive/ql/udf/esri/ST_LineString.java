@@ -17,14 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.Point;
-import com.esri.core.geometry.Polyline;
-import com.esri.core.geometry.ogc.OGCGeometry;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Point;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,14 +61,12 @@ public class ST_LineString extends ST_Geometry {
     }
 
     try {
-      Polyline linestring = new Polyline();
-      linestring.startPath(xyPairs[0].get(), xyPairs[1].get());
-
-      for (int i = 2; i < xyPairs.length; i += 2) {
-        linestring.lineTo(xyPairs[i].get(), xyPairs[i + 1].get());
+      Coordinate[] coords = new Coordinate[xyPairs.length / 2];
+      for (int i = 0; i < xyPairs.length; i += 2) {
+        coords[i / 2] = new Coordinate(xyPairs[i].get(), xyPairs[i + 1].get());
       }
-
-      return GeometryUtils.geometryToEsriShapeBytesWritable(OGCGeometry.createFromEsriGeometry(linestring, null));
+      Geometry linestring = GeometryUtils.GEOMETRY_FACTORY.createLineString(coords);
+      return GeometryUtils.geometryToEsriShapeBytesWritable(linestring);
     } catch (Exception e) {
       LogUtils.Log_InternalError(LOG, "ST_LineString: " + e);
       return null;
@@ -83,21 +81,16 @@ public class ST_LineString extends ST_Geometry {
     }
 
     try {
-      Polyline linestring = new Polyline();
-
+      Coordinate[] coords = new Coordinate[xs.size()];
       for (int ix = 0; ix < xs.size(); ++ix) {
         DoubleWritable xdw = xs.get(ix), ydw = ys.get(ix);
         if (xdw == null || ydw == null) {
           LogUtils.Log_ArgumentsNull(LOG);
         }
-        if (ix == 0) {
-          linestring.startPath(xdw.get(), ydw.get());
-        } else {
-          linestring.lineTo(xdw.get(), ydw.get());
-        }
+        coords[ix] = new Coordinate(xdw.get(), ydw.get());
       }
-
-      return GeometryUtils.geometryToEsriShapeBytesWritable(OGCGeometry.createFromEsriGeometry(linestring, null));
+      Geometry linestring = GeometryUtils.GEOMETRY_FACTORY.createLineString(coords);
+      return GeometryUtils.geometryToEsriShapeBytesWritable(linestring);
     } catch (Exception e) {
       LogUtils.Log_InternalError(LOG, "ST_LineString: " + e);
       return null;
@@ -111,11 +104,10 @@ public class ST_LineString extends ST_Geometry {
     }
 
     try {
-      Polyline linestring = new Polyline();
-
+      Coordinate[] coords = new Coordinate[points.size()];
       for (int ix = 0; ix < points.size(); ++ix) {
         BytesWritable geomref = points.get(ix);
-        OGCGeometry gcur = GeometryUtils.geometryFromEsriShape(geomref);
+        Geometry gcur = GeometryUtils.geometryFromEsriShape(geomref);
         if (gcur == null || GeometryUtils.getType(geomref) != GeometryUtils.OGCType.ST_POINT) {
           if (gcur == null)
             LogUtils.Log_ArgumentsNull(LOG);
@@ -123,14 +115,11 @@ public class ST_LineString extends ST_Geometry {
             LogUtils.Log_InvalidType(LOG, GeometryUtils.OGCType.ST_POINT, GeometryUtils.getType(geomref));
           return null;
         }
-        if (ix == 0) {
-          linestring.startPath((Point) gcur.getEsriGeometry());
-        } else {
-          linestring.lineTo((Point) gcur.getEsriGeometry());
-        }
+        Point pt = (Point) gcur;
+        coords[ix] = pt.getCoordinate();
       }
-
-      return GeometryUtils.geometryToEsriShapeBytesWritable(OGCGeometry.createFromEsriGeometry(linestring, null));
+      Geometry linestring = GeometryUtils.GEOMETRY_FACTORY.createLineString(coords);
+      return GeometryUtils.geometryToEsriShapeBytesWritable(linestring);
     } catch (Exception e) {
       LogUtils.Log_InternalError(LOG, "ST_LineString: " + e);
       return null;
@@ -141,10 +130,9 @@ public class ST_LineString extends ST_Geometry {
   public BytesWritable evaluate(Text wkwrap) throws UDFArgumentException {
     String wkt = wkwrap.toString();
     try {
-      OGCGeometry ogcObj = OGCGeometry.fromText(wkt);
-      ogcObj.setSpatialReference(null);
-      if (ogcObj.geometryType().equals("LineString")) {
-        return GeometryUtils.geometryToEsriShapeBytesWritable(ogcObj);
+      Geometry geom = GeometryUtils.wktReader().read(wkt);
+      if (geom.getGeometryType().equals("LineString")) {
+        return GeometryUtils.geometryToEsriShapeBytesWritable(geom);
       } else {
         LogUtils.Log_InvalidType(LOG, GeometryUtils.OGCType.ST_LINESTRING, GeometryUtils.OGCType.UNKNOWN);
         return null;

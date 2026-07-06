@@ -17,11 +17,11 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.ogc.OGCGeometry;
-import com.esri.core.geometry.ogc.OGCPoint;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.BytesWritable;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Point;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,19 +63,19 @@ public class ST_Z extends ST_GeometryAccessor {
       return null;
     }
 
-    OGCGeometry ogcGeometry = GeometryUtils.geometryFromEsriShape(geomref);
-    if (ogcGeometry == null) {
-      return null;
-    }
-    if (!ogcGeometry.is3D()) {
-      LogUtils.Log_Not3D(LOG);
+    Geometry geom = GeometryUtils.geometryFromEsriShape(geomref);
+    if (geom == null) {
       return null;
     }
 
     switch (GeometryUtils.getType(geomref)) {
     case ST_POINT:
-      OGCPoint pt = (OGCPoint) ogcGeometry;
-      resultDouble.set(pt.Z());
+      double z = ((Point) geom).getCoordinate().getZ();
+      if (Double.isNaN(z)) {
+        LogUtils.Log_Not3D(LOG);
+        return null;
+      }
+      resultDouble.set(z);
       return resultDouble;
     default:
       LogUtils.Log_InvalidType(LOG, GeometryUtils.OGCType.ST_POINT, GeometryUtils.getType(geomref));

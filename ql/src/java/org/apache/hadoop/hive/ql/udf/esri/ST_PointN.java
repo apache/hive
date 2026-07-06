@@ -17,14 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.Geometry;
-import com.esri.core.geometry.MultiPath;
-import com.esri.core.geometry.MultiPoint;
-import com.esri.core.geometry.Point;
-import com.esri.core.geometry.ogc.OGCGeometry;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.MultiPoint;
+import org.locationtech.jts.geom.Point;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,33 +65,32 @@ public class ST_PointN extends ST_GeometryAccessor {
       return null;
     }
 
-    OGCGeometry ogcGeometry = GeometryUtils.geometryFromEsriShape(geomref);
-    if (ogcGeometry == null) {
+    Geometry geom = GeometryUtils.geometryFromEsriShape(geomref);
+    if (geom == null) {
       LogUtils.Log_ArgumentsNull(LOG);
       return null;
     }
 
-    Geometry esriGeom = ogcGeometry.getEsriGeometry();
-    Point pn = null;
     int idx = index.get();
     idx = (idx == 0) ? 0 : idx - 1;  // consistency with SDE ST_Geometry
-    switch (esriGeom.getType()) {
-    case Line:
-    case Polyline:
-      MultiPath lines = (MultiPath) (esriGeom);
+
+    Point pn = null;
+    switch (GeometryUtils.getType(geomref)) {
+    case ST_LINESTRING:
+      LineString ls = (LineString) geom;
       try {
-        pn = lines.getPoint(idx);
+        pn = ls.getPointN(idx);
       } catch (Exception e) {
-        LogUtils.Log_InvalidIndex(LOG, idx + 1, 1, lines.getPointCount());
+        LogUtils.Log_InvalidIndex(LOG, idx + 1, 1, ls.getNumPoints());
         return null;
       }
       break;
-    case MultiPoint:
-      MultiPoint mp = (MultiPoint) (esriGeom);
+    case ST_MULTIPOINT:
+      MultiPoint mp = (MultiPoint) geom;
       try {
-        pn = mp.getPoint(idx);
+        pn = (Point) mp.getGeometryN(idx);
       } catch (Exception e) {
-        LogUtils.Log_InvalidIndex(LOG, idx + 1, 1, mp.getPointCount());
+        LogUtils.Log_InvalidIndex(LOG, idx + 1, 1, mp.getNumGeometries());
         return null;
       }
       break;
@@ -100,7 +98,6 @@ public class ST_PointN extends ST_GeometryAccessor {
       LogUtils.Log_InvalidType(LOG, GeometryUtils.OGCType.ST_LINESTRING, GeometryUtils.getType(geomref));
       return null;
     }
-    return GeometryUtils
-        .geometryToEsriShapeBytesWritable(pn, GeometryUtils.getWKID(geomref), GeometryUtils.OGCType.ST_POINT);
+    return GeometryUtils.geometryToEsriShapeBytesWritable(pn);
   }
 }

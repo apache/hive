@@ -17,12 +17,11 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.Geometry;
-import com.esri.core.geometry.GeometryEngine;
-import com.esri.core.geometry.ogc.OGCGeometry;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
+
+import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +30,7 @@ import org.slf4j.LoggerFactory;
     extended = "Example:\n" + "  SELECT _FUNC_(ST_Point(1.0, 2.0)) from onerow; -- {\"x\":1.0,\"y\":2.0}\n"
         + "  SELECT _FUNC_(ST_SetSRID(ST_Point(1, 1), 4326)) from onerow; -- {\"x\":1.0,\"y\":1.0,\"spatialReference\":{\"wkid\":4326}}")
 //@HivePdkUnitTests(
-//	cases = { 
+//	cases = {
 //		@HivePdkUnitTest(
 //			query = "select ST_AsJSON(ST_Point(1, 2)), ST_AsJSON(ST_SetSRID(ST_Point(1, 1), 4326)) from onerow",
 //			result = "{\"x\":1.0,\"y\":2.0}	{\"x\":1.0,\"y\":1.0,\"spatialReference\":{\"wkid\":4326}}"
@@ -55,14 +54,18 @@ public class ST_AsJson extends ST_Geometry {
       return null;
     }
 
-    OGCGeometry ogcGeometry = GeometryUtils.geometryFromEsriShape(geomref);
-    if (ogcGeometry == null) {
+    Geometry jtsGeom = GeometryUtils.geometryFromEsriShape(geomref);
+    if (jtsGeom == null) {
       LogUtils.Log_ArgumentsNull(LOG);
       return null;
     }
 
-    Geometry esriGeom = ogcGeometry.getEsriGeometry();
-    int wkid = GeometryUtils.getWKID(geomref);
-    return new Text(GeometryEngine.geometryToJson(wkid, esriGeom));
+    try {
+      int wkid = GeometryUtils.getWKID(geomref);
+      return new Text(EsriJsonConverter.geometryToEsriJson(jtsGeom, wkid));
+    } catch (Exception e) {
+      LOG.error(e.getMessage());
+      return null;
+    }
   }
 }
