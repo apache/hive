@@ -69,7 +69,6 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Stream;
 
@@ -83,7 +82,6 @@ import javax.security.sasl.SaslException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.auth.HiveAuthUtils;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -192,31 +190,6 @@ public class HiveConnection implements java.sql.Connection {
   private IJdbcBrowserClient browserClient;
 
   public TCLIService.Iface getClient() { return client; }
-
-  /**
-   * @return {@code hive.query.timeout.seconds} from the JDBC URL hive-conf map, in seconds,
-   *         or {@code -1} if not set or not parseable
-   */
-  long getSessionQueryTimeoutSeconds() {
-    if (connParams == null) {
-      return -1L;
-    }
-    Map<String, String> hiveConfs = connParams.getHiveConfs();
-    if (hiveConfs == null || hiveConfs.isEmpty()) {
-      return -1L;
-    }
-    String raw = hiveConfs.get(ConfVars.HIVE_QUERY_TIMEOUT_SECONDS.varname);
-    if (StringUtils.isBlank(raw)) {
-      return -1L;
-    }
-    try {
-      long sec = HiveConf.toTime(raw.trim(), TimeUnit.SECONDS, TimeUnit.SECONDS);
-      return sec > 0 ? sec : -1L;
-    } catch (Exception e) {
-      LOG.debug("Could not parse {} from JDBC URL: {}", ConfVars.HIVE_QUERY_TIMEOUT_SECONDS.varname, raw, e);
-      return -1L;
-    }
-  }
 
   /**
    * Get all direct HiveServer2 URLs from a ZooKeeper based HiveServer2 URL

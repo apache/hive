@@ -2785,8 +2785,9 @@ public class TestJdbcDriver2 {
   /**
    * Variant of {@link #testQueryTimeoutFromSetStatement}: the {@code SET} is issued on a separate,
    * already-closed statement; the timed-out query runs on a brand-new statement with no
-   * {@link Statement#setQueryTimeout(int)} call. HS2 returns {@code HYT00} with the session timeout,
-   * so the {@link SQLTimeoutException} message is correct without client-side tracking.
+   * {@link Statement#setQueryTimeout(int)} call. The timeout lives on the HS2 session, so it
+   * persists across client statement instances and the server-supplied {@link SQLTimeoutException}
+   * message must still reflect it correctly.
    */
   @Test
   public void testQueryTimeoutMessagePersistedAcrossStatements() throws Exception {
@@ -2800,7 +2801,7 @@ public class TestJdbcDriver2 {
     stmt2.execute("set hive.query.timeout.seconds=1s");
     stmt2.close();
 
-    // Brand-new statement, no setQueryTimeout() call – relies on HS2 timeout message (HYT00)
+    // Brand-new statement, no setQueryTimeout() call – relies solely on the HS2 session timeout
     Statement stmt = con.createStatement();
     System.err.println("Executing query (expecting timeout): ");
     try {
