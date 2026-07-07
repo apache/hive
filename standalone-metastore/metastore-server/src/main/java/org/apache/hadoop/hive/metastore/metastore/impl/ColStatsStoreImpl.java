@@ -292,7 +292,7 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
         throw new RetryingExecutor.RetryException(exceptionRef.get());
       }
       pm.refresh(mTable);
-      Table table = baseStore.unwrap(TableStore.class).getTable(new TableName(catName, statsDesc.getDbName(),
+      Table table = siblingStore(TableStore.class).getTable(new TableName(catName, statsDesc.getDbName(),
           statsDesc.getTableName()), null, -1);
       List<String> colNames = new ArrayList<>();
       for (ColumnStatisticsObj statsObj : statsObjs) {
@@ -387,7 +387,7 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
         throw new RetryingExecutor.RetryException(exceptionRef.get());
       }
       pm.refresh(mPartition);
-      Partition partition = baseStore.unwrap(TableStore.class)
+      Partition partition = siblingStore(TableStore.class)
           .getPartition(new TableName(catName, statsDesc.getDbName(), statsDesc.getTableName()), mPartition.getValues(), null);
       Map<String, MPartitionColumnStatistics> oldStats = Maps.newHashMap();
       List<MPartitionColumnStatistics> stats =
@@ -758,7 +758,7 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
         return null;
       }
 
-      Table table = baseStore.unwrap(TableStore.class).getTable(tableName, null, -1);
+      Table table = siblingStore(TableStore.class).getTable(tableName, null, -1);
       boolean isTxn = TxnUtils.isTransactionalTable(table.getParameters());
       if (isTxn && !areTxnStatsSupported) {
         return null;
@@ -769,7 +769,7 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
       GetProjectionsSpec ps = new GetProjectionsSpec();
       ps.setIncludeParamKeyPattern(StatsSetupConst.COLUMN_STATS_ACCURATE + '%');
       ps.setFieldList(Lists.newArrayList("writeId", "parameters", "values"));
-      List<Partition> parts = baseStore.unwrap(TableStore.class)
+      List<Partition> parts = siblingStore(TableStore.class)
           .getPartitionSpecsByFilterAndProjection(table, ps, fs);
 
       // Loop through the given "partNames" list
@@ -942,12 +942,12 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
       @Override
       protected Integer getJdoResult() throws MetaException, NoSuchObjectException {
         try {
-          List<Partition> parts = baseStore.unwrap(TableStore.class)
+          List<Partition> parts = siblingStore(TableStore.class)
               .getPartitions(tn, GetPartitionsArgs.getAllPartitions());
           for (Partition part : parts) {
             Partition newPart = new Partition(part);
             StatsSetupConst.clearColumnStatsState(newPart.getParameters());
-            baseStore.unwrap(TableStore.class).alterPartition(tn, part.getValues(), newPart, writeIdList);
+            siblingStore(TableStore.class).alterPartition(tn, part.getValues(), newPart, writeIdList);
           }
           return parts.size();
         } catch (InvalidObjectException e) {

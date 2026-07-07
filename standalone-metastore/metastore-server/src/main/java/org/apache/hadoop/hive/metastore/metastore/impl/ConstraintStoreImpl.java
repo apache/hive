@@ -77,7 +77,7 @@ public class ConstraintStoreImpl extends RawStoreBundle implements ConstraintSto
   @Override
   public SQLAllTableConstraints createTableWithConstraints(Table tbl, SQLAllTableConstraints constraints)
       throws InvalidObjectException, MetaException {
-    baseStore.unwrap(TableStore.class).createTable(tbl);
+    siblingStore(TableStore.class).createTable(tbl);
     // Add constraints.
     // We need not do a deep retrieval of the Table Column Descriptor while persisting the
     // constraints since this transaction involving create table is not yet committed.
@@ -208,7 +208,7 @@ public class ConstraintStoreImpl extends RawStoreBundle implements ConstraintSto
         // If retrieveCD is false, we do not need to do a deep retrieval of the Table Column Descriptor.
         // For instance, this is the case when we are creating the table.
         final TableStore.AttachedMTableInfo nChildTable =
-            baseStore.unwrap(TableStore.class).getMTable(new TableName(catName, fkTableDB, fkTableName), retrieveCD);
+            siblingStore(TableStore.class).getMTable(new TableName(catName, fkTableDB, fkTableName), retrieveCD);
         final MTable childTable = nChildTable.mtbl;
         if (childTable == null) {
           throw new InvalidObjectException("Child table not found: " + fkTableName);
@@ -242,7 +242,7 @@ public class ConstraintStoreImpl extends RawStoreBundle implements ConstraintSto
           existingTableUniqueConstraints = uniqueConstraints;
         } else {
           nParentTable =
-              baseStore.unwrap(TableStore.class).getMTable(new TableName(catName, pkTableDB, pkTableName), true);
+              siblingStore(TableStore.class).getMTable(new TableName(catName, pkTableDB, pkTableName), true);
           parentTable = nParentTable.mtbl;
           if (parentTable == null) {
             throw new InvalidObjectException("Parent table not found: " + pkTableName);
@@ -450,7 +450,7 @@ public class ConstraintStoreImpl extends RawStoreBundle implements ConstraintSto
 
       // If retrieveCD is false, we do not need to do a deep retrieval of the Table Column Descriptor.
       // For instance, this is the case when we are creating the table.
-      TableStore.AttachedMTableInfo nParentTable = baseStore.unwrap(TableStore.class)
+      TableStore.AttachedMTableInfo nParentTable = siblingStore(TableStore.class)
           .getMTable(new TableName(catName, tableDB, tableName), retrieveCD);
       MTable parentTable = nParentTable.mtbl;
       if (parentTable == null) {
@@ -535,7 +535,7 @@ public class ConstraintStoreImpl extends RawStoreBundle implements ConstraintSto
 
       // If retrieveCD is false, we do not need to do a deep retrieval of the Table Column Descriptor.
       // For instance, this is the case when we are creating the table.
-      TableStore.AttachedMTableInfo nParentTable = baseStore.unwrap(TableStore.class)
+      TableStore.AttachedMTableInfo nParentTable = siblingStore(TableStore.class)
           .getMTable(new TableName(catName, tableDB, tableName), retrieveCD);
       MTable parentTable = nParentTable.mtbl;
       if (parentTable == null) {
@@ -652,7 +652,7 @@ public class ConstraintStoreImpl extends RawStoreBundle implements ConstraintSto
     String constraintName = null;
     // If retrieveCD is false, we do not need to do a deep retrieval of the Table Column Descriptor.
     // For instance, this is the case when we are creating the table.
-    TableStore.AttachedMTableInfo nParentTable = baseStore.unwrap(TableStore.class)
+    TableStore.AttachedMTableInfo nParentTable = siblingStore(TableStore.class)
         .getMTable(new TableName(catName, tableDB, tableName), retrieveCD);
     MTable parentTable = nParentTable.mtbl;
     if (parentTable == null) {
@@ -743,7 +743,7 @@ public class ConstraintStoreImpl extends RawStoreBundle implements ConstraintSto
 
       // If retrieveCD is false, we do not need to do a deep retrieval of the Table Column Descriptor.
       // For instance, this is the case when we are creating the table.
-      TableStore.AttachedMTableInfo nParentTable = baseStore.unwrap(TableStore.class)
+      TableStore.AttachedMTableInfo nParentTable = siblingStore(TableStore.class)
           .getMTable(new TableName(catName, tableDB, tableName), retrieveCD);
       MTable parentTable = nParentTable.mtbl;
       if (parentTable == null) {

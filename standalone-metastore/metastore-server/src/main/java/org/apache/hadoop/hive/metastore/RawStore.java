@@ -2503,4 +2503,5 @@ public interface RawStore extends Configurable {
    * @throws RuntimeException If the context cannot be unwrapped to the provided class
    */
   <T> T unwrap(Class<T> iface);
+
 }

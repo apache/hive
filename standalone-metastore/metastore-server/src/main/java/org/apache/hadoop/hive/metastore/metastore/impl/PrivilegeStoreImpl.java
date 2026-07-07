@@ -1100,7 +1100,7 @@ public class PrivilegeStoreImpl extends RawStoreBundle implements PrivilegeStore
           }
         } else if (hiveObject.getObjectType() == HiveObjectType.PARTITION) {
           boolean found = false;
-          Table tabObj = baseStore.unwrap(TableStore.class).getTable(
+          Table tabObj = siblingStore(TableStore.class).getTable(
               new TableName(catName, hiveObject.getDbName(), hiveObject.getObjectName()), null, -1);
           String partName = null;
           if (hiveObject.getPartValues() != null) {
@@ -1133,7 +1133,7 @@ public class PrivilegeStoreImpl extends RawStoreBundle implements PrivilegeStore
             }
           }
         } else if (hiveObject.getObjectType() == HiveObjectType.COLUMN) {
-          Table tabObj = baseStore.unwrap(TableStore.class).getTable(
+          Table tabObj = siblingStore(TableStore.class).getTable(
               new TableName(catName, hiveObject.getDbName(), hiveObject.getObjectName()), null, -1);
           String partName = null;
           if (hiveObject.getPartValues() != null) {

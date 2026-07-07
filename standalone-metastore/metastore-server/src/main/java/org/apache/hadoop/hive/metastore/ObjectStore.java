@@ -118,6 +118,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.metastore.GetHelper;
 import org.apache.hadoop.hive.metastore.metastore.GetListHelper;
+import org.apache.hadoop.hive.metastore.metastore.PersistenceManagerProxy;
 import org.apache.hadoop.hive.metastore.metastore.iface.PrivilegeStore;
 import org.apache.hadoop.hive.metastore.model.MCatalog;
 import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
@@ -142,7 +143,6 @@ import org.apache.hadoop.hive.metastore.model.MVersionTable;
 import org.apache.hadoop.hive.metastore.model.MReplicationMetrics;
 import org.apache.hadoop.hive.metastore.properties.CachingPropertyStore;
 import org.apache.hadoop.hive.metastore.properties.PropertyStore;
-import org.apache.hadoop.hive.metastore.metastore.PersistenceManagerProxy;
 import org.apache.hadoop.hive.metastore.metastore.RawStoreBundle;
 import org.apache.hadoop.hive.metastore.metastore.MetaDescriptor;
 import org.apache.hadoop.hive.metastore.metastore.TransactionHandler;
@@ -207,7 +207,6 @@ public class ObjectStore implements RawStore, Configurable {
   private Transaction currentTransaction = null;
   private TXN_STATUS transactionStatus = TXN_STATUS.NO_STATE;
   private PropertyStore propertyStore;
-  private final Map<Class<?>, Object> cachedImpls = new HashMap<>();
 
   public ObjectStore() {
   }
@@ -382,7 +381,6 @@ public class ObjectStore implements RawStore, Configurable {
       pm.close();
       pm = null;
     }
-    cachedImpls.clear();
   }
 
   /**
@@ -412,31 +410,26 @@ public class ObjectStore implements RawStore, Configurable {
     return result;
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked, rawtypes")
   @Override
   public <T> T unwrap(Class<T> iface) {
     MetaDescriptor descriptor = iface.getAnnotation(MetaDescriptor.class);
     if (descriptor == null) {
       throw new IllegalArgumentException("Unable to unwrap the store as " + iface);
     }
-    String implClassName = conf.get("metastore." + descriptor.alias() + ".store.impl", "");
-    T simpl;
-    T impl = (T) cachedImpls.get(iface);
-    if (impl != null &&
-        (StringUtils.isEmpty(implClassName) || impl.getClass().getName().equals(implClassName))) {
-      simpl = impl;
-    } else {
-      Class<?> ifaceImpl = descriptor.defaultImpl();
-      if (StringUtils.isNotEmpty(implClassName)) {
-        ifaceImpl = conf.getClass(implClassName, ifaceImpl);
-      }
-      simpl = (T) JavaUtils.newInstance(ifaceImpl);
-      cachedImpls.put(iface, simpl);
+    String implClassName =
+        conf.get("metastore." + descriptor.alias() + ".store.impl", "");
+    Class<?> ifaceImpl = descriptor.defaultImpl();
+    if (StringUtils.isNotEmpty(implClassName)) {
+      ifaceImpl = conf.getClass(implClassName, ifaceImpl);
     }
+    T simpl = (T) JavaUtils.newInstance(ifaceImpl);
     List<Query> openQueries = new LinkedList<>();
     if (simpl instanceof RawStoreBundle rsb) {
       rsb.setBaseStore(this);
-      rsb.setPersistentManager(PersistenceManagerProxy.getProxy(pm, openQueries));
+      if (pm != null) {
+        rsb.setPersistentManager(PersistenceManagerProxy.getProxy(pm, openQueries));
+      }
     }
     return TransactionHandler.getProxy(iface, new TransactionHandler<>(this, simpl, openQueries));
   }
