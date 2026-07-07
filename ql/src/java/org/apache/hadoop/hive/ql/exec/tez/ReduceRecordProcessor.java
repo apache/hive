@@ -358,13 +358,16 @@ public class ReduceRecordProcessor extends RecordProcessor {
       if (abort) {
         setAborted(true);
       }
-      reducer.close(abort);
+      // Close Tree1 (DummyStore chain) before Tree2 (MergeJoin chain).
+      // DummyStore.closeOp() removes itself from MergeJoin.parentOperators, so that when
+      // Tree2 closes, MergeJoin.allInitializedParentsAreClosed() returns true and
+      // checkAndGenObject() fires to emit the last join group.
       if (mergeWorkList != null) {
         for (BaseWork redWork : mergeWorkList) {
           ((ReduceWork) redWork).getReducer().close(abort);
         }
       }
-
+      reducer.close(abort);
       // Need to close the dummyOps as well. The operator pipeline
       // is not considered "closed/done" unless all operators are
       // done. For broadcast joins that includes the dummy parents.

@@ -18,8 +18,11 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.util.List;
+
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
  * A dummy store operator same as the dummy store operator but for tez. This is required so that we
@@ -59,6 +62,16 @@ public class TezDummyStoreOperator extends DummyStoreOperator {
 
   @Override
   public void closeOp(boolean abort) throws HiveException {
+    List<Operator<? extends OperatorDesc>> children = getChildOperators();
+    if (children != null && !children.isEmpty()) {
+      for (Operator<? extends OperatorDesc> child : children) {
+        List<Operator<? extends OperatorDesc>> parents = child.getParentOperators();
+        if (parents != null) {
+          parents.remove(this);
+        }
+      }
+      children.clear();
+    }
     super.closeOp(abort);
     fetchDone = false;
   }
