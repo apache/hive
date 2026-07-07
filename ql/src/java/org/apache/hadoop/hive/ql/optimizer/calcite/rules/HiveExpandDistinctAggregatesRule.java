@@ -161,7 +161,14 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
     // arguments then we can use a more efficient form.
     final RelMetadataQuery mq = call.getMetadataQuery();
     if ((nonDistinctCount == 0) && (argListSets.size() == 1)) {
-      for (Integer arg : argListSets.iterator().next()) {
+      List<Integer> argList = argListSets.iterator().next();
+      // When COUNT(DISTINCT a, b, ...) has multiple columns convertMonopole -> rewriteAggCalls 
+      // would produce COUNT(a, b) without DISTINCT at the top level, which is semantically 
+      // wrong and is rejected by GenericUDAFCount.
+      if (argList.size() > 1 && numCountDistinct > 0) {
+        return;
+      }
+      for (Integer arg : argList) {
         Set<RelColumnOrigin> colOrigs = mq.getColumnOrigins(aggregate.getInput(), arg);
         if (null != colOrigs) {
           for (RelColumnOrigin colOrig : colOrigs) {
@@ -173,12 +180,8 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
           }
         }
       }
-      RelNode converted =
-          convertMonopole(
-              aggregate,
-              argListSets.iterator().next());
+      RelNode converted = convertMonopole(aggregate, argList);
       call.transformTo(converted);
-      return;
     }
   }
 
