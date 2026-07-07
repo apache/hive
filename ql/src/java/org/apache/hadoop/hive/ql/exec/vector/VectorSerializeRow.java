@@ -176,6 +176,10 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
         field.children = createFields(objectTypeInfos.toArray(new TypeInfo[objectTypeInfos.size()]));
         field.writer = new VectorSerializeUnionWriter();
         break;
+      case UNKNOWN:
+        field.children = new Field[0];
+        field.writer = new VectorSerializeUnknownWriter();
+        break;
       default:
         throw new RuntimeException();
       }
@@ -576,6 +580,13 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
     void serialize(Object colInfo, Field field, int adjustedBatchIndex) throws IOException {
       serializeWrite.writeHiveIntervalDayTime(
               ((IntervalDayTimeColumnVector) colInfo).asScratchIntervalDayTime(adjustedBatchIndex));
+    }
+  }
+
+  class VectorSerializeUnknownWriter extends VectorSerializeWriter {
+    @Override
+    void serialize(Object colInfo, Field field, int adjustedBatchIndex) throws IOException {
+      // Unknown type values are always null and handled before the writer is invoked.
     }
   }
 

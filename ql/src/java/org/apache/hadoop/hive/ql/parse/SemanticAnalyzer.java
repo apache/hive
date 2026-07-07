@@ -9121,6 +9121,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // JSON-format. However, we may add more operators.
     // Thus, we still keep the conversion.
     if (!tableFieldTypeInfo.equals(rowFieldTypeInfo)) {
+      if (TypeInfoUtils.isVoidCompatibleTarget(rowFieldTypeInfo, tableFieldTypeInfo)) {
+        return column;
+      }
       // need to do some conversions here
       conversion.set(true);
       if (tableFieldTypeInfo.getCategory() != Category.PRIMITIVE) {
@@ -9343,8 +9346,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           rowFields.get(posn).getInternalName(), rowFields.get(posn).getTabAlias(),
           rowFields.get(posn).getIsVirtualCol());
 
-      if (convert && !tableFieldTypeInfo.equals(rowFieldTypeInfo)) {
-        // need to do some conversions here
+      if (convert && !tableFieldTypeInfo.equals(rowFieldTypeInfo)
+          && !TypeInfoUtils.isVoidCompatibleTarget(rowFieldTypeInfo, tableFieldTypeInfo)) {
         if (tableFieldTypeInfo.getCategory() != Category.PRIMITIVE) {
           // cannot convert to complex types
           column = null;

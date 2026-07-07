@@ -90,6 +90,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.hadoop.hive.serde.serdeConstants.UNKNOWN_TYPE_NAME;
 import static org.apache.hadoop.hive.serde.serdeConstants.VARIANT_TYPE_NAME;
 
 /**
@@ -1393,6 +1394,7 @@ public class Table implements Serializable {
 
   private static boolean isUnsupportedInNonIceberg(String columnType) {
     return VARIANT_TYPE_NAME.equalsIgnoreCase(columnType) ||
+        UNKNOWN_TYPE_NAME.equalsIgnoreCase(columnType) ||
         TypeInfoFactory.nanoTimestampTypeInfo.getQualifiedName().equalsIgnoreCase(columnType) ||
         TypeInfoFactory.timestampNanoLocalTZTypeInfo.getQualifiedName().equalsIgnoreCase(columnType);
   }

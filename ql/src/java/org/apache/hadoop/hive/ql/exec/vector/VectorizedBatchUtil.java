@@ -208,6 +208,8 @@ public class VectorizedBatchUtil {
             createColumnVector(mapTypeInfo.getMapKeyTypeInfo()),
             createColumnVector(mapTypeInfo.getMapValueTypeInfo()));
       }
+    case UNKNOWN:
+      return new VoidColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
     default:
       throw new RuntimeException("Vectorization is not supported for datatype:"
           + typeInfo.getCategory());

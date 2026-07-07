@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
@@ -169,6 +170,35 @@ public class TestHiveSchemaUtil {
         Collections.singletonList("customer comment"));
 
     assertThat(schema.asStruct()).isEqualTo(expected.asStruct());
+  }
+
+  @Test
+  public void testUnknownTypeConvertToIcebergSchema() {
+    List<FieldSchema> hiveSchema = ImmutableList.of(
+        new FieldSchema("id", serdeConstants.INT_TYPE_NAME, null),
+        new FieldSchema("placeholder", serdeConstants.UNKNOWN_TYPE_NAME, "placeholder comment"));
+    Schema expected = new Schema(
+        optional(1, "id", Types.IntegerType.get()),
+        optional(2, "placeholder", Types.UnknownType.get(), "placeholder comment"));
+
+    assertThat(HiveSchemaUtil.convert(hiveSchema).asStruct()).isEqualTo(expected.asStruct());
+  }
+
+  @Test
+  public void testUnknownTypeConvertToHiveSchema() {
+    Schema icebergSchema = new Schema(
+        optional(1, "id", Types.IntegerType.get()),
+        optional(2, "placeholder", Types.UnknownType.get(), "placeholder comment"));
+    List<FieldSchema> expected = ImmutableList.of(
+        new FieldSchema("id", serdeConstants.INT_TYPE_NAME, null),
+        new FieldSchema("placeholder", serdeConstants.UNKNOWN_TYPE_NAME, "placeholder comment"));
+
+    assertThat(HiveSchemaUtil.convert(icebergSchema)).isEqualTo(expected);
+  }
+
+  @Test
+  public void testUnknownTypeAndTypeInfoConvert() {
+    checkConvert(TypeInfoFactory.getUnknownTypeInfo(), Types.UnknownType.get());
   }
 
   protected List<FieldSchema> getSupportedFieldSchemas() {

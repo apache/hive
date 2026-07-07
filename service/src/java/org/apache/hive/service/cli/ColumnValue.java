@@ -219,6 +219,8 @@ public class ColumnValue {
       return stringValue((String)value);
     case NULL_TYPE:
       return stringValue((String)value);
+    case UNKNOWN_TYPE:
+      return stringValue((String)value);
     default:
       return null;
     }
