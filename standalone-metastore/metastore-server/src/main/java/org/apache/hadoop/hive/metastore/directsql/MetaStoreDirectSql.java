@@ -133,6 +133,7 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hive.common.util.BloomFilter;
 import org.datanucleus.store.rdbms.query.ForwardQueryResult;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -540,59 +541,125 @@ public class MetaStoreDirectSql {
     if (cols == null || cols.isEmpty()) {
       return null;
     }
-    Query<?> query = null;
-    try {
-      // TODO: Is there a more efficient query? Should we add a limit?
-      String findDesciptorsSql = "SELECT DISTINCT \"SDS\".\"CD_ID\" FROM \"SDS\" "
-              + "INNER JOIN \"COLUMNS_V2\" ON \"SDS\".\"CD_ID\" = \"COLUMNS_V2\".\"CD_ID\" "
-              + "WHERE \"SDS\".\"SD_ID\" IN ("
-              + "SELECT \"SD_ID\" FROM \"PARTITIONS\" WHERE \"TBL_ID\" = ?"
-              + ") GROUP BY \"SDS\".\"CD_ID\", \"SDS\".\"SD_ID\" HAVING COUNT(*) = ?";
-      query = pm.newQuery("javax.jdo.query.SQL", findDesciptorsSql);
-      List<Long> candidateIds = executeWithArray(query, new Object[]{tblId, cols.size()}, findDesciptorsSql);
-      if (candidateIds == null || candidateIds.isEmpty()) {
-        return null;
-      }
 
-      for (Long cdId : candidateIds) {
-        if (descriptorHasColumns(cdId, cols)) {
-          return pm.getObjectById(MColumnDescriptor.class, cdId);
-        }
-      }
-    } finally {
-      if (query != null) {
-        query.closeAll();
-      }
+    List<Long> cdCandidates = findTheLatestColumnDescriptors(tblId);
+
+    cdCandidates = filterCandidatesByColumnCount(cdCandidates, cols.size());
+
+    Long matchedColumnDescriptorId = matchColumnDescriptorWithActualColumns(cdCandidates, cols);
+
+    if (matchedColumnDescriptorId != null) {
+      return pm.getObjectById(MColumnDescriptor.class, matchedColumnDescriptorId);
     }
+
     return null;
   }
 
-  private boolean descriptorHasColumns(Long cdId, List<FieldSchema> cols) throws MetaException {
-    String findColumnSql = "SELECT \"COLUMN_NAME\", \"TYPE_NAME\", \"COMMENT\" FROM \"COLUMNS_V2\" "
-        + "WHERE \"CD_ID\" = ? ORDER BY \"INTEGER_IDX\"";
-    Query query = null;
+  private @Nullable List<Long> findTheLatestColumnDescriptors(long tblId) throws MetaException {
+    Query<?> query = null;
     try {
-      query = pm.newQuery("javax.jdo.query.SQL", findColumnSql);
-      List<Object[]> rows = executeWithArray(query, new Object[] {cdId}, findColumnSql);
-      if (rows != null && rows.size() == cols.size()) {
-        boolean match = true;
-        for (int i = 0; i < cols.size(); i++) {
-          Object[] row = rows.get(i);
-          FieldSchema col = new FieldSchema(String.valueOf(row[0]), String.valueOf(row[1]), String.valueOf(row[2]));
-          if (!cols.get(i).equals(col)) {
-            match = false;
-            break;
-          }
-        }
-        return match;
+      String findLatestDescriptorsSql = """
+        SELECT s."CD_ID"
+        FROM "PARTITIONS" p
+        JOIN "SDS" s ON s."SD_ID" = p."SD_ID"
+        WHERE p."TBL_ID" = ?
+        GROUP BY s."CD_ID"
+        ORDER BY MAX(p."PART_ID") DESC
+      """;
+      query = pm.newQuery("javax.jdo.query.SQL", findLatestDescriptorsSql);
+
+      List<Object> sqlResult = executeWithArray(query, new Object[]{ tblId }, findLatestDescriptorsSql);
+      if (sqlResult == null || sqlResult.isEmpty()) {
+        return null;
       }
-      return false;
+
+      List<Long> latestColumnDescriptorIds = new  ArrayList<>();
+      for (Object cdId : sqlResult) {
+        latestColumnDescriptorIds.add((Long) cdId);
+      }
+      return latestColumnDescriptorIds;
+
     } finally {
       if (query != null) {
         query.closeAll();
       }
     }
   }
+
+  private List<Long> filterCandidatesByColumnCount(List<Long> cdCandidates, int size) throws MetaException {
+    Query<?> query = null;
+    try {
+      String placeholders = cdCandidates.stream()
+          .map(c -> "?")
+          .collect(Collectors.joining(", "));
+
+      String candidatesWithProperColumnCountSql = String.format("""
+        SELECT c."CD_ID"
+        FROM "COLUMNS_V2" c
+        WHERE c."CD_ID" IN (%s)
+        GROUP BY c."CD_ID"
+        HAVING COUNT(*) = ?
+      """, placeholders);
+
+      query = pm.newQuery("javax.jdo.query.SQL", candidatesWithProperColumnCountSql);
+
+      Object[] params = new Object[cdCandidates.size() + 1];
+      for (int i = 0; i < cdCandidates.size(); i++) {
+        params[i] = cdCandidates.get(i);
+      }
+      params[cdCandidates.size()] = size;
+
+      List<Object> result = executeWithArray(query, params, candidatesWithProperColumnCountSql);
+
+      if (result == null || result.isEmpty()) {
+        return null;
+      }
+
+      List<Long> candidateIds = new  ArrayList<>();
+      for (Object cdId : result) {
+        candidateIds.add((Long) cdId);
+      }
+
+      return candidateIds;
+
+    } finally {
+      if (query != null) {
+        query.closeAll();
+      }
+    }
+  }
+
+  private Long matchColumnDescriptorWithActualColumns(List<Long> cdCandidates, List<FieldSchema> cols)
+      throws MetaException {
+    String findColumnSql = "SELECT \"COLUMN_NAME\", \"TYPE_NAME\", \"COMMENT\" FROM \"COLUMNS_V2\" "
+        + "WHERE \"CD_ID\" = ? ORDER BY \"INTEGER_IDX\"";
+
+    for (Long candidate: cdCandidates) {
+      Query query = null;
+      try {
+        query = pm.newQuery("javax.jdo.query.SQL", findColumnSql);
+        List<Object[]> rows = executeWithArray(query, new Object[] {candidate}, findColumnSql);
+        if (rows != null && rows.size() == cols.size()) {
+          for (int i = 0; i < cols.size(); i++) {
+            Object[] row = rows.get(i);
+            FieldSchema col = new FieldSchema(String.valueOf(row[0]), String.valueOf(row[1]), String.valueOf(row[2]));
+            if (!cols.get(i).equals(col)) {
+              break;
+            }
+          }
+          return candidate;
+        }
+        return null;
+      } finally {
+        if (query != null) {
+          query.closeAll();
+        }
+      }
+    }
+
+    return null;
+  }
+
   /**
    * Alter partitions in batch using direct SQL
    * @param table the target table

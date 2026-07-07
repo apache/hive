@@ -32,6 +32,11 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.DatabaseRule;
+import org.apache.hadoop.hive.metastore.dbinstall.rules.Derby;
+import org.apache.hadoop.hive.metastore.dbinstall.rules.Mariadb;
+import org.apache.hadoop.hive.metastore.dbinstall.rules.Mssql;
+import org.apache.hadoop.hive.metastore.dbinstall.rules.Mysql;
+import org.apache.hadoop.hive.metastore.dbinstall.rules.Oracle;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Postgres;
 import org.junit.After;
 import org.junit.Before;
@@ -56,7 +61,7 @@ public class TestHMSColumnDescriptorReuse {
   // Use Postgres instead of Derby for facilitate debugging and looking into the database
   // In the final version we should rather use Derby
   // TODO: Beore merging we should test with all supported DBMS
-  private static final DatabaseRule DB = new Postgres();
+  private static final DatabaseRule DB = new Oracle();
 
   @Before
   public void setUp() throws Exception {
@@ -118,7 +123,7 @@ public class TestHMSColumnDescriptorReuse {
 
   private int countColumnDescriptors() {
     try(Connection c = DriverManager.getConnection(DB.getJdbcUrl(), DB.getHiveUser(), DB.getHivePassword())){
-      try(ResultSet rs = c.prepareStatement("SELECT COUNT(*) FROM \"CDS\"").executeQuery()) {
+      try(ResultSet rs = c.prepareStatement("SELECT COUNT(*) FROM CDS").executeQuery()) {
         rs.next();
         return rs.getInt(1);
       }
