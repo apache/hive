@@ -140,8 +140,6 @@ class VectorSpillBlockContainer {
     boolean[] isLastGroupBatch;
 
     /**
-     */
-    /**
      * <pre>
       * Deserializer needs to know which columns to put the deserialized values into. Basically,
       * deserialization can happen in 2 cases:
