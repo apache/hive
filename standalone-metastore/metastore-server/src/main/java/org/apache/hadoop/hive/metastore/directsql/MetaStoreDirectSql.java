@@ -33,6 +33,7 @@ import static org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils
 import static org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils.makeParams;
 import static org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils.prepareParams;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -536,12 +537,22 @@ public class MetaStoreDirectSql {
     directSqlInsertPart.addPartitions(parts, partPrivilegesList, partColPrivilegesList);
   }
 
+  /**
+   * Gets a suitable column descriptor for an existing table, based on the latest partitions
+   *
+   * @param cols column list of a partition
+   * @param tblId table id
+   * @return an existing column descriptor which columns matches with @cols.  Null if there is no match.
+   * @throws MetaException
+   */
   public MColumnDescriptor getColumnDescriptor(List<FieldSchema> cols, long tblId)
       throws MetaException {
+
     if (cols == null || cols.isEmpty()) {
       return null;
     }
 
+    // Please note! In case you modify any of those methods, run TestHMSColumnDescriptorReuse with all the supported databases
     List<Long> cdCandidates = findTheLatestColumnDescriptors(tblId);
 
     cdCandidates = filterCandidatesByColumnCount(cdCandidates, cols.size());
@@ -575,7 +586,7 @@ public class MetaStoreDirectSql {
 
       List<Long> latestColumnDescriptorIds = new  ArrayList<>();
       for (Object cdId : sqlResult) {
-        latestColumnDescriptorIds.add((Long) cdId);
+        latestColumnDescriptorIds.add(extractLongValue(cdId));
       }
       return latestColumnDescriptorIds;
 
@@ -617,7 +628,7 @@ public class MetaStoreDirectSql {
 
       List<Long> candidateIds = new  ArrayList<>();
       for (Object cdId : result) {
-        candidateIds.add((Long) cdId);
+        candidateIds.add(extractLongValue(cdId));
       }
 
       return candidateIds;
@@ -655,6 +666,17 @@ public class MetaStoreDirectSql {
           query.closeAll();
         }
       }
+    }
+
+    return null;
+  }
+
+  private Long extractLongValue(Object cdId) {
+    if (cdId instanceof Long) {
+      return (Long) cdId;
+    }
+    if (cdId instanceof BigDecimal) {
+      return ((BigDecimal) cdId).longValue();
     }
 
     return null;

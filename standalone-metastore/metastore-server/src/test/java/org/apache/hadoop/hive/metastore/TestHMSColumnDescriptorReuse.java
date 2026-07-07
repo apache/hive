@@ -21,10 +21,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -33,11 +31,6 @@ import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.DatabaseRule;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Derby;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Mariadb;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Mssql;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Mysql;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Oracle;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Postgres;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,15 +51,15 @@ import static org.junit.Assert.assertEquals;
 @Category(MetastoreUnitTest.class)
 public class TestHMSColumnDescriptorReuse {
   private ObjectStore objectStore = null;
-  // Use Postgres instead of Derby for facilitate debugging and looking into the database
-  // In the final version we should rather use Derby
-  // TODO: Beore merging we should test with all supported DBMS
-  private static final DatabaseRule DB = new Oracle();
+  // Modify to try out with different databases.
+  // Keep it on Derby once you commit your change. It makes the test execution faster.
+  private static final DatabaseRule DB = new Derby();
 
   @Before
   public void setUp() throws Exception {
     DB.before();
     DB.install();
+
     Configuration conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY, DB.getJdbcUrl());
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECTION_DRIVER, DB.getJdbcDriver());
@@ -96,33 +89,39 @@ public class TestHMSColumnDescriptorReuse {
   }
 
   @Test
-  public void testAddPartitionAlterAddPartition() throws MetaException, InvalidObjectException, InvalidInputException, NoSuchObjectException {
+  public void testAddPartitionAlterAddPartition() throws MetaException, InvalidObjectException {
     FieldSchema id = new FieldSchema("id", ColumnType.STRING_TYPE_NAME, "");
     FieldSchema fname = new FieldSchema("fname", ColumnType.STRING_TYPE_NAME, "");
     FieldSchema country = new FieldSchema("country", ColumnType.STRING_TYPE_NAME, "");
 
-    Table tbl1 = newTable("person", Arrays.asList(id, fname), Collections.singletonList(country));
+    Table tbl1 = newTable(Arrays.asList(id, fname), Collections.singletonList(country));
     objectStore.createTable(tbl1);
     objectStore.addPartition(newPart(tbl1, "US"));
     objectStore.addPartition(newPart(tbl1, "Greece"));
     FieldSchema lname = new FieldSchema("lname", ColumnType.STRING_TYPE_NAME, "");
-    Table tbl2 = newTable("person", Arrays.asList(id, fname, lname), Collections.singletonList(country));
+
+    Table tbl2 = newTable(Arrays.asList(id, fname, lname), Collections.singletonList(country));
     objectStore.alterTable(DEFAULT_CATALOG_NAME, tbl1.getDbName(), tbl1.getTableName(), tbl2, null);
     objectStore.addPartition(newPart(tbl2, "Italy"));
+
     // Mimics replication scenario where we are adding partitions to the "same" table but with a different schema.
     // The tbl1 is using the old storage descriptor so "Germany" and "Belgium" partitions will have the old schema
     // And will lead to "duplicate" entries in "CDS" and "COLUMNS_V2" tables.
     objectStore.addPartition(newPart(tbl1, "Germany"));
     objectStore.addPartition(newPart(tbl1, "Belgium"));
+
     // On the other hand the addition of a partition to the table with the new schema is successfully using the
     // existing storage/column descriptors
     objectStore.addPartition(newPart(tbl2, "England"));
-    // This assertion could be more elaborate and not just a simple count
+
     assertEquals(2, countColumnDescriptors());
   }
 
   private int countColumnDescriptors() {
     try(Connection c = DriverManager.getConnection(DB.getJdbcUrl(), DB.getHiveUser(), DB.getHivePassword())){
+      // Postgres is the only database that requires quote characters around the column.
+      // Add the quote characters manually if you want to test with Postgres now.
+      // Todo: unify this solution
       try(ResultSet rs = c.prepareStatement("SELECT COUNT(*) FROM CDS").executeQuery()) {
         rs.next();
         return rs.getInt(1);
@@ -132,8 +131,9 @@ public class TestHMSColumnDescriptorReuse {
     }
   }
 
-  private static Table newTable(String name, List<FieldSchema> columns, List<FieldSchema> partCols ) {
+  private static Table newTable(List<FieldSchema> columns, List<FieldSchema> partCols ) {
     int timeSec = (int) System.currentTimeMillis() / 1000;
+
     StorageDescriptor sd = new StorageDescriptor(columns,
             "/fake/location/person",
             "org.apache.hadoop.mapred.TextInputFormat",
@@ -144,21 +144,25 @@ public class TestHMSColumnDescriptorReuse {
             null,
             null,
             null);
+
     HashMap<String, String> tableParams = new HashMap<>();
     tableParams.put("EXTERNAL", "false");
+
     return
-            new Table(name, "default", "owner", timeSec, timeSec, 3, sd, partCols,
+            new Table("person", "default", "owner", timeSec, timeSec, 3, sd, partCols,
                     tableParams, null, null, "MANAGED_TABLE");
   }
 
   private static Partition newPart(Table tbl, String value) {
     int timeSec = (int) System.currentTimeMillis() / 1000;
     HashMap<String, String> partitionParams = new HashMap<>();
+
     partitionParams.put("PARTITION_LEVEL_PRIVILEGE", "true");
     StorageDescriptor psd = tbl.getSd().deepCopy();
     psd.setLocation(psd.getLocation() + "/" + value);
     Partition p = new Partition(Collections.singletonList(value), tbl.getDbName(), tbl.getTableName(), timeSec, timeSec, psd, partitionParams);
     p.setCatName(DEFAULT_CATALOG_NAME);
+
     return p;
   }
 
