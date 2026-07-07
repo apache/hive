@@ -257,39 +257,43 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
   }
 
 
-  @SuppressWarnings({ "rawtypes", "unchecked" })
+  @SuppressWarnings("unchecked")
   private LlapBufferOrBuffers wrapBbForFile(LlapBufferOrBuffers result,
       Object fileKey, int length, InputStream stream, CacheTag tag, AtomicBoolean isStopped) throws IOException {
-    if (result != null) return result;
+    if (result != null) {
+      return result;
+    }
     int maxAlloc = allocator.getMaxAllocation();
-    LlapMetadataBuffer<Object>[] largeBuffers = null;
-    if (maxAlloc < length) {
-      largeBuffers = new LlapMetadataBuffer[length / maxAlloc];
-      for (int i = 0; i < largeBuffers.length; ++i) {
-        largeBuffers[i] = new LlapMetadataBuffer<>(fileKey, tag);
-      }
-      allocator.allocateMultiple(largeBuffers, maxAlloc, null, isStopped);
-      for (int i = 0; i < largeBuffers.length; ++i) {
-        readIntoCacheBuffer(stream, maxAlloc, largeBuffers[i]);
-      }
+    if (length <= maxAlloc) {
+      // The whole footer fits in a single buffer - the overwhelmingly common case.
+      LlapMetadataBuffer<Object> buffer = new LlapMetadataBuffer<>(fileKey, tag);
+      allocator.allocateMultiple(new MemoryBuffer[] { buffer }, length, null, isStopped);
+      readIntoCacheBuffer(stream, length, buffer);
+      return buffer;
+    }
+    // Larger footers are split across maxAlloc-sized chunks, the last one holding the remainder.
+    LlapMetadataBuffer<Object>[] largeBuffers = new LlapMetadataBuffer[length / maxAlloc];
+    for (int i = 0; i < largeBuffers.length; ++i) {
+      largeBuffers[i] = new LlapMetadataBuffer<>(fileKey, tag);
+    }
+    allocator.allocateMultiple(largeBuffers, maxAlloc, null, isStopped);
+    for (int i = 0; i < largeBuffers.length; ++i) {
+      readIntoCacheBuffer(stream, maxAlloc, largeBuffers[i]);
     }
     int smallSize = length % maxAlloc;
     if (smallSize == 0) {
-      return new LlapMetadataBuffers(largeBuffers);
-    } else {
-      LlapMetadataBuffer<Object>[] smallBuffer = new LlapMetadataBuffer[1];
-      smallBuffer[0] = new LlapMetadataBuffer(fileKey, tag);
-      allocator.allocateMultiple(smallBuffer, length, null, isStopped);
-      readIntoCacheBuffer(stream, smallSize, smallBuffer[0]);
-      if (largeBuffers == null) {
-        return smallBuffer[0]; // This is the overwhelmingly common case.
-      } else {
-        LlapMetadataBuffer<Object>[] cacheData = new LlapMetadataBuffer[largeBuffers.length + 1];
-        System.arraycopy(largeBuffers, 0, cacheData, 0, largeBuffers.length);
-        cacheData[largeBuffers.length] = smallBuffer[0];
-        return new LlapMetadataBuffers<>(cacheData);
-      }
+      return new LlapMetadataBuffers<>(largeBuffers);
     }
+    // Allocate the remainder only; the last chunk is smaller than maxAlloc.
+    LlapMetadataBuffer<Object> smallBuffer = new LlapMetadataBuffer<>(fileKey, tag);
+    allocator.allocateMultiple(new MemoryBuffer[] { smallBuffer }, smallSize, null, isStopped);
+    readIntoCacheBuffer(stream, smallSize, smallBuffer);
+
+    LlapMetadataBuffer<Object>[] cacheData = new LlapMetadataBuffer[largeBuffers.length + 1];
+    System.arraycopy(largeBuffers, 0, cacheData, 0, largeBuffers.length);
+    cacheData[largeBuffers.length] = smallBuffer;
+
+    return new LlapMetadataBuffers<>(cacheData);
   }
 
   private static void readIntoCacheBuffer(

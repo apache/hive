@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.llap.cache;
 import static org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer.INVALIDATE_OK;
 import static org.junit.Assert.*;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Random;
@@ -51,7 +52,9 @@ import org.apache.orc.impl.OrcTail;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestOrcMetadataCache {
+public class TestMetadataCache {
+  private static final int MAX_ALLOC = 64;
+
   private static class DummyCachePolicy implements LowLevelCachePolicy {
     int lockCount = 0, unlockCount = 0;
 
@@ -115,12 +118,7 @@ public class TestOrcMetadataCache {
 
   @Test
   public void testCaseSomePartialBuffersAreEvicted() {
-    final DummyMemoryManager mm = new DummyMemoryManager();
-    final DummyCachePolicy cp = new DummyCachePolicy();
-    final int MAX_ALLOC = 64;
-    final LlapDaemonCacheMetrics metrics = LlapDaemonCacheMetrics.create("", "");
-    final BuddyAllocator alloc = new BuddyAllocator(false, false, 8, MAX_ALLOC, 1, 4096, 0, null, mm, metrics, null, true);
-    final MetadataCache cache = new MetadataCache(alloc, mm, cp, true, metrics);
+    final MetadataCache cache = newMetadataCache();
     final Object fileKey1 = new Object();
     final Random rdm = new Random();
     final ByteBuffer smallBuffer = ByteBuffer.allocate(2 * MAX_ALLOC);
@@ -138,14 +136,8 @@ public class TestOrcMetadataCache {
   }
 
   @Test
-  public void testBuffers() throws Exception {
-    DummyMemoryManager mm = new DummyMemoryManager();
-    DummyCachePolicy cp = new DummyCachePolicy();
-    final int MAX_ALLOC = 64;
-    LlapDaemonCacheMetrics metrics = LlapDaemonCacheMetrics.create("", "");
-    BuddyAllocator alloc = new BuddyAllocator(
-        false, false, 8, MAX_ALLOC, 1, 4096, 0, null, mm, metrics, null, true);
-    MetadataCache cache = new MetadataCache(alloc, mm, cp, true, metrics);
+  public void testBuffers() {
+    MetadataCache cache = newMetadataCache();
     Object fileKey1 = new Object();
     Random rdm = new Random();
 
@@ -185,6 +177,65 @@ public class TestOrcMetadataCache {
     assertFalse(b0.incRef() > 0); // Should have also been thrown out.
   }
 
+  /**
+   * A footer of exactly maxAlloc: the split condition used a strict {@code <}, so no buffer was
+   * allocated and the InputStream put path returned an empty wrapper (NPE on lock).
+   */
+  @Test
+  public void testStreamFooterEqualToMaxAlloc() throws Exception {
+    verifyFooterFromStream(newMetadataCache(), MAX_ALLOC, true);
+  }
+
+  /**
+   * A footer larger than maxAlloc is split into a multi-buffer wrapper: an exact multiple of maxAlloc
+   * (only full chunks) and a multiple plus a remainder (full chunks + a smaller last chunk). The
+   * remainder buffer used to be allocated with the full footer length, exceeding the max allocation.
+   */
+  @Test
+  public void testStreamFooterLargerThanMaxAlloc() throws Exception {
+    MetadataCache cache = newMetadataCache();
+    verifyFooterFromStream(cache, 2 * MAX_ALLOC, false);
+    verifyFooterFromStream(cache, 2 * MAX_ALLOC + 3, false);
+  }
+
+  private MetadataCache newMetadataCache() {
+    return newMetadataCache(4096);
+  }
+
+  private MetadataCache newMetadataCache(int arenaSize) {
+    return newMetadataCache(arenaSize, new DummyCachePolicy());
+  }
+
+  private MetadataCache newMetadataCache(int arenaSize, DummyCachePolicy cp) {
+    DummyMemoryManager mm = new DummyMemoryManager();
+    LlapDaemonCacheMetrics metrics = LlapDaemonCacheMetrics.create("", "");
+    BuddyAllocator alloc = new BuddyAllocator(
+        false, false, 8, MAX_ALLOC, 1, arenaSize, 0, null, mm, metrics, null, true);
+    return new MetadataCache(alloc, mm, cp, true, metrics);
+  }
+
+  private void verifyFooterFromStream(MetadataCache cache, int length, boolean expectSingleBuffer)
+      throws IOException {
+    Object fileKey = new Object();
+    ByteBuffer footer = ByteBuffer.allocate(length);
+    new Random().nextBytes(footer.array());
+
+    LlapBufferOrBuffers result = cache.putFileMetadata(
+        fileKey, length, new ByteArrayInputStream(footer.array()), null, null);
+    cache.decRefBuffer(result);
+    assertEquals(expectSingleBuffer, result.getSingleLlapBuffer() != null);
+    assertEquals(footer, reassemble(result));
+
+    result = cache.getFileMetadata(fileKey);
+    assertEquals(footer, reassemble(result));
+    cache.decRefBuffer(result);
+  }
+
+  private ByteBuffer reassemble(LlapBufferOrBuffers result) {
+    LlapAllocatorBuffer single = result.getSingleLlapBuffer();
+    return single != null ? single.getByteBufferDup() : extractResultBbs(result);
+  }
+
   public ByteBuffer extractResultBbs(LlapBufferOrBuffers result) {
     int totalLen = 0;
     for (LlapAllocatorBuffer buf : result.getMultipleLlapBuffers()) {
@@ -199,14 +250,9 @@ public class TestOrcMetadataCache {
   }
 
   @Test
-  public void testIncompleteCbs() throws Exception {
-    DummyMemoryManager mm = new DummyMemoryManager();
+  public void testIncompleteCbs() {
     DummyCachePolicy cp = new DummyCachePolicy();
-    final int MAX_ALLOC = 64;
-    LlapDaemonCacheMetrics metrics = LlapDaemonCacheMetrics.create("", "");
-    BuddyAllocator alloc = new BuddyAllocator(
-        false, false, 8, MAX_ALLOC, 1, 4096, 0, null, mm, metrics, null, true);
-    MetadataCache cache = new MetadataCache(alloc, mm, cp, true, metrics);
+    MetadataCache cache = newMetadataCache(4096, cp);
     DataCache.BooleanRef gotAllData = new DataCache.BooleanRef();
     Object fileKey1 = new Object();
 
@@ -239,13 +285,7 @@ public class TestOrcMetadataCache {
 
   @Test
   public void testGetOrcTailForPath() throws Exception {
-    DummyMemoryManager mm = new DummyMemoryManager();
-    DummyCachePolicy cp = new DummyCachePolicy();
-    final int MAX_ALLOC = 64;
-    LlapDaemonCacheMetrics metrics = LlapDaemonCacheMetrics.create("", "");
-    BuddyAllocator alloc = new BuddyAllocator(
-        false, false, 8, MAX_ALLOC, 1, 4 * 4096, 0, null, mm, metrics, null, true);
-    MetadataCache cache = new MetadataCache(alloc, mm, cp, true, metrics);
+    MetadataCache cache = newMetadataCache(4 * 4096);
 
     Path path = new Path("../data/files/alltypesorc");
     Configuration jobConf = new Configuration();
@@ -260,13 +300,7 @@ public class TestOrcMetadataCache {
 
   @Test
   public void testGetOrcTailForPathWithFileId() throws Exception {
-    DummyMemoryManager mm = new DummyMemoryManager();
-    DummyCachePolicy cp = new DummyCachePolicy();
-    final int MAX_ALLOC = 64;
-    LlapDaemonCacheMetrics metrics = LlapDaemonCacheMetrics.create("", "");
-    BuddyAllocator alloc = new BuddyAllocator(
-        false, false, 8, MAX_ALLOC, 1, 4 * 4096, 0, null, mm, metrics, null, true);
-    MetadataCache cache = new MetadataCache(alloc, mm, cp, true, metrics);
+    MetadataCache cache = newMetadataCache(4 * 4096);
 
     Path path = new Path("../data/files/alltypesorc");
     Configuration jobConf = new Configuration();
@@ -284,13 +318,7 @@ public class TestOrcMetadataCache {
 
   @Test
   public void testGetOrcTailForPathWithFileIdChange() throws Exception {
-    DummyMemoryManager mm = new DummyMemoryManager();
-    DummyCachePolicy cp = new DummyCachePolicy();
-    final int MAX_ALLOC = 64;
-    LlapDaemonCacheMetrics metrics = LlapDaemonCacheMetrics.create("", "");
-    BuddyAllocator alloc = new BuddyAllocator(
-        false, false, 8, MAX_ALLOC, 1, 4 * 4096, 0, null, mm, metrics, null, true);
-    MetadataCache cache = new MetadataCache(alloc, mm, cp, true, metrics);
+    MetadataCache cache = newMetadataCache(4 * 4096);
 
     Path path = new Path("../data/files/alltypesorc");
     Configuration jobConf = new Configuration();
@@ -317,14 +345,8 @@ public class TestOrcMetadataCache {
   }
 
   @Test
-  public void testProactiveEvictionMark() throws Exception {
-    DummyMemoryManager mm = new DummyMemoryManager();
-    DummyCachePolicy cp = new DummyCachePolicy();
-    final int MAX_ALLOC = 64;
-    LlapDaemonCacheMetrics metrics = LlapDaemonCacheMetrics.create("", "");
-    BuddyAllocator alloc = new BuddyAllocator(
-        false, false, 8, MAX_ALLOC, 1, 4096, 0, null, mm, metrics, null, true);
-    MetadataCache cache = new MetadataCache(alloc, mm, cp, true, metrics);
+  public void testProactiveEvictionMark() {
+    MetadataCache cache = newMetadataCache();
 
     long fn1 = 1;
     long fn2 = 2;
