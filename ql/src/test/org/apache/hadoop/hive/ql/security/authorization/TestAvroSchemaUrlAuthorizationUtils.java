@@ -23,7 +23,6 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils.AvroTableProperties;
 import org.apache.hadoop.hive.serde2.avro.AvroSerDe;
 import org.junit.Test;
@@ -69,7 +68,7 @@ public class TestAvroSchemaUrlAuthorizationUtils {
   }
 
   @Test
-  public void addSchemaUrlInputForReadEntityAddsDfsReadEntity() throws SemanticException {
+  public void addSchemaUrlInputForReadEntityAddsDfsReadEntity() {
     String schemaUrl = "hdfs://nn/schema.avsc";
     Table table = new Table(avroTable(schemaUrl, null));
     Set<ReadEntity> inputs = new LinkedHashSet<>();
@@ -79,10 +78,12 @@ public class TestAvroSchemaUrlAuthorizationUtils {
     AuthorizationUtils.addAvroSchemaUrlInputForReadEntity(inputs, tableInput);
 
     assertEquals(2, inputs.size());
+    assertTrue(inputs.stream().anyMatch(input -> input.getTyp() == Entity.Type.DFS_DIR
+        && input.getD().toString().contains(schemaUrl)));
   }
 
   @Test
-  public void addSchemaUrlInputForReadEntitySkipsIndirectReads() throws SemanticException {
+  public void addSchemaUrlInputForReadEntitySkipsIndirectReads() {
     Table table = new Table(avroTable("hdfs://nn/schema.avsc", null));
     Set<ReadEntity> inputs = new LinkedHashSet<>();
     ReadEntity tableInput = new ReadEntity(table, null, false);
@@ -94,7 +95,7 @@ public class TestAvroSchemaUrlAuthorizationUtils {
   }
 
   @Test
-  public void addSchemaUrlInputForReadEntityAddsDfsDirEntity() throws SemanticException {
+  public void addSchemaUrlInputForReadEntityAddsDfsDirEntity() {
     String schemaUrl = "hdfs://nn/schema.avsc";
     Table table = new Table(avroTable(schemaUrl, null));
     Set<ReadEntity> inputs = new LinkedHashSet<>();

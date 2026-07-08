@@ -44,7 +44,6 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity.WriteType;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizationTranslator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrincipal;
@@ -324,7 +323,7 @@ public class AuthorizationUtils {
    * schema would be fetched from a filesystem location at query time.
    */
   public static void addAvroSchemaUrlInputForReadEntity(Collection<ReadEntity> inputs,
-      ReadEntity readEntity) throws SemanticException {
+      ReadEntity readEntity) {
     if (readEntity == null || !readEntity.isDirect() || readEntity.isUpdateOrDelete()) {
       return;
     }
@@ -345,8 +344,7 @@ public class AuthorizationUtils {
     }
   }
 
-  public static void addAvroSchemaUrlInputIfNeeded(Collection<ReadEntity> inputs, Table table)
-      throws SemanticException {
+  public static void addAvroSchemaUrlInputIfNeeded(Collection<ReadEntity> inputs, Table table) {
     String schemaUrl = getFilesystemAvroSchemaUrlToAuthorize(table);
     if (schemaUrl == null) {
       return;

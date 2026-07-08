@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
+import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthorizableEvent;
@@ -32,9 +33,6 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthzInfo;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
-import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
-import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils.AvroTableProperties;
-import org.apache.hadoop.hive.serde2.avro.AvroSerDe;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -130,23 +128,15 @@ public class AlterTableEvent extends HiveMetaStoreAuthorizableEvent {
   private void addAvroSchemaUrlInputAuth(List<HivePrivilegeObject> ret, PreAlterTableEvent event) {
     Table newTable = event.getNewTable();
     Table oldTable = event.getOldTable();
-    if (!AvroSerDe.class.getName().equals(newTable.getSd().getSerdeInfo().getSerializationLib())) {
-      return;
-    }
-    String literal = newTable.getParameters().get(AvroTableProperties.SCHEMA_LITERAL.getPropName());
-    if (StringUtils.isNotEmpty(literal) && !AvroSerdeUtils.SCHEMA_NONE.equals(literal)) {
-      return;
-    }
-    String newSchemaUrl = newTable.getParameters().get(AvroTableProperties.SCHEMA_URL.getPropName());
-    if (StringUtils.isEmpty(newSchemaUrl) || AvroSerdeUtils.SCHEMA_NONE.equals(newSchemaUrl)) {
+    String newSchemaUrl = AuthorizationUtils.getFilesystemAvroSchemaUrlToAuthorize(
+        new org.apache.hadoop.hive.ql.metadata.Table(newTable));
+    if (newSchemaUrl == null) {
       return;
     }
     String oldSchemaUrl = oldTable == null ? null
-        : oldTable.getParameters().get(AvroTableProperties.SCHEMA_URL.getPropName());
+        : AuthorizationUtils.getFilesystemAvroSchemaUrlToAuthorize(
+            new org.apache.hadoop.hive.ql.metadata.Table(oldTable));
     if (StringUtils.equals(oldSchemaUrl, newSchemaUrl)) {
-      return;
-    }
-    if (!AvroSerdeUtils.isFilesystemSchemaUrl(newSchemaUrl)) {
       return;
     }
     ret.add(getHivePrivilegeObjectDfsUri(newSchemaUrl));

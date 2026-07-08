@@ -26,14 +26,12 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.events.PreCreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthorizableEvent;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthzInfo;
-import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils;
-import org.apache.hadoop.hive.serde2.avro.AvroSerdeUtils.AvroTableProperties;
-import org.apache.hadoop.hive.serde2.avro.AvroSerDe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,18 +79,9 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
   }
 
   private void addAvroSchemaUrlInputAuth(List<HivePrivilegeObject> ret, Table table, Database database) {
-    if (!AvroSerDe.class.getName().equals(table.getSd().getSerdeInfo().getSerializationLib())) {
-      return;
-    }
-    String literal = table.getParameters().get(AvroTableProperties.SCHEMA_LITERAL.getPropName());
-    if (StringUtils.isNotEmpty(literal) && !AvroSerdeUtils.SCHEMA_NONE.equals(literal)) {
-      return;
-    }
-    String schemaUrl = table.getParameters().get(AvroTableProperties.SCHEMA_URL.getPropName());
-    if (StringUtils.isEmpty(schemaUrl) || AvroSerdeUtils.SCHEMA_NONE.equals(schemaUrl)) {
-      return;
-    }
-    if (!AvroSerdeUtils.isFilesystemSchemaUrl(schemaUrl)) {
+    String schemaUrl = AuthorizationUtils.getFilesystemAvroSchemaUrlToAuthorize(
+        new org.apache.hadoop.hive.ql.metadata.Table(table));
+    if (schemaUrl == null) {
       return;
     }
     if (!needDFSUriAuth(schemaUrl, getDefaultTablePath(database, table))) {

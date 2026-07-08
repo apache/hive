@@ -39,7 +39,6 @@ import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
@@ -86,14 +85,10 @@ final class CommandAuthorizerV2 {
     ss.getAuthorizerV2().checkPrivileges(hiveOpType, inputsHObjs, outputHObjs, authzContextBuilder.build());
   }
 
-  private static void enrichAvroSchemaUrlInputs(List<ReadEntity> inputList) throws HiveException {
+  private static void enrichAvroSchemaUrlInputs(List<ReadEntity> inputList) {
     List<ReadEntity> snapshot = new ArrayList<>(inputList);
     for (ReadEntity readEntity : snapshot) {
-      try {
-        AuthorizationUtils.addAvroSchemaUrlInputForReadEntity(inputList, readEntity);
-      } catch (SemanticException e) {
-        throw new HiveException("Failed to authorize avro.schema.url for " + readEntity.getName(), e);
-      }
+      AuthorizationUtils.addAvroSchemaUrlInputForReadEntity(inputList, readEntity);
     }
   }
 

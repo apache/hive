@@ -1003,11 +1003,7 @@ public final class PlanUtils {
       assert false;
     } else {
       inputs.add(newInput);
-      try {
-        AuthorizationUtils.addAvroSchemaUrlInputForReadEntity(inputs, newInput);
-      } catch (SemanticException e) {
-        throw new RuntimeException("Failed to authorize avro.schema.url for " + newInput.getName(), e);
-      }
+      AuthorizationUtils.addAvroSchemaUrlInputForReadEntity(inputs, newInput);
       return newInput;
     }
     // make compile happy
