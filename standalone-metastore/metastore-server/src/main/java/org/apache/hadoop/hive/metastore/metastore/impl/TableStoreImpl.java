@@ -2212,10 +2212,11 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
       partitions = getPartitionsByPs(tableName, args);
     }
     if (getauth) {
+      PrivilegeStore privilegeStore = siblingStore(PrivilegeStore.class);
       for (Partition part : partitions) {
         String partName = Warehouse.makePartName(convertToFieldSchemas(mtbl
             .getPartitionKeys()), part.getValues());
-        PrincipalPrivilegeSet partAuth = siblingStore(PrivilegeStore.class)
+        PrincipalPrivilegeSet partAuth = privilegeStore
             .getPartitionPrivilegeSet(new TableName(catName, dbName, tblName), partName, userName, groupNames);
         part.setPrivileges(partAuth);
       }

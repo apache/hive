@@ -143,9 +143,11 @@ public class TestObjectStoreUnwrap {
          DirectSqlConfigurator directSql = new DirectSqlConfigurator(conf, false)) {
       Assert.assertEquals(3, readProxy.getPartitions(tableName, args).size());
       Assert.assertEquals(0, readHandler.getOpenQueryCount());
+      Assert.assertEquals(0, deleteHandler.getOpenQueryCount());
 
       Assert.assertEquals(3, deleteProxy.getPartitions(tableName, args).size());
       Assert.assertEquals(0, deleteHandler.getOpenQueryCount());
+      Assert.assertEquals(0, readHandler.getOpenQueryCount());
 
       deleteProxy.dropPartitions(tableName, Arrays.asList("test_part_col=a0", "test_part_col=a1"));
       Assert.assertEquals(0, deleteHandler.getOpenQueryCount());

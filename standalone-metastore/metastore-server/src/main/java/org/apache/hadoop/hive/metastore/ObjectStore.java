@@ -413,6 +413,9 @@ public class ObjectStore implements RawStore, Configurable {
   @SuppressWarnings("unchecked, rawtypes")
   @Override
   public <T> T unwrap(Class<T> iface) {
+    if (pm == null) {
+      throw new IllegalStateException("ObjectStore hasn't been initialized yet");
+    }
     MetaDescriptor descriptor = iface.getAnnotation(MetaDescriptor.class);
     if (descriptor == null) {
       throw new IllegalArgumentException("Unable to unwrap the store as " + iface);
@@ -427,9 +430,7 @@ public class ObjectStore implements RawStore, Configurable {
     List<Query> openQueries = new LinkedList<>();
     if (simpl instanceof RawStoreBundle rsb) {
       rsb.setBaseStore(this);
-      if (pm != null) {
-        rsb.setPersistentManager(PersistenceManagerProxy.getProxy(pm, openQueries));
-      }
+      rsb.setPersistentManager(PersistenceManagerProxy.getProxy(pm, openQueries));
     }
     return TransactionHandler.getProxy(iface, new TransactionHandler<>(this, simpl, openQueries));
   }

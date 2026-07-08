@@ -943,12 +943,12 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
       @Override
       protected Integer getJdoResult() throws MetaException, NoSuchObjectException {
         try {
-          List<Partition> parts = siblingStore(TableStore.class)
-              .getPartitions(tn, GetPartitionsArgs.getAllPartitions());
+          TableStore tableStore = siblingStore(TableStore.class);
+          List<Partition> parts = tableStore.getPartitions(tn, GetPartitionsArgs.getAllPartitions());
           for (Partition part : parts) {
             Partition newPart = new Partition(part);
             StatsSetupConst.clearColumnStatsState(newPart.getParameters());
-            siblingStore(TableStore.class).alterPartition(tn, part.getValues(), newPart, writeIdList);
+            tableStore.alterPartition(tn, part.getValues(), newPart, writeIdList);
           }
           return parts.size();
         } catch (InvalidObjectException e) {
