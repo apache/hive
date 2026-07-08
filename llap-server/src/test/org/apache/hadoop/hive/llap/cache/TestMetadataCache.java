@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.common.io.DataCache;
 import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
+import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.IllegalCacheConfigurationException;
@@ -97,10 +98,12 @@ public class TestMetadataCache {
 
   private static class DummyMemoryManager implements MemoryManager {
     private int allocs;
+    private long reservedBytes;
 
     @Override
     public void reserveMemory(long memoryToReserve, AtomicBoolean isStopped) {
       ++allocs;
+      reservedBytes += memoryToReserve;
     }
 
     @Override public long evictMemory(long memoryToEvict) {
@@ -109,10 +112,15 @@ public class TestMetadataCache {
 
     @Override
     public void releaseMemory(long memUsage) {
+      reservedBytes -= memUsage;
     }
 
     @Override
     public void updateMaxSize(long maxSize) {
+    }
+
+    long reservedBytes() {
+      return reservedBytes;
     }
   }
 
@@ -196,6 +204,45 @@ public class TestMetadataCache {
     MetadataCache cache = newMetadataCache();
     verifyFooterFromStream(cache, 2 * MAX_ALLOC, false);
     verifyFooterFromStream(cache, 2 * MAX_ALLOC + 3, false);
+  }
+
+  /**
+   * If reading the footer stream fails after some buffers were already allocated, every allocated
+   * buffer must be released back to the allocator. Otherwise the long-lived LLAP daemon leaks arena
+   * memory on every failed footer read (a truncated file, an IO error, or an oversized chunk).
+   */
+  @Test
+  public void testStreamFooterReadFailureReleasesBuffers() {
+    assertFooterReadFailureReleasesBuffers(MAX_ALLOC);         // single-buffer path
+    assertFooterReadFailureReleasesBuffers(2 * MAX_ALLOC);     // multi-buffer, exact multiple
+    assertFooterReadFailureReleasesBuffers(2 * MAX_ALLOC + 3); // multi-buffer, with remainder
+  }
+
+  private void assertFooterReadFailureReleasesBuffers(int length) {
+    final int arenaSize = 4096;
+    DummyMemoryManager mm = new DummyMemoryManager();
+    LlapDaemonCacheMetrics metrics = LlapDaemonCacheMetrics.create("", "");
+    BuddyAllocator alloc = new BuddyAllocator(
+        false, false, 8, MAX_ALLOC, 1, arenaSize, 0, null, mm, metrics, null, true);
+    MetadataCache cache = new MetadataCache(alloc, mm, new DummyCachePolicy(), true, metrics);
+
+    Object fileKey = new Object();
+    // One byte short of the footer, so reading the last chunk hits EOF part-way through.
+    ByteArrayInputStream truncated = new ByteArrayInputStream(new byte[length - 1]);
+    try {
+      cache.putFileMetadata(fileKey, length, truncated, null, null);
+      fail("Expected an EOFException for a truncated footer stream of length " + length);
+    } catch (IOException expected) {
+      // expected
+    }
+    assertEquals("Allocated buffers must be released after a failed footer read (length " + length + ")",
+        0, mm.reservedBytes());
+    assertNull("A failed put must not leave a cache entry", cache.getFileMetadata(fileKey));
+
+    // Independent check against the real allocator: leaked buffers keep FLAG_NEW_ALLOC and can never
+    // be force-discarded, so re-filling the whole arena succeeds only if nothing leaked.
+    MemoryBuffer[] wholeArena = new MemoryBuffer[arenaSize / MAX_ALLOC];
+    alloc.allocateMultiple(wholeArena, MAX_ALLOC);
   }
 
   private MetadataCache newMetadataCache() {
