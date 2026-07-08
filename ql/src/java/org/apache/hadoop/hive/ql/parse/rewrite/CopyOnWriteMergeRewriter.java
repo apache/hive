@@ -32,6 +32,8 @@ import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.COWWithClauseBuilder;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.MultiInsertSqlGenerator;
+import org.apache.hadoop.hive.ql.parse.rewrite.sql.PartitionSetValuesClause;
+import org.apache.hadoop.hive.ql.parse.rewrite.sql.SetValuesClauseBase;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory;
 
 import java.util.ArrayList;
@@ -98,7 +100,8 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
   @Override
   protected CopyOnWriteMergeWhenClauseSqlGenerator createMergeSqlGenerator(
       MergeStatement mergeStatement, MultiInsertSqlGenerator sqlGenerator) {
-    return new CopyOnWriteMergeWhenClauseSqlGenerator(conf, sqlGenerator, mergeStatement);
+    return new CopyOnWriteMergeWhenClauseSqlGenerator(conf, sqlGenerator, mergeStatement,
+        new PartitionSetValuesClause(conf, (newValue, alias) -> String.format("%s AS %s", newValue, alias)));
   }
   
   private void handleSource(MergeStatement mergeStatement, MultiInsertSqlGenerator sqlGenerator) {
@@ -140,8 +143,8 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
     private int subQueryCount = 0;
 
     CopyOnWriteMergeWhenClauseSqlGenerator(
-      HiveConf conf, MultiInsertSqlGenerator sqlGenerator, MergeStatement mergeStatement) {
-      super(conf, sqlGenerator, mergeStatement, shouldAddRowLineageColumnsForMerge(mergeStatement, conf));
+        HiveConf conf, MultiInsertSqlGenerator sqlGenerator, MergeStatement mergeStatement, SetValuesClauseBase setvaluesClause) {
+      super(conf, sqlGenerator, mergeStatement, shouldAddRowLineageColumnsForMerge(mergeStatement, conf), setvaluesClause);
       this.cowWithClauseBuilder = new COWWithClauseBuilder();
     }
 
@@ -204,7 +207,7 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
       }
       List<String> values = new ArrayList<>(targetTable.getAllCols().size());
       values.addAll(sqlGenerator.getDeleteValues(Context.Operation.MERGE));
-      addValues(targetTable, targetAlias, updateClause.getNewValuesMap(), values);
+      setValuesClause.addValues(targetTable, targetAlias, updateClause.getNewValuesMap(), values);
       addValuesForRowLineageForCopyOnMerge(isRowLineageSupported, values,
           "NULL AS " + HiveUtils.unparseIdentifier(VirtualColumn.LAST_UPDATED_SEQUENCE_NUMBER.getName()), conf);
       sqlGenerator.append(columnRefsFunc.apply(StringUtils.join(values, ",")));
@@ -214,11 +217,6 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
           onClauseAsString, updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), sqlGenerator,
           columnRefsFunc);
       sqlGenerator.append("\n");
-    }
-    
-    @Override
-    protected String getRhsExpValue(String newValue, String alias) {
-        return String.format("%s AS %s", newValue, alias);
     }
 
     @Override

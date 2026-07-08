@@ -28,20 +28,19 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.StorageFormat;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.MultiInsertSqlGenerator;
+import org.apache.hadoop.hive.ql.parse.rewrite.sql.SetValuesClause;
+import org.apache.hadoop.hive.ql.parse.rewrite.sql.SetValuesClauseBase;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
@@ -105,7 +104,8 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
 
   protected MergeWhenClauseSqlGenerator createMergeSqlGenerator(
       MergeStatement mergeStatement, MultiInsertSqlGenerator sqlGenerator) {
-    return new MergeWhenClauseSqlGenerator(conf, sqlGenerator, mergeStatement, isRowLineageSupported);
+    return new MergeWhenClauseSqlGenerator(
+        conf, sqlGenerator, mergeStatement, isRowLineageSupported, new SetValuesClause(conf));
   }
 
   private void handleSource(boolean hasWhenNotMatchedClause, String sourceAlias, String onClauseAsText,
@@ -178,14 +178,16 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
     protected final MergeStatement mergeStatement;
     protected String hintStr;
     protected final boolean isRowLineageSupported;
+    protected final SetValuesClauseBase setValuesClause;
 
     MergeWhenClauseSqlGenerator(HiveConf conf, MultiInsertSqlGenerator sqlGenerator, MergeStatement mergeStatement,
-        boolean isRowLineageSupported) {
+                                boolean isRowLineageSupported, SetValuesClauseBase setValuesClause) {
       this.conf = conf;
       this.sqlGenerator = sqlGenerator;
       this.mergeStatement = mergeStatement;
       this.hintStr = mergeStatement.getHintStr();
       this.isRowLineageSupported = isRowLineageSupported;
+      this.setValuesClause = setValuesClause;
     }
 
     @Override
@@ -227,7 +229,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
       List<String> valuesAndAcidSortKeys = new ArrayList<>(
           targetTable.getAllCols().size() + 1);
       valuesAndAcidSortKeys.addAll(sqlGenerator.getSortKeys(Operation.MERGE));
-      addValues(targetTable, targetAlias, updateClause.getNewValuesMap(), valuesAndAcidSortKeys);
+      setValuesClause.addValues(targetTable, targetAlias, updateClause.getNewValuesMap(), valuesAndAcidSortKeys);
       sqlGenerator.appendInsertBranch(hintStr, valuesAndAcidSortKeys);
       hintStr = null;
 
@@ -235,48 +237,6 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
           onClauseAsString, updateClause.getExtraPredicate(), updateClause.getDeleteExtraPredicate(), sqlGenerator);
 
       sqlGenerator.appendSortKeys();
-    }
-
-    protected void addValues(Table targetTable, String targetAlias, Map<String, String> newValues,
-                             List<String> values) {
-      if (targetTable.hasNonNativePartitionSupport()) {
-        addNonNativeMergeUpdateValues(targetTable, targetAlias, newValues, values);
-      } else {
-        addNativeMergeUpdateValues(targetTable, targetAlias, newValues, values);
-      }
-    }
-
-    private void addNonNativeMergeUpdateValues(Table targetTable, String targetAlias,
-        Map<String, String> newValues, List<String> values) {
-      for (FieldSchema fieldSchema : targetTable.getAllCols()) {
-        setColumnValue(targetAlias, newValues, values, fieldSchema);
-      }
-    }
-
-    private void addNativeMergeUpdateValues(Table targetTable, String targetAlias,
-        Map<String, String> newValues, List<String> values) {
-      for (FieldSchema fieldSchema : targetTable.getCols()) {
-        setColumnValue(targetAlias, newValues, values, fieldSchema);
-      }
-      targetTable.getPartCols().forEach(fieldSchema -> values.add(
-          formatValue(targetAlias, fieldSchema.getName())));
-    }
-
-    protected void setColumnValue(String targetAlias, Map<String, String> newValues, List<String> values, FieldSchema fieldSchema) {
-      if (newValues.containsKey(fieldSchema.getName())) {
-        String rhsExp = newValues.get(fieldSchema.getName());
-        values.add(getRhsExpValue(rhsExp, formatValue(targetAlias, fieldSchema.getName())));
-      } else {
-        values.add(formatValue(targetAlias, fieldSchema.getName()));
-      }
-    }
-
-    private String formatValue(String targetAlias, String name) {
-      return String.format("%s.%s", targetAlias, HiveUtils.unparseIdentifier(name, conf));
-    }
-
-    protected String getRhsExpValue(String newValue, String alias) {
-      return newValue;
     }
 
     protected void addWhereClauseOfUpdate(String onClauseAsString, String extraPredicate, String deleteExtraPredicate,
