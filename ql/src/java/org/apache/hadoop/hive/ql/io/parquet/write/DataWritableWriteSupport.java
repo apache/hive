@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.IOConstants;
@@ -54,7 +55,7 @@ public class DataWritableWriteSupport extends WriteSupport<ParquetHiveRecord> {
   public static MessageType getSchema(final Configuration configuration) {
     String columnNames = configuration.get(IOConstants.COLUMNS);
     String columnTypes = configuration.get(IOConstants.COLUMNS_TYPES);
-    if (columnNames != null && !columnNames.isEmpty() && columnTypes != null && !columnTypes.isEmpty()) {
+    if (StringUtils.isNotEmpty(columnNames) && StringUtils.isNotEmpty(columnTypes)) {
       return HiveSchemaConverter.convert(
           DataWritableReadSupport.getColumnNames(columnNames),
           DataWritableReadSupport.getColumnTypes(columnTypes),

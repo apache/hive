@@ -443,7 +443,7 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
       Map<String, String> metadata) {
     String columnNames = configuration.get(IOConstants.COLUMNS);
     String columnTypes = configuration.get(IOConstants.COLUMNS_TYPES);
-    if (columnNames != null && !columnNames.isEmpty() && columnTypes != null && !columnTypes.isEmpty()) {
+    if (StringUtils.hasLength(columnNames) && StringUtils.hasLength(columnTypes)) {
       return getRequestedSchemaForIndexAccess(
           Boolean.parseBoolean(metadata.get(PARQUET_COLUMN_INDEX_ACCESS)),
           getColumnNames(columnNames),
