@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.metastore.metastore.impl;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -135,7 +134,7 @@ import static org.apache.hadoop.hive.metastore.ObjectStore.getPartQueryWithParam
 import static org.apache.hadoop.hive.metastore.ObjectStore.isCurrentStatsValidForTheQuery;
 import static org.apache.hadoop.hive.metastore.ObjectStore.makeParameterDeclarationString;
 import static org.apache.hadoop.hive.metastore.ObjectStore.verifyStatsChangeCtx;
-import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.ADD_PARTITION_REUSE_EXISTING_COLUMN_DESCRIPTORS;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.PARTITION_REUSE_COLUMN_DESCRIPTORS;
 import static org.apache.hadoop.hive.metastore.metastore.impl.PrivilegeStoreImpl.getPrincipalTypeFromStr;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.newMetaException;
@@ -3362,7 +3361,6 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
     return convertToMStorageDescriptor(sd, mcd);
   }
 
-  @VisibleForTesting
   public MColumnDescriptor getColumnDescriptor(List<FieldSchema> cols, MTable mt)
       throws MetaException {
     if (cols == null || cols.isEmpty()) {
@@ -3372,13 +3370,18 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
     // First check to see if partition and tables column descriptor match
     // that's the easy and relatively fast-check since does not require
     // round-tripe to the database
-    List<FieldSchema> tableSchema = mt.getSd() != null && mt.getSd().getCD() != null && mt.getSd()
-        .getCD()
-        .getCols() != null ? convertToFieldSchemas(mt.getSd()
-        .getCD()
-        .getCols()) : null;
+    List<FieldSchema> tableSchema =
+        mt.getSd() != null &&
+        mt.getSd().getCD() != null &&
+        mt.getSd().getCD().getCols() != null ?
+            convertToFieldSchemas(mt.getSd().getCD().getCols()) : null;
+
     if (cols.equals(tableSchema)) {
       return mt.getSd().getCD();
+    }
+
+    if (!MetastoreConf.getBoolVar(conf, PARTITION_REUSE_COLUMN_DESCRIPTORS)) {
+      return null;
     }
 
     String catName = mt.getDatabase().getCatalogName();
@@ -3394,12 +3397,7 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
 
         @Override
         protected MColumnDescriptor getSqlResult() throws MetaException {
-          if (MetastoreConf.getBoolVar(conf, ADD_PARTITION_REUSE_EXISTING_COLUMN_DESCRIPTORS)) {
-            return getDirectSql().getColumnDescriptor(cols, tblId);
-          }
-
-          // Return null basically means allocate a new column descriptor
-          return null;
+          return getDirectSql().getColumnDescriptor(cols, tblId);
         }
 
         @Override

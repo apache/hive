@@ -315,9 +315,6 @@ public class MetastoreConf {
     ACID_TXN_CLEANER_INTERVAL("metastore.acid.txn.cleaner.interval",
         "hive.metastore.acid.txn.cleaner.interval", 10, TimeUnit.SECONDS,
         "Time interval describing how often aborted and committed txns are cleaned."),
-    ADD_PARTITION_REUSE_EXISTING_COLUMN_DESCRIPTORS("metastore.add.partition.reuse.existing.column.descriptors",
-        "hive.metastore.add.partition.reuse.existing.column.descriptors", false,
-        "Add partition reuse existing column descriptors to avoid metadata bloat on schema evolution."),
     ADDED_JARS("metastore.added.jars.path", "hive.added.jars.path", "",
         "This an internal parameter."),
     AGGREGATE_STATS_CACHE_CLEAN_UNTIL("metastore.aggregate.stats.cache.clean.until",
@@ -1376,6 +1373,9 @@ public class MetastoreConf {
         "hive.metastore.partition.order.expr", "\"PART_NAME\" asc",
         "The default partition order if the metastore does not return all partitions. \n" +
             "It can be sorted based on any column in the PARTITIONS table (e.g., \"PARTITIONS\".\"CREATE_TIME\" desc, \"PARTITIONS\".\"LAST_ACCESS_TIME\" desc etc)"),
+    PARTITION_REUSE_COLUMN_DESCRIPTORS("metastore.partition.reuse.column.descriptors",
+        "hive.metastore.partition.reuse.column.descriptors", false,
+        "Add partition reuse existing column descriptors to avoid metadata bloat on schema evolution."),
     PART_INHERIT_TBL_PROPS("metastore.partition.inherit.table.properties",
         "hive.metastore.partition.inherit.table.properties", "",
         "List of comma separated keys occurring in table properties which will get inherited to newly created partitions. \n" +

@@ -31,19 +31,19 @@ import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.DatabaseRule;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Derby;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.junit.Assert.assertEquals;
@@ -51,16 +51,18 @@ import static org.junit.Assert.assertEquals;
 @Category(MetastoreUnitTest.class)
 public class TestHMSColumnDescriptorReuse {
   private ObjectStore objectStore = null;
+  Configuration conf;
+
   // Modify to try out with different databases.
   // Keep it on Derby once you commit your change. It makes the test execution faster.
-  private static final DatabaseRule DB = new Derby();
+  private final DatabaseRule DB = new Derby(true);
 
   @Before
   public void setUp() throws Exception {
     DB.before();
     DB.install();
 
-    Configuration conf = MetastoreConf.newMetastoreConf();
+    conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY, DB.getJdbcUrl());
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECTION_DRIVER, DB.getJdbcDriver());
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECTION_USER_NAME, DB.getHiveUser());
@@ -68,7 +70,7 @@ public class TestHMSColumnDescriptorReuse {
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.AUTO_CREATE_ALL, false);
 
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.ADD_PARTITION_REUSE_EXISTING_COLUMN_DESCRIPTORS, true);
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.PARTITION_REUSE_COLUMN_DESCRIPTORS, true);
 
     MetaStoreTestUtils.setConfForStandloneMode(conf);
 
@@ -84,8 +86,30 @@ public class TestHMSColumnDescriptorReuse {
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     DB.after();
+  }
+
+  @Test
+  public void testReuseAfterSimpleSchemaEvolution() throws Exception {
+    FieldSchema id = new FieldSchema("id", ColumnType.STRING_TYPE_NAME, "");
+    FieldSchema fname = new FieldSchema("fname", ColumnType.STRING_TYPE_NAME, "");
+    FieldSchema country = new FieldSchema("country", ColumnType.STRING_TYPE_NAME, "");
+
+    Table tbl1 = newTable(Arrays.asList(id, fname), Collections.singletonList(country));
+    objectStore.createTable(tbl1);
+    objectStore.addPartition(newPart(tbl1, "US"));
+
+    FieldSchema lname = new FieldSchema("lname", ColumnType.STRING_TYPE_NAME, "");
+    Table tbl2 = newTable(Arrays.asList(id, fname, lname), Collections.singletonList(country));
+
+    objectStore.alterTable(DEFAULT_CATALOG_NAME, tbl1.getDbName(), tbl1.getTableName(), tbl2, null);
+    objectStore.addPartition(newPart(tbl2, "Italy"));
+
+    objectStore.addPartition(newPart(tbl2, "Hungary"));
+    objectStore.addPartition(newPart(tbl1, "Ukraine"));
+
+    assertEquals(2, countColumnDescriptors());
   }
 
   @Test
@@ -117,21 +141,42 @@ public class TestHMSColumnDescriptorReuse {
     assertEquals(2, countColumnDescriptors());
   }
 
+  @Test
+  public void testNoReusableColumnDescriptors() throws MetaException, InvalidObjectException {
+    FieldSchema id = new FieldSchema("id", ColumnType.STRING_TYPE_NAME, "");
+    FieldSchema fname = new FieldSchema("fname", ColumnType.STRING_TYPE_NAME, "");
+    FieldSchema country = new FieldSchema("country", ColumnType.STRING_TYPE_NAME, "");
+
+    Table tbl1 = newTable(Arrays.asList(id, fname), Collections.singletonList(country));
+    objectStore.createTable(tbl1);
+    objectStore.addPartition(newPart(tbl1, "US"));
+
+    FieldSchema lname = new FieldSchema("lname", ColumnType.STRING_TYPE_NAME, "");
+    Table tbl2 = newTable(Arrays.asList(id, fname, lname), Collections.singletonList(country));
+
+    objectStore.alterTable(DEFAULT_CATALOG_NAME, tbl1.getDbName(), tbl1.getTableName(), tbl2, null);
+    objectStore.addPartition(newPart(tbl2, "Italy"));
+
+    FieldSchema address = new FieldSchema("address", ColumnType.STRING_TYPE_NAME, "");
+    Table tbl3 = newTable(Arrays.asList(id, fname, lname, address), Collections.singletonList(country));
+    objectStore.alterTable(DEFAULT_CATALOG_NAME, tbl1.getDbName(), tbl1.getTableName(), tbl3, null);
+    objectStore.addPartition(newPart(tbl3, "Hungary"));
+
+    assertEquals(3, countColumnDescriptors());
+  }
+
   private int countColumnDescriptors() {
-    try(Connection c = DriverManager.getConnection(DB.getJdbcUrl(), DB.getHiveUser(), DB.getHivePassword())){
-      // Postgres is the only database that requires quote characters around the column.
-      // Add the quote characters manually if you want to test with Postgres now.
-      // Todo: unify this solution
-      try(ResultSet rs = c.prepareStatement("SELECT COUNT(*) FROM CDS").executeQuery()) {
+    try(Connection c = TestTxnDbUtil.getConnection(conf)){
+      try(ResultSet rs = c.prepareStatement("SELECT COUNT(*) FROM \"CDS\"").executeQuery()) {
         rs.next();
         return rs.getInt(1);
       }
-    } catch (SQLException e) {
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  private static Table newTable(List<FieldSchema> columns, List<FieldSchema> partCols ) {
+  private static Table newTable(List<FieldSchema> columns, List<FieldSchema> partCols) {
     int timeSec = (int) System.currentTimeMillis() / 1000;
 
     StorageDescriptor sd = new StorageDescriptor(columns,
@@ -145,7 +190,7 @@ public class TestHMSColumnDescriptorReuse {
             null,
             null);
 
-    HashMap<String, String> tableParams = new HashMap<>();
+    Map<String, String> tableParams = new HashMap<>();
     tableParams.put("EXTERNAL", "false");
 
     return
@@ -155,16 +200,22 @@ public class TestHMSColumnDescriptorReuse {
 
   private static Partition newPart(Table tbl, String value) {
     int timeSec = (int) System.currentTimeMillis() / 1000;
-    HashMap<String, String> partitionParams = new HashMap<>();
+    Map<String, String> partitionParams = new HashMap<>();
 
     partitionParams.put("PARTITION_LEVEL_PRIVILEGE", "true");
     StorageDescriptor psd = tbl.getSd().deepCopy();
     psd.setLocation(psd.getLocation() + "/" + value);
-    Partition p = new Partition(Collections.singletonList(value), tbl.getDbName(), tbl.getTableName(), timeSec, timeSec, psd, partitionParams);
+    Partition p = new Partition(
+        Collections.singletonList(value),
+        tbl.getDbName(),
+        tbl.getTableName(),
+        timeSec,
+        timeSec,
+        psd,
+        partitionParams);
     p.setCatName(DEFAULT_CATALOG_NAME);
 
     return p;
   }
 
 }
-
