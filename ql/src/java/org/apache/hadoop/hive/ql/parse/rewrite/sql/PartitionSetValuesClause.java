@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 
 public class PartitionSetValuesClause extends SetValuesClauseBase {
 
@@ -31,7 +31,7 @@ public class PartitionSetValuesClause extends SetValuesClauseBase {
     super(conf);
   }
 
-  public PartitionSetValuesClause(HiveConf conf, BiFunction<String, String, String> rhsExpValueFormatter) {
+  public PartitionSetValuesClause(HiveConf conf, BinaryOperator<String> rhsExpValueFormatter) {
     super(conf, rhsExpValueFormatter);
   }
 

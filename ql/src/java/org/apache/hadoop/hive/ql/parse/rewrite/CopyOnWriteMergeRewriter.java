@@ -143,8 +143,10 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
     private int subQueryCount = 0;
 
     CopyOnWriteMergeWhenClauseSqlGenerator(
-        HiveConf conf, MultiInsertSqlGenerator sqlGenerator, MergeStatement mergeStatement, SetValuesClauseBase setvaluesClause) {
-      super(conf, sqlGenerator, mergeStatement, shouldAddRowLineageColumnsForMerge(mergeStatement, conf), setvaluesClause);
+        HiveConf conf, MultiInsertSqlGenerator sqlGenerator,
+        MergeStatement mergeStatement, SetValuesClauseBase setvaluesClause) {
+      super(conf, sqlGenerator, mergeStatement,
+          shouldAddRowLineageColumnsForMerge(mergeStatement, conf), setvaluesClause);
       this.cowWithClauseBuilder = new COWWithClauseBuilder();
     }
 

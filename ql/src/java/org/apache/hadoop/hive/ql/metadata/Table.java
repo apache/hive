@@ -780,11 +780,11 @@ public class Table implements Serializable {
     if (!hasNonNativePartitionSupport() || isView()) {
       fsList.addAll(getPartitionKeys());
     }
-    Map<String, TableColumn> columnsByName = Maps.newHashMapWithExpectedSize(fsList.size());
+    Map<String, TableColumn> colsByName = Maps.newHashMapWithExpectedSize(fsList.size());
     for (int i = 0; i < fsList.size(); i++) {
-      columnsByName.put(fsList.get(i).getName().toLowerCase(), new TableColumn(i, fsList.get(i)));
+      colsByName.put(fsList.get(i).getName().toLowerCase(), new TableColumn(i, fsList.get(i)));
     }
-    return columnsByName;
+    return colsByName;
   }
 
   public List<FieldSchema> getCols() {

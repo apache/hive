@@ -48,14 +48,12 @@ public class SplitMergeRewriter extends MergeRewriter {
 
   static class SplitMergeWhenClauseSqlGenerator extends MergeWhenClauseSqlGenerator {
     private final boolean isRowLineageSupported;
-    private final SetValuesClauseBase setValuesClause;
 
     SplitMergeWhenClauseSqlGenerator(
         HiveConf conf, MultiInsertSqlGenerator sqlGenerator, MergeStatement mergeStatement,
         boolean isRowLineageSupported, SetValuesClauseBase setValuesClause) {
       super(conf, sqlGenerator, mergeStatement, isRowLineageSupported, setValuesClause);
       this.isRowLineageSupported = isRowLineageSupported;
-      this.setValuesClause = setValuesClause;
     }
 
     @Override

@@ -24,18 +24,18 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 
 public abstract class SetValuesClauseBase {
 
   private final HiveConf conf;
-  private final BiFunction<String, String, String> rhsExpValueFormatter;
+  private final BinaryOperator<String> rhsExpValueFormatter;
 
-  public SetValuesClauseBase(HiveConf conf) {
+  protected SetValuesClauseBase(HiveConf conf) {
     this(conf, (newValue, alias) -> newValue);
   }
 
-  public SetValuesClauseBase(HiveConf conf, BiFunction<String, String, String> rhsExpValueFormatter) {
+  protected SetValuesClauseBase(HiveConf conf, BinaryOperator<String> rhsExpValueFormatter) {
     this.conf = conf;
     this.rhsExpValueFormatter = rhsExpValueFormatter;
   }
