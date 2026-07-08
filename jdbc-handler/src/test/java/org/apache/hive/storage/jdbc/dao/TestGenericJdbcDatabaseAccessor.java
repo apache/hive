@@ -14,16 +14,24 @@
  */
 package org.apache.hive.storage.jdbc.dao;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.mapreduce.RecordWriter;
+import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.hive.storage.jdbc.DBRecordWritable;
 import org.apache.hive.storage.jdbc.conf.JdbcStorageConfig;
 import org.apache.hive.storage.jdbc.exception.HiveJdbcDatabaseAccessException;
 
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -31,8 +39,11 @@ import java.util.Map;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class TestGenericJdbcDatabaseAccessor {
 
@@ -213,11 +224,119 @@ public class TestGenericJdbcDatabaseAccessor {
 
 
   @Test
+  public void testGetRecordIterator_limitOffsetLastPartition() throws HiveJdbcDatabaseAccessException {
+    Configuration conf = buildConfiguration();
+    DatabaseAccessor accessor = DatabaseAccessorFactory.getAccessor(conf);
+    JdbcRecordIterator iterator = accessor.getRecordIterator(conf, null, null, null, 2, 4);
+
+    assertThat(iterator, is(notNullValue()));
+
+    int count = 0;
+    while (iterator.hasNext()) {
+      Map<String, Object> record = iterator.next();
+      count++;
+
+      assertThat(record, is(notNullValue()));
+      assertThat(record.size(), is(equalTo(7)));
+      assertThat(record.get("strategy_id"), is(equalTo(5)));
+    }
+
+    assertThat(count, is(equalTo(1)));
+    iterator.close();
+  }
+
+
+  @Test
   public void testGetRecordIterator_emptyResultSet() throws HiveJdbcDatabaseAccessException {
     Configuration conf = buildConfiguration();
     conf.set(JdbcStorageConfig.QUERY.getPropertyName(), "select * from test_strategy where strategy_id = '25'");
     DatabaseAccessor accessor = DatabaseAccessorFactory.getAccessor(conf);
     JdbcRecordIterator iterator = accessor.getRecordIterator(conf, null, null, null, 0, 2);
+
+    assertThat(iterator, is(notNullValue()));
+    assertThat(iterator.hasNext(), is(false));
+    iterator.close();
+  }
+
+
+  @Test
+  public void testGetRecordIterator_partitionFirst() throws HiveJdbcDatabaseAccessException {
+    Configuration conf = buildConfiguration();
+    DatabaseAccessor accessor = DatabaseAccessorFactory.getAccessor(conf);
+    JdbcRecordIterator iterator =
+        accessor.getRecordIterator(conf, getStrategyIdColumnName(conf, accessor), null, "3", -1, 0);
+
+    assertThat(iterator, is(notNullValue()));
+
+    int count = 0;
+    while (iterator.hasNext()) {
+      Map<String, Object> record = iterator.next();
+      count++;
+
+      assertThat(record, is(notNullValue()));
+      assertThat(record.size(), is(equalTo(7)));
+      assertThat(record.get("strategy_id"), is(equalTo(count)));
+    }
+
+    assertThat(count, is(equalTo(2)));
+    iterator.close();
+  }
+
+
+  @Test
+  public void testGetRecordIterator_partitionMiddle() throws HiveJdbcDatabaseAccessException {
+    Configuration conf = buildConfiguration();
+    DatabaseAccessor accessor = DatabaseAccessorFactory.getAccessor(conf);
+    JdbcRecordIterator iterator =
+        accessor.getRecordIterator(conf, getStrategyIdColumnName(conf, accessor), "3", "5", -1, 0);
+
+    assertThat(iterator, is(notNullValue()));
+
+    int count = 0;
+    while (iterator.hasNext()) {
+      Map<String, Object> record = iterator.next();
+      count++;
+
+      assertThat(record, is(notNullValue()));
+      assertThat(record.size(), is(equalTo(7)));
+      assertThat(record.get("strategy_id"), is(equalTo(count + 2)));
+    }
+
+    assertThat(count, is(equalTo(2)));
+    iterator.close();
+  }
+
+
+  @Test
+  public void testGetRecordIterator_partitionLast() throws HiveJdbcDatabaseAccessException {
+    Configuration conf = buildConfiguration();
+    DatabaseAccessor accessor = DatabaseAccessorFactory.getAccessor(conf);
+    JdbcRecordIterator iterator =
+        accessor.getRecordIterator(conf, getStrategyIdColumnName(conf, accessor), "5", null, -1, 0);
+
+    assertThat(iterator, is(notNullValue()));
+
+    int count = 0;
+    while (iterator.hasNext()) {
+      Map<String, Object> record = iterator.next();
+      count++;
+
+      assertThat(record, is(notNullValue()));
+      assertThat(record.size(), is(equalTo(7)));
+      assertThat(record.get("strategy_id"), is(equalTo(5)));
+    }
+
+    assertThat(count, is(equalTo(1)));
+    iterator.close();
+  }
+
+
+  @Test
+  public void testGetRecordIterator_partitionEmptyResultSet() throws HiveJdbcDatabaseAccessException {
+    Configuration conf = buildConfiguration();
+    DatabaseAccessor accessor = DatabaseAccessorFactory.getAccessor(conf);
+    JdbcRecordIterator iterator =
+        accessor.getRecordIterator(conf, getStrategyIdColumnName(conf, accessor), "6", "7", -1, 0);
 
     assertThat(iterator, is(notNullValue()));
     assertThat(iterator.hasNext(), is(false));
@@ -244,6 +363,153 @@ public class TestGenericJdbcDatabaseAccessor {
     DatabaseAccessor accessor = DatabaseAccessorFactory.getAccessor(conf);
     @SuppressWarnings("unused")
       JdbcRecordIterator iterator = accessor.getRecordIterator(conf, null, null, null, 0, 2);
+  }
+
+  @Test
+  public void testGetBounds_minAndMax() throws HiveJdbcDatabaseAccessException {
+    Configuration conf = buildConfiguration();
+    DatabaseAccessor accessor = DatabaseAccessorFactory.getAccessor(conf);
+    Pair<String, String> bounds = accessor.getBounds(conf, getStrategyIdColumnName(conf, accessor), true, true);
+
+    assertThat(bounds.getLeft(), is(equalTo("1")));
+    assertThat(bounds.getRight(), is(equalTo("5")));
+  }
+
+  @Test
+  public void testGetBounds_minOnly() throws HiveJdbcDatabaseAccessException {
+    Configuration conf = buildConfiguration();
+    DatabaseAccessor accessor = DatabaseAccessorFactory.getAccessor(conf);
+    Pair<String, String> bounds = accessor.getBounds(conf, getStrategyIdColumnName(conf, accessor), true, false);
+
+    assertThat(bounds.getLeft(), is(equalTo("1")));
+    assertThat(bounds.getRight(), is(nullValue()));
+  }
+
+  @Test
+  public void testGetBounds_maxOnly() throws HiveJdbcDatabaseAccessException {
+    Configuration conf = buildConfiguration();
+    DatabaseAccessor accessor = DatabaseAccessorFactory.getAccessor(conf);
+    Pair<String, String> bounds = accessor.getBounds(conf, getStrategyIdColumnName(conf, accessor), false, true);
+
+    assertThat(bounds.getLeft(), is(nullValue()));
+    assertThat(bounds.getRight(), is(equalTo("5")));
+  }
+
+  @Test
+  public void testNeedColumnQuote_genericAccessor() {
+    Configuration conf = buildConfiguration();
+    DatabaseAccessor accessor = DatabaseAccessorFactory.getAccessor(conf);
+
+    assertThat(accessor.needColumnQuote(), is(true));
+  }
+
+  @Test
+  public void testNeedColumnQuote_mysqlAccessor() {
+    Configuration conf = buildConfiguration();
+    conf.set(JdbcStorageConfig.DATABASE_TYPE.getPropertyName(), "MYSQL");
+    DatabaseAccessor accessor = DatabaseAccessorFactory.getAccessor(conf);
+
+    assertThat(accessor.needColumnQuote(), is(false));
+  }
+
+  @Test
+  public void testClose_afterInitializedAccessor() throws Exception {
+    Configuration conf = buildConfiguration();
+    DatabaseAccessor accessor = DatabaseAccessorFactory.getAccessor(conf);
+
+    assertThat(accessor.getColumnNames(conf), is(notNullValue()));
+    accessor.close();
+    accessor.close();
+  }
+
+  @Test
+  public void testGetRecordWriter_writesRows() throws Exception {
+    Configuration conf = buildConfiguration();
+    conf.set(JdbcStorageConfig.JDBC_URL.getPropertyName(),
+        conf.get(JdbcStorageConfig.JDBC_URL.getPropertyName())
+            .replace("jdbc:h2:mem:test;MODE=MySQL;INIT",
+                "jdbc:h2:mem:test_writer;MODE=MySQL;DB_CLOSE_DELAY=-1;INIT"));
+    conf.set(JdbcStorageConfig.TABLE.getPropertyName(), "test_writer");
+    conf.set(serdeConstants.LIST_COLUMNS, "id,name");
+    conf.set(serdeConstants.LIST_COLUMN_TYPES, "int,string");
+
+    TaskAttemptContext context = mock(TaskAttemptContext.class);
+    when(context.getConfiguration()).thenReturn(conf);
+
+    DatabaseAccessor accessor = DatabaseAccessorFactory.getAccessor(conf);
+    @SuppressWarnings("rawtypes")
+    RecordWriter writer = accessor.getRecordWriter(context);
+    DBRecordWritable record = new DBRecordWritable(2);
+    record.set(0, 10);
+    record.set(1, "written");
+
+    writer.write(record, null);
+    writer.close(context);
+
+    String readBackUrl = conf.get(JdbcStorageConfig.JDBC_URL.getPropertyName()).replaceAll(";INIT=.*", "");
+    try (Connection conn = DriverManager.getConnection(readBackUrl);
+         Statement statement = conn.createStatement()) {
+      try (ResultSet rs = statement.executeQuery("select id, name from test_writer")) {
+        assertThat(rs.next(), is(true));
+        assertThat(rs.getInt("id"), is(equalTo(10)));
+        assertThat(rs.getString("name"), is(equalTo("written")));
+        assertThat(rs.next(), is(false));
+      }
+      statement.execute("SHUTDOWN");
+    }
+  }
+
+  @Test
+  public void testGetRecordWriter_writesMultipleRows() throws Exception {
+    Configuration conf = buildConfiguration();
+    conf.set(JdbcStorageConfig.JDBC_URL.getPropertyName(),
+        conf.get(JdbcStorageConfig.JDBC_URL.getPropertyName())
+            .replace("jdbc:h2:mem:test;MODE=MySQL;INIT",
+                "jdbc:h2:mem:test_writer_multi;MODE=MySQL;DB_CLOSE_DELAY=-1;INIT"));
+    conf.set(JdbcStorageConfig.TABLE.getPropertyName(), "test_writer");
+    conf.set(serdeConstants.LIST_COLUMNS, "id,name");
+    conf.set(serdeConstants.LIST_COLUMN_TYPES, "int,string");
+
+    TaskAttemptContext context = mock(TaskAttemptContext.class);
+    when(context.getConfiguration()).thenReturn(conf);
+
+    DatabaseAccessor accessor = DatabaseAccessorFactory.getAccessor(conf);
+    @SuppressWarnings("rawtypes")
+    RecordWriter writer = accessor.getRecordWriter(context);
+
+    DBRecordWritable firstRecord = new DBRecordWritable(2);
+    firstRecord.set(0, 11);
+    firstRecord.set(1, "first");
+    writer.write(firstRecord, null);
+
+    DBRecordWritable secondRecord = new DBRecordWritable(2);
+    secondRecord.set(0, 12);
+    secondRecord.set(1, "second");
+    writer.write(secondRecord, null);
+
+    writer.close(context);
+
+    String readBackUrl = conf.get(JdbcStorageConfig.JDBC_URL.getPropertyName()).replaceAll(";INIT=.*", "");
+    try (Connection conn = DriverManager.getConnection(readBackUrl);
+         Statement statement = conn.createStatement()) {
+      try (ResultSet rs = statement.executeQuery("select id, name from test_writer order by id")) {
+        assertThat(rs.next(), is(true));
+        assertThat(rs.getInt("id"), is(equalTo(11)));
+        assertThat(rs.getString("name"), is(equalTo("first")));
+
+        assertThat(rs.next(), is(true));
+        assertThat(rs.getInt("id"), is(equalTo(12)));
+        assertThat(rs.getString("name"), is(equalTo("second")));
+
+        assertThat(rs.next(), is(false));
+      }
+      statement.execute("SHUTDOWN");
+    }
+  }
+
+  private String getStrategyIdColumnName(Configuration conf, DatabaseAccessor accessor)
+      throws HiveJdbcDatabaseAccessException {
+    return accessor.getColumnNames(conf).get(0);
   }
 
 
