@@ -160,6 +160,11 @@ controls. *(maintainer — okumin)*
 
 - **Transport security (TLS)** on the HS2, Metastore, and HS2 Web UI endpoints,
   and the KDC / LDAP server's own security.
+- **Choosing and configuring authentication.** Hive supports several
+  authentication mechanisms, such as Kerberos and LDAP, depending on the
+  endpoint. The operator is responsible for enabling appropriate authentication
+  for all exposed endpoints; otherwise, clients may be accepted without proving
+  an identity.
 - **Choosing and configuring an authorization model.** **Apache Ranger is the
   primary authorization plugin** for Hive; storage-based and SQL-standard
   authorization give materially different guarantees. The operator owns the
