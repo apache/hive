@@ -310,7 +310,8 @@ public class ColStatsProcessor implements IStatsProcessor {
     } else {
       StatsSetupConst.removeColumnStatsState(tbl.getParameters(), colNames);
     }
-    db.alterTable(tbl.getFullyQualifiedName(), tbl, environmentContext, false);
+    boolean transactional = AcidUtils.isTransactionalTable(tbl);
+    db.alterTable(tbl.getFullyQualifiedName(), tbl, environmentContext, transactional);
   }
 
   private void removePartitionColumnStatsAccurateProperty(Hive db, Table tbl, List<Partition> partitions)
@@ -320,8 +321,9 @@ public class ColStatsProcessor implements IStatsProcessor {
     }
     EnvironmentContext environmentContext = new EnvironmentContext();
     environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
+    boolean transactional = AcidUtils.isTransactionalTable(tbl);
     try {
-      db.alterPartitions(tbl.getFullyQualifiedName(), partitions, environmentContext, false);
+      db.alterPartitions(tbl.getFullyQualifiedName(), partitions, environmentContext, transactional);
     } catch (InvalidOperationException e) {
       throw new HiveException(e);
     }

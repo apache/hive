@@ -3,7 +3,7 @@ PREHOOK: query: create table stats_t1(
   c_float float,
   c_str string)
 partitioned by (p int)
-stored as ORC
+STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@stats_t1
@@ -12,7 +12,7 @@ POSTHOOK: query: create table stats_t1(
   c_float float,
   c_str string)
 partitioned by (p int)
-stored as ORC
+STORED AS ORC TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_t1
@@ -95,7 +95,7 @@ Partition Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c_str\":\"true\"}}
 	numFiles            	1                   
 	numRows             	4                   
-	rawDataSize         	392                 
+	rawDataSize         	0                   
 	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
@@ -107,13 +107,11 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: create table stats_t2(
   c_double double,
   c_float float,
   c_str string)
-stored as ORC
+stored as ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@stats_t2
@@ -121,7 +119,7 @@ POSTHOOK: query: create table stats_t2(
   c_double double,
   c_float float,
   c_str string)
-stored as ORC
+stored as ORC TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_t2
@@ -214,8 +212,10 @@ Table Parameters:
 	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	4                   
-	rawDataSize         	392                 
+	rawDataSize         	0                   
 	totalSize           	#Masked#
+	transactional       	true                
+	transactional_properties	default             
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -226,8 +226,6 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
-Storage Desc Params:	 	 
-	serialization.format	1                   
 PREHOOK: query: create table stats_t3(
   a double,
   b float)

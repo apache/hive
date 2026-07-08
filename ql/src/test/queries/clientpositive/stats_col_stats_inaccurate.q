@@ -1,6 +1,9 @@
 set hive.stats.autogather=true;
 set hive.stats.column.autogather=true;
 set hive.stats.fetch.column.stats=true;
+set hive.support.concurrency=true;
+set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 
 -- Check partitioned tables on float/double columns with Infinity/NaN on inaccurate stats.
 
@@ -9,7 +12,7 @@ create table stats_t1(
   c_float float,
   c_str string)
 partitioned by (p int)
-stored as ORC;
+STORED AS ORC TBLPROPERTIES ('transactional'='true');
 
 insert into table stats_t1 partition(p=1) values
   (cast('Infinity' as double), cast('Infinity' as float), 'row1'),
@@ -28,7 +31,7 @@ create table stats_t2(
   c_double double,
   c_float float,
   c_str string)
-stored as ORC;
+stored as ORC TBLPROPERTIES ('transactional'='true');
 
 insert into table stats_t2 values
   (cast('Infinity' as double), cast('Infinity' as float), 'row1'),
