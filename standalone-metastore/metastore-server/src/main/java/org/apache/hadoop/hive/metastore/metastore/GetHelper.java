@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
 @VisibleForTesting
 public abstract class GetHelper<A, T> {
   private static final Logger LOG = LoggerFactory.getLogger(GetHelper.class);
-  private static final Counter directSqlErrors = Metrics.getRegistry() != null ?
+  private static Counter directSqlErrors = Metrics.getRegistry() != null ?
       Metrics.getOrCreateCounter(MetricsConstants.DIRECTSQL_ERRORS) : new Counter();
   private final boolean isInTxn, doTrace, allowJdo;
   private boolean doUseDirectSql;
@@ -61,18 +61,18 @@ public abstract class GetHelper<A, T> {
   private boolean success = false;
   protected T results = null;
 
-  public GetHelper(RawStoreAware rsa, A args) throws MetaException {
-    this(rsa, args, null);
+  public GetHelper(RawStoreBundle rsb, A args) throws MetaException {
+    this(rsb, args, null);
   }
 
-  public GetHelper(RawStoreAware rsa,
+  public GetHelper(RawStoreBundle rsb,
       A args, List<String> fields) throws MetaException {
-    this.baseStore = rsa.getBaseStore();
+    this.baseStore = rsb.getBaseStore();
     this.partitionFields = fields;
     this.argument = args;
     this.doTrace = LOG.isDebugEnabled();
     this.isInTxn = baseStore.isActiveTransaction();
-    this.pm = rsa.getPersistentManager();
+    this.pm = rsb.getPersistentManager();
     this.allowJdo = canUseJdoQuery();
 
     boolean isConfigEnabled = MetastoreConf.getBoolVar(baseStore.getConf(),
@@ -195,13 +195,13 @@ public abstract class GetHelper<A, T> {
     doUseDirectSql = false;
   }
 
-  private void setTransactionSavePoint(String savePoint) {
+  public void setTransactionSavePoint(String savePoint) {
     if (savePoint != null) {
       ((JDOTransaction) pm.currentTransaction()).setSavepoint(savePoint);
     }
   }
 
-  private void rollbackTransactionToSavePoint(String savePoint) {
+  public void rollbackTransactionToSavePoint(String savePoint) {
     if (savePoint != null) {
       ((JDOTransaction) pm.currentTransaction()).rollbackToSavepoint(savePoint);
     }
@@ -271,5 +271,11 @@ public abstract class GetHelper<A, T> {
 
   public static long getDirectSqlErrors() {
     return directSqlErrors.getCount();
+  }
+
+  @VisibleForTesting
+  public static Counter setDirectSqlErrors(Counter counter) {
+    directSqlErrors = counter;
+    return counter;
   }
 }

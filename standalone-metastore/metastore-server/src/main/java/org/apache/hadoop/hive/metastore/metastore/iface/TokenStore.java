@@ -16,24 +16,31 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.metastore.metastore;
+package org.apache.hadoop.hive.metastore.metastore.iface;
 
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.metastore.MetaDescriptor;
+import org.apache.hadoop.hive.metastore.metastore.impl.TokenStoreImpl;
 
-public abstract class GetListHelper<A, T> extends GetHelper<A, List<T>> {
-  public GetListHelper(RawStoreBundle rsb, A args) throws MetaException {
-    super(rsb, args, null);
-  }
+@MetaDescriptor(alias = "token", defaultImpl = TokenStoreImpl.class)
+public interface TokenStore {
+  boolean addToken(String tokenIdentifier, String delegationToken);
 
-  public GetListHelper(RawStoreBundle rsb,
-      A args, List<String> fields) throws MetaException {
-    super(rsb, args, fields);
-  }
+  boolean removeToken(String tokenIdentifier);
 
-  @Override
-  protected String describeResult() {
-    return (results != null ? results.size() : 0) + " entries";
-  }
+  String getToken(String tokenIdentifier);
+
+  List<String> getAllTokenIdentifiers();
+
+  int addMasterKey(String key) throws MetaException;
+
+  void updateMasterKey(Integer seqNo, String key)
+      throws NoSuchObjectException, MetaException;
+
+  boolean removeMasterKey(Integer keySeq);
+
+  String[] getMasterKeys();
 }

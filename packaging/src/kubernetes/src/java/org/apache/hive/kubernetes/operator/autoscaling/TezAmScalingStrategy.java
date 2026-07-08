@@ -18,7 +18,10 @@
 
 package org.apache.hive.kubernetes.operator.autoscaling;
 
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.spec.AutoscalingSpec;
@@ -32,10 +35,15 @@ import org.slf4j.LoggerFactory;
  * <p>
  * Uses the per-target session metric from HS2: hs2_llap_target_sessions_{llapName}.
  * Falls back to hs2_open_sessions if per-target metrics are not available.
+ * <p>
+ * Scale-down uses {@link #METRIC_DAG_RUNNING} from each TezAM pod's scraped
+ * {@link PodMetrics} to rank idle AMs for safe termination.
  */
 public class TezAmScalingStrategy implements ScalingStrategy {
 
   private static final Logger LOG = LoggerFactory.getLogger(TezAmScalingStrategy.class);
+  public static final String METRIC_DAG_RUNNING = "tez_am_dag_running";
+  public static final int BUSY_DELETION_COST = Integer.MAX_VALUE;
 
   private final HiveClusterAutoscaler orchestrator;
   private final HiveCluster cluster;
@@ -114,5 +122,34 @@ public class TezAmScalingStrategy implements ScalingStrategy {
   @Override
   public boolean usesScaleUpThreshold() {
     return false;
+  }
+
+  public static boolean hasActiveDag(Map<String, Double> metrics) {
+    return metrics.getOrDefault(METRIC_DAG_RUNNING, 0.0) > 0;
+  }
+
+  public static Map<String, Integer> deletionCostsByPod(List<PodMetrics> metrics) {
+    Map<String, Integer> costs = new HashMap<>();
+    int idleCost = 0;
+    for (PodMetrics pm : metrics) {
+      if (hasActiveDag(pm.metrics())) {
+        costs.put(pm.podName(), BUSY_DELETION_COST);
+      } else {
+        costs.put(pm.podName(), idleCost++);
+      }
+    }
+    return costs;
+  }
+
+  public static List<String> podsToRemove(List<PodMetrics> metrics,
+      Map<String, Integer> costs, int removeCount) {
+    if (removeCount <= 0) {
+      return List.of();
+    }
+    return metrics.stream()
+        .sorted(Comparator.comparingInt(pm -> costs.get(pm.podName())))
+        .limit(removeCount)
+        .map(PodMetrics::podName)
+        .toList();
   }
 }

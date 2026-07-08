@@ -52,7 +52,7 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.metastore.RawStoreAware;
+import org.apache.hadoop.hive.metastore.metastore.RawStoreBundle;
 import org.apache.hadoop.hive.metastore.metastore.iface.TableStore;
 import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
 import org.apache.hadoop.hive.metastore.model.MDCPrivilege;
@@ -67,7 +67,6 @@ import org.apache.hadoop.hive.metastore.model.MRoleMap;
 import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
-import org.apache.hadoop.hive.metastore.metastore.GetHelper;
 import org.apache.hadoop.hive.metastore.metastore.GetListHelper;
 import org.apache.hadoop.hive.metastore.metastore.iface.PrivilegeStore;
 import org.slf4j.Logger;
@@ -77,7 +76,7 @@ import static org.apache.hadoop.hive.metastore.ObjectStore.convert;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
-public class PrivilegeStoreImpl extends RawStoreAware implements PrivilegeStore {
+public class PrivilegeStoreImpl extends RawStoreBundle implements PrivilegeStore {
   private static final Logger LOG = LoggerFactory.getLogger(PrivilegeStoreImpl.class);
   private Configuration conf;
 
@@ -336,7 +335,8 @@ public class PrivilegeStoreImpl extends RawStoreAware implements PrivilegeStore 
     LOG.debug("Executing listMSecurityPrincipalMembershipRole");
     Query query = pm.newQuery(MRoleMap.class, "principalName == t1 && principalType == t2");
     query.declareParameters("java.lang.String t1, java.lang.String t2");
-    final List<MRoleMap> mRoleMemebership = (List<MRoleMap>) query.execute(roleName, principalType.toString());
+    final List<MRoleMap> mRoleMemebership =
+        (List<MRoleMap>) query.execute(roleName, principalType.toString());
 
     LOG.debug("Retrieving all objects for listMSecurityPrincipalMembershipRole");
     pm.retrieveAll(mRoleMemebership);
@@ -1258,7 +1258,8 @@ public class PrivilegeStoreImpl extends RawStoreAware implements PrivilegeStore 
       }
       break;
     case TABLE:
-      grants = listTableGrantsAll(new TableName(catName, objToRefresh.getDbName(), objToRefresh.getObjectName()), authorizer);
+      grants = listTableGrantsAll(new TableName(catName, objToRefresh.getDbName(),
+          objToRefresh.getObjectName()), authorizer);
       break;
     case COLUMN:
       Preconditions.checkArgument(objToRefresh.getColumnName()==null, "columnName must be null");

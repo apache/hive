@@ -128,6 +128,7 @@ public class SchemaInitJobDependent
                   hiveCluster, COMPONENT))
             .endMetadata()
             .withNewSpec()
+              .withServiceAccountName(spec.serviceAccountName())
               .withRestartPolicy("OnFailure")
               .withInitContainers(initContainers)
               .addNewContainer()

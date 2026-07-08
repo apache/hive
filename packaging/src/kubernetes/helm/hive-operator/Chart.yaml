@@ -19,7 +19,7 @@ description: Apache Hive Kubernetes Operator - deploys and manages Hive clusters
 type: application
 version: "4.3.0-SNAPSHOT"
 appVersion: "4.3.0-SNAPSHOT"
-kubeVersion: ">=1.25.0"
+kubeVersion: ">=1.25.0-0"
 keywords:
   - hive
   - hadoop
