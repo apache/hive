@@ -34,13 +34,9 @@ import org.apache.druid.data.input.impl.InputRowParser;
 import org.apache.druid.data.input.impl.TimestampSpec;
 import org.apache.druid.java.util.common.Pair;
 import org.apache.druid.java.util.common.RetryUtils;
-import org.apache.druid.java.util.common.lifecycle.Lifecycle;
-import org.apache.druid.java.util.http.client.HttpClient;
-import org.apache.druid.java.util.http.client.HttpClientConfig;
-import org.apache.druid.java.util.http.client.HttpClientInit;
-import org.apache.druid.java.util.http.client.Request;
-import org.apache.druid.java.util.http.client.response.StringFullResponseHandler;
-import org.apache.druid.java.util.http.client.response.StringFullResponseHolder;
+import org.apache.hadoop.hive.druid.http.HiveDruidHttpClient;
+import org.apache.hadoop.hive.druid.http.HiveDruidHttpRequest;
+import org.apache.hadoop.hive.druid.http.HiveDruidHttpResponse;
 import org.apache.druid.metadata.MetadataStorageConnectorConfig;
 import org.apache.druid.metadata.MetadataStorageTablesConfig;
 import org.apache.druid.metadata.SQLMetadataConnector;
@@ -75,7 +71,6 @@ import org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat;
 import org.apache.hadoop.hive.druid.io.DruidRecordWriter;
 import org.apache.hadoop.hive.druid.json.KafkaSupervisorReport;
 import org.apache.hadoop.hive.druid.json.KafkaSupervisorSpec;
-import org.apache.hadoop.hive.druid.security.KerberosHttpClient;
 import org.apache.hadoop.hive.druid.serde.DruidSerDe;
 import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
@@ -105,8 +100,6 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.ShutdownHookManager;
-import org.jboss.netty.handler.codec.http.HttpMethod;
-import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
 import org.skife.jdbi.v2.exceptions.CallbackFailedException;
@@ -119,7 +112,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -127,7 +119,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
@@ -146,7 +137,7 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
 
   private static final String INTERMEDIATE_SEGMENT_DIR_NAME = "intermediateSegmentDir";
 
-  private static final HttpClient HTTP_CLIENT;
+  private static final HiveDruidHttpClient HTTP_CLIENT;
 
   private static final List<String> ALLOWED_ALTER_TYPES =
       ImmutableList.of("ADDPROPS", "DROPPROPS", "ADDCOLS");
@@ -157,14 +148,14 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
   private static final String DRUID_HOST_NAME = "druid.zk.service.host";
 
   static {
-    final Lifecycle lifecycle = new Lifecycle();
-    try {
-      lifecycle.start();
-    } catch (Exception e) {
-      LOG.error("Issues with lifecycle start", e);
-    }
-    HTTP_CLIENT = makeHttpClient(lifecycle);
-    ShutdownHookManager.addShutdownHook(lifecycle::stop);
+    HTTP_CLIENT = makeHttpClient();
+    ShutdownHookManager.addShutdownHook(() -> {
+      try {
+        HTTP_CLIENT.close();
+      } catch (IOException e) {
+        LOG.warn("Failed to close HiveDruidHttpClient", e);
+      }
+    });
   }
 
   private SQLMetadataConnector connector;
@@ -388,19 +379,16 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
 
   private void resetKafkaIngestion(String overlordAddress, String dataSourceName) {
     try {
-      StringFullResponseHolder
-          response =
-          RetryUtils.retry(() -> DruidStorageHandlerUtils.getResponseFromCurrentLeader(getHttpClient(),
-              new Request(HttpMethod.POST, new URL(
-                  String.format("http://%s/druid/indexer/v1/supervisor/%s/reset", overlordAddress, dataSourceName))),
-              new StringFullResponseHandler(Charset.forName("UTF-8"))), input -> input instanceof IOException,
-              getMaxRetryCount());
-      if (response.getStatus().equals(HttpResponseStatus.OK)) {
+      HiveDruidHttpResponse response = RetryUtils.retry(() ->
+          DruidStorageHandlerUtils.getResponseFromCurrentLeader(getHttpClient(),
+              new HiveDruidHttpRequest("POST", new URL(
+                  String.format("http://%s/druid/indexer/v1/supervisor/%s/reset", overlordAddress, dataSourceName)))),
+          input -> input instanceof IOException, getMaxRetryCount());
+      if (response.getStatusCode() == HiveDruidHttpResponse.SC_OK) {
         CONSOLE.printInfo("Druid Kafka Ingestion Reset successful.");
       } else {
         throw new IOException(String.format("Unable to reset Kafka Ingestion Druid status [%d] full response [%s]",
-            response.getStatus().getCode(),
-            response.getContent()));
+            response.getStatusCode(), response.getContent()));
       }
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -409,19 +397,16 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
 
   private void stopKafkaIngestion(String overlordAddress, String dataSourceName) {
     try {
-      StringFullResponseHolder
-          response =
-          RetryUtils.retry(() -> DruidStorageHandlerUtils.getResponseFromCurrentLeader(getHttpClient(),
-              new Request(HttpMethod.POST, new URL(
-                  String.format("http://%s/druid/indexer/v1/supervisor/%s/shutdown", overlordAddress, dataSourceName))),
-              new StringFullResponseHandler(Charset.forName("UTF-8"))), input -> input instanceof IOException,
-              getMaxRetryCount());
-      if (response.getStatus().equals(HttpResponseStatus.OK)) {
+      HiveDruidHttpResponse response = RetryUtils.retry(() ->
+          DruidStorageHandlerUtils.getResponseFromCurrentLeader(getHttpClient(),
+              new HiveDruidHttpRequest("POST", new URL(
+                  String.format("http://%s/druid/indexer/v1/supervisor/%s/shutdown", overlordAddress, dataSourceName)))),
+          input -> input instanceof IOException, getMaxRetryCount());
+      if (response.getStatusCode() == HiveDruidHttpResponse.SC_OK) {
         CONSOLE.printInfo("Druid Kafka Ingestion shutdown successful.");
       } else {
         throw new IOException(String.format("Unable to stop Kafka Ingestion Druid status [%d] full response [%s]",
-            response.getStatus().getCode(),
-            response.getContent()));
+            response.getStatusCode(), response.getContent()));
       }
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -440,25 +425,22 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
         Preconditions.checkNotNull(DruidStorageHandlerUtils.getTableProperty(table, Constants.DRUID_DATA_SOURCE),
             "Druid Datasource name is null");
     try {
-      StringFullResponseHolder
-          response =
-          RetryUtils.retry(() -> DruidStorageHandlerUtils.getResponseFromCurrentLeader(getHttpClient(),
-              new Request(HttpMethod.GET,
-                  new URL(String.format("http://%s/druid/indexer/v1/supervisor/%s", overlordAddress, dataSourceName))),
-              new StringFullResponseHandler(Charset.forName("UTF-8"))), input -> input instanceof IOException,
-              getMaxRetryCount());
-      if (response.getStatus().equals(HttpResponseStatus.OK)) {
+      HiveDruidHttpResponse response = RetryUtils.retry(() ->
+          DruidStorageHandlerUtils.getResponseFromCurrentLeader(getHttpClient(),
+              new HiveDruidHttpRequest("GET",
+                  new URL(String.format("http://%s/druid/indexer/v1/supervisor/%s", overlordAddress, dataSourceName)))),
+          input -> input instanceof IOException, getMaxRetryCount());
+      if (response.getStatusCode() == HiveDruidHttpResponse.SC_OK) {
         return JSON_MAPPER.readValue(response.getContent(), KafkaSupervisorSpec.class);
         // Druid Returns 400 Bad Request when not found.
-      } else if (response.getStatus().equals(HttpResponseStatus.NOT_FOUND) || response.getStatus()
-          .equals(HttpResponseStatus.BAD_REQUEST)) {
+      } else if (response.getStatusCode() == HiveDruidHttpResponse.SC_NOT_FOUND
+          || response.getStatusCode() == HiveDruidHttpResponse.SC_BAD_REQUEST) {
         LOG.debug("No Kafka Supervisor found for datasource[%s]", dataSourceName);
         return null;
       } else {
         throw new IOException(String.format(
             "Unable to fetch Kafka Ingestion Spec from Druid status [%d] full response [%s]",
-            response.getStatus().getCode(),
-            response.getContent()));
+            response.getStatusCode(), response.getContent()));
       }
     } catch (Exception e) {
       throw new RuntimeException("Exception while fetching kafka ingestion spec from druid", e);
@@ -481,24 +463,21 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
         Preconditions.checkNotNull(DruidStorageHandlerUtils.getTableProperty(table, Constants.DRUID_DATA_SOURCE),
             "Druid Datasource name is null");
     try {
-      StringFullResponseHolder
-          response =
-          RetryUtils.retry(() -> DruidStorageHandlerUtils.getResponseFromCurrentLeader(getHttpClient(),
-              new Request(HttpMethod.GET, new URL(
-                  String.format("http://%s/druid/indexer/v1/supervisor/%s/status", overlordAddress, dataSourceName))),
-              new StringFullResponseHandler(Charset.forName("UTF-8"))), input -> input instanceof IOException,
-              getMaxRetryCount());
-      if (response.getStatus().equals(HttpResponseStatus.OK)) {
+      HiveDruidHttpResponse response = RetryUtils.retry(() ->
+          DruidStorageHandlerUtils.getResponseFromCurrentLeader(getHttpClient(),
+              new HiveDruidHttpRequest("GET", new URL(
+                  String.format("http://%s/druid/indexer/v1/supervisor/%s/status", overlordAddress, dataSourceName)))),
+          input -> input instanceof IOException, getMaxRetryCount());
+      if (response.getStatusCode() == HiveDruidHttpResponse.SC_OK) {
         return DruidStorageHandlerUtils.JSON_MAPPER.readValue(response.getContent(), KafkaSupervisorReport.class);
         // Druid Returns 400 Bad Request when not found.
-      } else if (response.getStatus().equals(HttpResponseStatus.NOT_FOUND) || response.getStatus()
-          .equals(HttpResponseStatus.BAD_REQUEST)) {
+      } else if (response.getStatusCode() == HiveDruidHttpResponse.SC_NOT_FOUND
+          || response.getStatusCode() == HiveDruidHttpResponse.SC_BAD_REQUEST) {
         LOG.info("No Kafka Supervisor found for datasource[%s]", dataSourceName);
         return null;
       } else {
-        LOG.error("Unable to fetch Kafka Supervisor status [%d] full response [%s]",
-            response.getStatus().getCode(),
-            response.getContent());
+        LOG.error("Unable to fetch Kafka Supervisor status [{}] full response [{}]",
+            response.getStatusCode(), response.getContent());
         return null;
       }
     } catch (Exception e) {
@@ -556,11 +535,11 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
 
     String coordinatorResponse;
     try {
-      coordinatorResponse =
-          RetryUtils.retry(() -> DruidStorageHandlerUtils.getResponseFromCurrentLeader(getHttpClient(),
-              new Request(HttpMethod.GET, new URL(String.format("http://%s/status", coordinatorAddress))),
-              new StringFullResponseHandler(Charset.forName("UTF-8"))).getContent(),
-              input -> input instanceof IOException, maxTries);
+      coordinatorResponse = RetryUtils.retry(() ->
+          DruidStorageHandlerUtils.getResponseFromCurrentLeader(getHttpClient(),
+              new HiveDruidHttpRequest("GET", new URL(String.format("http://%s/status", coordinatorAddress))))
+              .getContent(),
+          input -> input instanceof IOException, maxTries);
     } catch (Exception e) {
       CONSOLE.printInfo("Will skip waiting for data loading, coordinator unavailable");
       return;
@@ -591,12 +570,12 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
       urlsOfUnloadedSegments = ImmutableSet.copyOf(Sets.filter(urlsOfUnloadedSegments, input -> {
         try {
           String result = DruidStorageHandlerUtils
-              .getResponseFromCurrentLeader(getHttpClient(), new Request(HttpMethod.GET, input),
-                  new StringFullResponseHandler(Charset.forName("UTF-8"))).getContent();
+              .getResponseFromCurrentLeader(getHttpClient(), new HiveDruidHttpRequest("GET", input))
+              .getContent();
 
           LOG.debug("Checking segment [{}] response is [{}]", input, result);
           return Strings.isNullOrEmpty(result);
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (IOException e) {
           LOG.error(String.format("Error while checking URL [%s]", input), e);
           return true;
         }
@@ -934,33 +913,17 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
     return rootWorkingDir;
   }
 
-  private static HttpClient makeHttpClient(Lifecycle lifecycle) {
-    final int
-        numConnection =
-        HiveConf.getIntVar(SessionState.getSessionConf(), HiveConf.ConfVars.HIVE_DRUID_NUM_HTTP_CONNECTION);
-    final Period
-        readTimeout =
-        new Period(HiveConf.getVar(SessionState.getSessionConf(), HiveConf.ConfVars.HIVE_DRUID_HTTP_READ_TIMEOUT));
-    LOG.info("Creating Druid HTTP client with {} max parallel connections and {}ms read timeout",
-        numConnection,
-        readTimeout.toStandardDuration().getMillis());
-
-    final HttpClient
-        httpClient =
-        HttpClientInit.createClient(HttpClientConfig.builder()
-            .withNumConnections(numConnection)
-            .withReadTimeout(new Period(readTimeout).toStandardDuration())
-            .build(), lifecycle);
+  private static HiveDruidHttpClient makeHttpClient() {
+    final Period readTimeout = new Period(
+        HiveConf.getVar(SessionState.getSessionConf(), HiveConf.ConfVars.HIVE_DRUID_HTTP_READ_TIMEOUT));
     final boolean kerberosEnabled =
         HiveConf.getBoolVar(SessionState.getSessionConf(), HiveConf.ConfVars.HIVE_DRUID_KERBEROS_ENABLE);
-    if (kerberosEnabled && UserGroupInformation.isSecurityEnabled()) {
-      LOG.info("building Kerberos Http Client");
-      return new KerberosHttpClient(httpClient);
-    }
-    return httpClient;
+    LOG.info("Creating HiveDruidHttpClient with {}ms read timeout, kerberos={}",
+        readTimeout.toStandardDuration().getMillis(), kerberosEnabled);
+    return new HiveDruidHttpClient((int) readTimeout.toStandardDuration().getMillis(), kerberosEnabled);
   }
 
-  public static HttpClient getHttpClient() {
+  public static HiveDruidHttpClient getHttpClient() {
     return HTTP_CLIENT;
   }
 

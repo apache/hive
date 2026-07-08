@@ -45,11 +45,9 @@ import org.apache.druid.java.util.common.granularity.Granularity;
 import org.apache.druid.java.util.emitter.EmittingLogger;
 import org.apache.druid.java.util.emitter.core.NoopEmitter;
 import org.apache.druid.java.util.emitter.service.ServiceEmitter;
-import org.apache.druid.java.util.http.client.HttpClient;
-import org.apache.druid.java.util.http.client.Request;
-import org.apache.druid.java.util.http.client.response.InputStreamResponseHandler;
-import org.apache.druid.java.util.http.client.response.StringFullResponseHandler;
-import org.apache.druid.java.util.http.client.response.StringFullResponseHolder;
+import org.apache.hadoop.hive.druid.http.HiveDruidHttpClient;
+import org.apache.hadoop.hive.druid.http.HiveDruidHttpRequest;
+import org.apache.hadoop.hive.druid.http.HiveDruidHttpResponse;
 import org.apache.druid.math.expr.ExprMacroTable;
 import org.apache.druid.metadata.MetadataStorageTablesConfig;
 import org.apache.druid.metadata.SQLMetadataConnector;
@@ -144,9 +142,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.retry.RetryPolicies;
 import org.apache.hadoop.io.retry.RetryProxy;
-import org.jboss.netty.handler.codec.http.HttpHeaders;
-import org.jboss.netty.handler.codec.http.HttpMethod;
-import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.joda.time.Period;
@@ -289,10 +284,11 @@ public final class DruidStorageHandlerUtils {
    * @param query   druid query.
    * @return Request object to be submitted.
    */
-  public static Request createSmileRequest(String address, org.apache.druid.query.Query query) {
+  public static HiveDruidHttpRequest createSmileRequest(String address, org.apache.druid.query.Query query) {
     try {
-      return new Request(HttpMethod.POST, new URL(String.format("%s/druid/v2/", "http://" + address))).setContent(
-          SMILE_MAPPER.writeValueAsBytes(query)).setHeader(HttpHeaders.Names.CONTENT_TYPE, SMILE_CONTENT_TYPE);
+      return new HiveDruidHttpRequest("POST", new URL(String.format("%s/druid/v2/", "http://" + address)))
+          .setContent(SMILE_MAPPER.writeValueAsBytes(query))
+          .setHeader("Content-Type", SMILE_CONTENT_TYPE);
     } catch (MalformedURLException e) {
       LOG.error("URL Malformed  address {}", address);
       throw new RuntimeException(e);
@@ -311,42 +307,28 @@ public final class DruidStorageHandlerUtils {
    * @return response object.
    * @throws IOException in case of request IO error.
    */
-  public static InputStream submitRequest(HttpClient client, Request request) throws IOException {
-    try {
-      return client.go(request, new InputStreamResponseHandler()).get();
-    } catch (ExecutionException | InterruptedException e) {
-      throw new IOException(e.getCause());
-    }
-
+  public static InputStream submitRequest(HiveDruidHttpClient client, HiveDruidHttpRequest request)
+      throws IOException {
+    return client.executeStream(request);
   }
 
-  static StringFullResponseHolder getResponseFromCurrentLeader(HttpClient client, Request request,
-      StringFullResponseHandler fullResponseHandler) throws ExecutionException, InterruptedException {
-    StringFullResponseHolder responseHolder = client.go(request, fullResponseHandler).get();
-    if (HttpResponseStatus.TEMPORARY_REDIRECT.equals(responseHolder.getStatus())) {
-      String redirectUrlStr = responseHolder.getResponse().headers().get("Location");
-      LOG.debug("Request[%s] received redirect response to location [%s].", request.getUrl(), redirectUrlStr);
+  static HiveDruidHttpResponse getResponseFromCurrentLeader(HiveDruidHttpClient client,
+      HiveDruidHttpRequest request) throws IOException {
+    HiveDruidHttpResponse responseHolder = client.execute(request);
+    if (responseHolder.getStatusCode() == HiveDruidHttpResponse.SC_TEMPORARY_REDIRECT) {
+      String redirectUrlStr = responseHolder.getHeader("Location");
+      LOG.debug("Request[{}] received redirect response to location [{}].", request.getUrl(), redirectUrlStr);
       final URL redirectUrl;
       try {
         redirectUrl = new URL(redirectUrlStr);
       } catch (MalformedURLException ex) {
-        throw new ExecutionException(String
-            .format("Malformed redirect location is found in response from url[%s], new location[%s].",
-                request.getUrl(),
-            redirectUrlStr), ex);
+        throw new IOException(String.format(
+            "Malformed redirect location is found in response from url[%s], new location[%s].",
+            request.getUrl(), redirectUrlStr), ex);
       }
-      responseHolder = client.go(withUrl(request, redirectUrl), fullResponseHandler).get();
+      responseHolder = client.execute(request.withUrl(redirectUrl));
     }
     return responseHolder;
-  }
-
-  private static Request withUrl(Request old, URL url) {
-    Request req = new Request(old.getMethod(), url);
-    req.addHeaderValues(old.getHeaders());
-    if (old.hasContent()) {
-      req.setContent(old.getContent());
-    }
-    return req;
   }
 
   /**

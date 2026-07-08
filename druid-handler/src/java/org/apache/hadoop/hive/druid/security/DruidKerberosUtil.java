@@ -55,7 +55,7 @@ public final class DruidKerberosUtil {
    * @throws AuthenticationException on authentication errors.
    */
 
-  static String kerberosChallenge(String server) throws AuthenticationException {
+  public static String kerberosChallenge(String server) throws AuthenticationException {
     KERBEROS_LOCK.lock();
     try {
       // This Oid for Kerberos GSS-API mechanism.
@@ -84,7 +84,7 @@ public final class DruidKerberosUtil {
     }
   }
 
-  static HttpCookie getAuthCookie(CookieStore cookieStore, URI uri) {
+  public static HttpCookie getAuthCookie(CookieStore cookieStore, URI uri) {
     if (cookieStore == null) {
       return null;
     }
@@ -105,14 +105,14 @@ public final class DruidKerberosUtil {
     return null;
   }
 
-  static void removeAuthCookie(CookieStore cookieStore, URI uri) {
+  public static void removeAuthCookie(CookieStore cookieStore, URI uri) {
     HttpCookie authCookie = getAuthCookie(cookieStore, uri);
     if (authCookie != null) {
       cookieStore.remove(uri, authCookie);
     }
   }
 
-  static boolean needToSendCredentials(CookieStore cookieStore, URI uri) {
+  public static boolean needToSendCredentials(CookieStore cookieStore, URI uri) {
     return getAuthCookie(cookieStore, uri) == null;
   }
 

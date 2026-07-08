@@ -28,13 +28,12 @@ import org.apache.druid.data.input.impl.InputRowParser;
 import org.apache.druid.data.input.impl.JSONParseSpec;
 import org.apache.druid.data.input.impl.StringInputRowParser;
 import org.apache.druid.data.input.impl.TimestampSpec;
-import org.apache.druid.java.util.http.client.Request;
-import org.apache.druid.java.util.http.client.response.StringFullResponseHandler;
-import org.apache.druid.java.util.http.client.response.StringFullResponseHolder;
 import org.apache.druid.segment.IndexSpec;
 import org.apache.druid.segment.indexing.DataSchema;
 import org.apache.druid.segment.writeout.TmpFileSegmentWriteOutMediumFactory;
 import org.apache.hadoop.hive.druid.conf.DruidConstants;
+import org.apache.hadoop.hive.druid.http.HiveDruidHttpRequest;
+import org.apache.hadoop.hive.druid.http.HiveDruidHttpResponse;
 import org.apache.hadoop.hive.druid.json.AvroParseSpec;
 import org.apache.hadoop.hive.druid.json.AvroStreamInputRowParser;
 import org.apache.hadoop.hive.druid.json.InlineSchemaAvroBytesDecoder;
@@ -43,8 +42,6 @@ import org.apache.hadoop.hive.druid.json.KafkaSupervisorSpec;
 import org.apache.hadoop.hive.druid.json.KafkaSupervisorTuningConfig;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.jboss.netty.handler.codec.http.HttpMethod;
-import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -159,22 +156,21 @@ final class DruidKafkaUtils {
       String task = JSON_MAPPER.writeValueAsString(spec);
       CONSOLE.printInfo("submitting kafka Spec {}", task);
       LOG.info("submitting kafka Supervisor Spec {}", task);
-      StringFullResponseHolder response = DruidStorageHandlerUtils
-          .getResponseFromCurrentLeader(DruidStorageHandler.getHttpClient(), new Request(HttpMethod.POST,
-                  new URL(String.format("http://%s/druid/indexer/v1/supervisor", overlordAddress)))
-                  .setContent("application/json", JSON_MAPPER.writeValueAsBytes(spec)),
-              new StringFullResponseHandler(Charset.forName("UTF-8")));
-      if (response.getStatus().equals(HttpResponseStatus.OK)) {
-        String
-            msg =
-            String.format("Kafka Supervisor for [%s] Submitted Successfully to druid.",
-                spec.getDataSchema().getDataSource());
+      HiveDruidHttpResponse response = DruidStorageHandlerUtils.getResponseFromCurrentLeader(
+          DruidStorageHandler.getHttpClient(),
+          new HiveDruidHttpRequest("POST",
+              new URL(String.format("http://%s/druid/indexer/v1/supervisor", overlordAddress)))
+              .setContent(JSON_MAPPER.writeValueAsBytes(spec))
+              .setHeader("Content-Type", "application/json"));
+      if (response.getStatusCode() == HiveDruidHttpResponse.SC_OK) {
+        String msg = String.format("Kafka Supervisor for [%s] Submitted Successfully to druid.",
+            spec.getDataSchema().getDataSource());
         LOG.info(msg);
         CONSOLE.printInfo(msg);
       } else {
-        throw new IOException(String.format("Unable to update Kafka Ingestion for Druid status [%d] full response [%s]",
-            response.getStatus().getCode(),
-            response.getContent()));
+        throw new IOException(String.format(
+            "Unable to update Kafka Ingestion for Druid status [%d] full response [%s]",
+            response.getStatusCode(), response.getContent()));
       }
     } catch (Exception e) {
       throw new RuntimeException(e);

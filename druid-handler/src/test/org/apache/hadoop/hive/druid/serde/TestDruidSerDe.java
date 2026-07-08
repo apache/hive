@@ -34,8 +34,8 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import org.apache.druid.java.util.http.client.HttpClient;
-import org.apache.druid.java.util.http.client.response.HttpResponseHandler;
+import org.apache.hadoop.hive.druid.http.HiveDruidHttpClient;
+import org.apache.hadoop.hive.druid.http.HiveDruidHttpRequest;
 import org.apache.druid.query.scan.ScanResultValue;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -660,10 +660,10 @@ public class TestDruidSerDe {
       IllegalAccessException, InterruptedException, NoSuchMethodException, InvocationTargetException {
 
     // Initialize
-    HttpClient httpClient = mock(HttpClient.class);
+    HiveDruidHttpClient httpClient = mock(HiveDruidHttpClient.class);
     SettableFuture<InputStream> futureResult = SettableFuture.create();
     futureResult.set(new ByteArrayInputStream(resultString));
-    when(httpClient.go(any(), any(HttpResponseHandler.class))).thenReturn(futureResult);
+    when(httpClient.executeStreamAsync(any(HiveDruidHttpRequest.class))).thenReturn(futureResult);
     DruidQueryRecordReader<?> reader = DruidQueryBasedInputFormat.getDruidQueryReader(queryType);
 
     final HiveDruidSplit split = new HiveDruidSplit(jsonQuery, new Path("empty"), new String[]{"testing_host"});
@@ -692,7 +692,7 @@ public class TestDruidSerDe {
     // Check mapreduce path
     futureResult = SettableFuture.create();
     futureResult.set(new ByteArrayInputStream(resultString));
-    when(httpClient.go(any(), any(HttpResponseHandler.class))).thenReturn(futureResult);
+    when(httpClient.executeStreamAsync(any(HiveDruidHttpRequest.class))).thenReturn(futureResult);
     reader = DruidQueryBasedInputFormat.getDruidQueryReader(queryType);
     reader.initialize(split, DruidStorageHandlerUtils.JSON_MAPPER, DruidStorageHandlerUtils.SMILE_MAPPER, httpClient,
         conf);

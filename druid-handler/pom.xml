@@ -25,7 +25,7 @@
   <name>Hive Druid Handler</name>
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
-    <druid.guava.version>16.0.1</druid.guava.version>
+    <druid.guava.version>${guava.version}</druid.guava.version>
   </properties>
   <dependencies>
     <!-- dependencies are always listed in sorted order by groupId, artifactId -->
@@ -33,6 +33,14 @@
     <dependency>
       <groupId>com.fasterxml.jackson.dataformat</groupId>
       <artifactId>jackson-dataformat-smile</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
@@ -77,13 +85,16 @@
       <version>${druid.guava.version}</version>
     </dependency>
     <dependency>
-      <groupId>joda-time</groupId>
-      <artifactId>joda-time</artifactId>
+      <groupId>org.asynchttpclient</groupId>
+      <artifactId>async-http-client</artifactId>
     </dependency>
     <dependency>
-      <groupId>io.netty</groupId>
-      <artifactId>netty</artifactId>
-      <version>${netty3.version}</version>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>joda-time</groupId>
+      <artifactId>joda-time</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.druid</groupId>
@@ -115,6 +126,10 @@
           <artifactId>*</artifactId>
         </exclusion>
         <exclusion>
+          <groupId>org.asynchttpclient</groupId>
+          <artifactId>async-http-client</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>org.glassfish</groupId>
           <artifactId>javax.el</artifactId>
         </exclusion>
@@ -129,6 +144,26 @@
         <exclusion>
           <groupId>com.ibm.icu</groupId>
           <artifactId>icu4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-annotations</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-databind</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.asynchttpclient</groupId>
+          <artifactId>async-http-client</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>netty</artifactId>
         </exclusion>
         <exclusion>
           <groupId>org.codehaus.plexus</groupId>
@@ -332,10 +367,10 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-shade-plugin</artifactId>
             <executions>
-              <!-- we need to shade netty, as there is a conflict between versions
-              used by Hadoop (3.6.2.Final) and Druid (3.10.4.Final) -->
-              <!-- we need to shade jackson, as there is a conflict between versions
-              used by Hive (2.4.2) and Druid (2.4.6) -->
+              <!-- we need to shade netty 4, as there is a conflict between versions
+              used by Hadoop and Druid -->
+              <!-- we need to shade jackson and async-http-client to use Hive-managed
+              patched versions rather than legacy Druid transitives -->
               <execution>
                 <phase>package</phase>
                 <goals>
@@ -356,10 +391,6 @@
                     <relocation>
                       <pattern>org.apache.calcite</pattern>
                       <shadedPattern>org.apache.hive.druid.org.apache.calcite</shadedPattern>
-                    </relocation>
-                    <relocation>
-                      <pattern>org.jboss.netty</pattern>
-                      <shadedPattern>org.apache.hive.druid.org.jboss.netty</shadedPattern>
                     </relocation>
                     <relocation>
                       <pattern>com.fasterxml.jackson</pattern>
@@ -393,6 +424,10 @@
                       <include>org.asynchttpclient:*</include>
                       <include>org.antlr:*</include>
                     </includes>
+                    <excludes>
+                      <!-- HIVE-25013: Netty 3 (io.netty:netty) is EOL with no CVE fix; HTTP uses Apache HttpClient -->
+                      <exclude>io.netty:netty</exclude>
+                    </excludes>
                   </artifactSet>
                   <filters>
                     <filter>

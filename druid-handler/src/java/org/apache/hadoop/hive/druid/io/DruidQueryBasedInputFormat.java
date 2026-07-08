@@ -21,7 +21,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.druid.java.util.http.client.Request;
 import org.apache.druid.query.BaseQuery;
 import org.apache.druid.query.LocatedSegmentDescriptor;
 import org.apache.druid.query.Query;
@@ -53,8 +52,8 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.hadoop.hive.druid.http.HiveDruidHttpRequest;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -205,7 +204,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     try {
       response =
           DruidStorageHandlerUtils.submitRequest(DruidStorageHandler.getHttpClient(),
-              new Request(HttpMethod.GET, new URL(request)));
+              new HiveDruidHttpRequest("GET", new URL(request)));
     } catch (Exception e) {
       throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
     }

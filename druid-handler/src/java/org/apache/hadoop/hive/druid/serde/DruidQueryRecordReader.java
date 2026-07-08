@@ -27,9 +27,8 @@ import com.google.common.base.Throwables;
 import org.apache.druid.java.util.common.IAE;
 import org.apache.druid.java.util.common.RE;
 import org.apache.druid.java.util.common.guava.CloseQuietly;
-import org.apache.druid.java.util.http.client.HttpClient;
-import org.apache.druid.java.util.http.client.Request;
-import org.apache.druid.java.util.http.client.response.InputStreamResponseHandler;
+import org.apache.hadoop.hive.druid.http.HiveDruidHttpClient;
+import org.apache.hadoop.hive.druid.http.HiveDruidHttpRequest;
 import org.apache.druid.query.Query;
 import org.apache.druid.query.QueryInterruptedException;
 import org.apache.hadoop.conf.Configuration;
@@ -73,7 +72,7 @@ public abstract class DruidQueryRecordReader<R extends Comparable<R>> extends Re
   private ObjectMapper smileMapper;
   private Configuration conf;
   private String[] locations;
-  private HttpClient httpClient;
+  private HiveDruidHttpClient httpClient;
   /**
    * Query that Druid executes.
    */
@@ -116,8 +115,8 @@ public abstract class DruidQueryRecordReader<R extends Comparable<R>> extends Re
       // Execute query
       LOG.debug("Retrieving data from druid location[{}] using query:[{}] ", address, query);
       try {
-        Request request = DruidStorageHandlerUtils.createSmileRequest(address, query);
-        Future<InputStream> inputStreamFuture = httpClient.go(request, new InputStreamResponseHandler());
+        HiveDruidHttpRequest request = DruidStorageHandlerUtils.createSmileRequest(address, query);
+        Future<InputStream> inputStreamFuture = httpClient.executeStreamAsync(request);
         //noinspection unchecked
         iterator =
             new JsonParserIterator(smileMapper, resultsType, inputStreamFuture, request.getUrl().toString(), query);
@@ -149,8 +148,8 @@ public abstract class DruidQueryRecordReader<R extends Comparable<R>> extends Re
     initialize(split, context.getConfiguration());
   }
 
-  public void initialize(InputSplit split, ObjectMapper mapper, ObjectMapper smileMapper, HttpClient httpClient,
-      Configuration conf) throws IOException {
+  public void initialize(InputSplit split, ObjectMapper mapper, ObjectMapper smileMapper,
+      HiveDruidHttpClient httpClient, Configuration conf) throws IOException {
     this.conf = conf;
     HiveDruidSplit hiveDruidSplit = (HiveDruidSplit) split;
     Preconditions.checkNotNull(hiveDruidSplit, "input split is null ???");
