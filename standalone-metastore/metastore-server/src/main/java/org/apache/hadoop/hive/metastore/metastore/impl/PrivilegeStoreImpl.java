@@ -837,7 +837,8 @@ public class PrivilegeStoreImpl extends RawStoreBundle implements PrivilegeStore
             persistentObjs.add(mDc);
           }
         } else if (hiveObject.getObjectType() == HiveObjectType.TABLE) {
-          MTable tblObj = tableStore.ensureGetMTable(new TableName(catName, hiveObject.getDbName(), hiveObject.getObjectName()));
+          MTable tblObj = tableStore
+              .ensureGetMTable(new TableName(catName, hiveObject.getDbName(), hiveObject.getObjectName()));
           if (tblObj != null) {
             List<MTablePrivilege> tablePrivs = this
                 .listAllMTableGrants(userName, principalType,
@@ -891,7 +892,8 @@ public class PrivilegeStoreImpl extends RawStoreBundle implements PrivilegeStore
             }
           }
         } else if (hiveObject.getObjectType() == HiveObjectType.COLUMN) {
-          MTable tblObj = tableStore.ensureGetMTable(new TableName(catName, hiveObject.getDbName(), hiveObject.getObjectName()));
+          MTable tblObj = tableStore
+              .ensureGetMTable(new TableName(catName, hiveObject.getDbName(), hiveObject.getObjectName()));
           if (tblObj != null) {
             if (hiveObject.getPartValues() != null) {
               MPartition partObj = null;

@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.metastore.iface.TableStore;
+import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.utils.DirectSqlConfigurator;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.junit.Assert;
@@ -137,6 +138,8 @@ public class TestObjectStoreUnwrap {
 
     TransactionHandler<?> readHandler = getHandler(readProxy);
     TransactionHandler<?> deleteHandler = getHandler(deleteProxy);
+    Assert.assertNotSame(readHandler.openQueries(), deleteHandler.openQueries());
+
     GetPartitionsArgs args = new GetPartitionsArgs.GetPartitionsArgsBuilder().max(10).build();
 
     try (AutoCloseable ignored = deadline();
@@ -164,6 +167,7 @@ public class TestObjectStoreUnwrap {
     TableStore proxyB = objectStore.unwrap(TableStore.class);
     TransactionHandler<?> handlerA = getHandler(proxyA);
     TransactionHandler<?> handlerB = getHandler(proxyB);
+    Assert.assertNotSame(handlerA.openQueries(), handlerB.openQueries());
     GetPartitionsArgs args = new GetPartitionsArgs.GetPartitionsArgsBuilder().max(10).build();
 
     try (AutoCloseable ignored = deadline();
@@ -197,6 +201,7 @@ public class TestObjectStoreUnwrap {
 
     TransactionHandler<?> handlerA = getHandler(proxyA);
     TransactionHandler<?> handlerB = getHandler(proxyB);
+    Assert.assertNotSame(handlerA.openQueries(), handlerB.openQueries());
     GetPartitionsArgs args = new GetPartitionsArgs.GetPartitionsArgsBuilder().max(10).build();
 
     try (AutoCloseable ignored = deadline();
@@ -266,6 +271,39 @@ public class TestObjectStoreUnwrap {
   }
 
   @Test
+  public void testLeakingQueries() throws Exception {
+    TableStore proxyA = objectStore.unwrap(TableStore.class);
+    TransactionHandler<TableStore> handlerA = getHandler(proxyA);
+    RawStoreBundle rsbA = (RawStoreBundle) handlerA.simpl();
+    rsbA.getPersistentManager().newQuery(MTable.class);
+    rsbA.getPersistentManager().newQuery(MTable.class);
+    rsbA.getPersistentManager().newQuery(MTable.class);
+    // handlerA should have 3 opening queries
+    Assert.assertEquals(3, handlerA.getOpenQueryCount());
+
+    // Imaging proxyA creates a nested proxyB inside the same transaction
+    TableStore proxyB = objectStore.unwrap(TableStore.class);
+    TransactionHandler<TableStore> handlerB = getHandler(proxyB);
+    RawStoreBundle rsbB = (RawStoreBundle) handlerB.simpl();
+    rsbB.getPersistentManager().newQuery(MTable.class);
+    // Don't overwrite the queries opened by handlerA
+    Assert.assertEquals(3, handlerA.getOpenQueryCount());
+    Assert.assertEquals(1, handlerB.getOpenQueryCount());
+
+    proxyA.getTable(tableName, null, -1);
+    // handleA should close all opening queries at the end of transaction
+    Assert.assertEquals(0, handlerA.getOpenQueryCount());
+    // Shouldn't affect the opening queries in handlerB
+    Assert.assertEquals(1, handlerB.getOpenQueryCount());
+
+    rsbA.getPersistentManager().newQuery(MTable.class);
+    proxyB.getTable(tableName, null, -1);
+    Assert.assertEquals(0, handlerB.getOpenQueryCount());
+    // Shouldn't affect the opening queries in handlerA
+    Assert.assertEquals(1, handlerA.getOpenQueryCount());
+  }
+
+  @Test
   public void testCreateTableSharesPm() throws Exception {
     String otherDb = "unwrap_other_db";
     String otherTable = "unwrap_other_tbl";
@@ -315,8 +353,8 @@ public class TestObjectStoreUnwrap {
     }
   }
 
-  private static TransactionHandler<?> getHandler(Object storeProxy) {
-    return (TransactionHandler<?>) Proxy.getInvocationHandler(storeProxy);
+  private static <T> TransactionHandler<T> getHandler(Object storeProxy) {
+    return (TransactionHandler<T>) Proxy.getInvocationHandler(storeProxy);
   }
 
   private AutoCloseable deadline() throws Exception {

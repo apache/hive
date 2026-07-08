@@ -184,6 +184,7 @@ public class ConstraintStoreImpl extends RawStoreBundle implements ConstraintSto
   private List<SQLForeignKey> addForeignKeys(List<SQLForeignKey> foreignKeys, boolean retrieveCD,
       List<SQLPrimaryKey> primaryKeys, List<SQLUniqueConstraint> uniqueConstraints)
       throws InvalidObjectException, MetaException {
+    TableStore tableStore = siblingStore(TableStore.class);
     if (CollectionUtils.isNotEmpty(foreignKeys)) {
       List<MConstraint> mpkfks = new ArrayList<>();
       String currentConstraintName = null;
@@ -208,7 +209,7 @@ public class ConstraintStoreImpl extends RawStoreBundle implements ConstraintSto
         // If retrieveCD is false, we do not need to do a deep retrieval of the Table Column Descriptor.
         // For instance, this is the case when we are creating the table.
         final TableStore.AttachedMTableInfo nChildTable =
-            siblingStore(TableStore.class).getMTable(new TableName(catName, fkTableDB, fkTableName), retrieveCD);
+            tableStore.getMTable(new TableName(catName, fkTableDB, fkTableName), retrieveCD);
         final MTable childTable = nChildTable.mtbl;
         if (childTable == null) {
           throw new InvalidObjectException("Child table not found: " + fkTableName);
@@ -242,7 +243,7 @@ public class ConstraintStoreImpl extends RawStoreBundle implements ConstraintSto
           existingTableUniqueConstraints = uniqueConstraints;
         } else {
           nParentTable =
-              siblingStore(TableStore.class).getMTable(new TableName(catName, pkTableDB, pkTableName), true);
+              tableStore.getMTable(new TableName(catName, pkTableDB, pkTableName), true);
           parentTable = nParentTable.mtbl;
           if (parentTable == null) {
             throw new InvalidObjectException("Parent table not found: " + pkTableName);
@@ -441,7 +442,7 @@ public class ConstraintStoreImpl extends RawStoreBundle implements ConstraintSto
       MetaException {
     List<MConstraint> mpks = new ArrayList<>();
     String constraintName = null;
-
+    TableStore tableStore = siblingStore(TableStore.class);
     for (SQLPrimaryKey pk : pks) {
       final String catName = normalizeIdentifier(pk.getCatName());
       final String tableDB = normalizeIdentifier(pk.getTable_db());
@@ -450,7 +451,7 @@ public class ConstraintStoreImpl extends RawStoreBundle implements ConstraintSto
 
       // If retrieveCD is false, we do not need to do a deep retrieval of the Table Column Descriptor.
       // For instance, this is the case when we are creating the table.
-      TableStore.AttachedMTableInfo nParentTable = siblingStore(TableStore.class)
+      TableStore.AttachedMTableInfo nParentTable = tableStore
           .getMTable(new TableName(catName, tableDB, tableName), retrieveCD);
       MTable parentTable = nParentTable.mtbl;
       if (parentTable == null) {
@@ -527,6 +528,7 @@ public class ConstraintStoreImpl extends RawStoreBundle implements ConstraintSto
     List<MConstraint> cstrs = new ArrayList<>();
     String constraintName = null;
 
+    TableStore tableStore = siblingStore(TableStore.class);
     for (SQLUniqueConstraint uk : uks) {
       final String catName = normalizeIdentifier(uk.getCatName());
       final String tableDB = normalizeIdentifier(uk.getTable_db());
@@ -535,7 +537,7 @@ public class ConstraintStoreImpl extends RawStoreBundle implements ConstraintSto
 
       // If retrieveCD is false, we do not need to do a deep retrieval of the Table Column Descriptor.
       // For instance, this is the case when we are creating the table.
-      TableStore.AttachedMTableInfo nParentTable = siblingStore(TableStore.class)
+      TableStore.AttachedMTableInfo nParentTable = tableStore
           .getMTable(new TableName(catName, tableDB, tableName), retrieveCD);
       MTable parentTable = nParentTable.mtbl;
       if (parentTable == null) {
@@ -735,6 +737,7 @@ public class ConstraintStoreImpl extends RawStoreBundle implements ConstraintSto
     List<MConstraint> cstrs = new ArrayList<>();
     String constraintName;
 
+    TableStore tableStore = siblingStore(TableStore.class);
     for (SQLNotNullConstraint nn : nns) {
       final String catName = normalizeIdentifier(nn.getCatName());
       final String tableDB = normalizeIdentifier(nn.getTable_db());
@@ -743,7 +746,7 @@ public class ConstraintStoreImpl extends RawStoreBundle implements ConstraintSto
 
       // If retrieveCD is false, we do not need to do a deep retrieval of the Table Column Descriptor.
       // For instance, this is the case when we are creating the table.
-      TableStore.AttachedMTableInfo nParentTable = siblingStore(TableStore.class)
+      TableStore.AttachedMTableInfo nParentTable = tableStore
           .getMTable(new TableName(catName, tableDB, tableName), retrieveCD);
       MTable parentTable = nParentTable.mtbl;
       if (parentTable == null) {

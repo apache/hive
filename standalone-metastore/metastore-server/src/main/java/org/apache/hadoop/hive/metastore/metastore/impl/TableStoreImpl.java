@@ -196,7 +196,8 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
       }
 
       // delete column statistics if present
-      siblingStore(ColStatsStore.class).deleteTableColumnStatistics(new TableName(catName, dbName, tableName), null, null);
+      siblingStore(ColStatsStore.class)
+          .deleteTableColumnStatistics(new TableName(catName, dbName, tableName), null, null);
 
       List<MConstraint> tabConstraints = listAllTableConstraintsWithOptionalConstraintName(
           catName, dbName, tableName, null);
@@ -3303,8 +3304,8 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
       throws MetaException, NoSuchObjectException {
     SourceTable sourceTable = new SourceTable();
     MTable mTable = mmvSource.getTable();
-    Table table =
-        convertToTable(ensureGetMTable(new TableName(catalogName, mTable.getDatabase().getName(), mTable.getTableName())));
+    Table table = convertToTable(
+        ensureGetMTable(new TableName(catalogName, mTable.getDatabase().getName(), mTable.getTableName())));
     sourceTable.setTable(table);
     sourceTable.setInsertedCount(mmvSource.getInsertedCount());
     sourceTable.setUpdatedCount(mmvSource.getUpdatedCount());

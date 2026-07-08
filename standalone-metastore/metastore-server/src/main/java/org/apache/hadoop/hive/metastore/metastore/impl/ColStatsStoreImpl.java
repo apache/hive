@@ -271,7 +271,8 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
     String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
     // DataNucleus objects get detached all over the place for no (real) reason.
     // So let's not use them anywhere unless absolutely necessary.
-    MTable mTable = siblingStore(TableStore.class)
+    TableStore tableStore = siblingStore(TableStore.class);
+    MTable mTable = tableStore
         .ensureGetMTable(new TableName(catName, statsDesc.getDbName(), statsDesc.getTableName()));
     int maxRetries = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.METASTORE_S4U_NOWAIT_MAX_RETRIES);
     long sleepInterval = MetastoreConf.getTimeVar(conf,
@@ -293,7 +294,7 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
         throw new RetryingExecutor.RetryException(exceptionRef.get());
       }
       pm.refresh(mTable);
-      Table table = siblingStore(TableStore.class).getTable(new TableName(catName, statsDesc.getDbName(),
+      Table table = tableStore.getTable(new TableName(catName, statsDesc.getDbName(),
           statsDesc.getTableName()), null, -1);
       List<String> colNames = new ArrayList<>();
       for (ColumnStatisticsObj statsObj : statsObjs) {
@@ -358,7 +359,8 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
     List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
     ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
     String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
-    MPartition mPartition = siblingStore(TableStore.class)
+    TableStore tableStore = siblingStore(TableStore.class);
+    MPartition mPartition = tableStore
         .ensureGetMPartition(new TableName(catName, statsDesc.getDbName(), statsDesc.getTableName()), partVals);
     if (mPartition == null) {
       throw new NoSuchObjectException("Partition for which stats is gathered doesn't exist.");
@@ -388,7 +390,7 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
         throw new RetryingExecutor.RetryException(exceptionRef.get());
       }
       pm.refresh(mPartition);
-      Partition partition = siblingStore(TableStore.class)
+      Partition partition = tableStore
           .getPartition(new TableName(catName, statsDesc.getDbName(), statsDesc.getTableName()), mPartition.getValues(), null);
       Map<String, MPartitionColumnStatistics> oldStats = Maps.newHashMap();
       List<MPartitionColumnStatistics> stats =
@@ -679,9 +681,10 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
           cs.setIsStatsCompliant(false);
         }
       } else {
+        TableStore tableStore = siblingStore(TableStore.class);
         // TODO: this could be improved to get partitions in bulk
         for (ColumnStatistics cs : allStats) {
-          MPartition mpart = siblingStore(TableStore.class).ensureGetMPartition(tableName,
+          MPartition mpart = tableStore.ensureGetMPartition(tableName,
               Warehouse.getPartValuesFromPartName(cs.getStatsDesc().getPartName()));
           if (mpart == null
               || !isCurrentStatsValidForTheQuery(mpart.getParameters(), mpart.getWriteId(), writeIdList, false)) {
@@ -759,7 +762,8 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
         return null;
       }
 
-      Table table = siblingStore(TableStore.class).getTable(tableName, null, -1);
+      TableStore tableStore = siblingStore(TableStore.class);
+      Table table = tableStore.getTable(tableName, null, -1);
       boolean isTxn = TxnUtils.isTransactionalTable(table.getParameters());
       if (isTxn && !areTxnStatsSupported) {
         return null;
@@ -770,7 +774,7 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
       GetProjectionsSpec ps = new GetProjectionsSpec();
       ps.setIncludeParamKeyPattern(StatsSetupConst.COLUMN_STATS_ACCURATE + '%');
       ps.setFieldList(Lists.newArrayList("writeId", "parameters", "values"));
-      List<Partition> parts = siblingStore(TableStore.class)
+      List<Partition> parts = tableStore
           .getPartitionSpecsByFilterAndProjection(table, ps, fs);
 
       // Loop through the given "partNames" list
@@ -916,7 +920,6 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
     if (tableName == null) {
       throw new RuntimeException("Table name is null.");
     }
-    MTable mTable = siblingStore(TableStore.class).ensureGetMTable(new TableName(catName, dbName, tableName));
     Query query = pm.newQuery(MPartitionColumnStatistics.class);
     String filter = "partition.table.database.name == t2 && partition.table.tableName == t3 && partition.table.database.catalogName == t4";
     String parameters = "java.lang.String t2, java.lang.String t3, java.lang.String t4";
