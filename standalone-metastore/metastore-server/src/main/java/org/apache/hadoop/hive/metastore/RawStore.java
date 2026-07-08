@@ -2475,10 +2475,6 @@ public interface RawStore extends Configurable {
 
   MDatabase ensureGetMDatabase(String catName, String dbName) throws NoSuchObjectException;
 
-  default MPartition ensureGetMPartition(TableName tableName, List<String> partVals) throws MetaException {
-    return unwrap(TableStore.class).ensureGetMPartition(tableName, partVals);
-  }
-
   /** Persistent Property Management. */
   default PropertyStore getPropertyStore() {
     return null;

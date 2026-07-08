@@ -271,7 +271,8 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
     String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
     // DataNucleus objects get detached all over the place for no (real) reason.
     // So let's not use them anywhere unless absolutely necessary.
-    MTable mTable = baseStore.ensureGetMTable(catName, statsDesc.getDbName(), statsDesc.getTableName());
+    MTable mTable = siblingStore(TableStore.class)
+        .ensureGetMTable(new TableName(catName, statsDesc.getDbName(), statsDesc.getTableName()));
     int maxRetries = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.METASTORE_S4U_NOWAIT_MAX_RETRIES);
     long sleepInterval = MetastoreConf.getTimeVar(conf,
         MetastoreConf.ConfVars.METASTORE_S4U_NOWAIT_RETRY_SLEEP_INTERVAL, TimeUnit.MILLISECONDS);
@@ -357,8 +358,8 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
     List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
     ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
     String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
-    MPartition mPartition =
-        baseStore.ensureGetMPartition(new TableName(catName, statsDesc.getDbName(), statsDesc.getTableName()), partVals);
+    MPartition mPartition = siblingStore(TableStore.class)
+        .ensureGetMPartition(new TableName(catName, statsDesc.getDbName(), statsDesc.getTableName()), partVals);
     if (mPartition == null) {
       throw new NoSuchObjectException("Partition for which stats is gathered doesn't exist.");
     }
@@ -566,7 +567,7 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
     String dbName = normalizeIdentifier(tableName.getDb());
     String tblName = normalizeIdentifier(tableName.getTable());
     if (writeIdList != null) {
-      MTable table = baseStore.ensureGetMTable(catName, dbName, tblName);
+      MTable table = siblingStore(TableStore.class).ensureGetMTable(new TableName(catName, dbName, tblName));
       isCompliant = !TxnUtils.isTransactionalTable(table.getParameters())
           || (areTxnStatsSupported && isCurrentStatsValidForTheQuery(table.getParameters(), table.getWriteId(), writeIdList, false));
     }
@@ -680,7 +681,7 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
       } else {
         // TODO: this could be improved to get partitions in bulk
         for (ColumnStatistics cs : allStats) {
-          MPartition mpart = baseStore.ensureGetMPartition(tableName,
+          MPartition mpart = siblingStore(TableStore.class).ensureGetMPartition(tableName,
               Warehouse.getPartValuesFromPartName(cs.getStatsDesc().getPartName()));
           if (mpart == null
               || !isCurrentStatsValidForTheQuery(mpart.getParameters(), mpart.getWriteId(), writeIdList, false)) {
@@ -915,7 +916,7 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
     if (tableName == null) {
       throw new RuntimeException("Table name is null.");
     }
-    MTable mTable = baseStore.ensureGetMTable(catName, dbName, tableName);
+    MTable mTable = siblingStore(TableStore.class).ensureGetMTable(new TableName(catName, dbName, tableName));
     Query query = pm.newQuery(MPartitionColumnStatistics.class);
     String filter = "partition.table.database.name == t2 && partition.table.tableName == t3 && partition.table.database.catalogName == t4";
     String parameters = "java.lang.String t2, java.lang.String t3, java.lang.String t4";
@@ -1133,7 +1134,7 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
       pm.deletePersistentAll(mStatsObjColl);
     }
 
-    MTable mTable = baseStore.ensureGetMTable(catName, dbName, tableName);
+    MTable mTable = siblingStore(TableStore.class).ensureGetMTable(new TableName(catName, dbName, tableName));
     if (mTable != null) {
       Map<String, String> tableParams = mTable.getParameters();
       if (tableParams != null && tableParams.containsKey(StatsSetupConst.COLUMN_STATS_ACCURATE)) {
