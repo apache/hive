@@ -24,3 +24,12 @@ create external table tbl_standard_other(a int, b string) stored as orc;
 insert into tbl_standard_other values (10, 'ten'), (444, 'tutu');
 update tbl_ice set b='The last one' where a in (select t1.a from tbl_ice t1 join tbl_standard_other t2 on t1.a = t2.a);
 select * from tbl_ice order by a, b, c;
+
+-- update when all table columns are partition columns
+-- Disable vectorization: vectorized Parquet read fails for partition-only tables.
+set hive.vectorized.execution.enabled=false;
+drop table if exists tbl_ice_all_part;
+create external table tbl_ice_all_part(a int, b string) partitioned by spec (a, b) stored by iceberg tblproperties ('format-version'='2');
+insert into tbl_ice_all_part values (1, 'one'), (2, 'two'), (3, 'three');
+update tbl_ice_all_part set b='updated' where a = 2;
+select * from tbl_ice_all_part order by a, b;
