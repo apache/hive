@@ -94,9 +94,10 @@ used), and a KDC for Kerberos — all treated as trusted dependencies.
 
 ## §4 — Trust boundaries
 
-- **Client → HiveServer2** is the primary boundary. The session is
-  authenticated (Kerberos / LDAP / PAM / custom / none) and every statement is
-  authorization-checked before execution. From HS2's point of view the **SQL
+- **Client → HiveServer2** is the primary boundary. In a secure, in-model
+  deployment, the operator configures authentication (Kerberos / LDAP / PAM /
+  custom, etc.) and authorization, and statements are checked by the configured
+  authorizer before execution. From HS2's point of view the **SQL
   text, JDBC connection properties, and session-configuration overrides are all
   untrusted**; Hive rejects non-acceptable operations through the authorization
   plugin or through the configured deny lists — `hive.conf.restricted.list`
@@ -164,10 +165,10 @@ controls. *(maintainer — okumin)*
   authorization give materially different guarantees. The operator owns the
   choice (and whether "no authorization configured" is a supported production
   mode — it is not, for an internet- or multi-tenant-exposed deployment).
-- **Network isolation** of the Metastore, the metastore RDBMS, and the
-  execution cluster from untrusted networks.
+- **Network isolation** of the metastore RDBMS and the execution cluster from
+  untrusted networks.
 - **Vetting UDFs / SerDes / aux JARs.** Adding a function or SerDe is adding
-  code to the execution JVM (see §9).
+  code to the execution JVM (see §7).
 
 ## §7 — Properties Hive does *not* uphold (by design)
 
@@ -276,29 +277,26 @@ exposed — secrets placed there are the administrator's risk (see §11a).
 These are the dispositions the PMC has recorded; confirm and extend
 *(maintainer — okumin, §14 Q13)*:
 
+- Hive defaults are not a complete secure-production baseline; some defaults
+  prioritize ease of adoption, compatibility, or trusted/local deployments.
+  Operators are responsible for enabling and correctly configuring authentication,
+  authorization, transport security, network isolation, and related controls for
+  internet-exposed or multi-tenant production deployments. `OUT-OF-MODEL:
+  operator responsibility`
 - **"Secrets are exposed in `hive-site.xml` / `metastore-site.xml` / environment
   variables / system properties."** By design not a Hive defect — a Hive
   administrator who stores secrets in those places has chosen the wrong
   mechanism. Secrets should be managed through the Hadoop `CredentialProviderAPI`
   (§8.4). Hive does not guarantee the content of those config surfaces is never
   exposed. `OUT-OF-MODEL: operator responsibility`. *(maintainer — okumin.)*
-
 - **"A UDF / `TRANSFORM` script / custom SerDe can run arbitrary code."**
   By design — registering or invoking code is an authorized operation, not a
   sandbox escape. `BY-DESIGN`.
-- **"HiveServer2 with `authentication=NONE` accepts anyone."** That is a
-  non-default / operator-chosen insecure configuration, not a Hive defect.
-  `OUT-OF-MODEL: non-default-build` (confirm the shipped default).
-- **"The Metastore Thrift port has no authorization."** **In-model.** The PMC
-  confirms HMS is expected to enforce caller authorization at the application
-  level (external services such as Spark access HMS directly — §3.3), so a
-  genuine missing-authorization path on HMS is a **VALID** finding, not
-  out-of-scope. *(maintainer — okumin, §14 Q1.)*
 - **"A built-in UDF (`reflect`/`reflect2`/`java_method`/`in_file`) enables code
   execution."** By design — these are blocked by the administrator via
   `hive.server2.builtin.udf.blacklist` (Ranger does this). Reachable only when
   the operator has not configured the blacklist → `OUT-OF-MODEL:
-  non-default-build` / operator responsibility, unless the report shows a
+  operator responsibility`, unless the report shows a
   *bypass* of a configured blacklist. *(maintainer — okumin.)*
 - **Dependency-tail CVEs** (Hadoop, Log4j, a transitive JAR) surfaced by an
   SCA scanner against Hive's build — triage upstream unless Hive's own code
@@ -310,7 +308,7 @@ A finding is **VALID** only when all hold: the violated property is one Hive
 claims (§5), the attacker is in scope (§3), and the affected code is on an
 in-model surface (§2/§4) reached by untrusted input. Otherwise route to one
 of: `OUT-OF-MODEL: adversary-not-in-scope` · `OUT-OF-MODEL: equivalent-harm` ·
-`OUT-OF-MODEL: unsupported-component` · `OUT-OF-MODEL: non-default-build` ·
+`OUT-OF-MODEL: unsupported-component` · `OUT-OF-MODEL: operator responsibility` ·
 `BY-DESIGN: property-disclaimed`.
 
 ## §14 — Open questions for the Hive PMC
