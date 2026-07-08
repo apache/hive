@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.metastore.datasource;
 
 import com.codahale.metrics.Counter;
-import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 
 import java.lang.reflect.InvocationHandler;
@@ -28,7 +27,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.sql.Statement;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Objects;
@@ -47,9 +45,6 @@ import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.hadoop.hive.metastore.datasource.MetastoreStatement.JdbcProfilerUtils.logExecution;
-import static org.apache.hadoop.hive.metastore.datasource.MetastoreStatement.JdbcProfilerUtils.isSlowExecution;
-
 @SuppressWarnings("unchecked")
 public final class MetastoreStatement implements InvocationHandler {
   private static final Logger LOG = LoggerFactory.getLogger(MetastoreStatement.class);
@@ -65,16 +60,19 @@ public final class MetastoreStatement implements InvocationHandler {
     this.configuration = Objects.requireNonNull(conf);
     this.rawSql = rawSql;
     this.delegate = Objects.requireNonNull(statement);
+    this.hook = resolveHook(conf);
+  }
+
+  private MetastoreStatementHook resolveHook(Configuration conf) {
     String className = conf.get(EXEC_HOOK, "");
     if (StringUtils.isEmpty(className)) {
-      hook = new JdbcProfilerUtils(conf);
-    } else {
-      try {
-        hook = JavaUtils.newInstance(JavaUtils.getClass(className.trim(), MetastoreStatementHook.class),
-            new Class[] { Configuration.class}, new Object[] {conf});
-      } catch (MetaException e) {
-        throw new RuntimeException(e.getMessage(), e);
-      }
+      return new JdbcProfilerUtils(configuration);
+    }
+    try {
+      return JavaUtils.newInstance(JavaUtils.getClass(className.trim(), MetastoreStatementHook.class),
+          new Class[] {Configuration.class}, new Object[] {conf});
+    } catch (MetaException e) {
+      throw new RuntimeException(e.getMessage(), e);
     }
   }
 
@@ -84,27 +82,37 @@ public final class MetastoreStatement implements InvocationHandler {
         ClassUtils.getAllInterfaces(delegate.getClass()).toArray(new Class[0]), handler);
   }
 
-  private void logThriftCallSummary(boolean monitor) {
-    Optional<HMSHandlerContext.CallCtx> ctxCall = HMSHandlerContext.getCallCtx();
+  private void logSummary(boolean monitor) {
+    Optional<HMSHandlerContext.CallCtx> currentCall = HMSHandlerContext.getCallCtx();
     HMSHandlerContext.CallCtx previousCall = CALL_CTX.get();
-    if (ctxCall.isPresent()) {
-      if (previousCall == null) {
-        if (monitor) {
-          CALL_CTX.set(ctxCall.get());
-        }
-      } else if (!ctxCall.get().equals(previousCall)) {
-        // we approach the end of previous thrift call
-        long totalSpent = previousCall.totalTime().get();
-        LOG.debug("{} took {} ms to complete all queries", previousCall.methodName(), totalSpent);
-        if (isSlowExecution(configuration, totalSpent)) {
-          LOG.warn("{} took {} ms to complete all queries", previousCall.methodName(), totalSpent);
-        }
-        if (monitor) {
-          CALL_CTX.set(ctxCall.get());
-        } else {
-          CALL_CTX.remove();
-        }
+    if (currentCall.isEmpty()) {
+      if (previousCall != null) {
+        logSummary(previousCall);
+        CALL_CTX.remove();
       }
+      return;
+    }
+    if (previousCall == null) {
+      if (monitor) {
+        CALL_CTX.set(currentCall.get());
+      }
+      return;
+    }
+    if (!currentCall.get().equals(previousCall)) {
+      logSummary(previousCall);
+      if (monitor) {
+        CALL_CTX.set(currentCall.get());
+      } else {
+        CALL_CTX.remove();
+      }
+    }
+  }
+
+  private void logSummary(HMSHandlerContext.CallCtx call) {
+    long totalSpent = call.totalTime().get();
+    LOG.debug("{} took {} ms to complete all queries", call.methodName(), totalSpent);
+    if (isSlowExecution(configuration, totalSpent)) {
+      LOG.warn("{} took {} ms to complete all queries", call.methodName(), totalSpent);
     }
   }
 
@@ -113,7 +121,7 @@ public final class MetastoreStatement implements InvocationHandler {
     Timer.Context ctx = null;
     try {
       boolean monitor = hook.profile(rawSql, method, args);
-      logThriftCallSummary(monitor);
+      logSummary(monitor);
       if (Metrics.getRegistry() != null && monitor) {
         String metricName = hook.getMetricName(method, args);
         Timer timer = Metrics.getOrCreateTimer(metricName);
@@ -127,10 +135,12 @@ public final class MetastoreStatement implements InvocationHandler {
       hook.postRun(method, args, result);
       long timeSpent = System.currentTimeMillis() - start;
       if (monitor) {
-        String statement = rawSql != null ? rawSql : (args != null && args.length > 0 ? (String) args[0] : "no sql found");
+        String statement = rawSql != null ? rawSql
+            : (args != null && args.length > 0 ? (String) args[0] : "no sql found");
         LOG.debug("Jdbc query: {} completed in {} ms", statement, timeSpent);
-        if (CALL_CTX.get() != null) {
-          CALL_CTX.get().totalTime().addAndGet(timeSpent);
+        HMSHandlerContext.CallCtx callCtx = CALL_CTX.get();
+        if (callCtx != null) {
+          callCtx.totalTime().addAndGet(timeSpent);
         }
       }
       logExecution(timeSpent, configuration, rawSql, method, args);
@@ -142,6 +152,31 @@ public final class MetastoreStatement implements InvocationHandler {
         ctx.stop();
       }
     }
+  }
+
+  static void logExecution(long timeSpent, Configuration configuration,
+      String sql, Method method, Object[] args) {
+    if (isSlowExecution(configuration, timeSpent)) {
+      Object[] printableArgs = args;
+      if (args != null && args.length > 10) {
+        printableArgs = new Object[10];
+        System.arraycopy(args, 0, printableArgs, 0, 7);
+        System.arraycopy(args, args.length - 2, printableArgs, 8, 2);
+        printableArgs[7] = "....";
+      }
+      LOG.warn("Slow execution detected, method: {}, time taken: {} ms, args size: {}, args: {}{}",
+          method.getName(), timeSpent,
+          args != null ? args.length : 0, Arrays.toString(printableArgs), sql != null ? ", sql: " + sql : "");
+      if (Metrics.getRegistry() != null) {
+        Counter slowQueries = Metrics.getOrCreateCounter(MetricsConstants.JDBC_SLOW_QUERIES);
+        slowQueries.inc();
+      }
+    }
+  }
+
+  static boolean isSlowExecution(Configuration configuration, long timeSpent) {
+    long threshold = MetastoreConf.getLongVar(configuration, MetastoreConf.ConfVars.METASTORE_JDBC_SLOW_QUERIES);
+    return threshold > 0 && timeSpent > threshold;
   }
 
   public interface MetastoreStatementHook {
@@ -157,6 +192,7 @@ public final class MetastoreStatement implements InvocationHandler {
     boolean profile(String sql, Method method, Object[] args);
 
     String getMetricName(Method method, Object[] args);
+
     /**
      * Invoked before the method call
      * @param method Method which is being called
@@ -178,79 +214,41 @@ public final class MetastoreStatement implements InvocationHandler {
   /**
    * This class is used to profile the underlying statement originated from specific thrift API calls
    */
-  public static class JdbcProfilerUtils implements MetastoreStatement.MetastoreStatementHook  {
-    private static final Set<String> PROFILED_APIS = new HashSet<>();
+  public static class JdbcProfilerUtils implements MetastoreStatementHook {
     static final Set<String> QUERY_EXECUTION =
         Set.of("executeQuery", "executeUpdate", "execute", "executeBatch");
-    private static volatile boolean initialized = false;
-    private static long logSlowQueriesThreshold;
+
+    private final Configuration configuration;
+    private final Set<String> profiledApis;
 
     public JdbcProfilerUtils(Configuration configuration) {
-      initialize(Objects.requireNonNull(configuration));
+      this.configuration = Objects.requireNonNull(configuration);
+      this.profiledApis = getProfiledApis();
     }
 
-    private static void initialize(Configuration configuration) {
-      if (!initialized) {
-        synchronized (JdbcProfilerUtils.class) {
-          if (!initialized) {
-            initialized = true;
-            logSlowQueriesThreshold = MetastoreConf.getLongVar(configuration,
-                MetastoreConf.ConfVars.METASTORE_JDBC_SLOW_QUERIES);
-            if (logSlowQueriesThreshold > 0) {
-              LOG.info("The slow query log enabled, will log the query that takes more than {} ms",
-                  logSlowQueriesThreshold);
-            }
-            String thriftApis = MetastoreConf.getVar(configuration,
-                MetastoreConf.ConfVars.METASTORE_PROFILE_JDBC_THRIFT_APIS);
-            for (String thriftApi : thriftApis.split(",")) {
-              String trimmedThriftApi = thriftApi.trim();
-              if (!trimmedThriftApi.isEmpty()) {
-                PROFILED_APIS.add(trimmedThriftApi);
-              }
-            }
-          }
+    private Set<String> getProfiledApis() {
+      String thriftApis = MetastoreConf.getVar(configuration,
+          MetastoreConf.ConfVars.METASTORE_PROFILE_JDBC_THRIFT_APIS);
+      Set<String> profiledApis = new HashSet<>();
+      for (String thriftApi : thriftApis.split(",")) {
+        String trimmedThriftApi = thriftApi.trim();
+        if (!trimmedThriftApi.isEmpty()) {
+          profiledApis.add(trimmedThriftApi);
         }
       }
-    }
-
-    public static void logExecution(long timeSpent, Configuration configuration,
-        String sql, Method method, Object[] args) {
-      if (isSlowExecution(configuration, timeSpent)) {
-        Object[] printableArgs = args;
-        if (args != null && args.length > 10) {
-          printableArgs = new Object[10];
-          System.arraycopy(args, 0, printableArgs, 0, 7);
-          System.arraycopy(args, args.length - 2, printableArgs, 8, 2);
-          printableArgs[7] = "....";
-        }
-        LOG.warn("Slow execution detected, method: {}, time taken: {} ms, args size: {}, args: {}{}",
-            method.getName(), timeSpent,
-            args != null ? args.length : 0, Arrays.toString(printableArgs), sql != null ? ", sql: " + sql : "");
-        MetricRegistry registry = Metrics.getRegistry();
-        if (registry != null) {
-          Counter slowQueries = Metrics.getOrCreateCounter(MetricsConstants.JDBC_SLOW_QUERIES);
-          slowQueries.inc();
-        }
-      }
-    }
-
-    public static boolean isSlowExecution(Configuration configuration, long timeSpent) {
-      initialize(configuration);
-      return logSlowQueriesThreshold > 0 && timeSpent > logSlowQueriesThreshold;
+      return profiledApis;
     }
 
     @Override
     public boolean profile(String sql, Method method, Object[] args) {
-      if (PROFILED_APIS.isEmpty() || !QUERY_EXECUTION.contains(method.getName())) {
-        // No api to profile
+      if (!QUERY_EXECUTION.contains(method.getName())) {
+        return false;
+      }
+      if (profiledApis.isEmpty()) {
         return false;
       }
       Optional<HMSHandlerContext.CallCtx> ctxCall = HMSHandlerContext.getCallCtx();
-      if (ctxCall.isPresent()) {
-        String call = ctxCall.get().methodName();
-        return PROFILED_APIS.contains(call);
-      }
-      return false;
+      return ctxCall.isPresent() && profiledApis.contains(ctxCall.get().methodName());
     }
 
     @Override
@@ -258,4 +256,5 @@ public final class MetastoreStatement implements InvocationHandler {
       return MetricsConstants.JDBC_EXECUTION + method.getName();
     }
   }
+
 }

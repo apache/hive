@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.metastore.datasource;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -44,10 +42,10 @@ import static java.sql.DriverManager.registerDriver;
 public class MetastoreDriver implements Driver {
   private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(MetastoreDriver.class);
   private static final String URL_PREFIX = "jdbc:metastore://";
-  private static final Configuration configuration;
   private static int majorVersion = -1;
   private static int minorVersion = -1;
   private static volatile Driver delegateDriver;
+  private static Configuration defaultConfiguration;
   static {
     try {
       registerDriver(new MetastoreDriver());
@@ -59,11 +57,13 @@ public class MetastoreDriver implements Driver {
       if (versionNums.length >1 && NumberUtils.isNumber(versionNums[1])) {
         minorVersion = Integer.parseInt(versionNums[1]);
       }
-      configuration = MetastoreConf.newMetastoreConf();
+      defaultConfiguration = MetastoreConf.newMetastoreConf();
     } catch (Exception e) {
       throw new RuntimeException("Failed to register Metastore driver", e);
     }
   }
+
+  private volatile Configuration configuration;
 
   private synchronized static Driver
       findRegisteredDriver(String jdbcUrl, String driverClassName) throws SQLException {
@@ -79,6 +79,7 @@ public class MetastoreDriver implements Driver {
           candidates.add(driver);
         }
       } catch (Exception e) {
+        LOG.debug("Driver {} did not accept URL {}", driver.getClass().getName(), jdbcUrl, e);
       }
     }
 
@@ -119,8 +120,8 @@ public class MetastoreDriver implements Driver {
     if (!acceptsURL(url)) {
       return null;
     }
-    // The url should match jdbc:metastore://<driverClass>:<jdbcUrl>, the <jdbcUrl> is
-    // the real database this MetastoreDriver should connect to.
+    // The url should match "jdbc:metastore://<driverClass>:<jdbcUrl>", the <jdbcUrl> is
+    // the real url MetastoreDriver should connect to.
     String driverAndUrl = url.substring(URL_PREFIX.length());
     String defaultDriverClz =  driverAndUrl.split(":")[0];
     String jdbcUrl = driverAndUrl.substring(defaultDriverClz.length() + 1);
@@ -130,6 +131,9 @@ public class MetastoreDriver implements Driver {
       driver = findRegisteredDriver(jdbcUrl, defaultDriverClz);
     }
     connection = driver.connect(jdbcUrl, info);
+    if (configuration == null) {
+      configuration = DataSourceProvider.resolveConfiguration(info, defaultConfiguration);
+    }
     return connection == null ? null : new MetastoreConnection(connection, configuration);
   }
 
@@ -161,17 +165,16 @@ public class MetastoreDriver implements Driver {
 
   @Override
   public Logger getParentLogger() throws SQLFeatureNotSupportedException {
-    return delegateDriver.getParentLogger();
+    Driver driver = delegateDriver;
+    if (driver == null) {
+      throw new SQLFeatureNotSupportedException("No delegate driver has been initialized yet");
+    }
+    return driver.getParentLogger();
   }
 
   public static String getMetastoreDbUrl(Configuration configuration) {
     String delegateUrl = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.CONNECT_URL_KEY);
     String driverClz = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.CONNECTION_DRIVER);
     return MetastoreDriver.URL_PREFIX  + driverClz + ":" + delegateUrl;
-  }
-
-  @VisibleForTesting
-  static Configuration getConfiguration() {
-    return configuration;
   }
 }

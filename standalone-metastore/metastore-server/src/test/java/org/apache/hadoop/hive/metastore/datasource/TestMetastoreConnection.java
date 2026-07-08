@@ -50,7 +50,7 @@ public class TestMetastoreConnection {
 
   @Before
   public void init() {
-    conf = MetastoreDriver.getConfiguration();
+    conf = MetastoreConf.newMetastoreConf();
     conf.set(MetastoreStatement.EXEC_HOOK, MetastoreStatementTestHook.class.getName());
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.METASTORE_JDBC_SLOW_QUERIES, 200);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
@@ -96,7 +96,7 @@ public class TestMetastoreConnection {
     Timer timer = Metrics.getOrCreateTimer(MetastoreStatementTestHook.TEST_METRIC_NAME);
     Assert.assertNotNull(timer);
     long timeCount = timer.getCount();
-    try (AutoCloseable sleep = MetastoreStatementTestHook.testConnection("test_metastore_statement", 300)) {
+    try (AutoCloseable sleep = MetastoreStatementTestHook.testConnection("test_metastore_statement", 300, connection)) {
       try (Statement statement = connection.createStatement();
            ResultSet rs = statement.executeQuery("VALUES 1")) {
         Assert.assertTrue(rs.next());
@@ -107,7 +107,7 @@ public class TestMetastoreConnection {
     Assert.assertTrue(timer.getSnapshot().getMean() > TimeUnit.MILLISECONDS.toNanos(300));
 
     // Test a method outside of monitor
-    try (AutoCloseable sleep = MetastoreStatementTestHook.testConnection("test_statement_outside", 300)) {
+    try (AutoCloseable sleep = MetastoreStatementTestHook.testConnection("test_statement_outside", 300, connection)) {
       try (Statement statement = connection.createStatement();
            ResultSet rs = statement.executeQuery("VALUES 1")) {
         Assert.assertTrue(rs.next());
@@ -121,19 +121,18 @@ public class TestMetastoreConnection {
 
   public static class MetastoreStatementTestHook extends MetastoreStatement.JdbcProfilerUtils {
     static final String TEST_METRIC_NAME = "MetastoreStatementTestHook_" + System.currentTimeMillis();
-    static final String ENABLE_SLEEP_FOR_QUERY = "MetastoreStatementTestHook.should.sleep";
     static final String SLEEP_MILLIS = "MetastoreStatementTestHook.sleep.ms";
-    private final boolean shouldSleep;
-    private final long sleepMs;
+    private final Configuration configuration;
+
     public MetastoreStatementTestHook(Configuration configuration) {
       super(configuration);
-      shouldSleep = configuration.getBoolean(ENABLE_SLEEP_FOR_QUERY, false);
-      sleepMs = configuration.getLong(SLEEP_MILLIS, 1000);
+      this.configuration = configuration;
     }
 
     @Override
     public void preRun(Method method, Object[] args) {
-      if (shouldSleep &&
+      long sleepMs = configuration.getLong(SLEEP_MILLIS, 0);
+      if (sleepMs > 0 &&
           MetastoreStatement.JdbcProfilerUtils.QUERY_EXECUTION.contains(method.getName())) {
         try {
           Thread.sleep(sleepMs);
@@ -148,16 +147,15 @@ public class TestMetastoreConnection {
       return TEST_METRIC_NAME;
     }
 
-    public static AutoCloseable testConnection(String method, long sleepMs) {
-      Configuration configuration = MetastoreDriver.getConfiguration();
-      configuration.setLong(SLEEP_MILLIS, sleepMs);
-      configuration.setBoolean(ENABLE_SLEEP_FOR_QUERY, true);
+    public static AutoCloseable testConnection(String method, long sleepMs, Connection connection)
+        throws Exception {
       HMSHandlerContext
           .setCallCtx(new HMSHandlerContext.CallCtx(method, System.currentTimeMillis(), new AtomicLong()));
+      Configuration configuration = connection.unwrap(MetastoreConnection.class).configuration();
+      configuration.set(SLEEP_MILLIS, sleepMs + "");
       return () -> {
-        configuration.unset(ENABLE_SLEEP_FOR_QUERY);
-        configuration.unset(SLEEP_MILLIS);
         HMSHandlerContext.setCallCtx(null);
+        configuration.unset(SLEEP_MILLIS);
       };
     }
   }

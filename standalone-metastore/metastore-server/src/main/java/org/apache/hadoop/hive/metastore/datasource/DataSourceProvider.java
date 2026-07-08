@@ -17,21 +17,26 @@
  */
 package org.apache.hadoop.hive.metastore.datasource;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Base64;
 import java.util.Map;
 import java.util.Properties;
 import java.util.function.Consumer;
 import javax.sql.DataSource;
 
 import com.google.common.collect.Iterables;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 
 public interface DataSourceProvider {
-
+  String CONF_PROPERTY = "metastore.jdbc.configuration";
   /**
    * @param hdpConfig
    * @return the new connection pool
@@ -84,6 +89,32 @@ public interface DataSourceProvider {
       return MetastoreDriver.getMetastoreDbUrl(conf);
     }
     return MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY);
+  }
+
+  static void addJdbcWrapperProperties(Configuration configuration, Properties properties)
+      throws SQLException {
+    if (MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.METASTORE_PROFILE_JDBC_EXECUTION)) {
+      try {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        configuration.writeXml(outputStream);
+        properties.put(CONF_PROPERTY, Base64.getEncoder().encodeToString(outputStream.toByteArray()));
+      } catch (IOException e) {
+        throw new SQLException("Failed to serialize metastore JDBC configuration", e);
+      }
+    }
+  }
+
+  static Configuration resolveConfiguration(Properties properties, Configuration defaultConfiguration) {
+    if (properties != null) {
+      String encodedConfiguration = properties.getProperty(CONF_PROPERTY);
+      if (StringUtils.isNotEmpty(encodedConfiguration)) {
+        byte[] xmlBytes = Base64.getDecoder().decode(encodedConfiguration);
+        Configuration configuration = new Configuration(false);
+        configuration.addResource(new ByteArrayInputStream(xmlBytes), "metastore-jdbc-configuration");
+        return configuration;
+      }
+    }
+    return defaultConfiguration;
   }
 
   static String getDataSourceName(Configuration conf) {

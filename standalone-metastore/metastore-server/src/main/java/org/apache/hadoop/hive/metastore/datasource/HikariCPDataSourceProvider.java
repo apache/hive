@@ -60,6 +60,9 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     config.setJdbcUrl(driverUrl);
     config.setUsername(user);
     config.setPassword(passwd);
+    Properties jdbcWrapperProperties = new Properties();
+    DataSourceProvider.addJdbcWrapperProperties(hdpConfig, jdbcWrapperProperties);
+    jdbcWrapperProperties.forEach((key, value) -> config.addDataSourceProperty(key.toString(), value.toString()));
     if (!StringUtils.isEmpty(poolName)) {
       config.setPoolName(poolName);
     }

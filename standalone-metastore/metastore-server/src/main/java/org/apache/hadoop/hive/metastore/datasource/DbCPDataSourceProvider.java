@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.datasource;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.Properties;
 
 import javax.sql.DataSource;
 
@@ -120,15 +121,21 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
       }
     }
     StringBuilder connectionProperties = new StringBuilder();
+    Properties jdbcWrapperProperties = new Properties();
+    DataSourceProvider.addJdbcWrapperProperties(hdpConfig, jdbcWrapperProperties);
+    jdbcWrapperProperties.forEach((key, value) ->
+        connectionProperties.append(key).append('=').append(value).append(';'));
     DataSourceProvider.preparePool(hdpConfig,
         stmt -> poolableConnFactory.setConnectionInitSql(Collections.singletonList(stmt)),
         kv -> {
-          if (connectionProperties.length() > 0) {
+          if (!connectionProperties.isEmpty()) {
             connectionProperties.append(';');
           }
           connectionProperties.append(kv.getKey()).append('=').append(kv.getValue());
-          dbcpDs.setConnectionProperties(connectionProperties.toString());
         });
+    if (!connectionProperties.isEmpty()) {
+      dbcpDs.setConnectionProperties(connectionProperties.toString());
+    }
     return new PoolingDataSource(objectPool);
   }
 

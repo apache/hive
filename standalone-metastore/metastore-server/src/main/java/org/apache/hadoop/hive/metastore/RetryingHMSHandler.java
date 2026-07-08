@@ -94,8 +94,8 @@ public class RetryingHMSHandler extends AbstractHMSHandlerProxy {
         boolean clearLocal = false;
         try {
           if (!local) {
-            Optional<HMSHandlerContext.CallCtx> previousCall = HMSHandlerContext.getCallCtx();
-            if (previousCall.isEmpty()) {
+            Optional<HMSHandlerContext.CallCtx> callCtx = HMSHandlerContext.getCallCtx();
+            if (callCtx.isEmpty()) {
               HMSHandlerContext.CallCtx currentCall =
                   new HMSHandlerContext.CallCtx(method.getName(), System.currentTimeMillis(), new AtomicLong());
               HMSHandlerContext.setCallCtx(currentCall);
