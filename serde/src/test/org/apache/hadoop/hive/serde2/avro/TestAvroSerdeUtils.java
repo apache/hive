@@ -312,7 +312,6 @@ public class TestAvroSerdeUtils {
       props.put(AvroTableProperties.SCHEMA_URL.getPropName(), onHDFS);
       Schema resolved = determineSchemaOrThrowException(miniDfs.getFileSystem().getConf(), props);
       assertEquals(expectedSchema, resolved);
-      assertNotNull(props.getProperty(AvroTableProperties.SCHEMA_LITERAL.getPropName()));
     } finally {
       if(miniDfs != null) miniDfs.shutdown();
     }

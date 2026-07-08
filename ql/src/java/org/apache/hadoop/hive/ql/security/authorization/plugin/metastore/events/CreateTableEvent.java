@@ -73,18 +73,15 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
       }
     }
 
-    addAvroSchemaUrlInputAuth(ret, table, database);
+    addAvroSchemaUrlInputAuth(ret, table);
 
     return ret;
   }
 
-  private void addAvroSchemaUrlInputAuth(List<HivePrivilegeObject> ret, Table table, Database database) {
+  private void addAvroSchemaUrlInputAuth(List<HivePrivilegeObject> ret, Table table) {
     String schemaUrl = AuthorizationUtils.getFilesystemAvroSchemaUrlToAuthorize(
         new org.apache.hadoop.hive.ql.metadata.Table(table));
     if (schemaUrl == null) {
-      return;
-    }
-    if (!needDFSUriAuth(schemaUrl, getDefaultTablePath(database, table))) {
       return;
     }
     ret.add(getHivePrivilegeObjectDfsUri(schemaUrl));

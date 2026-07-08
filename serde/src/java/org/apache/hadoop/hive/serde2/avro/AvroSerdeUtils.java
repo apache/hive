@@ -162,7 +162,6 @@ public class AvroSerdeUtils {
               + "Consider using avro.schema.literal instead.");
         }
       }
-      materializeResolvedSchema(properties, conf, s);
       return s;
     } catch (IOException ioe) {
       throw new AvroSerdeException("Unable to read schema from given path: " + schemaString, ioe);
@@ -278,13 +277,6 @@ public class AvroSerdeUtils {
       }
     }
     return false;
-  }
-
-  private static void materializeResolvedSchema(Properties properties, Configuration conf, Schema schema) {
-    properties.setProperty(AvroTableProperties.SCHEMA_LITERAL.getPropName(), schema.toString());
-    if (conf != null) {
-      conf.set(AvroTableProperties.AVRO_SERDE_SCHEMA.getPropName(), schema.toString(false));
-    }
   }
 
   // Protected for testing and so we can pass in a conf for testing.
