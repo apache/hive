@@ -47,7 +47,8 @@ import org.apache.druid.metadata.SQLMetadataConnector;
 import org.apache.druid.metadata.storage.derby.DerbyConnector;
 import org.apache.druid.metadata.storage.derby.DerbyMetadataStorage;
 import org.apache.druid.metadata.storage.mysql.MySQLConnector;
-import org.apache.druid.metadata.storage.mysql.MySQLConnectorConfig;
+import org.apache.druid.metadata.storage.mysql.MySQLConnectorDriverConfig;
+import org.apache.druid.metadata.storage.mysql.MySQLConnectorSslConfig;
 import org.apache.druid.metadata.storage.postgresql.PostgreSQLConnector;
 import org.apache.druid.metadata.storage.postgresql.PostgreSQLConnectorConfig;
 import org.apache.druid.metadata.storage.postgresql.PostgreSQLTablesConfig;
@@ -319,7 +320,7 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
           + columnNames);
     }
 
-    DimensionsSpec dimensionsSpec = new DimensionsSpec(dimensionsAndAggregates.lhs, null, null);
+    DimensionsSpec dimensionsSpec = new DimensionsSpec(dimensionsAndAggregates.lhs);
     String timestampFormat = DruidStorageHandlerUtils
             .getTableProperty(table, DruidConstants.DRUID_TIMESTAMP_FORMAT);
     String timestampColumnName = DruidStorageHandlerUtils
@@ -884,7 +885,7 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
       connector =
           new MySQLConnector(storageConnectorConfigSupplier,
               Suppliers.ofInstance(getDruidMetadataStorageTablesConfig()),
-              new MySQLConnectorConfig());
+              new MySQLConnectorSslConfig(), new MySQLConnectorDriverConfig());
       break;
     case "postgresql":
       connector =

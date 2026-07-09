@@ -191,7 +191,7 @@ final class DruidKafkaUtils {
 
     // Default case JSON
     if ((parseSpecFormat == null) || "json".equalsIgnoreCase(parseSpecFormat)) {
-      return new StringInputRowParser(new JSONParseSpec(timestampSpec, dimensionsSpec, null, null), "UTF-8");
+      return new StringInputRowParser(new JSONParseSpec(timestampSpec, dimensionsSpec), "UTF-8");
     } else if ("csv".equalsIgnoreCase(parseSpecFormat)) {
       return new StringInputRowParser(new CSVParseSpec(timestampSpec,
           dimensionsSpec,

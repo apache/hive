@@ -130,7 +130,7 @@ import java.util.stream.Collectors;
         inputRowParser =
         new MapInputRowParser(new TimeAndDimsParseSpec(new TimestampSpec(DruidConstants.DEFAULT_TIMESTAMP_COLUMN,
             "auto",
-            null), new DimensionsSpec(ImmutableList.of(new StringDimensionSchema("host")), null, null)));
+            null), new DimensionsSpec(ImmutableList.of(new StringDimensionSchema("host")))));
     final Map<String, Object>
         parserMap =
         objectMapper.convertValue(inputRowParser, new TypeReference<Map<String, Object>>() {
@@ -146,12 +146,17 @@ import java.util.stream.Collectors;
             null,
             objectMapper);
 
-    IndexSpec indexSpec = new IndexSpec(new RoaringBitmapSerdeFactory(true), null, null, null);
-    RealtimeTuningConfig
-        tuningConfig =
-        new RealtimeTuningConfig(null,
-            null, null, null, temporaryFolder.newFolder(), null, null, null, null, indexSpec, null, null, 0, 0, null,
-            null, 0L, null, null);
+    IndexSpec indexSpec = IndexSpec.builder().withBitmapSerdeFactory(RoaringBitmapSerdeFactory.getInstance()).build();
+    RealtimeTuningConfig defaults = RealtimeTuningConfig.makeDefaultTuningConfig(temporaryFolder.newFolder());
+    RealtimeTuningConfig tuningConfig = defaults.withBasePersistDirectory(temporaryFolder.newFolder())
+        .withVersioningPolicy(defaults.getVersioningPolicy());
+    tuningConfig = new RealtimeTuningConfig(defaults.getAppendableIndexSpec(), defaults.getMaxRowsInMemory(),
+        defaults.getMaxBytesInMemory(), defaults.isSkipBytesInMemoryOverheadCheck(),
+        defaults.getIntermediatePersistPeriod(), defaults.getWindowPeriod(), temporaryFolder.newFolder(),
+        defaults.getVersioningPolicy(), defaults.getRejectionPolicyFactory(), defaults.getMaxPendingPersists(),
+        defaults.getShardSpec(), indexSpec, indexSpec, defaults.getPersistThreadPriority(),
+        defaults.getMergeThreadPriority(), defaults.isReportParseExceptions(), defaults.getHandoffConditionTimeout(),
+        defaults.getAlertTimeout(), defaults.getSegmentWriteOutMediumFactory(), defaults.getDedupColumn());
     LocalFileSystem localFileSystem = FileSystem.getLocal(config);
     DataSegmentPusher dataSegmentPusher = new LocalDataSegmentPusher(new LocalDataSegmentPusherConfig() {
       @Override public File getStorageDirectory() {

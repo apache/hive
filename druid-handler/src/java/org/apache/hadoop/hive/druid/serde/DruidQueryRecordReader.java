@@ -26,10 +26,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import org.apache.druid.java.util.common.IAE;
 import org.apache.druid.java.util.common.RE;
-import org.apache.druid.java.util.common.guava.CloseQuietly;
 import org.apache.druid.java.util.http.client.HttpClient;
 import org.apache.druid.java.util.http.client.Request;
 import org.apache.druid.java.util.http.client.response.InputStreamResponseHandler;
+import org.apache.commons.io.IOUtils;
 import org.apache.druid.query.Query;
 import org.apache.druid.query.QueryInterruptedException;
 import org.apache.hadoop.conf.Configuration;
@@ -126,7 +126,7 @@ public abstract class DruidQueryRecordReader<R extends Comparable<R>> extends Re
       } catch (Exception e) {
         if (iterator != null) {
           // We got exception while querying results from this host.
-          CloseQuietly.close(iterator);
+          IOUtils.closeQuietly(iterator);
         }
         LOG.error("Failure getting results for query[{}] from host[{}] because of [{}]",
             query, address, e.getMessage());
@@ -200,7 +200,7 @@ public abstract class DruidQueryRecordReader<R extends Comparable<R>> extends Re
 
   @Override public void close() {
     if (queryResultsIterator != null) {
-      CloseQuietly.close(queryResultsIterator);
+      IOUtils.closeQuietly(queryResultsIterator);
     }
   }
 
@@ -248,7 +248,7 @@ public abstract class DruidQueryRecordReader<R extends Comparable<R>> extends Re
         return false;
       }
       if (jp.getCurrentToken() == JsonToken.END_ARRAY) {
-        CloseQuietly.close(jp);
+        IOUtils.closeQuietly(jp);
         return false;
       }
 
@@ -296,7 +296,7 @@ public abstract class DruidQueryRecordReader<R extends Comparable<R>> extends Re
     }
 
     @Override public void close() throws IOException {
-      CloseQuietly.close(jp);
+      IOUtils.closeQuietly(jp);
     }
   }
 

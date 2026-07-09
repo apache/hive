@@ -121,11 +121,12 @@ public class DruidOutputFormat implements HiveOutputFormat<NullWritable, DruidWr
         .getDimensionsAndAggregates(columnNames, columnTypes);
     final InputRowParser inputRowParser = new MapInputRowParser(new TimeAndDimsParseSpec(
             new TimestampSpec(DruidConstants.DEFAULT_TIMESTAMP_COLUMN, "auto", null),
-            new DimensionsSpec(dimensionsAndAggregates.lhs, Lists
-                .newArrayList(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME,
-                    Constants.DRUID_SHARD_KEY_COL_NAME
-                ), null
-            )
+            DimensionsSpec.builder()
+                .setDimensions(dimensionsAndAggregates.lhs)
+                .setDimensionExclusions(Lists.newArrayList(
+                    Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME,
+                    Constants.DRUID_SHARD_KEY_COL_NAME))
+                .build()
     ));
 
     Map<String, Object>
@@ -152,9 +153,16 @@ public class DruidOutputFormat implements HiveOutputFormat<NullWritable, DruidWr
     Integer maxRowInMemory = HiveConf.getIntVar(jc, HiveConf.ConfVars.HIVE_DRUID_MAX_ROW_IN_MEMORY);
 
     IndexSpec indexSpec = DruidStorageHandlerUtils.getIndexSpec(jc);
-    RealtimeTuningConfig realtimeTuningConfig = new RealtimeTuningConfig(maxRowInMemory, null, null, null,
-        new File(basePersistDirectory, dataSource), new CustomVersioningPolicy(version), null, null, null, indexSpec,
-        null, true, 0, 0, true, null, 0L, null, null);
+    RealtimeTuningConfig defaults =
+        RealtimeTuningConfig.makeDefaultTuningConfig(new File(basePersistDirectory, dataSource));
+    RealtimeTuningConfig realtimeTuningConfig = new RealtimeTuningConfig(defaults.getAppendableIndexSpec(),
+        maxRowInMemory, defaults.getMaxBytesInMemory(), defaults.isSkipBytesInMemoryOverheadCheck(),
+        defaults.getIntermediatePersistPeriod(), defaults.getWindowPeriod(),
+        new File(basePersistDirectory, dataSource), new CustomVersioningPolicy(version),
+        defaults.getRejectionPolicyFactory(), defaults.getMaxPendingPersists(), defaults.getShardSpec(), indexSpec,
+        indexSpec, defaults.getPersistThreadPriority(), defaults.getMergeThreadPriority(),
+        defaults.isReportParseExceptions(), defaults.getHandoffConditionTimeout(), defaults.getAlertTimeout(),
+        defaults.getSegmentWriteOutMediumFactory(), defaults.getDedupColumn());
 
     LOG.debug(String.format("running with Data schema [%s] ", dataSchema));
     return new DruidRecordWriter(dataSchema, realtimeTuningConfig,

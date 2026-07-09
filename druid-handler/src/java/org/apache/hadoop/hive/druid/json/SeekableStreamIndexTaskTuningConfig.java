@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.druid.json;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.druid.segment.incremental.AppendableIndexSpec;
 import org.apache.druid.indexer.partitions.DynamicPartitionsSpec;
 import org.apache.druid.segment.IndexSpec;
 import org.apache.druid.segment.indexing.RealtimeTuningConfig;
@@ -39,8 +40,10 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements TuningConfi
   private static final boolean DEFAULT_RESET_OFFSET_AUTOMATICALLY = false;
   private static final boolean DEFAULT_SKIP_SEQUENCE_NUMBER_AVAILABILITY_CHECK = false;
 
+  private final AppendableIndexSpec appendableIndexSpec;
   private final int maxRowsInMemory;
   private final long maxBytesInMemory;
+  private final boolean skipBytesInMemoryOverheadCheck;
   private final DynamicPartitionsSpec partitionsSpec;
   private final Period intermediatePersistPeriod;
   private final File basePersistDirectory;
@@ -85,11 +88,13 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements TuningConfi
     // Cannot be a static because default basePersistDirectory is unique per-instance
     final RealtimeTuningConfig defaults = RealtimeTuningConfig.makeDefaultTuningConfig(basePersistDirectory);
 
+    this.appendableIndexSpec = defaults.getAppendableIndexSpec();
     this.maxRowsInMemory = maxRowsInMemory == null ? defaults.getMaxRowsInMemory() : maxRowsInMemory;
     this.partitionsSpec = new DynamicPartitionsSpec(maxRowsPerSegment, maxTotalRows);
     // initializing this to 0, it will be lazily initialized to a value
     // @see server.src.main.java.org.apache.druid.segment.indexing.TuningConfigs#getMaxBytesInMemoryOrDefault(long)
     this.maxBytesInMemory = maxBytesInMemory == null ? 0 : maxBytesInMemory;
+    this.skipBytesInMemoryOverheadCheck = defaults.isSkipBytesInMemoryOverheadCheck();
     this.intermediatePersistPeriod = intermediatePersistPeriod == null
         ? defaults.getIntermediatePersistPeriod()
         : intermediatePersistPeriod;
@@ -133,6 +138,12 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements TuningConfi
 
   @Override
   @JsonProperty
+  public AppendableIndexSpec getAppendableIndexSpec() {
+    return appendableIndexSpec;
+  }
+
+  @Override
+  @JsonProperty
   public int getMaxRowsInMemory() {
     return maxRowsInMemory;
   }
@@ -141,6 +152,12 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements TuningConfi
   @JsonProperty
   public long getMaxBytesInMemory() {
     return maxBytesInMemory;
+  }
+
+  @Override
+  @JsonProperty
+  public boolean isSkipBytesInMemoryOverheadCheck() {
+    return skipBytesInMemoryOverheadCheck;
   }
 
   @Override

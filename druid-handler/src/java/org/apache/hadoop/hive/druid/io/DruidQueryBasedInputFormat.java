@@ -198,7 +198,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
         request =
         String.format("http://%s/druid/v2/datasources/%s/candidates?intervals=%s",
             address,
-            query.getDataSource().getNames().get(0),
+            query.getDataSource().getTableNames().iterator().next(),
             URLEncoder.encode(intervals, "UTF-8"));
     LOG.debug("sending request {} to query for segments", request);
     final InputStream response;

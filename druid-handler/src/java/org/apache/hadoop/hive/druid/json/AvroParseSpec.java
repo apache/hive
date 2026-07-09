@@ -41,7 +41,7 @@ public class AvroParseSpec extends ParseSpec {
       @JsonProperty("dimensionsSpec") DimensionsSpec dimensionsSpec,
       @JsonProperty("flattenSpec") JSONPathSpec flattenSpec) {
     super(timestampSpec != null ? timestampSpec : new TimestampSpec(null, null, null),
-        dimensionsSpec != null ? dimensionsSpec : new DimensionsSpec(null, null, null));
+        dimensionsSpec != null ? dimensionsSpec : DimensionsSpec.EMPTY);
 
     this.flattenSpec = flattenSpec != null ? flattenSpec : JSONPathSpec.DEFAULT;
   }

@@ -89,6 +89,7 @@ import org.apache.druid.segment.IndexMergerV9;
 import org.apache.druid.segment.IndexSpec;
 import org.apache.druid.segment.VirtualColumn;
 import org.apache.druid.segment.VirtualColumns;
+import org.apache.druid.segment.column.ColumnType;
 import org.apache.druid.segment.column.ValueType;
 import org.apache.druid.segment.data.BitmapSerdeFactory;
 import org.apache.druid.segment.data.ConciseBitmapSerdeFactory;
@@ -217,7 +218,7 @@ public final class DruidStorageHandlerUtils {
   /**
    * Mapper to use to serialize/deserialize Druid objects (SMILE).
    */
-  public static final ObjectMapper SMILE_MAPPER = new DefaultObjectMapper(new SmileFactory());
+  public static final ObjectMapper SMILE_MAPPER = new DefaultObjectMapper(new SmileFactory(), "smile");
   private static final int DEFAULT_MAX_TRIES = 10;
 
   static {
@@ -797,7 +798,7 @@ public final class DruidStorageHandlerUtils {
     if (shardSpec instanceof LinearShardSpec) {
       return new LinearShardSpec(shardSpec.getPartitionNum() + 1);
     } else if (shardSpec instanceof NumberedShardSpec) {
-      return new NumberedShardSpec(shardSpec.getPartitionNum(), ((NumberedShardSpec) shardSpec).getPartitions());
+      return new NumberedShardSpec(shardSpec.getPartitionNum(), ((NumberedShardSpec) shardSpec).getNumCorePartitions());
     } else {
       // Druid only support appending more partitions to Linear and Numbered ShardSpecs.
       throw new IllegalStateException(String.format("Cannot expand shard spec [%s]", shardSpec));
@@ -832,12 +833,9 @@ public final class DruidStorageHandlerUtils {
     if ("concise".equals(HiveConf.getVar(jc, HiveConf.ConfVars.HIVE_DRUID_BITMAP_FACTORY_TYPE))) {
       bitmapSerdeFactory = new ConciseBitmapSerdeFactory();
     } else {
-      bitmapSerdeFactory = new RoaringBitmapSerdeFactory(true);
+      bitmapSerdeFactory = RoaringBitmapSerdeFactory.getInstance();
     }
-    return new IndexSpec(bitmapSerdeFactory,
-        IndexSpec.DEFAULT_DIMENSION_COMPRESSION,
-        IndexSpec.DEFAULT_METRIC_COMPRESSION,
-        IndexSpec.DEFAULT_LONG_ENCODING);
+    return IndexSpec.builder().withBitmapSerdeFactory(bitmapSerdeFactory).build();
   }
 
   public static Pair<List<DimensionSchema>, AggregatorFactory[]> getDimensionsAndAggregates(List<String> columnNames,
@@ -1082,7 +1080,8 @@ public final class DruidStorageHandlerUtils {
     Set<String> usedColumnNames = virtualColumns.stream().map(col -> col.getOutputName()).collect(Collectors.toSet());
     final String name = SqlValidatorUtil.uniquify("vc", usedColumnNames, SqlValidatorUtil.EXPR_SUGGESTER);
     ExpressionVirtualColumn expressionVirtualColumn =
-        new ExpressionVirtualColumn(name, virtualColumnExpr, targetType, ExprMacroTable.nil());
+        new ExpressionVirtualColumn(name, virtualColumnExpr, ColumnType.fromString(targetType.toString()),
+            ExprMacroTable.nil());
     virtualColumns.add(expressionVirtualColumn);
     return name;
   }
