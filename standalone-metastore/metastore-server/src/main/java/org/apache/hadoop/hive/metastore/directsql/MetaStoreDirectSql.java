@@ -546,32 +546,26 @@ public class MetaStoreDirectSql {
    */
   public MColumnDescriptor getColumnDescriptor(List<FieldSchema> cols, long tblId)
       throws MetaException {
-
     if (cols == null || cols.isEmpty()) {
       return null;
     }
 
-    // Please note! In case you modify any of those methods, run TestHMSColumnDescriptorReuse with all the supported databases
-    List<Long> cdCandidates = findTheLatestColumnDescriptors(tblId);
-
-    cdCandidates = filterCandidatesByColumnCount(cdCandidates, cols.size());
-
-    if (cdCandidates == null || cdCandidates.isEmpty()) {
+    // Please note! In case you modify any of those methods,
+    // run TestHMSColumnDescriptorReuse with all the supported databases
+    List<Long> cdCandidates = filterCandidatesByColumnCount(findTheLatestColumnDescriptors(tblId), cols.size());
+    if (cdCandidates.isEmpty()) {
       return null;
     }
 
     Long matchedColumnDescriptorId = matchColumnDescriptorWithActualColumns(cdCandidates, cols);
-
     if (matchedColumnDescriptorId != null) {
       return pm.getObjectById(MColumnDescriptor.class, matchedColumnDescriptorId);
     }
-
     return null;
   }
 
   private List<Long> findTheLatestColumnDescriptors(long tblId) throws MetaException {
     final int limit = 20;
-
     String findLatestDescriptorsSql =
         """
           SELECT s."CD_ID"
@@ -585,10 +579,9 @@ public class MetaStoreDirectSql {
     try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", findLatestDescriptorsSql))) {
 
       List<Object> sqlResult = executeWithArray(
-          query.getInnerQuery(), new Object[] {tblId}, findLatestDescriptorsSql, limit);
-
+          query.getInnerQuery(), new Object[]{tblId}, findLatestDescriptorsSql, limit);
       if (sqlResult == null || sqlResult.isEmpty()) {
-        return null;
+        return Collections.emptyList();
       }
 
       List<Long> latestColumnDescriptorIds = new ArrayList<>();
@@ -601,13 +594,12 @@ public class MetaStoreDirectSql {
 
   private List<Long> filterCandidatesByColumnCount(List<Long> cdCandidates, int size) throws MetaException {
     if (cdCandidates == null || cdCandidates.isEmpty()) {
-      return null;
+      return Collections.emptyList();
     }
 
     String placeholders = cdCandidates.stream()
         .map(c -> "?")
         .collect(Collectors.joining(", "));
-
     String candidatesWithProperColumnCountSql = String.format(
         """
           SELECT c."CD_ID"
@@ -617,10 +609,8 @@ public class MetaStoreDirectSql {
           HAVING COUNT(*) = ?
         """, placeholders);
 
-    try (
-        QueryWrapper query =
-            new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", candidatesWithProperColumnCountSql))
-    ){
+    try (QueryWrapper query =
+             new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", candidatesWithProperColumnCountSql))) {
 
       Object[] params = new Object[cdCandidates.size() + 1];
       for (int i = 0; i < cdCandidates.size(); i++) {
@@ -629,18 +619,14 @@ public class MetaStoreDirectSql {
       params[cdCandidates.size()] = size;
 
       List<Object> result = executeWithArray(query.getInnerQuery(), params, candidatesWithProperColumnCountSql);
-
       if (result == null || result.isEmpty()) {
-        return null;
+        return Collections.emptyList();
       }
-
       List<Long> candidateIds = new  ArrayList<>();
       for (Object cdId : result) {
         candidateIds.add(MetastoreDirectSqlUtils.extractSqlLong(cdId));
       }
-
       return candidateIds;
-
     }
   }
 
@@ -652,11 +638,9 @@ public class MetaStoreDirectSql {
 
     String findColumnSql = "SELECT \"COLUMN_NAME\", \"TYPE_NAME\", \"COMMENT\" FROM \"COLUMNS_V2\" "
         + "WHERE \"CD_ID\" = ? ORDER BY \"INTEGER_IDX\"";
-
     for (Long candidate: cdCandidates) {
       try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", findColumnSql))) {
-
-        List<Object[]> rows = executeWithArray(query.getInnerQuery(), new Object[] {candidate}, findColumnSql);
+        List<Object[]> rows = executeWithArray(query.getInnerQuery(), new Object[]{candidate}, findColumnSql);
         if (rows != null && rows.size() == cols.size()) {
           int i = 0;
           for (; i < cols.size(); i++) {
@@ -669,14 +653,12 @@ public class MetaStoreDirectSql {
               break;
             }
           }
-
           if (i ==  cols.size()) {
             return candidate;
           }
         }
       }
     }
-
     return null;
   }
 

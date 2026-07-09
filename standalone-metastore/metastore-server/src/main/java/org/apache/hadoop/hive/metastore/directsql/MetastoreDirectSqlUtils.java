@@ -583,7 +583,7 @@ public class MetastoreDirectSqlUtils {
  public static String extractSqlString(Object value) {
     if (value == null) return null;
 
-    // workaround for DataNucleus's Oracle empty string workaround (it puts an ASCII value 1 instead of empty string
+    // Workaround for DataNucleus's Oracle empty-string behavior (it puts ASCII value 1 instead of an empty string).
     if ("\u0001".equals(value)) {
       return "";
     }

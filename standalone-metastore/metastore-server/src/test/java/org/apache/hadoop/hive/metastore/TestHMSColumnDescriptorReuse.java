@@ -51,22 +51,22 @@ import static org.junit.Assert.assertEquals;
 @Category(MetastoreUnitTest.class)
 public class TestHMSColumnDescriptorReuse {
   private ObjectStore objectStore = null;
-  Configuration conf;
+  private Configuration conf;
 
   // Modify to try out with different databases.
   // Keep it on Derby once you commit your change. It makes the test execution faster.
-  private final DatabaseRule DB = new Derby(true);
+  private final DatabaseRule db = new Derby(true);
 
   @Before
   public void setUp() throws Exception {
-    DB.before();
-    DB.install();
+    db.before();
+    db.install();
 
     conf = MetastoreConf.newMetastoreConf();
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY, DB.getJdbcUrl());
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECTION_DRIVER, DB.getJdbcDriver());
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECTION_USER_NAME, DB.getHiveUser());
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.PWD, DB.getHivePassword());
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY, db.getJdbcUrl());
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECTION_DRIVER, db.getJdbcDriver());
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECTION_USER_NAME, db.getHiveUser());
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.PWD, db.getHivePassword());
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.AUTO_CREATE_ALL, false);
 
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
@@ -87,7 +87,7 @@ public class TestHMSColumnDescriptorReuse {
 
   @After
   public void tearDown() {
-    DB.after();
+    db.after();
   }
 
   @Test
@@ -177,7 +177,7 @@ public class TestHMSColumnDescriptorReuse {
   }
 
   private static Table newTable(List<FieldSchema> columns, List<FieldSchema> partCols) {
-    int timeSec = (int) System.currentTimeMillis() / 1000;
+    int timeSec = (int) (System.currentTimeMillis() / 1000);
 
     StorageDescriptor sd = new StorageDescriptor(columns,
             "/fake/location/person",
@@ -199,7 +199,7 @@ public class TestHMSColumnDescriptorReuse {
   }
 
   private static Partition newPart(Table tbl, String value) {
-    int timeSec = (int) System.currentTimeMillis() / 1000;
+    int timeSec = (int) (System.currentTimeMillis() / 1000);
     Map<String, String> partitionParams = new HashMap<>();
 
     partitionParams.put("PARTITION_LEVEL_PRIVILEGE", "true");
@@ -217,5 +217,4 @@ public class TestHMSColumnDescriptorReuse {
 
     return p;
   }
-
 }

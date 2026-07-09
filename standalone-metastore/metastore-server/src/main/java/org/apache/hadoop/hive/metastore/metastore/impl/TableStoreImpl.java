@@ -3361,15 +3361,15 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
     return convertToMStorageDescriptor(sd, mcd);
   }
 
-  public MColumnDescriptor getColumnDescriptor(List<FieldSchema> cols, MTable mt)
+  private MColumnDescriptor getColumnDescriptor(List<FieldSchema> cols, MTable mt)
       throws MetaException {
     if (cols == null || cols.isEmpty()) {
       return null;
     }
 
-    // First check to see if partition and tables column descriptor match
-    // that's the easy and relatively fast-check since does not require
-    // round-tripe to the database
+    // First check to see if partition and table's column descriptor match;
+    // that's the easy and relatively fast check since it does not require
+    // a round-trip to the database.
     List<FieldSchema> tableSchema =
         mt.getSd() != null &&
         mt.getSd().getCD() != null &&
@@ -3384,25 +3384,19 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
       return null;
     }
 
-    String catName = mt.getDatabase().getCatalogName();
-    String dbName = mt.getDatabase().getName();
-    String tblName = mt.getTableName();
     long tblId = mt.getId();
     try {
-      return new GetHelper<TableName, MColumnDescriptor>(this, new TableName(catName, dbName, tblName)) {
+      return new GetHelper<TableName, MColumnDescriptor>(this, null) {
         @Override
         protected String describeResult() {
           return "Matching column descriptor";
         }
-
         @Override
         protected MColumnDescriptor getSqlResult() throws MetaException {
           return getDirectSql().getColumnDescriptor(cols, tblId);
         }
-
         @Override
-        protected MColumnDescriptor getJdoResult()
-            throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
+        protected MColumnDescriptor getJdoResult() {
           return null;
         }
       }.run(false);
