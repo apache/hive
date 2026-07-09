@@ -93,10 +93,12 @@ col3                	string
 #### A masked pattern was here ####
 PREHOOK: query: SELECT * FROM avro_extschema_url_n0
 PREHOOK: type: QUERY
+#### A masked pattern was here ####
 PREHOOK: Input: default@avro_extschema_url_n0
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM avro_extschema_url_n0
 POSTHOOK: type: QUERY
+#### A masked pattern was here ####
 POSTHOOK: Input: default@avro_extschema_url_n0
 #### A masked pattern was here ####
 s1	1	s2

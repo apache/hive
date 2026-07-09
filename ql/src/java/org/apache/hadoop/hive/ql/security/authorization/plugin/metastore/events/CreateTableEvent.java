@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.events.PreCreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
@@ -65,16 +66,25 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
     Database                  database = event.getDatabase();
     String                    uri   = getSdLocation(table.getSd());
 
-    if (StringUtils.isEmpty(uri)) {
-      return ret;
+    if (StringUtils.isNotEmpty(uri)) {
+      // Skip DFS_URI only if table location is under default db path
+      if (this.needDFSUriAuth(uri, this.getDefaultTablePath(database, table))) {
+        ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.DFS_URI, uri));
+      }
     }
 
-    // Skip DFS_URI only if table location is under default db path
-    if (this.needDFSUriAuth(uri, this.getDefaultTablePath(database, table))) {
-      ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.DFS_URI, uri));
-    }
+    addAvroSchemaUrlInputAuth(ret, table);
 
     return ret;
+  }
+
+  private void addAvroSchemaUrlInputAuth(List<HivePrivilegeObject> ret, Table table) {
+    String schemaUrl = AuthorizationUtils.getFilesystemAvroSchemaUrlToAuthorize(
+        new org.apache.hadoop.hive.ql.metadata.Table(table));
+    if (schemaUrl == null) {
+      return;
+    }
+    ret.add(getHivePrivilegeObjectDfsUri(schemaUrl));
   }
 
   private List<HivePrivilegeObject> getOutputHObjs() {
