@@ -162,7 +162,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@testice1000
 # col_name            	data_type           	comment             
 a                   	int                 	                    
-b                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
