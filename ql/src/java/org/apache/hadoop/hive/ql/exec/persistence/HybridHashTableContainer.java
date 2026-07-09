@@ -701,12 +701,17 @@ public class HybridHashTableContainer
       int minWbSize) throws IOException {
     int numPartitions = minNumParts;
 
-    if (memoryThreshold < minNumParts * minWbSize) {
+    if (memoryThreshold < (long) minNumParts * minWbSize) {
       LOG.warn("Available memory is not enough to create a HybridHashTableContainer!");
     }
 
     if (memoryThreshold / 2 < dataSize) { // The divided-by-2 logic is consistent to MapJoinOperator.reloadHashTable
       while (dataSize / numPartitions > memoryThreshold / 2) {
+        // Prevent integer overflow
+        if (numPartitions > Integer.MAX_VALUE / 2) {
+          throw new IOException("Cannot create a Hybrid Grace Hash Join with a table size this large ("
+              + dataSize + " bytes) against a memory threshold of " + memoryThreshold + " bytes");
+        }
         numPartitions *= 2;
       }
     }
