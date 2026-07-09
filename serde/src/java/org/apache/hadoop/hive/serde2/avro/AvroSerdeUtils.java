@@ -43,10 +43,13 @@ import java.net.URL;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * Utilities useful only to the AvroSerde itself.  Not mean to be used by
@@ -97,7 +100,8 @@ public class AvroSerdeUtils {
       + AvroTableProperties.SCHEMA_LITERAL.getPropName() + " nor "
       + AvroTableProperties.SCHEMA_URL.getPropName() + " specified, can't determine table schema";
 
-
+  private static final Set<String> HTTP_SCHEMES =
+      new HashSet<>(Arrays.asList("http", "https"));
 
   /**
    * Determine the schema to that's been provided for Avro serde work.
@@ -137,11 +141,26 @@ public class AvroSerdeUtils {
       throw new AvroSerdeException(EXCEPTION_MESSAGE);
     }
 
+    validateSchemaUrl(schemaString, conf);
+
     try {
-      Schema s = getSchemaFromFS(schemaString, conf);
-      if (s == null) {
-        //in case schema is not a file system
-        return AvroSerdeUtils.getSchemaFor(new URL(schemaString));
+      Schema s;
+      if (requiresHttpFetch(schemaString)) {
+        URL url = new URL(schemaString);
+        java.net.URLConnection conn = url.openConnection();
+        if (conn instanceof java.net.HttpURLConnection) {
+          ((java.net.HttpURLConnection) conn).setInstanceFollowRedirects(false);
+        }
+        try (InputStream in = conn.getInputStream()) {
+          s = getSchemaParser().parse(in);
+        }
+      } else {
+        s = getSchemaFromFS(schemaString, conf);
+        if (s == null) {
+          throw new AvroSerdeException("Unable to read Avro schema from: " + schemaString
+              + ". avro.schema.url must refer to a Hadoop FileSystem URI (e.g. hdfs://, s3a://). "
+              + "Consider using avro.schema.literal instead.");
+        }
       }
       return s;
     } catch (IOException ioe) {
@@ -149,6 +168,115 @@ public class AvroSerdeUtils {
     } catch (URISyntaxException urie) {
       throw new AvroSerdeException("Unable to read schema from given path: " + schemaString, urie);
     }
+  }
+
+  /**
+   * Validate that the avro.schema.url uses a permitted scheme and host.
+   */
+  static void validateSchemaUrl(String schemaUrl, Configuration conf) throws AvroSerdeException {
+    final URI uri;
+    try {
+      uri = new URI(schemaUrl);
+    } catch (URISyntaxException e) {
+      throw new AvroSerdeException("Invalid avro.schema.url: " + schemaUrl, e);
+    }
+
+    final String scheme = uri.getScheme();
+    if (scheme == null || scheme.isEmpty()) {
+      return;
+    }
+
+    final String schemeLower = scheme.toLowerCase(Locale.ROOT);
+    if ("file".equals(schemeLower)) {
+      throw new AvroSerdeException("avro.schema.url scheme '" + scheme
+          + "' is not permitted. Use a Hadoop FileSystem URI (e.g. hdfs://, s3a://) or "
+          + "avro.schema.literal instead.");
+    }
+    if (HTTP_SCHEMES.contains(schemeLower)) {
+      if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_AVRO_SCHEMA_URL_REMOTE_HTTP_ENABLED)) {
+        throw new AvroSerdeException("avro.schema.url scheme '" + scheme
+            + "' is not permitted. Remote HTTP schema fetch is disabled. Set "
+            + HiveConf.ConfVars.HIVE_AVRO_SCHEMA_URL_REMOTE_HTTP_ENABLED.varname
+            + " to true and configure "
+            + HiveConf.ConfVars.HIVE_AVRO_SCHEMA_URL_HTTP_ALLOWED_HOSTS.varname
+            + ", or use avro.schema.literal instead.");
+      }
+      final String host = uri.getHost();
+      if (host == null || host.isEmpty()) {
+        throw new AvroSerdeException("avro.schema.url must specify a host for HTTP/HTTPS schemas.");
+      }
+      if (!isHttpHostAllowed(host, conf)) {
+        throw new AvroSerdeException("avro.schema.url host '" + host
+            + "' is not in the permitted host list configured by "
+            + HiveConf.ConfVars.HIVE_AVRO_SCHEMA_URL_HTTP_ALLOWED_HOSTS.varname + ".");
+      }
+      return;
+    }
+
+    if (!getAllowedFilesystemSchemes(conf).contains(schemeLower)) {
+      throw new AvroSerdeException("avro.schema.url scheme '" + scheme
+          + "' is not permitted. Use a Hadoop FileSystem URI (e.g. hdfs://, s3a://) or "
+          + "avro.schema.literal instead.");
+    }
+  }
+
+  /**
+   * Returns true if the schema URL refers to a Hadoop filesystem location (including scheme-less URIs).
+   */
+  public static boolean isFilesystemSchemaUrl(String schemaUrl) {
+    if (schemaUrl == null || schemaUrl.isEmpty() || SCHEMA_NONE.equals(schemaUrl)) {
+      return false;
+    }
+    try {
+      URI uri = new URI(schemaUrl);
+      String scheme = uri.getScheme();
+      if (scheme == null || scheme.isEmpty()) {
+        return true;
+      }
+      String schemeLower = scheme.toLowerCase(Locale.ROOT);
+      return !HTTP_SCHEMES.contains(schemeLower) && !"file".equals(schemeLower);
+    } catch (URISyntaxException e) {
+      return false;
+    }
+  }
+
+  private static boolean requiresHttpFetch(String schemaUrl) throws AvroSerdeException {
+    try {
+      URI uri = new URI(schemaUrl);
+      String scheme = uri.getScheme();
+      return scheme != null && HTTP_SCHEMES.contains(scheme.toLowerCase(Locale.ROOT));
+    } catch (URISyntaxException e) {
+      throw new AvroSerdeException("Invalid avro.schema.url: " + schemaUrl, e);
+    }
+  }
+
+  private static Set<String> getAllowedFilesystemSchemes(Configuration conf) {
+    String schemes = conf == null
+        ? HiveConf.ConfVars.HIVE_AVRO_SCHEMA_URL_ALLOWED_SCHEMES.getDefaultValue()
+        : HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_AVRO_SCHEMA_URL_ALLOWED_SCHEMES);
+    Set<String> allowed = new HashSet<>();
+    for (String scheme : schemes.split(",")) {
+      String trimmed = scheme.trim().toLowerCase(Locale.ROOT);
+      if (!trimmed.isEmpty()) {
+        allowed.add(trimmed);
+      }
+    }
+    return allowed;
+  }
+
+  private static boolean isHttpHostAllowed(String host, Configuration conf) {
+    String allowedHosts = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_AVRO_SCHEMA_URL_HTTP_ALLOWED_HOSTS);
+    if (allowedHosts == null || allowedHosts.trim().isEmpty()) {
+      return false;
+    }
+    String hostLower = host.toLowerCase(Locale.ROOT);
+    for (String allowedHost : allowedHosts.split(",")) {
+      String trimmed = allowedHost.trim().toLowerCase(Locale.ROOT);
+      if (!trimmed.isEmpty() && trimmed.equals(hostLower)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   // Protected for testing and so we can pass in a conf for testing.
