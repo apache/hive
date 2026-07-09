@@ -205,6 +205,11 @@ public abstract class Operation {
     if (state == OperationState.TIMEDOUT) {
       return;
     }
+    // Do not overwrite a completed outcome (success, cancel, etc.). ERROR is excluded so the
+    // background thread can still record the SQLException after runQuery() sets ERROR.
+    if (state.isTerminal() && state != OperationState.ERROR) {
+      return;
+    }
     this.operationException = operationException;
   }
 
