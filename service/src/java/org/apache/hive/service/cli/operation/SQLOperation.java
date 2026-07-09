@@ -345,9 +345,7 @@ public class SQLOperation extends ExecuteStatementOperation {
             runQuery();
           } catch (HiveSQLException e) {
             // TODO: why do we invent our own error path op top of the one from Future.get?
-            if (getState() != OperationState.TIMEDOUT) {
-              setOperationException(e);
-            }
+            setOperationException(e);
             log.error("Error running hive query", e);
           } finally {
             if (!embedded) {
@@ -366,9 +364,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       try {
         currentUGI.doAs(doAsAction);
       } catch (Exception e) {
-        if (getState() != OperationState.TIMEDOUT) {
-          setOperationException(new HiveSQLException(e));
-        }
+        setOperationException(new HiveSQLException(e));
         log.error("Error running hive query as user : {}", currentUGI.getShortUserName(), e);
       } finally {
         /**
