@@ -202,6 +202,9 @@ public abstract class Operation {
   }
 
   protected void setOperationException(HiveSQLException operationException) {
+    if (state == OperationState.TIMEDOUT) {
+      return;
+    }
     this.operationException = operationException;
   }
 
