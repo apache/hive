@@ -47,8 +47,6 @@ POSTHOOK: query: describe formatted mat1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@mat1
 # col_name            	data_type           	comment             
-b                   	string              	                    
-c                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -140,8 +138,6 @@ POSTHOOK: query: describe formatted mat2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@mat2
 # col_name            	data_type           	comment             
-b                   	string              	                    
-c                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             

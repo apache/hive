@@ -48,7 +48,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@mat1
 # col_name            	data_type           	comment             
 c                   	int                 	                    
-b                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -139,7 +138,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@mat2
 # col_name            	data_type           	comment             
 c                   	int                 	                    
-b                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
