@@ -25,7 +25,7 @@ import java.util.function.Predicate;
 
 /**
  * The PropertyStore is the persistent container of property maps.
- * Maps are addressed in the store by their key -  their name prepended by their manager&quot;s namespace.
+ * Maps are addressed in the store by their key - their name prepended by their manager&quot;s namespace.
  */
 
 public abstract class PropertyStore {
@@ -84,7 +84,7 @@ public abstract class PropertyStore {
 
   /**
    * Persists an iterator property map.
-   * <p>May be useful to override to use one transaction.</p>
+   * <p>Maybe useful to override to use one transaction.</p>
    * @param save the iterator on pairs for map key, property map
    */
   public void saveProperties(Iterator<Map.Entry<String, PropertyMap>> save) {

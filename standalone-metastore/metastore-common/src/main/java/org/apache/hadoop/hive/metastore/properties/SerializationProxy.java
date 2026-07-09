@@ -33,6 +33,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.Serial;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
@@ -75,6 +76,7 @@ import static org.apache.hadoop.hive.metastore.properties.Serializer.SERIALIZER;
  */
 public class SerializationProxy<T extends Serializable> implements Externalizable {
   /** Serial version. */
+  @Serial
   private static final long serialVersionUID = 202212281757L;
   /** The logger. */
   public static final Logger LOGGER = LoggerFactory.getLogger(SerializationProxy.class);
