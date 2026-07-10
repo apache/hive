@@ -2220,9 +2220,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       generatePartialProgram(program, true, HepMatchOrder.BOTTOM_UP,
           rules.toArray(new RelOptRule[0]));
-      // Join reordering
+      // Join reordering. The data-movement-aware ordering only applies when map-join conversion
+      // is enabled - the cost model ranks orderings against broadcast joins the physical planner
+      // must be able to materialize.
+      final boolean shuffleCostReorder =
+          conf.getBoolVar(HiveConf.ConfVars.HIVE_CBO_JOIN_REORDER_SHUFFLE_COST)
+              && conf.getBoolVar(HiveConf.ConfVars.HIVE_CONVERT_JOIN)
+              && conf.getBoolVar(HiveConf.ConfVars.HIVE_CONVERT_JOIN_NOCONDITIONALTASK);
+      final long broadcastThreshold = shuffleCostReorder
+          ? conf.getLongVar(HiveConf.ConfVars.HIVE_CONVERT_JOIN_NOCONDITIONAL_TASK_THRESHOLD)
+          : -1L;
       generatePartialProgram(program, false, HepMatchOrder.BOTTOM_UP,
-          new JoinToMultiJoinRule(HiveJoin.class), HiveLoptOptimizeJoinRule.INSTANCE);
+          new JoinToMultiJoinRule(HiveJoin.class), HiveLoptOptimizeJoinRule.create(broadcastThreshold));
 
       RelNode calciteOptimizedPlan;
       try {
