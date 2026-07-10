@@ -403,9 +403,11 @@ public class HiveStatement implements java.sql.Statement {
 
   /**
    * Returns the timeout message for a {@code TIMEDOUT_STATE} response. The server is authoritative
-   * when the SQL state is {@code HYT00} ("timeout expired") and the message is usable. Otherwise
-   * (e.g. an older server, or a placeholder {@code after 0 seconds} message) falls back to the
-   * per-statement {@link #setQueryTimeout(int)}.
+   * when the SQL state is {@code HYT00} ("timeout expired") and the message is usable: it reflects
+   * the effective operation timeout (e.g. the minimum of session
+   * {@code hive.query.timeout.seconds} and {@link #setQueryTimeout(int)}). Otherwise (e.g. an older
+   * server, or a placeholder {@code after 0 seconds} message) falls back to the per-statement
+   * {@link #setQueryTimeout(int)}.
    */
   private String sqlTimeoutMessageForTimedOutState(String serverMessage, String sqlState) {
     if ("HYT00".equals(sqlState) && isUsableServerTimeoutMessage(serverMessage)) {
