@@ -49,6 +49,7 @@ import org.apache.iceberg.exceptions.NoSuchNamespaceException;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.exceptions.NoSuchViewException;
 import org.apache.iceberg.exceptions.NotAuthorizedException;
+import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.exceptions.UnprocessableEntityException;
 import org.apache.iceberg.exceptions.ValidationException;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
@@ -61,6 +62,7 @@ import org.apache.iceberg.rest.requests.CreateNamespaceRequest;
 import org.apache.iceberg.rest.requests.CreateTableRequest;
 import org.apache.iceberg.rest.requests.CreateViewRequest;
 import org.apache.iceberg.rest.requests.RegisterTableRequest;
+import org.apache.iceberg.rest.requests.RegisterViewRequest;
 import org.apache.iceberg.rest.requests.RenameTableRequest;
 import org.apache.iceberg.rest.requests.ReportMetricsRequest;
 import org.apache.iceberg.rest.requests.UpdateNamespacePropertiesRequest;
@@ -96,6 +98,7 @@ public class HMSCatalogAdapter implements Closeable {
           .put(ForbiddenException.class, 403)
           .put(NoSuchNamespaceException.class, 404)
           .put(NoSuchTableException.class, 404)
+          .put(NotFoundException.class, 404)
           .put(NoSuchViewException.class, 404)
           .put(NoSuchIcebergTableException.class, 404)
           .put(NoSuchIcebergViewException.class, 404)
@@ -147,7 +150,8 @@ public class HMSCatalogAdapter implements Closeable {
     CREATE_VIEW(HTTPMethod.POST, ResourcePaths.V1_VIEWS, CreateViewRequest.class),
     UPDATE_VIEW(HTTPMethod.POST, ResourcePaths.V1_VIEW, UpdateTableRequest.class),
     RENAME_VIEW(HTTPMethod.POST, ResourcePaths.V1_VIEW_RENAME, RenameTableRequest.class),
-    DROP_VIEW(HTTPMethod.DELETE, ResourcePaths.V1_VIEW);
+    DROP_VIEW(HTTPMethod.DELETE, ResourcePaths.V1_VIEW),
+    REGISTER_VIEW(HTTPMethod.POST, ResourcePaths.V1_VIEW_REGISTER, RegisterViewRequest.class);
 
     private final HTTPMethod method;
     private final int requiredLength;
@@ -390,6 +394,13 @@ public class HMSCatalogAdapter implements Closeable {
     return null;
   }
 
+  private LoadViewResponse registerView(Map<String, String> vars, Object body) {
+    Namespace namespace = namespaceFromPathVars(vars);
+    RegisterViewRequest request = castRequest(RegisterViewRequest.class, body);
+    return castResponse(
+        LoadViewResponse.class, CatalogHandlers.registerView(asViewCatalog, namespace, request));
+  }
+
   /**
    * This is a very simplistic approach that only validates the requirements for each table and does
    * not do any other conflict detection. Therefore, it does not guarantee true transactional
@@ -494,6 +505,9 @@ public class HMSCatalogAdapter implements Closeable {
         
       case DROP_VIEW:
         return (T) dropView(vars);
+
+      case REGISTER_VIEW:
+        return (T) registerView(vars, body);
 
       default:
     }

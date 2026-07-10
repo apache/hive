@@ -149,6 +149,7 @@ existing_delete_files_count	int
 deleted_delete_files_count	int                 	                    
 partition_summaries 	array<struct<contains_null:boolean,contains_nan:boolean,lower_bound:string,upper_bound:string>>	                    
 reference_snapshot_id	bigint              	                    
+key_metadata        	binary              	                    
 PREHOOK: query: describe default.ice_meta_desc.all_data_files
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
@@ -439,6 +440,7 @@ existing_delete_files_count	int
 deleted_delete_files_count	int                 	                    
 partition_summaries 	array<struct<contains_null:boolean,contains_nan:boolean,lower_bound:string,upper_bound:string>>	                    
 reference_snapshot_id	bigint              	                    
+key_metadata        	binary              	                    
 PREHOOK: query: describe formatted default.ice_meta_desc.all_data_files
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
@@ -730,6 +732,7 @@ existing_delete_files_count	int
 deleted_delete_files_count	int                 	                    
 partition_summaries 	array<struct<contains_null:boolean,contains_nan:boolean,lower_bound:string,upper_bound:string>>	                    
 reference_snapshot_id	bigint              	                    
+key_metadata        	binary              	                    
 PREHOOK: query: describe extended default.ice_meta_desc.all_data_files
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@ice_meta_desc
