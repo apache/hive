@@ -103,6 +103,67 @@ public class TestMetastoreEventHandlerIntegration {
   }
 
   @Test
+  public void skipsAlterWhenIndexedFieldsUnchanged() throws Exception {
+    Configuration conf = new Configuration(false);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY,
+        JSONMessageEncoder.class.getName());
+
+    MessageBuilder messageBuilder = MessageBuilder.getInstance();
+    Table before = InMemorySearchFixture.table("hive", "sales", "orders", "daily sales orders");
+    Table after = new Table(before);
+    after.setParameters(new java.util.HashMap<>(before.getParameters()));
+    after.getParameters().put("transient_lastDdlTime", "999");
+    String alterMessage = messageBuilder.buildAlterTableMessage(before, after, false, -1L).toString();
+
+    NotificationEvent create = event(
+        301L,
+        MessageBuilder.CREATE_TABLE_EVENT,
+        messageBuilder.buildCreateTableMessage(before, null).toString(),
+        "hive",
+        "sales",
+        "orders");
+    NotificationEvent alter = event(
+        302L,
+        MessageBuilder.ALTER_TABLE_EVENT,
+        alterMessage,
+        "hive",
+        "sales",
+        "orders");
+
+    IMetaStoreClient client = mock(IMetaStoreClient.class);
+    when(client.getNextNotification(any(NotificationEventRequest.class), eq(true), eq(null)))
+        .thenReturn(response(create))
+        .thenReturn(response(alter))
+        .thenReturn(emptyResponse());
+
+    try (InMemorySearchFixture fixture = InMemorySearchFixture.create()) {
+      AtomicReference<MetastoreEventListener.IndexTask> lastTask = new AtomicReference<>();
+      MetastoreEventHandler handler = new MetastoreEventHandler(conf, client);
+      handler.addListeners(new MetastoreEventListener() {
+        @Override
+        public void notifyIndexTask(IndexTask task) throws IOException {
+          lastTask.set(task);
+          try {
+            fixture.mutations().apply(task);
+            fixture.commit(task.lastEventId);
+          } catch (Exception e) {
+            throw new IOException(e);
+          }
+        }
+      });
+
+      assertEquals(1, handler.getNextMetastoreEvents(10));
+      assertEquals(1, lastTask.get().tablesToAdd.size());
+      assertFalse(fixture.searchMatch("sales", 5).isEmpty());
+
+      assertEquals(1, handler.getNextMetastoreEvents(10));
+      assertTrue(lastTask.get().tablesToAdd.isEmpty());
+      assertTrue(lastTask.get().tablesToDrop.isEmpty());
+      assertFalse(fixture.searchMatch("sales", 5).isEmpty());
+    }
+  }
+
+  @Test
   public void coalesceCreateThenDropInSameBatch() throws Exception {
     Configuration conf = new Configuration(false);
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY,

@@ -114,23 +114,21 @@ public final class InMemorySearchFixture implements AutoCloseable {
     }
   }
 
-  public List<Map<String, Object>> searchMatch(String text, int limit) throws Exception {
-    return search(Map.of("table_keyword", text), limit);
+  public List<TableSearchHit> searchMatch(String text, int limit) throws Exception {
+    return search(new SearchArgs.Match(text), limit);
   }
 
-  public List<Map<String, Object>> search(Map<String, Object> query, int limit) throws Exception {
+  public List<TableSearchHit> search(SearchArgs args, int limit) throws Exception {
     if (searcherManager == null || bayesianParameters == null) {
       throw new IllegalStateException("call commit() before searching");
     }
     try (SearchInternal searchIO = new SearchInternal(
         searcherManager, indexManager, modelRegistry, searchConfig, bayesianParameters)) {
-      SearchReqResp.Response response = searchIO.search(SearchReqResp.Request.validated(
-          query,
-          List.of(MetastoreTableMapper.FIELD_TABLE, MetastoreTableMapper.FIELD_COMMENT),
-          limit,
-          null,
-          null));
-      return response.hits();
+      TableSearchResult result = searchIO.search(new SearchQuery(
+          args,
+          null, null, limit,
+          List.of(MetastoreTableMapper.FIELD_TABLE, MetastoreTableMapper.FIELD_COMMENT)));
+      return result.hits();
     }
   }
 
