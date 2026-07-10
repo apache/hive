@@ -70,6 +70,9 @@ public class HiveStatement implements java.sql.Statement {
 
   public static final String QUERY_CANCELLED_MESSAGE = "Query was cancelled.";
 
+  /** Known-bad placeholder text from older/mixed-version servers that still send {@code HYT00}. */
+  private static final String TIMEOUT_AFTER_ZERO_SECONDS = "after 0 seconds";
+
   private final HiveConnection connection;
   private TCLIService.Iface client;
   private Optional<TOperationHandle> stmtHandle;
@@ -399,19 +402,27 @@ public class HiveStatement implements java.sql.Statement {
   }
 
   /**
-   * Returns the timeout message for a {@code TIMEDOUT_STATE} response. The server is authoritative:
-   * when the SQL state is {@code HYT00} ("timeout expired") it has set a precise message that
-   * already reflects the effective {@code hive.query.timeout.seconds}, so it is used verbatim.
-   * Otherwise (e.g. an older server) falls back to the per-statement {@link #setQueryTimeout(int)}.
+   * Returns the timeout message for a {@code TIMEDOUT_STATE} response. The server is authoritative
+   * when the SQL state is {@code HYT00} ("timeout expired") and the message is usable. Otherwise
+   * (e.g. an older server, or a placeholder {@code after 0 seconds} message) falls back to the
+   * per-statement {@link #setQueryTimeout(int)}.
    */
   private String sqlTimeoutMessageForTimedOutState(String serverMessage, String sqlState) {
-    if ("HYT00".equals(sqlState) && StringUtils.isNotBlank(serverMessage)) {
+    if ("HYT00".equals(sqlState) && isUsableServerTimeoutMessage(serverMessage)) {
       return serverMessage;
     }
     if (queryTimeout > 0) {
       return "Query timed out after " + queryTimeout + " seconds";
     }
     return "Query timed out";
+  }
+
+  /**
+   * @return whether {@code serverMessage} is safe to pass through as the JDBC timeout text
+   */
+  static boolean isUsableServerTimeoutMessage(String serverMessage) {
+    return StringUtils.isNotBlank(serverMessage)
+        && !StringUtils.containsIgnoreCase(serverMessage, TIMEOUT_AFTER_ZERO_SECONDS);
   }
 
   /**
