@@ -37,4 +37,18 @@ INSERT INTO unknown_test_basic VALUES
 
 SELECT id, placeholder, extra FROM unknown_test_basic ORDER BY id;
 
-DESC FORMATTED unknown_test_basic;
+-- CTLT preserves unknown column types from the source table
+CREATE TABLE unknown_test_ctlt LIKE unknown_test_basic STORED BY ICEBERG tblproperties('format-version'='3');
+
+DESC FORMATTED unknown_test_ctlt;
+
+INSERT INTO unknown_test_ctlt SELECT * FROM unknown_test_basic;
+
+SELECT id, placeholder, extra FROM unknown_test_ctlt ORDER BY id;
+
+-- CTAS preserves unknown column types from the query schema
+CREATE TABLE unknown_test_ctas STORED BY ICEBERG tblproperties('format-version'='3') AS SELECT * FROM unknown_test_basic;
+
+DESC FORMATTED unknown_test_ctas;
+
+SELECT id, placeholder, extra FROM unknown_test_ctas ORDER BY id;
