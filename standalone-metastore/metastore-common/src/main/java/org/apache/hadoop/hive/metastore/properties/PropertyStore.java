@@ -84,7 +84,7 @@ public abstract class PropertyStore {
 
   /**
    * Persists an iterator property map.
-   * <p>Maybe useful to override to use one transaction.</p>
+   * <p>May be useful to override to use one transaction.</p>
    * @param save the iterator on pairs for map key, property map
    */
   public void saveProperties(Iterator<Map.Entry<String, PropertyMap>> save) {
