@@ -60,9 +60,9 @@ public final class Indexer implements AutoCloseable {
   private final IndexManager indexManager;
   private final EmbedModelRegistry modelRegistry;
   private final EmbeddingCache embeddingCache;
+  private final int commitFlushThreshold;
   private SnapshotDeletionPolicy snapshotter;
   private FlushTrackingWriter writer;
-  private int commitFlushThreshold;
 
   public Indexer(IndexManager index, EmbedModelRegistry registry) {
     this.indexManager = index;
@@ -70,11 +70,6 @@ public final class Indexer implements AutoCloseable {
     this.embeddingCache = registry.embeddingCache();
     this.commitFlushThreshold =
         new IndexConfig(index.mapping().configuration()).getCommitFlushes();
-  }
-
-  /** Package-private for bootstrap to apply a different commit threshold temporarily. */
-  public void setCommitFlushThreshold(int commitFlushThreshold) {
-    this.commitFlushThreshold = Math.max(0, commitFlushThreshold);
   }
 
   int flushesSinceCommit() {
@@ -192,7 +187,7 @@ public final class Indexer implements AutoCloseable {
           }
           if (!missTexts.isEmpty()) {
             String[] texts = missTexts.toArray(new String[0]);
-            float[][] embeddings = embedModel.encodeBatch(EmbedModel.TaskType.DOCUMENT, texts);
+            float[][] embeddings = embedModel.embedBatch(EmbedModel.TaskType.DOCUMENT, texts);
             for (int i = 0; i < texts.length; i++) {
               String text = texts[i];
               float[] embedding = embeddings[i];

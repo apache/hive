@@ -106,7 +106,7 @@ public class TestBootstrapIndexer {
     Configuration conf = new Configuration(false);
     conf.setInt(IndexConfig.BOOTSTRAP_FETCH_THREADS, 1);
     conf.setInt(IndexConfig.BOOTSTRAP_QUEUE_DEPTH, 4);
-    conf.setInt(IndexConfig.BOOTSTRAP_COMMIT_FLUSHES, 1);
+    conf.setInt(IndexConfig.COMMIT_FLUSHES, 1);
     conf.setLong(IndexConfig.BOOTSTRAP_PROGRESS_INTERVAL_MS, Long.MAX_VALUE);
     return conf;
   }

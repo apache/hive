@@ -17,7 +17,6 @@
 
 package org.apache.hive.search.search;
 
-import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hive.search.exception.SearchException;
 import org.junit.Test;
@@ -25,6 +24,7 @@ import org.junit.experimental.categories.Category;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 @Category(MetastoreUnitTest.class)
 public class TestSearchQuery {
@@ -32,24 +32,26 @@ public class TestSearchQuery {
   @Test
   public void ofTextDefaultsToHybridMode() throws Exception {
     SearchQuery query = SearchQuery.of("sales");
-    assertEquals("sales", query.queryText());
-    assertEquals(SearchReqResp.Mode.HYBRID, query.mode());
+    assertTrue(query.args() instanceof SearchArgs.Hybrid);
+    assertEquals("sales", ((SearchArgs.Hybrid) query.args()).queryText());
+    assertEquals(SearchQuery.Mode.HYBRID, query.mode());
     assertEquals(0, query.limit());
   }
 
   @Test
   public void ofTextWithModeAndLimit() throws Exception {
-    SearchQuery query = SearchQuery.of("sales", SearchReqResp.Mode.SEMANTIC, 25);
-    assertEquals(SearchReqResp.Mode.SEMANTIC, query.mode());
+    SearchQuery query = SearchQuery.of("sales", SearchQuery.Mode.SEMANTIC, 25);
+    assertTrue(query.args() instanceof SearchArgs.Semantic);
+    assertEquals(SearchQuery.Mode.SEMANTIC, query.mode());
     assertEquals(25, query.limit());
   }
 
   @Test
   public void ofTableNameUsesKeywordMode() throws Exception {
-    TableName tableName = new TableName("hive", "default", "orders");
-    SearchQuery query = SearchQuery.of(tableName);
-    assertEquals("orders", query.queryText());
-    assertEquals(SearchReqResp.Mode.KEYWORD, query.mode());
+    SearchQuery query = SearchQuery.of("orders", "hive", "default");
+    assertTrue(query.args() instanceof SearchArgs.Match);
+    assertEquals("orders", ((SearchArgs.Match) query.args()).queryText());
+    assertEquals(SearchQuery.Mode.MATCH, query.mode());
     assertEquals("hive", query.catalogName());
     assertEquals("default", query.databaseName());
   }
@@ -62,6 +64,6 @@ public class TestSearchQuery {
   @Test
   public void rejectsNegativeLimit() {
     assertThrows(SearchException.class,
-        () -> SearchQuery.of("sales", SearchReqResp.Mode.HYBRID, -1));
+        () -> SearchQuery.of("sales", SearchQuery.Mode.HYBRID, -1));
   }
 }

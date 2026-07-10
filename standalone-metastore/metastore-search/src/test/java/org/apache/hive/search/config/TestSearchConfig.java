@@ -19,6 +19,7 @@ package org.apache.hive.search.config;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
+import org.apache.hive.search.exception.SearchException;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -30,20 +31,19 @@ import static org.junit.Assert.assertEquals;
 public class TestSearchConfig {
 
   @Test
-  public void usesDefaultsWhenUnset() {
+  public void usesDefaultsWhenUnset() throws SearchException {
     SearchConfig config = new SearchConfig(new Configuration(false));
     assertEquals(Duration.ofSeconds(SearchConfig.REFRESH_INTERVAL_SECONDS_DEFAULT),
         config.getRefreshInterval());
     assertEquals(SearchConfig.DEFAULT_LIMIT_DEFAULT, config.getDefaultLimit());
-    assertEquals(SearchConfig.HYBRID_MATCH_WEIGHT_DEFAULT, config.getHybridMatchWeight(), 0.001f);
     assertEquals(SearchConfig.HYBRID_SEMANTIC_WEIGHT_DEFAULT, config.getHybridSemanticWeight(), 0.001f);
   }
 
   @Test
-  public void readsConfiguredValues() {
+  public void readsConfiguredValues() throws SearchException  {
     Configuration conf = new Configuration(false);
     conf.setInt(SearchConfig.DEFAULT_LIMIT, 50);
-    conf.setFloat(SearchConfig.HYBRID_MATCH_WEIGHT, 0.8f);
+    conf.setFloat(SearchConfig.HYBRID_SEMANTIC_WEIGHT, 0.2f);
     SearchConfig config = new SearchConfig(conf);
     assertEquals(50, config.getDefaultLimit());
     assertEquals(0.8f, config.getHybridMatchWeight(), 0.001f);

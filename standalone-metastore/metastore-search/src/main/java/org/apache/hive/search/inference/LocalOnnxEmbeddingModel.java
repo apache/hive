@@ -63,7 +63,7 @@ public final class LocalOnnxEmbeddingModel implements EmbedModel {
   }
 
   @Override
-  public float[] encode(TaskType task, String text) throws IndexException {
+  public float[] embed(TaskType task, String text) throws IndexException {
     try {
       return model.embed(prompt.prefixFor(task) + text).content().vector();
     } catch (RuntimeException e) {
@@ -72,7 +72,7 @@ public final class LocalOnnxEmbeddingModel implements EmbedModel {
   }
 
   @Override
-  public float[][] encodeBatch(TaskType task, String[] texts) throws IndexException {
+  public float[][] embedBatch(TaskType task, String[] texts) throws IndexException {
     try {
       String prefix = prompt.prefixFor(task);
       List<TextSegment> segments = new ArrayList<>(texts.length);
