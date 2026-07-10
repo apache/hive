@@ -36,7 +36,8 @@ public record IndexManifest(String indexName, List<IndexFile> files, String mode
 
   public record IndexFile(String name, long size) {}
 
-  public static IndexManifest create(String indexName, List<IndexFile> files, String modelName, long lastEventId) {
+  public static IndexManifest create(String indexName, List<IndexFile> files,
+      String modelName, long lastEventId) {
     return new IndexManifest(indexName, List.copyOf(files), modelName, lastEventId);
   }
 

@@ -17,7 +17,7 @@
 
 package org.apache.hive.search.mapping.field;
 
-/** A single field value within a {@lin}. */
+/** A single field value within a {@link org.apache.hive.search.mapping.TableDocument}. */
 public interface Field {
   String name();
 }

@@ -32,8 +32,10 @@ import org.apache.hive.search.index.IndexManager;
 import org.apache.hive.search.index.store.LocalStateClient;
 import org.apache.hive.search.inference.EmbedModelRegistry;
 import org.apache.hive.search.mapping.IndexMapping;
+import org.apache.hive.search.search.SearchArgs;
 import org.apache.hive.search.search.SearchInternal;
-import org.apache.hive.search.search.SearchReqResp;
+import org.apache.hive.search.search.SearchQuery;
+import org.apache.hive.search.search.TableSearchResult;
 import org.apache.hive.search.testutil.InMemoryIndexStateClient;
 import org.apache.hive.search.testutil.RealMetastoreServer;
 import org.apache.hive.search.testutil.StubEmbedModel;
@@ -149,7 +151,7 @@ public final class RealMetastoreSearchSession implements AutoCloseable {
         () -> {
           try {
             drainNotifications();
-            if (searchMatch(text, limit).isEmpty()) {
+            if (searchMatch(text, limit).hits().isEmpty()) {
               throw new AssertionError("not searchable yet");
             }
           } catch (AssertionError e) {
@@ -168,7 +170,7 @@ public final class RealMetastoreSearchSession implements AutoCloseable {
         () -> {
           try {
             drainNotifications();
-            if (!searchMatch(text, limit).isEmpty()) {
+            if (!searchMatch(text, limit).hits().isEmpty()) {
               throw new AssertionError("still searchable for '" + text + "'");
             }
           } catch (RuntimeException e) {
@@ -206,32 +208,28 @@ public final class RealMetastoreSearchSession implements AutoCloseable {
     }
   }
 
-  public List<Map<String, Object>> searchMatch(String text, int limit) throws Exception {
+  public TableSearchResult searchMatch(String text, int limit) throws Exception {
     refreshSearcher();
     try (SearchInternal searchIO = new SearchInternal(
         searcherManager, indexManager, modelRegistry, searchConfig, bayesianParameters)) {
-      return searchIO.search(SearchReqResp.Request.validated(
-          Map.of("table_keyword", text),
-          List.of(MetastoreTableMapper.FIELD_TABLE, MetastoreTableMapper.FIELD_COMMENT),
-          limit,
-          null,
-          null)).hits();
+      return searchIO.search(new SearchQuery(
+          new SearchArgs.Match(text),
+          null, null, limit,
+          List.of(MetastoreTableMapper.FIELD_TABLE, MetastoreTableMapper.FIELD_COMMENT)));
     }
   }
 
-  public List<Map<String, Object>> searchHybrid(String queryText, int limit) throws Exception {
+  public TableSearchResult searchHybrid(String queryText, int limit) throws Exception {
     refreshSearcher();
-    Map<String, Object> hybridBody = Map.of(
-        "field", MetastoreTableMapper.FIELD_SEARCH_TEXT,
-        "query", queryText);
     try (SearchInternal searchIO = new SearchInternal(
         searcherManager, indexManager, modelRegistry, searchConfig, bayesianParameters)) {
-      return searchIO.search(SearchReqResp.Request.validated(
-          Map.of("hybrid", hybridBody),
-          List.of(MetastoreTableMapper.FIELD_TABLE, MetastoreTableMapper.FIELD_COMMENT),
-          limit,
-          null,
-          null)).hits();
+      return searchIO.search(SearchQuery.fromQueryBody(
+          Map.of(
+              "field", MetastoreTableMapper.FIELD_SEARCH_TEXT,
+              "query", queryText),
+          SearchQuery.Mode.HYBRID,
+          null, null, limit,
+          List.of(MetastoreTableMapper.FIELD_TABLE, MetastoreTableMapper.FIELD_COMMENT)));
     }
   }
 

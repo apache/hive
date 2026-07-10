@@ -51,11 +51,11 @@ public class TestEmbedModelRegistry {
   @Test
   public void stubModelProducesDeterministicVectors() throws Exception {
     StubEmbedModel model = new StubEmbedModel("stub-model");
-    float[] first = model.encode(EmbedModel.TaskType.QUERY, "sales");
-    float[] second = model.encode(EmbedModel.TaskType.QUERY, "sales");
+    float[] first = model.embed(EmbedModel.TaskType.QUERY, "sales");
+    float[] second = model.embed(EmbedModel.TaskType.QUERY, "sales");
     assertArrayEquals(first, second, 0.0001f);
 
-    float[] document = model.encode(EmbedModel.TaskType.DOCUMENT, "sales");
+    float[] document = model.embed(EmbedModel.TaskType.DOCUMENT, "sales");
     assertNotEquals(first[0], document[0], 0.0001f);
   }
 }

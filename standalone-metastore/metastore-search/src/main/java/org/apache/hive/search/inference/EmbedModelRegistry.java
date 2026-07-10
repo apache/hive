@@ -51,7 +51,7 @@ public record EmbedModelRegistry(Map<String, EmbedModel> models, EmbeddingCache 
         embeddingConfig.getPrompt());
     long warmupStart = System.currentTimeMillis();
     try {
-      embedModel.encode(EmbedModel.TaskType.QUERY, "warmup");
+      embedModel.embed(EmbedModel.TaskType.QUERY, "warmup");
     } catch (IndexException e) {
       throw new InitializeException("Failed to warm up embedding model '" + modelName + "'", e);
     }

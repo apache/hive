@@ -20,6 +20,7 @@ package org.apache.hive.search.metastore;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.TableName;
@@ -74,12 +75,8 @@ public final class MetastoreTableMapper {
     String id = tableId(catalog, db, name);
     String owner = nullToEmpty(table.getOwner());
     String tableType = nullToEmpty(table.getTableType());
-    String location =
-        table.getSd() == null ? "" : nullToEmpty(table.getSd().getLocation());
-    String comment = "";
-    if (table.getParameters() != null && table.getParameters().get("comment") != null) {
-      comment = nullToEmpty(table.getParameters().get("comment"));
-    }
+    String location = tableLocation(table);
+    String comment = tableComment(table);
     String columns = formatColumnsForStorage(table);
     String columnNames = formatColumnNamesForSearch(table);
     String columnComments = formatColumnCommentsForSearch(table);
@@ -97,6 +94,35 @@ public final class MetastoreTableMapper {
     fields.add(new TextField(FIELD_COLUMN_COMMENTS, columnComments));
     fields.add(new TextField(FIELD_SEARCH_TEXT, searchText));
     return new TableDocument(new IdField("_id", id), fields, indexMapping);
+  }
+
+  /** Returns true when an alter would change any value written to the search index. */
+  public static boolean hasIndexedFieldsChanged(Table before, Table after) {
+    Objects.requireNonNull(before);
+    Objects.requireNonNull(after);
+    if (!Objects.equals(before.getCatName(), after.getCatName())
+        || !Objects.equals(before.getDbName(), after.getDbName())
+        || !Objects.equals(before.getTableName(), after.getTableName())) {
+      return true;
+    }
+    return !nullToEmpty(before.getOwner()).equals(nullToEmpty(after.getOwner()))
+        || !nullToEmpty(before.getTableType()).equals(nullToEmpty(after.getTableType()))
+        || !tableLocation(before).equals(tableLocation(after))
+        || !tableComment(before).equals(tableComment(after))
+        || !formatColumnsForStorage(before).equals(formatColumnsForStorage(after))
+        || !formatColumnNamesForSearch(before).equals(formatColumnNamesForSearch(after))
+        || !formatColumnCommentsForSearch(before).equals(formatColumnCommentsForSearch(after));
+  }
+
+  private static String tableLocation(Table table) {
+    return table.getSd() == null ? "" : nullToEmpty(table.getSd().getLocation());
+  }
+
+  private static String tableComment(Table table) {
+    if (table.getParameters() == null || table.getParameters().get("comment") == null) {
+      return "";
+    }
+    return nullToEmpty(table.getParameters().get("comment"));
   }
 
   private static String buildSearchText(String tableName, String comment, String searchColumns) {

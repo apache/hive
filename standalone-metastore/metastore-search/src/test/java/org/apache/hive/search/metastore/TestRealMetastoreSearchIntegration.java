@@ -56,8 +56,8 @@ public class TestRealMetastoreSearchIntegration {
 
     try (RealMetastoreSearchSession session = RealMetastoreSearchSession.open(metastore)) {
       session.refreshSearcher();
-      assertFalse(session.searchMatch("orders", 10).isEmpty());
-      assertFalse(session.searchMatch("customers", 10).isEmpty());
+      assertFalse(session.searchMatch("orders", 10).hits().isEmpty());
+      assertFalse(session.searchMatch("customers", 10).hits().isEmpty());
     }
   }
 
@@ -69,11 +69,11 @@ public class TestRealMetastoreSearchIntegration {
     try (RealMetastoreSearchSession session = RealMetastoreSearchSession.open(metastore)) {
       metastore.createTable(db, "orders", "daily sales orders");
       session.waitUntilSearchable("sales", 5);
-      assertFalse(session.searchMatch("sales", 5).isEmpty());
+      assertFalse(session.searchMatch("sales", 5).hits().isEmpty());
 
       metastore.dropTable(db, "orders");
       session.waitUntilNotSearchable("sales", 5);
-      assertTrue(session.searchMatch("sales", 5).isEmpty());
+      assertTrue(session.searchMatch("sales", 5).hits().isEmpty());
     }
   }
 
@@ -85,12 +85,12 @@ public class TestRealMetastoreSearchIntegration {
 
     try (RealMetastoreSearchSession session = RealMetastoreSearchSession.open(metastore)) {
       session.waitUntilSearchable("warehouse", 5);
-      assertTrue(session.searchMatch("revenue", 5).isEmpty());
+      assertTrue(session.searchMatch("revenue", 5).hits().isEmpty());
 
       metastore.dropTable(db, "orders");
       metastore.createTable(db, "orders", "revenue analytics dashboard");
       session.waitUntilSearchable("revenue", 5);
-      assertFalse(session.searchMatch("revenue", 5).isEmpty());
+      assertFalse(session.searchMatch("revenue", 5).hits().isEmpty());
     }
   }
 }
