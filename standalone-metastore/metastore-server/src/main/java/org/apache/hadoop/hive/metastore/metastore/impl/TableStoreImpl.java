@@ -90,6 +90,8 @@ import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metastore.RawStoreBundle;
+import org.apache.hadoop.hive.metastore.metastore.iface.ColStatsStore;
+import org.apache.hadoop.hive.metastore.metastore.iface.PrivilegeStore;
 import org.apache.hadoop.hive.metastore.model.FetchGroups;
 import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
 import org.apache.hadoop.hive.metastore.model.MConstraint;
@@ -194,7 +196,8 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
       }
 
       // delete column statistics if present
-      baseStore.deleteTableColumnStatistics(catName, dbName, tableName, null, null);
+      siblingStore(ColStatsStore.class)
+          .deleteTableColumnStatistics(new TableName(catName, dbName, tableName), null, null);
 
       List<MConstraint> tabConstraints = listAllTableConstraintsWithOptionalConstraintName(
           catName, dbName, tableName, null);
@@ -584,7 +587,7 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
   public AttachedMTableInfo getMTable(TableName tableName, boolean retrieveCD) {
     AttachedMTableInfo nmtbl = new AttachedMTableInfo();
     String catName = normalizeIdentifier(Optional.ofNullable(tableName.getCat())
-        .orElse(getDefaultCatalog(baseStore.getConf())));
+        .orElse(getDefaultCatalog(conf)));
     String db = normalizeIdentifier(tableName.getDb());
     String table = normalizeIdentifier(tableName.getTable());
     Query query = pm.newQuery(MTable.class,
@@ -616,7 +619,7 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
     String dbName = normalizeIdentifier(table.getDb());
     String tableName = normalizeIdentifier(table.getTable());
     MTable mtable = getMTable(catName, dbName, tableName);
-    tbl = convertToTable(mtable, conf);
+    tbl = convertToTable(mtable);
     // Retrieve creation metadata if needed
     if (tbl != null && TableType.MATERIALIZED_VIEW.toString().equals(tbl.getTableType())) {
       tbl.setCreationMetadata(
@@ -975,7 +978,7 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
         oldt.setWriteId(newTable.getWriteId());
       }
     }
-    newTable = convertToTable(oldt, conf);
+    newTable = convertToTable(oldt);
     return newTable;
   }
 
@@ -1248,7 +1251,7 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
       }
     } else {
       for (Iterator iter = mtables.iterator(); iter.hasNext(); ) {
-        Table tbl = convertToTable((MTable) iter.next(), conf);
+        Table tbl = convertToTable((MTable) iter.next());
         // Retrieve creation metadata if needed
         if (TableType.MATERIALIZED_VIEW.toString().equals(tbl.getTableType())) {
           tbl.setCreationMetadata(
@@ -1450,7 +1453,7 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
       params.put("catName", catName);
     }
 
-    tree.accept(new ExpressionTree.JDOFilterGenerator(baseStore.getConf(),
+    tree.accept(new ExpressionTree.JDOFilterGenerator(conf,
         table != null ? table.getPartitionKeys() : null, queryBuilder, params));
     if (queryBuilder.hasError()) {
       assert !isValidatedFilter;
@@ -1471,7 +1474,7 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
     params.put("t1", tblName);
     params.put("t2", dbName);
     params.put("t3", catName);
-    tree.accept(new ExpressionTree.JDOFilterGenerator(baseStore.getConf(), partitionKeys, queryBuilder, params));
+    tree.accept(new ExpressionTree.JDOFilterGenerator(conf, partitionKeys, queryBuilder, params));
     if (queryBuilder.hasError()) {
       assert !isValidatedFilter;
       LOG.debug("JDO filter pushdown cannot be used: {}", queryBuilder.getErrorMessage());
@@ -1532,7 +1535,7 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
    */
   private String getDefaultPartitionName(String inputDefaultPartName) {
     return (((inputDefaultPartName == null) || (inputDefaultPartName.isEmpty()))
-        ? MetastoreConf.getVar(baseStore.getConf(), MetastoreConf.ConfVars.DEFAULTPARTITIONNAME)
+        ? MetastoreConf.getVar(conf, MetastoreConf.ConfVars.DEFAULTPARTITIONNAME)
         : inputDefaultPartName);
   }
 
@@ -1563,7 +1566,7 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
     ExpressionTree tmp = null;
     if (!isEmptyFilter) {
       tmp = PartFilterExprUtil.makeExpressionTree(expressionProxy, exprBytes,
-          getDefaultPartitionName(defaultPartName), baseStore.getConf());
+          getDefaultPartitionName(defaultPartName), conf);
     }
     String catName = normalizeIdentifier(tableName.getCat());
     String dbName = normalizeIdentifier(tableName.getDb());
@@ -1647,7 +1650,7 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
     byte[] expr = args.getExpr();
     final ExpressionTree exprTree = expr.length != 0 ? PartFilterExprUtil.makeExpressionTree(
         expressionProxy, expr,
-        getDefaultPartitionName(args.getDefaultPartName()), baseStore.getConf()) : ExpressionTree.EMPTY_TREE;
+        getDefaultPartitionName(args.getDefaultPartName()), conf) : ExpressionTree.EMPTY_TREE;
     final AtomicBoolean hasUnknownPartitions = new AtomicBoolean(false);
 
     String catName = normalizeIdentifier(tableName.getCat());
@@ -1664,7 +1667,7 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
           MetaStoreDirectSql.SqlFilterForPushdown filter = new MetaStoreDirectSql.SqlFilterForPushdown();
           if (getDirectSql().generateSqlFilterForPushdown(catName, dbName, tblName, partitionKeys,
               exprTree, args.getDefaultPartName(), filter)) {
-            String catalogName = (catName != null) ? catName : getDefaultCatalog(baseStore.getConf());
+            String catalogName = (catName != null) ? catName : getDefaultCatalog(conf);
             return getDirectSql().getPartitionsViaSqlFilter(catalogName, dbName, tblName, filter,
                 isAcidTable, args);
           }
@@ -2210,11 +2213,12 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
       partitions = getPartitionsByPs(tableName, args);
     }
     if (getauth) {
+      PrivilegeStore privilegeStore = siblingStore(PrivilegeStore.class);
       for (Partition part : partitions) {
         String partName = Warehouse.makePartName(convertToFieldSchemas(mtbl
             .getPartitionKeys()), part.getValues());
-        PrincipalPrivilegeSet partAuth = baseStore.getPartitionPrivilegeSet(catName, dbName,
-            tblName, partName, userName, groupNames);
+        PrincipalPrivilegeSet partAuth = privilegeStore
+            .getPartitionPrivilegeSet(new TableName(catName, dbName, tblName), partName, userName, groupNames);
         part.setPrivileges(partAuth);
       }
     }
@@ -2699,8 +2703,8 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
     if ("TRUE".equalsIgnoreCase(mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
       String partName = Warehouse.makePartName(convertToFieldSchemas(mtbl
           .getPartitionKeys()), partVals);
-      PrincipalPrivilegeSet partAuth = baseStore.getPartitionPrivilegeSet(catName, dbName,
-          tblName, partName, user_name, group_names);
+      PrincipalPrivilegeSet partAuth = siblingStore(PrivilegeStore.class)
+          .getPartitionPrivilegeSet(new TableName(catName, dbName, tblName), partName, user_name, group_names);
       part.setPrivileges(partAuth);
     }
     return part;
@@ -2720,7 +2724,7 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
       Map<String, Object> params) throws MetaException {
     ExpressionTree tree = (filter != null && !filter.isEmpty())
         ? PartFilterExprUtil.parseFilterTree(filter) : ExpressionTree.EMPTY_TREE;
-    return makeQueryFilterString(catName, dbName, convertToTable(mtable, baseStore.getConf()), tree, params, true);
+    return makeQueryFilterString(catName, dbName, convertToTable(mtable), tree, params, true);
   }
 
   @Override
@@ -2749,7 +2753,7 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
     Collection<MTable> mTbls = (Collection<MTable>) query.executeWithArray(
         catName, TableType.MATERIALIZED_VIEW.toString(), true);
     for (MTable mTbl : mTbls) {
-      Table tbl = convertToTable(mTbl, conf);
+      Table tbl = convertToTable(mTbl);
       tbl.setCreationMetadata(
           convertToCreationMetadata(
               getCreationMetadata(tbl.getCatName(), tbl.getDbName(), tbl.getTableName())));
@@ -2959,7 +2963,7 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
     }
   }
 
-  private Table convertToTable(MTable mtbl, Configuration conf) throws MetaException {
+  private Table convertToTable(MTable mtbl) throws MetaException {
     if (mtbl == null) {
       return null;
     }
@@ -3013,7 +3017,7 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
       return null;
     }
     MDatabase mdb = null;
-    String catName = tbl.isSetCatName() ? tbl.getCatName() : getDefaultCatalog(baseStore.getConf());
+    String catName = tbl.isSetCatName() ? tbl.getCatName() : getDefaultCatalog(conf);
     try {
       mdb = baseStore.ensureGetMDatabase(catName, tbl.getDbName());
     } catch (NoSuchObjectException e) {
@@ -3241,7 +3245,7 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
   private MMVSource convertToSourceTable(String catalog, SourceTable sourceTable)
       throws NoSuchObjectException {
     Table table = sourceTable.getTable();
-    MTable mtbl = baseStore.ensureGetMTable(catalog, table.getDbName(), table.getTableName());
+    MTable mtbl = ensureGetMTable(new TableName(catalog, table.getDbName(), table.getTableName()));
     MMVSource source = new MMVSource();
     source.setTable(mtbl);
     source.setInsertedCount(sourceTable.getInsertedCount());
@@ -3262,7 +3266,7 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
   private MMVSource convertToSourceTable(String catalog, String fullyQualifiedTableName)
       throws NoSuchObjectException {
     String[] names = fullyQualifiedTableName.split("\\.");
-    MTable mtbl = baseStore.ensureGetMTable(catalog, names[0], names[1]);
+    MTable mtbl = ensureGetMTable(new TableName(catalog, names[0], names[1]));
     MMVSource source = new MMVSource();
     source.setTable(mtbl);
     source.setInsertedCount(0L);
@@ -3300,9 +3304,8 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
       throws MetaException, NoSuchObjectException {
     SourceTable sourceTable = new SourceTable();
     MTable mTable = mmvSource.getTable();
-    Table table =
-        convertToTable(baseStore.ensureGetMTable(catalogName, mTable.getDatabase().getName(), mTable.getTableName()),
-            baseStore.getConf());
+    Table table = convertToTable(
+        ensureGetMTable(new TableName(catalogName, mTable.getDatabase().getName(), mTable.getTableName())));
     sourceTable.setTable(table);
     sourceTable.setInsertedCount(mmvSource.getInsertedCount());
     sourceTable.setUpdatedCount(mmvSource.getUpdatedCount());

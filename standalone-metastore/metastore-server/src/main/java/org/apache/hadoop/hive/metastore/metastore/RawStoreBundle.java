@@ -33,7 +33,7 @@ public abstract class RawStoreBundle {
   }
 
   public void setPersistentManager(PersistenceManager manager) {
-    this.pm = Objects.requireNonNull(manager);
+    this.pm = manager;
   }
 
   public RawStore getBaseStore() {
@@ -42,5 +42,9 @@ public abstract class RawStoreBundle {
 
   public PersistenceManager getPersistentManager() {
     return pm;
+  }
+
+  protected <T> T siblingStore(Class<T> iface) {
+    return baseStore.unwrap(iface);
   }
 }

@@ -760,6 +760,7 @@ public class PrivilegeStoreImpl extends RawStoreBundle implements PrivilegeStore
     if (CollectionUtils.isNotEmpty(privilegeList)) {
       Iterator<HiveObjectPrivilege> privIter = privilegeList.iterator();
       Set<String> privSet = new HashSet<>();
+      TableStore tableStore = siblingStore(TableStore.class);
       while (privIter.hasNext()) {
         HiveObjectPrivilege privDef = privIter.next();
         HiveObjectRef hiveObject = privDef.getHiveObject();
@@ -836,8 +837,8 @@ public class PrivilegeStoreImpl extends RawStoreBundle implements PrivilegeStore
             persistentObjs.add(mDc);
           }
         } else if (hiveObject.getObjectType() == HiveObjectType.TABLE) {
-          MTable tblObj = baseStore.ensureGetMTable(catName, hiveObject.getDbName(), hiveObject
-              .getObjectName());
+          MTable tblObj = tableStore
+              .ensureGetMTable(new TableName(catName, hiveObject.getDbName(), hiveObject.getObjectName()));
           if (tblObj != null) {
             List<MTablePrivilege> tablePrivs = this
                 .listAllMTableGrants(userName, principalType,
@@ -862,7 +863,7 @@ public class PrivilegeStoreImpl extends RawStoreBundle implements PrivilegeStore
             }
           }
         } else if (hiveObject.getObjectType() == HiveObjectType.PARTITION) {
-          MPartition partObj = baseStore.ensureGetMPartition(new TableName(catName, hiveObject.getDbName(),
+          MPartition partObj = tableStore.ensureGetMPartition(new TableName(catName, hiveObject.getDbName(),
               hiveObject.getObjectName()), hiveObject.getPartValues());
           String partName = null;
           if (partObj != null) {
@@ -891,14 +892,15 @@ public class PrivilegeStoreImpl extends RawStoreBundle implements PrivilegeStore
             }
           }
         } else if (hiveObject.getObjectType() == HiveObjectType.COLUMN) {
-          MTable tblObj = baseStore.ensureGetMTable(catName, hiveObject.getDbName(), hiveObject
-              .getObjectName());
+          MTable tblObj = tableStore
+              .ensureGetMTable(new TableName(catName, hiveObject.getDbName(), hiveObject.getObjectName()));
           if (tblObj != null) {
             if (hiveObject.getPartValues() != null) {
               MPartition partObj = null;
               List<MPartitionColumnPrivilege> colPrivs = null;
-              partObj = baseStore.ensureGetMPartition(new TableName(catName, hiveObject.getDbName(), hiveObject
-                  .getObjectName()), hiveObject.getPartValues());
+              partObj = tableStore
+                  .ensureGetMPartition(new TableName(catName, hiveObject.getDbName(), hiveObject.getObjectName()),
+                      hiveObject.getPartValues());
               if (partObj == null) {
                 continue;
               }
@@ -973,7 +975,7 @@ public class PrivilegeStoreImpl extends RawStoreBundle implements PrivilegeStore
 
     if (CollectionUtils.isNotEmpty(privilegeList)) {
       Iterator<HiveObjectPrivilege> privIter = privilegeList.iterator();
-
+      TableStore tableStore = siblingStore(TableStore.class);
       while (privIter.hasNext()) {
         HiveObjectPrivilege privDef = privIter.next();
         HiveObjectRef hiveObject = privDef.getHiveObject();
@@ -1100,7 +1102,7 @@ public class PrivilegeStoreImpl extends RawStoreBundle implements PrivilegeStore
           }
         } else if (hiveObject.getObjectType() == HiveObjectType.PARTITION) {
           boolean found = false;
-          Table tabObj = baseStore.unwrap(TableStore.class).getTable(
+          Table tabObj = tableStore.getTable(
               new TableName(catName, hiveObject.getDbName(), hiveObject.getObjectName()), null, -1);
           String partName = null;
           if (hiveObject.getPartValues() != null) {
@@ -1133,7 +1135,7 @@ public class PrivilegeStoreImpl extends RawStoreBundle implements PrivilegeStore
             }
           }
         } else if (hiveObject.getObjectType() == HiveObjectType.COLUMN) {
-          Table tabObj = baseStore.unwrap(TableStore.class).getTable(
+          Table tabObj = tableStore.getTable(
               new TableName(catName, hiveObject.getDbName(), hiveObject.getObjectName()), null, -1);
           String partName = null;
           if (hiveObject.getPartValues() != null) {
