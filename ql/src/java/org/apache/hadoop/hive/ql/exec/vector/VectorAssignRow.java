@@ -626,6 +626,9 @@ public class VectorAssignRow {
         assignRowColumn(unionColumnVector.fields[tag], batchIndex, objectTypeInfos.get(tag), union.getObject());
       }
       break;
+    case UNKNOWN:
+      VectorizedBatchUtil.setNullColIsNullValue(columnVector, batchIndex);
+      return;
     default:
       throw new RuntimeException("Category " + targetTypeInfo.getCategory().name() + " not supported");
     }
@@ -986,6 +989,9 @@ public class VectorAssignRow {
               unionObjectInspector.getField(tag));
         }
         break;
+      case UNKNOWN:
+        VectorizedBatchUtil.setNullColIsNullValue(columnVector, batchIndex);
+        return;
       default:
         throw new RuntimeException("Category " + targetCategory.name() + " not supported");
       }

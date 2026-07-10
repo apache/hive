@@ -168,6 +168,8 @@ public class JdbcColumn {
       /* fall through */
     case "null":
       return Type.NULL_TYPE;
+    case serdeConstants.UNKNOWN_TYPE_NAME:
+      return Type.UNKNOWN_TYPE;
     default:
       throw new SQLException("Unrecognized column type: " + type);
     }
@@ -224,6 +226,8 @@ public class JdbcColumn {
         /* fall through */
       case "null":
         return serdeConstants.VOID_TYPE_NAME;
+      case serdeConstants.UNKNOWN_TYPE_NAME:
+        return serdeConstants.UNKNOWN_TYPE_NAME;
       case "map":
         return serdeConstants.MAP_TYPE_NAME;
       case "array":
