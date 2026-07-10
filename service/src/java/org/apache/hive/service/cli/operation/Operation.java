@@ -202,11 +202,8 @@ public abstract class Operation {
   }
 
   protected void setOperationException(HiveSQLException operationException) {
-    if (state == OperationState.TIMEDOUT) {
-      return;
-    }
-    // Do not overwrite a completed outcome (success, cancel, etc.). ERROR is excluded so the
-    // background thread can still record the SQLException after runQuery() sets ERROR.
+    // Do not overwrite a completed outcome (success, cancel, timeout, etc.). ERROR is excluded so
+    // the background thread can still record the SQLException after runQuery() sets ERROR.
     if (state.isTerminal() && state != OperationState.ERROR) {
       return;
     }
