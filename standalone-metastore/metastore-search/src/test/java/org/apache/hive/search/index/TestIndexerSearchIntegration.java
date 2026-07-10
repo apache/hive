@@ -21,6 +21,8 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hive.search.search.InMemorySearchFixture;
+import org.apache.hive.search.search.TableSearchHit;
+import org.apache.hive.search.search.TableSearchResult;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -43,9 +45,9 @@ public class TestIndexerSearchIntegration {
           InMemorySearchFixture.table("hive", "inventory", "parts", "spare parts catalog"));
       fixture.commit(1L);
 
-      List<Map<String, Object>> hits = fixture.searchMatch("sales", 5);
+      List<TableSearchHit> hits = fixture.searchMatch("sales", 5);
       assertFalse(hits.isEmpty());
-      assertTrue(hits.stream().anyMatch(hit -> hit.get("_id").toString().contains("sales.orders")));
+      assertTrue(hits.stream().anyMatch(hit -> hit.table().toString().contains("sales.orders")));
     }
   }
 
@@ -70,11 +72,11 @@ public class TestIndexerSearchIntegration {
           InMemorySearchFixture.table("hive", "sales", "revenue", "monthly facts"));
       fixture.commit(1L);
 
-      List<Map<String, Object>> hits = fixture.searchMatch("revenue", 5);
+      List<TableSearchHit> hits = fixture.searchMatch("revenue", 5);
       assertEquals(3, hits.size());
-      assertTrue(hits.get(0).get("_id").toString().contains("sales.revenue"));
-      assertTrue(hits.get(1).get("_id").toString().contains("sales.line_items"));
-      assertTrue(hits.get(2).get("_id").toString().contains("sales.orders"));
+      assertTrue(hits.get(0).table().toString().contains("sales.revenue"));
+      assertTrue(hits.get(1).table().toString().contains("sales.line_items"));
+      assertTrue(hits.get(2).table().toString().contains("sales.orders"));
     }
   }
 
@@ -96,7 +98,7 @@ public class TestIndexerSearchIntegration {
       fixture.mutations().dropTable(new TableName("hive", "sales", "orders"));
       fixture.commit(2L);
 
-      List<Map<String, Object>> hits = fixture.searchMatch("sales", 5);
+      List<TableSearchHit> hits = fixture.searchMatch("sales", 5);
       assertTrue(hits.isEmpty());
     }
   }
@@ -113,9 +115,9 @@ public class TestIndexerSearchIntegration {
       fixture.mutations().replaceTable(before, after);
       fixture.commit(2L);
 
-      List<Map<String, Object>> hits = fixture.searchMatch("revenue", 5);
+      List<TableSearchHit> hits = fixture.searchMatch("revenue", 5);
       assertEquals(1, hits.size());
-      assertTrue(hits.get(0).get("_id").toString().contains("sales.orders"));
+      assertTrue(hits.get(0).table().toString().contains("sales.orders"));
     }
   }
 }

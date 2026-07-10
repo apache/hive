@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hive.search.config.SearchConfig;
 import org.apache.hive.search.exception.IndexException;
 import org.apache.hive.search.exception.SearchException;
@@ -79,41 +80,36 @@ public final class SearchInternal implements AutoCloseable {
     this.modelRegistry = Objects.requireNonNull(registry, "Model registry");
   }
 
-  public record RetrieverSpec(Map<String, Object> query, float weight, String name) {
+  public record RetrieverSpec(SearchArgs query, float weight, String name) {
   }
 
   public record FusionRequest(List<RetrieverSpec> retrievers, int size) {}
 
-  public SearchReqResp.Response search(SearchReqResp.Request request)
+  public TableSearchResult search(SearchQuery request)
       throws SearchException, IOException {
-    TopDocs topDocs = executeQuery(request);
-    List<Map<String, Object>> hits = new ArrayList<>();
-    for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
-      hits.add(readHit(scoreDoc, request.fields()));
-    }
-    return new SearchReqResp.Response(hits, topDocs.totalHits.value());
-  }
-
-  private TopDocs executeQuery(SearchReqResp.Request request)
-      throws SearchException, IOException {
-    int size = request.size() > 0 ? request.size() : searchConfig.getDefaultLimit();
-    Query query = compileRootQuery(request.query(), size);
+    int size = request.limit() > 0 ? request.limit() : searchConfig.getDefaultLimit();
+    Query query = compileRootQuery(request, size);
     query = applyScopeFilter(query, request.catalogName(), request.databaseName());
-    return searcher.search(query, size);
-  }
-
-  private Query compileRootQuery(Map<String, Object> queryNode, int size)
-      throws SearchException, IOException {
-    if (queryNode.containsKey("hybrid")) {
-      return compileHybridQuery(queryNode.get("hybrid"), size);
+    TopDocs topDocs = searcher.search(query, size);
+    List<TableSearchHit> hits = new ArrayList<>();
+    for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+      hits.add(readHit(scoreDoc, request.returnFields()));
     }
-    return compileQuery(queryNode, size);
+    return new TableSearchResult(hits, topDocs.totalHits.value());
   }
 
-  private Query compileHybridQuery(Object hybridBody, int size)
+  private Query compileRootQuery(SearchQuery searchQuery, int size)
       throws SearchException, IOException {
-    HybridSearch.ParsedHybridQuery hybrid = HybridSearch.parse(hybridBody, mapping);
-    return compileFusionQuery(HybridSearch.toFusionRequest(hybrid, size, searchConfig), size);
+    return switch (searchQuery.args()) {
+      case SearchArgs.Match match -> compileMatchQuery(match.queryText());
+      case SearchArgs.Semantic semantic ->
+          compileSemanticQuery(SemanticSearch.resolve(semantic, mapping), size);
+      case SearchArgs.Hybrid hybrid -> {
+        HybridSearch.ResolvedHybridQuery resolved = HybridSearch.resolve(hybrid, mapping);
+        yield compileFusionQuery(
+            HybridSearch.toFusionRequest(resolved, size, searchConfig), size);
+      }
+    };
   }
 
   private Query compileFusionQuery(FusionRequest fusion, int size)
@@ -162,21 +158,18 @@ public final class SearchInternal implements AutoCloseable {
         MetastoreTableMapper.FIELD_DB + TableDocument.FILTER_SUFFIX, databaseName));
   }
 
-  private Query compileQuery(Map<String, Object> queryNode, int knnK)
+  private Query compileQuery(SearchArgs args, int knnK)
       throws SearchException, IOException {
-    if (queryNode.containsKey("table_keyword")) {
-      return compileTableKeywordQuery(queryNode.get("table_keyword").toString());
-    }
-    if (queryNode.containsKey("semantic")) {
-      return compileSemanticQuery(queryNode, knnK);
-    }
-    if (queryNode.containsKey("hybrid")) {
-      throw new SearchException("nested hybrid queries are not supported");
-    }
-    throw new SearchException("supported queries: table_keyword, match, semantic, hybrid");
+    return switch (args) {
+      case SearchArgs.Match match -> compileMatchQuery(match.queryText());
+      case SearchArgs.Semantic semantic ->
+          compileSemanticQuery(SemanticSearch.resolve(semantic, mapping), knnK);
+      case SearchArgs.Hybrid hybrid ->
+          throw new SearchException("Nested hybrid queries are not supported");
+    };
   }
 
-  private Query compileTableKeywordQuery(String queryText) throws SearchException, IOException {
+  private Query compileMatchQuery(String queryText) throws SearchException, IOException {
     BooleanQuery.Builder builder = new BooleanQuery.Builder();
     boolean added = false;
     for (MetastoreTableMapper.KeywordSearchField keywordField : MetastoreTableMapper.KEYWORD_SEARCH_FIELDS) {
@@ -207,7 +200,7 @@ public final class SearchInternal implements AutoCloseable {
       added = true;
     }
     if (!added) {
-      throw new SearchException("no lexically searchable table fields are configured");
+      throw new SearchException("No lexically searchable table fields are configured");
     }
     return builder.build();
   }
@@ -246,93 +239,44 @@ public final class SearchInternal implements AutoCloseable {
   }
 
   private org.apache.lucene.search.Query compileSemanticQuery(
-      Map<String, Object> queryNode, int knnK) throws SearchException {
-    Object semanticBody = queryNode.get("semantic");
-    String field;
-    String queryText;
-    if (semanticBody instanceof String text) {
-      field = requireSemanticField(null);
-      queryText = text;
-    } else if (semanticBody instanceof Map<?, ?> body) {
-      @SuppressWarnings("unchecked")
-      Map<String, Object> semanticMap = (Map<String, Object>) body;
-      if (semanticMap.containsKey("field") && semanticMap.containsKey("query")) {
-        field = semanticMap.get("field").toString();
-        queryText = semanticMap.get("query").toString();
-      } else if (semanticMap.size() == 1) {
-        Map.Entry<String, Object> entry = semanticMap.entrySet().iterator().next();
-        field = entry.getKey();
-        queryText = entry.getValue().toString();
-      } else {
-        throw new SearchException("semantic query must be {field: text} or {field:, query:}");
-      }
-    } else {
-      throw new SearchException("semantic query must be a string or object");
-    }
-
-    FieldSchema schema = mapping.fieldSchema(field);
+      SemanticSearch.ResolvedSemanticQuery semantic, int knnK) throws SearchException {
+    FieldSchema schema = mapping.fieldSchema(semantic.field());
     if (!(schema instanceof FieldSchema.TextFieldSchema text) || !text.search().semantic()) {
-      throw new SearchException("field '" + field + "' is not semantically searchable");
+      throw new SearchException("field '" + semantic.field() + "' is not semantically searchable");
     }
     float[] embedding;
     try {
       embedding = modelRegistry.get(text.search().semanticModel())
-          .encode(EmbedModel.TaskType.QUERY, queryText);
+          .embed(EmbedModel.TaskType.QUERY, semantic.queryText());
     } catch (IndexException e) {
       throw new SearchException(
-          "Failed to encode semantic query for field '" + field + "'", e);
+          "Failed to encode semantic query for field '" + semantic.field() + "'", e);
     }
     if (embedding == null) {
       throw new SearchException(
           "embedding model '" + text.search().semanticModel() + "' returned null vector");
     }
-    return new KnnFloatVectorQuery(field, embedding, knnK);
+    return new KnnFloatVectorQuery(semantic.field(), embedding, knnK);
   }
 
-  private String requireSemanticField(String field) throws SearchException {
-    if (StringUtils.isNotEmpty(field)) {
-      validateSemanticField(field);
-      return field;
-    }
-    List<String> semanticFields = mapping.fields().entrySet().stream()
-        .filter(entry -> entry.getValue() instanceof FieldSchema.TextFieldSchema text
-            && text.search().semantic())
-        .map(java.util.Map.Entry::getKey)
-        .toList();
-    if (semanticFields.size() == 1) {
-      return semanticFields.getFirst();
-    }
-    throw new SearchException(
-        "semantic query requires field when index has "
-            + semanticFields.size()
-            + " semantic field(s): "
-            + semanticFields);
-  }
-
-  private void validateSemanticField(String field) throws SearchException {
-    FieldSchema schema = mapping.fieldSchema(field);
-    if (!(schema instanceof FieldSchema.TextFieldSchema text) || !text.search().semantic()) {
-      throw new SearchException("field '" + field + "' is not semantically searchable");
-    }
-  }
-
-  private Map<String, Object> readHit(ScoreDoc scoreDoc, List<String> fields)
+  private TableSearchHit readHit(ScoreDoc scoreDoc, List<String> fields)
       throws IOException {
     Document stored = searcher.storedFields().document(scoreDoc.doc);
-    Map<String, Object> hit = new LinkedHashMap<>();
-    hit.put("_score", scoreDoc.score);
-    List<String> requested = fields.isEmpty() ? mapping.fields().keySet().stream().toList() : fields;
+    Map<String, String> fieldHits = new LinkedHashMap<>();
+    List<String> requested = fields.isEmpty() ?
+        mapping.fields().keySet().stream().toList() : fields;
     for (String field : requested) {
       IndexableField[] values = stored.getFields(field);
       if (values != null && values.length > 0) {
-        hit.put(field, values[0].stringValue());
+        fieldHits.put(field, values[0].stringValue());
       }
     }
+    TableName tableName = null;
     IndexableField[] idValues = stored.getFields("_id");
     if (idValues != null && idValues.length > 0) {
-      hit.put("_id", idValues[0].stringValue());
+      tableName = TableName.fromString(idValues[0].stringValue(), "", "default");
     }
-    return hit;
+    return new TableSearchHit(tableName, scoreDoc.score, fieldHits);
   }
 
   @Override

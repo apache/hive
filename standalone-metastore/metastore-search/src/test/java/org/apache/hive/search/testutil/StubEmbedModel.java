@@ -45,7 +45,7 @@ public final class StubEmbedModel implements EmbedModel {
   }
 
   @Override
-  public float[] encode(TaskType task, String text) {
+  public float[] embed(TaskType task, String text) {
     return vector(text + ":" + task.name());
   }
 
@@ -78,8 +78,8 @@ public final class StubEmbedModel implements EmbedModel {
   }
 
   @Override
-  public float[][] encodeBatch(TaskType task, String[] texts) throws IndexException {
+  public float[][] embedBatch(TaskType task, String[] texts) throws IndexException {
     encodeBatchCalls.incrementAndGet();
-    return Arrays.stream(texts).map(text -> encode(task, text)).toArray(float[][]::new);
+    return Arrays.stream(texts).map(text -> embed(task, text)).toArray(float[][]::new);
   }
 }

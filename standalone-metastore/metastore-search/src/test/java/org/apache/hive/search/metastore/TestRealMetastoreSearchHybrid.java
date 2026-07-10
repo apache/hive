@@ -18,14 +18,12 @@
 package org.apache.hive.search.metastore;
 
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
+import org.apache.hive.search.search.TableSearchResult;
 import org.apache.hive.search.testutil.RealMetastoreServer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -56,11 +54,11 @@ public class TestRealMetastoreSearchHybrid {
 
     try (RealMetastoreSearchSession session = RealMetastoreSearchSession.open(metastore)) {
       session.waitUntilSearchable("sales", 5);
-      List<Map<String, Object>> hits = session.searchMatch("sales", 5);
-      assertFalse(hits.isEmpty());
-      assertTrue(hits.stream().anyMatch(hit -> hit.get("_id").toString().contains("orders")));
-      assertTrue(session.searchMatch("parts", 5).stream()
-          .anyMatch(hit -> hit.get("_id").toString().contains("inventory")));
+      TableSearchResult result = session.searchMatch("sales", 5);
+      assertFalse(result.hits().isEmpty());
+      assertTrue(result.hits().stream().anyMatch(hit -> hit.table().getTable().contains("orders")));
+      assertTrue(session.searchMatch("parts", 5).hits().stream()
+          .anyMatch(hit -> hit.table().getTable().contains("inventory")));
     }
   }
 
@@ -73,9 +71,9 @@ public class TestRealMetastoreSearchHybrid {
 
     try (RealMetastoreSearchSession session = RealMetastoreSearchSession.open(metastore)) {
       session.waitUntilSearchable("revenue", 5);
-      List<Map<String, Object>> hits = session.searchHybrid("revenue analytics", 5);
-      assertFalse(hits.isEmpty());
-      assertTrue(hits.stream().anyMatch(hit -> hit.get("_id").toString().contains("orders")));
+      TableSearchResult searchResult = session.searchHybrid("revenue analytics", 5);
+      assertFalse(searchResult.hits().isEmpty());
+      assertTrue(searchResult.hits().stream().anyMatch(hit -> hit.table().getTable().contains("orders")));
     }
   }
 
@@ -88,13 +86,13 @@ public class TestRealMetastoreSearchHybrid {
 
     try (RealMetastoreSearchSession session = RealMetastoreSearchSession.open(metastore)) {
       session.waitUntilSearchable("sales", 5);
-      List<Map<String, Object>> keywordHits = session.searchMatch("sales", 5);
-      assertFalse(keywordHits.isEmpty());
-      assertTrue(keywordHits.get(0).get("_id").toString().contains("orders"));
+      TableSearchResult result = session.searchMatch("sales", 5);
+      assertFalse(result.hits().isEmpty());
+      assertTrue(result.hits().get(0).table().getTable().contains("orders"));
 
-      List<Map<String, Object>> hybridHits = session.searchHybrid("revenue analytics", 5);
-      assertFalse(hybridHits.isEmpty());
-      assertTrue(hybridHits.stream().anyMatch(hit -> hit.get("_id").toString().contains("metrics")));
+      result = session.searchHybrid("revenue analytics", 5);
+      assertFalse(result.hits().isEmpty());
+      assertTrue(result.hits().stream().anyMatch(hit -> hit.table().getTable().contains("metrics")));
     }
   }
 }

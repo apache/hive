@@ -19,15 +19,13 @@ package org.apache.hive.search.metastore;
 
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hive.search.exception.IndexNotHealthyException;
+import org.apache.hive.search.search.TableSearchResult;
 import org.apache.hive.search.testutil.InMemoryIndexStateClient;
 import org.apache.hive.search.testutil.RealMetastoreServer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -66,9 +64,9 @@ public class TestRealMetastoreSearchFailureRecovery {
 
     try (RealMetastoreSearchSession restored = RealMetastoreSearchSession.open(metastore, remote)) {
       restored.refreshSearcher();
-      List<Map<String, Object>> hits = restored.searchMatch("sales", 5);
-      assertFalse(hits.isEmpty());
-      assertTrue(hits.stream().anyMatch(hit -> hit.get("_id").toString().contains("orders")));
+      TableSearchResult result = restored.searchMatch("sales", 5);
+      assertFalse(result.hits().isEmpty());
+      assertTrue(result.hits().stream().anyMatch(hit -> hit.table().getTable().contains("orders")));
     }
   }
 
@@ -88,7 +86,7 @@ public class TestRealMetastoreSearchFailureRecovery {
       restored.waitUntilSearchable("sales", 5);
       metastore.createTable(db, "customers", "customer master records");
       restored.waitUntilSearchable("customer", 5);
-      assertEquals(2, restored.searchMatch("master", 10).size());
+      assertEquals(2, restored.searchMatch("master", 10).hits().size());
     }
   }
 
@@ -109,7 +107,7 @@ public class TestRealMetastoreSearchFailureRecovery {
 
       metastore.createTable(db, "customers", "customer master records");
       session.waitUntilSearchable("customer", 5);
-      assertFalse(session.searchMatch("customer", 5).isEmpty());
+      assertFalse(session.searchMatch("customer", 5).hits().isEmpty());
     }
   }
 }

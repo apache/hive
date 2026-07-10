@@ -27,12 +27,12 @@ public interface EmbedModel extends AutoCloseable {
 
   String name();
 
-  float[] encode(TaskType task, String text) throws IndexException;
+  float[] embed(TaskType task, String text) throws IndexException;
 
-  default float[][] encodeBatch(TaskType task, String[] texts) throws IndexException {
+  default float[][] embedBatch(TaskType task, String[] texts) throws IndexException {
     float[][] result = new float[texts.length][];
     for (int i = 0; i < texts.length; i++) {
-      result[i] = encode(task, texts[i]);
+      result[i] = embed(task, texts[i]);
     }
     return result;
   }

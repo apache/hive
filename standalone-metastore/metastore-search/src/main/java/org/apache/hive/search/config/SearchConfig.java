@@ -20,6 +20,7 @@ package org.apache.hive.search.config;
 import java.time.Duration;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hive.search.exception.SearchException;
 
 public record SearchConfig(Configuration configuration) {
   public static final String REFRESH_INTERVAL_SECONDS = "metastore.search.refresh.interval.seconds";
@@ -59,13 +60,17 @@ public record SearchConfig(Configuration configuration) {
     return configuration.getLong(INIT_READY_TIMEOUT_MS, INIT_READY_TIMEOUT_MS_DEFAULT);
   }
 
-  public float getHybridSemanticWeight() {
+  public float getHybridSemanticWeight() throws SearchException {
     float weight = configuration.getFloat(HYBRID_SEMANTIC_WEIGHT, HYBRID_SEMANTIC_WEIGHT_DEFAULT);
-    if (weight >= 1 || weight <= 0) {
-      throw new IllegalArgumentException("metastore.search.hybrid.semantic.weight " +
-          "should be configured as between 0.0 and 1.0");
+    if (weight >= 1.0f || weight <= 0.0f) {
+      throw new SearchException("Invalid hybrid semantic weight, " +
+          "it must be in (0, 1), but got " + weight);
     }
     return weight;
+  }
+
+  public float getHybridMatchWeight() throws SearchException {
+    return 1.0f - getHybridSemanticWeight();
   }
 
   public float getFusionPrior() {
