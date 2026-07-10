@@ -214,7 +214,7 @@ public final class MetastoreStatement implements InvocationHandler {
   }
 
   /**
-   * This class is used to profile the underlying statement originated from specific thrift API calls
+   * This class is used to profile the statement originated from specific thrift API calls
    */
   public static class JdbcProfilerUtils implements MetastoreStatementHook {
     static final Set<String> QUERY_EXECUTION =
@@ -258,5 +258,4 @@ public final class MetastoreStatement implements InvocationHandler {
       return MetricsConstants.JDBC_EXECUTION + method.getName();
     }
   }
-
 }

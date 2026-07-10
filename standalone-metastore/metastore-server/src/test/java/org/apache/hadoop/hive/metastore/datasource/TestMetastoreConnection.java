@@ -52,7 +52,7 @@ public class TestMetastoreConnection {
   public void init() {
     conf = MetastoreConf.newMetastoreConf();
     conf.set(MetastoreStatement.EXEC_HOOK, MetastoreStatementTestHook.class.getName());
-    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.METASTORE_JDBC_SLOW_QUERIES, 200);
+    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.METASTORE_JDBC_SLOW_QUERIES, 200, TimeUnit.MILLISECONDS);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METASTORE_PROFILE_JDBC_EXECUTION, true);
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_PROFILE_JDBC_THRIFT_APIS, "test_metastore_statement");
