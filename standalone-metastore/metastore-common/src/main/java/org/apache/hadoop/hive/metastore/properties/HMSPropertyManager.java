@@ -101,14 +101,14 @@ public class HMSPropertyManager extends PropertyManager {
    */
   public static final PropertyType<MaintenanceOpType> MAINTENANCE_OPERATION = new PropertyType<MaintenanceOpType>("MaintenanceOperation"){
     @Override public MaintenanceOpType cast(Object value) {
-      if (value instanceof MaintenanceOpType) {
-        return (MaintenanceOpType) value;
+      if (value instanceof MaintenanceOpType op) {
+        return op;
       }
       if (value == null) {
         return null;
       }
-      if (value instanceof Number) {
-        return findOpType(((Number) value).intValue());
+      if (value instanceof Number n) {
+        return findOpType(n.intValue());
       }
       return parse(value.toString());
     }
@@ -121,8 +121,8 @@ public class HMSPropertyManager extends PropertyManager {
     }
 
     @Override public String format(Object value) {
-      if (value instanceof MaintenanceOpType) {
-        return value.toString();
+      if (value instanceof MaintenanceOpType op) {
+        return op.toString();
       }
       return null;
     }
@@ -133,14 +133,14 @@ public class HMSPropertyManager extends PropertyManager {
    */
   public static final PropertyType<MaintenanceOpStatus> MAINTENANCE_STATUS = new PropertyType<MaintenanceOpStatus>("MaintenanceStatus"){
     @Override public MaintenanceOpStatus cast(Object value) {
-      if (value instanceof MaintenanceOpStatus) {
-        return (MaintenanceOpStatus) value;
+      if (value instanceof MaintenanceOpStatus op) {
+        return op;
       }
       if (value == null) {
         return null;
       }
-      if (value instanceof Number) {
-        return findOpStatus(((Number) value).intValue());
+      if (value instanceof Number n) {
+        return findOpStatus(n.intValue());
       }
       return parse(value.toString());
     }
@@ -153,8 +153,8 @@ public class HMSPropertyManager extends PropertyManager {
     }
 
     @Override public String format(Object value) {
-      if (value instanceof MaintenanceOpStatus) {
-        return value.toString();
+      if (value instanceof MaintenanceOpStatus op) {
+        return op.toString();
       }
       return null;
     }
