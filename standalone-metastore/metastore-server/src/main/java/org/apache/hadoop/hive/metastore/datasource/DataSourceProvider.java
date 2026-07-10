@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 
 public interface DataSourceProvider {
-  String CONF_PROPERTY = "metastore.jdbc.configuration";
+  String METASTORE_CONF_PROPERTY = "metastore.jdbc.configuration";
   /**
    * @param hdpConfig
    * @return the new connection pool
@@ -84,7 +84,7 @@ public interface DataSourceProvider {
     }
   }
 
-  static String getMetastoreJdbcDriverUrl(Configuration conf) throws SQLException {
+  static String getMetastoreJdbcDriverUrl(Configuration conf) {
     if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_PROFILE_JDBC_EXECUTION)) {
       return MetastoreDriver.getMetastoreDbUrl(conf);
     }
@@ -95,18 +95,21 @@ public interface DataSourceProvider {
       throws SQLException {
     if (MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.METASTORE_PROFILE_JDBC_EXECUTION)) {
       try {
+        Configuration slimConf = new Configuration(false);
+        configuration.getPropsWithPrefix("metastore.jdbc.")
+            .forEach((k,v) -> slimConf.set("metastore.jdbc." + k, v));
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        configuration.writeXml(outputStream);
-        properties.put(CONF_PROPERTY, Base64.getEncoder().encodeToString(outputStream.toByteArray()));
+        slimConf.writeXml(outputStream);
+        properties.put(METASTORE_CONF_PROPERTY, Base64.getEncoder().encodeToString(outputStream.toByteArray()));
       } catch (IOException e) {
-        throw new SQLException("Failed to serialize metastore JDBC configuration", e);
+        throw new SQLException("Failed to serialize Metastore configuration", e);
       }
     }
   }
 
-  static Configuration resolveConfiguration(Properties properties, Configuration defaultConfiguration) {
+  static Configuration resolveConfiguration(Properties properties) {
     if (properties != null) {
-      String encodedConfiguration = properties.getProperty(CONF_PROPERTY);
+      String encodedConfiguration = properties.getProperty(METASTORE_CONF_PROPERTY);
       if (StringUtils.isNotEmpty(encodedConfiguration)) {
         byte[] xmlBytes = Base64.getDecoder().decode(encodedConfiguration);
         Configuration configuration = new Configuration(false);
@@ -114,7 +117,7 @@ public interface DataSourceProvider {
         return configuration;
       }
     }
-    return defaultConfiguration;
+    throw new IllegalStateException("properties should have contained the information for Metastore profiling");
   }
 
   static String getDataSourceName(Configuration conf) {

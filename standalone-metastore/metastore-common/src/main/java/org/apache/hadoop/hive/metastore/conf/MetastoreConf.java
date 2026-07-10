@@ -653,12 +653,13 @@ public class MetastoreConf {
         "Percentage (fractional) size of the delta files relative to the base directory. Deltas smaller than this threshold " +
             "count as small deltas. Default 0.01 = 1%.)"),
     METASTORE_JDBC_SLOW_QUERIES("metastore.jdbc.execution.logSlowQueriesThreshold", "metastore.jdbc.execution.logSlowQueriesThreshold",
-        3000, "Log the slow jdbc query that Metastore has been waiting for the result beyond the threshold(ms), " +
-        "should enable the metastore.profile.jdbc.execution first"),
+        3000, TimeUnit.MILLISECONDS, "Log the slow jdbc query that Metastore has been waiting for the result beyond the threshold(ms), " +
+        "should turn on the metastore.profile.jdbc.execution first"),
     METASTORE_PROFILE_JDBC_EXECUTION("metastore.profile.jdbc.execution", "metastore.profile.jdbc.execution", false,
-        "Profile the jdbc executions, will give the histogram about the jdbc read and write if check the metrics"),
+        "Turn on to profile the jdbc executions, it will log the slow queries, and record the metrics about the jdbc read/write\n" +
+        "over the Metastore public APIs configured by metastore.jdbc.profile.thrift.apis." ),
     METASTORE_PROFILE_JDBC_THRIFT_APIS("metastore.jdbc.profile.thrift.apis", "metastore.jdbc.profile.thrift.apis",
-        "get_table_req,get_database_req", "List of thrift methods that want to monitor the underlying jdbc executions"),
+        "get_table_req,get_database_req", "List of Metastore public APIs that want to monitor the associated jdbc executions."),
     COMPACTOR_INITIATOR_ON("metastore.compactor.initiator.on", "hive.compactor.initiator.on", true,
         "Whether to run the initiator thread on this metastore instance or not.\n" +
             "Set this to true on one instance of the Thrift metastore service as part of turning\n" +

@@ -143,7 +143,7 @@ public class TestMetastoreConnection {
     }
 
     @Override
-    public String getMetricName(Method method, Object[] args) {
+    public String getMetricName(Method method) {
       return TEST_METRIC_NAME;
     }
 

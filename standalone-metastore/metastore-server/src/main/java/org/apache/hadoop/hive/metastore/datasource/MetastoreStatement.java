@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -123,7 +124,7 @@ public final class MetastoreStatement implements InvocationHandler {
       boolean monitor = hook.profile(rawSql, method, args);
       logSummary(monitor);
       if (Metrics.getRegistry() != null && monitor) {
-        String metricName = hook.getMetricName(method, args);
+        String metricName = hook.getMetricName(method);
         Timer timer = Metrics.getOrCreateTimer(metricName);
         if (timer != null) {
           ctx = timer.time();
@@ -175,7 +176,8 @@ public final class MetastoreStatement implements InvocationHandler {
   }
 
   static boolean isSlowExecution(Configuration configuration, long timeSpent) {
-    long threshold = MetastoreConf.getLongVar(configuration, MetastoreConf.ConfVars.METASTORE_JDBC_SLOW_QUERIES);
+    long threshold = MetastoreConf.getTimeVar(configuration,
+        MetastoreConf.ConfVars.METASTORE_JDBC_SLOW_QUERIES, TimeUnit.MILLISECONDS);
     return threshold > 0 && timeSpent > threshold;
   }
 
@@ -191,7 +193,7 @@ public final class MetastoreStatement implements InvocationHandler {
      */
     boolean profile(String sql, Method method, Object[] args);
 
-    String getMetricName(Method method, Object[] args);
+    String getMetricName(Method method);
 
     /**
      * Invoked before the method call
@@ -252,7 +254,7 @@ public final class MetastoreStatement implements InvocationHandler {
     }
 
     @Override
-    public String getMetricName(Method method, Object[] args) {
+    public String getMetricName(Method method) {
       return MetricsConstants.JDBC_EXECUTION + method.getName();
     }
   }

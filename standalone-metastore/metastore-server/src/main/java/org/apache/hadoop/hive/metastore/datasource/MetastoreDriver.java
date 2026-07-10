@@ -31,6 +31,7 @@ import java.util.Properties;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -45,7 +46,6 @@ public class MetastoreDriver implements Driver {
   private static int majorVersion = -1;
   private static int minorVersion = -1;
   private static volatile Driver delegateDriver;
-  private static Configuration defaultConfiguration;
   static {
     try {
       registerDriver(new MetastoreDriver());
@@ -57,7 +57,6 @@ public class MetastoreDriver implements Driver {
       if (versionNums.length >1 && NumberUtils.isNumber(versionNums[1])) {
         minorVersion = Integer.parseInt(versionNums[1]);
       }
-      defaultConfiguration = MetastoreConf.newMetastoreConf();
     } catch (Exception e) {
       throw new RuntimeException("Failed to register Metastore driver", e);
     }
@@ -79,12 +78,13 @@ public class MetastoreDriver implements Driver {
           candidates.add(driver);
         }
       } catch (Exception e) {
-        LOG.debug("Driver {} did not accept URL {}", driver.getClass().getName(), jdbcUrl, e);
+        LOG.debug("Driver {} cannot accept URL {}", driver.getClass().getName(), jdbcUrl, e);
       }
     }
 
-    if (candidates.isEmpty()) {
-      Class<Driver> driverClz = tryLoadDriver(driverClassName, Thread.currentThread().getContextClassLoader(),
+    if (candidates.isEmpty() && StringUtils.isNotEmpty(driverClassName)) {
+      Class<Driver> driverClz = tryLoadDriver(driverClassName,
+          Thread.currentThread().getContextClassLoader(),
           MetastoreDriver.class.getClassLoader());
       if (driverClz != null) {
         try {
@@ -94,7 +94,7 @@ public class MetastoreDriver implements Driver {
           }
           candidates.add(driver);
         } catch (Exception e) {
-          LOG.warn("Failed to create instance of driver class {}", driverClassName, e);
+          LOG.warn("Driver {} cannot handle the URL {}", driverClassName, jdbcUrl, e);
         }
       }
     }
@@ -130,10 +130,12 @@ public class MetastoreDriver implements Driver {
     if (driver == null || !driver.acceptsURL(jdbcUrl)) {
       driver = findRegisteredDriver(jdbcUrl, defaultDriverClz);
     }
-    connection = driver.connect(jdbcUrl, info);
     if (configuration == null) {
-      configuration = DataSourceProvider.resolveConfiguration(info, defaultConfiguration);
+      configuration = DataSourceProvider.resolveConfiguration(info);
     }
+    Properties properties = new Properties(info);
+    properties.remove(DataSourceProvider.METASTORE_CONF_PROPERTY);
+    connection = driver.connect(jdbcUrl, properties);
     return connection == null ? null : new MetastoreConnection(connection, configuration);
   }
 
