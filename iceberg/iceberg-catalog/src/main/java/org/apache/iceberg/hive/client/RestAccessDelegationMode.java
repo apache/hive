@@ -17,11 +17,12 @@
  * under the License.
  */
 
-package org.apache.iceberg.hive;
+package org.apache.iceberg.hive.client;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.iceberg.hive.IcebergCatalogProperties;
 
 /**
  * Values for the Iceberg REST catalog {@code X-Iceberg-Access-Delegation} request header. The header

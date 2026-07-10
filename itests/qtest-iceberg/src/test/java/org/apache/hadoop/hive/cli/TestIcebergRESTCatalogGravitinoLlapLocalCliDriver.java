@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
-import org.apache.iceberg.hive.RestAccessDelegationMode;
+import org.apache.iceberg.hive.client.RestAccessDelegationMode;
 import org.apache.iceberg.hive.client.HiveRESTCatalogClient;
 import org.apache.iceberg.mr.hive.IcebergVendedCredentialUtil;
 import org.apache.iceberg.rest.extension.OAuth2AuthorizationServer;

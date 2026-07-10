@@ -27,6 +27,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.CatalogUtil;
+import org.apache.iceberg.hive.client.RestAccessDelegationMode;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 
 public class IcebergCatalogProperties {

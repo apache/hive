@@ -17,8 +17,9 @@
  * under the License.
  */
 
-package org.apache.iceberg.hive;
+package org.apache.iceberg.hive.client;
 
+import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
