@@ -588,6 +588,7 @@ public class TestVectorPTFGroupBatches {
         /* bufferedTypeInfos */ new TypeInfo[] { getTypeInfo("int"), getTypeInfo("string") },
         /* orderColumnMap */ new int[] { 1 }, // p_date
         /* keyWithoutOrderColumnMap */ new int[] { 0 }, // p_mfgr
+        /* partitionColumnMap */ new int[] { 0 },
         getFakeOperator().setupOverflowBatch(3, new String[] { "bigint", "bigint" },
             outputProjectionColumnMap, outputTypeInfos));
   }

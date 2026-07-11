@@ -349,6 +349,7 @@ public class VectorPTFOperator extends Operator<PTFDesc>
         bufferedTypeInfos,
         orderColumnMap,
         keyWithoutOrderColumnMap,
+        vectorPTFInfo.getPartitionColumnMap(),
         overflowBatch);
 
     isFirstPartition = true;
