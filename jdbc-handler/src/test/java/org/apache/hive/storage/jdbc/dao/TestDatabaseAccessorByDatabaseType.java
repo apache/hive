@@ -229,6 +229,40 @@ public class TestDatabaseAccessorByDatabaseType {
     }
   }
 
+  @RunWith(Parameterized.class)
+  public static class FactoryMapping {
+    private final DatabaseType databaseType;
+    private final String driverClass;
+    private final Class<? extends DatabaseAccessor> expectedType;
+
+    public FactoryMapping(DatabaseType databaseType, String driverClass,
+        Class<? extends DatabaseAccessor> expectedType) {
+      this.databaseType = databaseType;
+      this.driverClass = driverClass;
+      this.expectedType = expectedType;
+    }
+
+    @Parameters(name = "{0}:{1}")
+    public static Collection<Object[]> data() {
+      return Arrays.asList(new Object[][]{
+          {DatabaseType.H2, "org.h2.Driver", GenericJdbcDatabaseAccessor.class},
+          {DatabaseType.METASTORE, "com.mysql.cj.jdbc.Driver", MySqlDatabaseAccessor.class},
+          {DatabaseType.METASTORE, "org.postgresql.Driver", PostgresDatabaseAccessor.class},
+          {DatabaseType.METASTORE, "oracle.jdbc.OracleDriver", OracleDatabaseAccessor.class},
+          {DatabaseType.METASTORE, "com.microsoft.sqlserver.jdbc.SQLServerDriver", MsSqlDatabaseAccessor.class},
+          {DatabaseType.METASTORE, "org.unknown.Driver", GenericJdbcDatabaseAccessor.class},
+      });
+    }
+
+    @Test
+    public void testFactoryMapping() {
+      Configuration config = new Configuration();
+      config.set(JdbcStorageConfig.DATABASE_TYPE.getPropertyName(), databaseType.name());
+      config.set(JdbcStorageConfig.JDBC_DRIVER_CLASS.getPropertyName(), driverClass);
+      assertThat(DatabaseAccessorFactory.getAccessor(config), instanceOf(expectedType));
+    }
+  }
+
   private static final AccessorCase[] CASES = {
       db(DatabaseType.MYSQL, MySqlDatabaseAccessor.class,
           BASE + " LIMIT 2",
