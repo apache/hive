@@ -32,6 +32,7 @@ import org.apache.parquet.ParquetReadOptions;
 import org.apache.parquet.crypto.FileDecryptionProperties;
 import org.apache.parquet.format.converter.ParquetMetadataConverter;
 import org.apache.parquet.hadoop.ParquetFileReader;
+import org.apache.parquet.hadoop.ParquetFileWriter;
 import org.apache.parquet.hadoop.metadata.ParquetMetadata;
 
 public class HiveParquetUtil {
@@ -62,7 +63,9 @@ public class HiveParquetUtil {
 
     org.apache.parquet.io.InputFile parquetInputFile;
     if (footerData != null) {
-      parquetInputFile = new ParquetFooterInputFromCache(footerData);
+      byte[] magic = (icebergInputFile instanceof NativeEncryptionInputFile) ?
+          ParquetFileWriter.EFMAGIC : ParquetFileWriter.MAGIC;
+      parquetInputFile = new ParquetFooterInputFromCache(footerData, magic);
     } else {
       parquetInputFile = ParquetIO.file(rawFileToRead);
     }
