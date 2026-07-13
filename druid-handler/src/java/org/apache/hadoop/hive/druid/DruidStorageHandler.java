@@ -916,11 +916,14 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
   private static HiveDruidHttpClient makeHttpClient() {
     final Period readTimeout = new Period(
         HiveConf.getVar(SessionState.getSessionConf(), HiveConf.ConfVars.HIVE_DRUID_HTTP_READ_TIMEOUT));
+    final int maxConnections =
+        HiveConf.getIntVar(SessionState.getSessionConf(), HiveConf.ConfVars.HIVE_DRUID_NUM_HTTP_CONNECTION);
     final boolean kerberosEnabled =
         HiveConf.getBoolVar(SessionState.getSessionConf(), HiveConf.ConfVars.HIVE_DRUID_KERBEROS_ENABLE);
-    LOG.info("Creating HiveDruidHttpClient with {}ms read timeout, kerberos={}",
-        readTimeout.toStandardDuration().getMillis(), kerberosEnabled);
-    return new HiveDruidHttpClient((int) readTimeout.toStandardDuration().getMillis(), kerberosEnabled);
+    LOG.info("Creating HiveDruidHttpClient with {}ms read timeout, {} max connections, kerberos={}",
+        readTimeout.toStandardDuration().getMillis(), maxConnections, kerberosEnabled);
+    return new HiveDruidHttpClient((int) readTimeout.toStandardDuration().getMillis(), maxConnections,
+        kerberosEnabled);
   }
 
   public static HiveDruidHttpClient getHttpClient() {

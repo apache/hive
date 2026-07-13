@@ -30,15 +30,16 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.CookieManager;
-import java.net.HttpCookie;
 import java.net.URI;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -58,14 +59,20 @@ public class HiveDruidHttpClient implements Closeable {
   private static final Logger LOG = LoggerFactory.getLogger(HiveDruidHttpClient.class);
 
   private final CloseableHttpClient httpClient;
+  private final PoolingHttpClientConnectionManager connectionManager;
   private final CookieManager cookieManager;
   private final boolean kerberosEnabled;
   private final ExecutorService executor;
 
-  public HiveDruidHttpClient(int readTimeoutMs, boolean kerberosEnabled) {
+  public HiveDruidHttpClient(int readTimeoutMs, int maxConnections, boolean kerberosEnabled) {
     this.kerberosEnabled = kerberosEnabled && UserGroupInformation.isSecurityEnabled();
     this.cookieManager = new CookieManager();
+    int connections = maxConnections > 0 ? maxConnections : 20;
+    this.connectionManager = new PoolingHttpClientConnectionManager();
+    this.connectionManager.setMaxTotal(connections);
+    this.connectionManager.setDefaultMaxPerRoute(connections);
     this.httpClient = HttpClients.custom()
+        .setConnectionManager(connectionManager)
         .setDefaultRequestConfig(RequestConfig.custom()
             .setConnectTimeout(readTimeoutMs)
             .setSocketTimeout(readTimeoutMs)
@@ -73,7 +80,7 @@ public class HiveDruidHttpClient implements Closeable {
             .build())
         .disableCookieManagement()
         .build();
-    this.executor = Executors.newCachedThreadPool(r -> {
+    this.executor = Executors.newFixedThreadPool(connections, r -> {
       Thread t = new Thread(r, "HiveDruidHttpClient");
       t.setDaemon(true);
       return t;
@@ -88,8 +95,7 @@ public class HiveDruidHttpClient implements Closeable {
   }
 
   public InputStream executeStream(HiveDruidHttpRequest request) throws IOException {
-    HiveDruidHttpResponse response = innerExecute(request);
-    return new java.io.ByteArrayInputStream(response.getBody());
+    return innerExecuteStream(request);
   }
 
   public Future<InputStream> executeStreamAsync(HiveDruidHttpRequest request) {
@@ -104,7 +110,7 @@ public class HiveDruidHttpClient implements Closeable {
       try (CloseableHttpResponse response = httpClient.execute(buildHttpRequest(current))) {
         int statusCode = response.getStatusLine().getStatusCode();
         storeCookies(current.getUrl().toURI(), response);
-        byte[] body = EntityUtils.toByteArray(response.getEntity());
+        byte[] body = response.getEntity() == null ? new byte[0] : EntityUtils.toByteArray(response.getEntity());
 
         if (kerberosEnabled && shouldRetryOnUnauthorized
             && statusCode == HiveDruidHttpResponse.SC_UNAUTHORIZED) {
@@ -120,6 +126,43 @@ public class HiveDruidHttpClient implements Closeable {
       } catch (IOException e) {
         throw e;
       } catch (Exception e) {
+        throw new IOException(e);
+      }
+    }
+  }
+
+  private InputStream innerExecuteStream(HiveDruidHttpRequest request) throws IOException {
+    HiveDruidHttpRequest current = request.copy();
+    boolean shouldRetryOnUnauthorized = prepareKerberosAuth(current);
+
+    while (true) {
+      CloseableHttpResponse response = null;
+      try {
+        response = httpClient.execute(buildHttpRequest(current));
+        int statusCode = response.getStatusLine().getStatusCode();
+        storeCookies(current.getUrl().toURI(), response);
+
+        if (kerberosEnabled && shouldRetryOnUnauthorized
+            && statusCode == HiveDruidHttpResponse.SC_UNAUTHORIZED) {
+          LOG.debug("Received 401 for URI {}, retrying with fresh Kerberos credentials", current.getUrl());
+          EntityUtils.consumeQuietly(response.getEntity());
+          response.close();
+          DruidKerberosUtil.removeAuthCookie(cookieManager.getCookieStore(), current.getUrl().toURI());
+          current = request.copy();
+          current.setHeader("Cookie", "");
+          shouldRetryOnUnauthorized = prepareKerberosAuth(current);
+          continue;
+        }
+
+        InputStream content = response.getEntity() == null
+            ? InputStream.nullInputStream()
+            : response.getEntity().getContent();
+        return new HttpResponseInputStream(content, response);
+      } catch (IOException e) {
+        closeQuietly(response);
+        throw e;
+      } catch (Exception e) {
+        closeQuietly(response);
         throw new IOException(e);
       }
     }
@@ -203,9 +246,41 @@ public class HiveDruidHttpClient implements Closeable {
     }
   }
 
+  private static void closeQuietly(Closeable closeable) {
+    if (closeable != null) {
+      try {
+        closeable.close();
+      } catch (IOException e) {
+        LOG.debug("Failed to close HTTP resource", e);
+      }
+    }
+  }
+
   @Override
   public void close() throws IOException {
     executor.shutdownNow();
     httpClient.close();
+    connectionManager.close();
+  }
+
+  /**
+   * InputStream that closes the underlying HTTP response when the stream is closed.
+   */
+  private static final class HttpResponseInputStream extends FilterInputStream {
+    private final Closeable closeable;
+
+    private HttpResponseInputStream(InputStream in, Closeable closeable) {
+      super(in);
+      this.closeable = closeable;
+    }
+
+    @Override
+    public void close() throws IOException {
+      try {
+        super.close();
+      } finally {
+        closeable.close();
+      }
+    }
   }
 }
