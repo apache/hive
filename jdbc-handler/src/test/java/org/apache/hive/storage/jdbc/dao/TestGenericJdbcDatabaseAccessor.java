@@ -47,6 +47,8 @@ import static org.mockito.Mockito.when;
 
 public class TestGenericJdbcDatabaseAccessor {
 
+  private static final String BOUNDARY_SQL = "select * from test_strategy";
+
   @Test
   public void testGetColumnNames_starQuery() throws HiveJdbcDatabaseAccessException {
     Configuration conf = buildConfiguration();
@@ -393,6 +395,53 @@ public class TestGenericJdbcDatabaseAccessor {
 
     assertThat(bounds.getLeft(), is(nullValue()));
     assertThat(bounds.getRight(), is(equalTo("5")));
+  }
+
+  @Test
+  public void testAddBoundaryToQuery_bothBounds() {
+    GenericJdbcDatabaseAccessor accessor = new GenericJdbcDatabaseAccessor();
+    String result = accessor.addBoundaryToQuery(null, BOUNDARY_SQL, "strategy_id", "3", "5");
+
+    assertThat(result, is(equalTo(
+        "SELECT * FROM (" + BOUNDARY_SQL + ") tmptable WHERE \"strategy_id\" >= 3 AND \"strategy_id\" < 5")));
+  }
+
+  @Test
+  public void testAddBoundaryToQuery_upperOnlyIncludesNulls() {
+    GenericJdbcDatabaseAccessor accessor = new GenericJdbcDatabaseAccessor();
+    String result = accessor.addBoundaryToQuery(null, BOUNDARY_SQL, "strategy_id", null, "5");
+
+    assertThat(result, is(equalTo(
+        "SELECT * FROM (" + BOUNDARY_SQL + ") tmptable WHERE \"strategy_id\" < 5 OR \"strategy_id\" IS NULL")));
+  }
+
+  @Test
+  public void testAddBoundaryToQuery_lowerOnly() {
+    GenericJdbcDatabaseAccessor accessor = new GenericJdbcDatabaseAccessor();
+    String result = accessor.addBoundaryToQuery(null, BOUNDARY_SQL, "strategy_id", "3", null);
+
+    assertThat(result, is(equalTo(
+        "SELECT * FROM (" + BOUNDARY_SQL + ") tmptable WHERE \"strategy_id\" >= 3")));
+  }
+
+  @Test
+  public void testAddBoundaryToQuery_rewritesNamedTable() {
+    GenericJdbcDatabaseAccessor accessor = new GenericJdbcDatabaseAccessor();
+    String result = accessor.addBoundaryToQuery("test_strategy",
+        "select * from test_strategy where priority > 0", "strategy_id", "3", "5");
+
+    assertThat(result, is(equalTo(
+        "select * from  (SELECT * FROM test_strategy WHERE \"strategy_id\" >= 3 AND \"strategy_id\" < 5)"
+            + " tmptable  where priority > 0")));
+  }
+
+  @Test
+  public void testAddBoundaryToQuery_mysqlAccessorDoesNotQuoteColumn() {
+    MySqlDatabaseAccessor accessor = new MySqlDatabaseAccessor();
+    String result = accessor.addBoundaryToQuery(null, BOUNDARY_SQL, "strategy_id", "3", "5");
+
+    assertThat(result, is(equalTo(
+        "SELECT * FROM (" + BOUNDARY_SQL + ") tmptable WHERE strategy_id >= 3 AND strategy_id < 5")));
   }
 
   @Test
