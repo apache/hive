@@ -572,18 +572,20 @@ public class TxnUtils {
       UserGroupInformation ugi = UserGroupInformation.createProxyUser(t.getOwner(),
         UserGroupInformation.getLoginUser());
 
-      ugi.doAs((PrivilegedExceptionAction<Void>) () -> {
-        // need to use a new filesystem object here to have the correct ugi
-        FileSystem proxyFs = p.getFileSystem(conf);
-        FileStatus stat = proxyFs.getFileStatus(p);
-        wrapper.add(stat.getOwner());
-        return null;
-      });
-
       try {
-        FileSystem.closeAllForUGI(ugi);
-      } catch (IOException exception) {
-        LOG.error("Could not clean up file-system handles for UGI: " + ugi, exception);
+        ugi.doAs((PrivilegedExceptionAction<Void>) () -> {
+          // need to use a new filesystem object here to have the correct ugi
+          FileSystem proxyFs = p.getFileSystem(conf);
+          FileStatus stat = proxyFs.getFileStatus(p);
+          wrapper.add(stat.getOwner());
+          return null;
+        });
+      } finally {
+        try {
+          FileSystem.closeAllForUGI(ugi);
+        } catch (IOException exception) {
+          LOG.error("Could not clean up file-system handles for UGI: " + ugi, exception);
+        }
       }
       if (wrapper.size() == 1) {
         LOG.debug("Running job as {}", wrapper.get(0));

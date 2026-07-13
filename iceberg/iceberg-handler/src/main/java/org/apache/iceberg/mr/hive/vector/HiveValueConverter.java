@@ -104,6 +104,8 @@ public class HiveValueConverter {
       case DOUBLE:
       case STRING:
         return object;
+      case UNKNOWN:
+        return null;
       default:
         throw new UnsupportedOperationException("Not a supported type: " + type);
     }

@@ -29,6 +29,8 @@ import static org.apache.hadoop.hive.metastore.ColumnType.STRING_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.TIMESTAMP_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.TINYINT_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.VARCHAR_TYPE_NAME;
+import static org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils.extractSqlClob;
+import static org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils.extractSqlString;
 import static org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils.getFullyQualifiedName;
 import static org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils.makeParams;
 import static org.apache.hadoop.hive.metastore.directsql.MetastoreDirectSqlUtils.prepareParams;
@@ -107,6 +109,7 @@ import org.apache.hadoop.hive.metastore.api.TableParamsUpdate;
 import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
 import org.apache.hadoop.hive.metastore.model.MConstraint;
 import org.apache.hadoop.hive.metastore.model.MCreationMetadata;
 import org.apache.hadoop.hive.metastore.model.MDatabase;
@@ -432,28 +435,27 @@ public class MetaStoreDirectSql {
           queryDbParams.getInnerQuery(), params, queryTextDbParams));
       if (!sqlResult2.isEmpty()) {
         for (Object[] line : sqlResult2) {
-          dbParams.put(MetastoreDirectSqlUtils.extractSqlString(line[0]), MetastoreDirectSqlUtils
-              .extractSqlString(line[1]));
+          dbParams.put(extractSqlString(line[0]), extractSqlString(line[1]));
         }
       }
       Database db = new Database();
-      db.setName(MetastoreDirectSqlUtils.extractSqlString(dbline[1]));
-      db.setLocationUri(MetastoreDirectSqlUtils.extractSqlString(dbline[2]));
-      db.setDescription(MetastoreDirectSqlUtils.extractSqlString(dbline[3]));
-      db.setOwnerName(MetastoreDirectSqlUtils.extractSqlString(dbline[4]));
-      String type = MetastoreDirectSqlUtils.extractSqlString(dbline[5]);
+      db.setName(extractSqlString(dbline[1]));
+      db.setLocationUri(extractSqlString(dbline[2]));
+      db.setDescription(extractSqlString(dbline[3]));
+      db.setOwnerName(extractSqlString(dbline[4]));
+      String type = extractSqlString(dbline[5]);
       db.setOwnerType(
           (null == type || type.trim().isEmpty()) ? null : PrincipalType.valueOf(type));
-      db.setCatalogName(MetastoreDirectSqlUtils.extractSqlString(dbline[6]));
+      db.setCatalogName(extractSqlString(dbline[6]));
       if (dbline[7] != null) {
         db.setCreateTime(MetastoreDirectSqlUtils.extractSqlInt(dbline[7]));
       }
-      db.setManagedLocationUri(MetastoreDirectSqlUtils.extractSqlString(dbline[8]));
-      String dbType = MetastoreDirectSqlUtils.extractSqlString(dbline[9]);
+      db.setManagedLocationUri(extractSqlString(dbline[8]));
+      String dbType = extractSqlString(dbline[9]);
       if (dbType != null && dbType.equalsIgnoreCase(DatabaseType.REMOTE.name())) {
         db.setType(DatabaseType.REMOTE);
-        db.setConnector_name(MetastoreDirectSqlUtils.extractSqlString(dbline[10]));
-        db.setRemote_dbname(MetastoreDirectSqlUtils.extractSqlString(dbline[11]));
+        db.setConnector_name(extractSqlString(dbline[10]));
+        db.setRemote_dbname(extractSqlString(dbline[11]));
       } else {
         db.setType(DatabaseType.NATIVE);
       }
@@ -532,6 +534,132 @@ public class MetaStoreDirectSql {
   public void addPartitions(List<MPartition> parts, List<List<MPartitionPrivilege>> partPrivilegesList,
       List<List<MPartitionColumnPrivilege>> partColPrivilegesList) throws MetaException {
     directSqlInsertPart.addPartitions(parts, partPrivilegesList, partColPrivilegesList);
+  }
+
+  /**
+   * Gets a suitable column descriptor for an existing table, based on the latest partitions
+   *
+   * @param cols column list of a partition
+   * @param tblId table id
+   * @return an existing column descriptor which columns matches with @cols.  Null if there is no match.
+   * @throws MetaException
+   */
+  public MColumnDescriptor getColumnDescriptor(List<FieldSchema> cols, long tblId)
+      throws MetaException {
+    if (cols == null || cols.isEmpty()) {
+      return null;
+    }
+
+    // Please note! In case you modify any of those methods,
+    // run TestHMSColumnDescriptorReuse with all the supported databases
+    List<Long> cdCandidates = filterCandidatesByColumnCount(findTheLatestColumnDescriptors(tblId), cols.size());
+    if (cdCandidates.isEmpty()) {
+      return null;
+    }
+
+    Long matchedColumnDescriptorId = matchColumnDescriptorWithActualColumns(cdCandidates, cols);
+    if (matchedColumnDescriptorId != null) {
+      return pm.getObjectById(MColumnDescriptor.class, matchedColumnDescriptorId);
+    }
+    return null;
+  }
+
+  private List<Long> findTheLatestColumnDescriptors(long tblId) throws MetaException {
+    final int limit = 20;
+    String findLatestDescriptorsSql =
+        """
+          SELECT s."CD_ID"
+          FROM "PARTITIONS" p
+          JOIN "SDS" s ON s."SD_ID" = p."SD_ID"
+          WHERE p."TBL_ID" = ?
+          GROUP BY s."CD_ID"
+          ORDER BY MAX(p."PART_ID") DESC
+        """;
+
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", findLatestDescriptorsSql))) {
+
+      List<Object> sqlResult = executeWithArray(
+          query.getInnerQuery(), new Object[]{tblId}, findLatestDescriptorsSql, limit);
+      if (sqlResult == null || sqlResult.isEmpty()) {
+        return Collections.emptyList();
+      }
+
+      List<Long> latestColumnDescriptorIds = new ArrayList<>();
+      for (Object cdId : sqlResult) {
+        latestColumnDescriptorIds.add(MetastoreDirectSqlUtils.extractSqlLong(cdId));
+      }
+      return latestColumnDescriptorIds;
+    }
+  }
+
+  private List<Long> filterCandidatesByColumnCount(List<Long> cdCandidates, int size) throws MetaException {
+    if (cdCandidates == null || cdCandidates.isEmpty()) {
+      return Collections.emptyList();
+    }
+
+    String placeholders = cdCandidates.stream()
+        .map(c -> "?")
+        .collect(Collectors.joining(", "));
+    String candidatesWithProperColumnCountSql = String.format(
+        """
+          SELECT c."CD_ID"
+          FROM "COLUMNS_V2" c
+          WHERE c."CD_ID" IN (%s)
+          GROUP BY c."CD_ID"
+          HAVING COUNT(*) = ?
+        """, placeholders);
+
+    try (QueryWrapper query =
+             new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", candidatesWithProperColumnCountSql))) {
+
+      Object[] params = new Object[cdCandidates.size() + 1];
+      for (int i = 0; i < cdCandidates.size(); i++) {
+        params[i] = cdCandidates.get(i);
+      }
+      params[cdCandidates.size()] = size;
+
+      List<Object> result = executeWithArray(query.getInnerQuery(), params, candidatesWithProperColumnCountSql);
+      if (result == null || result.isEmpty()) {
+        return Collections.emptyList();
+      }
+      List<Long> candidateIds = new  ArrayList<>();
+      for (Object cdId : result) {
+        candidateIds.add(MetastoreDirectSqlUtils.extractSqlLong(cdId));
+      }
+      return candidateIds;
+    }
+  }
+
+  private Long matchColumnDescriptorWithActualColumns(List<Long> cdCandidates, List<FieldSchema> cols)
+      throws MetaException {
+    if (cdCandidates == null || cdCandidates.isEmpty()) {
+      return null;
+    }
+
+    String findColumnSql = "SELECT \"COLUMN_NAME\", \"TYPE_NAME\", \"COMMENT\" FROM \"COLUMNS_V2\" "
+        + "WHERE \"CD_ID\" = ? ORDER BY \"INTEGER_IDX\"";
+    for (Long candidate: cdCandidates) {
+      try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", findColumnSql))) {
+        List<Object[]> rows = executeWithArray(query.getInnerQuery(), new Object[]{candidate}, findColumnSql);
+        if (rows != null && rows.size() == cols.size()) {
+          int i = 0;
+          for (; i < cols.size(); i++) {
+            Object[] row = rows.get(i);
+            FieldSchema col = new FieldSchema(
+                extractSqlString(row[0]),
+                extractSqlClob(row[1]),
+                extractSqlString(row[2]));
+            if (!cols.get(i).equals(col)) {
+              break;
+            }
+          }
+          if (i ==  cols.size()) {
+            return candidate;
+          }
+        }
+      }
+    }
+    return null;
   }
 
   /**
@@ -1685,17 +1813,17 @@ public class MetaStoreDirectSql {
 
       // If there is some result convert it into HivePrivilege bag and return.
       for (Object[] privLine : queryResult) {
-        String privAuthorizer = MetastoreDirectSqlUtils.extractSqlString(privLine[authorizerIndex]);
-        String principalName = MetastoreDirectSqlUtils.extractSqlString(privLine[principalNameIndex]);
+        String privAuthorizer = extractSqlString(privLine[authorizerIndex]);
+        String principalName = extractSqlString(privLine[principalNameIndex]);
         PrincipalType ptype = PrincipalType.valueOf(
-                MetastoreDirectSqlUtils.extractSqlString(privLine[principalTypeIndex]));
-        String columnName = MetastoreDirectSqlUtils.extractSqlString(privLine[columnNameIndex]);
-        String privilege = MetastoreDirectSqlUtils.extractSqlString(privLine[privilegeIndex]);
+                extractSqlString(privLine[principalTypeIndex]));
+        String columnName = extractSqlString(privLine[columnNameIndex]);
+        String privilege = extractSqlString(privLine[privilegeIndex]);
         int createTime = MetastoreDirectSqlUtils.extractSqlInt(privLine[createTimeIndex]);
-        String grantor = MetastoreDirectSqlUtils.extractSqlString(privLine[grantorIndex]);
+        String grantor = extractSqlString(privLine[grantorIndex]);
         PrincipalType grantorType =
                 PrincipalType.valueOf(
-                        MetastoreDirectSqlUtils.extractSqlString(privLine[grantorTypeIndex]));
+                        extractSqlString(privLine[grantorTypeIndex]));
         boolean grantOption = MetastoreDirectSqlUtils.extractSqlBoolean(privLine[grantOptionIndex]);
 
         HiveObjectRef objectRef = new HiveObjectRef(HiveObjectType.COLUMN, dbName, tableName, null,
@@ -1927,17 +2055,17 @@ public class MetaStoreDirectSql {
           boolean validate = (enableValidateRely & 2) != 0;
           boolean rely = (enableValidateRely & 1) != 0;
           SQLForeignKey currKey = new SQLForeignKey(
-              MetastoreDirectSqlUtils.extractSqlString(line[0]),
-              MetastoreDirectSqlUtils.extractSqlString(line[1]),
-              MetastoreDirectSqlUtils.extractSqlString(line[2]),
-              MetastoreDirectSqlUtils.extractSqlString(line[3]),
-              MetastoreDirectSqlUtils.extractSqlString(line[4]),
-              MetastoreDirectSqlUtils.extractSqlString(line[5]),
+              extractSqlString(line[0]),
+              extractSqlString(line[1]),
+              extractSqlString(line[2]),
+              extractSqlString(line[3]),
+              extractSqlString(line[4]),
+              extractSqlString(line[5]),
               MetastoreDirectSqlUtils.extractSqlInt(line[6]),
               MetastoreDirectSqlUtils.extractSqlInt(line[7]),
               MetastoreDirectSqlUtils.extractSqlInt(line[8]),
-              MetastoreDirectSqlUtils.extractSqlString(line[9]),
-              MetastoreDirectSqlUtils.extractSqlString(line[10]),
+              extractSqlString(line[9]),
+              extractSqlString(line[10]),
               enable,
               validate,
               rely
@@ -1995,14 +2123,14 @@ public class MetaStoreDirectSql {
           boolean validate = (enableValidateRely & 2) != 0;
           boolean rely = (enableValidateRely & 1) != 0;
           SQLPrimaryKey currKey = new SQLPrimaryKey(
-              MetastoreDirectSqlUtils.extractSqlString(line[0]),
-              MetastoreDirectSqlUtils.extractSqlString(line[1]),
-              MetastoreDirectSqlUtils.extractSqlString(line[2]),
-              MetastoreDirectSqlUtils.extractSqlInt(line[3]), MetastoreDirectSqlUtils.extractSqlString(line[4]),
+              extractSqlString(line[0]),
+              extractSqlString(line[1]),
+              extractSqlString(line[2]),
+              MetastoreDirectSqlUtils.extractSqlInt(line[3]), extractSqlString(line[4]),
               enable,
               validate,
               rely);
-          currKey.setCatName(MetastoreDirectSqlUtils.extractSqlString(line[6]));
+          currKey.setCatName(extractSqlString(line[6]));
           ret.add(currKey);
         }
       }
@@ -2055,10 +2183,10 @@ public class MetaStoreDirectSql {
           boolean rely = (enableValidateRely & 1) != 0;
           ret.add(new SQLUniqueConstraint(
               catName,
-              MetastoreDirectSqlUtils.extractSqlString(line[0]),
-              MetastoreDirectSqlUtils.extractSqlString(line[1]),
-              MetastoreDirectSqlUtils.extractSqlString(line[2]),
-              MetastoreDirectSqlUtils.extractSqlInt(line[3]), MetastoreDirectSqlUtils.extractSqlString(line[4]),
+              extractSqlString(line[0]),
+              extractSqlString(line[1]),
+              extractSqlString(line[2]),
+              MetastoreDirectSqlUtils.extractSqlInt(line[3]), extractSqlString(line[4]),
               enable,
               validate,
               rely));
@@ -2113,10 +2241,10 @@ public class MetaStoreDirectSql {
           boolean rely = (enableValidateRely & 1) != 0;
           ret.add(new SQLNotNullConstraint(
               catName,
-              MetastoreDirectSqlUtils.extractSqlString(line[0]),
-              MetastoreDirectSqlUtils.extractSqlString(line[1]),
-              MetastoreDirectSqlUtils.extractSqlString(line[2]),
-              MetastoreDirectSqlUtils.extractSqlString(line[3]),
+              extractSqlString(line[0]),
+              extractSqlString(line[1]),
+              extractSqlString(line[2]),
+              extractSqlString(line[3]),
               enable,
               validate,
               rely));
@@ -2175,11 +2303,11 @@ public class MetaStoreDirectSql {
           boolean rely = (enableValidateRely & 1) != 0;
           SQLDefaultConstraint currConstraint = new SQLDefaultConstraint(
               catName,
-              MetastoreDirectSqlUtils.extractSqlString(line[0]),
-              MetastoreDirectSqlUtils.extractSqlString(line[1]),
-              MetastoreDirectSqlUtils.extractSqlString(line[2]),
-              MetastoreDirectSqlUtils.extractSqlString(line[5]),
-              MetastoreDirectSqlUtils.extractSqlString(line[3]),
+              extractSqlString(line[0]),
+              extractSqlString(line[1]),
+              extractSqlString(line[2]),
+              extractSqlString(line[5]),
+              extractSqlString(line[3]),
               enable,
               validate,
               rely);
@@ -2239,11 +2367,11 @@ public class MetaStoreDirectSql {
           boolean rely = (enableValidateRely & 1) != 0;
           SQLCheckConstraint currConstraint = new SQLCheckConstraint(
               catName,
-              MetastoreDirectSqlUtils.extractSqlString(line[0]),
-              MetastoreDirectSqlUtils.extractSqlString(line[1]),
-              MetastoreDirectSqlUtils.extractSqlString(line[2]),
-              MetastoreDirectSqlUtils.extractSqlString(line[5]),
-              MetastoreDirectSqlUtils.extractSqlString(line[3]),
+              extractSqlString(line[0]),
+              extractSqlString(line[1]),
+              extractSqlString(line[2]),
+              extractSqlString(line[5]),
+              extractSqlString(line[3]),
               enable,
               validate,
               rely);
@@ -2309,7 +2437,7 @@ public class MetaStoreDirectSql {
         partIds.add(MetastoreDirectSqlUtils.extractSqlLong(((Object[])result)[0]));
         String partitionLocation;
         if (baseLocationToNotShow != null &&
-            (partitionLocation = MetastoreDirectSqlUtils.extractSqlString(((Object[])result)[1])) != null &&
+            (partitionLocation = extractSqlString(((Object[])result)[1])) != null &&
             !FileUtils.isSubdirectory(baseLocationToNotShow, partitionLocation)) {
           locations.add(partitionLocation);
         }
@@ -2639,8 +2767,8 @@ public class MetaStoreDirectSql {
       String lastPartName = null;
       List<String> cols = null;
       for (Object[] line : sqlResult) {
-        String col = MetastoreDirectSqlUtils.extractSqlString(line[1]);
-        String part = MetastoreDirectSqlUtils.extractSqlString(line[0]);
+        String col = extractSqlString(line[1]);
+        String part = extractSqlString(line[0]);
         if (!part.equals(lastPartName)) {
           if (lastPartName != null) {
             result.put(lastPartName, cols);
@@ -2675,8 +2803,7 @@ public class MetaStoreDirectSql {
           .ensureList(executeWithArray(query.getInnerQuery(), STATS_TABLE_TYPES, queryText));
       for (Object[] line : sqlResult) {
         result.add(new org.apache.hadoop.hive.common.TableName(
-            MetastoreDirectSqlUtils.extractSqlString(line[2]), MetastoreDirectSqlUtils
-            .extractSqlString(line[1]), MetastoreDirectSqlUtils.extractSqlString(line[0])));
+            extractSqlString(line[2]), extractSqlString(line[1]), extractSqlString(line[0])));
       }
     }
   }
@@ -2784,11 +2911,11 @@ public class MetaStoreDirectSql {
 
       for (Object[] function : queryResult) {
         Long funcId = MetastoreDirectSqlUtils.extractSqlLong(function[funcIdIndex]);
-        String funcName = MetastoreDirectSqlUtils.extractSqlString(function[funcNameIndex]);
-        String dbName = MetastoreDirectSqlUtils.extractSqlString(function[dbNameIndex]);
-        String funcClassName = MetastoreDirectSqlUtils.extractSqlString(function[funcClassNameIndex]);
-        String funcOwnerName = MetastoreDirectSqlUtils.extractSqlString(function[funcOwnerNameIndex]);
-        String funcOwnerType = MetastoreDirectSqlUtils.extractSqlString(function[funcOwnerTypeIndex]);
+        String funcName = extractSqlString(function[funcNameIndex]);
+        String dbName = extractSqlString(function[dbNameIndex]);
+        String funcClassName = extractSqlString(function[funcClassNameIndex]);
+        String funcOwnerName = extractSqlString(function[funcOwnerNameIndex]);
+        String funcOwnerType = extractSqlString(function[funcOwnerTypeIndex]);
         int funcCreateTime = MetastoreDirectSqlUtils.extractSqlInt(function[funcCreateTimeIndex]);
         int funcType = MetastoreDirectSqlUtils.extractSqlInt(function[funcTypeIndex]);
 
