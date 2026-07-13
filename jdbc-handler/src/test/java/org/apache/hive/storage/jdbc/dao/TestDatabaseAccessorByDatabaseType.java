@@ -14,9 +14,12 @@
  */
 package org.apache.hive.storage.jdbc.dao;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hive.storage.jdbc.conf.DatabaseType;
 import org.apache.hive.storage.jdbc.conf.JdbcStorageConfig;
+import org.apache.hive.storage.jdbc.exception.HiveJdbcDatabaseAccessException;
 
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -28,11 +31,14 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Function;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -285,6 +291,64 @@ public class TestDatabaseAccessorByDatabaseType {
     }
   }
 
+  @RunWith(Parameterized.class)
+  public static class H2CompatibleIntegration {
+    private final DatabaseType databaseType;
+
+    public H2CompatibleIntegration(DatabaseType databaseType) {
+      this.databaseType = databaseType;
+    }
+
+    @Parameters(name = "{0}")
+    public static Collection<Object[]> data() {
+      return Arrays.asList(new Object[][]{
+          {DatabaseType.MYSQL},
+          {DatabaseType.POSTGRES},
+          {DatabaseType.DB2},
+          {DatabaseType.DERBY},
+          {DatabaseType.HIVE},
+          {DatabaseType.JETHRO_DATA},
+      });
+    }
+
+    @Test
+    public void testGetRecordIterator_limitTwo() throws HiveJdbcDatabaseAccessException {
+      Configuration conf = buildIntegrationConfiguration(databaseType);
+      DatabaseAccessor accessor = DatabaseAccessorFactory.getAccessor(conf);
+      JdbcRecordIterator iterator = accessor.getRecordIterator(conf, null, null, null, 2, 0);
+
+      assertThat(iterator, is(notNullValue()));
+      int count = 0;
+      while (iterator.hasNext()) {
+        iterator.next();
+        count++;
+      }
+      assertThat(count, is(equalTo(2)));
+      iterator.close();
+    }
+
+    @Test
+    public void testGetColumnNames() throws HiveJdbcDatabaseAccessException {
+      Configuration conf = buildIntegrationConfiguration(databaseType);
+      DatabaseAccessor accessor = DatabaseAccessorFactory.getAccessor(conf);
+      List<String> columnNames = accessor.getColumnNames(conf);
+
+      assertThat(columnNames, is(notNullValue()));
+      assertThat(columnNames.size(), is(equalTo(7)));
+      assertThat(columnNames.get(0), is(equalToIgnoringCase("strategy_id")));
+    }
+
+    @Test
+    public void testGetBounds_minAndMax() throws HiveJdbcDatabaseAccessException {
+      Configuration conf = buildIntegrationConfiguration(databaseType);
+      DatabaseAccessor accessor = DatabaseAccessorFactory.getAccessor(conf);
+      Pair<String, String> bounds = accessor.getBounds(conf, accessor.getColumnNames(conf).get(0), true, true);
+
+      assertThat(bounds.getLeft(), is(equalTo("1")));
+      assertThat(bounds.getRight(), is(equalTo("5")));
+    }
+  }
+
   private static final AccessorCase[] CASES = {
       db(DatabaseType.MYSQL, MySqlDatabaseAccessor.class,
           BASE + " LIMIT 2",
@@ -413,6 +477,22 @@ public class TestDatabaseAccessorByDatabaseType {
     Configuration config = new Configuration();
     config.set(JdbcStorageConfig.DATABASE_TYPE.getPropertyName(), databaseType.name());
     config.set(JdbcStorageConfig.JDBC_DRIVER_CLASS.getPropertyName(), H2_DRIVER);
+    return config;
+  }
+
+  private static Configuration buildIntegrationConfiguration(DatabaseType databaseType) {
+    String scriptPath =
+        TestDatabaseAccessorByDatabaseType.class.getClassLoader().getResource("test_script.sql").getPath();
+    Configuration config = new Configuration();
+    config.set(JdbcStorageConfig.DATABASE_TYPE.getPropertyName(), databaseType.name());
+    config.set(JdbcStorageConfig.JDBC_DRIVER_CLASS.getPropertyName(), H2_DRIVER);
+    config.set(JdbcStorageConfig.JDBC_URL.getPropertyName(),
+        "jdbc:h2:mem:test_dbtype_integration_" + databaseType.name().toLowerCase()
+            + ";MODE=MySQL;INIT=runscript from '" + scriptPath + "'");
+    config.set(JdbcStorageConfig.QUERY.getPropertyName(), BASE);
+    config.set(serdeConstants.LIST_COLUMNS,
+        "strategy_id,name,referrer,landing,priority,implementation,last_modified");
+    config.set(serdeConstants.LIST_COLUMN_TYPES, "int,string,string,string,int,string,timestamp");
     return config;
   }
 
