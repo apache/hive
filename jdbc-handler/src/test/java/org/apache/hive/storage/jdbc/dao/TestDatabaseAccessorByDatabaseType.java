@@ -24,6 +24,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.Function;
@@ -32,6 +34,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @RunWith(Enclosed.class)
 public class TestDatabaseAccessorByDatabaseType {
@@ -260,6 +264,24 @@ public class TestDatabaseAccessorByDatabaseType {
       config.set(JdbcStorageConfig.DATABASE_TYPE.getPropertyName(), databaseType.name());
       config.set(JdbcStorageConfig.JDBC_DRIVER_CLASS.getPropertyName(), driverClass);
       assertThat(DatabaseAccessorFactory.getAccessor(config), instanceOf(expectedType));
+    }
+  }
+
+  public static class HiveColumnNames {
+    @Test
+    public void testGetColNamesFromRS_stripsQualifiedColumnNames() throws Exception {
+      ResultSet rs = mock(ResultSet.class);
+      ResultSetMetaData metadata = mock(ResultSetMetaData.class);
+      when(rs.getMetaData()).thenReturn(metadata);
+      when(metadata.getColumnCount()).thenReturn(3);
+      when(metadata.getColumnName(1)).thenReturn("test_strategy.strategy_id");
+      when(metadata.getColumnName(2)).thenReturn("name");
+      when(metadata.getColumnName(3)).thenReturn("db.schema.priority");
+
+      HiveDatabaseAccessor accessor = new HiveDatabaseAccessor();
+
+      assertThat(accessor.getColNamesFromRS(rs),
+          is(equalTo(Arrays.asList("strategy_id", "name", "priority"))));
     }
   }
 
