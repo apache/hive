@@ -175,9 +175,12 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
                   referencedDataFiles.addAll(files.referencedDataFiles());
                   rewrittenDeleteFiles.addAll(files.rewrittenDeleteFiles());
                 }
+                // the writers' FileIO carries the table storage credentials; the table deserialized
+                // from the committer conf does not, since that conf is built at DAG time (secret-free)
+                FileIO io = writers.get(output).get(0).io();
                 createFileForCommit(
                     new FilesForCommit(dataFiles, deleteFiles, replacedDataFiles, referencedDataFiles,
-                        rewrittenDeleteFiles, mergedPaths), fileForCommitLocation, table.io());
+                        rewrittenDeleteFiles, mergedPaths), fileForCommitLocation, io);
               } else {
                 LOG.info("CommitTask found no writer for specific table: {}, attemptID: {}", output, attemptID);
                 createFileForCommit(FilesForCommit.empty(), fileForCommitLocation, table.io());
@@ -312,8 +315,10 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
             // fall back to getting the serialized table from the config
             .orElseGet(() -> HiveTableUtil.deserializeTable(jobContext.getJobConf(), output));
         if (table != null) {
-          IcebergVendedCredentialUtil.applyFromJobConf(table, jobContext.getJobConf());
           String catalogName = catalogName(jobContext.getJobConf(), output);
+          // pass the per-table catalog name: the job-level CATALOG_NAME is absent in the DAG conf,
+          // and without it the session endpoint override is not applied to the commit-side FileIO
+          IcebergVendedCredentialUtil.applyFromJobConf(table, catalogName, jobContext.getJobConf());
           outputs.put(new OutputTable(catalogName, output, table), jobContext);
         } else {
           LOG.info("Found no table object in QueryState or conf for: {}. Skipping job commit.", output);

@@ -19,7 +19,7 @@
 
 package org.apache.iceberg.mr.hive;
 
-import java.net.URI;
+import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,32 +28,40 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.iceberg.BaseMetadataTable;
+import org.apache.iceberg.BaseTable;
+import org.apache.iceberg.CatalogUtil;
+import org.apache.iceberg.HasTableOperations;
+import org.apache.iceberg.MetadataTableType;
+import org.apache.iceberg.MetadataTableUtils;
+import org.apache.iceberg.StaticTableOperations;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.TableMetadata;
+import org.apache.iceberg.aws.AwsClientProperties;
+import org.apache.iceberg.aws.s3.S3FileIOProperties;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.StorageCredential;
 import org.apache.iceberg.io.SupportsStorageCredentials;
 import org.apache.iceberg.mr.InputFormatConfig;
+import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.util.SerializationUtil;
-import org.springframework.util.CollectionUtils;
 
 /**
  * Propagates vended storage credentials from an Iceberg {@link Table}'s {@link FileIO} to Hive job
  * configuration so Tez/LLAP executors can access object storage without static catalog keys.
+ *
+ * <p>Limitation: credentials are minted at compile/job launch and are not refreshed — work that
+ * outlives the vended token lifetime fails authentication.
  */
 public final class IcebergVendedCredentialUtil {
 
-  public static final String ACCESS_KEY_ID = "s3.access-key-id";
-  public static final String SECRET_ACCESS_KEY = "s3.secret-access-key";
-  public static final String SESSION_TOKEN = "s3.session-token";
-  public static final String ENDPOINT = "s3.endpoint";
-  public static final String PATH_STYLE_ACCESS = "s3.path-style-access";
-
-  private static final ImmutableSet<String> SECRET_ICEBERG_KEYS = ImmutableSet.of(
-      ACCESS_KEY_ID, SECRET_ACCESS_KEY, SESSION_TOKEN);
+  /** Vended config safe to display; any key not listed here routes to the secrets channel. */
+  private static final ImmutableSet<String> NON_SECRET_ICEBERG_KEYS = ImmutableSet.of(
+      S3FileIOProperties.ENDPOINT, S3FileIOProperties.PATH_STYLE_ACCESS, AwsClientProperties.CLIENT_REGION);
 
   private IcebergVendedCredentialUtil() {
   }
@@ -65,7 +73,9 @@ public final class IcebergVendedCredentialUtil {
    * the serialized {@link StorageCredential} list) go to {@code jobSecrets}; non-secret config such
    * as endpoint and path-style access go to {@code jobProperties}.
    *
-   * @param table loaded Iceberg table
+   * @param table loaded Iceberg table; its catalog-qualified name keys the credentials blob,
+   *        since REST catalogs mint credentials per table (the table pointer carries the same
+   *        name, so executors resolve the matching key)
    * @param catalogName Hive catalog name ({@link InputFormatConfig#CATALOG_NAME})
    * @param jobProperties Tez/MR non-secret job properties; may be {@code null}
    * @param jobSecrets sensitive keys and serialized credentials; may be {@code null}
@@ -83,8 +93,8 @@ public final class IcebergVendedCredentialUtil {
 
     if (jobSecrets != null) {
       jobSecrets.put(
-          InputFormatConfig.VENDED_STORAGE_CREDENTIALS,
-          SerializationUtil.serializeToBase64(Lists.newArrayList(credentials)));
+          InputFormatConfig.vendedCredentialsKey(table.name()),
+          serializeToSingleLineBase64(Lists.newArrayList(credentials)));
     }
 
     for (StorageCredential credential : credentials) {
@@ -158,13 +168,15 @@ public final class IcebergVendedCredentialUtil {
     }
   }
 
-  /** Writes Hadoop S3A per-bucket keys only; Iceberg secrets are carried in the serialized blob. */
+  /** Writes Hadoop S3A per-bucket keys only; Iceberg secrets are carried in the serialized blob.
+   * First table wins on a shared bucket, matching the non-secret entries, so an endpoint and its
+   * key always come from the same credential. */
   private static void addSecretCredentialEntry(String bucket, String icebergKey, String value,
       Map<String, String> jobSecrets) {
     if (bucket != null) {
       String s3aSecretKey = toS3aBucketProperty(bucket, icebergKey);
       if (s3aSecretKey != null) {
-        jobSecrets.put(s3aSecretKey, value);
+        jobSecrets.putIfAbsent(s3aSecretKey, value);
       }
     }
   }
@@ -174,12 +186,17 @@ public final class IcebergVendedCredentialUtil {
    * Used on executors after deserialization and on HS2 commit when the table is taken from query state.
    */
   public static void applyFromJobConf(Table table, Configuration conf) {
+    applyFromJobConf(table, conf != null ? conf.get(InputFormatConfig.CATALOG_NAME) : null, conf);
+  }
+
+  /** Variant for callers that resolve the catalog name per table (HS2 commit paths, where the
+   * job-level {@link InputFormatConfig#CATALOG_NAME} is not set). */
+  public static void applyFromJobConf(Table table, String catalogName, Configuration conf) {
     if (table == null || conf == null) {
       return;
     }
 
-    String catalogName = conf.get(InputFormatConfig.CATALOG_NAME);
-    if (shouldSkipApplyFromJobConf(catalogName, conf)) {
+    if (shouldSkipApplyFromJobConf(table.name(), catalogName, conf)) {
       return;
     }
 
@@ -189,7 +206,7 @@ public final class IcebergVendedCredentialUtil {
     }
 
     List<StorageCredential> credentials = resolveCredentialsForApply(table, credentialIo, conf);
-    if (credentials != null && !credentials.isEmpty()) {
+    if (!credentials.isEmpty()) {
       credentialIo.setCredentials(withConfigurationOverrides(catalogName, credentials, conf));
     }
   }
@@ -199,8 +216,8 @@ public final class IcebergVendedCredentialUtil {
    * configured for credential vending (no {@code vended-credentials} REST delegation header).
    * Otherwise apply may restore credentials from the job conf or from the table FileIO.
    */
-  private static boolean shouldSkipApplyFromJobConf(String catalogName, Configuration conf) {
-    return StringUtils.isBlank(conf.get(InputFormatConfig.VENDED_STORAGE_CREDENTIALS)) &&
+  private static boolean shouldSkipApplyFromJobConf(String tableName, String catalogName, Configuration conf) {
+    return StringUtils.isBlank(conf.get(InputFormatConfig.vendedCredentialsKey(tableName))) &&
         !IcebergCatalogProperties.requestsVendedCredentials(catalogName, conf);
   }
 
@@ -209,27 +226,22 @@ public final class IcebergVendedCredentialUtil {
    *
    * <p>Uses the first non-empty source: credentials already on the FileIO (typical on HS2 after
    * table load), else the base64 list from {@link InputFormatConfig#VENDED_STORAGE_CREDENTIALS} on
-   * the task {@code conf} (propagated at plan time), else {@link #extractCredentials(Table)} from
-   * the table (including FileIO property fallbacks).
+   * the task {@code conf} (restored from the HIVE-20651 Credentials channel into table properties
+   * by {@code Utilities#copyJobSecretToTableProperties} and copied to the task-local conf), else
+   * {@link #extractCredentials(Table)} from the table (including FileIO property fallbacks).
    */
   private static List<StorageCredential> resolveCredentialsForApply(
       Table table, SupportsStorageCredentials credentialIo, Configuration conf) {
 
     List<StorageCredential> credentials = credentialIo.credentials();
-    if (CollectionUtils.isEmpty(credentials)) {
-      String serialized = conf.get(InputFormatConfig.VENDED_STORAGE_CREDENTIALS);
-      if (StringUtils.isNotBlank(serialized)) {
-        @SuppressWarnings("unchecked")
-        List<StorageCredential> deserialized =
-            SerializationUtil.deserializeFromBase64(serialized);
-        credentials = deserialized;
-      }
+    if (credentials != null && !credentials.isEmpty()) {
+      return credentials;
     }
-
-    if (credentials == null || credentials.isEmpty()) {
-      credentials = extractCredentials(table);
+    String serialized = conf.get(InputFormatConfig.vendedCredentialsKey(table.name()));
+    if (StringUtils.isNotBlank(serialized)) {
+      return SerializationUtil.deserializeFromBase64(serialized);
     }
-    return credentials;
+    return extractCredentials(table);
   }
 
   /**
@@ -262,8 +274,7 @@ public final class IcebergVendedCredentialUtil {
    */
   static void refreshVendedCredentialsIfMissing(TableDesc tableDesc, JobConf jobConf, Configuration configuration) {
     if (tableDesc == null || tableDesc.getProperties() == null ||
-        hasSerializedCredentials(tableDesc.getJobSecrets()) ||
-        StringUtils.isNotBlank(jobConf.get(InputFormatConfig.VENDED_STORAGE_CREDENTIALS))) {
+        hasSerializedCredentials(tableDesc.getJobSecrets())) {
       return;
     }
 
@@ -289,17 +300,62 @@ public final class IcebergVendedCredentialUtil {
     }
   }
 
-  /** Copies {@code jobSecrets} onto {@code jobConf} so the Tez driver can use S3A before tasks start. */
-  static void applyJobSecretsToJobConf(TableDesc tableDesc, JobConf jobConf) {
-    Map<String, String> secrets = tableDesc.getJobSecrets();
-    if (secrets != null) {
-      secrets.forEach(jobConf::set);
+  /**
+   * Returns a copy of the table over a fresh secret-free {@link FileIO}, safe to serialize into
+   * job properties. {@code SerializableTable.copyOf} embeds {@code table.io()} — and with it the
+   * vended credentials — into the serialized bytes, so the copy is rebuilt from the same table
+   * metadata over a FileIO that keeps only the allowlisted non-secret properties: unknown keys
+   * never ship, whatever the storage provider. Executors restore the credentials from the
+   * HIVE-20651 Credentials channel via {@link #applyFromJobConf}
+   * ({@code SupportsStorageCredentials#setCredentials}).
+   */
+  static Table secretFreeCopy(Table table, Configuration conf) {
+    if (table instanceof BaseMetadataTable metadataTable) {
+      Table base = secretFreeCopy(metadataTable.table(), conf);
+      return MetadataTableUtils.createMetadataTableInstance(base, metadataTableType(metadataTable));
     }
+    Preconditions.checkState(table instanceof HasTableOperations,
+        "Cannot build a secret-free copy of %s (%s)", table.name(), table.getClass().getName());
+    TableMetadata metadata = ((HasTableOperations) table).operations().current();
+
+    FileIO io = table.io();
+    Map<String, String> ioProps = new LinkedHashMap<>();
+    if (io.properties() != null) {
+      io.properties().forEach((key, value) -> {
+        if (NON_SECRET_ICEBERG_KEYS.contains(key)) {
+          ioProps.put(key, value);
+        }
+      });
+    }
+    FileIO cleanIo = CatalogUtil.loadFileIO(io.getClass().getName(), ioProps, conf);
+
+    return new BaseTable(
+        new StaticTableOperations(metadata, cleanIo, table.locationProvider()), table.name());
+  }
+
+  /** {@code metadataTableType()} is package-private; the name suffix is the type by construction. */
+  private static MetadataTableType metadataTableType(BaseMetadataTable metadataTable) {
+    String name = metadataTable.name();
+    MetadataTableType type = MetadataTableType.from(name.substring(name.lastIndexOf('.') + 1));
+    Preconditions.checkState(type != null, "Cannot resolve metadata table type from %s", name);
+    return type;
+  }
+
+  /**
+   * Single-line base64, unlike {@link SerializationUtil#serializeToBase64} which MIME-wraps with
+   * CR/LF. The blob is restored into table properties and copied to the task conf through
+   * {@code Utilities#copyTablePropertiesToConf}, whose {@code escapeJava} turns CR/LF into literal
+   * {@code \r\n} — and {@code r}/{@code n} are valid base64 alphabet, corrupting the decoded
+   * stream. {@link SerializationUtil#deserializeFromBase64} uses the MIME decoder, which accepts
+   * unwrapped input.
+   */
+  private static String serializeToSingleLineBase64(Object obj) {
+    return Base64.getEncoder().encodeToString(SerializationUtil.serializeToBytes(obj));
   }
 
   private static boolean hasSerializedCredentials(Map<String, String> jobSecrets) {
-    return jobSecrets != null &&
-        StringUtils.isNotBlank(jobSecrets.get(InputFormatConfig.VENDED_STORAGE_CREDENTIALS));
+    return jobSecrets != null && jobSecrets.keySet().stream()
+        .anyMatch(key -> key.startsWith(InputFormatConfig.VENDED_STORAGE_CREDENTIALS));
   }
 
   private static void mergeJobSecrets(TableDesc tableDesc, Map<String, String> secrets) {
@@ -315,7 +371,7 @@ public final class IcebergVendedCredentialUtil {
   }
 
   private static boolean isSecretKey(String icebergKey) {
-    return SECRET_ICEBERG_KEYS.contains(icebergKey);
+    return !NON_SECRET_ICEBERG_KEYS.contains(icebergKey);
   }
 
   static List<StorageCredential> extractCredentials(Table table) {
@@ -334,17 +390,17 @@ public final class IcebergVendedCredentialUtil {
 
   private static List<StorageCredential> credentialsFromFileIoProperties(Table table, FileIO io) {
     Map<String, String> props = io.properties();
-    if (props == null || StringUtils.isBlank(props.get(ACCESS_KEY_ID)) ||
-        StringUtils.isBlank(props.get(SECRET_ACCESS_KEY))) {
+    if (props == null || StringUtils.isBlank(props.get(S3FileIOProperties.ACCESS_KEY_ID)) ||
+        StringUtils.isBlank(props.get(S3FileIOProperties.SECRET_ACCESS_KEY))) {
       return List.of();
     }
     Map<String, String> config = new LinkedHashMap<>();
-    putIfPresent(config, props, ACCESS_KEY_ID);
-    putIfPresent(config, props, SECRET_ACCESS_KEY);
-    putIfPresent(config, props, SESSION_TOKEN);
-    putIfPresent(config, props, ENDPOINT);
-    putIfPresent(config, props, PATH_STYLE_ACCESS);
-    putIfPresent(config, props, "client.region");
+    putIfPresent(config, props, S3FileIOProperties.ACCESS_KEY_ID);
+    putIfPresent(config, props, S3FileIOProperties.SECRET_ACCESS_KEY);
+    putIfPresent(config, props, S3FileIOProperties.SESSION_TOKEN);
+    putIfPresent(config, props, S3FileIOProperties.ENDPOINT);
+    putIfPresent(config, props, S3FileIOProperties.PATH_STYLE_ACCESS);
+    putIfPresent(config, props, AwsClientProperties.CLIENT_REGION);
     return List.of(StorageCredential.create(credentialPrefix(table), config));
   }
 
@@ -395,23 +451,13 @@ public final class IcebergVendedCredentialUtil {
   }
 
   /**
-   * Applies session-level catalog overrides for {@link #ENDPOINT} and
-   * {@link #PATH_STYLE_ACCESS} to the given credential configuration.
-   *
-   * <p>Override values are read from {@code conf} using
-   * {@link IcebergCatalogProperties#catalogPropertyConfigKey(String, String)}.
-   * If a non-blank override is configured, it replaces the corresponding value
-   * in {@code config}; otherwise the existing (vended) value is retained.
+   * Applies session-level catalog overrides to every entry of the given credential configuration,
+   * through the same {@link #resolveCredentialValue} used for the job-property entries — one
+   * resolver, one scope, so both channels always carry the same values.
    */
   private static void applyCatalogConfigOverrides(
       String catalogName, Map<String, String> config, Configuration conf) {
-    for (String icebergKey : List.of(ENDPOINT, PATH_STYLE_ACCESS)) {
-      String override =
-          conf.get(IcebergCatalogProperties.catalogPropertyConfigKey(catalogName, icebergKey));
-      if (StringUtils.isNotBlank(override)) {
-        config.put(icebergKey, override);
-      }
-    }
+    config.replaceAll((icebergKey, value) -> resolveCredentialValue(catalogName, icebergKey, value, conf));
   }
 
   private static String resolveCredentialValue(
@@ -424,35 +470,29 @@ public final class IcebergVendedCredentialUtil {
     return StringUtils.isNotBlank(override) ? override : vendedValue;
   }
 
+  /** Authority (bucket) of a storage prefix such as {@code s3://bucket/path}, any scheme.
+   * Plain string parse: {@code URI.getHost()} rejects legal bucket names with underscores. */
+  @SuppressWarnings("java:S1075") // storage URI path separator, not a filesystem path
   private static String bucketFromPrefix(String prefix) {
-    if (StringUtils.isBlank(prefix)) {
+    int schemeEnd = prefix == null ? -1 : prefix.indexOf("://");
+    if (schemeEnd < 0) {
       return null;
     }
-    try {
-      URI uri = new URI(prefix.endsWith("/") ? prefix : prefix + "/");
-      if ("s3".equalsIgnoreCase(uri.getScheme()) || "s3a".equalsIgnoreCase(uri.getScheme())) {
-        return uri.getHost();
-      }
-    } catch (Exception ignored) {
-      // fall through
-    }
-    if (prefix.startsWith("s3://") || prefix.startsWith("s3a://")) {
-      String withoutScheme = prefix.substring(prefix.indexOf("://") + 3);
-      int slash = withoutScheme.indexOf('/');
-      return slash >= 0 ? withoutScheme.substring(0, slash) : withoutScheme;
-    }
-    return null;
+    String withoutScheme = prefix.substring(schemeEnd + 3);
+    int slash = withoutScheme.indexOf('/');
+    String bucket = slash >= 0 ? withoutScheme.substring(0, slash) : withoutScheme;
+    return StringUtils.defaultIfBlank(bucket, null);
   }
 
   private static String toS3aBucketProperty(String bucket, String icebergKey) {
     String bucketPrefix = "fs.s3a.bucket." + bucket + ".";
     return switch (icebergKey) {
-      case ACCESS_KEY_ID -> bucketPrefix + "access.key";
-      case SECRET_ACCESS_KEY -> bucketPrefix + "secret.key";
-      case SESSION_TOKEN -> bucketPrefix + "session.token";
-      case ENDPOINT -> bucketPrefix + "endpoint";
-      case PATH_STYLE_ACCESS -> bucketPrefix + "path.style.access";
-      case "client.region" -> bucketPrefix + "endpoint.region";
+      case S3FileIOProperties.ACCESS_KEY_ID -> bucketPrefix + "access.key";
+      case S3FileIOProperties.SECRET_ACCESS_KEY -> bucketPrefix + "secret.key";
+      case S3FileIOProperties.SESSION_TOKEN -> bucketPrefix + "session.token";
+      case S3FileIOProperties.ENDPOINT -> bucketPrefix + "endpoint";
+      case S3FileIOProperties.PATH_STYLE_ACCESS -> bucketPrefix + "path.style.access";
+      case AwsClientProperties.CLIENT_REGION -> bucketPrefix + "endpoint.region";
       default -> null;
     };
   }

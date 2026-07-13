@@ -82,9 +82,15 @@ public class InputFormatConfig {
 
   /**
    * Base64-serialized list of {@link org.apache.iceberg.io.StorageCredential} for Tez/LLAP executors.
-   * Stored in {@code TableDesc#jobSecrets} (HIVE-20651), not in job properties.
+   * Stored in {@code TableDesc#jobSecrets} (HIVE-20651), not in job properties. REST catalogs mint
+   * credentials per table, so entries are keyed via {@link #vendedCredentialsKey(String)}; this
+   * constant is the key prefix (and the {@code hive.conf.hidden.list} entry, matched by prefix).
    */
   public static final String VENDED_STORAGE_CREDENTIALS = "iceberg.vended.storage.credentials";
+
+  public static String vendedCredentialsKey(String tableName) {
+    return VENDED_STORAGE_CREDENTIALS + "." + tableName;
+  }
 
   public static final String SORT_ORDER = "sort.order";
   public static final String SORT_COLUMNS = "sort.columns";

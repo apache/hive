@@ -29,6 +29,9 @@ set metastore.client.impl=org.apache.iceberg.hive.client.HiveRESTCatalogClient;
 set metastore.catalog.default=ice01;
 set iceberg.catalog.ice01.type=rest;
 set iceberg.catalog.ice01.header.X-Iceberg-Access-Delegation=vended-credentials;
+--! Vended credentials travel via DAG credentials (HIVE-20651); an in-process fetch task cannot
+--! restore them, so fetch conversion must be off for credential-vending catalogs.
+set hive.fetch.task.conversion=none;
 
 --! REST URI, OAuth, MinIO + Gravitino S3 warehouse / credential vending, and host S3A are set in
 --! TestIcebergRESTCatalogGravitinoLlapLocalCliDriver.

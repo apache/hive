@@ -28,10 +28,11 @@ import org.apache.hadoop.hive.cli.control.CliConfigs;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.iceberg.CatalogUtil;
+import org.apache.iceberg.aws.AwsClientProperties;
+import org.apache.iceberg.aws.s3.S3FileIOProperties;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.hive.client.RestAccessDelegationMode;
 import org.apache.iceberg.hive.client.HiveRESTCatalogClient;
-import org.apache.iceberg.mr.hive.IcebergVendedCredentialUtil;
 import org.apache.iceberg.rest.extension.OAuth2AuthorizationServer;
 import org.junit.After;
 import org.junit.Before;
@@ -199,9 +200,9 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
     int port = minioContainer.getMappedPort(MINIO_API_PORT);
     @SuppressWarnings("HttpUrlsUsage")
     String icebergS3Endpoint = String.format("http://%s:%d", host, port);
-    conf.set(restCatalogPrefix + IcebergVendedCredentialUtil.ENDPOINT, icebergS3Endpoint);
-    conf.set(restCatalogPrefix + IcebergVendedCredentialUtil.PATH_STYLE_ACCESS, "true");
-    conf.set(restCatalogPrefix + "client.region", "us-east-1");
+    conf.set(restCatalogPrefix + S3FileIOProperties.ENDPOINT, icebergS3Endpoint);
+    conf.set(restCatalogPrefix + S3FileIOProperties.PATH_STYLE_ACCESS, "true");
+    conf.set(restCatalogPrefix + AwsClientProperties.CLIENT_REGION, "us-east-1");
   }
 
   /**

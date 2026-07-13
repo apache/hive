@@ -353,7 +353,6 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     configureOutputTableJobConf(tableDesc, jobConf);
     if (IcebergVendedCredentialUtil.requestsVendedCredentials(tableDesc.getProperties(), conf)) {
       IcebergVendedCredentialUtil.refreshVendedCredentialsIfMissing(tableDesc, jobConf, conf);
-      IcebergVendedCredentialUtil.applyJobSecretsToJobConf(tableDesc, jobConf);
     }
     try {
       if (!jobConf.getBoolean(ConfVars.HIVE_IN_TEST_IDE.varname, false)) {
@@ -1711,18 +1710,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
           IcebergVendedCredentialUtil.getTableWithVendedCredentials(props, configuration) :
           IcebergTableUtil.getTable(configuration, props);
       location = table.location();
-      // set table format-version and write-mode information from tableDesc
-      bytes = HiveTableUtil.serializeTable(table, configuration, props,
-          ImmutableList.of(
-              TableProperties.FORMAT_VERSION,
-              TableProperties.DELETE_MODE, TableProperties.UPDATE_MODE, TableProperties.MERGE_MODE));
       schema = table.schema();
       spec = table.spec();
-
-      String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
-      if (isVendedCredentials) {
-        IcebergVendedCredentialUtil.propagateToJob(table, catalogName, map, null, configuration);
-      }
 
       // For intra-txn read-after-write: if the table has in-memory metadata with no metadata file
       // (i.e. uncommitted changes from a prior statement in the same txn), write the metadata to
@@ -1736,6 +1725,20 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
           map.put(InputFormatConfig.TABLE_METADATA_LOCATION, metadataPath);
         }
       }
+
+      if (isVendedCredentials) {
+        String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
+        IcebergVendedCredentialUtil.propagateToJob(table, catalogName, map, null, configuration);
+        // Serializing the table as-is would embed its FileIO, and with it the vended credentials,
+        // into plain job properties: ship a copy over a secret-free FileIO instead; executors
+        // restore the credentials from the Credentials channel (setCredentials).
+        table = IcebergVendedCredentialUtil.secretFreeCopy(table, configuration);
+      }
+      // set table format-version and write-mode information from tableDesc
+      bytes = HiveTableUtil.serializeTable(table, configuration, props,
+          ImmutableList.of(
+              TableProperties.FORMAT_VERSION,
+              TableProperties.DELETE_MODE, TableProperties.UPDATE_MODE, TableProperties.MERGE_MODE));
 
     } catch (NoSuchTableException ex) {
       if (!HiveTableUtil.isCtas(props)) {

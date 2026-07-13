@@ -862,44 +862,36 @@ public final class PlanUtils {
       if (storageHandler != null) {
         Map<String, String> jobProperties = new LinkedHashMap<>();
         Map<String, String> jobSecrets = new LinkedHashMap<>();
-        if (input) {
-          try {
-            storageHandler.configureInputJobProperties(
-              tableDesc,
-              jobProperties);
-          } catch (AbstractMethodError e) {
-            LOG.info("configureInputJobProperties not found "+
-                "using configureTableJobProperties",e);
-            storageHandler.configureTableJobProperties(tableDesc, jobProperties);
-          }
+        if(input) {
+            try {
+                storageHandler.configureInputJobProperties(
+                  tableDesc,
+                  jobProperties);
+            } catch(AbstractMethodError e) {
+                LOG.info("configureInputJobProperties not found "+
+                    "using configureTableJobProperties",e);
+                storageHandler.configureTableJobProperties(tableDesc, jobProperties);
+            }
 
-          try {
-            storageHandler.configureInputJobCredentials(
-              tableDesc,
-              jobSecrets);
-          } catch (AbstractMethodError e) {
-            // ignore
-            LOG.info("configureInputJobSecrets not found");
-          }
+            try{
+              storageHandler.configureInputJobCredentials(
+                tableDesc,
+                jobSecrets);
+            } catch(AbstractMethodError e) {
+              // ignore
+              LOG.info("configureInputJobSecrets not found");
+            }
         }
         else {
-          try {
-            storageHandler.configureOutputJobProperties(
-              tableDesc,
-              jobProperties);
-          } catch (AbstractMethodError e) {
-            LOG.info("configureOutputJobProperties not found"+
-                "using configureTableJobProperties",e);
-            storageHandler.configureTableJobProperties(tableDesc, jobProperties);
-          }
-
-          try {
-            storageHandler.configureInputJobCredentials(
-              tableDesc,
-              jobSecrets);
-          } catch (AbstractMethodError e) {
-            LOG.info("configureInputJobSecrets not found");
-          }
+            try {
+                storageHandler.configureOutputJobProperties(
+                  tableDesc,
+                  jobProperties);
+            } catch(AbstractMethodError e) {
+                LOG.info("configureOutputJobProperties not found"+
+                    "using configureTableJobProperties",e);
+                storageHandler.configureTableJobProperties(tableDesc, jobProperties);
+            }
         }
         // Job properties are only relevant for non-native tables, so
         // for native tables, leave it null to avoid cluttering up

@@ -162,6 +162,8 @@ public class IcebergInputFormat<T> extends InputFormat<Void, T> {
         .orElseGet(() -> {
           Table tbl = Catalogs.loadTable(conf);
           conf.set(InputFormatConfig.TABLE_IDENTIFIER, tbl.name());
+          // planning-local conf only (never shipped): for credential-vending catalogs the loaded
+          // table's FileIO carries secrets, which must not reach a serialized job configuration
           conf.set(InputFormatConfig.SERIALIZED_TABLE_PREFIX + tbl.name(), SerializationUtil.serializeToBase64(tbl));
           return tbl;
         });
