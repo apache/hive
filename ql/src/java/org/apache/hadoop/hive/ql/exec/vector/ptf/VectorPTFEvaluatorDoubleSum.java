@@ -42,7 +42,6 @@ public class VectorPTFEvaluatorDoubleSum extends VectorPTFEvaluatorAbstractSum<D
   public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
-    evaluateInputExpr(batch);
 
     // Sum all non-null double column values; maintain isGroupResultNull.
 

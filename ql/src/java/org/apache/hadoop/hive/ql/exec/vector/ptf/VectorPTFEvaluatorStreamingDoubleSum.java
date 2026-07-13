@@ -45,7 +45,6 @@ public class VectorPTFEvaluatorStreamingDoubleSum extends VectorPTFEvaluatorBase
   public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
-    evaluateInputExpr(batch);
 
     // We do not filter when PTF is in reducer.
     Preconditions.checkState(!batch.selectedInUse);
