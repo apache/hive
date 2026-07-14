@@ -50,12 +50,7 @@ import org.junit.Test;
           + "\"intervals\":{\"type\":\"LegacySegmentSpec\",\"intervals\":"
           + "[\"2012-01-01T08:00:00.000Z/2012-01-03T08:00:00.000Z\"]},"
           + "\"descending\":true,"
-          + "\"virtualColumns\":[],"
-          + "\"filter\":null,"
           + "\"granularity\":\"DAY\","
-          + "\"aggregations\":[],"
-          + "\"postAggregations\":[],"
-          + "\"limit\":2147483647,"
           + "\"context\":{\"queryId\":\"\"}}, [localhost:8082]}]";
 
   private static final String
@@ -85,20 +80,16 @@ import org.junit.Test;
       TOPN_QUERY_SPLIT =
       "[HiveDruidSplit{{\"queryType\":\"topN\","
           + "\"dataSource\":{\"type\":\"table\",\"name\":\"sample_data\"},"
-          + "\"virtualColumns\":[],"
           + "\"dimension\":{\"type\":\"LegacyDimensionSpec\",\"dimension\":\"sample_dim\","
           + "\"outputName\":\"sample_dim\",\"outputType\":\"STRING\"},"
           + "\"metric\":{\"type\":\"LegacyTopNMetricSpec\",\"metric\":\"count\"},"
           + "\"threshold\":5,"
           + "\"intervals\":{\"type\":\"LegacySegmentSpec\",\"intervals\":[\"2013-08-31T07:00:00"
           + ".000Z/2013-09-03T07:00:00.000Z\"]},"
-          + "\"filter\":null,"
           + "\"granularity\":{\"type\":\"all\"},"
-          + "\"aggregations\":[{\"type\":\"longSum\",\"name\":\"count\",\"fieldName\":\"count\",\"expression\":null},"
-          + "{\"type\":\"doubleSum\",\"name\":\"some_metric\",\"fieldName\":\"some_metric\",\"expression\":null}],"
-          + "\"postAggregations\":[],"
-          + "\"context\":{\"queryId\":\"\"},"
-          + "\"descending\":false}, [localhost:8082]}]";
+          + "\"aggregations\":[{\"type\":\"longSum\",\"name\":\"count\",\"fieldName\":\"count\"},"
+          + "{\"type\":\"doubleSum\",\"name\":\"some_metric\",\"fieldName\":\"some_metric\"}],"
+          + "\"context\":{\"queryId\":\"\"}}, [localhost:8082]}]";
 
   private static final String
       GROUP_BY_QUERY =
@@ -122,24 +113,18 @@ import org.junit.Test;
           + "\"dataSource\":{\"type\":\"table\",\"name\":\"sample_datasource\"},"
           + "\"intervals\":{\"type\":\"LegacySegmentSpec\",\"intervals\":[\"2012-01-01T08:00:00"
           + ".000Z/2012-01-03T08:00:00.000Z\"]},"
-          + "\"virtualColumns\":[],"
-          + "\"filter\":null,"
           + "\"granularity\":\"DAY\","
           + "\"dimensions\":[{\"type\":\"LegacyDimensionSpec\",\"dimension\":\"country\",\"outputName\":\"country\","
           + "\"outputType\":\"STRING\"},"
           + "{\"type\":\"LegacyDimensionSpec\",\"dimension\":\"device\",\"outputName\":\"device\","
           + "\"outputType\":\"STRING\"}],"
-          + "\"aggregations\":[{\"type\":\"longSum\",\"name\":\"total_usage\",\"fieldName\":\"user_count\","
-          + "\"expression\":null},"
-          + "{\"type\":\"doubleSum\",\"name\":\"data_transfer\",\"fieldName\":\"data_transfer\",\"expression\":null}],"
-          + "\"postAggregations\":[],"
-          + "\"having\":null,"
+          + "\"aggregations\":[{\"type\":\"longSum\",\"name\":\"total_usage\",\"fieldName\":\"user_count\"},"
+          + "{\"type\":\"doubleSum\",\"name\":\"data_transfer\",\"fieldName\":\"data_transfer\"}],"
           + "\"limitSpec\":{\"type\":\"default\",\"columns\":[{\"dimension\":\"country\",\"direction\":\"ascending\","
           + "\"dimensionOrder\":{\"type\":\"lexicographic\"}},"
           + "{\"dimension\":\"data_transfer\",\"direction\":\"ascending\","
           + "\"dimensionOrder\":{\"type\":\"lexicographic\"}}],\"limit\":5000},"
-          + "\"context\":{\"queryId\":\"\"},"
-          + "\"descending\":false}, [localhost:8082]}]";
+          + "\"context\":{\"queryId\":\"\"}}, [localhost:8082]}]";
 
   @Test
   public void testTimeZone() throws Exception {
