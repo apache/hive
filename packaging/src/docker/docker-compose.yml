@@ -156,12 +156,14 @@ services:
       - '2181:2181'
     networks:
       - hive
+    environment:
+      ZOO_4LW_COMMANDS_WHITELIST: ruok
     volumes:
       - zookeeper_data:/data
       - zookeeper_datalog:/datalog
       - zookeeper_logs:/logs
     healthcheck:
-      test: ["CMD-SHELL", "bash -c 'echo ruok > /dev/tcp/localhost/2181'"]
+      test: ["CMD-SHELL", "echo ruok | nc -w 2 127.0.0.1 2181 | grep imok"]
       interval: 5s
       timeout: 3s
       retries: 30
@@ -182,6 +184,7 @@ services:
 
       TEZ_FRAMEWORK_MODE: STANDALONE_ZOOKEEPER
       TEZ_AM_ZOOKEEPER_QUORUM: zookeeper:2181
+      TEZ_AM_RPC_PORT: '15100'
 
       # LLAP daemon discovery
       HIVE_ZOOKEEPER_QUORUM: zookeeper:2181
@@ -196,6 +199,12 @@ services:
       - scratch:/opt/hive/scratch
     networks:
       - hive
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/$${TEZ_AM_RPC_PORT}'"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
 
   llapdaemon:
     profiles:
