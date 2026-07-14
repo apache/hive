@@ -48,9 +48,14 @@ public final class OzoneS3GatewayContainers {
 
   private static final String S3_BUCKET_READY_MARKER = "OZONE_S3_BUCKET_READY";
 
+  /** S3 keys used when Ozone security is disabled (same as {@code start-hive.sh --ozone}). */
+  public static final String ACCESS_KEY = "ozone";
+  public static final String SECRET_KEY = "secret";
+
   public static final int S3G_PORT = 9878;
   public static final String S3_DOCKER_ALIAS = "s3.ozone";
-  public static final String S3_DOCKER_ENDPOINT = String.format("http://%s:%d", S3_DOCKER_ALIAS, S3G_PORT);
+  public static final String S3_DOCKER_ENDPOINT =
+      String.format("http://%s:%d", S3_DOCKER_ALIAS, S3G_PORT);
 
   private static final Duration STARTUP_TIMEOUT = Duration.ofMinutes(5);
 
