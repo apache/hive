@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Properties;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.iceberg.BaseMetadataTable;
@@ -46,7 +47,6 @@ import org.apache.iceberg.io.StorageCredential;
 import org.apache.iceberg.io.SupportsStorageCredentials;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
-import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.util.SerializationUtil;
 
@@ -58,10 +58,6 @@ import org.apache.iceberg.util.SerializationUtil;
  * outlives the vended token lifetime fails authentication.
  */
 public final class IcebergVendedCredentialUtil {
-
-  /** Vended config safe to display; any key not listed here routes to the secrets channel. */
-  private static final ImmutableSet<String> NON_SECRET_ICEBERG_KEYS = ImmutableSet.of(
-      S3FileIOProperties.ENDPOINT, S3FileIOProperties.PATH_STYLE_ACCESS, AwsClientProperties.CLIENT_REGION);
 
   private IcebergVendedCredentialUtil() {
   }
@@ -135,11 +131,11 @@ public final class IcebergVendedCredentialUtil {
     }
     String resolvedValue = resolveCredentialValue(catalogName, icebergKey, value, conf);
 
-    if (jobProperties != null && !isSecretKey(icebergKey)) {
+    if (jobProperties != null && !isSecretKey(icebergKey, conf)) {
       addNonSecretCredentialEntry(catalogName, bucket, icebergKey, resolvedValue, jobProperties);
     }
 
-    if (jobSecrets != null && isSecretKey(icebergKey)) {
+    if (jobSecrets != null && isSecretKey(icebergKey, conf)) {
       addSecretCredentialEntry(bucket, icebergKey, resolvedValue, jobSecrets);
     }
   }
@@ -320,13 +316,11 @@ public final class IcebergVendedCredentialUtil {
 
     FileIO io = table.io();
     Map<String, String> ioProps = new LinkedHashMap<>();
-    if (io.properties() != null) {
-      io.properties().forEach((key, value) -> {
-        if (NON_SECRET_ICEBERG_KEYS.contains(key)) {
-          ioProps.put(key, value);
-        }
-      });
-    }
+    io.properties().forEach((k, v) -> {
+      if (!isSecretKey(k, conf)) {
+        ioProps.put(k, v);
+      }
+    });
     FileIO cleanIo = CatalogUtil.loadFileIO(io.getClass().getName(), ioProps, conf);
 
     return new BaseTable(
@@ -370,8 +364,14 @@ public final class IcebergVendedCredentialUtil {
     }
   }
 
-  private static boolean isSecretKey(String icebergKey) {
-    return !NON_SECRET_ICEBERG_KEYS.contains(icebergKey);
+  /**
+   * A vended config key is secret — routed to the Credentials channel, never job properties, and
+   * stripped from the serialized table's FileIO — exactly when {@code hive.conf.hidden.list} covers
+   * it. That is Hive's own registry of sensitive configuration (the same one behind
+   * {@code HiveConf#isHiddenConfig}) that masks values in EXPLAIN, the Tez UI, and ATS.
+   */
+  private static boolean isSecretKey(String key, Configuration conf) {
+    return HiveConfUtil.getHiddenSet(conf).stream().anyMatch(key::startsWith);
   }
 
   static List<StorageCredential> extractCredentials(Table table) {
