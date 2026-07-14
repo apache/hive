@@ -287,8 +287,9 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
       largeBuffers[i] = new LlapMetadataBuffer<>(fileKey, tag);
     }
     // allocateMultiple is all-or-nothing: on success every chunk is allocated; on failure it
-    // releases whatever it reserved, so a throw here needs no cleanup from us.
+    // releases whatever it reserved.
     allocator.allocateMultiple(largeBuffers, maxAlloc, null, isStopped);
+
     LlapMetadataBuffer<Object> smallBuffer = null;
     boolean done = false;
     try {

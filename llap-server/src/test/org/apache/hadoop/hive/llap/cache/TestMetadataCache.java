@@ -21,6 +21,7 @@ import static org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer.INVALIDATE_O
 import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Random;
@@ -212,13 +213,13 @@ public class TestMetadataCache {
    * memory on every failed footer read (a truncated file, an IO error, or an oversized chunk).
    */
   @Test
-  public void testStreamFooterReadFailureReleasesBuffers() {
+  public void testStreamFooterReadFailureReleasesBuffers() throws IOException {
     assertFooterReadFailureReleasesBuffers(MAX_ALLOC);         // single-buffer path
     assertFooterReadFailureReleasesBuffers(2 * MAX_ALLOC);     // multi-buffer, exact multiple
     assertFooterReadFailureReleasesBuffers(2 * MAX_ALLOC + 3); // multi-buffer, with remainder
   }
 
-  private void assertFooterReadFailureReleasesBuffers(int length) {
+  private void assertFooterReadFailureReleasesBuffers(int length) throws IOException {
     final int arenaSize = 4096;
     DummyMemoryManager mm = new DummyMemoryManager();
     LlapDaemonCacheMetrics metrics = LlapDaemonCacheMetrics.create("", "");
@@ -232,7 +233,7 @@ public class TestMetadataCache {
     try {
       cache.putFileMetadata(fileKey, length, truncated, null, null);
       fail("Expected an EOFException for a truncated footer stream of length " + length);
-    } catch (IOException expected) {
+    } catch (EOFException expected) {
       // expected
     }
     assertEquals("Allocated buffers must be released after a failed footer read (length " + length + ")",
