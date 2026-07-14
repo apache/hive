@@ -49,6 +49,7 @@ import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Util;
+import org.apache.hadoop.hive.ql.optimizer.calcite.Bug;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
@@ -133,6 +134,9 @@ public class HiveMaterializedViewRule {
         RelNode node,
         BiMap<RexTableInputRef.RelTableRef, RexTableInputRef.RelTableRef> queryToViewTableMapping,
         EquivalenceClasses viewEC, EquivalenceClasses queryEC) {
+      if (Bug.CALCITE_7641_FIXED) {
+        throw new AssertionError("Overriding should be removed");
+      }
       RelNode unwrappedNode = HiveCalciteUtil.stripHepVertices(node);
       return super.rewriteQuery(relBuilder, rexBuilder, simplify, mq, compensationColumnsEquiPred,
           otherCompensationPred, topProject, unwrappedNode, queryToViewTableMapping, viewEC, queryEC);
@@ -162,6 +166,9 @@ public class HiveMaterializedViewRule {
         RelNode node,
         BiMap<RexTableInputRef.RelTableRef, RexTableInputRef.RelTableRef> queryToViewTableMapping,
         EquivalenceClasses viewEC, EquivalenceClasses queryEC) {
+      if (Bug.CALCITE_7641_FIXED) {
+        throw new AssertionError("Overriding should be removed");
+      }
       RelNode unwrappedNode = HiveCalciteUtil.stripHepVertices(node);
       return super.rewriteQuery(relBuilder, rexBuilder, simplify, mq, compensationColumnsEquiPred,
           otherCompensationPred, topProject, unwrappedNode, queryToViewTableMapping, viewEC, queryEC);
@@ -192,6 +199,9 @@ public class HiveMaterializedViewRule {
         RelNode node,
         BiMap<RexTableInputRef.RelTableRef, RexTableInputRef.RelTableRef> viewToQueryTableMapping,
         EquivalenceClasses viewEC, EquivalenceClasses queryEC) {
+      if (Bug.CALCITE_7641_FIXED) {
+        throw new AssertionError("Overriding should be removed");
+      }
       RelNode unwrappedNode = HiveCalciteUtil.stripHepVertices(node);
       return super.rewriteQuery(relBuilder, rexBuilder, simplify, mq, compensationColumnsEquiPred,
           otherCompensationPred, topProject, unwrappedNode, viewToQueryTableMapping, viewEC, queryEC);
@@ -217,6 +227,9 @@ public class HiveMaterializedViewRule {
         RelNode node,
         BiMap<RexTableInputRef.RelTableRef, RexTableInputRef.RelTableRef> viewToQueryTableMapping,
         EquivalenceClasses viewEC, EquivalenceClasses queryEC) {
+      if (Bug.CALCITE_7641_FIXED) {
+        throw new AssertionError("Overriding should be removed");
+      }
       RelNode unwrappedNode = HiveCalciteUtil.stripHepVertices(node);
       return super.rewriteQuery(relBuilder, rexBuilder, simplify, mq, compensationColumnsEquiPred,
           otherCompensationPred, topProject, unwrappedNode, viewToQueryTableMapping, viewEC, queryEC);
@@ -242,6 +255,9 @@ public class HiveMaterializedViewRule {
         RelNode node,
         BiMap<RexTableInputRef.RelTableRef, RexTableInputRef.RelTableRef> viewToQueryTableMapping,
         EquivalenceClasses viewEC, EquivalenceClasses queryEC) {
+      if (Bug.CALCITE_7641_FIXED) {
+        throw new AssertionError("Overriding should be removed");
+      }
       RelNode unwrappedNode = HiveCalciteUtil.stripHepVertices(node);
       return super.rewriteQuery(relBuilder, rexBuilder, simplify, mq, compensationColumnsEquiPred,
           otherCompensationPred, topProject, unwrappedNode, viewToQueryTableMapping, viewEC, queryEC);
@@ -268,6 +284,9 @@ public class HiveMaterializedViewRule {
         BiMap<RexTableInputRef.RelTableRef, RexTableInputRef.RelTableRef> viewToQueryTableMapping,
         EquivalenceClasses viewEC,
         EquivalenceClasses queryEC) {
+      if (Bug.CALCITE_7641_FIXED) {
+        throw new AssertionError("Overriding should be removed");
+      }
       RelNode unwrappedNode = HiveCalciteUtil.stripHepVertices(node);
       return super.rewriteQuery(relBuilder, rexBuilder, simplify, mq, compensationColumnsEquiPred,
           otherCompensationPred, topProject, unwrappedNode, viewToQueryTableMapping, viewEC, queryEC);
