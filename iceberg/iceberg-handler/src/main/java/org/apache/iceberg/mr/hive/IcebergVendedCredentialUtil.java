@@ -425,7 +425,7 @@ public final class IcebergVendedCredentialUtil {
   /**
    * REST catalogs vend credentials together with S3 connectivity settings such as endpoint
    * and path-style access. These settings reflect the catalog's network view and may reference
-   * hosts that are not reachable from Hive (for example, an internal {@code minio:9000}
+   * hosts that are not reachable from Hive (for example, an internal {@code s3.ozone:9878}
    * hostname).
    *
    * Catalog S3 properties configured in the Hive session (for example,

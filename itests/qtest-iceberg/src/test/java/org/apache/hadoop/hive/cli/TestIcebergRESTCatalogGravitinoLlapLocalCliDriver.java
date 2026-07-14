@@ -18,9 +18,6 @@
 
 package org.apache.hadoop.hive.cli;
 
-import io.minio.BucketExistsArgs;
-import io.minio.MakeBucketArgs;
-import io.minio.MinioClient;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.cli.control.CliAdapter;
@@ -66,7 +63,7 @@ import java.util.List;
 /**
  * LLAP {@link CliAdapter} qtests for Hive against the Gravitino Iceberg REST server image
  * ({@link #GRAVITINO_IMAGE}), with OAuth2 on the catalog HTTP API and an Iceberg warehouse on
- * MinIO using Gravitino {@code s3-secret-key} credential vending (see
+ * Apache Ozone S3 Gateway using Gravitino {@code s3-secret-key} credential vending (see
  * {@link #GRAVITINO_S3_CONF_TEMPLATE}).
  *
  * <p>Table metadata and data live under {@code s3://} in {@link #S3_BUCKET}. The host temp directory
@@ -94,11 +91,6 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
       DockerImageName.parse("apache/gravitino-iceberg-rest:1.0.0");
 
   private static final String S3_BUCKET = "iceberg-vend";
-  private static final String MINIO_ACCESS_KEY = "minioadmin";
-  private static final String MINIO_SECRET_KEY = "minioadmin";
-  private static final int MINIO_API_PORT = 9000;
-  private static final DockerImageName MINIO_IMAGE =
-      DockerImageName.parse("minio/minio:RELEASE.2024-09-22T00-33-43Z");
 
   private static final String OAUTH2_SERVER_ICEBERG_CLIENT_ID = "iceberg-client";
   private static final String OAUTH2_SERVER_ICEBERG_CLIENT_SECRET = "iceberg-client-secret";
@@ -107,7 +99,7 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
   private final File qfile;
 
   private GenericContainer<?> gravitinoContainer;
-  private GenericContainer<?> minioContainer;
+  private OzoneS3GatewayContainers ozoneS3;
   private Path warehouseDir;
   private OAuth2AuthorizationServer oAuth2AuthorizationServer;
 
@@ -133,8 +125,8 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
 
     startOAuth2AuthorizationServer(dockerNetwork);
     createWarehouseDir();
-    startMinio(dockerNetwork);
-    ensureMinioBucket();
+    ozoneS3 = new OzoneS3GatewayContainers();
+    ozoneS3.start(dockerNetwork, S3_BUCKET);
     prepareGravitinoConfig();
     startGravitinoContainer(dockerNetwork);
 
@@ -170,8 +162,8 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
       gravitinoContainer.stop();
     }
 
-    if (minioContainer != null) {
-      minioContainer.stop();
+    if (ozoneS3 != null) {
+      ozoneS3.stop();
     }
 
     if (oAuth2AuthorizationServer != null) {
@@ -186,18 +178,19 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
   /**
    * Puts host-reachable Iceberg S3 client settings on the HS2 session.
    *
-   * <p>Gravitino runs in Docker and vends storage credentials whose endpoint is {@code http://minio:9000}
-   * (reachable inside the compose network only). Hive runs on the host, so this sets
-   * {@code iceberg.catalog.&lt;catalog&gt;.s3.endpoint} to the published MinIO host/port, plus path-style
-   * and region, matching what operators configure in {@code hive-site.xml} in a real deployment.
+   * <p>Gravitino runs in Docker and vends storage credentials whose endpoint is
+   * {@link OzoneS3GatewayContainers#S3_DOCKER_ENDPOINT} (reachable inside the compose network only).
+   * Hive runs on the host, so this sets {@code iceberg.catalog.&lt;catalog&gt;.s3.endpoint} to the
+   * published Ozone S3G host/port, plus path-style and region, matching what operators configure in
+   * {@code hive-site.xml} in a real deployment.
    *
    * <p>Those keys are the <em>source</em> for {@link org.apache.iceberg.mr.hive.IcebergVendedCredentialUtil}:
    * at plan time and on tasks it merges them over the vended endpoint in credentials and job conf. This
    * method does not replace that util — it seeds session conf so the util has a host endpoint to apply.
    */
   private void applyIcebergS3ClientEndpointOverride(Configuration conf, String restCatalogPrefix) {
-    String host = minioContainer.getHost();
-    int port = minioContainer.getMappedPort(MINIO_API_PORT);
+    String host = ozoneS3.getHost();
+    int port = ozoneS3.getMappedPort();
     @SuppressWarnings("HttpUrlsUsage")
     String icebergS3Endpoint = String.format("http://%s:%d", host, port);
     conf.set(restCatalogPrefix + S3FileIOProperties.ENDPOINT, icebergS3Endpoint);
@@ -206,10 +199,10 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
   }
 
   /**
-   * Wires Hadoop to use S3A for {@code s3://} on the host-visible MinIO endpoint.
+   * Wires Hadoop to use S3A for {@code s3://} on the host-visible Ozone S3G endpoint.
    *
    * <p><b>What:</b> sets {@code fs.s3}/{@code fs.s3a} implementation classes, per-bucket endpoint and path-style
-   * ({@code fs.s3a.bucket.&lt;bucket&gt;.*}), and disables SSL for this local MinIO test.
+   * ({@code fs.s3a.bucket.&lt;bucket&gt;.*}), and disables SSL for this local Ozone S3G test.
    *
    * <p><b>Why:</b> Hive and Tez use Hadoop {@code FileSystem} for many {@code s3://} paths, not only Iceberg
    * {@code S3FileIO}. {@link org.apache.iceberg.mr.hive.IcebergVendedCredentialUtil} propagates vended keys and
@@ -220,10 +213,10 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
    * <p>Access keys are intentionally omitted here; they are vended per query and copied into job secrets by the util.
    */
   private void applyHostS3FilesystemSettings(Configuration conf) {
-    String minioHost = minioContainer.getHost();
-    int minioPort = minioContainer.getMappedPort(MINIO_API_PORT);
+    String s3Host = ozoneS3.getHost();
+    int s3Port = ozoneS3.getMappedPort();
     @SuppressWarnings("HttpUrlsUsage")
-    String endpoint = String.format("http://%s:%d", minioHost, minioPort);
+    String endpoint = String.format("http://%s:%d", s3Host, s3Port);
     conf.set("fs.s3.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem");
     conf.set("fs.AbstractFileSystem.s3.impl", "org.apache.hadoop.fs.s3a.S3A");
     conf.set("fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem");
@@ -240,12 +233,12 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
    * <ul>
    *   <li>Expose {@link #GRAVITINO_HTTP_PORT} on the container and map it to a host port.</li>
    *   <li>Adjust the entrypoint so a bootstrap directory exists before {@link #GRAVITINO_STARTUP_SCRIPT} runs
-   *       (the Iceberg <em>warehouse</em> itself is {@code s3://} on MinIO, not this path).</li>
+   *       (the Iceberg <em>warehouse</em> itself is {@code s3://} on Ozone S3G, not this path).</li>
    *   <li>Copy the rendered Gravitino configuration from {@link #warehouseDir} into the image at
    *       {@link #GRAVITINO_CONF_FILE}.</li>
    *   <li>Copy the H2 driver JAR (JDBC catalog backend metadata) into {@link #GRAVITINO_H2_LIB}.</li>
-   *   <li>Attach the container to {@code dockerNetwork} so it reaches the OAuth2 server and the {@code minio}
-   *       alias.</li>
+   *   <li>Attach the container to {@code dockerNetwork} so it reaches the OAuth2 server and Ozone S3G
+   *       ({@link OzoneS3GatewayContainers#S3_DOCKER_ALIAS}).</li>
    *   <li>Wait for the Gravitino Iceberg REST server to finish starting (log line + listening port).</li>
    *   <li>Stream container logs into {@link #LOG}.</li>
    * </ul>
@@ -259,7 +252,7 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
   private void startGravitinoContainer(Network dockerNetwork) {
     gravitinoContainer = new GenericContainer<>(GRAVITINO_IMAGE)
         .withExposedPorts(GRAVITINO_HTTP_PORT)
-        // Bootstrap dir for the server script; warehouse is s3:// on MinIO (see template)
+        // Bootstrap dir for the server script; warehouse is s3:// on Ozone S3G (see template)
         .withCreateContainerCmdModifier(cmd -> cmd.withEntrypoint("bash", "-c",
             "mkdir -p /tmp/gravitino-bootstrap && exec " + GRAVITINO_STARTUP_SCRIPT))
         // Mount Gravitino configuration file (rendered under warehouseDir on the host)
@@ -271,7 +264,7 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
             MountableFile.forHostPath(
                 Paths.get("target", "test-dependencies", "h2-driver.jar").toAbsolutePath()),
             GRAVITINO_H2_LIB)
-        // Same Docker network as OAuth2 and MinIO (Gravitino uses http://minio:9000 in config)
+        // Same Docker network as OAuth2 and Ozone S3G (Gravitino uses http://s3.ozone:9878 in config)
         .withNetwork(dockerNetwork)
         // Wait for the server to be fully started
         .waitingFor(
@@ -285,35 +278,6 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
     gravitinoContainer.start();
   }
 
-  /**
-   * MinIO for the Iceberg warehouse. {@code .withNetworkAliases("minio")} matches
-   * {@code gravitino.iceberg-rest.s3-endpoint = http://minio:9000} inside the Gravitino container.
-   */
-  @SuppressWarnings("resource")
-  private void startMinio(Network dockerNetwork) {
-    minioContainer = new GenericContainer<>(MINIO_IMAGE)
-        .withNetwork(dockerNetwork)
-        .withNetworkAliases("minio")
-        .withExposedPorts(MINIO_API_PORT)
-        .withEnv("MINIO_ROOT_USER", MINIO_ACCESS_KEY)
-        .withEnv("MINIO_ROOT_PASSWORD", MINIO_SECRET_KEY)
-        .withCommand("server", "/data")
-        .waitingFor(Wait.forListeningPort());
-
-    minioContainer.start();
-  }
-
-  /** Creates {@link #S3_BUCKET} if missing so Gravitino and Hive can use {@code s3://} paths. */
-  private void ensureMinioBucket() throws Exception {
-    MinioClient client = MinioClient.builder()
-        .endpoint(minioContainer.getHost(), minioContainer.getMappedPort(MINIO_API_PORT), false)
-        .credentials(MINIO_ACCESS_KEY, MINIO_SECRET_KEY)
-        .build();
-    if (!client.bucketExists(BucketExistsArgs.builder().bucket(S3_BUCKET).build())) {
-      client.makeBucket(MakeBucketArgs.builder().bucket(S3_BUCKET).build());
-    }
-  }
-
   /** Keycloak-backed OAuth2 used by Gravitino REST authentication and by the Hive REST client. */
   private void startOAuth2AuthorizationServer(Network dockerNetwork) {
     oAuth2AuthorizationServer = new OAuth2AuthorizationServer(dockerNetwork, false);
@@ -323,7 +287,7 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
   /**
    * Host directory used to write the rendered Gravitino config (see {@link #prepareGravitinoConfig}) and as the
    * source path for {@code .withCopyFileToContainer} in {@link #startGravitinoContainer}. This is not the Iceberg
-   * warehouse root; the warehouse is {@code s3://}{@link #S3_BUCKET}{@code /...} on MinIO.
+   * warehouse root; the warehouse is {@code s3://}{@link #S3_BUCKET}{@code /...} on Ozone S3G.
    */
   private void createWarehouseDir() {
     try {
@@ -335,7 +299,7 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
   }
 
   /**
-   * Reads {@link #GRAVITINO_S3_CONF_TEMPLATE} from the classpath, substitutes bucket / MinIO / OAuth placeholders,
+   * Reads {@link #GRAVITINO_S3_CONF_TEMPLATE} from the classpath, substitutes bucket / Ozone S3 / OAuth placeholders,
    * and writes the result under {@link #warehouseDir} for copying into the Gravitino container.
    */
   private void prepareGravitinoConfig() throws IOException {
@@ -350,8 +314,8 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
 
     String updatedContent = content
         .replace("S3_BUCKET", S3_BUCKET)
-        .replace("MINIO_ACCESS_KEY", MINIO_ACCESS_KEY)
-        .replace("MINIO_SECRET_KEY", MINIO_SECRET_KEY)
+        .replace("S3_ACCESS_KEY", OzoneS3GatewayContainers.ACCESS_KEY)
+        .replace("S3_SECRET_KEY", OzoneS3GatewayContainers.SECRET_KEY)
         .replace("OAUTH2_SERVER_URI", oAuth2AuthorizationServer.getIssuer())
         .replace("OAUTH2_JWKS_URI", getJwksUri())
         .replace("OAUTH2_CLIENT_ID", OAUTH2_SERVER_ICEBERG_CLIENT_ID)

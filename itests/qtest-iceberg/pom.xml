@@ -37,12 +37,6 @@
       <artifactId>metrics-core</artifactId>
       <version>${dropwizard.version}</version>
     </dependency>
-    <dependency>
-      <groupId>io.minio</groupId>
-      <artifactId>minio</artifactId>
-      <version>8.5.11</version>
-      <scope>test</scope>
-    </dependency>
     <!-- dependencies are always listed in sorted order by groupId, artifactId -->
     <!-- test intra-project -->
     <dependency>
