@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.ql.QueryProperties.QueryFeature;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -732,7 +733,7 @@ public class SortedDynPartitionOptimizer extends Transform {
       // should honor the ordering of records provided by ORDER BY in SELECT statement
       ReduceSinkOperator parentRSOp = OperatorUtils.findSingleOperatorUpstream(parent,
           ReduceSinkOperator.class);
-      if (parentRSOp != null && parseCtx.getQueryProperties().hasOuterOrderBy()) {
+      if (parentRSOp != null && parseCtx.getQueryProperties().hasFeature(QueryFeature.OUTER_ORDER_BY)) {
         String parentRSOpOrder = parentRSOp.getConf().getOrder();
         String parentRSOpNullOrder = parentRSOp.getConf().getNullOrder();
         if (parentRSOpOrder != null && !parentRSOpOrder.isEmpty() && sortPositions.isEmpty()) {

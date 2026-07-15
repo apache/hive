@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Stack;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.QueryProperties.QueryFeature;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -55,8 +56,9 @@ public class SimpleFetchAggregation extends Transform {
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
-    if (pctx.getFetchTask() != null || !pctx.getQueryProperties().isQuery() ||
-        pctx.getQueryProperties().isAnalyzeRewrite() || pctx.getQueryProperties().isCTAS() ||
+    if (pctx.getFetchTask() != null || !pctx.getQueryProperties().hasFeature(QueryFeature.QUERY) ||
+        pctx.getQueryProperties().hasFeature(QueryFeature.REWRITE) ||
+        pctx.getQueryProperties().hasFeature(QueryFeature.CTAS) ||
         pctx.getLoadFileWork().size() > 1 || !pctx.getLoadTableWork().isEmpty()) {
       return pctx;
     }
