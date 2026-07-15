@@ -246,6 +246,8 @@ public class ColStatsProcessor implements IStatsProcessor {
 
         if (tbl.isNonNative() && tbl.getStorageHandler().canSetColStatistics(tbl)) {
           if (!(tbl.isMaterializedView() || tbl.isView() || tbl.isTemporary())) {
+            // table level COLUMN_STATS_ACCURATE cleanup only for non-native tables
+            // partition level cleanup is not done due to no storage-handler API.
             setOrRemoveColumnStatsAccurateProperty(db, tbl, failedColumns, false);
           }
         } else {

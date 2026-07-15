@@ -25,7 +25,7 @@ describe formatted stats_t1 partition(p=1) c_float;
 describe formatted stats_t1 partition(p=1);
 
 
--- Check non-partitioned tables on flout/double columns with Infinity/NaN on inaccurate stats.
+-- Check non-partitioned tables on float/double columns with Infinity/NaN on inaccurate stats.
 
 create table stats_t2(
   c_double double,
