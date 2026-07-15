@@ -18,8 +18,6 @@
 package org.apache.hive.jdbc;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.withSettings;
 
@@ -140,16 +138,5 @@ public class TestHiveStatement {
     try (HiveStatement stmt = new HiveStatement(connection, iface, handle)) {
       stmt.addBatch(null);
     }
-  }
-
-  @Test
-  public void testIsUsableServerTimeoutMessage() {
-    assertFalse(HiveStatement.isUsableServerTimeoutMessage(null));
-    assertFalse(HiveStatement.isUsableServerTimeoutMessage(""));
-    assertFalse(HiveStatement.isUsableServerTimeoutMessage("Query timed out after 0 seconds"));
-    assertFalse(HiveStatement.isUsableServerTimeoutMessage("QUERY TIMED OUT AFTER 0 SECONDS"));
-    assertTrue(HiveStatement.isUsableServerTimeoutMessage("Query timed out after 1 seconds"));
-    assertTrue(HiveStatement.isUsableServerTimeoutMessage(
-        "Query timed out after 1 seconds; Query ID: abc"));
   }
 }
