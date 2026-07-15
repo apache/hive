@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExtractRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorRandomBatchSource;
 import org.apache.hadoop.hive.ql.exec.vector.VectorRandomRowSource;
@@ -98,6 +99,122 @@ public class TestVectorStringConcat {
     doStringConcatTests(random, "varchar(20)", "string");
     doStringConcatTests(random, "varchar(20)", "char(10)");
     doStringConcatTests(random, "string", "varchar(10)");
+  }
+
+  /**
+   * The vectorized string concatenation operator (col || col) reuses the output vector across batches.
+   * However, if a prior batch produced NULLs, the output vector's noNulls flag is mistakenly left as false
+   * instead of being reset to true.
+   */
+  @Test
+  public void testColColConcatMaintainsNoNullsInvariant() throws Exception {
+    // Two-column input batch plus one output column.
+    VectorizedRowBatch batch = new VectorizedRowBatch(3, VectorizedRowBatch.DEFAULT_SIZE);
+
+    BytesColumnVector inV1 = new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+    BytesColumnVector inV2 = new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+    BytesColumnVector outV = new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+    outV.initBuffer();
+
+    batch.cols[0] = inV1;
+    batch.cols[1] = inV2;
+    batch.cols[2] = outV;
+
+    byte[] a = "foo".getBytes(StandardCharsets.UTF_8);
+    byte[] b = "bar".getBytes(StandardCharsets.UTF_8);
+    byte[] c = "baz".getBytes(StandardCharsets.UTF_8);
+    byte[] d = "qux".getBytes(StandardCharsets.UTF_8);
+    byte[] e = "quux".getBytes(StandardCharsets.UTF_8);
+    byte[] f = "corge".getBytes(StandardCharsets.UTF_8);
+
+    inV1.setRef(0, a, 0, a.length);
+    inV1.setRef(1, b, 0, b.length);
+    inV1.setRef(2, c, 0, c.length);
+    inV1.noNulls = true;
+    inV1.isRepeating = false;
+    inV1.isNull[0] = inV1.isNull[1] = inV1.isNull[2] = false;
+
+    inV2.setRef(0, d, 0, d.length);
+    inV2.setRef(1, e, 0, e.length);
+    inV2.setRef(2, f, 0, f.length);
+    inV2.noNulls = true;
+    inV2.isRepeating = false;
+    inV2.isNull[0] = inV2.isNull[1] = inV2.isNull[2] = false;
+
+    // Simulate the state left behind by a *prior* batch that had NULLs. The output
+    // vector object is reused across batches (VectorizedRowBatch does not allocate
+    // a new one), so noNulls stays false until the next evaluate() explicitly
+    // resets it.
+    outV.noNulls = false;
+
+    batch.size = 3;
+    batch.selectedInUse = false;
+
+    new StringGroupConcatColCol(0, 1, 2).evaluate(batch);
+
+    // if both inputs had noNulls=true, the output must too. This is
+    // what every sibling concat class in this package already does.
+    Assert.assertTrue(
+        "HIVE-28503: outV.noNulls must be true after col||col concat when both "
+            + "inputs are non-null; leaving it false lets downstream consumers "
+            + "that short-circuit on noNulls treat non-null rows as NULL.",
+        outV.noNulls);
+
+    // check for concatenated bytes.
+    Assert.assertEquals("fooqux",
+        new String(outV.vector[0], outV.start[0], outV.length[0], StandardCharsets.UTF_8));
+    Assert.assertEquals("barquux",
+        new String(outV.vector[1], outV.start[1], outV.length[1], StandardCharsets.UTF_8));
+    Assert.assertEquals("bazcorge",
+        new String(outV.vector[2], outV.start[2], outV.length[2], StandardCharsets.UTF_8));
+  }
+
+  /**
+   * This test covers input vectors that have the isRepeating flag set.
+   * Specifically, it tests the sub-case where both input vectors contain non-null values for the
+   * string concatenation operator (col || col).
+   */
+  @Test
+  public void testColColConcatMaintainsNoNullsInvariantRepeating() throws Exception {
+    VectorizedRowBatch batch = new VectorizedRowBatch(3, VectorizedRowBatch.DEFAULT_SIZE);
+
+    BytesColumnVector inV1 = new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+    BytesColumnVector inV2 = new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+    BytesColumnVector outV = new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+    outV.initBuffer();
+
+    batch.cols[0] = inV1;
+    batch.cols[1] = inV2;
+    batch.cols[2] = outV;
+
+    byte[] a = "hello".getBytes(StandardCharsets.UTF_8);
+    byte[] b = "world".getBytes(StandardCharsets.UTF_8);
+
+    inV1.setRef(0, a, 0, a.length);
+    inV1.noNulls = true;
+    inV1.isRepeating = true;
+    inV1.isNull[0] = false;
+
+    inV2.setRef(0, b, 0, b.length);
+    inV2.noNulls = true;
+    inV2.isRepeating = true;
+    inV2.isNull[0] = false;
+
+    outV.noNulls = false;
+
+    batch.size = 5;
+    batch.selectedInUse = false;
+
+    new StringGroupConcatColCol(0, 1, 2).evaluate(batch);
+
+    Assert.assertTrue("HIVE-28503: repeating output should keep isRepeating=true",
+        outV.isRepeating);
+    Assert.assertTrue(
+        "HIVE-28503: outV.noNulls must be true after col||col concat when both "
+            + "repeating inputs are non-null.",
+        outV.noNulls);
+    Assert.assertEquals("helloworld",
+        new String(outV.vector[0], outV.start[0], outV.length[0], StandardCharsets.UTF_8));
   }
 
   public enum StringConcatTestMode {
