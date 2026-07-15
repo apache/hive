@@ -18,9 +18,6 @@
 
 package org.apache.hadoop.hive.cli;
 
-import com.github.dockerjava.api.command.CopyArchiveFromContainerCmd;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.cli.control.CliAdapter;
@@ -28,7 +25,10 @@ import org.apache.hadoop.hive.cli.control.CliConfigs;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.iceberg.CatalogUtil;
+import org.apache.iceberg.aws.AwsClientProperties;
+import org.apache.iceberg.aws.s3.S3FileIOProperties;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
+import org.apache.iceberg.hive.client.RestAccessDelegationMode;
 import org.apache.iceberg.hive.client.HiveRESTCatalogClient;
 import org.apache.iceberg.rest.extension.OAuth2AuthorizationServer;
 import org.junit.After;
@@ -42,13 +42,13 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
-import org.testcontainers.containers.GenericContainer;
 
 import java.io.File;
 import java.io.IOException;
@@ -59,28 +59,38 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
+/**
+ * LLAP {@link CliAdapter} qtests for Hive against the Gravitino Iceberg REST server image
+ * ({@link #GRAVITINO_IMAGE}), with OAuth2 on the catalog HTTP API and an Iceberg warehouse on
+ * Apache Ozone S3 Gateway using Gravitino {@code s3-secret-key} credential vending (see
+ * {@link #GRAVITINO_S3_CONF_TEMPLATE}).
+ *
+ * <p>Table metadata and data live under {@code s3://} in {@link #S3_BUCKET}. The host temp directory
+ * {@link #warehouseDir} is used to render the Gravitino server configuration and as the source path for
+ * {@code .withCopyFileToContainer} (config + H2 driver JAR).</p>
+ */
 @RunWith(Parameterized.class)
 public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
 
   private static final CliAdapter CLI_ADAPTER =
       new CliConfigs.TestIcebergRESTCatalogGravitinoLlapLocalCliDriver().getCliAdapter();
-  
+
   private static final Logger LOG = LoggerFactory.getLogger(TestIcebergRESTCatalogGravitinoLlapLocalCliDriver.class);
-  
+
   private static final String CATALOG_NAME = "ice01";
   private static final long GRAVITINO_STARTUP_TIMEOUT_MINUTES = 5L;
   private static final int GRAVITINO_HTTP_PORT = 9001;
-  private static final String GRAVITINO_CONF_FILE_TEMPLATE = "gravitino-h2-test-template.conf";
+
+  private static final String GRAVITINO_S3_CONF_TEMPLATE = "gravitino-s3-vended-oauth-template.conf";
   private static final String GRAVITINO_ROOT_DIR = "/root/gravitino-iceberg-rest-server";
   private static final String GRAVITINO_STARTUP_SCRIPT = GRAVITINO_ROOT_DIR + "/bin/start-iceberg-rest-server.sh";
   private static final String GRAVITINO_H2_LIB = GRAVITINO_ROOT_DIR + "/libs/h2-driver.jar";
   private static final String GRAVITINO_CONF_FILE = GRAVITINO_ROOT_DIR + "/conf/gravitino-iceberg-rest-server.conf";
   private static final DockerImageName GRAVITINO_IMAGE =
       DockerImageName.parse("apache/gravitino-iceberg-rest:1.0.0");
+
+  private static final String S3_BUCKET = "iceberg-vend";
 
   private static final String OAUTH2_SERVER_ICEBERG_CLIENT_ID = "iceberg-client";
   private static final String OAUTH2_SERVER_ICEBERG_CLIENT_SECRET = "iceberg-client-secret";
@@ -89,8 +99,8 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
   private final File qfile;
 
   private GenericContainer<?> gravitinoContainer;
+  private OzoneS3GatewayContainers ozoneS3;
   private Path warehouseDir;
-  private final ScheduledExecutorService fileSyncExecutor = Executors.newSingleThreadScheduledExecutor();
   private OAuth2AuthorizationServer oAuth2AuthorizationServer;
 
   @Parameters(name = "{0}")
@@ -110,14 +120,15 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
   }
 
   @Before
-  public void setup() throws IOException {
+  public void setup() throws Exception {
     Network dockerNetwork = Network.newNetwork();
-    
+
     startOAuth2AuthorizationServer(dockerNetwork);
     createWarehouseDir();
+    ozoneS3 = new OzoneS3GatewayContainers();
+    ozoneS3.start(dockerNetwork, S3_BUCKET);
     prepareGravitinoConfig();
     startGravitinoContainer(dockerNetwork);
-    fileSyncExecutor.scheduleAtFixedRate(this::syncWarehouseDir, 0, 5, TimeUnit.SECONDS);
 
     String host = gravitinoContainer.getHost();
     Integer port = gravitinoContainer.getMappedPort(GRAVITINO_HTTP_PORT);
@@ -137,63 +148,123 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
     conf.set(restCatalogPrefix + "rest.auth.type", "oauth2");
     conf.set(restCatalogPrefix + "oauth2-server-uri", oAuth2AuthorizationServer.getTokenEndpoint());
     conf.set(restCatalogPrefix + "credential", oAuth2AuthorizationServer.getClientCredential());
+    conf.set(
+        restCatalogPrefix + IcebergCatalogProperties.REST_ACCESS_DELEGATION_HEADER_PROPERTY,
+        RestAccessDelegationMode.VENDED_CREDENTIALS.modeName());
+
+    applyHostS3FilesystemSettings(conf);
+    applyIcebergS3ClientEndpointOverride(conf, restCatalogPrefix);
   }
 
   @After
-  public void teardown() throws IOException {
+  public void teardown() throws Exception {
     if (gravitinoContainer != null) {
       gravitinoContainer.stop();
     }
-    
+
+    if (ozoneS3 != null) {
+      ozoneS3.stop();
+    }
+
     if (oAuth2AuthorizationServer != null) {
       oAuth2AuthorizationServer.stop();
     }
 
-    fileSyncExecutor.shutdownNow();
-    FileUtils.deleteDirectory(warehouseDir.toFile());
+    if (warehouseDir != null) {
+      FileUtils.deleteDirectory(warehouseDir.toFile());
+    }
   }
 
   /**
-   * Starts a Gravitino container with the Iceberg REST server configured for testing.
+   * Puts host-reachable Iceberg S3 client settings on the HS2 session.
+   *
+   * <p>Gravitino runs in Docker and vends storage credentials whose endpoint is
+   * {@link OzoneS3GatewayContainers#S3_DOCKER_ENDPOINT} (reachable inside the compose network only).
+   * Hive runs on the host, so this sets {@code iceberg.catalog.&lt;catalog&gt;.s3.endpoint} to the
+   * published Ozone S3G host/port, plus path-style and region, matching what operators configure in
+   * {@code hive-site.xml} in a real deployment.
+   *
+   * <p>Those keys are the <em>source</em> for {@link org.apache.iceberg.mr.hive.IcebergVendedCredentialUtil}:
+   * at plan time and on tasks it merges them over the vended endpoint in credentials and job conf. This
+   * method does not replace that util — it seeds session conf so the util has a host endpoint to apply.
+   */
+  private void applyIcebergS3ClientEndpointOverride(Configuration conf, String restCatalogPrefix) {
+    String host = ozoneS3.getHost();
+    int port = ozoneS3.getMappedPort();
+    @SuppressWarnings("HttpUrlsUsage")
+    String icebergS3Endpoint = String.format("http://%s:%d", host, port);
+    conf.set(restCatalogPrefix + S3FileIOProperties.ENDPOINT, icebergS3Endpoint);
+    conf.set(restCatalogPrefix + S3FileIOProperties.PATH_STYLE_ACCESS, "true");
+    conf.set(restCatalogPrefix + AwsClientProperties.CLIENT_REGION, "us-east-1");
+  }
+
+  /**
+   * Wires Hadoop to use S3A for {@code s3://} on the host-visible Ozone S3G endpoint.
+   *
+   * <p><b>What:</b> sets {@code fs.s3}/{@code fs.s3a} implementation classes, per-bucket endpoint and path-style
+   * ({@code fs.s3a.bucket.&lt;bucket&gt;.*}), and disables SSL for this local Ozone S3G test.
+   *
+   * <p><b>Why:</b> Hive and Tez use Hadoop {@code FileSystem} for many {@code s3://} paths, not only Iceberg
+   * {@code S3FileIO}. {@link org.apache.iceberg.mr.hive.IcebergVendedCredentialUtil} propagates vended keys and
+   * overlapping S3A settings onto <em>job</em> conf at plan time; it does not register the S3A filesystem or seed
+   * session defaults. Session wiring is still needed for HS2 and for paths that read session conf before job
+   * properties exist.
+   *
+   * <p>Access keys are intentionally omitted here; they are vended per query and copied into job secrets by the util.
+   */
+  private void applyHostS3FilesystemSettings(Configuration conf) {
+    String s3Host = ozoneS3.getHost();
+    int s3Port = ozoneS3.getMappedPort();
+    @SuppressWarnings("HttpUrlsUsage")
+    String endpoint = String.format("http://%s:%d", s3Host, s3Port);
+    conf.set("fs.s3.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem");
+    conf.set("fs.AbstractFileSystem.s3.impl", "org.apache.hadoop.fs.s3a.S3A");
+    conf.set("fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem");
+    String bucketPrefix = "fs.s3a.bucket." + S3_BUCKET + ".";
+    conf.set(bucketPrefix + "endpoint", endpoint);
+    conf.setBoolean(bucketPrefix + "path.style.access", true);
+    conf.setBoolean(bucketPrefix + "connection.ssl.enabled", false);
+  }
+
+  /**
+   * Starts a Gravitino container with the Iceberg REST server configured for this test.
    *
    * <p>This method configures the container to:
    * <ul>
-   *   <li>Expose container REST port GRAVITINO_HTTP_PORT and map it to a host port.</li>
-   *   <li>Modify the container entrypoint to create the warehouse directory before startup.</li>
-   *   <li>Copy a dynamically prepared Gravitino configuration file into the container.</li>
-   *   <li>Copy the H2 driver JAR into the server's lib directory.</li>
-   *   <li>Wait for the Gravitino Iceberg REST server to finish starting (based on logs and port checks).</li>
-   *   <li>Stream container logs into the test logger for easier debugging.</li>
+   *   <li>Expose {@link #GRAVITINO_HTTP_PORT} on the container and map it to a host port.</li>
+   *   <li>Adjust the entrypoint so a bootstrap directory exists before {@link #GRAVITINO_STARTUP_SCRIPT} runs
+   *       (the Iceberg <em>warehouse</em> itself is {@code s3://} on Ozone S3G, not this path).</li>
+   *   <li>Copy the rendered Gravitino configuration from {@link #warehouseDir} into the image at
+   *       {@link #GRAVITINO_CONF_FILE}.</li>
+   *   <li>Copy the H2 driver JAR (JDBC catalog backend metadata) into {@link #GRAVITINO_H2_LIB}.</li>
+   *   <li>Attach the container to {@code dockerNetwork} so it reaches the OAuth2 server and Ozone S3G
+   *       ({@link OzoneS3GatewayContainers#S3_DOCKER_ALIAS}).</li>
+   *   <li>Wait for the Gravitino Iceberg REST server to finish starting (log line + listening port).</li>
+   *   <li>Stream container logs into {@link #LOG}.</li>
    * </ul>
    *
-   * <p>Note: The {@code @SuppressWarnings("resource")} annotation is applied because
-   * IntelliJ and some compilers flag {@link org.testcontainers.containers.GenericContainer}
-   * as a resource that should be managed with try-with-resources. In this test setup,
-   * the container lifecycle is managed explicitly: it is started here and stopped in
-   * {@code @After} (via {@code gravitinoContainer.stop()}). Using try-with-resources
-   * would not work in this context, since the container must remain running across
-   * multiple test methods rather than being confined to a single block scope.</p>
+   * <p>Note: the {@code @SuppressWarnings("resource")} annotation is applied because IntelliJ and some compilers
+   * flag {@link GenericContainer} as a resource that should be used with try-with-resources. Here the container
+   * lifecycle is explicit: it is started in this method and stopped in {@link #teardown()} via
+   * {@code gravitinoContainer.stop()}.</p>
    */
   @SuppressWarnings("resource")
   private void startGravitinoContainer(Network dockerNetwork) {
     gravitinoContainer = new GenericContainer<>(GRAVITINO_IMAGE)
         .withExposedPorts(GRAVITINO_HTTP_PORT)
-        // Update entrypoint to create the warehouse directory before starting the server
+        // Bootstrap dir for the server script; warehouse is s3:// on Ozone S3G (see template)
         .withCreateContainerCmdModifier(cmd -> cmd.withEntrypoint("bash", "-c",
-            String.format("mkdir -p %s && exec %s", warehouseDir.toString(), GRAVITINO_STARTUP_SCRIPT)))
-        // Mount gravitino configuration file
+            "mkdir -p /tmp/gravitino-bootstrap && exec " + GRAVITINO_STARTUP_SCRIPT))
+        // Mount Gravitino configuration file (rendered under warehouseDir on the host)
         .withCopyFileToContainer(
-            MountableFile.forHostPath(Paths.get(warehouseDir.toString(), GRAVITINO_CONF_FILE_TEMPLATE)),
-            GRAVITINO_CONF_FILE
-        )
+            MountableFile.forHostPath(Paths.get(warehouseDir.toString(), GRAVITINO_S3_CONF_TEMPLATE)),
+            GRAVITINO_CONF_FILE)
         // Mount the H2 driver JAR into the server's lib directory
         .withCopyFileToContainer(
             MountableFile.forHostPath(
-                Paths.get("target", "test-dependencies", "h2-driver.jar").toAbsolutePath()
-            ),
-            GRAVITINO_H2_LIB
-        )
-        // Use the same Docker network as the OAuth2 server so they can communicate
+                Paths.get("target", "test-dependencies", "h2-driver.jar").toAbsolutePath()),
+            GRAVITINO_H2_LIB)
+        // Same Docker network as OAuth2 and Ozone S3G (Gravitino uses http://s3.ozone:9878 in config)
         .withNetwork(dockerNetwork)
         // Wait for the server to be fully started
         .waitingFor(
@@ -201,123 +272,71 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
                 .withStrategy(Wait.forLogMessage(".*GravitinoIcebergRESTServer is running.*\\n", 1)
                     .withStartupTimeout(Duration.ofMinutes(GRAVITINO_STARTUP_TIMEOUT_MINUTES)))
                 .withStrategy(Wait.forListeningPort()
-                    .withStartupTimeout(Duration.ofMinutes(GRAVITINO_STARTUP_TIMEOUT_MINUTES)))
-        )
-        .withLogConsumer(new Slf4jLogConsumer(LoggerFactory
-            .getLogger(TestIcebergRESTCatalogGravitinoLlapLocalCliDriver.class)));
+                    .withStartupTimeout(Duration.ofMinutes(GRAVITINO_STARTUP_TIMEOUT_MINUTES))))
+        .withLogConsumer(new Slf4jLogConsumer(LOG));
 
     gravitinoContainer.start();
   }
 
-  /**
-   * Starts a background daemon that continuously synchronizes the Iceberg warehouse
-   * directory from the running Gravitino container to the host file system.
-   *
-   * <p>In CI environments, Testcontainers' {@code .withFileSystemBind()} cannot reliably
-   * bind the same host path to the same path inside the container, especially when
-   * using remote Docker hosts or Docker-in-Docker setups. This causes the container's
-   * writes (e.g., Iceberg metadata files like {@code .metadata.json}) to be invisible
-   * on the host.</p>
-   *
-   * <p>This method works around that limitation by repeatedly copying new files from
-   * the container's warehouse directory to the corresponding host directory. Existing
-   * files on the host are preserved, and only files that do not yet exist are copied.
-   * The sync runs every 1 second while the container is running.</p>
-   *
-   * <p>Each archive copy from the container is extracted using a {@link TarArchiveInputStream},
-   * and directories are created as needed. Files that already exist on the host are skipped
-   * to avoid overwriting container data.</p>
-   */
-  private void syncWarehouseDir() {
-    if (gravitinoContainer.isRunning()) {
-      try (CopyArchiveFromContainerCmd copyArchiveFromContainerCmd = 
-               gravitinoContainer
-                   .getDockerClient()
-                   .copyArchiveFromContainerCmd(gravitinoContainer.getContainerId(), warehouseDir.toString()); 
-           InputStream tarStream = copyArchiveFromContainerCmd.exec();
-           TarArchiveInputStream tis = new TarArchiveInputStream(tarStream)) {
-
-        TarArchiveEntry entry;
-        while ((entry = tis.getNextEntry()) != null) {
-          // Skip directories because we only want to copy metadata files from the container.
-          if (entry.isDirectory()) {
-            continue;
-          }
-
-          /*
-           * Tar entry names include a container-specific top-level folder, e.g.:
-           *   iceberg-test-1759245909247/iceberg_warehouse/ice_rest/.../metadata.json
-           *
-           * Strip the first part so the relative path inside the warehouse is preserved
-           * when mapping to the host warehouseDir.
-           */
-          
-          String[] parts = entry.getName().split("/", 2);
-          if (parts.length < 2) {
-            continue; // defensive guard
-          }
-
-          Path relativePath = Paths.get(parts[1]);
-          Path outputPath = warehouseDir.resolve(relativePath);
-
-          // Skip if already present on host to avoid overwriting
-          if (Files.exists(outputPath)) {
-            continue;
-          }
-
-          Files.createDirectories(outputPath.getParent());
-          Files.copy(tis, outputPath);
-        }
-
-      } catch (Exception e) {
-        LOG.error("Warehouse folder sync failed: {}", e.getMessage());
-      }
-    }
-  }
-  
+  /** Keycloak-backed OAuth2 used by Gravitino REST authentication and by the Hive REST client. */
   private void startOAuth2AuthorizationServer(Network dockerNetwork) {
     oAuth2AuthorizationServer = new OAuth2AuthorizationServer(dockerNetwork, false);
     oAuth2AuthorizationServer.start();
   }
 
+  /**
+   * Host directory used to write the rendered Gravitino config (see {@link #prepareGravitinoConfig}) and as the
+   * source path for {@code .withCopyFileToContainer} in {@link #startGravitinoContainer}. This is not the Iceberg
+   * warehouse root; the warehouse is {@code s3://}{@link #S3_BUCKET}{@code /...} on Ozone S3G.
+   */
   private void createWarehouseDir() {
     try {
       warehouseDir = Paths.get("/tmp", "iceberg-test-" + System.currentTimeMillis()).toAbsolutePath();
       Files.createDirectories(warehouseDir);
     } catch (Exception e) {
-      throw new RuntimeException("Failed to create the Iceberg warehouse directory", e);
+      throw new RuntimeException("Failed to create temp directory for Gravitino config staging", e);
     }
   }
 
+  /**
+   * Reads {@link #GRAVITINO_S3_CONF_TEMPLATE} from the classpath, substitutes bucket / Ozone S3 / OAuth placeholders,
+   * and writes the result under {@link #warehouseDir} for copying into the Gravitino container.
+   */
   private void prepareGravitinoConfig() throws IOException {
     String content;
     try (InputStream in = TestIcebergRESTCatalogGravitinoLlapLocalCliDriver.class.getClassLoader()
-        .getResourceAsStream(GRAVITINO_CONF_FILE_TEMPLATE)) {
+        .getResourceAsStream(GRAVITINO_S3_CONF_TEMPLATE)) {
       if (in == null) {
-        throw new IOException("Resource not found: " + GRAVITINO_CONF_FILE_TEMPLATE);
+        throw new IOException("Resource not found: " + GRAVITINO_S3_CONF_TEMPLATE);
       }
       content = new String(in.readAllBytes(), StandardCharsets.UTF_8);
     }
 
     String updatedContent = content
-        .replace("/WAREHOUSE_DIR", warehouseDir.toString())
+        .replace("S3_BUCKET", S3_BUCKET)
+        .replace("S3_ACCESS_KEY", OzoneS3GatewayContainers.ACCESS_KEY)
+        .replace("S3_SECRET_KEY", OzoneS3GatewayContainers.SECRET_KEY)
         .replace("OAUTH2_SERVER_URI", oAuth2AuthorizationServer.getIssuer())
         .replace("OAUTH2_JWKS_URI", getJwksUri())
         .replace("OAUTH2_CLIENT_ID", OAUTH2_SERVER_ICEBERG_CLIENT_ID)
         .replace("OAUTH2_CLIENT_SECRET", OAUTH2_SERVER_ICEBERG_CLIENT_SECRET)
         .replace("HTTP_PORT", String.valueOf(GRAVITINO_HTTP_PORT));
 
-    Path configFile = warehouseDir.resolve(GRAVITINO_CONF_FILE_TEMPLATE);
+    Path configFile = warehouseDir.resolve(GRAVITINO_S3_CONF_TEMPLATE);
     Files.writeString(configFile, updatedContent);
   }
 
+  /**
+   * JWKS URL reachable from <em>inside</em> the Gravitino container: host/port in the issuer are rewritten to the
+   * Keycloak container hostname and its internal HTTP port.
+   */
   private String getJwksUri() {
     String reachableHost = oAuth2AuthorizationServer.getKeycloackContainerDockerInternalHostName();
     int internalPort = 8080; // Keycloak container's internal port
     return oAuth2AuthorizationServer.getIssuer()
         .replace("localhost", reachableHost)
         .replace("127.0.0.1", reachableHost)
-        // replace issuer's mapped port with keyclock container's internal port
+        // Replace issuer's mapped host port with Keycloak's internal port on the Docker network
         .replaceFirst(":[0-9]+", ":" + internalPort);
   }
 

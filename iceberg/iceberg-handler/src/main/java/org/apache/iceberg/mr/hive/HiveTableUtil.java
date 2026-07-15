@@ -246,6 +246,7 @@ public class HiveTableUtil {
       table = readTableObjectFromFile(location, config);
     }
     checkAndSetIoConfig(config, table);
+    IcebergVendedCredentialUtil.applyFromJobConf(table, config);
 
     // For intra-txn read-after-write: if a metadata file was written for uncommitted in-txn state,
     // reconstruct a BaseTable from it so the Tez side sees changes from prior statements.
@@ -362,8 +363,10 @@ public class HiveTableUtil {
     try {
       FileSystem fs = Util.getFs(toDelete, configuration);
       fs.delete(toDelete, true);
-    } catch (IOException ex) {
-      throw new UncheckedIOException(ex);
+    } catch (IOException e) {
+      // best effort: never fail the commit over the temp table-object file; with catalog-vended
+      // credentials the Hadoop filesystem has no keys and the query-scoped file is left behind
+      LOG.warn("Could not remove temp table object file: {}", filePath, e);
     }
   }
 
