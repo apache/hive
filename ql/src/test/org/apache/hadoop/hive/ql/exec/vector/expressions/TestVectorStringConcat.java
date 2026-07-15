@@ -132,14 +132,18 @@ public class TestVectorStringConcat {
     inV1.setRef(2, c, 0, c.length);
     inV1.noNulls = true;
     inV1.isRepeating = false;
-    inV1.isNull[0] = inV1.isNull[1] = inV1.isNull[2] = false;
+    inV1.isNull[0] = false;
+    inV1.isNull[1] = false;
+    inV1.isNull[2] = false;
 
     inV2.setRef(0, d, 0, d.length);
     inV2.setRef(1, e, 0, e.length);
     inV2.setRef(2, f, 0, f.length);
     inV2.noNulls = true;
     inV2.isRepeating = false;
-    inV2.isNull[0] = inV2.isNull[1] = inV2.isNull[2] = false;
+    inV2.isNull[0] = false;
+    inV2.isNull[1] = false;
+    inV2.isNull[2] = false;
 
     // Simulate the state left behind by a *prior* batch that had NULLs. The output
     // vector object is reused across batches (VectorizedRowBatch does not allocate
