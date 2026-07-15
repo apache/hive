@@ -37,6 +37,13 @@ public class LlapItUtils {
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapItUtils.class);
 
+  /**
+   * Cap in-process mini LLAP memory so Tez AM / mini YARN / mini HDFS retain heap.
+   * Without caps, 90% of the test JVM max heap is reserved for LLAP alone.
+   */
+  private static final long MAX_MINI_LLAP_EXECUTOR_MEMORY_BYTES = 768L * 1024 * 1024;
+  private static final long MAX_MINI_LLAP_CACHE_MEMORY_BYTES = 256L * 1024 * 1024;
+
   public static MiniLlapCluster startAndGetMiniLlapCluster(Configuration conf,
                                                            MiniZooKeeperCluster miniZkCluster,
                                                            String confDir) throws
@@ -51,10 +58,10 @@ public class LlapItUtils {
     Configuration daemonConf = new LlapDaemonConfiguration(conf);
     final String clusterName = "llap";
     final long maxMemory = LlapDaemon.getTotalHeapSize();
-    // 15% for io cache
-    final long memoryForCache = (long) (0.15f * maxMemory);
-    // 75% for 4 executors
-    final long totalExecutorMemory = (long) (0.75f * maxMemory);
+    // 15% for io cache, 75% for executors, but cap totals for in-process mini cluster.
+    final long memoryForCache = Math.min((long) (0.15f * maxMemory), MAX_MINI_LLAP_CACHE_MEMORY_BYTES);
+    final long totalExecutorMemory =
+        Math.min((long) (0.75f * maxMemory), MAX_MINI_LLAP_EXECUTOR_MEMORY_BYTES);
     final int numExecutors = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_DAEMON_NUM_EXECUTORS);
     HiveConf.setIntVar(conf, HiveConf.ConfVars.LLAP_IO_THREADPOOL_SIZE, numExecutors);
     final boolean asyncIOEnabled = true;

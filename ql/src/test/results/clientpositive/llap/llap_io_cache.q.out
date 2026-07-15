@@ -33,19 +33,23 @@ POSTHOOK: Output: default@tbl_parq
 PREHOOK: query: INSERT INTO TABLE tbl_parq
 SELECT
   1 AS id,
-  RPAD('x', 16777177, 'x') AS payload
+  RPAD('x', 16777177 + length(key) - length(key), 'x') AS payload
+FROM src
+LIMIT 1
 PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@src
 PREHOOK: Output: default@tbl_parq
 POSTHOOK: query: INSERT INTO TABLE tbl_parq
 SELECT
   1 AS id,
-  RPAD('x', 16777177, 'x') AS payload
+  RPAD('x', 16777177 + length(key) - length(key), 'x') AS payload
+FROM src
+LIMIT 1
 POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@src
 POSTHOOK: Output: default@tbl_parq
 POSTHOOK: Lineage: tbl_parq.id SIMPLE []
-POSTHOOK: Lineage: tbl_parq.payload SIMPLE []
+POSTHOOK: Lineage: tbl_parq.payload EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: SELECT LENGTH(payload) FROM tbl_parq
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_parq
