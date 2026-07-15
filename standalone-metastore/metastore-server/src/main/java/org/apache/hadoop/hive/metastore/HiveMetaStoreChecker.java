@@ -457,13 +457,21 @@ public class HiveMetaStoreChecker {
       // will not return any results.
       pr.setPath(partPath);
 
-      // Check if partition already exists. No need to check for those partition which are present in db
-      // but no in fs as msck will override the partition location in db
+      /*
+       Check if partition already exists. No need to check for those partitions which are present in db
+       but not in fs as msck will override the partition location in db.
+       This edge case happens when a partition's URI in the metastore contains a port (e.g., :8020)
+       while the table's default FS does not (e.g., HA nameservice). The string mismatch causes
+       allPartDirs.remove() to fail, leaving the physical directory in the unknown list even though
+       it was successfully verified and added to correctPartitions. We can safely skip it.
+      */
       if (result.getCorrectPartitions().contains(pr)) {
-        String msg = "The partition '" + pr.toString() + "' already exists for table" + table.getTableName();
-        throw new MetastoreException(msg);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("The partition '{}' already exists in metastore for table {}", pr, table.getTableName());
+        }
+        continue;
       } else if (result.getPartitionsNotInMs().contains(pr)) {
-        String msg = "Found two paths for same partition '" + pr.toString() + "' for table " + table.getTableName();
+        String msg = "Found two paths for same partition '" + pr + "' for table " + table.getTableName();
         throw new MetastoreException(msg);
       }
       if (transactionalTable) {
