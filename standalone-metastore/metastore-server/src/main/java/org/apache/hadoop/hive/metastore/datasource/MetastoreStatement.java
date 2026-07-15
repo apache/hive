@@ -177,7 +177,7 @@ public final class MetastoreStatement implements InvocationHandler {
 
   static boolean isSlowExecution(Configuration configuration, long timeSpent) {
     long threshold = MetastoreConf.getTimeVar(configuration,
-        MetastoreConf.ConfVars.METASTORE_JDBC_SLOW_QUERIES, TimeUnit.MILLISECONDS);
+        MetastoreConf.ConfVars.METASTORE_JDBC_SLOW_QUERY_THRESHOLD, TimeUnit.MILLISECONDS);
     return threshold > 0 && timeSpent > threshold;
   }
 

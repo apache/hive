@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.metastore.datasource;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Collections;
-import java.util.Properties;
 
 import javax.sql.DataSource;
 
@@ -57,7 +56,7 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
   @Override
-  public DataSource create(Configuration hdpConfig, int maxPoolSize) throws SQLException {
+  public DataSource createPool(Configuration hdpConfig, int maxPoolSize) throws SQLException {
     String poolName = DataSourceProvider.getDataSourceName(hdpConfig);
     LOG.info("Creating dbcp connection pool for the MetaStore, maxPoolSize: {}, name: {}", maxPoolSize, poolName);
 
@@ -121,10 +120,6 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
       }
     }
     StringBuilder connectionProperties = new StringBuilder();
-    Properties jdbcWrapperProperties = new Properties();
-    DataSourceProvider.addJdbcWrapperProperties(hdpConfig, jdbcWrapperProperties);
-    jdbcWrapperProperties.forEach((key, value) ->
-        connectionProperties.append(key).append('=').append(value).append(';'));
     DataSourceProvider.preparePool(hdpConfig,
         stmt -> poolableConnFactory.setConnectionInitSql(Collections.singletonList(stmt)),
         kv -> {

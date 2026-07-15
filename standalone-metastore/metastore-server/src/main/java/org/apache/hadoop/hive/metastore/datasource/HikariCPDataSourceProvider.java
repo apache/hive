@@ -40,7 +40,7 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
   static final String HIKARI = "hikaricp";
 
   @Override
-  public DataSource create(Configuration hdpConfig, int maxPoolSize) throws SQLException {
+  public DataSource createPool(Configuration hdpConfig, int maxPoolSize) throws SQLException {
     String poolName = DataSourceProvider.getDataSourceName(hdpConfig);
     LOG.info("Creating Hikari connection pool for the MetaStore, maxPoolSize: {}, name: {}", maxPoolSize, poolName);
 
@@ -60,9 +60,6 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     config.setJdbcUrl(driverUrl);
     config.setUsername(user);
     config.setPassword(passwd);
-    Properties jdbcWrapperProperties = new Properties();
-    DataSourceProvider.addJdbcWrapperProperties(hdpConfig, jdbcWrapperProperties);
-    jdbcWrapperProperties.forEach((key, value) -> config.addDataSourceProperty(key.toString(), value.toString()));
     if (!StringUtils.isEmpty(poolName)) {
       config.setPoolName(poolName);
     }

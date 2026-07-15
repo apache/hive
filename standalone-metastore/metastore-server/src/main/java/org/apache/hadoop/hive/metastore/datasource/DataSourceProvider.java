@@ -17,12 +17,9 @@
  */
 package org.apache.hadoop.hive.metastore.datasource;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Base64;
 import java.util.Map;
 import java.util.Properties;
 import java.util.function.Consumer;
@@ -30,13 +27,12 @@ import javax.sql.DataSource;
 
 import com.google.common.collect.Iterables;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 
 public interface DataSourceProvider {
-  String METASTORE_CONF_PROPERTY = "metastore.jdbc.configuration";
+
   /**
    * @param hdpConfig
    * @return the new connection pool
@@ -51,7 +47,14 @@ public interface DataSourceProvider {
    * @param maxPoolSize the maximum size of the connection pool
    * @return the new connection pool
    */
-  DataSource create(Configuration hdpConfig, int maxPoolSize) throws SQLException;
+  default DataSource create(Configuration hdpConfig, int maxPoolSize) throws SQLException {
+    return maybeWrapForProfiling(hdpConfig, createPool(hdpConfig, maxPoolSize));
+  }
+
+  /**
+   * Creates the underlying connection pool without JDBC profiling decoration.
+   */
+  DataSource createPool(Configuration hdpConfig, int maxPoolSize) throws SQLException;
 
   /**
    * Get the declared pooling type string. This is used to check against the constant in
@@ -85,39 +88,14 @@ public interface DataSourceProvider {
   }
 
   static String getMetastoreJdbcDriverUrl(Configuration conf) {
-    if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_PROFILE_JDBC_EXECUTION)) {
-      return MetastoreDriver.getMetastoreDbUrl(conf);
-    }
     return MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY);
   }
 
-  static void addJdbcWrapperProperties(Configuration configuration, Properties properties)
-      throws SQLException {
-    if (MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.METASTORE_PROFILE_JDBC_EXECUTION)) {
-      try {
-        Configuration slimConf = new Configuration(false);
-        configuration.getPropsWithPrefix("metastore.jdbc.")
-            .forEach((k,v) -> slimConf.set("metastore.jdbc." + k, v));
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        slimConf.writeXml(outputStream);
-        properties.put(METASTORE_CONF_PROPERTY, Base64.getEncoder().encodeToString(outputStream.toByteArray()));
-      } catch (IOException e) {
-        throw new SQLException("Failed to serialize Metastore configuration", e);
-      }
+  static DataSource maybeWrapForProfiling(Configuration conf, DataSource dataSource) {
+    if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.METASTORE_PROFILE_JDBC_EXECUTION)) {
+      return new ProfilingDataSource(dataSource, conf);
     }
-  }
-
-  static Configuration resolveConfiguration(Properties properties) {
-    if (properties != null) {
-      String encodedConfiguration = properties.getProperty(METASTORE_CONF_PROPERTY);
-      if (StringUtils.isNotEmpty(encodedConfiguration)) {
-        byte[] xmlBytes = Base64.getDecoder().decode(encodedConfiguration);
-        Configuration configuration = new Configuration(false);
-        configuration.addResource(new ByteArrayInputStream(xmlBytes), "metastore-jdbc-configuration");
-        return configuration;
-      }
-    }
-    throw new IllegalStateException("properties should have contained the information for Metastore profiling");
+    return dataSource;
   }
 
   static String getDataSourceName(Configuration conf) {
@@ -127,7 +105,7 @@ public interface DataSourceProvider {
   static void preparePool(Configuration configuration, Consumer<String> initSql,
       Consumer<Map.Entry<String, String>> dataSourceProps) {
     String url = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.CONNECT_URL_KEY);
-    DatabaseProduct dbProduct =  DatabaseProduct.determineDatabaseProduct(url, configuration);
+    DatabaseProduct dbProduct = DatabaseProduct.determineDatabaseProduct(url, configuration);
     String s = dbProduct.getPrepareTxnStmt();
     if (s != null) {
       initSql.accept(s);

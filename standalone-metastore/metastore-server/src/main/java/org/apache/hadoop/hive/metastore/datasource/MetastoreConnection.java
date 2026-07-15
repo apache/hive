@@ -34,12 +34,21 @@ import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Struct;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
 import org.apache.hadoop.conf.Configuration;
 
-public record MetastoreConnection(Connection delegate, Configuration configuration) implements Connection {
+public final class MetastoreConnection implements Connection {
+  private final Configuration configuration;
+  private final Connection delegate;
+
+  MetastoreConnection(Connection connection, Configuration conf) {
+    this.delegate = Objects.requireNonNull(connection, "delegate connection");
+    this.configuration = Objects.requireNonNull(conf, "configuration");
+  }
+
   @Override
   public Statement createStatement() throws SQLException {
     return MetastoreStatement.getProxyStatement(configuration, delegate.createStatement(), null);
@@ -321,5 +330,9 @@ public record MetastoreConnection(Connection delegate, Configuration configurati
   @Override
   public boolean isWrapperFor(Class<?> iface) throws SQLException {
     return iface.isInstance(this) || delegate.isWrapperFor(iface);
+  }
+
+  public Configuration getConfiguration() {
+    return configuration;
   }
 }

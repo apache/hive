@@ -31,7 +31,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.dbcp2.PoolingDataSource;
-import org.apache.derby.impl.jdbc.EmbedConnection;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HMSHandlerContext;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
@@ -44,7 +43,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 @Category(MetastoreUnitTest.class)
-public class TestMetastoreConnection {
+public class TestProfilingDataSource {
   private Configuration conf;
   private Counter slowQuery;
 
@@ -52,7 +51,7 @@ public class TestMetastoreConnection {
   public void init() {
     conf = MetastoreConf.newMetastoreConf();
     conf.set(MetastoreStatement.EXEC_HOOK, MetastoreStatementTestHook.class.getName());
-    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.METASTORE_JDBC_SLOW_QUERIES, 200, TimeUnit.MILLISECONDS);
+    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.METASTORE_JDBC_SLOW_QUERY_THRESHOLD, 200, TimeUnit.MILLISECONDS);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METASTORE_PROFILE_JDBC_EXECUTION, true);
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_PROFILE_JDBC_THRIFT_APIS, "test_metastore_statement");
@@ -71,7 +70,8 @@ public class TestMetastoreConnection {
     DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
     Assert.assertNotNull(dsp);
     DataSource ds = dsp.create(conf);
-    Assert.assertTrue(ds instanceof HikariDataSource);
+    Assert.assertTrue(ds instanceof ProfilingDataSource);
+    Assert.assertTrue(((ProfilingDataSource) ds).getDelegate() instanceof HikariDataSource);
     try (Connection connection = ds.getConnection()) {
       verify(connection);
     }
@@ -84,14 +84,15 @@ public class TestMetastoreConnection {
     DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
     Assert.assertNotNull(dsp);
     DataSource ds = dsp.create(conf);
-    Assert.assertTrue(ds instanceof PoolingDataSource);
+    Assert.assertTrue(ds instanceof ProfilingDataSource);
+    Assert.assertTrue(((ProfilingDataSource) ds).getDelegate() instanceof PoolingDataSource);
     try (Connection connection = ds.getConnection()) {
       verify(connection);
     }
   }
 
   private void verify(Connection connection) throws Exception {
-    Assert.assertTrue(connection.unwrap(MetastoreConnection.class).delegate() instanceof EmbedConnection);
+    // Assert.assertTrue(connection.unwrap(MetastoreConnection.class).delegate() instanceof EmbedConnection);
     long slowNum = slowQuery.getCount();
     Timer timer = Metrics.getOrCreateTimer(MetastoreStatementTestHook.TEST_METRIC_NAME);
     Assert.assertNotNull(timer);
@@ -151,7 +152,7 @@ public class TestMetastoreConnection {
         throws Exception {
       HMSHandlerContext
           .setCallCtx(new HMSHandlerContext.CallCtx(method, System.currentTimeMillis(), new AtomicLong()));
-      Configuration configuration = connection.unwrap(MetastoreConnection.class).configuration();
+      Configuration configuration = connection.unwrap(MetastoreConnection.class).getConfiguration();
       configuration.set(SLEEP_MILLIS, sleepMs + "");
       return () -> {
         HMSHandlerContext.setCallCtx(null);

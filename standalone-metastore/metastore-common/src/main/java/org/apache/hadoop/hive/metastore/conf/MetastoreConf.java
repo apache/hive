@@ -652,7 +652,7 @@ public class MetastoreConf {
         "hive.txn.acid.metrics.delta.pct.threshold", 0.01f,
         "Percentage (fractional) size of the delta files relative to the base directory. Deltas smaller than this threshold " +
             "count as small deltas. Default 0.01 = 1%.)"),
-    METASTORE_JDBC_SLOW_QUERIES("metastore.jdbc.execution.logSlowQueriesThreshold", "metastore.jdbc.execution.logSlowQueriesThreshold",
+    METASTORE_JDBC_SLOW_QUERY_THRESHOLD("metastore.jdbc.execution.logSlowQueriesThreshold", "metastore.jdbc.execution.logSlowQueriesThreshold",
         3000, TimeUnit.MILLISECONDS, "Log the slow jdbc query that Metastore has been waiting for the result beyond the threshold(ms), " +
         "should turn on the metastore.profile.jdbc.execution first"),
     METASTORE_PROFILE_JDBC_EXECUTION("metastore.profile.jdbc.execution", "metastore.profile.jdbc.execution", false,
