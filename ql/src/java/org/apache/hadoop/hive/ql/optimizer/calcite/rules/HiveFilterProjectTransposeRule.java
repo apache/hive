@@ -337,11 +337,12 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
       } else {
         if (node instanceof Filter) {
           check((Filter) node);
-        } else if (node instanceof Project) {
-          RexNode condition = HiveRelOptUtil.pushPastProjectUnlessBloat(
-              filterCondition, (Project) node, bloat);
-          if (condition != null) {
-            filterCondition = condition;
+        } else if (node instanceof Project project) {
+          filterCondition = HiveRelOptUtil.pushPastProjectUnlessBloat(
+              filterCondition, project, bloat);
+          if (filterCondition == null) {
+            // the condition could not be pushed, so bail out
+            return;
           }
         } else {
           // we do not support other operators for now
