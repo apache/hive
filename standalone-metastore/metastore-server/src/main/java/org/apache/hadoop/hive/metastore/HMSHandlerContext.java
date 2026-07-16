@@ -73,6 +73,14 @@ public final class HMSHandlerContext {
     public int hashCode() {
       return Objects.hash(methodName, startTime);
     }
+
+    public long getTotalTime() {
+      return totalTime.get();
+    }
+
+    public void increaseTime(long time) {
+      totalTime.addAndGet(time);
+    }
   }
 
   private HMSHandlerContext() {

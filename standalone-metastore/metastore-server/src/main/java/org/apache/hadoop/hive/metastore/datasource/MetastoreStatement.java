@@ -56,12 +56,15 @@ public final class MetastoreStatement implements InvocationHandler {
   private final Statement delegate;
   private final Configuration configuration;
   private final MetastoreStatementHook hook;
+  private final long slowQueryThreshold;
 
   private MetastoreStatement(Configuration conf, Statement statement, String rawSql) {
     this.configuration = Objects.requireNonNull(conf);
     this.rawSql = rawSql;
     this.delegate = Objects.requireNonNull(statement);
     this.hook = resolveHook(conf);
+    this.slowQueryThreshold = MetastoreConf.getTimeVar(configuration,
+        MetastoreConf.ConfVars.METASTORE_JDBC_SLOW_QUERY_THRESHOLD, TimeUnit.MILLISECONDS);
   }
 
   private MetastoreStatementHook resolveHook(Configuration conf) {
@@ -83,37 +86,34 @@ public final class MetastoreStatement implements InvocationHandler {
         ClassUtils.getAllInterfaces(delegate.getClass()).toArray(new Class[0]), handler);
   }
 
-  private void logSummary(boolean monitor) {
-    Optional<HMSHandlerContext.CallCtx> currentCall = HMSHandlerContext.getCallCtx();
-    HMSHandlerContext.CallCtx previousCall = CALL_CTX.get();
-    if (currentCall.isEmpty()) {
-      if (previousCall != null) {
-        logSummary(previousCall);
+  private void logExecutionSummary() {
+    Optional<HMSHandlerContext.CallCtx> currentCtx = HMSHandlerContext.getCallCtx();
+    HMSHandlerContext.CallCtx previousCtx = CALL_CTX.get();
+    if (currentCtx.isEmpty()) {
+      if (previousCtx != null) {
+        logExecutionSummary(previousCtx);
         CALL_CTX.remove();
       }
       return;
     }
-    if (previousCall == null) {
-      if (monitor) {
-        CALL_CTX.set(currentCall.get());
-      }
+    if (previousCtx == null) {
+      CALL_CTX.set(currentCtx.get());
       return;
     }
-    if (!currentCall.get().equals(previousCall)) {
-      logSummary(previousCall);
-      if (monitor) {
-        CALL_CTX.set(currentCall.get());
-      } else {
-        CALL_CTX.remove();
-      }
+    if (!currentCtx.get().equals(previousCtx)) {
+      logExecutionSummary(previousCtx);
+      CALL_CTX.set(currentCtx.get());
     }
   }
 
-  private void logSummary(HMSHandlerContext.CallCtx call) {
-    long totalSpent = call.totalTime().get();
-    LOG.debug("{} took {} ms to complete all queries", call.methodName(), totalSpent);
-    if (isSlowExecution(configuration, totalSpent)) {
-      LOG.warn("{} took {} ms to complete all queries", call.methodName(), totalSpent);
+  private void logExecutionSummary(HMSHandlerContext.CallCtx call) {
+    if (call == null) {
+      return;
+    }
+    long totalSpent = call.getTotalTime();
+    LOG.debug("{} took {} ms to complete all associated queries", call.methodName(), totalSpent);
+    if (isSlowExecution(totalSpent)) {
+      LOG.warn("{} took {} ms to complete all associated queries", call.methodName(), totalSpent);
     }
   }
 
@@ -122,7 +122,7 @@ public final class MetastoreStatement implements InvocationHandler {
     Timer.Context ctx = null;
     try {
       boolean monitor = hook.profile(rawSql, method, args);
-      logSummary(monitor);
+      logExecutionSummary();
       if (Metrics.getRegistry() != null && monitor) {
         String metricName = hook.getMetricName(method);
         Timer timer = Metrics.getOrCreateTimer(metricName);
@@ -139,12 +139,12 @@ public final class MetastoreStatement implements InvocationHandler {
         String statement = rawSql != null ? rawSql
             : (args != null && args.length > 0 ? (String) args[0] : "no sql found");
         LOG.debug("Jdbc query: {} completed in {} ms", statement, timeSpent);
-        HMSHandlerContext.CallCtx callCtx = CALL_CTX.get();
-        if (callCtx != null) {
-          callCtx.totalTime().addAndGet(timeSpent);
-        }
       }
-      logExecution(timeSpent, configuration, rawSql, method, args);
+      HMSHandlerContext.CallCtx callCtx = CALL_CTX.get();
+      if (callCtx != null) {
+        callCtx.increaseTime(timeSpent);
+      }
+      logExecution(timeSpent, rawSql, method, args);
       return result;
     } catch (InvocationTargetException | UndeclaredThrowableException e) {
       throw e.getCause() != null ? e.getCause() : e;
@@ -155,9 +155,8 @@ public final class MetastoreStatement implements InvocationHandler {
     }
   }
 
-  static void logExecution(long timeSpent, Configuration configuration,
-      String sql, Method method, Object[] args) {
-    if (isSlowExecution(configuration, timeSpent)) {
+  private void logExecution(long timeSpent, String sql, Method method, Object[] args) {
+    if (isSlowExecution(timeSpent)) {
       Object[] printableArgs = args;
       if (args != null && args.length > 10) {
         printableArgs = new Object[10];
@@ -175,10 +174,8 @@ public final class MetastoreStatement implements InvocationHandler {
     }
   }
 
-  static boolean isSlowExecution(Configuration configuration, long timeSpent) {
-    long threshold = MetastoreConf.getTimeVar(configuration,
-        MetastoreConf.ConfVars.METASTORE_JDBC_SLOW_QUERY_THRESHOLD, TimeUnit.MILLISECONDS);
-    return threshold > 0 && timeSpent > threshold;
+  private boolean isSlowExecution(long timeSpent) {
+    return slowQueryThreshold > 0 && timeSpent > slowQueryThreshold;
   }
 
   public interface MetastoreStatementHook {
