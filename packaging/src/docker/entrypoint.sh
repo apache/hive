@@ -48,6 +48,7 @@ export HIVE_SERVER2_TEZ_USE_EXTERNAL_SESSIONS="${HIVE_SERVER2_TEZ_USE_EXTERNAL_S
 export TEZ_FRAMEWORK_MODE="${TEZ_FRAMEWORK_MODE:-}"
 export TEZ_AM_REGISTRY_NAMESPACE="${TEZ_AM_REGISTRY_NAMESPACE:-/tez_am/server}"
 export TEZ_AM_ZOOKEEPER_QUORUM="${TEZ_AM_ZOOKEEPER_QUORUM:-${HIVE_ZOOKEEPER_QUORUM}}"
+export TEZ_AM_RPC_PORT="${TEZ_AM_RPC_PORT:-0}"
 
 envsubst < $HIVE_HOME/conf/core-site.xml.template > $HIVE_HOME/conf/core-site.xml
 envsubst < $HIVE_HOME/conf/hive-site.xml.template > $HIVE_HOME/conf/hive-site.xml
