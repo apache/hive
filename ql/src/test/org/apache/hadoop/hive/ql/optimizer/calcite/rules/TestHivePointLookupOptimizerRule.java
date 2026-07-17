@@ -389,8 +389,8 @@ public class TestHivePointLookupOptimizerRule {
     RexNode condition = filter.getCondition();
     System.out.println(condition);
     assertEquals("IN($1, " +
-                    "_UTF-16LE'AAA111':VARCHAR(30) CHARACTER SET \"UTF-16LE\", " +
-                    "_UTF-16LE'BBB222':VARCHAR(30) CHARACTER SET \"UTF-16LE\")",
+                    "'AAA111':VARCHAR(30) CHARACTER SET \"UTF-16LE\", " +
+                    "'BBB222':VARCHAR(30) CHARACTER SET \"UTF-16LE\")",
             condition.toString());
   }
 
@@ -490,8 +490,8 @@ public class TestHivePointLookupOptimizerRule {
     RexNode condition = filter.getCondition();
     System.out.println(condition);
     assertEquals("IN($1, " +
-                    "_UTF-16LE'AAA111':VARCHAR(30) CHARACTER SET \"UTF-16LE\", " +
-                    "_UTF-16LE'BBB222':VARCHAR(30) CHARACTER SET \"UTF-16LE\")",
+                    "'AAA111':VARCHAR(30) CHARACTER SET \"UTF-16LE\", " +
+                    "'BBB222':VARCHAR(30) CHARACTER SET \"UTF-16LE\")",
             condition.toString());
   }
 
