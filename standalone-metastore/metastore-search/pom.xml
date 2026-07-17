@@ -21,8 +21,8 @@
   <name>Hive Metastore Search</name>
   <properties>
     <standalone.metastore.path.to.root>..</standalone.metastore.path.to.root>
-    <langchain4j.version>1.16.2</langchain4j.version>
-    <langchain4j.embeddings.version>1.16.1-beta26</langchain4j.embeddings.version>
+    <onnxruntime.version>1.25.1</onnxruntime.version>
+    <djl.tokenizers.version>0.36.0</djl.tokenizers.version>
     <lucene.version>10.4.0</lucene.version>
   </properties>
   <dependencies>
@@ -88,14 +88,14 @@
       <artifactId>jackson-databind</artifactId>
     </dependency>
     <dependency>
-      <groupId>dev.langchain4j</groupId>
-      <artifactId>langchain4j</artifactId>
-      <version>${langchain4j.version}</version>
+      <groupId>com.microsoft.onnxruntime</groupId>
+      <artifactId>onnxruntime</artifactId>
+      <version>${onnxruntime.version}</version>
     </dependency>
     <dependency>
-      <groupId>dev.langchain4j</groupId>
-      <artifactId>langchain4j-embeddings-bge-small-en-v15</artifactId>
-      <version>${langchain4j.embeddings.version}</version>
+      <groupId>ai.djl.huggingface</groupId>
+      <artifactId>tokenizers</artifactId>
+      <version>${djl.tokenizers.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.lucene</groupId>
