@@ -95,10 +95,9 @@ public class TestMetastoreTableMapper {
     assertEquals("orders", luceneDoc.get(MetastoreTableMapper.FIELD_TABLE));
     assertTrue(hasIndexedField(luceneDoc, MetastoreTableMapper.FIELD_TABLE + ".filter"));
     String searchText = luceneDoc.get(MetastoreTableMapper.FIELD_SEARCH_TEXT);
-    assertTrue(searchText.contains("orders"));
-    assertTrue(searchText.contains("daily orders"));
-    assertTrue(searchText.contains("id order id"));
-    assertFalse(searchText.contains("amount"));
+    assertEquals(
+        "table: orders; comment: daily orders; column id: order id; column amount:",
+        searchText);
     assertFalse(searchText.contains("hdfs://"));
     assertFalse(searchText.contains("MANAGED_TABLE"));
     assertFalse(searchText.contains("alice"));
@@ -129,7 +128,7 @@ public class TestMetastoreTableMapper {
   }
 
   @Test
-  public void searchTextIncludesOnlyCommentedColumns() throws Exception {
+  public void searchTextIncludesAllColumns() throws Exception {
     Configuration conf = new Configuration(false);
     IndexMapping mapping = MetastoreSchemas.defaultHiveTablesMapping("hive_tables", "bge-small", conf);
 
@@ -144,17 +143,14 @@ public class TestMetastoreTableMapper {
         new FieldSchema("status", "string", "fulfillment status")));
 
     TableDocument document = MetastoreTableMapper.fromTable(table, mapping);
-    String searchText = fieldValue(document, MetastoreTableMapper.FIELD_SEARCH_TEXT);
-    String storedColumns = fieldValue(document, MetastoreTableMapper.FIELD_COLUMNS);
-
-    assertTrue(searchText.contains("id order id"));
-    assertTrue(searchText.contains("status fulfillment status"));
-    assertFalse(searchText.contains("amount"));
-    assertTrue(storedColumns.contains("amount double"));
+    assertEquals(
+        "table: orders; column id: order id; column amount:; column status: fulfillment status",
+        fieldValue(document, MetastoreTableMapper.FIELD_SEARCH_TEXT));
+    assertTrue(fieldValue(document, MetastoreTableMapper.FIELD_COLUMNS).contains("amount double"));
   }
 
   @Test
-  public void searchTextCapsWideTables() throws Exception {
+  public void searchTextIncludesAllCommentedColumnsForWideTables() throws Exception {
     Configuration conf = new Configuration(false);
     IndexMapping mapping = MetastoreSchemas.defaultHiveTablesMapping("hive_tables", "bge-small", conf);
 
@@ -164,23 +160,41 @@ public class TestMetastoreTableMapper {
     table.setTableName("events");
     table.setSd(new StorageDescriptor());
     List<FieldSchema> cols = new ArrayList<>();
-    int maxCols = MetastoreTableMapper.MAX_SEARCH_COLUMNS;
-    for (int i = 0; i < maxCols + 5; i++) {
+    int columnCount = 105;
+    for (int i = 0; i < columnCount; i++) {
       cols.add(new FieldSchema("col" + i, "string", "comment " + i));
     }
     table.getSd().setCols(cols);
 
     TableDocument document = MetastoreTableMapper.fromTable(table, mapping);
     String searchText = fieldValue(document, MetastoreTableMapper.FIELD_SEARCH_TEXT);
+    String columnComments = fieldValue(document, MetastoreTableMapper.FIELD_COLUMN_COMMENTS);
     String storedColumns = fieldValue(document, MetastoreTableMapper.FIELD_COLUMNS);
 
-    assertTrue(searchText.contains("col0 comment 0"));
-    assertTrue(searchText.contains("col" + (maxCols - 1) + " comment " + (maxCols - 1)));
-    assertFalse(searchText.contains("; col" + maxCols + " comment " + maxCols + ";"));
-    assertFalse(searchText.endsWith("; col" + maxCols + " comment " + maxCols));
-    assertTrue(searchText.contains("(+5 more)"));
-    assertTrue(storedColumns.contains("col" + (maxCols + 4) + " string comment " + (maxCols + 4)));
-    assertFalse(storedColumns.contains("(+5 more)"));
+    assertTrue(searchText.contains("column col0: comment 0"));
+    assertTrue(searchText.contains(
+        "column col" + (columnCount - 1) + ": comment " + (columnCount - 1)));
+    assertFalse(searchText.contains("(+"));
+    assertTrue(columnComments.contains("comment " + (columnCount - 1)));
+    assertFalse(columnComments.contains("(+"));
+    assertTrue(storedColumns.contains("col" + (columnCount - 1) + " string comment " + (columnCount - 1)));
+    assertFalse(storedColumns.contains("(+"));
+  }
+
+  @Test
+  public void searchTextUsesStructuredLabelsWithoutComment() throws Exception {
+    Configuration conf = new Configuration(false);
+    IndexMapping mapping = MetastoreSchemas.defaultHiveTablesMapping("hive_tables", "bge-small", conf);
+
+    Table table = new Table();
+    table.setCatName("hive");
+    table.setDbName("sales");
+    table.setTableName("Events");
+    table.setSd(new StorageDescriptor());
+    table.getSd().setCols(List.of(new FieldSchema("id", "bigint", null)));
+
+    TableDocument document = MetastoreTableMapper.fromTable(table, mapping);
+    assertEquals("table: events; column id:", fieldValue(document, MetastoreTableMapper.FIELD_SEARCH_TEXT));
   }
 
   @Test

@@ -53,8 +53,6 @@ public final class MetastoreTableMapper {
       new KeywordSearchField(FIELD_COLUMN_NAMES, KEYWORD_BOOST_COLUMN_NAME),
       new KeywordSearchField(FIELD_COMMENT, KEYWORD_BOOST_COMMENT),
       new KeywordSearchField(FIELD_COLUMN_COMMENTS, KEYWORD_BOOST_COMMENT));
-  /** Max commented data columns included in search-oriented column fields. */
-  static final int MAX_SEARCH_COLUMNS = 100;
 
   public record KeywordSearchField(String field, float boost) {}
 
@@ -80,7 +78,7 @@ public final class MetastoreTableMapper {
     String columns = formatColumnsForStorage(table);
     String columnNames = formatColumnNamesForSearch(table);
     String columnComments = formatColumnCommentsForSearch(table);
-    String searchText = buildSearchText(name, comment, formatColumnsForSearch(table));
+    String searchText = buildSearchText(name, comment, table);
 
     List<Field> fields = new ArrayList<>(10);
     fields.add(new TextField(FIELD_DB, db));
@@ -125,18 +123,18 @@ public final class MetastoreTableMapper {
     return nullToEmpty(table.getParameters().get("comment"));
   }
 
-  private static String buildSearchText(String tableName, String comment, String searchColumns) {
-    String normalizedTableName = tableName.toLowerCase(Locale.ROOT);
-    if (comment.isEmpty()) {
-      if (searchColumns.isEmpty()) {
-        return normalizedTableName;
+  private static String buildSearchText(String tableName, String comment, Table table) {
+    List<String> parts = new ArrayList<>();
+    parts.add("table: " + tableName.toLowerCase(Locale.ROOT));
+    if (StringUtils.isNotEmpty(comment)) {
+      parts.add("comment: " + comment);
+    }
+    if (table.getSd() != null && table.getSd().getCols() != null) {
+      for (FieldSchema column : table.getSd().getCols()) {
+        parts.add(formatColumnForSearch(column));
       }
-      return normalizedTableName + " " + searchColumns;
     }
-    if (searchColumns.isEmpty()) {
-      return normalizedTableName + " " + comment;
-    }
-    return normalizedTableName + " " + comment + " " + searchColumns;
+    return String.join("; ", parts);
   }
 
   private static String formatColumnsForStorage(Table table) {
@@ -165,44 +163,13 @@ public final class MetastoreTableMapper {
     if (table.getSd() == null || table.getSd().getCols() == null) {
       return "";
     }
-    List<FieldSchema> commented = new ArrayList<>();
+    List<String> parts = new ArrayList<>();
     for (FieldSchema column : table.getSd().getCols()) {
       if (StringUtils.isNotEmpty(column.getComment())) {
-        commented.add(column);
+        parts.add(column.getComment());
       }
     }
-    int limit = Math.min(commented.size(), MAX_SEARCH_COLUMNS);
-    List<String> parts = new ArrayList<>(limit);
-    for (int i = 0; i < limit; i++) {
-      parts.add(commented.get(i).getComment());
-    }
-    String formatted = String.join("; ", parts);
-    if (commented.size() > MAX_SEARCH_COLUMNS) {
-      return formatted + "; ... (+" + (commented.size() - MAX_SEARCH_COLUMNS) + " more)";
-    }
-    return formatted;
-  }
-
-  private static String formatColumnsForSearch(Table table) {
-    if (table.getSd() == null || table.getSd().getCols() == null) {
-      return "";
-    }
-    List<FieldSchema> commented = new ArrayList<>();
-    for (FieldSchema column : table.getSd().getCols()) {
-      if (StringUtils.isNotEmpty(column.getComment())) {
-        commented.add(column);
-      }
-    }
-    int limit = Math.min(commented.size(), MAX_SEARCH_COLUMNS);
-    List<String> parts = new ArrayList<>(limit);
-    for (int i = 0; i < limit; i++) {
-      parts.add(formatColumnForSearch(commented.get(i)));
-    }
-    String formatted = String.join("; ", parts);
-    if (commented.size() > MAX_SEARCH_COLUMNS) {
-      return formatted + "; ... (+" + (commented.size() - MAX_SEARCH_COLUMNS) + " more)";
-    }
-    return formatted;
+    return String.join("; ", parts);
   }
 
   private static String formatColumnForStorage(FieldSchema column) {
@@ -214,7 +181,11 @@ public final class MetastoreTableMapper {
   }
 
   private static String formatColumnForSearch(FieldSchema column) {
-    return column.getName() + " " + column.getComment();
+    String name = column.getName().toLowerCase(Locale.ROOT);
+    if (StringUtils.isNotEmpty(column.getComment())) {
+      return "column " + name + ": " + column.getComment();
+    }
+    return "column " + name + ":";
   }
 
   private static String nullToEmpty(String value) {
