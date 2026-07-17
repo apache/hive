@@ -20,7 +20,7 @@ package org.apache.hive.search.index;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hive.search.config.IndexConfig;
-import org.apache.hive.search.config.IndexStateConfig;
+import org.apache.hive.search.config.IndexStoreConfig;
 import org.apache.hive.search.config.InferenceConfig;
 import org.apache.hive.search.exception.IndexNotHealthyException;
 import org.apache.hive.search.mapping.IndexMapping;
@@ -36,7 +36,7 @@ public class TestIndexManagerFailureRecovery {
   @Test
   public void unhealthyStatusBlocksSearchUntilRecovered() throws Exception {
     Configuration conf = new Configuration(false);
-    conf.setBoolean(IndexStateConfig.MEMORY, true);
+    conf.setBoolean(IndexStoreConfig.MEMORY, true);
     conf.set(IndexConfig.INDEX_NAME, "test_index");
     conf.set(InferenceConfig.MODEL_NAME, "stub-model");
     IndexMapping mapping = MetastoreSchemas.defaultHiveTablesMapping("test_index", "stub-model", conf);
