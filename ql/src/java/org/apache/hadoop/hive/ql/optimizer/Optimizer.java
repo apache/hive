@@ -107,10 +107,6 @@ public class Optimizer {
       transformations.add(new ConstantPropagate());
     }
 
-
-
-    transformations.add(new SortedDynPartitionTimeGranularityOptimizer());
-
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPT_PPD)) {
       transformations.add(new PartitionPruner());
       transformations.add(new PartitionConditionRemover());

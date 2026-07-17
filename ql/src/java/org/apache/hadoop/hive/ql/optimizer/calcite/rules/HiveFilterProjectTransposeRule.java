@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptPredicateList;
 import org.apache.calcite.plan.RelOptRuleCall;
@@ -99,13 +98,6 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
 
   public static final HiveFilterProjectTransposeRule SCAN = new HiveFilterProjectTransposeRule(
       operand(Filter.class, operand(HiveProject.class, operand(HiveTableScan.class, none()))),
-      HiveRelFactories.HIVE_BUILDER,
-      false,
-      false,
-      ProjectMergeRule.DEFAULT_BLOAT);
-
-  public static final HiveFilterProjectTransposeRule DRUID = new HiveFilterProjectTransposeRule(
-      operand(Filter.class, operand(HiveProject.class, operand(DruidQuery.class, none()))),
       HiveRelFactories.HIVE_BUILDER,
       false,
       false,

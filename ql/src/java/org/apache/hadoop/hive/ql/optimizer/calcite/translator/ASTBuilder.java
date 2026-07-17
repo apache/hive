@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 import java.math.BigDecimal;
 import java.util.stream.Collectors;
 
-import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rex.RexDynamicParam;
@@ -69,8 +68,6 @@ public class ASTBuilder {
     HiveTableScan hts = null;
     if (scan instanceof HiveJdbcConverter) {
       hts = ((HiveJdbcConverter) scan).getTableScan().getHiveTableScan();
-    } else if (scan instanceof DruidQuery) {
-      hts = (HiveTableScan) ((DruidQuery) scan).getTableScan();
     } else {
       hts = (HiveTableScan) scan;
     }
@@ -110,33 +107,7 @@ public class ASTBuilder {
     }
 
     ASTBuilder propList = ASTBuilder.construct(HiveParser.TOK_TABLEPROPLIST, "TOK_TABLEPROPLIST");
-    if (scan instanceof DruidQuery) {
-      //Passing query spec, column names and column types to be used as part of Hive Physical execution
-      DruidQuery dq = (DruidQuery) scan;
-      //Adding Query specs to be used by org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat
-      propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
-              .add(HiveParser.StringLiteral, "\"" + Constants.DRUID_QUERY_JSON + "\"")
-              .add(HiveParser.StringLiteral, "\"" + SemanticAnalyzer.escapeSQLString(
-                      dq.getQueryString()) + "\""));
-      // Adding column names used later by org.apache.hadoop.hive.druid.serde.DruidSerDe
-      propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
-          .add(HiveParser.StringLiteral, "\"" + Constants.DRUID_QUERY_FIELD_NAMES + "\"")
-          .add(HiveParser.StringLiteral,
-              "\"" + dq.getRowType().getFieldNames().stream().map(Object::toString)
-                  .collect(Collectors.joining(",")) + "\""
-          ));
-      // Adding column types used later by org.apache.hadoop.hive.druid.serde.DruidSerDe
-      propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
-          .add(HiveParser.StringLiteral, "\"" + Constants.DRUID_QUERY_FIELD_TYPES + "\"")
-          .add(HiveParser.StringLiteral,
-              "\"" + dq.getRowType().getFieldList().stream()
-                  .map(e -> TypeConverter.convert(e.getType()).getTypeName())
-                  .collect(Collectors.joining(",")) + "\""
-          ));
-      propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
-              .add(HiveParser.StringLiteral, "\"" + Constants.DRUID_QUERY_TYPE + "\"")
-              .add(HiveParser.StringLiteral, "\"" + dq.getQueryType().getQueryName() + "\""));
-    } else if (scan instanceof HiveJdbcConverter) {
+    if (scan instanceof HiveJdbcConverter) {
       HiveJdbcConverter jdbcConverter = (HiveJdbcConverter) scan;
       final String query = jdbcConverter.generateSql();
       LOGGER.debug("Generated SQL query: " + System.lineSeparator() + query);
@@ -147,14 +118,14 @@ public class ASTBuilder {
       propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
           .add(HiveParser.StringLiteral, "\"" + Constants.JDBC_SPLIT_QUERY + "\"")
           .add(HiveParser.StringLiteral, "\"" + jdbcConverter.splittingAllowed() + "\""));
-      // Adding column names used later by org.apache.hadoop.hive.druid.serde.DruidSerDe
+      // Adding column names used later by JDBC storage handler
       propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
           .add(HiveParser.StringLiteral, "\"" + Constants.JDBC_QUERY_FIELD_NAMES + "\"")
           .add(HiveParser.StringLiteral,
               "\"" + scan.getRowType().getFieldNames().stream().map(Object::toString)
                   .collect(Collectors.joining(",")) + "\""
           ));
-      // Adding column types used later by org.apache.hadoop.hive.druid.serde.DruidSerDe
+      // Adding column types used later by JDBC storage handler
       propList.add(ASTBuilder.construct(HiveParser.TOK_TABLEPROPERTY, "TOK_TABLEPROPERTY")
           .add(HiveParser.StringLiteral, "\"" + Constants.JDBC_QUERY_FIELD_TYPES + "\"")
           .add(HiveParser.StringLiteral,

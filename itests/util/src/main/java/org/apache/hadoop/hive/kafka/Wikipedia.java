@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hive.kafka;
+package org.apache.hadoop.hive.kafka;
 
 import org.apache.avro.specific.SpecificData;
 import org.apache.avro.message.BinaryMessageEncoder;
@@ -475,8 +475,8 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
    * Creates a new Wikipedia RecordBuilder.
    * @return A new Wikipedia RecordBuilder
    */
-  public static org.apache.hive.kafka.Wikipedia.Builder newBuilder() {
-    return new org.apache.hive.kafka.Wikipedia.Builder();
+  public static Wikipedia.Builder newBuilder() {
+    return new Wikipedia.Builder();
   }
 
   /**
@@ -484,8 +484,8 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
    * @param other The existing builder to copy.
    * @return A new Wikipedia RecordBuilder
    */
-  public static org.apache.hive.kafka.Wikipedia.Builder newBuilder(org.apache.hive.kafka.Wikipedia.Builder other) {
-    return new org.apache.hive.kafka.Wikipedia.Builder(other);
+  public static Wikipedia.Builder newBuilder(Wikipedia.Builder other) {
+    return new Wikipedia.Builder(other);
   }
 
   /**
@@ -493,8 +493,8 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
    * @param other The existing instance to copy.
    * @return A new Wikipedia RecordBuilder
    */
-  public static org.apache.hive.kafka.Wikipedia.Builder newBuilder(org.apache.hive.kafka.Wikipedia other) {
-    return new org.apache.hive.kafka.Wikipedia.Builder(other);
+  public static Wikipedia.Builder newBuilder(Wikipedia other) {
+    return new Wikipedia.Builder(other);
   }
 
   /**
@@ -531,7 +531,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * Creates a Builder by copying an existing Builder.
      * @param other The existing Builder to copy.
      */
-    private Builder(org.apache.hive.kafka.Wikipedia.Builder other) {
+    private Builder(Wikipedia.Builder other) {
       super(other);
       if (isValidValue(fields()[0], other.isrobot)) {
         this.isrobot = data().deepCopy(fields()[0].schema(), other.isrobot);
@@ -611,7 +611,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * Creates a Builder by copying an existing Wikipedia instance
      * @param other The existing instance to copy.
      */
-    private Builder(org.apache.hive.kafka.Wikipedia other) {
+    private Builder(Wikipedia other) {
       super(SCHEMA$);
       if (isValidValue(fields()[0], other.isrobot)) {
         this.isrobot = data().deepCopy(fields()[0].schema(), other.isrobot);
@@ -700,7 +700,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * @param value The value of 'isrobot'.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder setIsrobot(boolean value) {
+    public Wikipedia.Builder setIsrobot(boolean value) {
       validate(fields()[0], value);
       this.isrobot = value;
       fieldSetFlags()[0] = true;
@@ -720,7 +720,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * Clears the value of the 'isrobot' field.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder clearIsrobot() {
+    public Wikipedia.Builder clearIsrobot() {
       fieldSetFlags()[0] = false;
       return this;
     }
@@ -738,7 +738,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * @param value The value of 'channel'.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder setChannel(java.lang.String value) {
+    public Wikipedia.Builder setChannel(java.lang.String value) {
       validate(fields()[1], value);
       this.channel = value;
       fieldSetFlags()[1] = true;
@@ -758,7 +758,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * Clears the value of the 'channel' field.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder clearChannel() {
+    public Wikipedia.Builder clearChannel() {
       channel = null;
       fieldSetFlags()[1] = false;
       return this;
@@ -777,7 +777,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * @param value The value of 'timestamp'.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder setTimestamp(java.lang.String value) {
+    public Wikipedia.Builder setTimestamp(java.lang.String value) {
       validate(fields()[2], value);
       this.timestamp = value;
       fieldSetFlags()[2] = true;
@@ -797,7 +797,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * Clears the value of the 'timestamp' field.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder clearTimestamp() {
+    public Wikipedia.Builder clearTimestamp() {
       timestamp = null;
       fieldSetFlags()[2] = false;
       return this;
@@ -816,7 +816,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * @param value The value of 'flags'.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder setFlags(java.lang.String value) {
+    public Wikipedia.Builder setFlags(java.lang.String value) {
       validate(fields()[3], value);
       this.flags = value;
       fieldSetFlags()[3] = true;
@@ -836,7 +836,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * Clears the value of the 'flags' field.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder clearFlags() {
+    public Wikipedia.Builder clearFlags() {
       flags = null;
       fieldSetFlags()[3] = false;
       return this;
@@ -855,7 +855,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * @param value The value of 'isunpatrolled'.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder setIsunpatrolled(boolean value) {
+    public Wikipedia.Builder setIsunpatrolled(boolean value) {
       validate(fields()[4], value);
       this.isunpatrolled = value;
       fieldSetFlags()[4] = true;
@@ -875,7 +875,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * Clears the value of the 'isunpatrolled' field.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder clearIsunpatrolled() {
+    public Wikipedia.Builder clearIsunpatrolled() {
       fieldSetFlags()[4] = false;
       return this;
     }
@@ -893,7 +893,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * @param value The value of 'page'.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder setPage(java.lang.String value) {
+    public Wikipedia.Builder setPage(java.lang.String value) {
       validate(fields()[5], value);
       this.page = value;
       fieldSetFlags()[5] = true;
@@ -913,7 +913,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * Clears the value of the 'page' field.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder clearPage() {
+    public Wikipedia.Builder clearPage() {
       page = null;
       fieldSetFlags()[5] = false;
       return this;
@@ -932,7 +932,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * @param value The value of 'diffurl'.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder setDiffurl(java.lang.String value) {
+    public Wikipedia.Builder setDiffurl(java.lang.String value) {
       validate(fields()[6], value);
       this.diffurl = value;
       fieldSetFlags()[6] = true;
@@ -952,7 +952,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * Clears the value of the 'diffurl' field.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder clearDiffurl() {
+    public Wikipedia.Builder clearDiffurl() {
       diffurl = null;
       fieldSetFlags()[6] = false;
       return this;
@@ -971,7 +971,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * @param value The value of 'added'.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder setAdded(long value) {
+    public Wikipedia.Builder setAdded(long value) {
       validate(fields()[7], value);
       this.added = value;
       fieldSetFlags()[7] = true;
@@ -991,7 +991,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * Clears the value of the 'added' field.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder clearAdded() {
+    public Wikipedia.Builder clearAdded() {
       fieldSetFlags()[7] = false;
       return this;
     }
@@ -1009,7 +1009,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * @param value The value of 'comment'.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder setComment(java.lang.String value) {
+    public Wikipedia.Builder setComment(java.lang.String value) {
       validate(fields()[8], value);
       this.comment = value;
       fieldSetFlags()[8] = true;
@@ -1029,7 +1029,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * Clears the value of the 'comment' field.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder clearComment() {
+    public Wikipedia.Builder clearComment() {
       comment = null;
       fieldSetFlags()[8] = false;
       return this;
@@ -1048,7 +1048,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * @param value The value of 'commentlength'.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder setCommentlength(long value) {
+    public Wikipedia.Builder setCommentlength(long value) {
       validate(fields()[9], value);
       this.commentlength = value;
       fieldSetFlags()[9] = true;
@@ -1068,7 +1068,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * Clears the value of the 'commentlength' field.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder clearCommentlength() {
+    public Wikipedia.Builder clearCommentlength() {
       fieldSetFlags()[9] = false;
       return this;
     }
@@ -1086,7 +1086,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * @param value The value of 'isnew'.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder setIsnew(boolean value) {
+    public Wikipedia.Builder setIsnew(boolean value) {
       validate(fields()[10], value);
       this.isnew = value;
       fieldSetFlags()[10] = true;
@@ -1106,7 +1106,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * Clears the value of the 'isnew' field.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder clearIsnew() {
+    public Wikipedia.Builder clearIsnew() {
       fieldSetFlags()[10] = false;
       return this;
     }
@@ -1124,7 +1124,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * @param value The value of 'isminor'.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder setIsminor(boolean value) {
+    public Wikipedia.Builder setIsminor(boolean value) {
       validate(fields()[11], value);
       this.isminor = value;
       fieldSetFlags()[11] = true;
@@ -1144,7 +1144,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * Clears the value of the 'isminor' field.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder clearIsminor() {
+    public Wikipedia.Builder clearIsminor() {
       fieldSetFlags()[11] = false;
       return this;
     }
@@ -1162,7 +1162,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * @param value The value of 'delta'.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder setDelta(long value) {
+    public Wikipedia.Builder setDelta(long value) {
       validate(fields()[12], value);
       this.delta = value;
       fieldSetFlags()[12] = true;
@@ -1182,7 +1182,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * Clears the value of the 'delta' field.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder clearDelta() {
+    public Wikipedia.Builder clearDelta() {
       fieldSetFlags()[12] = false;
       return this;
     }
@@ -1200,7 +1200,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * @param value The value of 'isanonymous'.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder setIsanonymous(boolean value) {
+    public Wikipedia.Builder setIsanonymous(boolean value) {
       validate(fields()[13], value);
       this.isanonymous = value;
       fieldSetFlags()[13] = true;
@@ -1220,7 +1220,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * Clears the value of the 'isanonymous' field.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder clearIsanonymous() {
+    public Wikipedia.Builder clearIsanonymous() {
       fieldSetFlags()[13] = false;
       return this;
     }
@@ -1238,7 +1238,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * @param value The value of 'user'.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder setUser(java.lang.String value) {
+    public Wikipedia.Builder setUser(java.lang.String value) {
       validate(fields()[14], value);
       this.user = value;
       fieldSetFlags()[14] = true;
@@ -1258,7 +1258,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * Clears the value of the 'user' field.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder clearUser() {
+    public Wikipedia.Builder clearUser() {
       user = null;
       fieldSetFlags()[14] = false;
       return this;
@@ -1277,7 +1277,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * @param value The value of 'deltabucket'.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder setDeltabucket(double value) {
+    public Wikipedia.Builder setDeltabucket(double value) {
       validate(fields()[15], value);
       this.deltabucket = value;
       fieldSetFlags()[15] = true;
@@ -1297,7 +1297,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * Clears the value of the 'deltabucket' field.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder clearDeltabucket() {
+    public Wikipedia.Builder clearDeltabucket() {
       fieldSetFlags()[15] = false;
       return this;
     }
@@ -1315,7 +1315,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * @param value The value of 'deleted'.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder setDeleted(long value) {
+    public Wikipedia.Builder setDeleted(long value) {
       validate(fields()[16], value);
       this.deleted = value;
       fieldSetFlags()[16] = true;
@@ -1335,7 +1335,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * Clears the value of the 'deleted' field.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder clearDeleted() {
+    public Wikipedia.Builder clearDeleted() {
       fieldSetFlags()[16] = false;
       return this;
     }
@@ -1353,7 +1353,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * @param value The value of 'namespace'.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder setNamespace(java.lang.String value) {
+    public Wikipedia.Builder setNamespace(java.lang.String value) {
       validate(fields()[17], value);
       this.namespace = value;
       fieldSetFlags()[17] = true;
@@ -1373,7 +1373,7 @@ public class Wikipedia extends org.apache.avro.specific.SpecificRecordBase imple
      * Clears the value of the 'namespace' field.
      * @return This builder.
      */
-    public org.apache.hive.kafka.Wikipedia.Builder clearNamespace() {
+    public Wikipedia.Builder clearNamespace() {
       namespace = null;
       fieldSetFlags()[17] = false;
       return this;

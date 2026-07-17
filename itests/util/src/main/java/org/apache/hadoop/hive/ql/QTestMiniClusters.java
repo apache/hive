@@ -57,9 +57,8 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsErasureCodingShim;
-import org.apache.hive.druid.MiniDruidCluster;
-import org.apache.hive.kafka.SingleNodeKafkaCluster;
-import org.apache.hive.kafka.Wikipedia;
+import org.apache.hadoop.hive.kafka.SingleNodeKafkaCluster;
+import org.apache.hadoop.hive.kafka.Wikipedia;
 import org.apache.hive.testutils.MiniZooKeeperCluster;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
@@ -70,7 +69,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 
 /**
- * QTestMiniClusters: decouples cluster details from QTestUtil (kafka/druid/llap/tez/mr, file
+ * QTestMiniClusters: decouples cluster details from QTestUtil (kafka/llap/tez/mr, file
  * system)
  */
 public class QTestMiniClusters {
@@ -94,7 +93,6 @@ public class QTestMiniClusters {
   private HadoopShims.MiniDFSShim dfs = null;
   private HadoopShims.HdfsEncryptionShim hes = null;
   private MiniLlapCluster llapCluster = null;
-  private MiniDruidCluster druidCluster = null;
   private SingleNodeKafkaCluster kafkaCluster = null;
 
   public enum CoreClusterType {
@@ -112,9 +110,6 @@ public class QTestMiniClusters {
     LLAP(CoreClusterType.TEZ, FsType.HDFS),
     LLAP_LOCAL(CoreClusterType.TEZ, FsType.LOCAL), 
     NONE(CoreClusterType.MR,FsType.LOCAL),
-    DRUID_LOCAL(CoreClusterType.TEZ, FsType.LOCAL),
-    DRUID(CoreClusterType.TEZ, FsType.HDFS),
-    DRUID_KAFKA(CoreClusterType.TEZ, FsType.HDFS),
     KAFKA(CoreClusterType.TEZ, FsType.HDFS),
     KUDU(CoreClusterType.TEZ, FsType.LOCAL);
 
@@ -146,12 +141,6 @@ public class QTestMiniClusters {
         return LLAP;
       } else if (type.equals("llap_local")) {
         return LLAP_LOCAL;
-      } else if (type.equals("druidLocal")) {
-        return DRUID_LOCAL;
-      } else if (type.equals("druid")) {
-        return DRUID;
-      } else if (type.equals("druid-kafka")) {
-        return DRUID_KAFKA;
       } else if (type.equals("kafka")) {
         return KAFKA;
       } else if (type.equals("kudu")) {
@@ -241,23 +230,7 @@ public class QTestMiniClusters {
 
     String uriString = fs.getUri().toString();
 
-    if (clusterType == MiniClusterType.DRUID_KAFKA || clusterType == MiniClusterType.DRUID_LOCAL
-        || clusterType == MiniClusterType.DRUID) {
-      final String tempDir = QTestSystemProperties.getTempDir();
-      druidCluster = new MiniDruidCluster(
-          clusterType == MiniClusterType.DRUID ? "mini-druid" : "mini-druid-kafka", logDir, tempDir,
-          setup.zkPort, Utilities.jarFinderGetJar(MiniDruidCluster.class));
-      final Path druidDeepStorage = fs.makeQualified(new Path(druidCluster.getDeepStorageDir()));
-      fs.mkdirs(druidDeepStorage);
-      final Path scratchDir =
-          fs.makeQualified(new Path(QTestSystemProperties.getTempDir(), "druidStagingDir"));
-      fs.mkdirs(scratchDir);
-      conf.set("hive.druid.working.directory", scratchDir.toUri().getPath());
-      druidCluster.init(conf);
-      druidCluster.start();
-    }
-
-    if (clusterType == MiniClusterType.KAFKA || clusterType == MiniClusterType.DRUID_KAFKA) {
+    if (clusterType == MiniClusterType.KAFKA) {
       kafkaCluster =
           new SingleNodeKafkaCluster("kafka", QTestSystemProperties.getTempDir() + "/kafka-cluster",
               setup.zkPort, clusterType == MiniClusterType.KAFKA ? 9093 : 9092);
@@ -277,22 +250,20 @@ public class QTestMiniClusters {
       }
       int numTrackers = 2;
       if (EnumSet
-          .of(MiniClusterType.LLAP, MiniClusterType.LLAP_LOCAL, MiniClusterType.DRUID_LOCAL,
-              MiniClusterType.DRUID_KAFKA, MiniClusterType.DRUID, MiniClusterType.KAFKA)
+          .of(MiniClusterType.LLAP, MiniClusterType.LLAP_LOCAL, MiniClusterType.KAFKA)
           .contains(clusterType)) {
         llapCluster = LlapItUtils.startAndGetMiniLlapCluster(conf, setup.zooKeeperCluster, confDir);
       }
       if (EnumSet
-          .of(MiniClusterType.LLAP_LOCAL, MiniClusterType.TEZ_LOCAL, MiniClusterType.DRUID_LOCAL)
+          .of(MiniClusterType.LLAP_LOCAL, MiniClusterType.TEZ_LOCAL)
           .contains(clusterType)) {
         mr = shims.getLocalMiniTezCluster(conf,
-            clusterType == MiniClusterType.LLAP_LOCAL || clusterType == MiniClusterType.DRUID_LOCAL);
+            clusterType == MiniClusterType.LLAP_LOCAL);
       } else {
         mr = shims
             .getMiniTezCluster(conf, numTrackers, uriString,
                 EnumSet
-                    .of(MiniClusterType.LLAP, MiniClusterType.LLAP_LOCAL,
-                        MiniClusterType.DRUID_KAFKA, MiniClusterType.DRUID, MiniClusterType.KAFKA)
+                    .of(MiniClusterType.LLAP, MiniClusterType.LLAP_LOCAL, MiniClusterType.KAFKA)
                     .contains(clusterType));
       }
     } else if (clusterType == MiniClusterType.MR) {
@@ -319,20 +290,6 @@ public class QTestMiniClusters {
         // Conf.get takes care of parameter replacement, iterator.value does not.
         conf.set(confEntry.getKey(), clusterSpecificConf.get(confEntry.getKey()));
       }
-    }
-    if (druidCluster != null) {
-      final Path druidDeepStorage = fs.makeQualified(new Path(druidCluster.getDeepStorageDir()));
-      fs.mkdirs(druidDeepStorage);
-      conf.set("hive.druid.storage.storageDirectory", druidDeepStorage.toUri().getPath());
-      conf.set("hive.druid.metadata.db.type", "derby");
-      conf.set("hive.druid.metadata.uri", druidCluster.getMetadataURI());
-      conf.set("hive.druid.coordinator.address.default", druidCluster.getCoordinatorURI());
-      conf.set("hive.druid.overlord.address.default", druidCluster.getOverlordURI());
-      conf.set("hive.druid.broker.address.default", druidCluster.getBrokerURI());
-      final Path scratchDir =
-          fs.makeQualified(new Path(QTestSystemProperties.getTempDir(), "druidStagingDir"));
-      fs.mkdirs(scratchDir);
-      conf.set("hive.druid.working.directory", scratchDir.toUri().getPath());
     }
 
     if (testArgs.isWithLlapIo() && (clusterType == MiniClusterType.NONE)) {
@@ -369,11 +326,6 @@ public class QTestMiniClusters {
     if (clusterType.getCoreClusterType() == CoreClusterType.TEZ
         && SessionState.get().getTezSession() != null) {
       SessionState.get().getTezSession().destroy();
-    }
-
-    if (druidCluster != null) {
-      druidCluster.stop();
-      druidCluster = null;
     }
 
     if (kafkaCluster != null) {

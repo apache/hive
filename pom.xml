@@ -35,7 +35,6 @@
     <module>cli</module>
     <module>common</module>
     <module>contrib</module>
-    <module>druid-handler</module>
     <module>hbase-handler</module>
     <module>jdbc-handler</module>
     <module>hcatalog</module>
@@ -134,7 +133,6 @@
     <derby.version>10.17.1.0</derby.version>
     <dropwizard.version>3.1.0</dropwizard.version>
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2</dropwizard-metrics-hadoop-metrics2-reporter.version>
-    <druid.version>0.17.1</druid.version>
     <esri.version>2.2.4</esri.version>
     <flatbuffers.version>1.12.0</flatbuffers.version>
     <guava.version>22.0</guava.version>
@@ -195,8 +193,6 @@
     <mockito-inline.version>5.2.0</mockito-inline.version>
     <mina.version>2.0.0-M5</mina.version>
     <netty.version>4.1.127.Final</netty.version>
-    <netty3.version>3.10.5.Final</netty3.version>
-    <!-- used by druid storage handler -->
     <pac4j-saml.version>4.5.8</pac4j-saml.version>
     <paranamer.version>2.8</paranamer.version>
     <parquet.version>1.16.0</parquet.version>
@@ -637,11 +633,6 @@
       <dependency>
         <groupId>org.apache.calcite</groupId>
         <artifactId>calcite-linq4j</artifactId>
-        <version>${calcite.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.calcite</groupId>
-        <artifactId>calcite-druid</artifactId>
         <version>${calcite.version}</version>
       </dependency>
       <dependency>

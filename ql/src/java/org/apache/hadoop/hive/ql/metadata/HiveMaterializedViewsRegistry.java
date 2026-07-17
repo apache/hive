@@ -19,9 +19,7 @@ package org.apache.hadoop.hive.ql.metadata;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -31,25 +29,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.ImmutableMap;
-import org.apache.calcite.adapter.druid.DruidQuery;
-import org.apache.calcite.adapter.druid.DruidSchema;
-import org.apache.calcite.adapter.druid.DruidTable;
-import org.apache.calcite.interpreter.BindableConvention;
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.type.RelDataType;
-import org.apache.calcite.rel.type.RelDataTypeFactory;
-import org.apache.calcite.rel.type.RelDataTypeField;
-import org.apache.calcite.rel.type.RelDataTypeImpl;
 import org.apache.calcite.rex.RexBuilder;
-import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl;
@@ -79,12 +66,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
-import com.google.common.collect.ImmutableList;
 
 import static java.util.stream.Collectors.toList;
 import static org.apache.hadoop.hive.ql.metadata.RewriteAlgorithm.ALL;
@@ -450,88 +434,17 @@ public final class HiveMaterializedViewsRegistry {
 
     RelNode tableRel;
 
-    // 3. Build operator
-    if (obtainTableType(viewTable) == TableType.DRUID) {
-      // Build Druid query
-      String address = HiveConf.getVar(conf,
-          HiveConf.ConfVars.HIVE_DRUID_BROKER_DEFAULT_ADDRESS);
-      String dataSource = viewTable.getParameters().get(Constants.DRUID_DATA_SOURCE);
-      Set<String> metrics = new HashSet<>();
-      List<RelDataType> druidColTypes = new ArrayList<>();
-      List<String> druidColNames = new ArrayList<>();
-      //@NOTE this code is very similar to the code at org/apache/hadoop/hive/ql/parse/CalcitePlanner.java:2362
-      //@TODO it will be nice to refactor it
-      RelDataTypeFactory dtFactory = cluster.getRexBuilder().getTypeFactory();
-      for (RelDataTypeField field : rowType.getFieldList()) {
-        if (DruidTable.DEFAULT_TIMESTAMP_COLUMN.equals(field.getName())) {
-          // Druid's time column is always not null.
-          druidColTypes.add(dtFactory.createTypeWithNullability(field.getType(), false));
-        } else {
-          druidColTypes.add(field.getType());
-        }
-        druidColNames.add(field.getName());
-        if (field.getName().equals(DruidTable.DEFAULT_TIMESTAMP_COLUMN)) {
-          // timestamp
-          continue;
-        }
-        if (field.getType().getSqlTypeName() == SqlTypeName.VARCHAR) {
-          // dimension
-          continue;
-        }
-        metrics.add(field.getName());
-      }
-
-      List<Interval> intervals = Collections.singletonList(DruidTable.DEFAULT_INTERVAL);
-      rowType = dtFactory.createStructType(druidColTypes, druidColNames);
-      // We can pass null for Hive object because it is only used to retrieve tables
-      // if constraints on a table object are existing, but constraints cannot be defined
-      // for materialized views.
-      RelOptHiveTable optTable = new RelOptHiveTable(null, cluster.getTypeFactory(), fullyQualifiedTabName,
-          rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
-          conf, new QueryTables(true), new HashMap<>(), new HashMap<>(), new AtomicInteger());
-      DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
-          dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,
-          intervals, null, null);
-      final TableScan scan = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
-          optTable, viewTable.getTableName(), null, false, false);
-      tableRel = DruidQuery.create(cluster, cluster.traitSetOf(BindableConvention.INSTANCE),
-          optTable, druidTable, ImmutableList.<RelNode>of(scan), ImmutableMap.of());
-    } else {
-      // Build Hive Table Scan Rel.
-      // We can pass null for Hive object because it is only used to retrieve tables
-      // if constraints on a table object are existing, but constraints cannot be defined
-      // for materialized views.
-      RelOptHiveTable optTable = new RelOptHiveTable(null, cluster.getTypeFactory(), fullyQualifiedTabName,
-          rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
-          conf, new QueryTables(true), new HashMap<>(), new HashMap<>(), new AtomicInteger());
-      tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
-          viewTable.getTableName(), null, false, false);
-    }
+    // Build Hive Table Scan Rel.
+    // We can pass null for Hive object because it is only used to retrieve tables
+    // if constraints on a table object are existing, but constraints cannot be defined
+    // for materialized views.
+    RelOptHiveTable optTable = new RelOptHiveTable(null, cluster.getTypeFactory(), fullyQualifiedTabName,
+        rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
+        conf, new QueryTables(true), new HashMap<>(), new HashMap<>(), new AtomicInteger());
+    tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
+        viewTable.getTableName(), null, false, false);
 
     return tableRel;
-  }
-
-  private static TableType obtainTableType(Table tabMetaData) {
-    if (tabMetaData.getStorageHandler() != null) {
-      final String storageHandlerStr = tabMetaData.getStorageHandler().toString();
-      if (storageHandlerStr.equals(Constants.DRUID_HIVE_STORAGE_HANDLER_ID)) {
-        return TableType.DRUID;
-      }
-
-      if (storageHandlerStr.equals(Constants.JDBC_HIVE_STORAGE_HANDLER_ID)) {
-        return TableType.JDBC;
-      }
-
-    }
-
-    return TableType.NATIVE;
-  }
-
-  //@TODO this seems to be the same as org.apache.hadoop.hive.ql.parse.CalcitePlanner.TableType.DRUID do we really need both
-  private enum TableType {
-    DRUID,
-    NATIVE,
-    JDBC
   }
 
 }
