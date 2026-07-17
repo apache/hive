@@ -49,19 +49,19 @@ final class InferenceWorker extends Thread {
   private final int maxSeqLength;
 
   InferenceWorker(
-      String modelName,
+      InferenceConfig config,
+      InferenceConfig.EmbeddingModelSpec spec,
       int workerIndex,
-      Path modelDir,
-      EmbeddingPrompt prompt,
-      int intraOpThreads,
-      int maxSeqLength,
       BlockingQueue<EmbedRequest> queue)
       throws InitializeException, IOException {
-    super("EmbedModel-" + modelName + "-" + workerIndex);
+    super("EmbedModel-" + spec.getModel() + "-" + workerIndex);
     setDaemon(true);
-    this.prompt = prompt == null ? EmbeddingPrompt.none() : prompt;
+    this.prompt = spec.getPrompt() == null ? EmbeddingPrompt.none() : spec.getPrompt();
     this.queue = queue;
-    this.maxSeqLength = Math.max(1, maxSeqLength);
+    this.maxSeqLength = config.getEmbeddingMaxSeqLength();
+    int intraOpThreads = Math.max(1,
+        Runtime.getRuntime().availableProcessors() / config.getEmbeddingThreads());
+    Path modelDir = spec.getModelDir();
     try {
       this.ortEnv = OrtEnvironment.getEnvironment();
       OrtSession.SessionOptions opts = new OrtSession.SessionOptions();
@@ -120,9 +120,7 @@ final class InferenceWorker extends Thread {
     long[] attentionMask = encoding.getAttentionMask();
 
     if (inputIds.length <= maxSeqLength) {
-      float[] vector = runInference(inputIds, attentionMask, 0, inputIds.length);
-      normalize(vector);
-      return vector;
+      return normalize(embedInternal(inputIds, attentionMask, 0, inputIds.length));
     }
 
     int chunkCount = (inputIds.length + maxSeqLength - 1) / maxSeqLength;
@@ -130,19 +128,16 @@ final class InferenceWorker extends Thread {
     for (int chunk = 0; chunk < chunkCount; chunk++) {
       int offset = chunk * maxSeqLength;
       int chunkLen = Math.min(maxSeqLength, inputIds.length - offset);
-      chunkVectors[chunk] = runInference(inputIds, attentionMask, offset, chunkLen);
-      normalize(chunkVectors[chunk]);
+      chunkVectors[chunk] = normalize(embedInternal(inputIds, attentionMask, offset, chunkLen));
     }
     if (LOG.isDebugEnabled()) {
       LOG.debug("Embedded {} token(s) in {} chunk(s) on worker {}", inputIds.length, chunkCount,
           getName());
     }
-    float[] pooled = meanPoolVectors(chunkVectors);
-    normalize(pooled);
-    return pooled;
+    return normalize(meanPoolVectors(chunkVectors));
   }
 
-  private float[] runInference(long[] inputIds, long[] attentionMask, int offset, int seqLen)
+  private float[] embedInternal(long[] inputIds, long[] attentionMask, int offset, int seqLen)
       throws OrtException {
     long[] ids = new long[seqLen];
     long[] mask = new long[seqLen];
@@ -218,7 +213,7 @@ final class InferenceWorker extends Thread {
     return result;
   }
 
-  static void normalize(float[] vec) {
+  static float[] normalize(float[] vec) {
     float norm = 0;
     for (float v : vec) {
       norm += v * v;
@@ -229,6 +224,7 @@ final class InferenceWorker extends Thread {
         vec[i] /= norm;
       }
     }
+    return vec;
   }
 
   private void closeResources() {

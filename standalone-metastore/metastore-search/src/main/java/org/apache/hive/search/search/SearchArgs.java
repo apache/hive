@@ -70,14 +70,6 @@ public sealed interface SearchArgs permits SearchArgs.Match, SearchArgs.Semantic
     return toBody(args);
   }
 
-  static SearchQuery.Mode modeOf(SearchArgs args) {
-    return switch (args) {
-      case Match m -> SearchQuery.Mode.MATCH;
-      case Semantic s -> SearchQuery.Mode.SEMANTIC;
-      case Hybrid h -> SearchQuery.Mode.HYBRID;
-    };
-  }
-
   private static Map<String, String> toSemanticBody(Semantic semantic) {
     Map<String, String> body = new LinkedHashMap<>();
     body.put("query", semantic.queryText());
