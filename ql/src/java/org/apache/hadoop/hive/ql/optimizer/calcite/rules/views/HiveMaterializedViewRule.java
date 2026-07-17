@@ -45,7 +45,6 @@ import org.apache.calcite.rex.RexSimplify;
 import org.apache.calcite.rex.RexTableInputRef;
 import org.apache.calcite.sql.SqlFunction;
 import org.apache.calcite.tools.RelBuilder;
-import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.ql.optimizer.calcite.Bug;
@@ -86,24 +85,22 @@ public class HiveMaterializedViewRule {
       .build();
 
   public static final MaterializedViewProjectFilterRule INSTANCE_PROJECT_FILTER =
-      new HiveMaterializedViewProjectFilterRule(HiveRelFactories.HIVE_BUILDER, true, PROGRAM, false);
+      new HiveMaterializedViewProjectFilterRule();
 
   public static final MaterializedViewOnlyFilterRule INSTANCE_FILTER =
-      new HiveMaterializedViewOnlyFilterRule(HiveRelFactories.HIVE_BUILDER, true, PROGRAM, false);
+      new HiveMaterializedViewOnlyFilterRule();
 
   public static final MaterializedViewProjectJoinRule INSTANCE_PROJECT_JOIN =
-      new HiveMaterializedViewProjectJoinRule(HiveRelFactories.HIVE_BUILDER, true, PROGRAM, false);
+      new HiveMaterializedViewProjectJoinRule();
 
   public static final MaterializedViewOnlyJoinRule INSTANCE_JOIN =
-      new HiveMaterializedViewOnlyJoinRule(HiveRelFactories.HIVE_BUILDER, true, PROGRAM, false);
+      new HiveMaterializedViewOnlyJoinRule();
 
   public static final HiveMaterializedViewProjectAggregateRule INSTANCE_PROJECT_AGGREGATE =
-      new HiveMaterializedViewProjectAggregateRule(HiveRelFactories.HIVE_BUILDER,
-          true, PROGRAM);
+      new HiveMaterializedViewProjectAggregateRule();
 
   public static final HiveMaterializedViewOnlyAggregateRule INSTANCE_AGGREGATE =
-      new HiveMaterializedViewOnlyAggregateRule(HiveRelFactories.HIVE_BUILDER,
-          true, PROGRAM);
+      new HiveMaterializedViewOnlyAggregateRule();
 
   public static final RelOptRule[] MATERIALIZED_VIEW_REWRITING_RULES =
       new RelOptRule[] {
@@ -116,12 +113,11 @@ public class HiveMaterializedViewRule {
 
 
   protected static class HiveMaterializedViewProjectAggregateRule extends MaterializedViewProjectAggregateRule {
-    public HiveMaterializedViewProjectAggregateRule(
-        RelBuilderFactory relBuilderFactory, boolean generateUnionRewriting, HepProgram unionRewritingPullProgram) {
-      super(relBuilderFactory, generateUnionRewriting, unionRewritingPullProgram);
+    public HiveMaterializedViewProjectAggregateRule() {
+      super(HiveRelFactories.HIVE_BUILDER, true, PROGRAM);
     }
 
-    // Overridden to avoid CALCITE-7641; TODO remove this once fixed.
+    // Overridden to avoid CALCITE-7641
     @Override protected @Nullable RelNode rewriteQuery(
         RelBuilder relBuilder,
         RexBuilder rexBuilder,
@@ -148,12 +144,11 @@ public class HiveMaterializedViewRule {
   }
 
   protected static class HiveMaterializedViewOnlyAggregateRule extends MaterializedViewOnlyAggregateRule {
-    public HiveMaterializedViewOnlyAggregateRule(
-        RelBuilderFactory relBuilderFactory, boolean generateUnionRewriting, HepProgram unionRewritingPullProgram) {
-      super(relBuilderFactory, generateUnionRewriting, unionRewritingPullProgram);
+    public HiveMaterializedViewOnlyAggregateRule() {
+      super(HiveRelFactories.HIVE_BUILDER, true, PROGRAM);
     }
 
-    // Overridden to avoid CALCITE-7641; TODO remove this once fixed.
+    // Overridden to avoid CALCITE-7641
     @Override protected @Nullable RelNode rewriteQuery(
         RelBuilder relBuilder,
         RexBuilder rexBuilder,
@@ -180,13 +175,11 @@ public class HiveMaterializedViewRule {
   }
 
   protected static class HiveMaterializedViewProjectFilterRule extends MaterializedViewProjectFilterRule {
-    public HiveMaterializedViewProjectFilterRule(RelBuilderFactory relBuilderFactory,
-        boolean generateUnionRewriting, HepProgram unionRewritingPullProgram,
-        boolean fastBailOut) {
-      super(relBuilderFactory, generateUnionRewriting, unionRewritingPullProgram, fastBailOut);
+    public HiveMaterializedViewProjectFilterRule() {
+      super(HiveRelFactories.HIVE_BUILDER, true, PROGRAM, false);
     }
 
-    // Overridden to avoid CALCITE-7641; TODO remove this once fixed.
+    // Overridden to avoid CALCITE-7641
     @Override protected @Nullable RelNode rewriteQuery(
         RelBuilder relBuilder,
         RexBuilder rexBuilder,
@@ -208,13 +201,11 @@ public class HiveMaterializedViewRule {
   }
 
   protected static class HiveMaterializedViewOnlyFilterRule extends MaterializedViewOnlyFilterRule {
-    public HiveMaterializedViewOnlyFilterRule(RelBuilderFactory relBuilderFactory,
-        boolean generateUnionRewriting, HepProgram unionRewritingPullProgram,
-        boolean fastBailOut) {
-      super(relBuilderFactory, generateUnionRewriting, unionRewritingPullProgram, fastBailOut);
+    public HiveMaterializedViewOnlyFilterRule() {
+      super(HiveRelFactories.HIVE_BUILDER, true, PROGRAM, false);
     }
 
-    // Overridden to avoid CALCITE-7641; TODO remove this once fixed.
+    // Overridden to avoid CALCITE-7641
     @Override protected @Nullable RelNode rewriteQuery(
         RelBuilder relBuilder,
         RexBuilder rexBuilder,
@@ -236,13 +227,11 @@ public class HiveMaterializedViewRule {
   }
 
   protected static class HiveMaterializedViewProjectJoinRule extends MaterializedViewProjectJoinRule {
-    public HiveMaterializedViewProjectJoinRule(RelBuilderFactory relBuilderFactory,
-        boolean generateUnionRewriting, HepProgram unionRewritingPullProgram,
-        boolean fastBailOut) {
-      super(relBuilderFactory, generateUnionRewriting, unionRewritingPullProgram, fastBailOut);
+    public HiveMaterializedViewProjectJoinRule() {
+      super(HiveRelFactories.HIVE_BUILDER, true, PROGRAM, false);
     }
 
-    // Overridden to avoid CALCITE-7641; TODO remove this once fixed.
+    // Overridden to avoid CALCITE-7641
     @Override protected @Nullable RelNode rewriteQuery(
         RelBuilder relBuilder,
         RexBuilder rexBuilder,
@@ -264,13 +253,11 @@ public class HiveMaterializedViewRule {
   }
 
   protected static class HiveMaterializedViewOnlyJoinRule extends MaterializedViewOnlyJoinRule {
-    public HiveMaterializedViewOnlyJoinRule(RelBuilderFactory relBuilderFactory,
-        boolean generateUnionRewriting, HepProgram unionRewritingPullProgram,
-        boolean fastBailOut) {
-      super(relBuilderFactory, generateUnionRewriting, unionRewritingPullProgram, fastBailOut);
+    public HiveMaterializedViewOnlyJoinRule() {
+      super(HiveRelFactories.HIVE_BUILDER, true, PROGRAM, false);
     }
 
-    // Overridden to avoid CALCITE-7641; TODO remove this once fixed.
+    // Overridden to avoid CALCITE-7641
     @Override protected @Nullable RelNode rewriteQuery(
         RelBuilder relBuilder,
         RexBuilder rexBuilder,
