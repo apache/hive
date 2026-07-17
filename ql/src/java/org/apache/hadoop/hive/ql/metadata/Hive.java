@@ -2898,9 +2898,8 @@ public class Hive implements AutoCloseable {
         }
 
         boolean isManaged = tbl.getTableType() == TableType.MANAGED_TABLE;
-        // TODO: why is "&& !isAcidIUDoperation" needed here?
         if (!isTxnTable && ((loadFileType == LoadFileType.REPLACE_ALL)
-            || (oldPart == null && !isAcidIUDoperation && loadFileType != LoadFileType.KEEP_EXISTING))) {
+            || (oldPart == null && loadFileType != LoadFileType.KEEP_EXISTING))) {
           //for fullAcid tables we don't delete files for commands with OVERWRITE - we create a new
           // base_x.  (there is Insert Overwrite and Load Data Overwrite)
           boolean isSkipTrash = MetaStoreUtils.isSkipTrash(tbl.getParameters());
