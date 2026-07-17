@@ -18,10 +18,10 @@
 package org.apache.hive.search.inference;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.apache.hive.search.config.InferenceConfig;
 import org.apache.hive.search.exception.IndexException;
 import org.apache.hive.search.exception.InitializeException;
 import org.slf4j.Logger;
@@ -35,20 +35,17 @@ public final class LocalOnnxEmbeddingModel implements EmbedModel {
   private final InferenceWorker[] workers;
   private final BlockingQueue<EmbedRequest> queue = new LinkedBlockingQueue<>();
 
-  public LocalOnnxEmbeddingModel(String name, Path modelDir, EmbeddingPrompt prompt, int inferThreads,
-      int maxSeqLength) throws InitializeException, IOException {
-    this.name = name;
-    int threads = Math.max(1, inferThreads);
-    int intraOpThreads = Math.max(1, Runtime.getRuntime().availableProcessors() / threads);
+  public LocalOnnxEmbeddingModel(InferenceConfig config) throws InitializeException, IOException {
+    InferenceConfig.EmbeddingModelSpec spec = config.embedding();
+    this.name = spec.getModel();
+    int threads = config.getEmbeddingThreads();
     this.workers = new InferenceWorker[threads];
     for (int i = 0; i < threads; i++) {
-      workers[i] = new InferenceWorker(name, i, modelDir, prompt, intraOpThreads, maxSeqLength,
-          queue);
+      workers[i] = new InferenceWorker(config, spec, i, queue);
       workers[i].startWorker();
     }
-    LOG.info("Loaded ONNX embedding model '{}' from {} with {} worker thread(s), "
-            + "{} intra-op thread(s) per session, max {} token(s) per chunk",
-        name, modelDir, threads, intraOpThreads, Math.max(1, maxSeqLength));
+    LOG.info("Loaded ONNX embedding model '{}' from {} with {} worker thread(s), max {} token(s) per chunk",
+        name, spec.getModelDir(), threads, config.getEmbeddingMaxSeqLength());
   }
 
   @Override
