@@ -45,19 +45,16 @@ public record EmbedModelRegistry(Map<String, EmbedModel> models, EmbeddingCache 
     InferenceConfig inference = new InferenceConfig(configuration);
     EmbeddingCache embeddingCache = EmbeddingCache.create(configuration);
     long start = System.currentTimeMillis();
-    InferenceConfig.EmbeddingModelSpec embeddingConfig = inference.embedding();
     String modelName = inference.modelName();
-    EmbedModel embedModel = new LocalOnnxEmbeddingModel(modelName, embeddingConfig.getModelDir(),
-        embeddingConfig.getPrompt(), inference.getEmbeddingThreads(),
-        inference.getEmbeddingMaxSeqLength());
+    EmbedModel embedModel = new LocalOnnxEmbeddingModel(inference);
     long warmupStart = System.currentTimeMillis();
     try {
       embedModel.embed(EmbedModel.TaskType.QUERY, "warmup");
     } catch (IndexException e) {
       throw new InitializeException("Failed to warm up embedding model '" + modelName + "'", e);
     }
-    LOG.info("Loaded embedding model '{}' from {} in {}ms (warmup {}ms)",
-        modelName, embeddingConfig.getModelDir(), System.currentTimeMillis() - start,
+    LOG.info("Loaded embedding model '{}' in {}ms (warmup {}ms)",
+        modelName, System.currentTimeMillis() - start,
         System.currentTimeMillis() - warmupStart);
     return new EmbedModelRegistry(Map.of(modelName, embedModel), embeddingCache);
   }
