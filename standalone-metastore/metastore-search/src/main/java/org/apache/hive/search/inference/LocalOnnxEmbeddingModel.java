@@ -17,44 +17,38 @@
 
 package org.apache.hive.search.inference;
 
-import dev.langchain4j.data.embedding.Embedding;
-import dev.langchain4j.data.segment.TextSegment;
-import dev.langchain4j.model.embedding.onnx.OnnxEmbeddingModel;
-import dev.langchain4j.model.embedding.onnx.PoolingMode;
-
+import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
-import org.apache.hive.search.config.InferenceConfig;
 import org.apache.hive.search.exception.IndexException;
+import org.apache.hive.search.exception.InitializeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/** ONNX Runtime-backed embedding model for locally deployed sentence-transformer models. */
 public final class LocalOnnxEmbeddingModel implements EmbedModel {
   private static final Logger LOG = LoggerFactory.getLogger(LocalOnnxEmbeddingModel.class);
 
   private final String name;
-  private final OnnxEmbeddingModel model;
-  private final EmbeddingPrompt prompt;
-  private final ExecutorService inferExecutor;
+  private final InferenceWorker[] workers;
+  private final BlockingQueue<EmbedRequest> queue = new LinkedBlockingQueue<>();
 
-  public LocalOnnxEmbeddingModel(String name, Path modelDir, EmbeddingPrompt prompt) {
+  public LocalOnnxEmbeddingModel(String name, Path modelDir, EmbeddingPrompt prompt, int inferThreads,
+      int maxSeqLength) throws InitializeException, IOException {
     this.name = name;
-    this.prompt = prompt == null ? EmbeddingPrompt.none() : prompt;
-    this.inferExecutor = Executors.newSingleThreadExecutor(r -> {
-      Thread thread = new Thread(r, "EmbedModel-" + name);
-      thread.setDaemon(true);
-      return thread;
-    });
-    this.model = new OnnxEmbeddingModel(
-        modelDir.resolve(InferenceConfig.MODEL_ONNX_FILE),
-        modelDir.resolve(InferenceConfig.TOKENIZER),
-        PoolingMode.MEAN,
-        inferExecutor);
+    int threads = Math.max(1, inferThreads);
+    int intraOpThreads = Math.max(1, Runtime.getRuntime().availableProcessors() / threads);
+    this.workers = new InferenceWorker[threads];
+    for (int i = 0; i < threads; i++) {
+      workers[i] = new InferenceWorker(name, i, modelDir, prompt, intraOpThreads, maxSeqLength,
+          queue);
+      workers[i].startWorker();
+    }
+    LOG.info("Loaded ONNX embedding model '{}' from {} with {} worker thread(s), "
+            + "{} intra-op thread(s) per session, max {} token(s) per chunk",
+        name, modelDir, threads, intraOpThreads, Math.max(1, maxSeqLength));
   }
 
   @Override
@@ -64,42 +58,50 @@ public final class LocalOnnxEmbeddingModel implements EmbedModel {
 
   @Override
   public float[] embed(TaskType task, String text) throws IndexException {
-    try {
-      return model.embed(prompt.prefixFor(task) + text).content().vector();
-    } catch (RuntimeException e) {
-      throw IndexException.wrap("Failed to encode text with model '" + name + "'", e);
-    }
+    return enqueue(task, text).awaitResult();
   }
 
   @Override
   public float[][] embedBatch(TaskType task, String[] texts) throws IndexException {
-    try {
-      String prefix = prompt.prefixFor(task);
-      List<TextSegment> segments = new ArrayList<>(texts.length);
-      for (String text : texts) {
-        segments.add(TextSegment.from(prefix + text));
-      }
-      List<Embedding> embeddings = model.embedAll(segments).content();
-      float[][] vectors = new float[texts.length][];
-      for (int i = 0; i < texts.length; i++) {
-        vectors[i] = embeddings.get(i).vector();
-      }
-      return vectors;
-    } catch (RuntimeException e) {
-      throw IndexException.wrap("Failed to encode batch with model '" + name + "'", e);
+    if (texts.length == 0) {
+      return new float[0][];
     }
+    EmbedRequest[] pending = new EmbedRequest[texts.length];
+    for (int i = 0; i < texts.length; i++) {
+      pending[i] = enqueue(task, texts[i]);
+    }
+    float[][] vectors = new float[texts.length][];
+    for (int i = 0; i < texts.length; i++) {
+      vectors[i] = pending[i].awaitResult();
+    }
+    return vectors;
+  }
+
+  private EmbedRequest enqueue(TaskType task, String text) throws IndexException {
+    EmbedRequest request = new EmbedRequest(task, text);
+    try {
+      queue.put(request);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw IndexException.wrap("Embedding interrupted for model '" + name + "'", e);
+    }
+    return request;
   }
 
   @Override
   public void close() {
-    inferExecutor.shutdown();
-    try {
-      if (!inferExecutor.awaitTermination(30, TimeUnit.SECONDS)) {
-        inferExecutor.shutdownNow();
+    for (int i = 0; i < workers.length; i++) {
+      try {
+        queue.put(EmbedRequest.SHUTDOWN);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        break;
       }
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      inferExecutor.shutdownNow();
+    }
+    if (workers != null) {
+      for (InferenceWorker worker : workers) {
+        worker.awaitStop();
+      }
     }
     LOG.debug("Closed embedding model '{}'", name);
   }
