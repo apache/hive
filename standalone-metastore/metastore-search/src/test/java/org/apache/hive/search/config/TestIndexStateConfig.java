@@ -33,9 +33,9 @@ public class TestIndexStateConfig {
   @Test
   public void detectsRemoteAndMemoryFlags() {
     Configuration conf = new Configuration(false);
-    conf.set(IndexStateConfig.REMOTE_URI, "file:///tmp/backup");
-    conf.setBoolean(IndexStateConfig.MEMORY, true);
-    IndexStateConfig config = new IndexStateConfig(conf, "hive_tables");
+    conf.set(IndexStoreConfig.REMOTE_URI, "file:///tmp/backup");
+    conf.setBoolean(IndexStoreConfig.MEMORY, true);
+    IndexStoreConfig config = new IndexStoreConfig(conf, "hive_tables");
     assertTrue(config.hasRemote());
     assertTrue(config.isDistributed());
     assertTrue(config.useMemory());
@@ -43,12 +43,12 @@ public class TestIndexStateConfig {
 
   @Test
   public void validateRemoteUriRejectsInvalidValue() {
-    assertThrows(IndexIOException.class, () -> IndexStateConfig.validateRemoteUri("://bad"));
+    assertThrows(IndexIOException.class, () -> IndexStoreConfig.validateRemoteUri("://bad"));
   }
 
   @Test
   public void localPathDefaultsToWorkdir() {
-    IndexStateConfig config = new IndexStateConfig(new Configuration(false), "hive_tables");
+    IndexStoreConfig config = new IndexStoreConfig(new Configuration(false), "hive_tables");
     assertFalse(config.getLocalPath().toString().isEmpty());
   }
 }
