@@ -21,13 +21,13 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hive.search.config.IndexConfig;
+import org.apache.hive.search.config.IndexStoreConfig;
 import org.apache.hive.search.exception.IndexException;
 import org.apache.hive.search.index.Indexer;
 import org.apache.hive.search.index.IndexManager;
 import org.apache.hive.search.inference.EmbedModelRegistry;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hive.search.mapping.IndexMapping;
-import org.apache.hive.search.mapping.TableDocument;
 import org.apache.hive.search.search.InMemorySearchFixture;
 import org.apache.hive.search.testutil.MetastoreBootstrapMocks;
 import org.apache.hive.search.testutil.StubEmbedModel;
@@ -130,7 +130,7 @@ public class TestBootstrapIndexer {
 
     static BootstrapFixture create(Configuration conf) throws Exception {
       conf = new Configuration(conf);
-      conf.setBoolean(org.apache.hive.search.config.IndexStateConfig.MEMORY, true);
+      conf.setBoolean(IndexStoreConfig.MEMORY, true);
       conf.set(IndexConfig.INDEX_NAME, "test_index");
       conf.set(org.apache.hive.search.config.InferenceConfig.MODEL_NAME,
           InMemorySearchFixture.MODEL_NAME);

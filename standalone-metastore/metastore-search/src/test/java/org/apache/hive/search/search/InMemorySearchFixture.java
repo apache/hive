@@ -21,7 +21,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hive.search.config.IndexConfig;
-import org.apache.hive.search.config.IndexStateConfig;
+import org.apache.hive.search.config.IndexStoreConfig;
 import org.apache.hive.search.config.InferenceConfig;
 import org.apache.hive.search.config.SearchConfig;
 import org.apache.hive.search.index.Indexer;
@@ -67,7 +67,7 @@ public final class InMemorySearchFixture implements AutoCloseable {
 
   public static InMemorySearchFixture create() throws Exception {
     Configuration conf = new Configuration(false);
-    conf.setBoolean(IndexStateConfig.MEMORY, true);
+    conf.setBoolean(IndexStoreConfig.MEMORY, true);
     conf.set(IndexConfig.INDEX_NAME, "test_index");
     conf.set(InferenceConfig.MODEL_NAME, MODEL_NAME);
     conf.setInt(SearchConfig.BAYESIAN_SAMPLES, 5);

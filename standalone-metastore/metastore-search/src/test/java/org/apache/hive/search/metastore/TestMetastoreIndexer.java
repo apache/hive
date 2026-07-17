@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder;
 import org.apache.hive.search.config.IndexConfig;
-import org.apache.hive.search.config.IndexStateConfig;
+import org.apache.hive.search.config.IndexStoreConfig;
 import org.apache.hive.search.config.InferenceConfig;
 import org.apache.hive.search.config.SearchConfig;
 import org.apache.hive.search.index.Indexer;
@@ -140,7 +140,7 @@ public class TestMetastoreIndexer {
 
   private static Configuration indexerConf(boolean leader) {
     Configuration conf = new Configuration(false);
-    conf.setBoolean(IndexStateConfig.MEMORY, true);
+    conf.setBoolean(IndexStoreConfig.MEMORY, true);
     conf.set(IndexConfig.INDEX_NAME, "test_index");
     conf.set(InferenceConfig.MODEL_NAME, InMemorySearchFixture.MODEL_NAME);
     conf.setInt(IndexConfig.BOOTSTRAP_FETCH_THREADS, 1);
