@@ -46,6 +46,15 @@ public record InferenceConfig(Configuration configuration) {
   public static final String EMBEDDING_CACHE_MAX_ENTRIES = "metastore.inference.embedding.cache.max.entries";
   public static final int EMBEDDING_CACHE_MAX_ENTRIES_DEFAULT = 100_000;
 
+  public static final String EMBEDDING_THREADS = "metastore.inference.embedding.threads";
+
+  public static final String EMBEDDING_MAX_SEQ_LENGTH = "metastore.inference.embedding.max_seq_length";
+  public static final int EMBEDDING_MAX_SEQ_LENGTH_DEFAULT = 512;
+
+  static int defaultEmbeddingThreads() {
+    return Math.min(4, Math.max(1, Runtime.getRuntime().availableProcessors()));
+  }
+
   public EmbeddingModelSpec embedding() throws InitializeException, IOException {
     String modelName = modelName();
     if (StringUtils.isEmpty(modelName)) {
@@ -101,6 +110,14 @@ public record InferenceConfig(Configuration configuration) {
 
   public int getEmbeddingCacheMaxEntries() {
     return configuration.getInt(EMBEDDING_CACHE_MAX_ENTRIES, EMBEDDING_CACHE_MAX_ENTRIES_DEFAULT);
+  }
+
+  public int getEmbeddingThreads() {
+    return Math.max(1, configuration.getInt(EMBEDDING_THREADS, defaultEmbeddingThreads()));
+  }
+
+  public int getEmbeddingMaxSeqLength() {
+    return Math.max(1, configuration.getInt(EMBEDDING_MAX_SEQ_LENGTH, EMBEDDING_MAX_SEQ_LENGTH_DEFAULT));
   }
 
   public static class EmbeddingModelSpec {
