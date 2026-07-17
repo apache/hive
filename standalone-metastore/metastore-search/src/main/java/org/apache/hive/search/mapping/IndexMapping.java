@@ -25,7 +25,7 @@ import java.util.Optional;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hive.search.config.IndexConfig;
-import org.apache.hive.search.config.IndexStateConfig;
+import org.apache.hive.search.config.IndexStoreConfig;
 import org.apache.hive.search.config.InferenceConfig;
 import org.apache.hive.search.config.SearchConfig;
 import org.apache.lucene.analysis.Analyzer;
@@ -40,8 +40,8 @@ public record IndexMapping(
     return new IndexConfig(configuration);
   }
 
-  public IndexStateConfig store() {
-    return new IndexStateConfig(configuration, indexName);
+  public IndexStoreConfig store() {
+    return new IndexStoreConfig(configuration, indexName);
   }
 
   public InferenceConfig inference() {

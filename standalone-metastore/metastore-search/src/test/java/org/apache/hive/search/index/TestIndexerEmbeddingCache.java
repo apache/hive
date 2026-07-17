@@ -21,7 +21,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hive.search.config.IndexConfig;
-import org.apache.hive.search.config.IndexStateConfig;
+import org.apache.hive.search.config.IndexStoreConfig;
 import org.apache.hive.search.config.InferenceConfig;
 import org.apache.hive.search.inference.EmbedModelRegistry;
 import org.apache.hive.search.inference.EmbeddingCache;
@@ -96,7 +96,7 @@ public class TestIndexerEmbeddingCache {
 
     static IndexerFixture create() throws Exception {
       Configuration conf = new Configuration(false);
-      conf.setBoolean(IndexStateConfig.MEMORY, true);
+      conf.setBoolean(IndexStoreConfig.MEMORY, true);
       conf.set(IndexConfig.INDEX_NAME, "test_index");
       conf.set(InferenceConfig.MODEL_NAME, InMemorySearchFixture.MODEL_NAME);
       conf.setBoolean(InferenceConfig.EMBEDDING_CACHE_ENABLED, true);
