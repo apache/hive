@@ -28,7 +28,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.apache.calcite.util.ConversionUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -560,14 +559,6 @@ public class Hive implements AutoCloseable {
     hiveDB.remove();
   }
 
-  public static void setCalciteSystemProperties() {
-    // turn off calcite rexnode normalization
-    System.setProperty("calcite.enable.rexnode.digest.normalize", "false");
-    // update calcite default charset, consistent with HiveTypeFactory#getDefaultCharset
-    System.setProperty("calcite.default.charset", ConversionUtil.NATIVE_UTF16_CHARSET_NAME);
-    System.setProperty("calcite.default.nationalcharset", ConversionUtil.NATIVE_UTF16_CHARSET_NAME);
-  }
-
   /**
    * Hive
    *
@@ -576,7 +567,6 @@ public class Hive implements AutoCloseable {
    */
   private Hive(HiveConf c, boolean doRegisterAllFns) throws HiveException {
     conf = c;
-    setCalciteSystemProperties();
     if (doRegisterAllFns) {
       registerAllFunctionsOnce();
     }

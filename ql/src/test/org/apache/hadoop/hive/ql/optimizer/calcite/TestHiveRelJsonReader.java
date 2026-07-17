@@ -24,7 +24,6 @@ import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.volcano.VolcanoPlanner;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -58,8 +57,6 @@ class TestHiveRelJsonReader {
   @ParameterizedTest
   @MethodSource("inputJsonFiles")
   void testReadJson(Path jsonFile) throws IOException {
-    Hive.setCalciteSystemProperties();
-
     String jsonContent =
         Files.readAllLines(jsonFile).stream().filter(line -> !line.startsWith("Warning")).collect(Collectors.joining());
     // Use VolcanoPlanner to be able to set the ConventionTraitDef in the cluster,
