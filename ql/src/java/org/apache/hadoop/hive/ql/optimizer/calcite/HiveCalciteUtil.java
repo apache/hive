@@ -69,8 +69,10 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
@@ -836,17 +838,14 @@ public class HiveCalciteUtil {
     return deterministicFuncWithSingleInputRef;
   }
 
-  public static <T> ImmutableMap<Integer, T> getColInfoMap(List<T> hiveCols,
-      int startIndx) {
-    Builder<Integer, T> bldr = ImmutableMap.<Integer, T> builder();
+  public static ImmutableMap<Integer, ColumnInfo> getColInfoMap(List<ColumnInfo> hiveCols, Table table) {
+    Builder<Integer, ColumnInfo> builder = ImmutableMap.builder();
 
-    int indx = startIndx;
-    for (T ci : hiveCols) {
-      bldr.put(indx, ci);
-      indx++;
+    for (ColumnInfo ci : hiveCols) {
+      builder.put(table.getColumnIndexByName(ci.getInternalName()), ci);
     }
 
-    return bldr.build();
+    return builder.build();
   }
 
   public static ImmutableSet<Integer> shiftVColsSet(Set<Integer> hiveVCols, int shift) {
