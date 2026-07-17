@@ -97,17 +97,17 @@ public class TestAuthorizationMetaStoreFilterHook {
   private void allowTablesWithCatName(String catName, String dbName, String... allowedTableNames)
        throws HiveAuthzPluginException, HiveAccessControlException {
     when(authorizer.filterListCmdObjects(any(), any())).thenAnswer(invocation -> {
-    List<HivePrivilegeObject> input = invocation.getArgument(0);
-    List<HivePrivilegeObject> result = new ArrayList<>();
-    Set<String> seen = new HashSet<>();
+      List<HivePrivilegeObject> input = invocation.getArgument(0);
+      List<HivePrivilegeObject> result = new ArrayList<>();
+      Set<String> seen = new HashSet<>();
       for (HivePrivilegeObject obj : input) {
         for (String allowed : allowedTableNames) {
           if (dbName.equals(obj.getDbname()) && allowed.equals(obj.getObjectName())) {
             String key = (catName != null ? catName : "") + "\0" + dbName + "\0" + allowed;
-              if (seen.add(key)) {
-                result.add(new HivePrivilegeObject(
-                  HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW, catName, dbName, allowed));
-              }
+            if (seen.add(key)) {
+              result.add(new HivePrivilegeObject(
+                    HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW, catName, dbName, allowed));
+            }
             break;
           }
         }
@@ -127,49 +127,49 @@ public class TestAuthorizationMetaStoreFilterHook {
   }
 
   @Test
-  public void testFilterTables_emptyInput() throws Exception {
+  public void testFilterTablesEmptyInput() throws Exception {
     denyAll();
     List<Table> result = hook.filterTables(Collections.emptyList());
     assertTrue(result.isEmpty());
   }
 
   @Test
-  public void testFilterTables_allAllowed() throws Exception {
+  public void testFilterTablesAllAllowed() throws Exception {
     List<Table> input = List.of(
-      createTable("db1", "tbl1"),
-      createTable("db1", "tbl2"),
-      createTable("db1", "tbl3"));
+        createTable("db1", "tbl1"),
+        createTable("db1", "tbl2"),
+        createTable("db1", "tbl3"));
     allowAll();
     List<Table> result = hook.filterTables(input);
     assertEquals(3, result.size());
   }
 
   @Test
-  public void testFilterTables_allFiltered() throws Exception {
+  public void testFilterTablesAllFiltered() throws Exception {
     List<Table> input = List.of(
-      createTable("db1", "tbl1"),
-      createTable("db1", "tbl2"));
+        createTable("db1", "tbl1"),
+        createTable("db1", "tbl2"));
     denyAll();
     List<Table> result = hook.filterTables(input);
     assertTrue(result.isEmpty());
   }
 
   @Test
-  public void testFilterTables_someFiltered() throws Exception {
+  public void testFilterTablesSomeFiltered() throws Exception {
     List<Table> input = List.of(
-      createTable("db1", "tbl1"),
-      createTable("db1", "tbl2"),
-      createTable("db1", "tbl3"));
+        createTable("db1", "tbl1"),
+        createTable("db1", "tbl2"),
+        createTable("db1", "tbl3"));
       // authorize returns tbl1 and tbl3 with null catName
     when(authorizer.filterListCmdObjects(any(), any())).thenAnswer(invocation -> {
       List<HivePrivilegeObject> objs = invocation.getArgument(0);
       return objs.stream()
                     .filter(o -> "tbl1".equals(o.getObjectName()) || "tbl3".equals(o.getObjectName()))
-                    .collect(Collectors.toList());
+                    .toList();
     });
     List<Table> result = hook.filterTables(input);
     assertEquals(2, result.size());
-    List<String> names = result.stream().map(Table::getTableName).collect(Collectors.toList());
+    List<String> names = result.stream().map(Table::getTableName).toList();
     assertTrue(names.contains("tbl1"));
     assertTrue(names.contains("tbl3"));
   }
@@ -181,7 +181,7 @@ public class TestAuthorizationMetaStoreFilterHook {
    * The live equivalent is tested via testFilterTables_tableCatNameNull_matchesObjWithNonNullCatName.
    */
   @Test
-  public void testFilterTables_objCatNameNull_matchesTableWithNullCatName() throws Exception {
+  public void testFilterTablesObjCatNameNullMatchesTableWithNullCatName() throws Exception {
     List<Table> input = List.of(createTable(null, "db1", "tbl1"));
     allowTablesWithCatName(null, "db1", "tbl1");
     List<Table> result = hook.filterTables(input);
@@ -194,7 +194,7 @@ public class TestAuthorizationMetaStoreFilterHook {
    * table's null catName to "hive" as well, producing an exact match.
    */
   @Test
-  public void testFilterTables_tableCatNameNull_matchesObjWithNonNullCatName() throws Exception {
+  public void testFilterTablesTableCatNameNullMatchesObjWithNonNullCatName() throws Exception {
     List<Table> input = List.of(createTable(null, "db1", "tbl1")); // table has null catName
     // authorizer echoes back the default-catalog HPO it received
     allowTablesWithCatName(null, "db1", "tbl1");
@@ -206,7 +206,7 @@ public class TestAuthorizationMetaStoreFilterHook {
    * Case 3: obj.catName != null, table.catName != null, and they match â†’ matches.
    */
   @Test
-  public void testFilterTables_sameCatName_matches() throws Exception {
+  public void testFilterTablesSameCatNameMatches() throws Exception {
     List<Table> input = List.of(createTable("cat1", "db1", "tbl1"));
     allowTablesWithCatName("cat1", "db1", "tbl1");
     List<Table> result = hook.filterTables(input);
@@ -219,7 +219,7 @@ public class TestAuthorizationMetaStoreFilterHook {
    * Original logic: condition is true â†’ continue (skip).
    */
   @Test
-  public void testFilterTables_differentCatName_noMatch() throws Exception {
+  public void testFilterTablesDifferentCatNameNoMatch() throws Exception {
     List<Table> input = List.of(createTable("cat2", "db1", "tbl1")); // table has cat2
     // authorizer says tbl1 is allowed but with catName=cat1
     allowTablesWithCatName("cat1", "db1", "tbl1");
@@ -232,7 +232,7 @@ public class TestAuthorizationMetaStoreFilterHook {
    * obj.catName=cat1 should return only the cat1 table, not cat2.
    */
   @Test
-  public void testFilterTables_multipleCatalogs_sameDbTable_exactCatNameMatch() throws Exception {
+  public void testFilterTablesMultipleCatalogsSameDbTableExactCatNameMatch() throws Exception {
     Table cat1Table = createTable("cat1", "db1", "tbl1");
     Table cat2Table = createTable("cat2", "db1", "tbl1");
     List<Table> input = List.of(cat1Table, cat2Table);
@@ -252,7 +252,7 @@ public class TestAuthorizationMetaStoreFilterHook {
    * that was not authorized is excluded.
    */
   @Test
-  public void testFilterTables_nullCatTable_includedWhenAuthorized_otherCatExcluded() throws Exception {
+  public void testFilterTablesNullCatTableIncludedWhenAuthorizedOtherCatExcluded() throws Exception {
     Table nullCatTable = createTable(null, "db1", "tbl1");   // normalized to "hive" for lookup
     Table cat2Table    = createTable("cat2", "db1", "tbl1"); // not authorized
     List<Table> input  = List.of(nullCatTable, cat2Table);
@@ -273,7 +273,7 @@ public class TestAuthorizationMetaStoreFilterHook {
    * - tbl3 (catName=cat2): not authorized â†’ excluded.
    */
   @Test
-  public void testFilterTables_mixed_catNameCombinations() throws Exception {
+  public void testFilterTablesMixedCatNameCombinations() throws Exception {
     List<Table> input = List.of(
         createTable("cat1", "db1", "tbl1"),  // authorized, exact catName match
         createTable(null,   "db1", "tbl2"),  // authorized, null catName normalized to "hive"
@@ -284,12 +284,12 @@ public class TestAuthorizationMetaStoreFilterHook {
       List<HivePrivilegeObject> objs = invocation.getArgument(0);
       return objs.stream()
           .filter(o -> !"tbl3".equals(o.getObjectName()))
-          .collect(Collectors.toList());
+          .toList();
     });
 
     List<Table> result = hook.filterTables(input);
 
-    List<String> names = result.stream().map(Table::getTableName).collect(Collectors.toList());
+    List<String> names = result.stream().map(Table::getTableName).toList();
     assertEquals("Should return tbl1 (cat1 exact match) and tbl2 (null catName normalized to hive)", 2, result.size());
     assertTrue(names.contains("tbl1"));
     assertTrue(names.contains("tbl2"));
@@ -303,19 +303,19 @@ public class TestAuthorizationMetaStoreFilterHook {
    * separate-thread execution, which breaks Mockito's ThreadLocal-based MockedStatic.
    */
   @Test
-  public void testFilterTables_performance_100kTables() throws Exception {
+  public void testFilterTablesPerformance100kTables() throws Exception {
     int total = 100_000;
     List<Table> input = IntStream.range(0, total)
-      .mapToObj(i -> createTable("cat1", "db1", "tbl_" + i))
-      .collect(Collectors.toList());
+        .mapToObj(i -> createTable("cat1", "db1", "tbl_" + i))
+        .toList();
 
     when(authorizer.filterListCmdObjects(any(), any())).thenAnswer(invocation -> {
-        List<HivePrivilegeObject> objs = invocation.getArgument(0);
-        return objs.stream()
+      List<HivePrivilegeObject> objs = invocation.getArgument(0);
+      return objs.stream()
           .filter(o -> Integer.parseInt(o.getObjectName().split("_")[1]) % 2 == 0)
           .map(o -> new HivePrivilegeObject(
              HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW, "cat1", o.getDbname(), o.getObjectName()))
-          .collect(Collectors.toList());
+          .toList();
     });
 
     long start = System.currentTimeMillis();
@@ -324,6 +324,6 @@ public class TestAuthorizationMetaStoreFilterHook {
 
     assertEquals(total / 2, result.size());
     assertTrue(String.format("filterTables with %d tables took %d ms, expected < 5000 ms", total, elapsed),
-      elapsed < 5000);
+        elapsed < 5000);
   }
 }
