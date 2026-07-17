@@ -48,7 +48,8 @@ public record EmbedModelRegistry(Map<String, EmbedModel> models, EmbeddingCache 
     InferenceConfig.EmbeddingModelSpec embeddingConfig = inference.embedding();
     String modelName = inference.modelName();
     EmbedModel embedModel = new LocalOnnxEmbeddingModel(modelName, embeddingConfig.getModelDir(),
-        embeddingConfig.getPrompt());
+        embeddingConfig.getPrompt(), inference.getEmbeddingThreads(),
+        inference.getEmbeddingMaxSeqLength());
     long warmupStart = System.currentTimeMillis();
     try {
       embedModel.embed(EmbedModel.TaskType.QUERY, "warmup");
