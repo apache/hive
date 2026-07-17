@@ -19,6 +19,7 @@
 package org.apache.hive.service.auth.saml;
 
 import com.google.common.annotations.VisibleForTesting;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -78,11 +79,11 @@ public class HiveSamlAuthTokenGenerator implements ISAMLAuthTokenGenerator {
   }
 
   private String encode(String token) {
-    return Base64.getEncoder().encodeToString(token.getBytes());
+    return Base64.getEncoder().encodeToString(token.getBytes(StandardCharsets.UTF_8));
   }
 
   private String decode(String encodedToken) {
-    return new String(Base64.getDecoder().decode(encodedToken));
+    return new String(Base64.getDecoder().decode(encodedToken), StandardCharsets.UTF_8);
   }
 
   private String getTokenStr(String username, String id, String timestamp,
@@ -100,7 +101,7 @@ public class HiveSamlAuthTokenGenerator implements ISAMLAuthTokenGenerator {
   private String getSign(String input) {
     try {
       MessageDigest md = MessageDigest.getInstance("SHA-256");
-      md.update(input.getBytes());
+      md.update(input.getBytes(StandardCharsets.UTF_8));
       md.update(signatureSecret);
       byte[] digest = md.digest();
       return Base64.getEncoder().encodeToString(digest);
@@ -144,7 +145,8 @@ public class HiveSamlAuthTokenGenerator implements ISAMLAuthTokenGenerator {
   }
 
   private boolean signatureMatches(String origSign, String derivedSign) {
-    return !MessageDigest.isEqual(origSign.getBytes(), derivedSign.getBytes());
+    return MessageDigest.isEqual(origSign.getBytes(StandardCharsets.UTF_8),
+        derivedSign.getBytes(StandardCharsets.UTF_8));
   }
 
   public static boolean parse(String token, Map<String, String> kv) {
@@ -153,7 +155,7 @@ public class HiveSamlAuthTokenGenerator implements ISAMLAuthTokenGenerator {
       return false;
     }
     for (String split : splits) {
-      String[] pair = split.split(SEPARATOR);
+      String[] pair = split.split(SEPARATOR, 2);
       if (pair.length != 2) {
         return false;
       }
