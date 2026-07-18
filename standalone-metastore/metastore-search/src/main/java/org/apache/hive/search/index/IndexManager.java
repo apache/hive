@@ -23,6 +23,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hive.search.exception.IndexException;
 import org.apache.hive.search.mapping.IndexMapping;
 import org.apache.hive.search.exception.IndexNotHealthyException;
 import org.apache.hive.search.index.manifest.IndexManifest;
@@ -45,6 +46,7 @@ public class IndexManager implements AutoCloseable, MetastoreEventListener {
   private final IndexStateClient localIndex;
   private final IndexStateClient remoteIndex;
   private volatile IndexNotHealthyException exception;
+  private volatile long indexedNid;
 
   public IndexManager(IndexMapping mapping, Directory directory, IndexStateClient localIndex,
       IndexStateClient remoteIndex) {
@@ -153,6 +155,11 @@ public class IndexManager implements AutoCloseable, MetastoreEventListener {
     }
   }
 
+  @Override
+  public void notifyIndexTask(IndexTask task) throws IndexException, IOException {
+    indexedNid = task.lastEventId;
+  }
+
   public void checkIndexState() throws IndexNotHealthyException {
     if (exception != null) {
       throw exception;
@@ -165,6 +172,14 @@ public class IndexManager implements AutoCloseable, MetastoreEventListener {
 
   public Directory directory() {
     return directory;
+  }
+
+  public long getIndexedNid() {
+    return indexedNid;
+  }
+
+  public void setIndexedNid(long nid) {
+    this.indexedNid = nid;
   }
 
   @Override
