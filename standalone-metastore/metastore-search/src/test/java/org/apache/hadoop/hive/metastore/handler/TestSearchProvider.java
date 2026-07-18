@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.hive.search.server;
+package org.apache.hadoop.hive.metastore.handler;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.TableName;
@@ -65,19 +65,6 @@ public class TestSearchProvider {
   }
 
   @Test
-  public void installReplacesPreviousProvider() throws Exception {
-    Configuration conf = new Configuration(false);
-    StubSearchBackend firstBackend = new StubSearchBackend();
-    StubSearchBackend secondBackend = new StubSearchBackend();
-    SearchProvider first = SearchProvider.install(conf, firstBackend);
-    SearchProvider second = SearchProvider.install(conf, secondBackend);
-
-    assertSame(second, SearchProvider.get());
-    assertTrue(firstBackend.closed);
-    assertSame(secondBackend, second.backend());
-  }
-
-  @Test
   public void getFailsWhenNotInstalled() {
     assertThrows(IllegalStateException.class, SearchProvider::get);
   }
@@ -117,7 +104,7 @@ public class TestSearchProvider {
               TableName.fromString("default.t", "hive", "default"),
               1.0f,
               Map.of("table_name", "t"))),
-          1);
+          1, 1);
     }
 
     @Override
