@@ -71,6 +71,7 @@ public final class MetastoreIndexer implements AutoCloseable {
     this.handler.addListeners(flushIndexListener, indexManager);
     this.cluster = new MetastoreCluster(configuration, flushIndexListener);
     this.lastEventId = initialize();
+    this.indexManager.setIndexedNid(lastEventId);
   }
 
   private boolean rebuildIndex() throws Exception {

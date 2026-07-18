@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.hive.search.server;
+package org.apache.hadoop.hive.metastore.handler;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -55,7 +55,6 @@ public final class SearchProvider implements AutoCloseable {
     return new SearchProvider(configuration, backend);
   }
 
-  /** Installs the process-wide provider, replacing any previous instance. */
   public static SearchProvider install(Configuration configuration)
       throws InitializeException, IOException {
     return install(configuration, new LuceneSearchBackend());
@@ -81,7 +80,7 @@ public final class SearchProvider implements AutoCloseable {
   public static SearchProvider get() {
     SearchProvider provider = INSTANCE.get();
     if (provider == null) {
-      throw new IllegalStateException("SearchServerProvider is not installed");
+      throw new IllegalStateException("SearchProvider is not installed");
     }
     return provider;
   }

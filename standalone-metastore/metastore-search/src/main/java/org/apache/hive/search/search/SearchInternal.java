@@ -66,6 +66,7 @@ public final class SearchInternal implements AutoCloseable {
   private final IndexMapping mapping;
   private final SearchConfig searchConfig;
   private final BayesianScoreEstimator.Parameters parameters;
+  private final long indexedNid;
 
   public SearchInternal(SearcherManager manager,
       IndexManager indexManager,
@@ -73,6 +74,7 @@ public final class SearchInternal implements AutoCloseable {
       SearchConfig searchConfig,
       BayesianScoreEstimator.Parameters parameters) throws IOException {
     this.searcherManager = manager;
+    this.indexedNid = indexManager.getIndexedNid();
     this.searcher = manager.acquire();
     this.mapping = indexManager.mapping();
     this.searchConfig = searchConfig;
@@ -95,7 +97,7 @@ public final class SearchInternal implements AutoCloseable {
     for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
       hits.add(readHit(scoreDoc, request.returnFields()));
     }
-    return new TableSearchResult(hits, topDocs.totalHits.value());
+    return new TableSearchResult(hits, topDocs.totalHits.value(), indexedNid);
   }
 
   private Query compileRootQuery(SearchQuery searchQuery, int size)
