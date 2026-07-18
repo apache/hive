@@ -39,7 +39,6 @@ import org.apache.lucene.index.LeafReaderContext;
  * sigmoid(alpha * (score - beta) + logit(baseRate))}. This shifts scores down for rare-relevance
  * corpora, improving calibration.
  *
- * @lucene.experimental
  */
 public final class BayesianScoreQuery extends Query {
 
