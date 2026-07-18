@@ -51,7 +51,6 @@ import org.apache.lucene.index.LeafReaderContext;
  * sum(w_i * softplus(logit(p_i))))} instead of the uniform mean.
  *
  * @see LogOddsFusionScorer
- * @lucene.experimental
  */
 public final class LogOddsFusionQuery extends Query implements Iterable<Query> {
 
