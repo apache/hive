@@ -42,7 +42,6 @@ import org.apache.lucene.util.BytesRef;
  *   <li>Estimate base rate: mean fraction of documents scoring above the 95th percentile
  * </ol>
  *
- * @lucene.experimental
  */
 public class BayesianScoreEstimator {
 
