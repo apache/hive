@@ -125,7 +125,7 @@ public record InferenceConfig(Configuration configuration) {
     private final java.nio.file.Path modelDir;
     private final EmbeddingPrompt prompt;
 
-    public EmbeddingModelSpec (String model, Path path, EmbeddingPrompt promp) {
+    public EmbeddingModelSpec(String model, Path path, EmbeddingPrompt promp) {
       this.model = model;
       this.prompt = promp == null ?
           EmbeddingPrompt.none() : promp;
