@@ -19,7 +19,7 @@ package org.apache.hive.search.search;
 
 import java.util.List;
 
-public record TableSearchResult(List<TableSearchHit> hits, long total) {
+public record TableSearchResult(List<TableSearchHit> hits, long total, long indexedNid) {
   public TableSearchResult {
     hits = hits == null ? List.of() : List.copyOf(hits);
   }
