@@ -166,18 +166,17 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
       }
     } else {
       if (AlterTableUtils.isFullPartitionSpec(table, partitionSpec)) {
-        if (table.hasNonNativePartitionSupport()) {
-          table.getStorageHandler().validatePartSpec(table, partitionSpec);
-          try {
-            String partName = Warehouse.makePartName(partitionSpec, false);
-            Partition partition = new DummyPartition(table, partName, partitionSpec);
-            outputs.add(new WriteEntity(partition, writeType));
-          } catch (MetaException e) {
-            throw new SemanticException("Unable to construct name for dummy partition due to: ", e);
-          }
-        } else {
-          Partition partition = PartitionUtils.getPartition(db, table, partitionSpec, true);
+        validatePartSpec(table, partitionSpec, (ASTNode) root.getChild(1), conf, true);
+        Partition partition = PartitionUtils.getPartition(db, table, partitionSpec, true);
+        outputs.add(new WriteEntity(partition, writeType));
+      } else if (table.hasNonNativePartitionSupport()) {
+        table.getStorageHandler().validatePartSpec(table, partitionSpec);
+        try {
+          String partName = Warehouse.makePartName(partitionSpec, false);
+          Partition partition = new DummyPartition(table, partName, partitionSpec);
           outputs.add(new WriteEntity(partition, writeType));
+        } catch (MetaException e) {
+          throw new SemanticException("Unable to construct name for dummy partition due to: ", e);
         }
       } else {
         validatePartSpec(table, partitionSpec, (ASTNode) root.getChild(1), conf, false);

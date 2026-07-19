@@ -1737,6 +1737,15 @@ public class HiveConf extends Configuration {
         "How many rows in the right-most join operand Hive should buffer before emitting the join result."),
     HIVE_JOIN_CACHE_SIZE("hive.join.cache.size", 25000,
         "How many rows in the joining tables (except the streaming table) should be cached in memory."),
+    HIVE_MERGE_JOIN_SKEW_THRESHOLD("hive.merge.join.skew.threshold", -1L,
+        "Maximum number of rows allowed per join key in a single sort-merge join task before a "
+        + "skew event is reported."),
+    HIVE_MERGE_JOIN_SKEW_ABORT("hive.merge.join.skew.abort", false,
+        "When set to true and the row count is equal to hive.merge.join.skew.threshold, the task will be aborted."),
+    HIVE_MERGE_JOIN_SKEW_CHECK_INTERVAL("hive.merge.join.skew.check.interval", 10000L,
+        "Number of rows added to a join-key group between consecutive skew checks. "
+        + "A lower value detects skew earlier but adds slightly more overhead. "
+        + "Only effective when hive.merge.join.skew.threshold is set to a positive value."),
     HIVE_PUSH_RESIDUAL_INNER("hive.join.inner.residual", false,
         "Whether to push non-equi filter predicates within inner joins. This can improve efficiency in "
         + "the evaluation of certain joins, since we will not be emitting rows which are thrown away by "
@@ -2182,6 +2191,17 @@ public class HiveConf extends Configuration {
         "Whether to use former Java date/time APIs to convert between timezones when writing timestamps in " +
         "Avro files. Once data are written to the file the effect is permanent (also reflected in the metadata)." +
         "Changing the value of this property affects only new data written to the file."),
+    HIVE_AVRO_SCHEMA_URL_ALLOWED_SCHEMES("hive.avro.schema.url.allowed.schemes",
+        "hdfs,s3,s3a,s3n,abfs,abfss,gs,wasb,wasbs,viewfs,o3fs,ofs",
+        "Comma-separated list of URI schemes permitted for avro.schema.url when loading schemas from a remote " +
+            "location. HTTP/HTTPS and file:// are never allowed via this setting. A URI with no scheme is " +
+            "resolved against the default filesystem."),
+    HIVE_AVRO_SCHEMA_URL_REMOTE_HTTP_ENABLED("hive.avro.schema.url.remote.http.enabled", false,
+        "Whether to allow avro.schema.url values that use http or https. When enabled, the host must also appear " +
+            "in hive.avro.schema.url.http.allowed.hosts. Disabled by default to prevent server-side request forgery."),
+    HIVE_AVRO_SCHEMA_URL_HTTP_ALLOWED_HOSTS("hive.avro.schema.url.http.allowed.hosts", "",
+        "Comma-separated list of hosts permitted for avro.schema.url when hive.avro.schema.url.remote.http.enabled " +
+            "is true. HTTP/HTTPS schema fetch is rejected when this list is empty."),
     HIVE_INT_TIMESTAMP_CONVERSION_IN_SECONDS("hive.int.timestamp.conversion.in.seconds", false,
         "Boolean/tinyint/smallint/int/bigint value is interpreted as milliseconds during the timestamp conversion.\n" +
         "Set this flag to true to interpret the value as seconds to be consistent with float/double." ),
@@ -3856,6 +3876,10 @@ public class HiveConf extends Configuration {
         "SSL certificate keystore location for HiveServer2 WebUI."),
     HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PASSWORD("hive.server2.webui.keystore.password", "",
         "SSL certificate keystore password for HiveServer2 WebUI."),
+    HIVE_SERVER2_WEBUI_SSL_KEYSTORE_RELOAD_INTERVAL("hive.server2.webui.keystore.reload.interval", "0",
+        new TimeValidator(TimeUnit.MILLISECONDS),
+        "Interval at which HiveServer2 WebUI checks the SSL keystore file for changes; " +
+        "set to 0 to disable auto-reload. The default is 0."),
     HIVE_SERVER2_WEBUI_SSL_KEYSTORE_TYPE("hive.server2.webui.keystore.type", "",
         "SSL certificate keystore type for HiveServer2 WebUI."),
     HIVE_SERVER2_WEBUI_SSL_INCLUDE_CIPHERSUITES("hive.server2.webui.include.ciphersuites", "",
@@ -5102,6 +5126,11 @@ public class HiveConf extends Configuration {
     LLAP_ZK_REGISTRY_NAMESPACE("hive.llap.zk.registry.namespace", null,
         "In the LLAP ZooKeeper-based registry, overrides the ZK path namespace. Note that\n" +
         "using this makes the path management (e.g. setting correct ACLs) your responsibility."),
+    LLAP_CLUSTER_ROUTING_RULES("hive.llap.cluster.routing.rules", "",
+        "Comma-separated rules mapping users/groups to LLAP cluster names.\n" +
+        "Format: user:<name>=<cluster>,group:<name>=<cluster>,default=<cluster>.\n" +
+        "Per-cluster configs are read from hive.llap.cluster.<cluster>.sessions.namespace\n" +
+        "and hive.llap.cluster.<cluster>.registry.namespace."),
     // Note: do not rename to ..service.acl; Hadoop generates .hosts setting name from this,
     // resulting in a collision with existing hive.llap.daemon.service.hosts and bizarre errors.
     // These are read by Hadoop IPC, so you should check the usage and naming conventions (e.g.
@@ -5556,7 +5585,8 @@ public class HiveConf extends Configuration {
             "hive.iceberg.allow.datafiles.in.table.location.only," +
             "hive.hook.proto.base-directory," +
             "hive.rewrite.data.policy," +
-            "hive.query.history.enabled", // Query History service is initialized on HS2 startup (HIVE-29170)
+            "hive.query.history.enabled," + // Query History service is initialized on HS2 startup (HIVE-29170)
+            "hive.llap.cluster.routing.rules",
         "Comma separated list of configuration options which are immutable at runtime"),
     HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
         METASTORE_PWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname
@@ -5570,6 +5600,11 @@ public class HiveConf extends Configuration {
         + ",fs.s3a.access.key"
         + ",fs.s3a.secret.key"
         + ",fs.s3a.proxy.password"
+        + ",iceberg.vended.storage.credentials"
+        // Iceberg FileIO vended credential keys (S3FileIOProperties)
+        + ",s3.access-key-id"
+        + ",s3.secret-access-key"
+        + ",s3.session-token"
         + ",dfs.adls.oauth2.credential"
         + ",fs.adl.oauth2.credential"
         + ",fs.azure.account.oauth2.client.secret"

@@ -34,6 +34,7 @@ import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
 import org.apache.hive.kubernetes.operator.model.spec.DatabaseConfig;
 import org.apache.hive.kubernetes.operator.model.spec.SecretKeyRef;
+import org.apache.hive.kubernetes.operator.util.ConfigUtils;
 import org.apache.hive.kubernetes.operator.util.Labels;
 
 /**
@@ -54,13 +55,19 @@ public class SchemaInitJobDependent
   }
 
   @Override
+  protected String getSecondaryResourceName(HiveCluster primary,
+      Context<HiveCluster> context) {
+    return resourceName(primary);
+  }
+
+  @Override
   protected Job desired(HiveCluster hiveCluster,
       Context<HiveCluster> context) {
     HiveClusterSpec spec = hiveCluster.getSpec();
     DatabaseConfig db = spec.metastore().database();
 
     List<EnvVar> envVars = new ArrayList<>();
-    envVars.add(new EnvVar("SERVICE_NAME", "metastore", null));
+    envVars.add(new EnvVar("SERVICE_NAME", ConfigUtils.COMPONENT_METASTORE, null));
     envVars.add(new EnvVar("IS_RESUME", "false", null));
     envVars.add(new EnvVar("HIVE_CUSTOM_CONF_DIR",
         CONF_MOUNT_PATH, null));
@@ -121,6 +128,7 @@ public class SchemaInitJobDependent
                   hiveCluster, COMPONENT))
             .endMetadata()
             .withNewSpec()
+              .withServiceAccountName(spec.serviceAccountName())
               .withRestartPolicy("OnFailure")
               .withInitContainers(initContainers)
               .addNewContainer()

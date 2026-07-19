@@ -89,8 +89,6 @@ orderid             	int
 quantity            	int                 	                    
 itemid              	int                 	                    
 tradets             	timestamp           	                    
-p1                  	string              	                    
-p2                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -114,7 +112,6 @@ Table Parameters:
 	bucketing_version   	2                   
 	format-version      	2                   
 	iceberg.catalog     	ice01               
-	iceberg.orc.files.only	true                
 	numFiles            	10                  
 	numPartitions       	10                  
 	numRows             	21                  
@@ -172,8 +169,6 @@ orderid             	int
 quantity            	int                 	                    
 itemid              	int                 	                    
 tradets             	timestamp           	                    
-p1                  	string              	                    
-p2                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -197,7 +192,6 @@ Table Parameters:
 	bucketing_version   	2                   
 	format-version      	2                   
 	iceberg.catalog     	ice01               
-	iceberg.orc.files.only	true                
 	numFiles            	10                  
 	numPartitions       	10                  
 	numRows             	21                  
@@ -263,8 +257,6 @@ orderid             	int
 quantity            	int                 	                    
 itemid              	int                 	                    
 tradets             	timestamp           	                    
-p1                  	string              	                    
-p2                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -352,8 +344,6 @@ orderid             	int
 quantity            	int                 	                    
 itemid              	int                 	                    
 tradets             	timestamp           	                    
-p1                  	string              	                    
-p2                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -377,7 +367,6 @@ Table Parameters:
 	bucketing_version   	2                   
 	format-version      	2                   
 	iceberg.catalog     	location_based_table
-	iceberg.orc.files.only	true                
 	numFiles            	10                  
 	numPartitions       	10                  
 	numRows             	21                  
@@ -427,8 +416,6 @@ orderid             	int
 quantity            	int                 	                    
 itemid              	int                 	                    
 tradets             	timestamp           	                    
-p1                  	string              	                    
-p2                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -452,7 +439,6 @@ Table Parameters:
 	bucketing_version   	2                   
 	format-version      	2                   
 	iceberg.catalog     	location_based_table
-	iceberg.orc.files.only	true                
 	numFiles            	10                  
 	numRows             	21                  
 	rawDataSize         	0                   

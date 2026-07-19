@@ -15,44 +15,34 @@ package org.apache.hadoop.hive.ql.io.parquet;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.DataCache;
 import org.apache.hadoop.hive.common.io.FileMetadataCache;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedSupport;
-import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
 import org.apache.hadoop.hive.ql.io.LlapCacheOnlyInputFormatInterface;
-import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetTableUtils;
-import org.apache.hadoop.hive.ql.plan.MapWork;
-import org.apache.hadoop.hive.ql.plan.PartitionDesc;
-import org.apache.hadoop.mapred.FileSplit;
-import org.apache.hadoop.mapred.JobConf;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
 import org.apache.hadoop.hive.ql.io.parquet.read.ParquetRecordReaderWrapper;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.FileInputFormat;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
-
 import org.apache.parquet.hadoop.ParquetInputFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static org.apache.hadoop.mapreduce.lib.input.FileInputFormat.LIST_STATUS_NUM_THREADS;
 
 
 /**
- *
- * A Parquet InputFormat for Hive (with the deprecated package mapred)
- *
- * NOTE: With HIVE-9235 we removed "implements VectorizedParquetInputFormat" since all data types
- *       are not currently supported.  Removing the interface turns off vectorization.
+ * A Parquet InputFormat for Hive (with the deprecated package mapred).
  */
 public class MapredParquetInputFormat extends FileInputFormat<NullWritable, ArrayWritable>
   implements InputFormatChecker, VectorizedInputFormatInterface, LlapCacheOnlyInputFormatInterface {
@@ -70,6 +60,19 @@ public class MapredParquetInputFormat extends FileInputFormat<NullWritable, Arra
   protected MapredParquetInputFormat(final ParquetInputFormat<ArrayWritable> inputFormat) {
     this.realInput = inputFormat;
     vectorizedSelf = new VectorizedParquetInputFormat();
+  }
+
+  /**
+   * Parallelize split-generation file listing by sizing Hadoop's {@code LocatedFileStatusFetcher}
+   * from {@code hive.compute.splits.num.threads}. We set it on the job conf here because that
+   * property's cluster default does not reach the conf split generation uses; a value of 1 stays
+   * serial.
+   */
+  @Override
+  protected FileStatus[] listStatus(JobConf job) throws IOException {
+    job.setInt(LIST_STATUS_NUM_THREADS,
+        HiveConf.getIntVar(job, HiveConf.ConfVars.HIVE_COMPUTE_SPLITS_NUM_THREADS));
+    return super.listStatus(job);
   }
 
   @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -115,6 +118,6 @@ public class MapredParquetInputFormat extends FileInputFormat<NullWritable, Arra
 
   @Override
   public VectorizedSupport.Support[] getSupportedFeatures() {
-    return null;
+    return new VectorizedSupport.Support[] { VectorizedSupport.Support.DECIMAL_64 };
   }
 }

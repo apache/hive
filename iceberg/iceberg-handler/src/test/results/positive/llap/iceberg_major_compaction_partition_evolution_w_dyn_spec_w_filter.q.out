@@ -225,8 +225,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_orc
 # col_name            	data_type           	comment             
 event_id            	int                 	                    
-event_time          	timestamp with local time zone	                    
-event_src           	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -255,7 +253,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"event_src_trunc\",\"transform\":\"truncate[3]\",\"source-id\":3,\"field-id\":1000},{\"name\":\"event_time_month\",\"transform\":\"month\",\"source-id\":2,\"field-id\":1001}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	13                  
 	numPartitions       	8                   
@@ -336,8 +333,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_orc
 # col_name            	data_type           	comment             
 event_id            	int                 	                    
-event_time          	timestamp with local time zone	                    
-event_src           	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -366,7 +361,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"event_src_trunc\",\"transform\":\"truncate[3]\",\"source-id\":3,\"field-id\":1000},{\"name\":\"event_time_month\",\"transform\":\"month\",\"source-id\":2,\"field-id\":1001}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	8                   
 	numPartitions       	8                   

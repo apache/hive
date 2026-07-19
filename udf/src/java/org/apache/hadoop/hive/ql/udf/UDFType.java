@@ -94,4 +94,11 @@ public @interface UDFType {
    * @return true if commutative law applies to this function
    */
   boolean commutative() default false;
+
+  /**
+   * Whether the return type of this UDF is nullable.
+   *
+   * @return true if the return type of this UDF can be null
+   */
+  boolean nullable() default true;
 }

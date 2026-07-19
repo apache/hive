@@ -47,8 +47,6 @@ POSTHOOK: query: describe formatted mat1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@mat1
 # col_name            	data_type           	comment             
-b                   	string              	                    
-c                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -75,7 +73,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b_bucket\",\"transform\":\"bucket[16]\",\"source-id\":1,\"field-id\":1000},{\"name\":\"c_trunc\",\"transform\":\"truncate[3]\",\"source-id\":2,\"field-id\":1001}]}
 	format-version      	1                   
-	iceberg.orc.files.only	true                
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	2                   
 	numPartitions       	2                   
@@ -141,8 +138,6 @@ POSTHOOK: query: describe formatted mat2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@mat2
 # col_name            	data_type           	comment             
-b                   	string              	                    
-c                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -169,7 +164,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b_bucket\",\"transform\":\"bucket[16]\",\"source-id\":1,\"field-id\":1000},{\"name\":\"c_trunc\",\"transform\":\"truncate[3]\",\"source-id\":2,\"field-id\":1001}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	2                   
 	numPartitions       	2                   

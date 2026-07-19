@@ -82,8 +82,6 @@ orderid             	int
 quantity            	int                 	                    
 itemid              	int                 	                    
 tradets             	timestamp           	                    
-p1                  	string              	                    
-p2                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -111,7 +109,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"p1\",\"transform\":\"identity\",\"source-id\":5,\"field-id\":1000},{\"name\":\"p2\",\"transform\":\"identity\",\"source-id\":6,\"field-id\":1001}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	10                  
 	numPartitions       	10                  
@@ -174,8 +171,6 @@ orderid             	int
 quantity            	int                 	                    
 itemid              	int                 	                    
 tradets             	timestamp           	                    
-p1                  	string              	                    
-p2                  	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -203,7 +198,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"p1\",\"transform\":\"identity\",\"source-id\":5,\"field-id\":1000},{\"name\":\"p2\",\"transform\":\"identity\",\"source-id\":6,\"field-id\":1001}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	10                  
 	numPartitions       	10                  

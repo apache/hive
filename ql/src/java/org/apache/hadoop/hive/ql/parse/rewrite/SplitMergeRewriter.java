@@ -22,6 +22,9 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.MultiInsertSqlGenerator;
+import org.apache.hadoop.hive.ql.parse.rewrite.sql.PartitionSetValuesClause;
+import org.apache.hadoop.hive.ql.parse.rewrite.sql.SetValuesClause;
+import org.apache.hadoop.hive.ql.parse.rewrite.sql.SetValuesClauseBase;
 import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory;
 
 import java.util.ArrayList;
@@ -38,7 +41,9 @@ public class SplitMergeRewriter extends MergeRewriter {
   @Override
   protected MergeWhenClauseSqlGenerator createMergeSqlGenerator(
       MergeStatement mergeStatement, MultiInsertSqlGenerator sqlGenerator) {
-    return new SplitMergeWhenClauseSqlGenerator(conf, sqlGenerator, mergeStatement, isRowLineageSupported);
+    return new SplitMergeWhenClauseSqlGenerator(conf, sqlGenerator, mergeStatement, isRowLineageSupported,
+        mergeStatement.getTargetTable().hasNonNativePartitionSupport() ?
+            new PartitionSetValuesClause(conf) : new SetValuesClause(conf));
   }
 
   static class SplitMergeWhenClauseSqlGenerator extends MergeWhenClauseSqlGenerator {
@@ -46,8 +51,8 @@ public class SplitMergeRewriter extends MergeRewriter {
 
     SplitMergeWhenClauseSqlGenerator(
         HiveConf conf, MultiInsertSqlGenerator sqlGenerator, MergeStatement mergeStatement,
-        boolean isRowLineageSupported) {
-      super(conf, sqlGenerator, mergeStatement, isRowLineageSupported);
+        boolean isRowLineageSupported, SetValuesClauseBase setValuesClause) {
+      super(conf, sqlGenerator, mergeStatement, isRowLineageSupported, setValuesClause);
       this.isRowLineageSupported = isRowLineageSupported;
     }
 
@@ -58,8 +63,8 @@ public class SplitMergeRewriter extends MergeRewriter {
       String onClauseAsString = mergeStatement.getOnClauseAsText();
 
       sqlGenerator.append("    -- update clause (insert part)\n");
-      List<String> values = new ArrayList<>(targetTable.getCols().size() + targetTable.getPartCols().size());
-      addValues(targetTable, targetAlias, updateClause.getNewValuesMap(), values);
+      List<String> values = new ArrayList<>(targetTable.getAllCols().size());
+      setValuesClause.addValues(targetTable, targetAlias, updateClause.getNewValuesMap(), values);
       addRowLineageColumnsForWhenMatchedUpdateClause(isRowLineageSupported, values, targetAlias, conf);
       sqlGenerator.appendInsertBranch(hintStr, values);
       hintStr = null;

@@ -838,7 +838,7 @@ public class Hive implements AutoCloseable {
    * Create a table metadata and the directory for the table data
    * @param tableName table name
    * @param columns list of fields of the table
-   * @param partCols partition keys of the table
+   * @param partColNames partition keys of the table
    * @param fileInputFormat Class of the input format of the table data file
    * @param fileOutputFormat Class of the output format of the table data file
    * @param bucketCount number of buckets that each partition (or the table itself) should be
@@ -847,7 +847,7 @@ public class Hive implements AutoCloseable {
    * @param parameters Parameters for the table
    * @throws HiveException
    */
-  public void createTable(String tableName, List<String> columns, List<String> partCols,
+  public void createTable(String tableName, List<String> columns, List<String> partColNames,
                           Class<? extends InputFormat> fileInputFormat,
                           Class<?> fileOutputFormat, int bucketCount, List<String> bucketCols,
                           Map<String, String> parameters) throws HiveException {
@@ -864,13 +864,15 @@ public class Hive implements AutoCloseable {
       tbl.getCols().add(field);
     }
 
-    if (partCols != null) {
-      for (String partCol : partCols) {
+    if (partColNames != null) {
+      List<FieldSchema> partCols = new ArrayList<>();
+      for (String partCol : partColNames) {
         FieldSchema part = new FieldSchema();
         part.setName(partCol);
         part.setType(STRING_TYPE_NAME); // default partition key
-        tbl.getPartCols().add(part);
+        partCols.add(part);
       }
+      tbl.setPartCols(partCols);
     }
     tbl.setSerializationLib(LazySimpleSerDe.class.getName());
     tbl.setNumBuckets(bucketCount);
@@ -2896,8 +2898,8 @@ public class Hive implements AutoCloseable {
         }
 
         boolean isManaged = tbl.getTableType() == TableType.MANAGED_TABLE;
-        // TODO: why is "&& !isAcidIUDoperation" needed here?
-        if (!isTxnTable && ((loadFileType == LoadFileType.REPLACE_ALL) || (oldPart == null && !isAcidIUDoperation))) {
+        if (!isTxnTable && ((loadFileType == LoadFileType.REPLACE_ALL)
+            || (oldPart == null && loadFileType != LoadFileType.KEEP_EXISTING))) {
           //for fullAcid tables we don't delete files for commands with OVERWRITE - we create a new
           // base_x.  (there is Insert Overwrite and Load Data Overwrite)
           boolean isSkipTrash = MetaStoreUtils.isSkipTrash(tbl.getParameters());
@@ -6094,8 +6096,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
     };
 
-    HiveMetaStoreClientBuilder msClientBuilder = new HiveMetaStoreClientBuilder(conf)
-        .newClient(allowEmbedded)
+    HiveMetaStoreClientBuilder msClientBuilder = new HiveMetaStoreClientBuilder(conf, allowEmbedded)
         .enhanceWith(client ->
             HiveMetaStoreClientWithLocalCache.newClient(conf, client))
         .enhanceWith(client ->

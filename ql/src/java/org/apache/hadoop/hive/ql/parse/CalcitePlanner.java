@@ -141,6 +141,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
+import org.apache.hadoop.hive.ql.QueryProperties.QueryFeature;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
@@ -567,7 +568,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       Pair<Boolean, String> canCBOHandleReason = canCBOHandleAst(queryForCbo, getQB(), cboCtx);
       runCBO = canCBOHandleReason.left;
-      if (queryProperties.hasMultiDestQuery()) {
+      if (queryProperties.hasFeature(QueryFeature.MULTI_DEST_QUERY)) {
         handleMultiDestQuery(ast, cboCtx);
       }
 
@@ -689,9 +690,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
           this.ctx.setCboInfo(cboMsg);
 
           // Determine if we should re-throw the exception OR if we try to mark the query to retry as non-CBO.
-          final boolean requiresCBO = queryProperties.hasQualify()
-              || queryProperties.hasExcept()
-              || queryProperties.hasIntersect();
+          final boolean requiresCBO = queryProperties.hasFeature(QueryFeature.QUALIFY)
+              || queryProperties.hasFeature(QueryFeature.EXCEPT)
+              || queryProperties.hasFeature(QueryFeature.INTERSECT);
           if (requiresCBO || fallbackStrategy.isFatal(e)) {
             if (e instanceof RuntimeException || e instanceof SemanticException) {
               // These types of exceptions do not need wrapped
@@ -1000,13 +1001,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
                                           HiveConf conf, boolean topLevelQB) {
     List<String> reasons = new ArrayList<>();
     // Not ok to run CBO, build error message.
-    if (queryProperties.hasSortBy() && queryProperties.hasLimit()) {
+    if (queryProperties.hasFeature(QueryFeature.SORT_BY) && queryProperties.hasFeature(QueryFeature.LIMIT)) {
       reasons.add("has sort by with limit");
     }
-    if (queryProperties.hasPTF()) {
+    if (queryProperties.hasFeature(QueryFeature.PTF)) {
       reasons.add("has PTF");
     }
-    if (queryProperties.usesScript()) {
+    if (queryProperties.hasFeature(QueryFeature.USES_SCRIPT)) {
       reasons.add("uses scripts");
     }
     if (!queryProperties.isCBOSupportedLateralViews()) {
@@ -1024,7 +1025,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       profilesCBO.add(ExtendedCBOProfile.JOIN_REORDERING);
     }
     // If the query contains windowing processing
-    if (queryProperties.hasWindowing()) {
+    if (queryProperties.hasFeature(QueryFeature.WINDOWING)) {
       profilesCBO.add(ExtendedCBOProfile.WINDOWING_POSTPROCESSING);
     }
     return profilesCBO;
@@ -3013,10 +3014,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
         ArrayList<ColumnInfo> partitionColumns = new ArrayList<ColumnInfo>();
 
         // 3.2 Add column info corresponding to partition columns
-        for (FieldSchema part_col : tabMetaData.getPartCols()) {
-          colName = part_col.getName();
+        for (FieldSchema partCol : tabMetaData.getPartCols()) {
+          if (tabMetaData.hasNonNativePartitionSupport()) {
+            break;
+          }
+          colName = partCol.getName();
           colInfo = new ColumnInfo(colName,
-                  TypeInfoFactory.getPrimitiveTypeInfo(part_col.getType()),
+                  TypeInfoFactory.getPrimitiveTypeInfo(partCol.getType()),
                   isNullable(colName, nnc, pkc), tableAlias, true);
           rr.put(tableAlias, colName, colInfo);
           cInfoLst.add(colInfo);

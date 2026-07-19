@@ -26,6 +26,9 @@ metadata:
 spec:
   image: {{ .Values.cluster.image }}
   imagePullPolicy: {{ .Values.cluster.imagePullPolicy }}
+  {{- if .Values.cluster.serviceAccountName }}
+  serviceAccountName: {{ .Values.cluster.serviceAccountName }}
+  {{- end }}
 
   metastore:
     enabled: {{ .Values.cluster.metastore.enabled }}
@@ -67,6 +70,18 @@ spec:
     extraVolumeMounts:
       {{- toYaml .Values.cluster.metastore.extraVolumeMounts | nindent 6 }}
     {{- end }}
+    {{- if and .Values.cluster.metastore.autoscaling .Values.cluster.metastore.autoscaling.enabled }}
+    autoscaling:
+      enabled: true
+      minReplicas: {{ .Values.cluster.metastore.autoscaling.minReplicas }}
+      scaleUpThreshold: {{ .Values.cluster.metastore.autoscaling.scaleUpThreshold }}
+      scaleUpStabilizationSeconds: {{ .Values.cluster.metastore.autoscaling.scaleUpStabilizationSeconds }}
+      scaleDownStabilizationSeconds: {{ .Values.cluster.metastore.autoscaling.scaleDownStabilizationSeconds }}
+      gracePeriodSeconds: {{ .Values.cluster.metastore.autoscaling.gracePeriodSeconds }}
+      metricsScrapeIntervalSeconds: {{ .Values.cluster.metastore.autoscaling.metricsScrapeIntervalSeconds | default 10 }}
+      cpuScaleUpThreshold: {{ .Values.cluster.metastore.autoscaling.cpuScaleUpThreshold | default 90 }}
+      cpuScaleDownThreshold: {{ .Values.cluster.metastore.autoscaling.cpuScaleDownThreshold | default 30 }}
+    {{- end }}
     {{- else }}
     {{- if .Values.cluster.metastore.externalUri }}
     externalUri: {{ .Values.cluster.metastore.externalUri | quote }}
@@ -96,36 +111,76 @@ spec:
     extraVolumeMounts:
       {{- toYaml .Values.cluster.hiveServer2.extraVolumeMounts | nindent 6 }}
     {{- end }}
+    {{- if and .Values.cluster.hiveServer2.autoscaling .Values.cluster.hiveServer2.autoscaling.enabled }}
+    autoscaling:
+      enabled: true
+      minReplicas: {{ .Values.cluster.hiveServer2.autoscaling.minReplicas }}
+      scaleUpThreshold: {{ .Values.cluster.hiveServer2.autoscaling.scaleUpThreshold }}
+      scaleUpStabilizationSeconds: {{ .Values.cluster.hiveServer2.autoscaling.scaleUpStabilizationSeconds }}
+      scaleDownStabilizationSeconds: {{ .Values.cluster.hiveServer2.autoscaling.scaleDownStabilizationSeconds }}
+      gracePeriodSeconds: {{ .Values.cluster.hiveServer2.autoscaling.gracePeriodSeconds }}
+      metricsScrapeIntervalSeconds: {{ .Values.cluster.hiveServer2.autoscaling.metricsScrapeIntervalSeconds | default 10 }}
+      cpuScaleUpThreshold: {{ .Values.cluster.hiveServer2.autoscaling.cpuScaleUpThreshold | default 90 }}
+      cpuScaleDownThreshold: {{ .Values.cluster.hiveServer2.autoscaling.cpuScaleDownThreshold | default 30 }}
+    {{- end }}
 
-  llap:
-    enabled: {{ .Values.cluster.llap.enabled }}
-    {{- if .Values.cluster.llap.enabled }}
-    replicas: {{ .Values.cluster.llap.replicas }}
-    executors: {{ .Values.cluster.llap.executors }}
-    memoryMb: {{ .Values.cluster.llap.memoryMb }}
-    serviceHosts: {{ .Values.cluster.llap.serviceHosts | quote }}
-    {{- if .Values.cluster.llap.resources }}
+  {{- if .Values.cluster.llapClusterRouting }}
+  llapClusterRouting: {{ .Values.cluster.llapClusterRouting | quote }}
+  {{- end }}
+
+  {{- if .Values.cluster.llapClusters }}
+  llapClusters:
+  {{- range .Values.cluster.llapClusters }}
+  - name: {{ .name }}
+    enabled: {{ .enabled | default true }}
+    replicas: {{ .replicas | default 2 }}
+    executors: {{ .executors | default 1 }}
+    memoryMb: {{ .memoryMb | default 1024 }}
+    {{- if .resources }}
     resources:
-      {{- toYaml .Values.cluster.llap.resources | nindent 6 }}
+      {{- toYaml .resources | nindent 6 }}
     {{- end }}
-    {{- if .Values.cluster.llap.configOverrides }}
+    {{- if .configOverrides }}
     configOverrides:
-      {{- toYaml .Values.cluster.llap.configOverrides | nindent 6 }}
+      {{- toYaml .configOverrides | nindent 6 }}
     {{- end }}
-    {{- if .Values.cluster.llap.extraVolumes }}
+    {{- if .extraVolumes }}
     extraVolumes:
-      {{- toYaml .Values.cluster.llap.extraVolumes | nindent 6 }}
+      {{- toYaml .extraVolumes | nindent 6 }}
     {{- end }}
-    {{- if .Values.cluster.llap.extraVolumeMounts }}
+    {{- if .extraVolumeMounts }}
     extraVolumeMounts:
-      {{- toYaml .Values.cluster.llap.extraVolumeMounts | nindent 6 }}
+      {{- toYaml .extraVolumeMounts | nindent 6 }}
     {{- end }}
+    {{- if and .autoscaling .autoscaling.enabled }}
+    autoscaling:
+      enabled: true
+      minReplicas: {{ .autoscaling.minReplicas }}
+      scaleUpThreshold: {{ .autoscaling.scaleUpThreshold }}
+      scaleUpStabilizationSeconds: {{ .autoscaling.scaleUpStabilizationSeconds }}
+      scaleDownStabilizationSeconds: {{ .autoscaling.scaleDownStabilizationSeconds }}
+      gracePeriodSeconds: {{ .autoscaling.gracePeriodSeconds }}
+      metricsScrapeIntervalSeconds: {{ .autoscaling.metricsScrapeIntervalSeconds | default 10 }}
     {{- end }}
+    {{- if .tezAm }}
+    tezAm:
+      replicas: {{ .tezAm.replicas | default 1 }}
+      {{- if and .tezAm.autoscaling .tezAm.autoscaling.enabled }}
+      autoscaling:
+        enabled: true
+        minReplicas: {{ .tezAm.autoscaling.minReplicas }}
+        scaleUpStabilizationSeconds: {{ .tezAm.autoscaling.scaleUpStabilizationSeconds }}
+        scaleDownStabilizationSeconds: {{ .tezAm.autoscaling.scaleDownStabilizationSeconds }}
+        gracePeriodSeconds: {{ .tezAm.autoscaling.gracePeriodSeconds }}
+        metricsScrapeIntervalSeconds: {{ .tezAm.autoscaling.metricsScrapeIntervalSeconds | default 10 }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+  {{- end }}
 
   tezAm:
     enabled: {{ .Values.cluster.tezAm.enabled }}
     {{- if .Values.cluster.tezAm.enabled }}
-    replicas: {{ .Values.cluster.tezAm.replicas }}
     scratchStorageSize: {{ .Values.cluster.tezAm.scratchStorageSize | quote }}
     {{- if .Values.cluster.tezAm.scratchStorageClassName }}
     scratchStorageClassName: {{ .Values.cluster.tezAm.scratchStorageClassName | quote }}
@@ -145,6 +200,15 @@ spec:
     {{- if .Values.cluster.tezAm.extraVolumeMounts }}
     extraVolumeMounts:
       {{- toYaml .Values.cluster.tezAm.extraVolumeMounts | nindent 6 }}
+    {{- end }}
+    {{- if and .Values.cluster.tezAm.autoscaling .Values.cluster.tezAm.autoscaling.enabled }}
+    autoscaling:
+      enabled: true
+      minReplicas: {{ .Values.cluster.tezAm.autoscaling.minReplicas }}
+      scaleUpStabilizationSeconds: {{ .Values.cluster.tezAm.autoscaling.scaleUpStabilizationSeconds }}
+      scaleDownStabilizationSeconds: {{ .Values.cluster.tezAm.autoscaling.scaleDownStabilizationSeconds }}
+      gracePeriodSeconds: {{ .Values.cluster.tezAm.autoscaling.gracePeriodSeconds }}
+      metricsScrapeIntervalSeconds: {{ .Values.cluster.tezAm.autoscaling.metricsScrapeIntervalSeconds | default 10 }}
     {{- end }}
     {{- end }}
 
@@ -176,4 +240,15 @@ spec:
   volumeMounts:
     {{- toYaml .Values.cluster.storage.volumeMounts | nindent 4 }}
   {{- end }}
+
+  {{- if and .Values.cluster.autoSuspend .Values.cluster.autoSuspend.enabled }}
+  autoSuspend:
+    enabled: true
+    idleTimeoutMinutes: {{ .Values.cluster.autoSuspend.idleTimeoutMinutes | default 15 }}
+    {{- if hasKey .Values.cluster.autoSuspend "includeMetastore" }}
+    includeMetastore: {{ .Values.cluster.autoSuspend.includeMetastore }}
+    {{- end }}
+  {{- end }}
+
+  suspend: false
 {{- end }}

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StringInternUtils;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
@@ -52,7 +53,29 @@ public class TableDesc implements Serializable, Cloneable {
   public static final String SECRET_PREFIX = "TABLE_SECRET";
   public static final String SECRET_DELIMIT = "#";
 
+  private String catalogName;
+
   public TableDesc() {
+  }
+
+  /**
+   * @param inputFormatClass
+   * @param outputFormatClass
+   * @param properties must contain serde class name associate with this table.
+   * @param catalogName the catalog this table belongs to; stored as a dedicated field so it does
+   *                    not appear in EXPLAIN output. Pass {@code null} for internal/intermediate
+   *                    descriptors that are not backed by a real user table; {@code null} will be
+   *                    normalized to {@link Warehouse#DEFAULT_CATALOG_NAME}.
+   */
+  public TableDesc(
+      final Class<? extends InputFormat> inputFormatClass,
+      final Class<?> outputFormatClass, final Properties properties,
+      final String catalogName) {
+    this.inputFileFormatClass = inputFormatClass;
+    outputFileFormatClass = HiveFileFormatUtils
+        .getOutputFormatSubstitute(outputFormatClass);
+    setProperties(properties);
+    this.catalogName = catalogName == null ? Warehouse.DEFAULT_CATALOG_NAME : catalogName;
   }
 
   /**
@@ -63,10 +86,7 @@ public class TableDesc implements Serializable, Cloneable {
   public TableDesc(
       final Class<? extends InputFormat> inputFormatClass,
       final Class<?> outputFormatClass, final Properties properties) {
-    this.inputFileFormatClass = inputFormatClass;
-    outputFileFormatClass = HiveFileFormatUtils
-        .getOutputFormatSubstitute(outputFormatClass);
-    setProperties(properties);
+    this(inputFormatClass, outputFormatClass, properties, null);
   }
 
   public Class<? extends AbstractSerDe> getSerDeClass() {
@@ -199,6 +219,14 @@ public class TableDesc implements Serializable, Cloneable {
         properties.getProperty(hive_metastoreConstants.TABLE_BUCKETING_VERSION));
   }
 
+  public String getCatalogName() {
+    return catalogName;
+  }
+
+  public void setCatalogName(String catalogName) {
+    this.catalogName = catalogName == null ? Warehouse.DEFAULT_CATALOG_NAME : catalogName;
+  }
+
   @Override
   public Object clone() {
     TableDesc ret = new TableDesc();
@@ -215,6 +243,7 @@ public class TableDesc implements Serializable, Cloneable {
     if (jobProperties != null) {
       ret.jobProperties = new LinkedHashMap<String, String>(jobProperties);
     }
+    ret.catalogName = catalogName == null ? Warehouse.DEFAULT_CATALOG_NAME : catalogName;
     return ret;
   }
 

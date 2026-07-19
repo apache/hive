@@ -48,7 +48,6 @@ public class VectorPTFEvaluatorDecimalMax extends VectorPTFEvaluatorBase {
   public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
-    evaluateInputExpr(batch);
 
     // Determine maximum of all non-null decimal column values; maintain isGroupResultNull.
 

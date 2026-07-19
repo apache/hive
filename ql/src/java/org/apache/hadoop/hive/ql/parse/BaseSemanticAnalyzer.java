@@ -1048,6 +1048,7 @@ public abstract class BaseSemanticAnalyzer {
     TOKEN_TO_TYPE.put(HiveParser.TOK_INTERVAL_DAY_TIME, serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME);
     TOKEN_TO_TYPE.put(HiveParser.TOK_DECIMAL, serdeConstants.DECIMAL_TYPE_NAME);
     TOKEN_TO_TYPE.put(HiveParser.TOK_VARIANT, serdeConstants.VARIANT_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_UNKNOWN, serdeConstants.UNKNOWN_TYPE_NAME);
   }
 
   private static String getTypeName(ASTNode node) throws SemanticException {
@@ -2044,6 +2045,16 @@ public abstract class BaseSemanticAnalyzer {
    * Create a FetchTask for a given schema.
    */
   protected FetchTask createFetchTask(String tableSchema) {
+    return createFetchTask(tableSchema, false);
+  }
+
+  /**
+   * Create a FetchTask for a given schema.
+   *
+   * @param lastColumnTakesRest when true, the last column consumes the remainder of the line.
+   *        Use for fetch results that may contain literal tab characters (e.g. SHOW CREATE TABLE).
+   */
+  protected FetchTask createFetchTask(String tableSchema, boolean lastColumnTakesRest) {
     String schema =
         "json".equals(conf.get(HiveConf.ConfVars.HIVE_DDL_OUTPUT_FORMAT.varname, "text")) ? "json#string" : tableSchema;
 
@@ -2051,6 +2062,9 @@ public abstract class BaseSemanticAnalyzer {
     // Sets delimiter to tab (ascii 9)
     prop.setProperty(serdeConstants.SERIALIZATION_FORMAT, Integer.toString(Utilities.tabCode));
     prop.setProperty(serdeConstants.SERIALIZATION_NULL_FORMAT, " ");
+    if (lastColumnTakesRest) {
+      prop.setProperty(serdeConstants.SERIALIZATION_LAST_COLUMN_TAKES_REST, "true");
+    }
     String[] colTypes = schema.split("#");
     prop.setProperty(serdeConstants.LIST_COLUMNS, colTypes[0]);
     prop.setProperty(serdeConstants.LIST_COLUMN_TYPES, colTypes[1]);

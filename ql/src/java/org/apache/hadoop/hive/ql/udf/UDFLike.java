@@ -83,7 +83,8 @@ public class UDFLike extends UDF {
 
       if (n == '_') {
         sb.append(".");
-      } else if (n == '%') {
+      } else if (n == '%' || (n == '*' && !literalize)) {
+        // Both % and * (when not literalized) are treated as standard regex .* 
         sb.append(greedyMatch ? ".*" : ".*?");
       } else {
         sb.append(literalize ? Pattern.quote(Character.toString(n)) : n);

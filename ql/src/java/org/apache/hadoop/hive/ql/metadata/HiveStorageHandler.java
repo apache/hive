@@ -1028,6 +1028,14 @@ public interface HiveStorageHandler extends Configurable {
     throw new UnsupportedOperationException("Storage handler does not support getting custom delete merge schema.");
   }
 
+  /**
+   * @return {@code true} if this handler may store CREATE VIEW text and column metadata in an external catalog
+   *         rather than only as a classic HMS virtual view.
+   */
+  default boolean supportsExternalViewCatalog() {
+    return false;
+  }
+
   default boolean supportsDefaultColumnValues(Map<String, String> tblProps) {
     return false;
   }

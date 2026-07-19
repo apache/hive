@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.QueryProperties.QueryFeature;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -137,7 +138,7 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
       // introduce RS and EX before FS
       FileSinkOperator fsOp = (FileSinkOperator) nd;
       final String sh = fsOp.getConf().getTableInfo().getOutputFileFormatClassName();
-      if (parseCtx.getQueryProperties().isQuery() || sh == null || !sh
+      if (parseCtx.getQueryProperties().hasFeature(QueryFeature.QUERY) || sh == null || !sh
               .equals(Constants.DRUID_HIVE_OUTPUT_FORMAT)) {
         // Bail out, nothing to do
         return null;

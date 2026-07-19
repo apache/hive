@@ -137,7 +137,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_orc
 # col_name            	data_type           	comment             
 a                   	int                 	                    
-b                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -163,7 +162,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b\",\"transform\":\"identity\",\"source-id\":2,\"field-id\":1000}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	4                   
@@ -415,7 +413,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_parquet
 # col_name            	data_type           	comment             
 a                   	int                 	                    
-b                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -441,7 +438,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b\",\"transform\":\"identity\",\"source-id\":2,\"field-id\":1000}]}
 	format-version      	2                   
-	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	7                   
@@ -770,7 +766,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_parquet_int
 # col_name            	data_type           	comment             
 a                   	int                 	                    
-b                   	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -796,7 +791,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b\",\"transform\":\"identity\",\"source-id\":2,\"field-id\":1000}]}
 	format-version      	2                   
-	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	7                   
@@ -1125,7 +1119,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_parquet_double
 # col_name            	data_type           	comment             
 a                   	int                 	                    
-b                   	double              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -1151,7 +1144,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b\",\"transform\":\"identity\",\"source-id\":2,\"field-id\":1000}]}
 	format-version      	2                   
-	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	7                   
@@ -1426,7 +1418,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_avro
 # col_name            	data_type           	comment             
 a                   	int                 	                    
-b                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -1452,7 +1443,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b\",\"transform\":\"identity\",\"source-id\":2,\"field-id\":1000}]}
 	format-version      	2                   
-	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	4                   

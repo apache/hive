@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.metastore.PersistenceManagerProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.datanucleus.ExecutionContext;
 import org.datanucleus.api.jdo.JDOPersistenceManager;
@@ -581,6 +582,12 @@ public class MetastoreDirectSqlUtils {
 
  public static String extractSqlString(Object value) {
     if (value == null) return null;
+
+    // Workaround for DataNucleus's Oracle empty-string behavior (it puts ASCII value 1 instead of an empty string).
+    if ("\u0001".equals(value)) {
+      return "";
+    }
+
     return value.toString();
   }
 
@@ -619,7 +626,14 @@ public class MetastoreDirectSqlUtils {
 
   static Long getModelIdentity(PersistenceManager pm, Class<?> modelClass)
       throws MetaException {
-    ExecutionContext ec = ((JDOPersistenceManager) pm).getExecutionContext();
+    ExecutionContext ec;
+    if (pm instanceof JDOPersistenceManager jp) {
+      ec = jp.getExecutionContext();
+    } else if (pm instanceof PersistenceManagerProxy.ExecutionContextReference ecr) {
+      ec = ecr.getExecutionContext();
+    } else {
+      throw new MetaException("Unknown " + pm);
+    }
     AbstractClassMetaData cmd = ec.getMetaDataManager().getMetaDataForClass(modelClass, ec.getClassLoaderResolver());
     switch (cmd.getIdentityType()) {
       case DATASTORE :

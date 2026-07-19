@@ -106,7 +106,6 @@ POSTHOOK: query: describe formatted ice_orc
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_orc
 # col_name            	data_type           	comment             
-a                   	string              	                    
 b                   	bigint              	                    
 	 	 
 # Partition Information	 	 
@@ -134,7 +133,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"a\",\"transform\":\"identity\",\"source-id\":1,\"field-id\":1001}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	4                   
 	numPartitions       	2                   
@@ -200,7 +198,6 @@ POSTHOOK: query: describe formatted ice_orc
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_orc
 # col_name            	data_type           	comment             
-a                   	string              	                    
 b                   	bigint              	                    
 	 	 
 # Partition Information	 	 
@@ -228,7 +225,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"a\",\"transform\":\"identity\",\"source-id\":1,\"field-id\":1001}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	4                   
 	numPartitions       	2                   
@@ -308,7 +304,6 @@ POSTHOOK: query: describe formatted ice_orc
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_orc
 # col_name            	data_type           	comment             
-a                   	string              	                    
 b                   	bigint              	                    
 	 	 
 # Partition Information	 	 
@@ -336,7 +331,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"a\",\"transform\":\"identity\",\"source-id\":1,\"field-id\":1001}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	3                   
 	numPartitions       	2                   
@@ -416,7 +410,6 @@ POSTHOOK: query: describe formatted ice_orc
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_orc
 # col_name            	data_type           	comment             
-a                   	string              	                    
 b                   	bigint              	                    
 	 	 
 # Partition Information	 	 
@@ -444,7 +437,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"a\",\"transform\":\"identity\",\"source-id\":1,\"field-id\":1001}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	5                   
 	numPartitions       	5                   

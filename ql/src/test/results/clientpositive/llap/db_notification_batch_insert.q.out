@@ -1,0 +1,79 @@
+PREHOOK: query: DROP TABLE IF EXISTS repro_batch_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS repro_batch_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE repro_batch_test (
+    id INT,
+    name STRING
+)
+PARTITIONED BY (part_key INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repro_batch_test
+POSTHOOK: query: CREATE TABLE repro_batch_test (
+    id INT,
+    name STRING
+)
+PARTITIONED BY (part_key INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repro_batch_test
+PREHOOK: query: INSERT INTO TABLE repro_batch_test PARTITION (part_key)
+SELECT
+    val as id,
+    'dummy_data' as name,
+    val as part_key
+FROM (
+    SELECT (a.pos + 1) as val
+    FROM (SELECT posexplode(split(repeat(',', 10), ','))) a
+) dummy
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@repro_batch_test
+POSTHOOK: query: INSERT INTO TABLE repro_batch_test PARTITION (part_key)
+SELECT
+    val as id,
+    'dummy_data' as name,
+    val as part_key
+FROM (
+    SELECT (a.pos + 1) as val
+    FROM (SELECT posexplode(split(repeat(',', 10), ','))) a
+) dummy
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@repro_batch_test
+POSTHOOK: Output: default@repro_batch_test@part_key=1
+POSTHOOK: Output: default@repro_batch_test@part_key=10
+POSTHOOK: Output: default@repro_batch_test@part_key=11
+POSTHOOK: Output: default@repro_batch_test@part_key=2
+POSTHOOK: Output: default@repro_batch_test@part_key=3
+POSTHOOK: Output: default@repro_batch_test@part_key=4
+POSTHOOK: Output: default@repro_batch_test@part_key=5
+POSTHOOK: Output: default@repro_batch_test@part_key=6
+POSTHOOK: Output: default@repro_batch_test@part_key=7
+POSTHOOK: Output: default@repro_batch_test@part_key=8
+POSTHOOK: Output: default@repro_batch_test@part_key=9
+POSTHOOK: Lineage: repro_batch_test PARTITION(part_key=10).id SCRIPT []
+POSTHOOK: Lineage: repro_batch_test PARTITION(part_key=10).name SIMPLE []
+POSTHOOK: Lineage: repro_batch_test PARTITION(part_key=11).id SCRIPT []
+POSTHOOK: Lineage: repro_batch_test PARTITION(part_key=11).name SIMPLE []
+POSTHOOK: Lineage: repro_batch_test PARTITION(part_key=1).id SCRIPT []
+POSTHOOK: Lineage: repro_batch_test PARTITION(part_key=1).name SIMPLE []
+POSTHOOK: Lineage: repro_batch_test PARTITION(part_key=2).id SCRIPT []
+POSTHOOK: Lineage: repro_batch_test PARTITION(part_key=2).name SIMPLE []
+POSTHOOK: Lineage: repro_batch_test PARTITION(part_key=3).id SCRIPT []
+POSTHOOK: Lineage: repro_batch_test PARTITION(part_key=3).name SIMPLE []
+POSTHOOK: Lineage: repro_batch_test PARTITION(part_key=4).id SCRIPT []
+POSTHOOK: Lineage: repro_batch_test PARTITION(part_key=4).name SIMPLE []
+POSTHOOK: Lineage: repro_batch_test PARTITION(part_key=5).id SCRIPT []
+POSTHOOK: Lineage: repro_batch_test PARTITION(part_key=5).name SIMPLE []
+POSTHOOK: Lineage: repro_batch_test PARTITION(part_key=6).id SCRIPT []
+POSTHOOK: Lineage: repro_batch_test PARTITION(part_key=6).name SIMPLE []
+POSTHOOK: Lineage: repro_batch_test PARTITION(part_key=7).id SCRIPT []
+POSTHOOK: Lineage: repro_batch_test PARTITION(part_key=7).name SIMPLE []
+POSTHOOK: Lineage: repro_batch_test PARTITION(part_key=8).id SCRIPT []
+POSTHOOK: Lineage: repro_batch_test PARTITION(part_key=8).name SIMPLE []
+POSTHOOK: Lineage: repro_batch_test PARTITION(part_key=9).id SCRIPT []
+POSTHOOK: Lineage: repro_batch_test PARTITION(part_key=9).name SIMPLE []

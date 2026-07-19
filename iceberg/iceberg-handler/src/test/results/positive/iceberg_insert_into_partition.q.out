@@ -479,7 +479,6 @@ POSTHOOK: Input: default@ice_parquet_int
 # col_name            	data_type           	comment             
 strcol              	string              	                    
 intcol              	int                 	                    
-pcol                	int                 	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -505,7 +504,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"pcol\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1000}]}
 	format-version      	2                   
-	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	#Masked#                   
 	numPartitions       	4                   
@@ -1676,8 +1674,6 @@ POSTHOOK: Input: default@ice_parquet_string
 # col_name            	data_type           	comment             
 name                	string              	                    
 age                 	int                 	                    
-country             	string              	                    
-state               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -1705,7 +1701,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"country\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1000},{\"name\":\"state\",\"transform\":\"identity\",\"source-id\":4,\"field-id\":1001}]}
 	format-version      	2                   
-	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	#Masked#                  
 	numPartitions       	4                   
@@ -2733,8 +2728,6 @@ POSTHOOK: Input: default@ice_parquet_string
 # col_name            	data_type           	comment             
 name                	string              	                    
 age                 	int                 	                    
-country             	string              	                    
-state               	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -2762,7 +2755,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"country\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1000},{\"name\":\"state\",\"transform\":\"identity\",\"source-id\":4,\"field-id\":1001}]}
 	format-version      	2                   
-	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	#Masked#                  
 	numPartitions       	4                   
@@ -3430,7 +3422,6 @@ POSTHOOK: Input: default@ice_parquet_bigint
 # col_name            	data_type           	comment             
 datecol             	date                	                    
 intcol              	int                 	                    
-pcol                	bigint              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -3456,7 +3447,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"pcol\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1000}]}
 	format-version      	2                   
-	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	#Masked#                   
 	numPartitions       	3                   
@@ -4124,7 +4114,6 @@ POSTHOOK: Input: default@ice_parquet_double
 # col_name            	data_type           	comment             
 datecol             	date                	                    
 intcol              	int                 	                    
-pcol                	double              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -4150,7 +4139,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"pcol\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1000}]}
 	format-version      	2                   
-	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	#Masked#                   
 	numPartitions       	3                   
@@ -4818,7 +4806,6 @@ POSTHOOK: Input: default@ice_parquet_decimal
 # col_name            	data_type           	comment             
 datecol             	date                	                    
 intcol              	int                 	                    
-pcol                	decimal(10,6)       	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -4844,7 +4831,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"pcol\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1000}]}
 	format-version      	2                   
-	iceberg.orc.files.only	false               
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	#Masked#                   
 	numPartitions       	3                   

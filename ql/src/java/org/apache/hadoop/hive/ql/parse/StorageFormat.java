@@ -88,6 +88,19 @@ public class StorageFormat {
       return outputFormat;
     }
   }
+  
+  public static String resolveStorageHandlerClassName(String formatType) throws SemanticException {
+    if (StringUtils.isBlank(formatType)) {
+      throw new SemanticException("Format type cannot be empty");
+    }
+    for (StorageHandlerTypes type : StorageHandlerTypes.NON_DEFAULT_TYPES) {
+      if (type.name().equalsIgnoreCase(formatType.trim())) {
+        Objects.requireNonNull(type.className());
+        return ensureClassExists(BaseSemanticAnalyzer.unescapeSQLString(type.className()));
+      }
+    }
+    return ensureClassExists(BaseSemanticAnalyzer.unescapeSQLString(formatType.trim()));
+  }
 
   public StorageFormat(Configuration conf) {
     this.conf = conf;

@@ -269,9 +269,7 @@ POSTHOOK: Input: default@ice_orc
 # col_name            	data_type           	comment             
 first_name          	string              	                    
 last_name           	string              	                    
-dept_id             	bigint              	                    
 team_id             	bigint              	                    
-company_id          	bigint              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -301,7 +299,6 @@ Table Parameters:
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"company_id\",\"transform\":\"identity\",\"source-id\":5,\"field-id\":1000},{\"name\":\"dept_id\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1001}]}
 	format-version      	2                   
 	hive.compactor.worker.pool	iceberg             
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	17                  
 	numRows             	17                  
@@ -866,9 +863,7 @@ POSTHOOK: Input: default@ice_orc
 # col_name            	data_type           	comment             
 first_name          	string              	                    
 last_name           	string              	                    
-dept_id             	bigint              	                    
 team_id             	bigint              	                    
-company_id          	bigint              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -898,7 +893,6 @@ Table Parameters:
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"company_id\",\"transform\":\"identity\",\"source-id\":5,\"field-id\":1000},{\"name\":\"dept_id\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1001}]}
 	format-version      	2                   
 	hive.compactor.worker.pool	iceberg             
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	4                   
 	numPartitions       	3                   

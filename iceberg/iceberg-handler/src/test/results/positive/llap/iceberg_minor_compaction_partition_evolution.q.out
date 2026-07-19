@@ -94,7 +94,6 @@ POSTHOOK: Input: ice_comp@ice_orc
 # col_name            	data_type           	comment             
 first_name          	string              	                    
 last_name           	string              	                    
-dept_id             	bigint              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -120,7 +119,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"dept_id\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1000}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	4                   
 	numPartitions       	1                   
@@ -177,7 +175,6 @@ POSTHOOK: Input: ice_comp@ice_orc
 # col_name            	data_type           	comment             
 first_name          	string              	                    
 last_name           	string              	                    
-dept_id             	bigint              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -205,7 +202,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"dept_id\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1000}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	4                   
 	numPartitions       	1                   
@@ -286,7 +282,6 @@ POSTHOOK: Input: ice_comp@ice_orc
 # col_name            	data_type           	comment             
 first_name          	string              	                    
 last_name           	string              	                    
-dept_id             	bigint              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -314,7 +309,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"dept_id\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1000}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	2                   
 	numPartitions       	2                   

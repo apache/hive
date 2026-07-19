@@ -68,6 +68,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -370,6 +371,10 @@ public final class LazyFactory {
       return LazyObjectInspectorFactory.getLazyUnionObjectInspector(lazyOIs,
           LazyUtils.getSeparator(lazyParams.getSeparators(), separatorIndex),
           lazyParams);
+    case UNKNOWN:
+      // Unknown columns are always null and are not stored in data files.
+      return LazyPrimitiveObjectInspectorFactory.getLazyObjectInspector(
+          TypeInfoFactory.voidTypeInfo, lazyParams);
    }
 
     throw new RuntimeException("Hive LazySerDe Internal error.");

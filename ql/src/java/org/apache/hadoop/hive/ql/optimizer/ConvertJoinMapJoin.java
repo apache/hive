@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.metainfo.query.JoinOperationMetadataResolver;
 import org.apache.hadoop.hive.ql.optimizer.physical.LlapClusterStateForCompile;
 import org.apache.hadoop.hive.ql.parse.GenTezUtils;
 import org.apache.hadoop.hive.ql.parse.OptimizeTezProcContext;
@@ -626,6 +627,30 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
       }
     }
     mergeJoinOp.cloneOriginalParentsList(mergeJoinOp.getParentOperators());
+
+    // Resolve original table names and key column names from the compile-time
+    // operator tree only when skew monitoring is actually enabled
+    // (hive.merge.join.skew.threshold > 0).  Tree traversal is skipped
+    // entirely when the feature is off so there is no overhead for the
+    // common case.
+    if (HiveConf.getLongVar(context.conf, HiveConf.ConfVars.HIVE_MERGE_JOIN_SKEW_THRESHOLD) > 0) {
+      JoinOperationMetadataResolver resolver = new JoinOperationMetadataResolver();
+      populateSkewJoinNames(resolver, joinOp, mergeJoinOp);
+    }
+  }
+
+  /**
+   * The results are stored as non-transient fields in
+   * {@link CommonMergeJoinDesc} so they survive plan serialization to the Tez task
+   * and can be read by the skew-join monitor at runtime.
+   *
+   */
+  private void populateSkewJoinNames(JoinOperationMetadataResolver resolver, JoinOperator joinOp,
+      CommonMergeJoinOperator mergeJoinOp) {
+    resolver.resolveJoinMetadata(joinOp);
+
+    mergeJoinOp.getConf().setSkewJoinKeyNames(resolver.getKeyNames());
+    mergeJoinOp.getConf().setSkewJoinTableAliases(resolver.getTableAliases());
   }
 
   private void setAllChildrenTraits(Operator<? extends OperatorDesc> currentOp, OpTraits opTraits) {

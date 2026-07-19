@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.lineage;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryProperties;
+import org.apache.hadoop.hive.ql.QueryProperties.QueryFeature;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.junit.Test;
@@ -41,19 +42,19 @@ public class TestGenerator {
 
     ParseContext parseContext = new ParseContext();
     QueryProperties queryProperties = new QueryProperties();
-    queryProperties.setCTAS(true);
+    queryProperties.addFeature(QueryFeature.CTAS);
     parseContext.setQueryProperties(queryProperties);
     assertThat(predicate.test(parseContext), is(true));
 
     parseContext = new ParseContext();
     queryProperties = new QueryProperties();
-    queryProperties.setQuery(true);
+    queryProperties.addFeature(QueryFeature.QUERY);
     parseContext.setQueryProperties(queryProperties);
     assertThat(predicate.test(parseContext), is(true));
 
     parseContext = new ParseContext();
     queryProperties = new QueryProperties();
-    queryProperties.setView(true);
+    queryProperties.addFeature(QueryFeature.VIEW);
     parseContext.setQueryProperties(queryProperties);
     assertThat(predicate.test(parseContext), is(false));
   }

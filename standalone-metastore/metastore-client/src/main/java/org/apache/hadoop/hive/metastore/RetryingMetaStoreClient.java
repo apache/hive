@@ -33,9 +33,11 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
+import org.apache.hadoop.hive.metastore.client.builder.HiveMetaStoreClientBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
@@ -69,15 +71,7 @@ public class RetryingMetaStoreClient implements InvocationHandler {
   private final Map<String, Long> metaCallTimeMap;
   private final long connectionLifeTimeInMillis;
   private long lastConnectionTime;
-  private boolean localMetaStore;
-
-
-  protected RetryingMetaStoreClient(Configuration conf, Class<?>[] constructorArgTypes,
-      Object[] constructorArgs, Map<String, Long> metaCallTimeMap,
-      Class<? extends IMetaStoreClient> msClientClass) throws MetaException {
-    this(conf, metaCallTimeMap, () ->
-        JavaUtils.newInstance(msClientClass, constructorArgTypes, constructorArgs));
-  }
+  private final boolean localMetaStore;
 
   protected RetryingMetaStoreClient(Configuration conf, Map<String, Long> metaCallTimeMap,
         Supplier<? extends IMetaStoreClient> msClient) throws MetaException {
@@ -95,12 +89,11 @@ public class RetryingMetaStoreClient implements InvocationHandler {
     this.connectionLifeTimeInMillis = MetastoreConf.getTimeVar(conf,
         ConfVars.CLIENT_SOCKET_LIFETIME, TimeUnit.MILLISECONDS);
     this.lastConnectionTime = System.currentTimeMillis();
-    String msUri = MetastoreConf.getVar(conf, ConfVars.THRIFT_URIS);
-    localMetaStore = (msUri == null) || msUri.trim().isEmpty();
 
     SecurityUtils.reloginExpiringKeytabUser();
 
     this.base = msClient.get();
+    this.localMetaStore = base.isLocalMetaStore();
 
     LOG.info("RetryingMetaStoreClient proxy=" + base.getClass() + " ugi=" + this.ugi
         + " retries=" + this.retryLimit + " delay=" + this.retryDelaySeconds
@@ -109,9 +102,7 @@ public class RetryingMetaStoreClient implements InvocationHandler {
 
   public static IMetaStoreClient getProxy(
       Configuration hiveConf, boolean allowEmbedded) throws MetaException {
-    return getProxy(hiveConf, new Class[]{Configuration.class, HiveMetaHookLoader.class, Boolean.class},
-        new Object[]{hiveConf, null, allowEmbedded}, null, HiveMetaStoreClient.class.getName()
-    );
+    return new HiveMetaStoreClientBuilder(hiveConf, allowEmbedded).withRetry(null).build();
   }
 
   @VisibleForTesting
@@ -123,13 +114,10 @@ public class RetryingMetaStoreClient implements InvocationHandler {
   public static IMetaStoreClient getProxy(Configuration hiveConf, HiveMetaHookLoader hookLoader,
       Map<String, Long> metaCallTimeMap, String mscClassName, boolean allowEmbedded)
           throws MetaException {
-
-    return getProxy(hiveConf,
-        new Class[] {Configuration.class, HiveMetaHookLoader.class, Boolean.class},
-        new Object[] {hiveConf, hookLoader, allowEmbedded},
-        metaCallTimeMap,
-        mscClassName
-    );
+    return
+        new HiveMetaStoreClientBuilder(hiveConf, mscClassName, allowEmbedded)
+        .withHooks(hookLoader)
+        .withRetry(metaCallTimeMap).build();
   }
 
   /**
@@ -148,26 +136,18 @@ public class RetryingMetaStoreClient implements InvocationHandler {
   public static IMetaStoreClient getProxy(Configuration hiveConf, Class<?>[] constructorArgTypes,
       Object[] constructorArgs, Map<String, Long> metaCallTimeMap,
       String mscClassName) throws MetaException {
-
     @SuppressWarnings("unchecked")
     Class<? extends IMetaStoreClient> baseClass =
         JavaUtils.getClass(mscClassName, IMetaStoreClient.class);
-
-    RetryingMetaStoreClient handler =
-        new RetryingMetaStoreClient(hiveConf, constructorArgTypes, constructorArgs,
-            metaCallTimeMap, baseClass);
-    return getProxy(baseClass.getInterfaces(), handler);
+    IMetaStoreClient baseClient = JavaUtils.newInstance(baseClass, constructorArgTypes, constructorArgs);
+    return new HiveMetaStoreClientBuilder(hiveConf, baseClient).withRetry(metaCallTimeMap).build();
   }
 
   public static IMetaStoreClient getProxy(Configuration hiveConf, Map<String, Long> metaCallTimeMap,
       IMetaStoreClient msClient) throws MetaException {
     RetryingMetaStoreClient handler =
         new RetryingMetaStoreClient(hiveConf, metaCallTimeMap, () -> msClient);
-    return getProxy(msClient.getClass().getInterfaces(), handler);
-  }
-
-  private static IMetaStoreClient getProxy(Class<?>[] interfaces,
-      RetryingMetaStoreClient handler) {
+    Class<?>[] interfaces = ClassUtils.getAllInterfaces(msClient.getClass()).toArray(new Class[0]);
     return (IMetaStoreClient) Proxy.newProxyInstance(
             RetryingMetaStoreClient.class.getClassLoader(), interfaces, handler);
   }

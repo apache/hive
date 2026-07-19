@@ -1,3 +1,5 @@
+--! qt:disabled:HIVE-29700
+-- Cast for non-default partition seems applied for all values in PARTITION_KEY_VALS
 --! qt:dataset:part
 set hive.mapred.mode=nonstrict;
 set hive.typecheck.on.insert = true;

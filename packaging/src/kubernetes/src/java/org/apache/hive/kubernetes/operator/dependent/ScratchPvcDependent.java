@@ -56,6 +56,12 @@ public class ScratchPvcDependent
   }
 
   @Override
+  protected String getSecondaryResourceName(HiveCluster primary,
+      Context<HiveCluster> context) {
+    return resourceName(primary);
+  }
+
+  @Override
   protected PersistentVolumeClaim desired(HiveCluster hiveCluster,
       Context<HiveCluster> context) {
     TezAmSpec tezAm = hiveCluster.getSpec().tezAm();

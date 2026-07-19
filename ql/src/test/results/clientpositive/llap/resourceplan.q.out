@@ -535,7 +535,12 @@ FAILED: SemanticException Invalid create arguments (tok_create_rp plan_3 (tok_qu
 PREHOOK: query: ALTER RESOURCE PLAN plan_1 RENAME TO plan_2
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. AlreadyExistsException(message:Resource plan name should be unique: )
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. MetaException(message:JDODataStoreException: Update of object with id "1[OID]org.apache.hadoop.hive.metastore.model.MWMResourcePlan" using statement "UPDATE WM_RESOURCEPLAN SET "NAME"=? WHERE RP_ID=?" failed : org.apache.derby.shared.common.error.DerbySQLIntegrityConstraintViolationException: The statement was aborted because it would have caused a duplicate key value in a unique or primary key constraint or unique index identified by 'UNIQUE_WM_RESOURCEPLAN' defined on 'WM_RESOURCEPLAN'.
+#### A masked pattern was here ####
+Caused by: ERROR 23505: The statement was aborted because it would have caused a duplicate key value in a unique or primary key constraint or unique index identified by 'UNIQUE_WM_RESOURCEPLAN' defined on 'WM_RESOURCEPLAN'.
+#### A masked pattern was here ####
+
+Root cause: ERROR 23505: The statement was aborted because it would have caused a duplicate key value in a unique or primary key constraint or unique index identified by 'UNIQUE_WM_RESOURCEPLAN' defined on 'WM_RESOURCEPLAN'.)
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_resourceplans
@@ -1991,7 +1996,9 @@ plan_2	default	USER	user2	def	1
 PREHOOK: query: DROP POOL plan_2.def.c1
 PREHOOK: type: DROP POOL
 PREHOOK: Output: dummyHostnameForTest
-FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. InvalidOperationException(message:Please remove all mappings for this pool.)
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. MetaException(message:JDODataStoreException: Batched statement "DELETE FROM WM_POOL WHERE POOL_ID=?" failed. 
+DELETE on table 'WM_POOL' caused a violation of foreign key constraint 'WM_MAPPING_FK2' for key (6).  The statement has been rolled back.
+Root cause: ERROR 23503: DELETE on table 'WM_POOL' caused a violation of foreign key constraint 'WM_MAPPING_FK2' for key (6).  The statement has been rolled back.)
 PREHOOK: query: EXPLAIN DROP USER MAPPING "user2" in plan_2
 PREHOOK: type: DROP MAPPING
 PREHOOK: Output: dummyHostnameForTest

@@ -83,6 +83,7 @@ public class StatisticsTestUtils {
     ColumnStatistics colStats = new ColumnStatistics();
     ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc(true, tbl.getDbName(), tbl.getTableName());
     statsDesc.setPartName(partName);
+    statsDesc.setCatName(tbl.getCatName());
     colStats.setStatsDesc(statsDesc);
     colStats.setStatsObj(Collections.singletonList(statObj));
     colStats.setEngine(HIVE_ENGINE);

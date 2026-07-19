@@ -58,6 +58,7 @@ public class QOutProcessor {
 
   public static final String MASK_PATTERN = "#### A masked pattern was here ####";
   public static final String PARTIAL_MASK_PATTERN = "#### A PARTIAL masked pattern was here ####";
+  public static final String MASKED_VERTEX_KILLED_PATTERN = "[Masked Vertex killed due to OTHER_VERTEX_FAILURE]";
   private static final PatternReplacementPair MASK_STATS = new PatternReplacementPair(
       Pattern.compile(" Num rows: [1-9][0-9]* Data size: [1-9][0-9]*"),
       " Num rows: ###Masked### Data size: ###Masked###");
@@ -197,6 +198,7 @@ public class QOutProcessor {
     out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
 
     boolean lastWasMasked = false;
+    boolean lastWasVertexKilled = false;
 
     while (null != (line = in.readLine())) {
       LineProcessingResult result = processLine(line);
@@ -209,10 +211,22 @@ public class QOutProcessor {
           lastWasMasked = true;
           result.partialMaskWasMatched = false;
         }
+        lastWasVertexKilled = false;
+      } else if (result.line.equals(MASKED_VERTEX_KILLED_PATTERN)) {
+        // Deduplicate consecutive standalone vertex-killed lines — the number of sibling
+        // vertices still alive when the kill propagates is non-deterministic.
+        if (!lastWasVertexKilled) {
+          out.write(result.line);
+          out.write("\n");
+          lastWasVertexKilled = true;
+        }
+        lastWasMasked = false;
+        result.partialMaskWasMatched = false;
       } else {
         out.write(result.line);
         out.write("\n");
         lastWasMasked = false;
+        lastWasVertexKilled = false;
         result.partialMaskWasMatched = false;
       }
     }
@@ -350,7 +364,16 @@ public class QOutProcessor {
     // We do not want the test to fail because of this.
     ppm.add(new PatternReplacementPair(
         Pattern.compile("Vertex killed, vertexName=(.*?),.*\\[\\1\\] killed\\/failed due to:OTHER_VERTEX_FAILURE\\]"),
-        "[Masked Vertex killed due to OTHER_VERTEX_FAILURE]"));
+        MASKED_VERTEX_KILLED_PATTERN));
+
+    // Collapse multiple consecutive embedded [Masked Vertex killed] tokens on the same line
+    // (the long FAILED: summary line repeats one token per killed vertex).
+    ppm.add(new PatternReplacementPair(Pattern.compile("(\\Q" + MASKED_VERTEX_KILLED_PATTERN + "\\E){2,}"),
+        MASKED_VERTEX_KILLED_PATTERN));
+
+    // The number of vertices killed when a DAG fails is a scheduling race condition —
+    // depends on how many sibling vertices are still running at the moment the kill propagates.
+    ppm.add(new PatternReplacementPair(Pattern.compile("killedVertices:\\d+"), "killedVertices:#Masked#"));
 
     partialPlanMask = ppm.toArray(new PatternReplacementPair[ppm.size()]);
   }

@@ -475,9 +475,9 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     PerfLogger perfLogger = PerfLogger.getPerfLogger(conf, false);
     perfLogger.perfLogBegin(ExplainTask.class.getName(), PerfLogger.HIVE_GET_TABLE_COLUMN_STATS);
     if (table.isPartitioned()) {
-      alterTableStmt.addAll(ddlPlanUtils.getDDLPlanForPartitionWithStats(table, tablePartitionsMap));
+      alterTableStmt.addAll(ddlPlanUtils.getDDLPlanForPartitionWithStats(conf, table, tablePartitionsMap));
     } else {
-      alterTableStmt.addAll(ddlPlanUtils.getAlterTableStmtTableStatsColsAll(table));
+      alterTableStmt.addAll(ddlPlanUtils.getAlterTableStmtTableStatsColsAll(conf, table));
     }
     perfLogger.perfLogEnd(ExplainTask.class.getName(), PerfLogger.HIVE_GET_TABLE_COLUMN_STATS);
   }
@@ -489,12 +489,12 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
   public void getDDLPlan(PrintStream out) throws Exception {
     DDLPlanUtils ddlPlanUtils = new DDLPlanUtils();
-    Set<String> createDatabase = new TreeSet<String>();
-    List<String> tableCreateStmt = new LinkedList<String>();
-    List<String> tableBasicDef = new LinkedList<String>();
-    List<String> createViewList = new LinkedList<String>();
-    List<String> alterTableStmt = new LinkedList<String>();
-    List<String> explainStmt = new LinkedList<String>();
+    Set<String> createDatabase = new TreeSet<>();
+    List<String> tableCreateStmt = new LinkedList<>();
+    List<String> tableBasicDef = new LinkedList<>();
+    List<String> createViewList = new LinkedList<>();
+    List<String> alterTableStmt = new LinkedList<>();
+    List<String> explainStmt = new LinkedList<>();
     Map<String, Table> tableMap = new HashMap<>();
     Map<String, List<Partition>> tablePartitionsMap = new HashMap<>();
     for (ReadEntity ent : work.getInputs()) {

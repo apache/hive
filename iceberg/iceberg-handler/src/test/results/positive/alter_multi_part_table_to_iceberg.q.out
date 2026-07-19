@@ -177,8 +177,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_orc
 # col_name            	data_type           	comment             
 a                   	int                 	                    
-b                   	string              	                    
-c                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -206,7 +204,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b\",\"transform\":\"identity\",\"source-id\":2,\"field-id\":1000},{\"name\":\"c\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1001}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	7                   
@@ -453,8 +450,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_parquet
 # col_name            	data_type           	comment             
 a                   	int                 	                    
-b                   	string              	                    
-c                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -482,7 +477,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b\",\"transform\":\"identity\",\"source-id\":2,\"field-id\":1000},{\"name\":\"c\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1001}]}
 	format-version      	2                   
-	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	7                   
@@ -729,8 +723,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_avro
 # col_name            	data_type           	comment             
 a                   	int                 	                    
-b                   	string              	                    
-c                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -758,7 +750,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b\",\"transform\":\"identity\",\"source-id\":2,\"field-id\":1000},{\"name\":\"c\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1001}]}
 	format-version      	2                   
-	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	7                   
@@ -1066,9 +1057,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_orc_mixed
 # col_name            	data_type           	comment             
 a                   	int                 	                    
-b                   	double              	                    
-c                   	int                 	                    
-d                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -1098,7 +1086,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b\",\"transform\":\"identity\",\"source-id\":2,\"field-id\":1000},{\"name\":\"c\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1001},{\"name\":\"d\",\"transform\":\"identity\",\"source-id\":4,\"field-id\":1002}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	10                  
@@ -1513,9 +1500,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_parquet_mixed
 # col_name            	data_type           	comment             
 a                   	int                 	                    
-b                   	double              	                    
-c                   	int                 	                    
-d                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -1545,7 +1529,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b\",\"transform\":\"identity\",\"source-id\":2,\"field-id\":1000},{\"name\":\"c\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1001},{\"name\":\"d\",\"transform\":\"identity\",\"source-id\":4,\"field-id\":1002}]}
 	format-version      	2                   
-	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	10                  
@@ -1960,9 +1943,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_avro_mixed
 # col_name            	data_type           	comment             
 a                   	int                 	                    
-b                   	double              	                    
-c                   	int                 	                    
-d                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -1992,7 +1972,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b\",\"transform\":\"identity\",\"source-id\":2,\"field-id\":1000},{\"name\":\"c\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1001},{\"name\":\"d\",\"transform\":\"identity\",\"source-id\":4,\"field-id\":1002}]}
 	format-version      	2                   
-	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	10                  

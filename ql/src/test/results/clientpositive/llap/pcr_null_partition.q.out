@@ -1,0 +1,175 @@
+PREHOOK: query: drop table if exists pcr_t1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists pcr_t1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table pcr_t1 (key string, value string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pcr_t1
+POSTHOOK: query: create table pcr_t1 (key string, value string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pcr_t1
+PREHOOK: query: insert into pcr_t1 partition (ds) select 'A', 'V1', '2000-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@pcr_t1
+POSTHOOK: query: insert into pcr_t1 partition (ds) select 'A', 'V1', '2000-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@pcr_t1
+POSTHOOK: Output: default@pcr_t1@ds=2000-04-08
+POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).key SIMPLE []
+POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).value SIMPLE []
+PREHOOK: query: insert into pcr_t1 partition (ds) select 'B', 'V2', 'null'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@pcr_t1
+POSTHOOK: query: insert into pcr_t1 partition (ds) select 'B', 'V2', 'null'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@pcr_t1
+POSTHOOK: Output: default@pcr_t1@ds=null
+POSTHOOK: Lineage: pcr_t1 PARTITION(ds=null).key SIMPLE []
+POSTHOOK: Lineage: pcr_t1 PARTITION(ds=null).value SIMPLE []
+PREHOOK: query: insert into pcr_t1 partition (ds) select 'C', 'V3', null
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@pcr_t1
+POSTHOOK: query: insert into pcr_t1 partition (ds) select 'C', 'V3', null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@pcr_t1
+POSTHOOK: Output: default@pcr_t1@ds=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: pcr_t1 PARTITION(ds=__HIVE_DEFAULT_PARTITION__).key SIMPLE []
+POSTHOOK: Lineage: pcr_t1 PARTITION(ds=__HIVE_DEFAULT_PARTITION__).value SIMPLE []
+PREHOOK: query: explain select key, value, ds from pcr_t1 where ds is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
+PREHOOK: Input: default@pcr_t1@ds=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
+POSTHOOK: query: explain select key, value, ds from pcr_t1 where ds is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
+POSTHOOK: Input: default@pcr_t1@ds=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: pcr_t1
+                  filterExpr: ds is null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 171 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: string), value (type: string), null (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 1 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select key, value, ds from pcr_t1 where ds is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
+PREHOOK: Input: default@pcr_t1@ds=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
+POSTHOOK: query: select key, value, ds from pcr_t1 where ds is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
+POSTHOOK: Input: default@pcr_t1@ds=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
+C	V3	NULL
+PREHOOK: query: explain select key, value, ds from pcr_t1 where ds is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
+PREHOOK: Input: default@pcr_t1@ds=2000-04-08
+PREHOOK: Input: default@pcr_t1@ds=null
+#### A masked pattern was here ####
+POSTHOOK: query: explain select key, value, ds from pcr_t1 where ds is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
+POSTHOOK: Input: default@pcr_t1@ds=null
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: pcr_t1
+                  filterExpr: ds is not null (type: boolean)
+                  Statistics: Num rows: 2 Data size: 710 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: string), value (type: string), ds (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 2 Data size: 710 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2 Data size: 710 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select key, value, ds from pcr_t1 where ds is not null order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
+PREHOOK: Input: default@pcr_t1@ds=2000-04-08
+PREHOOK: Input: default@pcr_t1@ds=null
+#### A masked pattern was here ####
+POSTHOOK: query: select key, value, ds from pcr_t1 where ds is not null order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
+POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
+POSTHOOK: Input: default@pcr_t1@ds=null
+#### A masked pattern was here ####
+A	V1	2000-04-08
+B	V2	null
+PREHOOK: query: select key, value, ds from pcr_t1 where ds = 'null'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
+PREHOOK: Input: default@pcr_t1@ds=null
+#### A masked pattern was here ####
+POSTHOOK: query: select key, value, ds from pcr_t1 where ds = 'null'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
+POSTHOOK: Input: default@pcr_t1@ds=null
+#### A masked pattern was here ####
+B	V2	null

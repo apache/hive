@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.stats;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -45,10 +47,12 @@ import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Timestamp;
 import org.apache.hadoop.hive.metastore.api.TimestampColumnStatsData;
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.ColStatistics.Range;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -108,6 +112,7 @@ class TestStatsUtils {
     exclusions.add(serdeConstants.STRUCT_TYPE_NAME);
     exclusions.add(serdeConstants.UNION_TYPE_NAME);
     exclusions.add(serdeConstants.VARIANT_TYPE_NAME);
+    exclusions.add(serdeConstants.UNKNOWN_TYPE_NAME);
     Field[] serdeFields = serdeConstants.class.getFields();
     for (Field field : serdeFields) {
       if (!Modifier.isStatic(field.getModifiers())) {
@@ -812,6 +817,69 @@ class TestStatsUtils {
     assertNotNull(range, "Range should be created for TIMESTAMP");
     assertEquals(1600000000L, range.minValue.longValue(), "minValue mismatch for TIMESTAMP");
     assertEquals(1700000000L, range.maxValue.longValue(), "maxValue mismatch for TIMESTAMP");
+  }
+
+  @Test
+  void testEstimateStatsForMissingColsHandlesEmptyList() {
+    HiveConf conf = new HiveConf();
+
+    ColumnInfo columnInfoA = new ColumnInfo("a", TypeInfoFactory.intTypeInfo, "t", false);
+
+    List<ColStatistics> allColumnStats = StatsUtils.estimateStatsForMissingCols(
+        List.of("a"), Collections.emptyList(), conf, 0, List.of(columnInfoA));
+
+    assertEquals(1, allColumnStats.size());
+  }
+
+  @Test
+  void testEstimateStatsForMissingColsCombinesExistingStatsAndEstimations() {
+    HiveConf conf = new HiveConf();
+
+    ColumnInfo colNeededButNotExists = new ColumnInfo("neededButNotExists", TypeInfoFactory.intTypeInfo, "t", false);
+    ColumnInfo colNeededAndExists = new ColumnInfo("neededAndExists", TypeInfoFactory.intTypeInfo, "t", false);
+    ColumnInfo colNotNeededButExists = new ColumnInfo("notNeededButExists", TypeInfoFactory.intTypeInfo, "t", false);
+    ColumnInfo colNotNeededNotExists = new ColumnInfo("notNeededNotExists", TypeInfoFactory.intTypeInfo, "t", false);
+
+    ColStatistics colStatNeededAndExists = new ColStatistics();
+    colStatNeededAndExists.setColumnName(colNeededAndExists.getInternalName());
+    ColStatistics colStatNotNeededButExists = new ColStatistics();
+    colStatNotNeededButExists.setColumnName(colNotNeededButExists.getInternalName());
+
+    List<ColStatistics> allColumnStats = StatsUtils.estimateStatsForMissingCols(
+        List.of(colNeededAndExists.getInternalName(), colNeededButNotExists.getInternalName()),
+        List.of(colStatNeededAndExists, colStatNotNeededButExists),
+        conf,
+        0,
+        List.of(colNeededButNotExists, colNeededAndExists, colNotNeededButExists, colNotNeededNotExists));
+
+    assertEquals(3, allColumnStats.size());
+    assertEquals(colStatNeededAndExists, allColumnStats.get(0));
+    assertFalse(allColumnStats.get(0).isEstimated());
+    assertEquals(colStatNotNeededButExists, allColumnStats.get(1));
+    assertFalse(allColumnStats.get(1).isEstimated());
+    assertEquals(colNeededButNotExists.getInternalName(), allColumnStats.get(2).getColumnName());
+    assertTrue(allColumnStats.get(2).isEstimated());
+  }
+
+  @Test
+  void testEstimateStatsForMissingColsReturnOnlyColumnsWithExistingStatsWhenNoNeededColumn() {
+    HiveConf conf = new HiveConf();
+
+    ColumnInfo colNotNeededButExists = new ColumnInfo("notNeededButExists", TypeInfoFactory.intTypeInfo, "t", false);
+    ColumnInfo colNotNeededNotExists = new ColumnInfo("notNeededNotExists", TypeInfoFactory.intTypeInfo, "t", false);
+
+    ColStatistics colStatNotNeededButExists = new ColStatistics();
+    colStatNotNeededButExists.setColumnName(colNotNeededButExists.getInternalName());
+
+    List<ColStatistics> allColumnStats = StatsUtils.estimateStatsForMissingCols(
+        Collections.emptyList(),
+        List.of(colStatNotNeededButExists),
+        conf,
+        0,
+        List.of(colNotNeededButExists, colNotNeededNotExists));
+
+    assertEquals(1, allColumnStats.size());
+    assertEquals(allColumnStats.getFirst(), colStatNotNeededButExists);
   }
 
 }

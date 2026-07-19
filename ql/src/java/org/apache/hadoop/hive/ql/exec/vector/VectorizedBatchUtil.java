@@ -208,6 +208,8 @@ public class VectorizedBatchUtil {
             createColumnVector(mapTypeInfo.getMapKeyTypeInfo()),
             createColumnVector(mapTypeInfo.getMapValueTypeInfo()));
       }
+    case UNKNOWN:
+      return new VoidColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
     default:
       throw new RuntimeException("Vectorization is not supported for datatype:"
           + typeInfo.getCategory());
@@ -520,17 +522,17 @@ public class VectorizedBatchUtil {
       }
         break;
     case DECIMAL:
-      DecimalColumnVector dcv = (DecimalColumnVector) batch.cols[offset + colIndex];
+      ColumnVector dcv = batch.cols[offset + colIndex];
       if (writableCol != null) {
         dcv.isNull[rowIndex] = false;
         HiveDecimalWritable wobj = (HiveDecimalWritable) writableCol;
-        dcv.set(rowIndex, wobj);
+        ((IDecimalColumnVector) dcv).set(rowIndex, wobj);
       } else {
         setNullColIsNullValue(dcv, rowIndex);
       }
       break;
     default:
-      throw new HiveException("Vectorizaton is not supported for datatype:" +
+      throw new HiveException("Vectorization is not supported for datatype:" +
           poi.getPrimitiveCategory());
     }
   }

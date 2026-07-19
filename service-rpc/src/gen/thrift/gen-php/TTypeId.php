@@ -62,6 +62,8 @@ final class TTypeId
 
     const TIMESTAMPLOCALTZ_TYPE = 22;
 
+    const UNKNOWN_TYPE = 23;
+
     static public $__names = array(
         0 => 'BOOLEAN_TYPE',
         1 => 'TINYINT_TYPE',
@@ -86,6 +88,7 @@ final class TTypeId
         20 => 'INTERVAL_YEAR_MONTH_TYPE',
         21 => 'INTERVAL_DAY_TIME_TYPE',
         22 => 'TIMESTAMPLOCALTZ_TYPE',
+        23 => 'UNKNOWN_TYPE',
     );
 }
 

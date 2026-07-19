@@ -180,7 +180,7 @@ public class TestTezTask {
     sessionState = mock(TezSessionState.class);
     when(sessionState.getTezClient()).thenReturn(session);
     when(sessionState.reopen()).thenReturn(sessionState);
-    when(session.submitDAG(any(DAG.class)))
+    when(sessionState.submitDAG(any(DAG.class)))
       .thenThrow(new SessionNotRunning(""))
       .thenReturn(mock(DAGClient.class));
   }
@@ -229,7 +229,7 @@ public class TestTezTask {
     task.submit(dag, Ref.from(sessionState));
     // validate close/reopen
     verify(sessionState, times(1)).reopen();
-    verify(session, times(2)).submitDAG(any(DAG.class));
+    verify(sessionState, times(2)).submitDAG(any(DAG.class));
   }
 
   @Test
@@ -241,14 +241,14 @@ public class TestTezTask {
     TezClient tezClient = mock(TezClient.class);
     when(tezSessionState.reopen()).thenThrow(new HiveException("Dag cannot be submitted"));
     when(tezSessionState.getTezClient()).thenReturn(tezClient);
-    when(tezClient.submitDAG(any(DAG.class))).thenThrow(new SessionNotRunning(""));
+    when(tezSessionState.submitDAG(any(DAG.class))).thenThrow(new SessionNotRunning(""));
     doNothing().when(tezSessionState).destroy();
     boolean isException = false;
     try {
       task.submit(dag, Ref.from(tezSessionState));
     } catch (Exception e) {
       isException = true;
-      verify(tezClient, times(1)).submitDAG(any(DAG.class));
+      verify(tezSessionState, times(1)).submitDAG(any(DAG.class));
       verify(tezSessionState, times(2)).reopen();
       verify(tezSessionState, times(1)).destroy();
       verify(tezSessionState, times(0)).returnToSessionManager();
@@ -266,13 +266,13 @@ public class TestTezTask {
     doNothing().when(tezSessionPoolSession).returnToSessionManager();
     when(tezSessionPoolSession.getTezClient()).thenReturn(tezClient);
     when(tezSessionPoolSession.isDefault()).thenReturn(true);
-    when(tezClient.submitDAG(any(DAG.class))).thenThrow(new SessionNotRunning(""));
+    when(tezSessionPoolSession.submitDAG(any(DAG.class))).thenThrow(new SessionNotRunning(""));
     boolean isException = false;
     try {
       task.submit(dag, Ref.from(tezSessionPoolSession));
     } catch (Exception e) {
       isException = true;
-      verify(tezClient, times(1)).submitDAG(any(DAG.class));
+      verify(tezSessionPoolSession, times(1)).submitDAG(any(DAG.class));
       verify(tezSessionPoolSession, times(2)).reopen();
       verify(tezSessionPoolSession, times(0)).destroy();
       verify(tezSessionPoolSession, times(1)).returnToSessionManager();

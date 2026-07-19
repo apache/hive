@@ -25,6 +25,7 @@ import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerIn
 import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerInfo.SchedulerPendingPreemptionTaskCount;
 import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerInfo.SchedulerPendingTaskCount;
 import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerInfo.SchedulerPreemptedTaskCount;
+import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerInfo.SchedulerDagStatus;
 import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerInfo.SchedulerRunningTaskCount;
 import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerInfo.SchedulerSchedulableTaskCount;
 import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerInfo.SchedulerSuccessfulTaskCount;
@@ -83,6 +84,8 @@ public class LlapTaskSchedulerMetrics implements MetricsSource {
   MutableCounterInt preemptedTasksCount;
   @Metric
   MutableCounterInt completedDagcount;
+  @Metric
+  MutableGaugeInt dagRunning;
   @Metric
   MutableCounterInt pendingPreemptionTasksCount;
   @Metric
@@ -276,6 +279,7 @@ public class LlapTaskSchedulerMetrics implements MetricsSource {
         .addGauge(SchedulerMemoryPerInstance, memoryPerInstance.value())
         .addGauge(SchedulerCpuCoresPerInstance, cpuCoresPerInstance.value())
         .addGauge(SchedulerDisabledNodeCount, disabledNodeCount.value())
+        .addGauge(SchedulerDagStatus, dagRunning.value())
         .addCounter(SchedulerPendingTaskCount, pendingTasksCount.value())
         .addCounter(SchedulerSchedulableTaskCount, schedulableTasksCount.value())
         .addCounter(SchedulerRunningTaskCount, runningTasksCount.value())
@@ -283,6 +287,10 @@ public class LlapTaskSchedulerMetrics implements MetricsSource {
         .addCounter(SchedulerPendingPreemptionTaskCount, pendingPreemptionTasksCount.value())
         .addCounter(SchedulerPreemptedTaskCount, preemptedTasksCount.value())
         .addCounter(SchedulerCompletedDagCount, completedDagcount.value());
+  }
+
+  public void setDagRunning(boolean running) {
+    dagRunning.set(running ? 1 : 0);
   }
 
   public JvmMetrics getJvmMetrics() {

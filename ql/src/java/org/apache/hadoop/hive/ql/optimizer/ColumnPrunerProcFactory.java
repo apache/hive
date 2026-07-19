@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.TreeSet;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.slf4j.Logger;
@@ -521,6 +522,8 @@ public final class ColumnPrunerProcFactory {
       cols.add(new FieldNode(VirtualColumn.RAWDATASIZE.getName()));
     }
 
+    Set<String> nonNativePartitionCols = nonNativePartitionColNames(desc.getTableMetadata());
+
     for (FieldNode fn : cols) {
       String column = fn.getFieldName();
       ColumnInfo colInfo = inputRS.getColumnInfo(column);
@@ -528,9 +531,9 @@ public final class ColumnPrunerProcFactory {
         continue;
       }
       referencedColumnNames.add(column);
-      if (colInfo.getIsVirtualCol() && !colInfo.isHiddenPartitionCol()) {
+      if (colInfo.getIsVirtualCol() && !nonNativePartitionCols.contains(column)) {
         // part is also a virtual column, but part col should not in this
-        // list.
+        // list in case of non native tables like iceberg which have their partition support.
         for (int j = 0; j < virtualCols.size(); j++) {
           VirtualColumn vc = virtualCols.get(j);
           if (vc.getName().equals(colInfo.getInternalName())) {
@@ -554,6 +557,15 @@ public final class ColumnPrunerProcFactory {
     scanOp.setNeededColumns(neededColumnNames);
     scanOp.setNeededNestedColumnPaths(neededNestedColumnPaths);
     scanOp.setReferencedColumns(referencedColumnNames);
+  }
+
+  private static Set<String> nonNativePartitionColNames(Table table) {
+    if (table == null || !table.hasNonNativePartitionSupport()) {
+      return Set.of();
+    }
+    Set<String> names = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+    names.addAll(table.getPartColNames());
+    return names;
   }
 
   /**
@@ -807,8 +819,7 @@ public final class ColumnPrunerProcFactory {
         for (FieldNode col : cols) {
           int index = originalOutputColumnNames.indexOf(col.getFieldName());
           Table tab = cppCtx.getParseContext().getViewProjectToTableSchema().get(op);
-          List<FieldSchema> fullFieldList = new ArrayList<FieldSchema>(tab.getCols());
-          fullFieldList.addAll(tab.getPartCols());
+          List<FieldSchema> fullFieldList = tab.getAllCols();
           cppCtx.getParseContext().getColumnAccessInfo()
               .add(tab.getCompleteName(), fullFieldList.get(index).getName());
         }

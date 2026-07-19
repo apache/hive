@@ -30,7 +30,7 @@ public class TestTxnCommands2WithAbortCleanupUsingCompactionCycle extends TestTx
   }
 
   @Override
-  void initHiveConf() {
+  protected void initHiveConf() {
     super.initHiveConf();
     MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER, false);
   }

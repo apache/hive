@@ -48,7 +48,6 @@ public class VectorPTFEvaluatorDecimalSum extends VectorPTFEvaluatorAbstractSum<
   public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
-    evaluateInputExpr(batch);
 
     // Sum all non-null decimal column values; maintain isGroupResultNull.
 

@@ -36,6 +36,7 @@ import io.javaoperatorsdk.operator.api.config.informer.Informer;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent;
 import org.apache.hive.kubernetes.operator.model.HiveCluster;
 import org.apache.hive.kubernetes.operator.model.HiveClusterSpec;
+import org.apache.hive.kubernetes.operator.model.spec.AutoscalingSpec;
 import org.apache.hive.kubernetes.operator.model.spec.DatabaseConfig;
 import org.apache.hive.kubernetes.operator.util.ConfigUtils;
 import org.apache.hive.kubernetes.operator.util.HadoopXmlBuilder;
@@ -50,10 +51,21 @@ import org.apache.hive.kubernetes.operator.util.Labels;
 public class MetastoreDeploymentDependent
     extends HiveDependentResource<Deployment, HiveCluster> {
 
-  public static final String COMPONENT = "metastore";
+  public static final String COMPONENT = ConfigUtils.COMPONENT_METASTORE;
 
   public MetastoreDeploymentDependent() {
     super(Deployment.class);
+  }
+
+  @Override
+  protected String getSecondaryResourceName(HiveCluster primary,
+      Context<HiveCluster> context) {
+    return resourceName(primary);
+  }
+
+  @Override
+  protected String getComponentName() {
+    return COMPONENT;
   }
 
   @Override
@@ -65,7 +77,7 @@ public class MetastoreDeploymentDependent
         Labels.selectorForComponent(hiveCluster, COMPONENT);
 
     List<EnvVar> envVars = new ArrayList<>();
-    envVars.add(new EnvVar("SERVICE_NAME", "metastore", null));
+    envVars.add(new EnvVar("SERVICE_NAME", COMPONENT, null));
     envVars.add(new EnvVar("IS_RESUME", "true", null));
     envVars.addAll(buildDbEnvVars(db));
     if (spec.envVars() != null) {
@@ -77,12 +89,15 @@ public class MetastoreDeploymentDependent
         ConfigUtils.METASTORE_THRIFT_PORT_KEY,
         ConfigUtils.METASTORE_THRIFT_PORT_HIVE_KEY,
         ConfigUtils.METASTORE_THRIFT_PORT_DEFAULT);
-    List<ContainerPort> ports = List.of(
-        new ContainerPortBuilder()
-            .withName("thrift").withContainerPort(thriftPort).build(),
-        new ContainerPortBuilder()
-            .withName("rest").withContainerPort(9001).build()
-    );
+    int restPort = ConfigUtils.getInt(
+        spec.metastore().configOverrides(),
+        ConfigUtils.METASTORE_REST_HTTP_PORT_KEY,
+        null, ConfigUtils.METASTORE_REST_HTTP_PORT_DEFAULT);
+    List<ContainerPort> ports = new ArrayList<>();
+    ports.add(new ContainerPortBuilder()
+        .withName("thrift").withContainerPort(thriftPort).withProtocol("TCP").build());
+    ports.add(new ContainerPortBuilder()
+        .withName("rest").withContainerPort(restPort).withProtocol("TCP").build());
 
     Probe readinessProbe = buildTcpProbe(thriftPort, spec.metastore().readinessProbe(), 15, 10, 3);
     Probe livenessProbe = buildTcpProbe(thriftPort, spec.metastore().livenessProbe(), 60, 30, 5);
@@ -107,6 +122,13 @@ public class MetastoreDeploymentDependent
     replaceConfMountWithSubPaths(volumeMounts, "hive-config",
         "metastore-site.xml", "core-site.xml");
 
+    // Add Prometheus JMX Exporter when autoscaling is enabled
+    AutoscalingSpec autoscaling = spec.metastore().autoscaling();
+    if (autoscaling.isEnabled()) {
+      addJmxExporter(spec.image(), COMPONENT, autoscaling.metricsPort(),
+          initContainers, volumeMounts, volumes, envVars, ports);
+    }
+
     // Pre-compute config hash for the pod template annotation.
     // This ensures the Deployment is created with the correct hash
     // from the start (single ReplicaSet) and triggers rolling
@@ -115,6 +137,12 @@ public class MetastoreDeploymentDependent
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getMetastoreSite(spec)),
         HadoopXmlBuilder.buildXml(HiveConfigBuilder.getHadoopCoreSite(spec)));
 
+    AutoscalingSpec msAutoscaling = spec.metastore().autoscaling();
+    int initialReplicas = msAutoscaling != null && msAutoscaling.isEnabled()
+        ? Math.max(1, msAutoscaling.minReplicas()) : spec.metastore().replicas();
+    Integer replicas = resolveReplicaCount(
+        hiveCluster, context, msAutoscaling, spec.metastore().replicas(), initialReplicas);
+
     Deployment deployment = new DeploymentBuilder()
         .withNewMetadata()
           .withName(resourceName(hiveCluster))
@@ -122,20 +150,21 @@ public class MetastoreDeploymentDependent
           .withLabels(Labels.forComponent(hiveCluster, COMPONENT))
         .endMetadata()
         .withNewSpec()
-          .withReplicas(spec.metastore().replicas())
+          .withReplicas(replicas)
           .withNewSelector()
             .withMatchLabels(selectorLabels)
           .endSelector()
           .withNewTemplate()
             .withNewMetadata()
               .withLabels(Labels.forComponent(hiveCluster, COMPONENT))
-              .addToAnnotations("kubectl.kubernetes.io/default-container", "metastore")
+              .addToAnnotations("kubectl.kubernetes.io/default-container", COMPONENT)
               .addToAnnotations("hive.apache.org/config-hash", configHash)
             .endMetadata()
             .withNewSpec()
+              .withServiceAccountName(spec.serviceAccountName())
               .withInitContainers(initContainers)
               .addNewContainer()
-                .withName("metastore")
+                .withName(COMPONENT)
                 .withImage(spec.image())
                 .withImagePullPolicy(spec.imagePullPolicy())
                 .withEnv(envVars)
@@ -155,20 +184,26 @@ public class MetastoreDeploymentDependent
     applySpreadAffinityIfAbsent(
         deployment.getSpec().getTemplate().getSpec(), selectorLabels);
 
-    if (spec.volumes() != null) {
-      deployment.getSpec().getTemplate().getSpec().getVolumes().addAll(spec.volumes());
+    // HMS uses HTTP transport mode — connections are stateless, so no session
+    // drain is needed. The preStop hook simply sends SIGTERM directly to the
+    // JVM (the shell entrypoint doesn't forward signals from K8s).
+    if (autoscaling.isEnabled()) {
+      String preStopScript = String.join("\n",
+          "#!/bin/bash",
+          "echo '[preStop] Sending SIGTERM to Metastore Java process...'",
+          "pkill -f 'java.*org.apache' || true",
+          "exit 0");
+      applyAutoscalingLifecycle(
+          deployment.getSpec().getTemplate().getSpec(),
+          deployment.getSpec().getTemplate().getMetadata(),
+          preStopScript, autoscaling.gracePeriodSeconds(),
+          autoscaling.metricsScrapeIntervalSeconds());
     }
-    if (spec.volumeMounts() != null) {
-      deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getVolumeMounts()
-          .addAll(spec.volumeMounts());
-    }
-    if (spec.metastore().extraVolumes() != null) {
-      deployment.getSpec().getTemplate().getSpec().getVolumes().addAll(spec.metastore().extraVolumes());
-    }
-    if (spec.metastore().extraVolumeMounts() != null) {
-      deployment.getSpec().getTemplate().getSpec().getContainers().get(0).getVolumeMounts()
-          .addAll(spec.metastore().extraVolumeMounts());
-    }
+
+    appendUserVolumes(deployment.getSpec().getTemplate().getSpec(),
+        spec.volumes(), spec.volumeMounts(),
+        spec.metastore().extraVolumes(), spec.metastore().extraVolumeMounts());
+
     return deployment;
   }
 

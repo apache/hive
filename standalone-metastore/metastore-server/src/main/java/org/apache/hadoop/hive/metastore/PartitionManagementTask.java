@@ -37,7 +37,6 @@ import org.apache.hadoop.hive.metastore.utils.TableFetcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
@@ -57,9 +56,6 @@ public class PartitionManagementTask implements MetastoreTaskThread {
   public static final String DISCOVER_PARTITIONS_TBLPROPERTY = "discover.partitions";
   public static final String PARTITION_RETENTION_PERIOD_TBLPROPERTY = "partition.retention.period";
   private static final Lock lock = new ReentrantLock();
-  // these are just for testing
-  private static int completedAttempts;
-  private static int skippedAttempts;
 
   private Configuration conf;
 
@@ -87,7 +83,6 @@ public class PartitionManagementTask implements MetastoreTaskThread {
   @Override
   public void run() {
     if (lock.tryLock()) {
-      skippedAttempts = 0;
       String qualifiedTableName = null;
       IMetaStoreClient msc = null;
       try {
@@ -136,10 +131,8 @@ public class PartitionManagementTask implements MetastoreTaskThread {
         }
         lock.unlock();
       }
-      completedAttempts++;
     } else {
-      skippedAttempts++;
-      LOG.info("Lock is held by some other partition discovery task. Skipping this attempt..#{}", skippedAttempts);
+      LOG.info("Lock is held by some other partition discovery task. Skipping this attempt.");
     }
   }
 
@@ -200,13 +193,4 @@ public class PartitionManagementTask implements MetastoreTaskThread {
     }
   }
 
-  @VisibleForTesting
-  public static int getSkippedAttempts() {
-    return skippedAttempts;
-  }
-
-  @VisibleForTesting
-  public static int getCompletedAttempts() {
-    return completedAttempts;
-  }
 }

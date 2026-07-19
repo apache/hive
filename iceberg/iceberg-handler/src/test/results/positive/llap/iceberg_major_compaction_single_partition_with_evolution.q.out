@@ -158,9 +158,6 @@ POSTHOOK: Input: default@ice_orc
 # col_name            	data_type           	comment             
 first_name          	string              	                    
 last_name           	string              	                    
-registration_date   	date                	                    
-dept_id             	bigint              	                    
-city                	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -191,7 +188,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"dept_id\",\"transform\":\"identity\",\"source-id\":4,\"field-id\":1000},{\"name\":\"city\",\"transform\":\"identity\",\"source-id\":5,\"field-id\":1001},{\"name\":\"registration_date\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1002}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	8                   
 	numPartitions       	4                   
@@ -275,9 +271,6 @@ POSTHOOK: Input: default@ice_orc
 # col_name            	data_type           	comment             
 first_name          	string              	                    
 last_name           	string              	                    
-registration_date   	date                	                    
-dept_id             	bigint              	                    
-city                	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -308,7 +301,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"dept_id\",\"transform\":\"identity\",\"source-id\":4,\"field-id\":1000},{\"name\":\"city\",\"transform\":\"identity\",\"source-id\":5,\"field-id\":1001},{\"name\":\"registration_date\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1002}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	7                   
 	numPartitions       	4                   
@@ -392,9 +384,6 @@ POSTHOOK: Input: default@ice_orc
 # col_name            	data_type           	comment             
 first_name          	string              	                    
 last_name           	string              	                    
-registration_date   	date                	                    
-dept_id             	bigint              	                    
-city                	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -425,7 +414,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"dept_id\",\"transform\":\"identity\",\"source-id\":4,\"field-id\":1000},{\"name\":\"city\",\"transform\":\"identity\",\"source-id\":5,\"field-id\":1001},{\"name\":\"registration_date\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1002}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	6                   
 	numPartitions       	4                   
@@ -508,9 +496,6 @@ POSTHOOK: Input: default@ice_orc
 # col_name            	data_type           	comment             
 first_name          	string              	                    
 last_name           	string              	                    
-registration_date   	date                	                    
-dept_id             	bigint              	                    
-city                	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -541,7 +526,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"dept_id\",\"transform\":\"identity\",\"source-id\":4,\"field-id\":1000},{\"name\":\"city\",\"transform\":\"identity\",\"source-id\":5,\"field-id\":1001},{\"name\":\"registration_date\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1002}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	5                   
 	numPartitions       	3                   
@@ -624,9 +608,6 @@ POSTHOOK: Input: default@ice_orc
 # col_name            	data_type           	comment             
 first_name          	string              	                    
 last_name           	string              	                    
-registration_date   	date                	                    
-dept_id             	bigint              	                    
-city                	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -657,7 +638,6 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"dept_id\",\"transform\":\"identity\",\"source-id\":4,\"field-id\":1000},{\"name\":\"city\",\"transform\":\"identity\",\"source-id\":5,\"field-id\":1001},{\"name\":\"registration_date\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1002}]}
 	format-version      	2                   
-	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	4                   
 	numPartitions       	2                   

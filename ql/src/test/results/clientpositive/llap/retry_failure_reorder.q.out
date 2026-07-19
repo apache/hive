@@ -333,7 +333,7 @@ Caused by: org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError: 
 Caused by: org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError: assert_true_oom: assertion failed; Simulated OOM
 #### A masked pattern was here ####
 ]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 4] killed/failed due to:OWN_TASK_FAILURE]
-DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0
+DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:#Masked#
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.TezTask. Vertex failed, vertexName=Reducer 4, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError: assert_true_oom: assertion failed; Simulated OOM
 #### A masked pattern was here ####
 Caused by: org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError: assert_true_oom: assertion failed; Simulated OOM
@@ -342,7 +342,7 @@ Caused by: org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError: 
 #### A masked pattern was here ####
 Caused by: org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError: assert_true_oom: assertion failed; Simulated OOM
 #### A masked pattern was here ####
-]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 4] killed/failed due to:OWN_TASK_FAILURE]DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:0
+]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Reducer 4] killed/failed due to:OWN_TASK_FAILURE]DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:#Masked#
 PREHOOK: query: select assert_true_oom(200000 > sum(u*v*w)) from tu
         join tv on (tu.id_uv=tv.id_uv)
         join tw on (tu.id_uw=tw.id_uw)

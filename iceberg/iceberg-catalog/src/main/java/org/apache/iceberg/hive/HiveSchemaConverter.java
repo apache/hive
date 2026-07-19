@@ -58,21 +58,22 @@ class HiveSchemaConverter {
   static Schema convert(List<String> names, List<TypeInfo> typeInfos, List<String> comments, boolean autoConvert,
       Map<String, String> defaultValues) {
     HiveSchemaConverter converter = new HiveSchemaConverter(autoConvert);
-    return new Schema(converter.convertInternal(names, typeInfos, defaultValues, comments));
+    return new Schema(converter.convertInternal(names, typeInfos, defaultValues, comments, false));
   }
 
-  public static Type convert(TypeInfo typeInfo, boolean autoConvert, String defaultValue) {
+  public static Type convert(TypeInfo typeInfo, boolean autoConvert, String defaultValue,
+      boolean shouldAddInitialDefault) {
     HiveSchemaConverter converter = new HiveSchemaConverter(autoConvert);
-    return converter.convertType(typeInfo, defaultValue);
+    return converter.convertType(typeInfo, defaultValue, shouldAddInitialDefault);
   }
 
   List<Types.NestedField> convertInternal(List<String> names, List<TypeInfo> typeInfos,
-      Map<String, String> defaultValues, List<String> comments) {
+      Map<String, String> defaultValues, List<String> comments, boolean shouldAddInitialDefault) {
     List<Types.NestedField> result = Lists.newArrayListWithExpectedSize(names.size());
     int outerId = id + names.size();
     id = outerId;
     for (int i = 0; i < names.size(); ++i) {
-      Type type = convertType(typeInfos.get(i), defaultValues.get(names.get(i)));
+      Type type = convertType(typeInfos.get(i), defaultValues.get(names.get(i)), shouldAddInitialDefault);
       String columnName = names.get(i);
       Types.NestedField.Builder fieldBuilder =
           Types.NestedField.builder()
@@ -87,6 +88,9 @@ class HiveSchemaConverter {
           Object icebergDefaultValue = HiveSchemaUtil.getDefaultValue(defaultValues.get(columnName), type);
           if (icebergDefaultValue != null) {
             fieldBuilder.withWriteDefault(Expressions.lit(icebergDefaultValue));
+            if (shouldAddInitialDefault) {
+              fieldBuilder.withInitialDefault(Expressions.lit(icebergDefaultValue));
+            }
           }
         } else if (!type.isStructType()) {
           throw new UnsupportedOperationException(
@@ -99,7 +103,7 @@ class HiveSchemaConverter {
     return result;
   }
 
-  Type convertType(TypeInfo typeInfo, String defaultValue) {
+  Type convertType(TypeInfo typeInfo, String defaultValue, boolean shouldAddInitialDefault) {
     switch (typeInfo.getCategory()) {
       case PRIMITIVE:
         switch (((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory()) {
@@ -161,24 +165,29 @@ class HiveSchemaConverter {
         }
       case STRUCT:
         StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
-        List<Types.NestedField> fields =
-            convertInternal(structTypeInfo.getAllStructFieldNames(), structTypeInfo.getAllStructFieldTypeInfos(),
-                HiveSchemaUtil.getDefaultValuesMap(null, defaultValue), Collections.emptyList());
+        List<Types.NestedField> fields = convertInternal(
+            structTypeInfo.getAllStructFieldNames(),
+            structTypeInfo.getAllStructFieldTypeInfos(),
+            HiveSchemaUtil.getDefaultValuesMap(null, defaultValue),
+            Collections.emptyList(),
+            shouldAddInitialDefault);
         return Types.StructType.of(fields);
       case MAP:
         MapTypeInfo mapTypeInfo = (MapTypeInfo) typeInfo;
         int keyId = id++;
-        Type keyType = convertType(mapTypeInfo.getMapKeyTypeInfo(), defaultValue);
+        Type keyType = convertType(mapTypeInfo.getMapKeyTypeInfo(), defaultValue, shouldAddInitialDefault);
         int valueId = id++;
-        Type valueType = convertType(mapTypeInfo.getMapValueTypeInfo(), defaultValue);
+        Type valueType = convertType(mapTypeInfo.getMapValueTypeInfo(), defaultValue, shouldAddInitialDefault);
         return Types.MapType.ofOptional(keyId, valueId, keyType, valueType);
       case LIST:
         ListTypeInfo listTypeInfo = (ListTypeInfo) typeInfo;
         int listId = id++;
-        Type listType = convertType(listTypeInfo.getListElementTypeInfo(), defaultValue);
+        Type listType = convertType(listTypeInfo.getListElementTypeInfo(), defaultValue, shouldAddInitialDefault);
         return Types.ListType.ofOptional(listId, listType);
       case VARIANT:
         return Types.VariantType.get();
+      case UNKNOWN:
+        return Types.UnknownType.get();
       default:
         throw new IllegalArgumentException("Unknown type " + typeInfo.getCategory());
     }

@@ -49,7 +49,6 @@ public class VectorPTFEvaluatorDoubleFirstValue extends VectorPTFEvaluatorBase {
   public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
-    evaluateInputExpr(batch);
 
     // First row determines isGroupResultNull and double firstValue; stream fill result as repeated.
 

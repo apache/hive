@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.conf.Configuration;
@@ -203,6 +205,9 @@ public class TestHiveSplitGenerator {
     private static final String EXCEPTION_MESSAGE = "Cannot write file to path";
     private final AtomicBoolean split0Finished = new AtomicBoolean(false);
     private final AtomicBoolean split2Finished = new AtomicBoolean(false);
+    // Ensures split #0's writeSplit() is past the anyTaskFailed check before split #1 throws,
+    // so the test deterministically exercises the "already running future is not cancelled" path.
+    private final CountDownLatch split0Started = new CountDownLatch(1);
 
     class SplitSerializerWithException extends SplitSerializer {
       SplitSerializerWithException() throws IOException {
@@ -229,6 +234,7 @@ public class TestHiveSplitGenerator {
         // current implementation of the waitFor doesn't cancel it
         LOG.info("Write split #{}", count);
         if (count == 0) {
+          split0Started.countDown();
           try {
             Thread.sleep(1000);
             split0Finished.set(true);
@@ -238,8 +244,17 @@ public class TestHiveSplitGenerator {
             throw new IOException(e);
           }
         }
-        // writing second split fails
+        // writing second split fails - but wait until split #0 is already running so the
+        // anyTaskFailed flag cannot short-circuit it before it gets a chance to call writeSplit().
         if (count == 1) {
+          try {
+            if (!split0Started.await(10, TimeUnit.SECONDS)) {
+              throw new IOException("Timed out waiting for split #0 to start");
+            }
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException(e);
+          }
           LOG.info("Split #1 is about to throw exception");
           throw new IOException(EXCEPTION_MESSAGE + ": " + filePath);
         }

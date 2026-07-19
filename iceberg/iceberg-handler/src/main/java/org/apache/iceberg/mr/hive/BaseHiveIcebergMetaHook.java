@@ -60,9 +60,11 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.hive.HMSTablePropertyHelper;
+import org.apache.iceberg.hive.HiveOperationsBase;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.hive.IcebergTableProperties;
+import org.apache.iceberg.hive.IcebergViewSupport;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
@@ -89,7 +91,6 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
   );
   private static final Set<String> PARAMETERS_TO_REMOVE = ImmutableSet
       .of(InputFormatConfig.TABLE_SCHEMA, Catalogs.LOCATION, Catalogs.NAME, InputFormatConfig.PARTITION_SPEC);
-  static final String ORC_FILES_ONLY = "iceberg.orc.files.only";
   private static final String ZORDER_FIELDS_JSON_KEY = "zorderFields";
 
   protected final Configuration conf;
@@ -126,6 +127,10 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     org.apache.hadoop.hive.metastore.api.Table hmsTable = request.getTable();
     if (hmsTable.isTemporary()) {
       throw new UnsupportedOperationException("Creation of temporary iceberg tables is not supported.");
+    }
+    if (HiveTableUtil.isIcebergView(hmsTable)) {
+      preCreateIcebergView(request);
+      return;
     }
     this.tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
 
@@ -197,11 +202,21 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
 
     assertFileFormat(tableProperties.getProperty(TableProperties.DEFAULT_FILE_FORMAT));
 
-    // Set whether the format is ORC, to be used during vectorization.
-    setOrcOnlyFilesParam(hmsTable);
     // Remove hive primary key columns from table request, as iceberg doesn't support hive primary key.
     request.setPrimaryKeys(null);
     setSortOrder(hmsTable, schema, tableProperties);
+  }
+
+  private void preCreateIcebergView(CreateTableRequest request) {
+
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = request.getTable();
+    tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
+
+    hmsTable
+        .getParameters()
+        .put(
+            BaseMetastoreTableOperations.TABLE_TYPE_PROP,
+            HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE);
   }
 
   /**
@@ -456,14 +471,6 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     return HMSTablePropertyHelper.getPartitionSpec(hmsTable.getParameters(), schema);
   }
 
-  protected void setOrcOnlyFilesParam(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    hmsTable.getParameters().put(ORC_FILES_ONLY, String.valueOf(isOrcOnlyFiles(hmsTable)));
-  }
-
-  protected boolean isOrcOnlyFiles(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    return !"FALSE".equalsIgnoreCase(hmsTable.getParameters().get(ORC_FILES_ONLY)) && isOrcFileFormat(hmsTable);
-  }
-
   static boolean isOrcFileFormat(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
     return hmsTable.getSd().getInputFormat() != null && hmsTable.getSd().getInputFormat().toUpperCase()
         .contains(org.apache.iceberg.FileFormat.ORC.name()) || org.apache.iceberg.FileFormat.ORC.name()
@@ -504,6 +511,10 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
   public void postGetTable(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
     if (hmsTable != null) {
       try {
+        if (HiveTableUtil.isIcebergView(hmsTable)) {
+          IcebergViewSupport.enrichHmsTableFromIcebergView(hmsTable, conf);
+          return;
+        }
         Table tbl = IcebergTableUtil.getTable(conf, hmsTable);
         String formatVersion = String.valueOf(TableUtil.formatVersion(tbl));
         hmsTable.getParameters().put(TableProperties.FORMAT_VERSION, formatVersion);
@@ -531,4 +542,5 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
       throw new RuntimeException("Error checking storage handler class", e);
     }
   }
+
 }

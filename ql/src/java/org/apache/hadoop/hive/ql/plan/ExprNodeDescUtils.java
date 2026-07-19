@@ -64,6 +64,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 
 public class ExprNodeDescUtils {
@@ -244,6 +245,21 @@ public class ExprNodeDescUtils {
   }
 
   /**
+   * Creates a disjunction (OR) of the given expressions flattening nested disjunctions if possible.
+   * <pre>
+   * Input: AND(A, B), C, OR(D, OR(E, F))
+   * Output: OR(AND(A, B), C, D, E, F)
+   * </pre>
+   */
+  public static ExprNodeGenericFuncDesc or(List<ExprNodeDesc> exps) {
+    List<ExprNodeDesc> flatExps = new ArrayList<>();
+    for (ExprNodeDesc e : exps) {
+      split(e, flatExps, FunctionRegistry::isOpOr);
+    }
+    return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, new GenericUDFOPOr(), "or", flatExps);
+  }
+
+  /**
    * Create an expression for computing a murmur hash by recursively hashing given expressions by two:
    * <pre>
    * Input: HASH(A, B, C, D)
@@ -305,9 +321,17 @@ public class ExprNodeDescUtils {
    * split predicates by AND op
    */
   public static List<ExprNodeDesc> split(ExprNodeDesc current, List<ExprNodeDesc> splitted) {
-    if (FunctionRegistry.isOpAnd(current)) {
+    return split(current, splitted, FunctionRegistry::isOpAnd);
+  }
+
+  /**
+   * split predicates by a certain condition
+   */
+  private static List<ExprNodeDesc> split(ExprNodeDesc current, List<ExprNodeDesc> splitted,
+      Predicate<ExprNodeDesc> condition) {
+    if (condition.test(current)) {
       for (ExprNodeDesc child : current.getChildren()) {
-        split(child, splitted);
+        split(child, splitted, condition);
       }
       return splitted;
     }

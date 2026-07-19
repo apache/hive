@@ -109,6 +109,8 @@ public class SessionManager extends CompositeService {
   private String sessionImplWithUGIclassName;
   private String sessionImplclassName;
   private CleanupService cleanupService;
+  // Tracks which LLAP target gauges have been lazily registered.
+  private final java.util.Set<String> registeredLlapTargetGauges = ConcurrentHashMap.newKeySet();
 
   public SessionManager(HiveServer2 hiveServer2, boolean allowSessions) {
     super(SessionManager.class.getSimpleName());
@@ -207,6 +209,52 @@ public class SessionManager extends CompositeService {
     };
     metrics.addGauge(MetricsConstant.HS2_ACTIVE_SESSIONS, activeSessionCnt);
     metrics.addRatio(MetricsConstant.HS2_AVG_ACTIVE_SESSION_TIME, activeSessionTime, activeSessionCnt);
+  }
+
+  // Registers a per-LLAP-target session gauge on first use.
+  private void registerLlapTargetGaugeIfNeeded(HiveSession session) {
+    try {
+      String sanitized = extractLlapTarget(session.getSessionConf());
+      if (sanitized == null) {
+        return;
+      }
+      if (registeredLlapTargetGauges.contains(sanitized)) {
+        return;
+      }
+      Metrics metrics = MetricsFactory.getInstance();
+      if (metrics == null) {
+        return;
+      }
+      if (!registeredLlapTargetGauges.add(sanitized)) {
+        return;
+      }
+      String metricName = MetricsConstant.HS2_LLAP_TARGET_SESSIONS + "_" + sanitized;
+      metrics.addGauge(metricName, () -> {
+        int count = 0;
+        for (HiveSession s : getSessions()) {
+          try {
+            String t = extractLlapTarget(s.getSessionConf());
+            if (sanitized.equals(t)) {
+              count++;
+            }
+          } catch (Exception e) {
+            // Session may be closing concurrently
+          }
+        }
+        return count;
+      });
+      LOG.info("Registered LLAP target session gauge: {}", metricName);
+    } catch (Exception e) {
+      LOG.debug("Could not register LLAP target gauge: {}", e.getMessage());
+    }
+  }
+
+  private static String extractLlapTarget(HiveConf conf) {
+    String target = conf.getVar(ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
+    if (target != null && !target.isEmpty()) {
+      return target.startsWith("@") ? target.substring(1) : target;
+    }
+    return null;
   }
 
   private void initSessionImplClassName() {
@@ -485,6 +533,7 @@ public class SessionManager extends CompositeService {
     session.setOperationManager(operationManager);
     try {
       session.open(sessionConf);
+      LlapClusterRouter.applyRouting(session.getHiveConf(), session.getUserName());
     } catch (Exception e) {
       LOG.warn("Failed to open session", e);
       try {
@@ -527,6 +576,7 @@ public class SessionManager extends CompositeService {
       }
       throw new HiveSQLException(FAIL_CLOSE_ERROR_MESSAGE);
     }
+    registerLlapTargetGaugeIfNeeded(session);
     LOG.info("Session opened, " + session.getSessionHandle()
         + ", current sessions:" + getOpenSessionCount());
     return session;
