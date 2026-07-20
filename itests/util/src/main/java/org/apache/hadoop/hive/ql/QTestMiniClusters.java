@@ -49,7 +49,6 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapItUtils;
 import org.apache.hadoop.hive.llap.daemon.MiniLlapCluster;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.TezSession;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.CuratorFrameworkSingleton;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager;
@@ -217,8 +216,7 @@ public class QTestMiniClusters {
     }
   }
 
-  public void setup(QTestArguments testArgs, HiveConf conf, String scriptsDir,
-      String logDir) throws Exception {
+  public void setup(QTestArguments testArgs, HiveConf conf, String scriptsDir) throws Exception {
     this.shims = ShimLoader.getHadoopShims();
     this.clusterType = testArgs.getClusterType();
     this.testArgs = testArgs;
@@ -233,7 +231,7 @@ public class QTestMiniClusters {
     if (clusterType == MiniClusterType.KAFKA) {
       kafkaCluster =
           new SingleNodeKafkaCluster("kafka", QTestSystemProperties.getTempDir() + "/kafka-cluster",
-              setup.zkPort, clusterType == MiniClusterType.KAFKA ? 9093 : 9092);
+              setup.zkPort, 9093);
       kafkaCluster.init(conf);
       kafkaCluster.start();
       kafkaCluster.createTopicWithData("test-topic", new File(scriptsDir, "kafka_init_data.json"));
@@ -276,7 +274,7 @@ public class QTestMiniClusters {
     }
   }
 
-  public void initConf(HiveConf conf) throws IOException {
+  public void initConf(HiveConf conf) {
     if (mr != null) {
       mr.setupConfiguration(conf);
 
