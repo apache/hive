@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.serde2.typeinfo;
 
 
 
+import java.util.Arrays;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import static org.junit.Assert.assertEquals;
@@ -52,7 +53,13 @@ public class TestTypeInfoUtils {
         "decimal(10, 2)",
         "decimal(10, 2 )",
         "decimal( 10, 2 )",
-        "struct<user id:int,user group: int>"
+        "struct<user id:int,user group: int>",
+        // struct field names with special characters (Iceberg partition column names)
+        "struct<gpa_!@#$%^&*():double>",
+        "struct<!@#$%^&*()_age:int>",
+        "struct<name:string,!@#$%^&*()_age:int,gpa_!@#$%^&*():double>",
+        "struct<name:string,gpa_!@#$%^&*():double>",
+        "struct<gpa_!@#$%^&*():double,age:int>"
     };
 
     String[] invalidTypeStrings = {
@@ -124,5 +131,44 @@ public class TestTypeInfoUtils {
       assertEquals("Failed for " + testCase.typeString, testCase.expectedPrecision, decimalType.getPrecision());
       assertEquals("Failed for " + testCase.typeString, testCase.expectedScale, decimalType.getScale());
     }
+  }
+
+  @Test
+  public void testStructFieldNameWithSpecialChars() {
+    TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString("struct<gpa_!@#$%^&*():double>");
+    StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
+    assertEquals(1, structTypeInfo.getAllStructFieldNames().size());
+    assertEquals("gpa_!@#$%^&*()", structTypeInfo.getAllStructFieldNames().get(0));
+    assertEquals(TypeInfoFactory.doubleTypeInfo, structTypeInfo.getAllStructFieldTypeInfos().get(0));
+  }
+
+  @Test
+  public void testStructFieldNameStartingWithSpecialChar() {
+    TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString("struct<!@#$%^&*()_age:int>");
+    StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
+    assertEquals(Arrays.asList("!@#$%^&*()_age"), structTypeInfo.getAllStructFieldNames());
+  }
+
+  @Test
+  public void testStructMultipleFieldsWithSpecialChars() {
+    TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(
+        "struct<name:string,!@#$%^&*()_age:int,gpa_!@#$%^&*():double>");
+    StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
+    assertEquals(Arrays.asList("name", "!@#$%^&*()_age", "gpa_!@#$%^&*()"),
+        structTypeInfo.getAllStructFieldNames());
+  }
+
+  @Test
+  public void testEmptyStruct() {
+    TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString("struct<>");
+    StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
+    assertEquals(0, structTypeInfo.getAllStructFieldNames().size());
+  }
+
+  @Test
+  public void testStructTrailingComma() {
+    TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString("struct<a:int,>");
+    StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
+    assertEquals(Arrays.asList("a"), structTypeInfo.getAllStructFieldNames());
   }
 }
