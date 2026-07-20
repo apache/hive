@@ -472,11 +472,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
    *  none of the relnode above aggregate refers to these keys
    *
    *  If all of above is true then group by is rewritten and a new project is introduced
-   *  underneath aggregate
-   *
-   *  This is mainly done so that hive is able to push down queries with
-   *  group by 'constant key with type not supported by druid' into druid.
-   *  TODO: If relevant only for Druid the review for removal
+   *  underneath aggregate.
    */
   private Aggregate rewriteGBConstantKeys(Aggregate aggregate, ImmutableBitSet fieldsUsed,
       ImmutableBitSet aggCallFields) {
