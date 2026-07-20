@@ -28,15 +28,25 @@ import static org.junit.Assert.assertEquals;
 public class TestLocalOnnxEmbeddingModel {
 
   @Test
-  public void meanPoolAveragesMaskedTokens() {
+  public void meanPoolAveragesAllTokenVectors() {
     float[][] tokenEmbeddings = {
         {1f, 0f},
         {3f, 0f},
         {9f, 9f}
     };
-    long[] mask = {1, 1, 0};
 
-    assertArrayEquals(new float[] {2f, 0f}, InferenceWorker.meanPool(tokenEmbeddings, mask, 3), 0.001f);
+    assertArrayEquals(new float[] {13f / 3f, 9f / 3f}, InferenceWorker.meanPool(tokenEmbeddings), 0.001f);
+  }
+
+  @Test
+  public void weightedAverageCombinesPartitionsByTokenCount() {
+    float[][] embeddings = {
+        {1f, 0f},
+        {3f, 0f}
+    };
+    int[] weights = {2, 1};
+
+    assertArrayEquals(new float[] {5f / 3f, 0f}, InferenceWorker.weightedAverage(embeddings, weights), 0.001f);
   }
 
   @Test
@@ -59,14 +69,14 @@ public class TestLocalOnnxEmbeddingModel {
         {3f, 0f}
     };
 
-    assertArrayEquals(new float[] {2f, 0f}, InferenceWorker.meanPoolVectors(chunks), 0.001f);
+    assertArrayEquals(new float[] {2f, 0f}, InferenceWorker.meanPool(chunks), 0.001f);
   }
 
   @Test
-  public void meanPoolVectorsReturnsSingleChunkUnchanged() {
+  public void meanPoolVectorsReturnsSingleRowMean() {
     float[][] chunks = {{0.6f, 0.8f}};
 
-    assertArrayEquals(new float[] {0.6f, 0.8f}, InferenceWorker.meanPoolVectors(chunks), 0.001f);
+    assertArrayEquals(new float[] {0.6f, 0.8f}, InferenceWorker.meanPool(chunks), 0.001f);
   }
 
   @Test
@@ -75,7 +85,7 @@ public class TestLocalOnnxEmbeddingModel {
         {1f, 0f},
         {0f, 1f}
     };
-    float[] pooled = InferenceWorker.meanPoolVectors(chunks);
+    float[] pooled = InferenceWorker.meanPool(chunks);
     InferenceWorker.normalize(pooled);
 
     float norm = 0f;

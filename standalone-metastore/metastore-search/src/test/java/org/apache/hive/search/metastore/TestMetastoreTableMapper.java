@@ -102,8 +102,7 @@ public class TestMetastoreTableMapper {
     assertFalse(searchText.contains("hdfs://"));
     assertFalse(searchText.contains("MANAGED_TABLE"));
     assertFalse(searchText.contains("alice"));
-    assertEquals("id bigint order id; amount double", luceneDoc.get(MetastoreTableMapper.FIELD_COLUMNS));
-    assertEquals("id amount", luceneDoc.get(MetastoreTableMapper.FIELD_COLUMN_NAMES));
+    assertEquals("id amount", luceneDoc.get(MetastoreTableMapper.FIELD_COLUMNS));
     assertEquals("order id", luceneDoc.get(MetastoreTableMapper.FIELD_COLUMN_COMMENTS));
   }
 
@@ -123,7 +122,7 @@ public class TestMetastoreTableMapper {
         new FieldSchema("status", "string", "fulfillment status")));
 
     TableDocument document = MetastoreTableMapper.fromTable(table, mapping);
-    assertEquals("id amount status", fieldValue(document, MetastoreTableMapper.FIELD_COLUMN_NAMES));
+    assertEquals("id amount status", fieldValue(document, MetastoreTableMapper.FIELD_COLUMNS));
     assertEquals("order id; fulfillment status",
         fieldValue(document, MetastoreTableMapper.FIELD_COLUMN_COMMENTS));
   }
@@ -147,7 +146,7 @@ public class TestMetastoreTableMapper {
     assertEquals(
         "table: orders; column id: order id; column amount:; column status: fulfillment status",
         fieldValue(document, MetastoreTableMapper.FIELD_SEARCH_TEXT));
-    assertTrue(fieldValue(document, MetastoreTableMapper.FIELD_COLUMNS).contains("amount double"));
+    assertTrue(fieldValue(document, MetastoreTableMapper.FIELD_COLUMNS).contains("amount"));
   }
 
   @Test
@@ -178,7 +177,7 @@ public class TestMetastoreTableMapper {
     assertFalse(searchText.contains("(+"));
     assertTrue(columnComments.contains("comment " + (columnCount - 1)));
     assertFalse(columnComments.contains("(+"));
-    assertTrue(storedColumns.contains("col" + (columnCount - 1) + " string comment " + (columnCount - 1)));
+    assertTrue(storedColumns.contains("col" + (columnCount - 1)));
     assertFalse(storedColumns.contains("(+"));
   }
 
@@ -302,10 +301,6 @@ public class TestMetastoreTableMapper {
 
     after = copyTable(before);
     after.getSd().getCols().get(0).setComment("new column comment");
-    assertTrue(MetastoreTableMapper.hasIndexedFieldsChanged(before, after));
-
-    after = copyTable(before);
-    after.getSd().getCols().get(1).setType("int");
     assertTrue(MetastoreTableMapper.hasIndexedFieldsChanged(before, after));
   }
 

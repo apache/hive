@@ -51,10 +51,7 @@ public class TestIndexMapping {
         && table.search().lexical());
     assertTrue(commentSchema instanceof FieldSchema.TextFieldSchema comment
         && comment.search().lexical());
-    FieldSchema columnNamesSchema = mapping.fieldSchema(MetastoreTableMapper.FIELD_COLUMN_NAMES);
     FieldSchema columnCommentsSchema = mapping.fieldSchema(MetastoreTableMapper.FIELD_COLUMN_COMMENTS);
-    assertTrue(columnNamesSchema instanceof FieldSchema.TextFieldSchema columnNames
-        && columnNames.search().lexical());
     assertTrue(columnCommentsSchema instanceof FieldSchema.TextFieldSchema columnComments
         && columnComments.search().lexical());
     assertNotNull(mapping.analyzer());

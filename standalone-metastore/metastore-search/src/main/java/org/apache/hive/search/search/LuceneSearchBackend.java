@@ -87,8 +87,6 @@ public final class LuceneSearchBackend implements SearchBackend {
     List<String> fields = query.returnFields();
     if (query.returnFields().isEmpty()) {
       fields = List.of(
-          MetastoreTableMapper.FIELD_DB,
-          MetastoreTableMapper.FIELD_TABLE,
           MetastoreTableMapper.FIELD_OWNER,
           MetastoreTableMapper.FIELD_COMMENT);
     }
