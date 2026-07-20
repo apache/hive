@@ -7,14 +7,13 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.apache.iceberg.rest;
@@ -25,6 +24,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.time.Clock;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
@@ -83,6 +83,7 @@ import org.slf4j.LoggerFactory;
  * Original @ <a href="https://github.com/apache/iceberg/blob/apache-iceberg-1.9.1/core/src/test/java/org/apache/iceberg/rest/RESTCatalogAdapter.java">RESTCatalogAdapter.java</a>
  * Adaptor class to translate REST requests into {@link Catalog} API calls.
  */
+
 public class HMSCatalogAdapter implements Closeable {
   private static final Logger LOG = LoggerFactory.getLogger(HMSCatalogAdapter.class);
   private static final Splitter SLASH = Splitter.on('/');
@@ -400,10 +401,9 @@ public class HMSCatalogAdapter implements Closeable {
 
     for (UpdateTableRequest tableChange : request.tableChanges()) {
       Table table = catalog.loadTable(tableChange.identifier());
-      if (table instanceof BaseTable) {
-        Transaction transaction =
-            Transactions.newTransaction(
-                tableChange.identifier().toString(), ((BaseTable) table).operations());
+      if (table instanceof BaseTable baseTable) {
+        Transaction transaction = Transactions.newTransaction(
+                tableChange.identifier().toString(), baseTable.operations());
         transactions.add(transaction);
 
         BaseTransaction.TransactionTable txTable =
@@ -420,86 +420,34 @@ public class HMSCatalogAdapter implements Closeable {
   }
   
   @SuppressWarnings({"MethodLength", "unchecked"})
-  private <T extends RESTResponse> T handleRequest(
-      Route route, Map<String, String> vars, Object body) {
-    switch (route) {
-      case CONFIG:
-        return (T) config();
-
-      case LIST_NAMESPACES:
-        return (T) listNamespaces(vars);
-
-      case CREATE_NAMESPACE:
-        return (T) createNamespace(body);
-
-      case NAMESPACE_EXISTS:
-        return (T) namespaceExists(vars);
-
-      case LOAD_NAMESPACE:
-        return (T) loadNamespace(vars);
-
-      case DROP_NAMESPACE:
-        return (T) dropNamespace(vars);
-
-      case UPDATE_NAMESPACE:
-        return (T) updateNamespace(vars, body);
-
-      case LIST_TABLES:
-        return (T) listTables(vars);
-
-      case CREATE_TABLE:
-        return (T) createTable(vars, body);
-
-      case DROP_TABLE:
-        return (T) dropTable(vars);
-
-      case TABLE_EXISTS:
-        return (T) tableExists(vars);
-
-      case LOAD_TABLE:
-        return (T) loadTable(vars);
-
-      case REGISTER_TABLE:
-        return (T) registerTable(vars, body);
-
-      case UPDATE_TABLE:
-        return (T) updateTable(vars, body);
-
-      case RENAME_TABLE:
-        return (T) renameTable(body);
-
-      case REPORT_METRICS:
-        return (T) reportMetrics(vars, body);
-
-      case COMMIT_TRANSACTION:
-        return (T) commitTransaction(body);
-        
-      case LIST_VIEWS:
-        return (T) listViews(vars);
-
-      case CREATE_VIEW:
-          return (T) createView(vars, body);
-
-      case VIEW_EXISTS:
-        return (T) viewExists(vars);
-
-      case LOAD_VIEW:
-        return (T) loadView(vars);
-
-      case UPDATE_VIEW:
-        return (T) updateView(vars, body);
-        
-      case RENAME_VIEW:
-        return (T) renameView(body);
-        
-      case DROP_VIEW:
-        return (T) dropView(vars);
-
-      default:
-    }
-    return null;
+  private <T extends RESTResponse> T handleRequest(Route route, Map<String, String> vars, Object body) {
+    return switch (route) {
+      case CONFIG -> (T) config();
+      case LIST_NAMESPACES -> (T) listNamespaces(vars);
+      case CREATE_NAMESPACE -> (T) createNamespace(body);
+      case NAMESPACE_EXISTS -> (T) namespaceExists(vars);
+      case LOAD_NAMESPACE -> (T) loadNamespace(vars);
+      case DROP_NAMESPACE -> (T) dropNamespace(vars);
+      case UPDATE_NAMESPACE -> (T) updateNamespace(vars, body);
+      case LIST_TABLES -> (T) listTables(vars);
+      case CREATE_TABLE -> (T) createTable(vars, body);
+      case DROP_TABLE -> (T) dropTable(vars);
+      case TABLE_EXISTS -> (T) tableExists(vars);
+      case LOAD_TABLE -> (T) loadTable(vars);
+      case REGISTER_TABLE -> (T) registerTable(vars, body);
+      case UPDATE_TABLE -> (T) updateTable(vars, body);
+      case RENAME_TABLE -> (T) renameTable(body);
+      case REPORT_METRICS -> (T) reportMetrics(vars, body);
+      case COMMIT_TRANSACTION -> (T) commitTransaction(body);
+      case LIST_VIEWS -> (T) listViews(vars);
+      case CREATE_VIEW -> (T) createView(vars, body);
+      case VIEW_EXISTS -> (T) viewExists(vars);
+      case LOAD_VIEW -> (T) loadView(vars);
+      case UPDATE_VIEW -> (T) updateView(vars, body);
+      case RENAME_VIEW -> (T) renameView(body);
+      case DROP_VIEW -> (T) dropView(vars);
+    };
   }
-
 
   <T extends RESTResponse> T execute(
       HTTPMethod method,
