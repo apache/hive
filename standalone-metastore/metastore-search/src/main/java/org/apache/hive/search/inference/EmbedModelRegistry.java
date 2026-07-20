@@ -27,23 +27,16 @@ import org.apache.hive.search.exception.InitializeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public record EmbedModelRegistry(Map<String, EmbedModel> models, EmbeddingCache embeddingCache)
-    implements AutoCloseable {
+public record EmbedModelRegistry(Map<String, EmbedModel> models) implements AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(EmbedModelRegistry.class);
 
   public EmbedModelRegistry(Map<String, EmbedModel> models) {
-    this(models, EmbeddingCache.disabled());
-  }
-
-  public EmbedModelRegistry(Map<String, EmbedModel> models, EmbeddingCache embeddingCache) {
     this.models = Map.copyOf(models);
-    this.embeddingCache = embeddingCache;
   }
 
   public static EmbedModelRegistry create(Configuration configuration)
       throws InitializeException, IOException {
     InferenceConfig inference = new InferenceConfig(configuration);
-    EmbeddingCache embeddingCache = EmbeddingCache.create(configuration);
     long start = System.currentTimeMillis();
     String modelName = inference.modelName();
     EmbedModel embedModel = new LocalOnnxEmbeddingModel(inference);
@@ -56,7 +49,7 @@ public record EmbedModelRegistry(Map<String, EmbedModel> models, EmbeddingCache 
     LOG.info("Loaded embedding model '{}' in {}ms (warmup {}ms)",
         modelName, System.currentTimeMillis() - start,
         System.currentTimeMillis() - warmupStart);
-    return new EmbedModelRegistry(Map.of(modelName, embedModel), embeddingCache);
+    return new EmbedModelRegistry(Map.of(modelName, embedModel));
   }
 
   public EmbedModel get(String modelRef) throws IndexException {

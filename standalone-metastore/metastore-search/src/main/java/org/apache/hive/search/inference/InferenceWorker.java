@@ -28,7 +28,9 @@ import java.io.IOException;
 import java.nio.LongBuffer;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -47,6 +49,7 @@ final class InferenceWorker extends Thread {
   private final EmbeddingPrompt prompt;
   private final BlockingQueue<EmbedRequest> queue;
   private final int maxSeqLength;
+  private final Set<String> sessionInputNames;
 
   InferenceWorker(
       InferenceConfig config,
@@ -68,6 +71,9 @@ final class InferenceWorker extends Thread {
       opts.setIntraOpNumThreads(intraOpThreads);
       this.session = ortEnv.createSession(
           modelDir.resolve(InferenceConfig.MODEL_ONNX_FILE).toString(), opts);
+      this.sessionInputNames = new HashSet<>(session.getInputNames());
+      LOG.info("ONNX embedding model '{}' worker {} expects inputs {}",
+          spec.getModel(), workerIndex, sessionInputNames);
       this.tokenizer = HuggingFaceTokenizer.newInstance(
           modelDir.resolve(InferenceConfig.TOKENIZER));
     } catch (OrtException e) {
@@ -146,17 +152,39 @@ final class InferenceWorker extends Thread {
     System.arraycopy(attentionMask, offset, mask, 0, seqLen);
 
     long[] shape = {1, seqLen};
-    try (OnnxTensor idsTensor = OnnxTensor.createTensor(ortEnv, LongBuffer.wrap(ids), shape);
-         OnnxTensor maskTensor = OnnxTensor.createTensor(ortEnv, LongBuffer.wrap(mask), shape);
-         OnnxTensor typeTensor = OnnxTensor.createTensor(ortEnv, LongBuffer.wrap(tokenTypeIds), shape)) {
-
+    OnnxTensor idsTensor = null;
+    OnnxTensor maskTensor = null;
+    OnnxTensor typeTensor = null;
+    try {
       Map<String, OnnxTensor> inputs = new HashMap<>();
-      inputs.put("input_ids", idsTensor);
-      inputs.put("attention_mask", maskTensor);
-      inputs.put("token_type_ids", typeTensor);
+      if (sessionInputNames.contains("input_ids")) {
+        idsTensor = OnnxTensor.createTensor(ortEnv, LongBuffer.wrap(ids), shape);
+        inputs.put("input_ids", idsTensor);
+      }
+      if (sessionInputNames.contains("attention_mask")) {
+        maskTensor = OnnxTensor.createTensor(ortEnv, LongBuffer.wrap(mask), shape);
+        inputs.put("attention_mask", maskTensor);
+      }
+      if (sessionInputNames.contains("token_type_ids")) {
+        typeTensor = OnnxTensor.createTensor(ortEnv, LongBuffer.wrap(tokenTypeIds), shape);
+        inputs.put("token_type_ids", typeTensor);
+      }
+      if (inputs.isEmpty()) {
+        throw new OrtException("ONNX model has no supported inputs: " + sessionInputNames);
+      }
       try (OrtSession.Result result = session.run(inputs)) {
         return poolOutput(result.get(0).getValue(), mask, seqLen);
       }
+    } finally {
+      closeQuietly(typeTensor);
+      closeQuietly(maskTensor);
+      closeQuietly(idsTensor);
+    }
+  }
+
+  private static void closeQuietly(OnnxTensor tensor) {
+    if (tensor != null) {
+      tensor.close();
     }
   }
 
