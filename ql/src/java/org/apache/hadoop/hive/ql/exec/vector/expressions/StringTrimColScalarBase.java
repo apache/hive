@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 
 /**
@@ -43,12 +44,73 @@ abstract public class StringTrimColScalarBase extends StringUnaryUDFDirect {
   }
 
   protected boolean shouldTrim(int character) {
-    for (int i = 0; i < trimChars.length; ++i) {
-      if (trimChars[i] == character) {
+    return shouldTrimByte((byte) character, trimChars, 0, trimChars.length);
+  }
+
+  static boolean shouldTrimByte(byte character, byte[] trimBytes, int trimStart, int trimLen) {
+    final int trimEnd = trimStart + trimLen;
+    for (int i = trimStart; i < trimEnd; ++i) {
+      if (trimBytes[i] == character) {
         return true;
       }
     }
     return false;
+  }
+
+  static void trimBoth(BytesColumnVector outV, byte[] bytes, int startIndex, int length,
+      byte[] trimBytes, int trimStart, int trimLen, int batchIndex) {
+    final int end = startIndex + length;
+    int leftIndex = startIndex;
+    while (leftIndex < end && shouldTrimByte(bytes[leftIndex], trimBytes, trimStart, trimLen)) {
+      leftIndex++;
+    }
+    if (leftIndex == end) {
+      outV.setVal(batchIndex, EMPTY_BYTES, 0, 0);
+      return;
+    }
+
+    int rightIndex = end - 1;
+    final int rightLimit = leftIndex + 1;
+    while (rightIndex >= rightLimit && shouldTrimByte(bytes[rightIndex], trimBytes, trimStart, trimLen)) {
+      rightIndex--;
+    }
+    final int resultLength = rightIndex - leftIndex + 1;
+    if (resultLength <= 0) {
+      throw new RuntimeException("Not expected");
+    }
+    outV.setVal(batchIndex, bytes, leftIndex, resultLength);
+  }
+
+  static void trimLeft(BytesColumnVector outV, byte[] bytes, int startIndex, int length,
+      byte[] trimBytes, int trimStart, int trimLen, int batchIndex) {
+    final int end = startIndex + length;
+    int index = startIndex;
+    while (index < end && shouldTrimByte(bytes[index], trimBytes, trimStart, trimLen)) {
+      index++;
+    }
+
+    final int resultLength = end - index;
+    if (resultLength == 0) {
+      outV.setVal(batchIndex, EMPTY_BYTES, 0, 0);
+      return;
+    }
+    outV.setVal(batchIndex, bytes, index, resultLength);
+  }
+
+  static void trimRight(BytesColumnVector outV, byte[] bytes, int startIndex, int length,
+      byte[] trimBytes, int trimStart, int trimLen, int batchIndex) {
+    final int start = startIndex;
+    int index = startIndex + length - 1;
+    while (index >= start && shouldTrimByte(bytes[index], trimBytes, trimStart, trimLen)) {
+      index--;
+    }
+
+    final int resultLength = index - start + 1;
+    if (resultLength == 0) {
+      outV.setVal(batchIndex, EMPTY_BYTES, 0, 0);
+      return;
+    }
+    outV.setVal(batchIndex, bytes, start, resultLength);
   }
 
   @Override

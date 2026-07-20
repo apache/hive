@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.hive.common.type.HiveChar;
@@ -68,7 +69,14 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsNotNull;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsNull;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsTrue;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringColumnInList;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringLTrimColCol;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringLTrimColScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringLTrimScalarCol;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringRTrimColCol;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringRTrimScalarCol;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringTrimColCol;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringTrimColScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringTrimScalarCol;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringLower;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringUpper;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
@@ -132,6 +140,8 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIf;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFInBloomFilter;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLTrim;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFRTrim;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFTrim;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLower;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
@@ -968,6 +978,61 @@ public class TestVectorizationContext {
 
     assertEquals(StringLTrimCol.class, ve.getClass());
     assertEquals(3, ve.getOutputColumnNum());
+  }
+
+  @Test
+  public void testTwoParameterTrimVectorExpressions() throws HiveException {
+    List<String> columns = new ArrayList<String>();
+    columns.add("b");
+    columns.add("a");
+    VectorizationContext vc = new VectorizationContext("name", columns);
+
+    ExprNodeColumnDesc col0 = new ExprNodeColumnDesc(String.class, "a", "table", false);
+    ExprNodeColumnDesc col1 = new ExprNodeColumnDesc(String.class, "b", "table", false);
+    ExprNodeConstantDesc trimScalar = new ExprNodeConstantDesc("xy");
+    ExprNodeConstantDesc stringScalar = new ExprNodeConstantDesc("xyfacebookyyx");
+
+    ExprNodeGenericFuncDesc trimColScalar = new ExprNodeGenericFuncDesc();
+    trimColScalar.setTypeInfo(TypeInfoFactory.stringTypeInfo);
+    trimColScalar.setGenericUDF(new GenericUDFTrim());
+    trimColScalar.setChildren(Arrays.asList(col0, trimScalar));
+    assertEquals(StringTrimColScalar.class, vc.getVectorExpression(trimColScalar).getClass());
+
+    ExprNodeGenericFuncDesc trimColCol = new ExprNodeGenericFuncDesc();
+    trimColCol.setTypeInfo(TypeInfoFactory.stringTypeInfo);
+    trimColCol.setGenericUDF(new GenericUDFTrim());
+    trimColCol.setChildren(Arrays.asList(col0, col1));
+    assertEquals(StringTrimColCol.class, vc.getVectorExpression(trimColCol).getClass());
+
+    ExprNodeGenericFuncDesc trimScalarCol = new ExprNodeGenericFuncDesc();
+    trimScalarCol.setTypeInfo(TypeInfoFactory.stringTypeInfo);
+    trimScalarCol.setGenericUDF(new GenericUDFTrim());
+    trimScalarCol.setChildren(Arrays.asList(stringScalar, col1));
+    assertEquals(StringTrimScalarCol.class, vc.getVectorExpression(trimScalarCol).getClass());
+
+    ExprNodeGenericFuncDesc ltrimColCol = new ExprNodeGenericFuncDesc();
+    ltrimColCol.setTypeInfo(TypeInfoFactory.stringTypeInfo);
+    ltrimColCol.setGenericUDF(new GenericUDFLTrim());
+    ltrimColCol.setChildren(Arrays.asList(col0, col1));
+    assertEquals(StringLTrimColCol.class, vc.getVectorExpression(ltrimColCol).getClass());
+
+    ExprNodeGenericFuncDesc ltrimScalarCol = new ExprNodeGenericFuncDesc();
+    ltrimScalarCol.setTypeInfo(TypeInfoFactory.stringTypeInfo);
+    ltrimScalarCol.setGenericUDF(new GenericUDFLTrim());
+    ltrimScalarCol.setChildren(Arrays.asList(stringScalar, col1));
+    assertEquals(StringLTrimScalarCol.class, vc.getVectorExpression(ltrimScalarCol).getClass());
+
+    ExprNodeGenericFuncDesc rtrimColCol = new ExprNodeGenericFuncDesc();
+    rtrimColCol.setTypeInfo(TypeInfoFactory.stringTypeInfo);
+    rtrimColCol.setGenericUDF(new GenericUDFRTrim());
+    rtrimColCol.setChildren(Arrays.asList(col0, col1));
+    assertEquals(StringRTrimColCol.class, vc.getVectorExpression(rtrimColCol).getClass());
+
+    ExprNodeGenericFuncDesc rtrimScalarCol = new ExprNodeGenericFuncDesc();
+    rtrimScalarCol.setTypeInfo(TypeInfoFactory.stringTypeInfo);
+    rtrimScalarCol.setGenericUDF(new GenericUDFRTrim());
+    rtrimScalarCol.setChildren(Arrays.asList(stringScalar, col1));
+    assertEquals(StringRTrimScalarCol.class, vc.getVectorExpression(rtrimScalarCol).getClass());
   }
 
   @Test
