@@ -2070,12 +2070,13 @@ public class StatsRulesProcFactory {
 
           if (numAttr > 1 && conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_CORRELATED_MULTI_KEY_JOINS)) {
             denom = Collections.max(distinctVals);
-            distinctUnmatched = denom - ndvsUnmatched.get(distinctVals.indexOf(denom));
+            distinctUnmatched = computeDistinctUnmatched(denom,
+                ndvsUnmatched.get(distinctVals.indexOf(denom)));
           } else {
             // To avoid denominator getting larger and aggressively reducing
             // number of rows, we will ease out denominator.
             denom = StatsUtils.addWithExpDecay(distinctVals);
-            distinctUnmatched = denom - StatsUtils.addWithExpDecay(ndvsUnmatched);
+            distinctUnmatched = computeDistinctUnmatched(denom, StatsUtils.addWithExpDecay(ndvsUnmatched));
           }
         }
 
@@ -2823,11 +2824,25 @@ public class StatsRulesProcFactory {
       }
     }
 
-    private long getDenominatorForUnmatchedRows(List<Long> distinctVals) {
+    /**
+     * Distinct key values expected to stay unmatched. An unknown (-1) unmatched estimate
+     * means every key value in the denominator may be unmatched.
+     */
+    @VisibleForTesting
+    static long computeDistinctUnmatched(long denom, long unmatched) {
+      if (denom < 0) {
+        return denom;
+      }
+      return unmatched < 0 ? denom : denom - unmatched;
+    }
+
+    @VisibleForTesting
+    long getDenominatorForUnmatchedRows(List<Long> distinctVals) {
 
       if (distinctVals.isEmpty()) {
         return 2;
       }
+      // a single unknown (-1) NDV translates to an unknown denominoator
       if (StatsUtils.containsUnknownNDV(distinctVals)) {
         return -1L;
       }
@@ -2860,7 +2875,8 @@ public class StatsRulesProcFactory {
       }
     }
 
-    private long getDenominator(List<Long> distinctVals) {
+    @VisibleForTesting
+    long getDenominator(List<Long> distinctVals) {
 
       if (distinctVals.isEmpty()) {
 
@@ -2871,8 +2887,11 @@ public class StatsRulesProcFactory {
         // denominator is 2.
         return 2;
       }
+
+      // the known NDVs bound the join key domain from below no matter what the unknown
+      // (-1) ones resolve to, so the denominator is the product of the known values
       if (StatsUtils.containsUnknownNDV(distinctVals)) {
-        return -1L;
+        return distinctVals.stream().filter(v -> v >= 0).reduce(StatsUtils::safeMult).orElse(-1L);
       }
 
       // simple join from 2 relations: denom = max(v1, v2)

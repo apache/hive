@@ -864,6 +864,9 @@ public class StatsUtils {
       cs.setHistogram(csd.getTimestampStats().getHistogram());
     } else if (colTypeLowerCase.equals(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().lengthOfTimestamp());
+      // the stats data is not read for this type, so NDV and null count are genuinely unknown
+      cs.setCountDistint(-1);
+      cs.setNumNulls(-1);
     } else if (colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().lengthOfDecimal());
       cs.setCountDistint(csd.getDecimalStats().isSetNumDVs() ? csd.getDecimalStats().getNumDVs() : -1);
@@ -2066,7 +2069,7 @@ public class StatsUtils {
             // when some operators like GROUPBY duplicates the input rows in which case
             // number of distincts should not change. Update the distinct count only when
             // the output number of rows is less than input number of rows.
-            if (ratio <= 1.0) {
+            if (ratio < 1.0) {
               newDV = (long) Math.ceil(ratio * oldDV);
             }
             cs.setCountDistint(newDV);

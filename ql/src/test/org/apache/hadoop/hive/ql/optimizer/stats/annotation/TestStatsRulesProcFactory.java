@@ -58,9 +58,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -908,9 +910,93 @@ class TestStatsRulesProcFactory {
     );
   }
 
+  /**
+   * HIVE-29625: max/product-style join denominator. Unknown (-1) inputs are dropped and
+   * the denominator is the product of the known NDVs; unknown only when all are unknown.
+   */
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("getDenominatorCases")
+  void testGetDenominator(String name, List<Long> distinctVals, long expected) {
+    StatsRulesProcFactory.JoinStatsRule rule = new StatsRulesProcFactory.JoinStatsRule();
+    assertEquals(expected, rule.getDenominator(new ArrayList<>(distinctVals)));
+  }
+
+  private static Stream<Arguments> getDenominatorCases() {
+    return Stream.of(
+        Arguments.of("emptyReturnsTwo",              Collections.emptyList(),           2L),
+        Arguments.of("twoKnownReturnsMax",           Arrays.asList(100L, 200L),         200L),
+        Arguments.of("mixedUsesKnownSide",           Arrays.asList(-1L, 100L),          100L),
+        Arguments.of("mixedKnownFirst",              Arrays.asList(100L, -1L),          100L),
+        Arguments.of("allUnknownReturnsUnknown",     Arrays.asList(-1L, -1L),           -1L),
+        Arguments.of("verifiedZeroLosesMax",         Arrays.asList(0L, 100L),           100L),
+        Arguments.of("threeKnownProductExceptLeast", Arrays.asList(10L, 20L, 30L),      600L),
+        Arguments.of("threeMixedProductOfKnowns",    Arrays.asList(-1L, 100L, 200L),    20000L),
+        Arguments.of("twoUnknownsUseSingleKnown",    Arrays.asList(-1L, -1L, 100L),     100L),
+        // verified-zero is evidence, not unknown: it survives the filter and zeroes the product
+        Arguments.of("mixedWithVerifiedZero",        Arrays.asList(-1L, 0L),            0L),
+        Arguments.of("twoUnknownsTwoKnownsProduct",  Arrays.asList(-1L, 100L, -1L, 200L), 20000L)
+    );
+  }
+
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("getDenominatorForUnmatchedRowsCases")
+  void testGetDenominatorForUnmatchedRows(String name, List<Long> distinctVals, long expected) {
+    StatsRulesProcFactory.JoinStatsRule rule = new StatsRulesProcFactory.JoinStatsRule();
+    assertEquals(expected, rule.getDenominatorForUnmatchedRows(new ArrayList<>(distinctVals)));
+  }
+
+  private static Stream<Arguments> getDenominatorForUnmatchedRowsCases() {
+    return Stream.of(
+        Arguments.of("emptyReturnsTwo",                 Collections.emptyList(),        2L),
+        Arguments.of("twoKnownReturnsMin",              Arrays.asList(100L, 200L),      100L),
+        // min-style combine: an unknown may resolve below every known value -> propagate
+        Arguments.of("anyUnknownPropagates",            Arrays.asList(-1L, 100L),       -1L),
+        Arguments.of("threeKnownProductExceptGreatest", Arrays.asList(10L, 20L, 30L),   200L)
+    );
+  }
+
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("computeDistinctUnmatchedCases")
+  void testComputeDistinctUnmatched(String name, long denom, long unmatched, long expected) {
+    assertEquals(expected,
+        StatsRulesProcFactory.JoinStatsRule.computeDistinctUnmatched(denom, unmatched));
+  }
+
+  private static Stream<Arguments> computeDistinctUnmatchedCases() {
+    return Stream.of(
+        Arguments.of("bothKnownSubtracts",            100L,  40L,  60L),
+        // unknown unmatched is treated as zero matched values: every key value may be unmatched
+        Arguments.of("unknownUnmatchedAssumesAll",    100L,  -1L, 100L),
+        Arguments.of("unknownDenomStaysUnknown",       -1L,  -1L,  -1L),
+        Arguments.of("unknownDenomKnownUnmatched",     -1L,  40L,  -1L)
+    );
+  }
+
   @ParameterizedTest(name = "{0}")
   @MethodSource("updateColStatsCases")
-  void testUpdateColStats(String name, long initialNdv, long expectedNdv) {
+  void testUpdateColStats(String name, long initialNdv, long newNumRows, long expectedNdv) {
+    assertEquals(expectedNdv, runUpdateColStats(initialNdv, 1000L, newNumRows));
+  }
+
+  private static Stream<Arguments> updateColStatsCases() {
+    return Stream.of(
+        Arguments.of("unknownNdvSkipsMath",     -1L,   500L,  -1L),
+        Arguments.of("knownNdvScaledByRatio",  100L,   500L,  50L),
+        // at ratio >= 1.0 the row count did not shrink, so the NDV must not change
+        Arguments.of("ratioOneKeepsNdv",       100L,  1000L, 100L),
+        Arguments.of("ratioAboveOneKeepsNdv",  100L,  2000L, 100L)
+    );
+  }
+
+  @Test
+  void testUpdateColStatsRatioOnePreservesHugeNdvExactly() {
+    // at ratio == 1.0 the scaling must be skipped, not computed: ceil(1.0 * oldDV)
+    // round-trips through double and corrupts NDVs above 2^53
+    long hugeNdv = (1L << 53) + 1;
+    assertEquals(hugeNdv, runUpdateColStats(hugeNdv, hugeNdv, hugeNdv));
+  }
+
+  private long runUpdateColStats(long initialNdv, long oldRowCount, long newNumRows) {
     ColStatistics cs = new ColStatistics("k", "int");
     cs.setCountDistint(initialNdv);
     cs.setNumNulls(0);
@@ -933,21 +1019,14 @@ class TestStatsRulesProcFactory {
     when(schema.getSignature()).thenReturn(Collections.emptyList());
     when(jop.getSchema()).thenReturn(schema);
     Map<Integer, Long> rowCountParents = new HashMap<>();
-    rowCountParents.put(0, 1000L);
+    rowCountParents.put(0, oldRowCount);
     HiveConf conf = new HiveConf();
     conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_JOIN_NDV_READJUSTMENT, false);
 
     new StatsRulesProcFactory.JoinStatsRule().updateColStats(
-        conf, stats, 0L, 0L, 500L, jop, rowCountParents);
+        conf, stats, 0L, 0L, newNumRows, jop, rowCountParents);
 
-    assertEquals(expectedNdv, cs.getCountDistint());
-  }
-
-  private static Stream<Arguments> updateColStatsCases() {
-    return Stream.of(
-        Arguments.of("unknownNdvSkipsMath",     -1L,  -1L),
-        Arguments.of("knownNdvScaledByRatio", 100L,  50L)
-    );
+    return cs.getCountDistint();
   }
 
   private void assertComputeRowCountAssumingInnerJoin(long denom, long expected) {

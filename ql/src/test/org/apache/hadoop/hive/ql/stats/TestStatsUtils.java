@@ -450,6 +450,28 @@ class TestStatsUtils {
     );
   }
 
+  @Test
+  void testGetColStatisticsTimestampLocalTzHasUnknownNDVAndNumNulls() {
+    // ANALYZE maps TIMESTAMPLOCALTZ to LONG column stats (ColStatsProcessor), but the
+    // read path ignores the stats data for this type, so NDV and numNulls must surface
+    // as unknown (-1) rather than the field defaults of 0 ("verified zero" / "no nulls").
+    LongColumnStatsData longStats = new LongColumnStatsData();
+    longStats.setNumNulls(2);
+    longStats.setNumDVs(42);
+    ColumnStatisticsObj cso = new ColumnStatisticsObj();
+    cso.setColName("test_col");
+    cso.setColType(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME);
+    cso.setStatsData(wrapLong(longStats));
+
+    ColStatistics cs = StatsUtils.getColStatistics(cso, "test_col");
+
+    assertNotNull(cs, "ColStatistics should not be null for timestamplocaltz");
+    assertEquals(-1, cs.getCountDistint(),
+        "NDV is not read for timestamplocaltz, so it should be -1 (unknown)");
+    assertEquals(-1, cs.getNumNulls(),
+        "numNulls is not read for timestamplocaltz, so it should be -1 (unknown)");
+  }
+
   private static ColumnStatisticsData wrapLong(LongColumnStatsData s) {
     ColumnStatisticsData d = new ColumnStatisticsData();
     d.setLongStats(s);
@@ -691,8 +713,7 @@ class TestStatsUtils {
 
   @Test
   void testUpdateStatsRecomputesNDVWhenAffectedAndKnown() {
-    // Regression check: when NDV is known and ratio <= 1.0, the NDV math still runs
-    // inside the new oldDV >= 0 guard.
+    // when NDV is known and ratio < 1.0, the NDV math still runs inside the oldDV >= 0 guard
     Statistics stats = new Statistics(1000, 8000, 0, 0);
     ColStatistics cs = createColStats("col1", 100, 0); // known NDV
     stats.setColumnStats(Collections.singletonList(cs));
@@ -705,6 +726,34 @@ class TestStatsUtils {
     // ratio = 500/1000 = 0.5 -> newDV = ceil(0.5 * 100) = 50
     assertEquals(50, updated.getCountDistint(),
         "Known NDV should be scaled by the row-count ratio");
+  }
+
+  @Test
+  void testUpdateStatsRatioOneKeepsNDV() {
+    // at ratio == 1.0 the row count did not shrink, so the NDV must not change
+    Statistics stats = new Statistics(1000, 8000, 0, 0);
+    ColStatistics cs = createColStats("col1", 100, 0);
+    stats.setColumnStats(Collections.singletonList(cs));
+
+    StatsUtils.updateStats(stats, 1000, true, null, Collections.singleton("col1"));
+
+    assertEquals(100, stats.getColumnStats().get(0).getCountDistint(),
+        "NDV should be unchanged when the row count is unchanged");
+  }
+
+  @Test
+  void testUpdateStatsRatioOnePreservesHugeNDVExactly() {
+    // at ratio == 1.0 the scaling must be skipped, not computed: ceil(1.0 * oldDV)
+    // round-trips through double and corrupts NDVs above 2^53
+    long hugeNdv = (1L << 53) + 1;
+    Statistics stats = new Statistics(hugeNdv, 8000, 0, 0);
+    ColStatistics cs = createColStats("col1", hugeNdv, 0);
+    stats.setColumnStats(Collections.singletonList(cs));
+
+    StatsUtils.updateStats(stats, hugeNdv, true, null, Collections.singleton("col1"));
+
+    assertEquals(hugeNdv, stats.getColumnStats().get(0).getCountDistint(),
+        "NDV above 2^53 must survive a ratio == 1.0 update bit-exactly");
   }
 
   @Test
