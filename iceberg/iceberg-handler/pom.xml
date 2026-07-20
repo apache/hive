@@ -35,6 +35,11 @@
       <optional>true</optional>
     </dependency>
     <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-iceberg-rest-catalog-client</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
       <!-- compile-time only, for S3FileIOProperties/AwsClientProperties string constants
            (inlined by javac); the classes are not referenced at runtime -->
       <groupId>org.apache.iceberg</groupId>
@@ -176,6 +181,14 @@
                 <artifactItem>
                   <groupId>org.apache.hive</groupId>
                   <artifactId>hive-iceberg-catalog</artifactId>
+                  <version>${project.version}</version>
+                  <type>jar</type>
+                  <overWrite>true</overWrite>
+                  <outputDirectory>${project.build.directory}/classes</outputDirectory>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.apache.hive</groupId>
+                  <artifactId>hive-iceberg-rest-catalog-client</artifactId>
                   <version>${project.version}</version>
                   <type>jar</type>
                   <overWrite>true</overWrite>

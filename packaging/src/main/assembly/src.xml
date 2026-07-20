@@ -119,6 +119,7 @@
         <include>parser/**/*</include>
         <include>udf/**/*</include>
         <include>iceberg/iceberg-catalog/**/*</include>
+        <include>iceberg/iceberg-rest-catalog-client/**/*</include>
         <include>iceberg/iceberg-handler/**/*</include>
         <include>iceberg/iceberg-shading/**/*</include>
         <include>iceberg/patched-iceberg-api/**/*</include>

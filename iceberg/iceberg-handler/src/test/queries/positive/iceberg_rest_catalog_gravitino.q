@@ -25,7 +25,7 @@
 --! qt:replace:/(\S\"iceberg-version\\\":\\\")(\w+\s\w+\s\d+\.\d+\.\d+\s\(\w+\s\w+\))(\\\")/$1#Masked#$3/
 
 set hive.stats.autogather=false;
-set metastore.client.impl=org.apache.iceberg.hive.client.HiveRESTCatalogClient;
+set metastore.client.impl=org.apache.iceberg.hive.rest.catalog.client.HiveRESTCatalogClient;
 set metastore.catalog.default=ice01;
 set iceberg.catalog.ice01.type=rest;
 set iceberg.catalog.ice01.header.X-Iceberg-Access-Delegation=vended-credentials;
