@@ -656,10 +656,12 @@ public class MetastoreConf {
         3000, TimeUnit.MILLISECONDS, "Log the slow jdbc query that Metastore has been waiting for the result beyond the threshold(ms), " +
         "should turn on the metastore.profile.jdbc.execution first"),
     METASTORE_PROFILE_JDBC_EXECUTION("metastore.profile.jdbc.execution", "metastore.profile.jdbc.execution", false,
-        "Turn on to profile the jdbc executions, it will log the slow queries, and record the metrics about the jdbc read/write\n" +
-        "over the Metastore public APIs configured by metastore.jdbc.profile.thrift.apis." ),
+        "Turn on to profile JDBC executions at the statement layer (slow-query logging, per-query metrics\n" +
+            "about metastore.jdbc.profile.thrift.apis, and aggregate JDBC summaries for Thrift APIs )."),
     METASTORE_PROFILE_JDBC_THRIFT_APIS("metastore.jdbc.profile.thrift.apis", "metastore.jdbc.profile.thrift.apis",
-        "get_table_req,get_database_req", "List of Metastore public APIs that want to monitor the associated jdbc executions."),
+        "get_table_req,get_database_req",
+        "Thrift API method names for which to record the per-query metrics.\n" +
+            "Per-query slow detection applies to all JDBC executions while profiling is on."),
     COMPACTOR_INITIATOR_ON("metastore.compactor.initiator.on", "hive.compactor.initiator.on", true,
         "Whether to run the initiator thread on this metastore instance or not.\n" +
             "Set this to true on one instance of the Thrift metastore service as part of turning\n" +

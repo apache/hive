@@ -102,25 +102,27 @@ public class TestProfilingDataSource {
            ResultSet rs = statement.executeQuery("VALUES 1")) {
         Assert.assertTrue(rs.next());
       }
+      HMSHandlerContext.getCallCtx().ifPresent(ctx -> {
+        Assert.assertEquals(1, ctx.getQueryCount());
+        Assert.assertTrue(ctx.getTotalTime() >= 300);
+        Assert.assertTrue(ctx.getMaxJdbcTimeMs() >= 300);
+      });
     }
     Assert.assertEquals(slowNum + 1, slowQuery.getCount());
     Assert.assertEquals(timeCount + 1, timer.getCount());
     Assert.assertTrue(timer.getSnapshot().getMean() > TimeUnit.MILLISECONDS.toNanos(300));
 
-    // Test a method outside of monitor
     try (AutoCloseable sleep = MetastoreStatementTestHook.testConnection("test_statement_outside", 300, connection)) {
       try (Statement statement = connection.createStatement();
            ResultSet rs = statement.executeQuery("VALUES 1")) {
         Assert.assertTrue(rs.next());
       }
     }
-    // record the slow query though
     Assert.assertEquals(slowNum + 2, slowQuery.getCount());
-    // don't count this un-interested method
     Assert.assertEquals(timeCount + 1, timer.getCount());
   }
 
-  public static class MetastoreStatementTestHook extends MetastoreStatement.JdbcProfilerUtils {
+  public static class MetastoreStatementTestHook extends MetastoreStatement.ThriftApiProfiler {
     static final String TEST_METRIC_NAME = "MetastoreStatementTestHook_" + System.currentTimeMillis();
     static final String SLEEP_MILLIS = "MetastoreStatementTestHook.sleep.ms";
     private final Configuration configuration;
@@ -134,7 +136,7 @@ public class TestProfilingDataSource {
     public void preRun(Method method, Object[] args) {
       long sleepMs = configuration.getLong(SLEEP_MILLIS, 0);
       if (sleepMs > 0 &&
-          MetastoreStatement.JdbcProfilerUtils.QUERY_EXECUTION.contains(method.getName())) {
+          MetastoreStatement.QUERY_EXECUTION.contains(method.getName())) {
         try {
           Thread.sleep(sleepMs);
         } catch (InterruptedException e) {
@@ -150,8 +152,7 @@ public class TestProfilingDataSource {
 
     public static AutoCloseable testConnection(String method, long sleepMs, Connection connection)
         throws Exception {
-      HMSHandlerContext
-          .setCallCtx(new HMSHandlerContext.CallCtx(method, System.currentTimeMillis(), new AtomicLong()));
+      HMSHandlerContext.setCallCtx(new HMSHandlerContext.CallCtx(method));
       Configuration configuration = connection.unwrap(MetastoreConnection.class).getConfiguration();
       configuration.set(SLEEP_MILLIS, sleepMs + "");
       return () -> {

@@ -49,8 +49,9 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("unchecked")
 public final class MetastoreStatement implements InvocationHandler {
   private static final Logger LOG = LoggerFactory.getLogger(MetastoreStatement.class);
-  private static final ThreadLocal<HMSHandlerContext.CallCtx> CALL_CTX = new ThreadLocal<>();
   static final String EXEC_HOOK = "metastore.jdbc.execution.hook";
+  static final Set<String> QUERY_EXECUTION =
+      Set.of("executeQuery", "executeUpdate", "execute", "executeBatch");
 
   private final String rawSql;
   private final Statement delegate;
@@ -70,7 +71,7 @@ public final class MetastoreStatement implements InvocationHandler {
   private MetastoreStatementHook resolveHook(Configuration conf) {
     String className = conf.get(EXEC_HOOK, "");
     if (StringUtils.isEmpty(className)) {
-      return new JdbcProfilerUtils(configuration);
+      return new ThriftApiProfiler(configuration);
     }
     try {
       return JavaUtils.newInstance(JavaUtils.getClass(className.trim(), MetastoreStatementHook.class),
@@ -86,43 +87,11 @@ public final class MetastoreStatement implements InvocationHandler {
         ClassUtils.getAllInterfaces(delegate.getClass()).toArray(new Class[0]), handler);
   }
 
-  private void logExecutionSummary() {
-    Optional<HMSHandlerContext.CallCtx> currentCtx = HMSHandlerContext.getCallCtx();
-    HMSHandlerContext.CallCtx previousCtx = CALL_CTX.get();
-    if (currentCtx.isEmpty()) {
-      if (previousCtx != null) {
-        logExecutionSummary(previousCtx);
-        CALL_CTX.remove();
-      }
-      return;
-    }
-    if (previousCtx == null) {
-      CALL_CTX.set(currentCtx.get());
-      return;
-    }
-    if (!currentCtx.get().equals(previousCtx)) {
-      logExecutionSummary(previousCtx);
-      CALL_CTX.set(currentCtx.get());
-    }
-  }
-
-  private void logExecutionSummary(HMSHandlerContext.CallCtx call) {
-    if (call == null) {
-      return;
-    }
-    long totalSpent = call.getTotalTime();
-    LOG.debug("{} took {} ms to complete all associated queries", call.methodName(), totalSpent);
-    if (isSlowExecution(totalSpent)) {
-      LOG.warn("{} took {} ms to complete all associated queries", call.methodName(), totalSpent);
-    }
-  }
-
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     Timer.Context ctx = null;
     try {
       boolean monitor = hook.profile(rawSql, method, args);
-      logExecutionSummary();
       if (Metrics.getRegistry() != null && monitor) {
         String metricName = hook.getMetricName(method);
         Timer timer = Metrics.getOrCreateTimer(metricName);
@@ -140,11 +109,11 @@ public final class MetastoreStatement implements InvocationHandler {
             : (args != null && args.length > 0 ? (String) args[0] : "no sql found");
         LOG.debug("Jdbc query: {} completed in {} ms", statement, timeSpent);
       }
-      HMSHandlerContext.CallCtx callCtx = CALL_CTX.get();
-      if (callCtx != null) {
-        callCtx.increaseTime(timeSpent);
+      boolean isQueryExecution = QUERY_EXECUTION.contains(method.getName());
+      if (isQueryExecution) {
+        HMSHandlerContext.getCallCtx().ifPresent(callCtx -> callCtx.recordJdbcExecution(timeSpent));
+        logExecution(timeSpent, rawSql, method, args);
       }
-      logExecution(timeSpent, rawSql, method, args);
       return result;
     } catch (InvocationTargetException | UndeclaredThrowableException e) {
       throw e.getCause() != null ? e.getCause() : e;
@@ -181,7 +150,7 @@ public final class MetastoreStatement implements InvocationHandler {
   public interface MetastoreStatementHook {
     /**
      * Whether should monitor the current call, this method gives a chance to profile a specific pattern of queries.
-     * For example, we use {@link JdbcProfilerUtils} to profile the queries originated from a set of specific APIs.
+     * For example, we use {@link ThriftApiProfiler} to profile the queries originated from a set of specific APIs.
      * @param sql The sql being executed, it might be null for {@link Statement#execute}, for this case
      *            need to obtain the sql from args, the method input.
      * @param method Method which is being called
@@ -192,20 +161,9 @@ public final class MetastoreStatement implements InvocationHandler {
 
     String getMetricName(Method method);
 
-    /**
-     * Invoked before the method call
-     * @param method Method which is being called
-     * @param args The method input
-     */
     default void preRun(Method method, Object[] args) {
     }
 
-    /**
-     *  Invoked post the method call
-     * @param method Method which is being called
-     * @param args The method input
-     * @param result The execution result from the call
-     */
     default void postRun(Method method, Object[] args, Object result) {
     }
   }
@@ -213,14 +171,11 @@ public final class MetastoreStatement implements InvocationHandler {
   /**
    * This class is used to profile the statement originated from specific thrift API calls
    */
-  public static class JdbcProfilerUtils implements MetastoreStatementHook {
-    static final Set<String> QUERY_EXECUTION =
-        Set.of("executeQuery", "executeUpdate", "execute", "executeBatch");
-
+  public static class ThriftApiProfiler implements MetastoreStatementHook {
     private final Configuration configuration;
     private final Set<String> profiledApis;
 
-    public JdbcProfilerUtils(Configuration configuration) {
+    public ThriftApiProfiler(Configuration configuration) {
       this.configuration = Objects.requireNonNull(configuration);
       this.profiledApis = getProfiledApis();
     }

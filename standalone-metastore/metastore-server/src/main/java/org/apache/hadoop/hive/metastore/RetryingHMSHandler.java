@@ -23,7 +23,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 
 import javax.jdo.JDOException;
 
@@ -91,20 +90,20 @@ public class RetryingHMSHandler extends AbstractHMSHandlerProxy {
         }
         Object object = null;
         boolean isStarted = Deadline.startTimer(method.getName());
-        boolean clearLocal = false;
+        boolean clearCtxCall = false;
         try {
           if (!local) {
             Optional<HMSHandlerContext.CallCtx> callCtx = HMSHandlerContext.getCallCtx();
             if (callCtx.isEmpty()) {
-              HMSHandlerContext.CallCtx currentCall =
-                  new HMSHandlerContext.CallCtx(method.getName(), System.currentTimeMillis(), new AtomicLong());
-              HMSHandlerContext.setCallCtx(currentCall);
-              clearLocal = true;
+              HMSHandlerContext.setCallCtx(new HMSHandlerContext.CallCtx(method.getName()));
+              clearCtxCall = true;
             }
           }
           object = method.invoke(baseHandler, args);
         } finally {
-          if (clearLocal) {
+          if (clearCtxCall) {
+            HMSHandlerContext.getCallCtx()
+                .ifPresent(ctx -> ctx.logJdbcSummary(LOG, getActiveConf()));
             HMSHandlerContext.setCallCtx(null);
           }
           if (isStarted) {
