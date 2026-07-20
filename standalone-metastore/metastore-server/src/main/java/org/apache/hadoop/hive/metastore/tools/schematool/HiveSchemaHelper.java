@@ -42,7 +42,7 @@ public class HiveSchemaHelper {
   public static final String DB_HIVE = "hive";
   public static final String DB_MSSQL = "mssql";
   public static final String DB_MYSQL = "mysql";
-  public static final String DB_POSTGRACE = "postgres";
+  public static final String DB_POSTGRES = "postgres";
   public static final String DB_ORACLE = "oracle";
   public static final String EMBEDDED_HS2_URL =
       "jdbc:hive2://?hive.conf.restricted.list=;hive.security.authorization.sqlstd.confwhitelist=.*;"
@@ -581,7 +581,7 @@ public class HiveSchemaHelper {
       return new MSSQLCommandParser(dbOpts, msUsername, msPassword, conf, usingSqlLine);
     } else if (dbName.equalsIgnoreCase(DB_MYSQL)) {
       return new MySqlCommandParser(dbOpts, msUsername, msPassword, conf, usingSqlLine);
-    } else if (dbName.equalsIgnoreCase(DB_POSTGRACE)) {
+    } else if (dbName.equalsIgnoreCase(DB_POSTGRES)) {
       return new PostgresCommandParser(dbOpts, msUsername, msPassword, conf, usingSqlLine);
     } else if (dbName.equalsIgnoreCase(DB_ORACLE)) {
       return new OracleCommandParser(dbOpts, msUsername, msPassword, conf, usingSqlLine);
