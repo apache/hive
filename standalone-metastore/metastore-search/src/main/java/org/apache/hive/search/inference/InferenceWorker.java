@@ -27,8 +27,10 @@ import ai.onnxruntime.OrtSession;
 import java.io.IOException;
 import java.nio.LongBuffer;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
@@ -109,7 +111,7 @@ final class InferenceWorker extends Thread {
           break;
         }
         try {
-          request.complete(embedInternal(request.task(), request.text()));
+          request.complete(embed(request.task(), request.text()));
         } catch (Exception e) {
           request.fail(e);
         }
@@ -119,7 +121,7 @@ final class InferenceWorker extends Thread {
     }
   }
 
-  private float[] embedInternal(EmbedModel.TaskType task, String text) throws OrtException {
+  private float[] embed(EmbedModel.TaskType task, String text) throws OrtException {
     String input = prompt.prefixFor(task) + text;
     Encoding encoding = tokenizer.encode(input, true, true);
     long[] inputIds = encoding.getIds();
@@ -130,17 +132,22 @@ final class InferenceWorker extends Thread {
     }
 
     int chunkCount = (inputIds.length + maxSeqLength - 1) / maxSeqLength;
-    float[][] chunkVectors = new float[chunkCount][];
+    List<ChunkEmbedding> chunkVectors = new ArrayList<>();
     for (int chunk = 0; chunk < chunkCount; chunk++) {
       int offset = chunk * maxSeqLength;
       int chunkLen = Math.min(maxSeqLength, inputIds.length - offset);
-      chunkVectors[chunk] = normalize(embedInternal(inputIds, attentionMask, offset, chunkLen));
+      float[] vectors = embedInternal(inputIds, attentionMask, offset, chunkLen);
+      chunkVectors.add(new ChunkEmbedding(vectors, offset, chunkLen));
     }
     if (LOG.isDebugEnabled()) {
       LOG.debug("Embedded {} token(s) in {} chunk(s) on worker {}", inputIds.length, chunkCount,
           getName());
     }
-    return normalize(meanPoolVectors(chunkVectors));
+    return normalize(average(chunkVectors));
+  }
+
+  private record ChunkEmbedding(float[] embedding, int offset, int chunkLen) {
+
   }
 
   private float[] embedInternal(long[] inputIds, long[] attentionMask, int offset, int seqLen)
@@ -173,7 +180,7 @@ final class InferenceWorker extends Thread {
         throw new OrtException("ONNX model has no supported inputs: " + sessionInputNames);
       }
       try (OrtSession.Result result = session.run(inputs)) {
-        return poolOutput(result.get(0).getValue(), mask, seqLen);
+        return poolOutput(result.get(0).getValue());
       }
     } finally {
       closeQuietly(typeTensor);
@@ -188,15 +195,15 @@ final class InferenceWorker extends Thread {
     }
   }
 
-  private static float[] poolOutput(Object value, long[] mask, int seqLen) {
+  private static float[] poolOutput(Object value) {
     if (value instanceof float[][][] tokenEmbeddings) {
-      return meanPool(tokenEmbeddings[0], mask, seqLen);
+      return meanPool(tokenEmbeddings[0]);
     }
     if (value instanceof float[][] matrix) {
       if (matrix.length == 1) {
         return matrix[0].clone();
       }
-      return meanPool(matrix, mask, seqLen);
+      return meanPool(matrix);
     }
     if (value instanceof float[] vector) {
       return vector.clone();
@@ -204,41 +211,55 @@ final class InferenceWorker extends Thread {
     throw new IllegalStateException("Unsupported ONNX embedding output type: " + value.getClass());
   }
 
-  static float[] meanPool(float[][] tokenEmbeddings, long[] mask, int seqLen) {
-    int dim = tokenEmbeddings[0].length;
-    float[] result = new float[dim];
-    float maskSum = 0;
-    for (int i = 0; i < seqLen && i < tokenEmbeddings.length; i++) {
-      if (mask[i] == 1) {
-        maskSum++;
-        for (int j = 0; j < dim; j++) {
-          result[j] += tokenEmbeddings[i][j];
-        }
-      }
+  /** Combines per-chunk embeddings, weighted by token count, similar to langchain4j. */
+  static float[] average(List<ChunkEmbedding> embeddings) {
+    if (embeddings.size() == 1) {
+      return embeddings.getFirst().embedding();
     }
-    if (maskSum > 0) {
-      for (int j = 0; j < dim; j++) {
-        result[j] /= maskSum;
-      }
+    float[][] vectors = new float[embeddings.size()][];
+    int[] weights = new int[embeddings.size()];
+    for (int i = 0; i < embeddings.size(); i++) {
+      ChunkEmbedding chunk = embeddings.get(i);
+      vectors[i] = chunk.embedding;
+      weights[i] = chunk.chunkLen;
     }
-    return result;
+    return weightedAverage(vectors, weights);
   }
 
-  static float[] meanPoolVectors(float[][] vectors) {
-    if (vectors.length == 1) {
-      return vectors[0].clone();
+  static float[] weightedAverage(float[][] embeddings, int[] weights) {
+    if (embeddings.length == 1) {
+      return embeddings[0];
     }
-    int dim = vectors[0].length;
-    float[] result = new float[dim];
-    for (float[] vector : vectors) {
-      for (int j = 0; j < dim; j++) {
-        result[j] += vector[j];
+    int dimensions = embeddings[0].length;
+    float[] averagedEmbedding = new float[dimensions];
+    int totalWeight = 0;
+    for (int i = 0; i < embeddings.length; i++) {
+      int weight = weights[i];
+      totalWeight += weight;
+      for (int j = 0; j < dimensions; j++) {
+        averagedEmbedding[j] += embeddings[i][j] * weight;
       }
     }
-    for (int j = 0; j < dim; j++) {
-      result[j] /= vectors.length;
+    for (int j = 0; j < dimensions; j++) {
+      averagedEmbedding[j] /= totalWeight;
     }
-    return result;
+    return averagedEmbedding;
+  }
+
+  /** Mean-pools all token vectors in the sequence. */
+  static float[] meanPool(float[][] vectors) {
+    int numVectors = vectors.length;
+    int vectorLength = vectors[0].length;
+    float[] averagedVector = new float[vectorLength];
+    for (float[] vector : vectors) {
+      for (int j = 0; j < vectorLength; j++) {
+        averagedVector[j] += vector[j];
+      }
+    }
+    for (int j = 0; j < vectorLength; j++) {
+      averagedVector[j] /= numVectors;
+    }
+    return averagedVector;
   }
 
   static float[] normalize(float[] vec) {
