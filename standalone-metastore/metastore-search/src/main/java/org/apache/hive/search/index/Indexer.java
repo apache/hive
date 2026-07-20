@@ -26,7 +26,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.apache.hadoop.hive.common.DatabaseName;
 import org.apache.hadoop.hive.metastore.Batchable;
@@ -34,7 +33,6 @@ import org.apache.hive.search.config.IndexConfig;
 import org.apache.hive.search.exception.IndexException;
 import org.apache.hive.search.inference.EmbedModel;
 import org.apache.hive.search.inference.EmbedModelRegistry;
-import org.apache.hive.search.inference.EmbeddingCache;
 import org.apache.hive.search.mapping.FieldSchema;
 import org.apache.hive.search.mapping.TableDocument;
 import org.apache.hive.search.mapping.field.Field;
@@ -59,7 +57,6 @@ public final class Indexer implements AutoCloseable {
 
   private final IndexManager indexManager;
   private final EmbedModelRegistry modelRegistry;
-  private final EmbeddingCache embeddingCache;
   private final int commitFlushThreshold;
   private SnapshotDeletionPolicy snapshotter;
   private FlushTrackingWriter writer;
@@ -67,7 +64,6 @@ public final class Indexer implements AutoCloseable {
   public Indexer(IndexManager index, EmbedModelRegistry registry) {
     this.indexManager = index;
     this.modelRegistry = registry;
-    this.embeddingCache = registry.embeddingCache();
     this.commitFlushThreshold =
         new IndexConfig(index.mapping().configuration()).getCommitFlushes();
   }
@@ -145,17 +141,12 @@ public final class Indexer implements AutoCloseable {
       }
     }
     int totalFields = modelPerTxt.values().stream().mapToInt(ListMultimap::size).sum();
-    long cacheHitsBefore = embeddingCache.hits();
-    long cacheMissesBefore = embeddingCache.misses();
     for (Map.Entry<String, ListMultimap<TextField, TableDocument>> entry : modelPerTxt.entrySet()) {
       embedInBatch(entry.getKey(), modelRegistry.get(entry.getKey()), entry.getValue());
     }
     if (totalFields > 0) {
-      long cacheHits = embeddingCache.hits() - cacheHitsBefore;
-      long cacheMisses = embeddingCache.misses() - cacheMissesBefore;
-      LOG.info("Embedded {} semantic field(s) across {} document(s) in {}ms"
-              + " (embedding cache hits={}, misses={})",
-          totalFields, tableDocs.size(), System.currentTimeMillis() - start, cacheHits, cacheMisses);
+      LOG.info("Embedded {} semantic field(s) across {} document(s) in {}ms",
+          totalFields, tableDocs.size(), System.currentTimeMillis() - start);
     }
     return result;
   }
@@ -175,28 +166,16 @@ public final class Indexer implements AutoCloseable {
           long batchStart = System.currentTimeMillis();
           ListMultimap<String, TextField> valueToTxt = ArrayListMultimap.create();
           batchFields.forEach(f -> valueToTxt.put(f.value(), f));
-          List<String> missTexts = new ArrayList<>();
-          for (String text : valueToTxt.keySet()) {
-            Optional<float[]> cached =
-                embeddingCache.get(modelRef, EmbedModel.TaskType.DOCUMENT, text);
-            if (cached.isPresent()) {
-              applyEmbedding(valueToTxt, textDocs, text, cached.get());
-            } else {
-              missTexts.add(text);
+          List<String> texts = new ArrayList<>(valueToTxt.keySet());
+          if (!texts.isEmpty()) {
+            String[] textArray = texts.toArray(new String[0]);
+            float[][] embeddings = embedModel.embedBatch(EmbedModel.TaskType.DOCUMENT, textArray);
+            for (int i = 0; i < textArray.length; i++) {
+              applyEmbedding(valueToTxt, textDocs, textArray[i], embeddings[i]);
             }
           }
-          if (!missTexts.isEmpty()) {
-            String[] texts = missTexts.toArray(new String[0]);
-            float[][] embeddings = embedModel.embedBatch(EmbedModel.TaskType.DOCUMENT, texts);
-            for (int i = 0; i < texts.length; i++) {
-              String text = texts[i];
-              float[] embedding = embeddings[i];
-              embeddingCache.put(modelRef, EmbedModel.TaskType.DOCUMENT, text, embedding);
-              applyEmbedding(valueToTxt, textDocs, text, embedding);
-            }
-          }
-          LOG.debug("Model '{}' embedded batch of {} unique text(s), {} cache miss(es) in {}ms",
-              modelRef, valueToTxt.keySet().size(), missTexts.size(),
+          LOG.debug("Model '{}' embedded batch of {} unique text(s) in {}ms",
+              modelRef, valueToTxt.keySet().size(),
               System.currentTimeMillis() - batchStart);
           return List.of();
         }
@@ -224,10 +203,6 @@ public final class Indexer implements AutoCloseable {
 
   public IndexWriter writer() {
     return writer;
-  }
-
-  public EmbeddingCache embeddingCache() {
-    return embeddingCache;
   }
 
   /**
