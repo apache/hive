@@ -95,7 +95,7 @@ public class ST_Aggr_ConvexHull extends UDAF {
         int wkid = (firstWKID == -2) ? GeometryUtils.WKID_UNKNOWN : firstWKID;
         return GeometryUtils.geometryToEsriShapeBytesWritable(result, wkid);
       } catch (Exception e) {
-        LOG.error("ST_Aggr_ConvexHull failed", e);
+        LogUtils.Log_InternalError(LOG, "ST_Aggr_ConvexHull: " + e);
       } finally {
         geometries.clear();
         firstWKID = -2;

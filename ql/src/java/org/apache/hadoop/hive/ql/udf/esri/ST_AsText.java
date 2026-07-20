@@ -70,7 +70,7 @@ public class ST_AsText extends ST_Geometry {
       wkt = wkt.replace(" ZM(", " ZM (").replace(" Z(", " Z (").replace(" M(", " M (");
       return new Text(wkt);
     } catch (Exception e) {
-      LOG.error(e.getMessage());
+      LogUtils.Log_InternalError(LOG, "ST_AsText: " + e);
       return null;
     }
   }

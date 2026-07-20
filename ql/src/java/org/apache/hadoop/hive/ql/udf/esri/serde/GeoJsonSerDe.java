@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.udf.esri.serde;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.hadoop.hive.ql.udf.esri.GeometryUtils;
@@ -29,12 +28,10 @@ import java.io.IOException;
 
 public class GeoJsonSerDe extends BaseJsonSerDe {
 
-  ObjectMapper mapper = null;
+  private final ObjectMapper mapper = new ObjectMapper();
 
   public GeoJsonSerDe() {
-    super();
-    attrLabel = "properties";
-    mapper = new ObjectMapper();
+    super("properties");
   }
 
   @Override
@@ -47,8 +44,8 @@ public class GeoJsonSerDe extends BaseJsonSerDe {
     try {
       ObjectNode node = mapper.readTree(parser);
       return GeometryUtils.geoJsonReader().read(node.toString());
-    } catch (ParseException | IOException e1) {
-      LOG.error("Error parsing GeoJSON", e1);
+    } catch (ParseException | IOException e) {
+      LOG.error("Error parsing GeoJSON", e);
     }
     return null;
   }

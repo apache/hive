@@ -41,6 +41,8 @@ import java.util.ArrayList;
 
 public abstract class JsonSerDeTestingBase {
 
+  private final static double EPSILON = 1e-9;
+
   protected void addWritable(ArrayList<Object> stuff, boolean item) {
     stuff.add(new BooleanWritable(item));
   }
@@ -106,8 +108,8 @@ public abstract class JsonSerDeTestingBase {
     Assert.assertNotNull("Geometry must not be null!", geom);
     Assert.assertTrue("Expected a Point geometry!", geom instanceof Point);
     Point actualPt = (Point) geom;
-    Assert.assertEquals("X coordinate differs!", refPt.getX(), actualPt.getX(), 0.0001);
-    Assert.assertEquals("Y coordinate differs!", refPt.getY(), actualPt.getY(), 0.0001);
+    Assert.assertEquals("X coordinate differs!", refPt.getX(), actualPt.getX(), EPSILON);
+    Assert.assertEquals("Y coordinate differs!", refPt.getY(), actualPt.getY(), EPSILON);
   }
 
   protected long epochFromWritable(Object dwHive) throws Exception {

@@ -70,6 +70,12 @@ public class ST_MaxM extends ST_GeometryAccessor {
       return null;
     }
 
+    // Avoid walking every coordinate when the geometry has no M ordinate at all.
+    if (!GeometryUtils.isMeasured(geom)) {
+      LogUtils.Log_NotMeasured(LOG);
+      return null;
+    }
+
     double[] max = {Double.NaN};
     geom.apply((CoordinateFilter) coord -> {
       double m = coord.getM();

@@ -120,11 +120,11 @@ public class GeometryUtils {
   /** Get a dimension-aware WKBWriter that matches the geometry's coordinate type. */
   public static WKBWriter wkbWriterFor(Geometry geom) {
     Set<Ordinate> ordinates = getOrdinates(geom);
-    if (ordinates.contains(Ordinate.Z) && ordinates.contains(Ordinate.M)) {
+    if (is4D(ordinates)) {
       return WKB_WRITER_4D.get();
-    } else if (ordinates.contains(Ordinate.Z)) {
+    } else if (is3D(ordinates)) {
       return WKB_WRITER_3D.get();
-    } else if (ordinates.contains(Ordinate.M)) {
+    } else if (isMeasured(ordinates)) {
       return WKB_WRITER_XYM.get();
     }
     return WKB_WRITER.get();
@@ -133,14 +133,39 @@ public class GeometryUtils {
   /** Get a dimension-aware WKTWriter that matches the geometry's coordinate type. */
   public static WKTWriter wktWriterFor(Geometry geom) {
     Set<Ordinate> ordinates = getOrdinates(geom);
-    if (ordinates.contains(Ordinate.Z) && ordinates.contains(Ordinate.M)) {
+    if (is4D(ordinates)) {
       return WKT_WRITER_4D.get();
-    } else if (ordinates.contains(Ordinate.Z)) {
+    } else if (is3D(ordinates)) {
       return WKT_WRITER_3D.get();
-    } else if (ordinates.contains(Ordinate.M)) {
+    } else if (isMeasured(ordinates)) {
       return WKT_WRITER_XYM.get();
     }
     return WKT_WRITER.get();
+  }
+
+  /** True if the geometry carries Z values. */
+  public static boolean is3D(Geometry geom) {
+    return is3D(getOrdinates(geom));
+  }
+
+  /** True if the geometry carries M (measure) values. */
+  public static boolean isMeasured(Geometry geom) {
+    return isMeasured(getOrdinates(geom));
+  }
+
+  /** True if the ordinates include both Z and M. */
+  public static boolean is4D(Set<Ordinate> ordinates) {
+    return is3D(ordinates) && isMeasured(ordinates);
+  }
+
+  /** True if the ordinates include Z. */
+  public static boolean is3D(Set<Ordinate> ordinates) {
+    return ordinates.contains(Ordinate.Z);
+  }
+
+  /** True if the ordinates include M. */
+  public static boolean isMeasured(Set<Ordinate> ordinates) {
+    return ordinates.contains(Ordinate.M);
   }
 
   /**

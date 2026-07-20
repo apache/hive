@@ -24,8 +24,11 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.WKBWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * Serializes a JTS Geometry to Esri JSON format.
@@ -33,15 +36,21 @@ import java.io.IOException;
  */
 public class GeometryJsonSerializer extends JsonSerializer<Geometry> {
 
+  private static final Logger LOG = LoggerFactory.getLogger(GeometryJsonSerializer.class);
+
+  // WKBWriter is not thread-safe, so keep one instance per thread rather than
+  // allocating a new one for every row.
+  private static final ThreadLocal<WKBWriter> WKB_WRITER = ThreadLocal.withInitial(WKBWriter::new);
+
   @Override
   public void serialize(Geometry geometry, JsonGenerator jsonGenerator, SerializerProvider arg2) throws IOException {
     try {
-      byte[] wkb = new WKBWriter().write(geometry);
-      OGCGeometry ogcGeom = OGCGeometry.fromBinary(java.nio.ByteBuffer.wrap(wkb));
+      byte[] wkb = WKB_WRITER.get().write(geometry);
+      OGCGeometry ogcGeom = OGCGeometry.fromBinary(ByteBuffer.wrap(wkb));
       com.esri.core.geometry.Geometry esriGeom = ogcGeom.getEsriGeometry();
-      int wkid = geometry.getSRID();
-      jsonGenerator.writeRawValue(GeometryEngine.geometryToJson(wkid, esriGeom));
+      jsonGenerator.writeRawValue(GeometryEngine.geometryToJson(geometry.getSRID(), esriGeom));
     } catch (Exception e) {
+      LOG.warn("Failed to serialize geometry to Esri JSON", e);
       jsonGenerator.writeNull();
     }
   }

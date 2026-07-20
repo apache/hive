@@ -23,7 +23,6 @@ import org.apache.hadoop.io.BytesWritable;
 import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.Arrays;
 
 @Description(name = "ST_MPolyFromWKB",
     value = "_FUNC_(wkb) - construct an ST_MultiPolygon from OGC well-known binary",
@@ -53,8 +52,7 @@ public class ST_MPolyFromWKB extends ST_Geometry {
   public BytesWritable evaluate(BytesWritable wkb, int wkid) throws UDFArgumentException {
 
     try {
-      byte[] bytes = Arrays.copyOf(wkb.getBytes(), wkb.getLength());
-      Geometry geom = GeometryUtils.wkbReader().read(bytes);
+      Geometry geom = GeometryUtils.wkbReader().read(wkb.getBytes());
       String gType = geom.getGeometryType();
       if (gType.equals("MultiPolygon") || gType.equals("Polygon")) {
         geom.setSRID(wkid);

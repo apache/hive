@@ -25,26 +25,38 @@ import org.locationtech.jts.geom.Geometry;
 
 public class EsriJsonSerDe extends BaseJsonSerDe {
 
+  private static final String JSON_NULL_GEOMETRY = "null";
+
+  private final ObjectMapper mapper = new ObjectMapper();
+
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Unlike the previous Esri-based implementation, which propagated a
+   * {@code JsonGeometryException}, a geometry that cannot be converted is logged and
+   * rendered as the JSON literal {@code null}, so that the enclosing record written by
+   * {@link BaseJsonSerDe#serialize} stays valid JSON.
+   */
   @Override
   protected String outGeom(Geometry geom) {
     try {
-      int wkid = geom.getSRID();
-      return EsriJsonConverter.geometryToEsriJson(geom, wkid);
+      return EsriJsonConverter.geometryToEsriJson(geom, geom.getSRID());
     } catch (Exception e) {
-      return "null";
+      LOG.error("Error generating Esri JSON", e);
+      return JSON_NULL_GEOMETRY;
     }
   }
 
   @Override
   protected Geometry parseGeom(JsonParser parser) {
     try {
-      ObjectMapper mapper = new ObjectMapper();
       JsonNode node = mapper.readTree(parser);
       if (node == null) {
         return null;
       }
       return EsriJsonConverter.esriJsonToGeometry(node.toString());
     } catch (Exception e) {
+      LOG.error("Error parsing Esri JSON", e);
       return null;
     }
   }

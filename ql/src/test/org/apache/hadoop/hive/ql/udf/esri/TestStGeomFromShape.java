@@ -34,7 +34,7 @@ import static org.junit.Assert.assertTrue;
 
 public class TestStGeomFromShape {
 
-  private final static double Epsilon = 0.0001;
+  private final static double EPSILON = 1e-9;
 
   private static Point createFirstLocation() {
     final double longitude = 12.224;
@@ -105,8 +105,8 @@ public class TestStGeomFromShape {
     DoubleWritable yAsWritable = getY.evaluate(geometryAsWritable);
     assertNotNull("The y writable must not be null!", yAsWritable);
 
-    assertEquals("Longitude is different!", point.getX(), xAsWritable.get(), Epsilon);
-    assertEquals("Latitude is different!", point.getY(), yAsWritable.get(), Epsilon);
+    assertEquals("Longitude is different!", point.getX(), xAsWritable.get(), EPSILON);
+    assertEquals("Latitude is different!", point.getY(), yAsWritable.get(), EPSILON);
 
     ST_SRID getWkid = new ST_SRID();
     IntWritable wkidAsWritable = getWkid.evaluate(geometryAsWritable);
@@ -168,12 +168,12 @@ public class TestStGeomFromShape {
     assertNotNull("The JTS geometry must not be null!", jtsGeometry);
     assertEquals("The SRID is different!", wkid, jtsGeometry.getSRID());
     assertEquals("Expected 2 coordinates (line start/end)!", 2, jtsGeometry.getNumPoints());
-    assertEquals("Start X differs!", createFirstLocation().getX(), jtsGeometry.getCoordinates()[0].x, Epsilon);
-    assertEquals("Start Y differs!", createFirstLocation().getY(), jtsGeometry.getCoordinates()[0].y, Epsilon);
+    assertEquals("Start X differs!", createFirstLocation().getX(), jtsGeometry.getCoordinates()[0].x, EPSILON);
+    assertEquals("Start Y differs!", createFirstLocation().getY(), jtsGeometry.getCoordinates()[0].y, EPSILON);
     assertEquals("End X differs!", createSecondLocation().getX(),
-        jtsGeometry.getCoordinates()[jtsGeometry.getNumPoints() - 1].x, Epsilon);
+        jtsGeometry.getCoordinates()[jtsGeometry.getNumPoints() - 1].x, EPSILON);
     assertEquals("End Y differs!", createSecondLocation().getY(),
-        jtsGeometry.getCoordinates()[jtsGeometry.getNumPoints() - 1].y, Epsilon);
+        jtsGeometry.getCoordinates()[jtsGeometry.getNumPoints() - 1].y, EPSILON);
   }
 
   @Test
@@ -194,12 +194,12 @@ public class TestStGeomFromShape {
     assertNotNull("The JTS geometry must not be null!", jtsGeometry);
     assertEquals("The SRID is different!", wkid, jtsGeometry.getSRID());
     assertEquals("Expected 4 points in polyline!", 4, jtsGeometry.getNumPoints());
-    assertEquals("Start X differs!", createFirstLocation().getX(), jtsGeometry.getCoordinates()[0].x, Epsilon);
-    assertEquals("Start Y differs!", createFirstLocation().getY(), jtsGeometry.getCoordinates()[0].y, Epsilon);
+    assertEquals("Start X differs!", createFirstLocation().getX(), jtsGeometry.getCoordinates()[0].x, EPSILON);
+    assertEquals("Start Y differs!", createFirstLocation().getY(), jtsGeometry.getCoordinates()[0].y, EPSILON);
     assertEquals("End X differs!", createFourthLocation().getX(),
-        jtsGeometry.getCoordinates()[jtsGeometry.getNumPoints() - 1].x, Epsilon);
+        jtsGeometry.getCoordinates()[jtsGeometry.getNumPoints() - 1].x, EPSILON);
     assertEquals("End Y differs!", createFourthLocation().getY(),
-        jtsGeometry.getCoordinates()[jtsGeometry.getNumPoints() - 1].y, Epsilon);
+        jtsGeometry.getCoordinates()[jtsGeometry.getNumPoints() - 1].y, EPSILON);
   }
 
   @Test

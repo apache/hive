@@ -21,13 +21,17 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class TestStCentroid {
 
-  private final static double Epsilon = 0.0001;
+  private final static Logger LOG = LoggerFactory.getLogger(TestStCentroid.class);
+
+  private final static double EPSILON = 1e-9;
 
   /**
    * Validates the centroid geometry writable.
@@ -45,17 +49,16 @@ public class TestStCentroid {
     DoubleWritable xAsWritable = getX.evaluate(geometryAsWritable);
     DoubleWritable yAsWritable = getY.evaluate(geometryAsWritable);
 
-    if (null == xAsWritable || null == yAsWritable || Math.abs(expectedX - xAsWritable.get()) > Epsilon
-        || Math.abs(expectedY - yAsWritable.get()) > Epsilon) {
-      System.err.println(
-          "validateCentroid: " + (new ST_AsText()).evaluate(geometryAsWritable) + " ~ (" + expectedX + ", " + expectedY
-              + ")");
+    if (null == xAsWritable || null == yAsWritable || Math.abs(expectedX - xAsWritable.get()) > EPSILON
+        || Math.abs(expectedY - yAsWritable.get()) > EPSILON) {
+      LOG.error("validateCentroid: {} ~ ({}, {})", (new ST_AsText()).evaluate(geometryAsWritable), expectedX,
+          expectedY);
     }
 
     assertNotNull("The x writable must not be null!", xAsWritable);
     assertNotNull("The y writable must not be null!", yAsWritable);
-    assertEquals("Longitude is different!", expectedX, xAsWritable.get(), Epsilon);
-    assertEquals("Latitude is different!", expectedY, yAsWritable.get(), Epsilon);
+    assertEquals("Longitude is different!", expectedX, xAsWritable.get(), EPSILON);
+    assertEquals("Latitude is different!", expectedY, yAsWritable.get(), EPSILON);
   }
 
   @Test
@@ -101,8 +104,9 @@ public class TestStCentroid {
     bwCentroid = stCtr.evaluate(bwGeom);
     validatePoint(3, 2, bwCentroid);
     bwGeom = stPoly.evaluate(new Text("polygon ((14 0, -14 0, -2 24, 2 24, 14 0))"));
-    bwCentroid = stCtr.evaluate(bwGeom);        // Cross-checked with ...
-    validatePoint(0, 9, bwCentroid);            // ... omnicalculator.com/math/centroid
+    bwCentroid = stCtr.evaluate(bwGeom);
+    // Cross-checked with omnicalculator.com/math/centroid
+    validatePoint(0, 9, bwCentroid);
   }
 
 }

@@ -23,7 +23,6 @@ import org.apache.hadoop.io.BytesWritable;
 import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.Arrays;
 
 @Description(name = "ST_GeomFromWKB",
     value = "_FUNC_(wkb) - construct an ST_Geometry from OGC well-known binary",
@@ -74,14 +73,13 @@ public class ST_GeomFromWKB extends ST_Geometry {
   public BytesWritable evaluate(BytesWritable wkb, int wkid) throws UDFArgumentException {
 
     try {
-      byte[] byteArr = Arrays.copyOf(wkb.getBytes(), wkb.getLength());
-      Geometry geom = GeometryUtils.wkbReader().read(byteArr);
+      Geometry geom = GeometryUtils.wkbReader().read(wkb.getBytes());
       if (wkid != GeometryUtils.WKID_UNKNOWN) {
         geom.setSRID(wkid);
       }
       return GeometryUtils.geometryToEsriShapeBytesWritable(geom);
     } catch (Exception e) {  // IllegalArgumentException, GeometryException
-      LOG.error(e.getMessage());
+      LogUtils.Log_InternalError(LOG, "ST_GeomFromWKB: " + e);
       return null;
     }
   }

@@ -23,7 +23,6 @@ import org.apache.hadoop.io.BytesWritable;
 import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.Arrays;
 
 @Description(name = "ST_LineFromWKB",
     value = "_FUNC_(wkb) - construct an ST_LineString from OGC well-known binary",
@@ -53,8 +52,7 @@ public class ST_LineFromWKB extends ST_Geometry {
   public BytesWritable evaluate(BytesWritable wkb, int wkid) throws UDFArgumentException {
 
     try {
-      byte[] bytes = Arrays.copyOf(wkb.getBytes(), wkb.getLength());
-      Geometry geom = GeometryUtils.wkbReader().read(bytes);
+      Geometry geom = GeometryUtils.wkbReader().read(wkb.getBytes());
       if (geom.getGeometryType().equals("LineString")) {
         geom.setSRID(wkid);
         return GeometryUtils.geometryToEsriShapeBytesWritable(geom, wkid);

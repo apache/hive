@@ -70,6 +70,12 @@ public class ST_MinZ extends ST_GeometryAccessor {
       return null;
     }
 
+    // Avoid walking every coordinate when the geometry has no Z ordinate at all.
+    if (!GeometryUtils.is3D(geom)) {
+      LogUtils.Log_Not3D(LOG);
+      return null;
+    }
+
     double[] min = {Double.NaN};
     geom.apply((CoordinateFilter) coord -> {
       double z = coord.getZ();

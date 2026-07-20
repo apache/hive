@@ -74,7 +74,7 @@ abstract public class BaseJsonSerDe extends AbstractSerDe {
   protected ArrayList<ObjectInspector> columnOIs;
   protected boolean[] columnSet;
   protected StructObjectInspector rowOI; // contains the type information for the fields returned
-  protected String attrLabel = "attributes";  // "properties"
+  protected final String attrLabel;
 
   /* rowBase keeps a base copy of the Writable for each field so they can be reused for
    * all records. When deserialize is called, row is initially nulled out. Then for each attribute
@@ -83,6 +83,14 @@ abstract public class BaseJsonSerDe extends AbstractSerDe {
    * previous records.
    */ ArrayList<Writable> rowBase;
   ArrayList<Writable> row;
+
+  protected BaseJsonSerDe() {
+    this("attributes");
+  }
+
+  protected BaseJsonSerDe(String attrLabel) {
+    this.attrLabel = attrLabel;
+  }
 
   @Override
   public void initialize(Configuration cfg, Properties tbl, Properties partitionProperties) throws SerDeException {

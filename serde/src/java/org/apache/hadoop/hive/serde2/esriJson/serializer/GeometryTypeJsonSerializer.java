@@ -31,17 +31,23 @@ import java.io.IOException;
  */
 public class GeometryTypeJsonSerializer extends JsonSerializer<String> {
 
+  /** Prefix of every Esri geometry type name, e.g. "esriGeometryPolygon". */
+  public static final String GEOMETRY_TYPE_PREFIX = "esriGeometry";
+
+  /** Esri geometry type name used when the type is absent or not recognized. */
+  public static final String GEOMETRY_TYPE_UNKNOWN = GEOMETRY_TYPE_PREFIX + "Unknown";
+
   @Override
   public void serialize(String geometryType, JsonGenerator jsonGenerator, SerializerProvider arg2)
       throws IOException, JsonProcessingException {
     if (geometryType == null) {
       jsonGenerator.writeNull();
-    } else if (geometryType.startsWith("esriGeometry")) {
+    } else if (geometryType.startsWith(GEOMETRY_TYPE_PREFIX)) {
       // Already in canonical form — write as-is
       jsonGenerator.writeString(geometryType);
     } else {
       // Normalise bare type names (e.g. "Polygon" -> "esriGeometryPolygon")
-      jsonGenerator.writeString("esriGeometry" + geometryType);
+      jsonGenerator.writeString(GEOMETRY_TYPE_PREFIX + geometryType);
     }
   }
 }

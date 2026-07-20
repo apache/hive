@@ -21,6 +21,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+import org.apache.hadoop.hive.serde2.esriJson.serializer.GeometryTypeJsonSerializer;
 
 import java.io.IOException;
 
@@ -39,12 +40,12 @@ public class GeometryTypeJsonDeserializer extends JsonDeserializer<String> {
       throws IOException, JsonProcessingException {
     String type_text = parser.getText();
     if (type_text == null) {
-      return "esriGeometryUnknown";
+      return GeometryTypeJsonSerializer.GEOMETRY_TYPE_UNKNOWN;
     }
     // Preserve the raw esriGeometry* string (e.g. "esriGeometryPolygon").
     // If the value is not already prefixed, normalise it.
-    if (!type_text.startsWith("esriGeometry")) {
-      return "esriGeometry" + type_text;
+    if (!type_text.startsWith(GeometryTypeJsonSerializer.GEOMETRY_TYPE_PREFIX)) {
+      return GeometryTypeJsonSerializer.GEOMETRY_TYPE_PREFIX + type_text;
     }
     return type_text;
   }

@@ -64,7 +64,7 @@ public class ST_GeomFromJson extends GenericUDF {
       }
       return GeometryUtils.geometryToEsriShapeBytesWritable(jtsGeom);
     } catch (Exception e) {
-      LOG.error("Failed to parse Esri JSON", e);
+      LogUtils.Log_InternalError(LOG, "ST_GeomFromJson: " + e);
     }
 
     return null;

@@ -21,7 +21,6 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.io.Ordinate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,7 +67,7 @@ public class ST_Is3D extends ST_GeometryAccessor {
       return null;
     }
 
-    resultBoolean.set(GeometryUtils.getOrdinates(geom).contains(Ordinate.Z));
+    resultBoolean.set(GeometryUtils.is3D(geom));
     return resultBoolean;
   }
 
