@@ -29,9 +29,6 @@ public record SearchConfig(Configuration configuration) {
   public static final String DEFAULT_LIMIT = "metastore.search.default.limit";
   public static final int DEFAULT_LIMIT_DEFAULT = 10;
 
-  public static final String INIT_READY_TIMEOUT_MS = "metastore.search.init.ready.timeout.ms";
-  public static final long INIT_READY_TIMEOUT_MS_DEFAULT = 300L;
-
   public static final String HYBRID_SEMANTIC_WEIGHT = "metastore.search.hybrid.semantic.weight";
   public static final float HYBRID_SEMANTIC_WEIGHT_DEFAULT = 0.4f;
 
@@ -54,10 +51,6 @@ public record SearchConfig(Configuration configuration) {
 
   public int getDefaultLimit() {
     return configuration.getInt(DEFAULT_LIMIT, DEFAULT_LIMIT_DEFAULT);
-  }
-
-  public long getInitReadyTimeoutMs() {
-    return configuration.getLong(INIT_READY_TIMEOUT_MS, INIT_READY_TIMEOUT_MS_DEFAULT);
   }
 
   public float getHybridSemanticWeight() throws SearchException {

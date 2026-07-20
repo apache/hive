@@ -65,7 +65,7 @@ public final class LuceneSearchBackend implements SearchBackend {
       throw new IndexNotReadyException("The in-process Lucene search backend hasn't been initialized yet");
     }
     try {
-      future.get(searchConfig.getInitReadyTimeoutMs(), TimeUnit.MILLISECONDS);
+      future.get(300, TimeUnit.MILLISECONDS);
       return true;
     } catch (ExecutionException e) {
       Throwable cause = e.getCause() != null ? e.getCause() : e;
