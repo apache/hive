@@ -18,9 +18,11 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Properties;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -111,6 +113,39 @@ public class TestGenTezUtilsMergeJoinNumReducers {
 
     assertEquals("both sides of the merge join must partition into the same number of tasks",
         rwBigTable.getNumReduceTasks(), rwSmallTable.getNumReduceTasks());
+  }
+
+  /**
+   * When a CommonMergeJoinOperator's parents are plain ReduceSinkOperators with no
+   * TezDummyStoreOperator sibling, both sides already run as tags of the same single Tez
+   * vertex and share its one parallelism setting. Normalization must be a no-op here: it must
+   * not touch numReducers or strip the AUTOPARALLEL trait, since there is no independent-vertex
+   * mismatch to protect against.
+   */
+  @Test
+  public void testMergeJoinWithoutDummyStoreSiblingIsNotNormalized() throws Exception {
+    CompilationOpContext cCtx = new CompilationOpContext();
+    ReduceSinkOperator rsLeft = newReduceSink(cCtx, BIG_TABLE_NUM_REDUCERS);
+    rsLeft.getConf().setReducerTraits(EnumSet.of(ReduceSinkDesc.ReducerTraits.AUTOPARALLEL));
+    ReduceSinkOperator rsRight = newReduceSink(cCtx, SMALL_TABLE_NUM_REDUCERS);
+    rsRight.getConf().setReducerTraits(EnumSet.of(ReduceSinkDesc.ReducerTraits.AUTOPARALLEL));
+
+    CommonMergeJoinOperator mergeJoin = new CommonMergeJoinOperator(cCtx);
+    rsLeft.setChildOperators(newList(mergeJoin));
+    rsRight.setChildOperators(newList(mergeJoin));
+    mergeJoin.setParentOperators(newList(rsLeft, rsRight));
+
+    ReduceWork rwLeft = createReduceWorkFor(rsLeft, mergeJoin);
+    ReduceWork rwRight = createReduceWorkFor(rsRight, mergeJoin);
+
+    assertEquals("numReducers must be untouched when there is no DummyStore sibling",
+        (long) BIG_TABLE_NUM_REDUCERS, (long) rwLeft.getNumReduceTasks());
+    assertEquals("numReducers must be untouched when there is no DummyStore sibling",
+        (long) SMALL_TABLE_NUM_REDUCERS, (long) rwRight.getNumReduceTasks());
+    assertTrue("AUTOPARALLEL must survive when there is no DummyStore sibling to protect against",
+        rsLeft.getConf().getReducerTraits().contains(ReduceSinkDesc.ReducerTraits.AUTOPARALLEL));
+    assertTrue("AUTOPARALLEL must survive when there is no DummyStore sibling to protect against",
+        rsRight.getConf().getReducerTraits().contains(ReduceSinkDesc.ReducerTraits.AUTOPARALLEL));
   }
 
   private ReduceWork createReduceWorkFor(ReduceSinkOperator rs, Operator<?> root) throws Exception {

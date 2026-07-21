@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.TezDummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -198,14 +199,32 @@ public class GenTezUtils {
   }
 
   /**
-   * If the given RS leads (through child ops) to a CommonMergeJoinOperator, normalizes all RS
-   * ancestors of that MergeJoinOp's parents to use the same maximum numReducers. This is a
-   * last-resort fix: even if earlier optimizer passes failed to align numReducers, we correct
-   * it at edge-creation time so each mapper writes the same partition count.
+   * If the given RS leads (through child ops) to a CommonMergeJoinOperator that also has a
+   * {@link TezDummyStoreOperator} sibling parent, normalizes all RS ancestors of that
+   * MergeJoinOp's parents to use the same maximum numReducers. This is a last-resort fix: even
+   * if earlier optimizer passes failed to align numReducers, we correct it at edge-creation time
+   * so each mapper writes the same partition count.
+   *
+   * <p>The DummyStore check matters: it marks the merge join's sibling as living in its own,
+   * separately auto-parallelized Tez vertex (see ReduceRecordProcessor's mergeWorkList). A merge
+   * join whose parents are just multiple tags of this same ReduceWork (no DummyStore involved)
+   * already shares this vertex's single parallelism setting, so there is no independent-vertex
+   * mismatch to guard against, and forcing FIXED traits there only disables auto-parallelism
+   * without fixing anything.
    */
   private static boolean normalizeMergeJoinReducers(ReduceSinkOperator reduceSink) {
     CommonMergeJoinOperator mergeJoin = findDownstreamMergeJoin(reduceSink, 8);
     if (mergeJoin == null) {
+      return false;
+    }
+    boolean hasDummyStoreSibling = false;
+    for (Operator<?> parent : mergeJoin.getParentOperators()) {
+      if (parent instanceof TezDummyStoreOperator) {
+        hasDummyStoreSibling = true;
+        break;
+      }
+    }
+    if (!hasDummyStoreSibling) {
       return false;
     }
     List<ReduceSinkOperator> allRS = new ArrayList<>();
