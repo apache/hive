@@ -26,7 +26,6 @@ import java.util.Optional;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hive.search.index.manifest.IndexManifest;
 
 /** Remote index backup target backed by Hadoop {@link FileSystem}. */
 public final class RemoteStateClient implements IndexStateClient {

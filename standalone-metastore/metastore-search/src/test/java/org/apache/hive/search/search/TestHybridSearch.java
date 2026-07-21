@@ -21,8 +21,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hive.search.config.SearchConfig;
 import org.apache.hive.search.exception.SearchException;
-import org.apache.hive.search.metastore.MetastoreSchemas;
-import org.apache.hive.search.metastore.MetastoreTableMapper;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -34,17 +32,16 @@ public class TestHybridSearch {
 
   @Test
   public void toFusionRequestUsesDefaultsFromSearchConfig() throws SearchException {
-    HybridSearch.ResolvedHybridQuery resolved = new HybridSearch.ResolvedHybridQuery(
-        MetastoreTableMapper.FIELD_SEARCH_TEXT, "sales", null);
+    HybridSearch.ResolvedHybridQuery resolved = new HybridSearch.ResolvedHybridQuery("sales", null);
     SearchConfig searchConfig = new SearchConfig(new Configuration(false));
-    SearchInternal.FusionRequest request =
+    Searcher.FusionRequest request =
         HybridSearch.toFusionRequest(resolved, 20, searchConfig);
 
     assertEquals(20, request.size());
     assertEquals(2, request.retrievers().size());
     assertEquals(SearchQuery.Mode.MATCH.name(), request.retrievers().get(0).name());
-    assertTrue(request.retrievers().get(0).query() instanceof SearchArgs.Match);
-    assertEquals("sales", ((SearchArgs.Match) request.retrievers().get(0).query()).queryText());
+    assertTrue(request.retrievers().get(0).query() instanceof SearchMethod.Match);
+    assertEquals("sales", ((SearchMethod.Match) request.retrievers().get(0).query()).queryText());
     assertEquals(searchConfig.getHybridMatchWeight(), request.retrievers().get(0).weight(), 0.001f);
     assertEquals(searchConfig.getHybridSemanticWeight(), request.retrievers().get(1).weight(), 0.001f);
   }

@@ -23,7 +23,7 @@ import org.apache.hive.search.exception.SearchException;
 import org.apache.hive.search.mapping.FieldSchema;
 import org.apache.hive.search.mapping.IndexMapping;
 import org.apache.hive.search.mapping.SearchParams;
-import org.apache.hive.search.metastore.MetastoreSchemas;
+import org.apache.hive.search.metastore.MetastoreIndexSchema;
 import org.apache.hive.search.metastore.MetastoreTableMapper;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -32,7 +32,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 
 @Category(MetastoreUnitTest.class)
@@ -40,45 +39,40 @@ public class TestSearchArgs {
 
   private static IndexMapping hybridMapping() {
     Configuration conf = new Configuration(false);
-    return MetastoreSchemas.defaultHiveTablesMapping("hive_tables", "bge-small", conf);
+    return MetastoreIndexSchema.defaultHiveTablesMapping("hive_tables", "bge-small", conf);
   }
 
   @Test
   public void parseHybridString() throws Exception {
-    SearchArgs.Hybrid hybrid =
-        (SearchArgs.Hybrid) SearchArgs.fromBody("sales revenue", SearchQuery.Mode.HYBRID);
+    SearchMethod.Hybrid hybrid =
+        (SearchMethod.Hybrid) SearchMethod.fromBody("sales revenue", SearchQuery.Mode.HYBRID);
     assertEquals("sales revenue", hybrid.queryText());
-    assertNull(hybrid.field());
   }
 
   @Test
-  public void parseHybridFieldAndQueryObject() throws Exception {
-    Map<String, Object> body = Map.of(
-        "field", MetastoreTableMapper.FIELD_SEARCH_TEXT,
-        "query", "orders");
-    SearchArgs.Hybrid hybrid =
-        (SearchArgs.Hybrid) SearchArgs.fromBody(body, SearchQuery.Mode.HYBRID);
-    assertEquals(MetastoreTableMapper.FIELD_SEARCH_TEXT, hybrid.field());
+  public void parseHybridQueryObject() throws Exception {
+    Map<String, Object> body = Map.of("query", "orders");
+    SearchMethod.Hybrid hybrid =
+        (SearchMethod.Hybrid) SearchMethod.fromBody(body, SearchQuery.Mode.HYBRID);
     assertEquals("orders", hybrid.queryText());
   }
 
   @Test
-  public void parseHybridSingleFieldMap() throws Exception {
-    Map<String, Object> body = Map.of(MetastoreTableMapper.FIELD_SEARCH_TEXT, "inventory");
-    SearchArgs.Hybrid hybrid =
-        (SearchArgs.Hybrid) SearchArgs.fromBody(body, SearchQuery.Mode.HYBRID);
+  public void parseHybridQueryOnlyObject() throws Exception {
+    Map<String, Object> body = Map.of("query", "inventory");
+    SearchMethod.Hybrid hybrid =
+        (SearchMethod.Hybrid) SearchMethod.fromBody(body, SearchQuery.Mode.HYBRID);
     assertEquals("inventory", hybrid.queryText());
   }
 
   @Test
   public void parseHybridCustomWeights() throws Exception {
     Map<String, Object> body = Map.of(
-        "field", MetastoreTableMapper.FIELD_SEARCH_TEXT,
         "query", "metrics",
         "match_weight", 0.7,
         "semantic_weight", 0.3);
-    SearchArgs.Hybrid hybrid =
-        (SearchArgs.Hybrid) SearchArgs.fromBody(body, SearchQuery.Mode.HYBRID);
+    SearchMethod.Hybrid hybrid =
+        (SearchMethod.Hybrid) SearchMethod.fromBody(body, SearchQuery.Mode.HYBRID);
     assertEquals(0.3f, hybrid.semanticWeight(), 0.001f);
   }
 
@@ -89,55 +83,66 @@ public class TestSearchArgs {
         "match_weight", 0.9,
         "semantic_weight", 0.9);
     assertThrows(SearchException.class,
-        () -> SearchArgs.fromBody(body, SearchQuery.Mode.HYBRID));
+        () -> SearchMethod.fromBody(body, SearchQuery.Mode.HYBRID));
   }
 
   @Test
   public void parseSemanticString() throws Exception {
-    SearchArgs.Semantic semantic =
-        (SearchArgs.Semantic) SearchArgs.fromBody("sales revenue", SearchQuery.Mode.SEMANTIC);
+    SearchMethod.Semantic semantic =
+        (SearchMethod.Semantic) SearchMethod.fromBody("sales revenue", SearchQuery.Mode.SEMANTIC);
     assertEquals("sales revenue", semantic.queryText());
-    assertNull(semantic.field());
   }
 
   @Test
-  public void parseSemanticFieldAndQueryObject() throws Exception {
-    Map<String, Object> body = Map.of(
-        "field", MetastoreTableMapper.FIELD_SEARCH_TEXT,
-        "query", "orders");
-    SearchArgs.Semantic semantic =
-        (SearchArgs.Semantic) SearchArgs.fromBody(body, SearchQuery.Mode.SEMANTIC);
-    assertEquals(MetastoreTableMapper.FIELD_SEARCH_TEXT, semantic.field());
+  public void parseSemanticQueryObject() throws Exception {
+    Map<String, Object> body = Map.of("query", "orders");
+    SearchMethod.Semantic semantic =
+        (SearchMethod.Semantic) SearchMethod.fromBody(body, SearchQuery.Mode.SEMANTIC);
     assertEquals("orders", semantic.queryText());
   }
 
   @Test
-  public void parseSemanticSingleFieldMap() throws Exception {
-    Map<String, Object> body = Map.of(MetastoreTableMapper.FIELD_SEARCH_TEXT, "inventory");
-    SearchArgs.Semantic semantic =
-        (SearchArgs.Semantic) SearchArgs.fromBody(body, SearchQuery.Mode.SEMANTIC);
-    assertEquals(MetastoreTableMapper.FIELD_SEARCH_TEXT, semantic.field());
+  public void parseSemanticQueryOnlyObject() throws Exception {
+    Map<String, Object> body = Map.of("query", "inventory");
+    SearchMethod.Semantic semantic =
+        (SearchMethod.Semantic) SearchMethod.fromBody(body, SearchQuery.Mode.SEMANTIC);
     assertEquals("inventory", semantic.queryText());
   }
 
   @Test
-  public void resolveHybridUsesSoleHybridField() throws Exception {
-    SearchArgs.Hybrid args =
-        (SearchArgs.Hybrid) SearchArgs.fromBody("sales revenue", SearchQuery.Mode.HYBRID);
+  public void parseMatchWithField() throws Exception {
+    Map<String, Object> body = Map.of(
+        "query", "orders",
+        "field", MetastoreTableMapper.FIELD_COMMENT);
+    SearchMethod.Match match =
+        (SearchMethod.Match) SearchMethod.fromBody(body, SearchQuery.Mode.MATCH);
+    assertEquals("orders", match.queryText());
+    assertEquals(MetastoreTableMapper.FIELD_COMMENT, match.field());
+  }
+
+  @Test
+  public void resolveMatchValidatesLexicalField() throws Exception {
+    SearchMethod.Match args = new SearchMethod.Match("x", MetastoreTableMapper.FIELD_COMMENT);
+    LexicalSearch.ResolvedMatchQuery resolved = LexicalSearch.resolve(args, hybridMapping());
+    assertEquals(MetastoreTableMapper.FIELD_COMMENT, resolved.field());
+  }
+
+  @Test
+  public void resolveMatchRejectsSemanticOnlyField() {
+    SearchMethod.Match args = new SearchMethod.Match("x", MetastoreTableMapper.FIELD_SEARCH_TEXT);
+    assertThrows(SearchException.class, () -> LexicalSearch.resolve(args, hybridMapping()));
+  }
+
+  @Test
+  public void resolveHybridUsesDefaultSemanticFields() throws Exception {
+    SearchMethod.Hybrid args =
+        (SearchMethod.Hybrid) SearchMethod.fromBody("sales revenue", SearchQuery.Mode.HYBRID);
     HybridSearch.ResolvedHybridQuery resolved = HybridSearch.resolve(args, hybridMapping());
-    assertEquals(MetastoreTableMapper.FIELD_SEARCH_TEXT, resolved.field());
     assertEquals("sales revenue", resolved.queryText());
   }
 
   @Test
-  public void resolveHybridRejectsNonHybridField() {
-    SearchArgs.Hybrid args = new SearchArgs.Hybrid(
-        "t1", MetastoreTableMapper.FIELD_TABLE, null, null);
-    assertThrows(SearchException.class, () -> HybridSearch.resolve(args, hybridMapping()));
-  }
-
-  @Test
-  public void resolveHybridRequiresFieldWhenMultipleHybridFieldsExist() throws Exception {
+  public void resolveHybridDefaultsWhenMultipleSemanticFieldsExist() throws Exception {
     Configuration conf = new Configuration(false);
     Map<String, FieldSchema> fields = new LinkedHashMap<>();
     fields.put(
@@ -149,60 +154,52 @@ public class TestSearchArgs {
         new FieldSchema.TextFieldSchema(
             "field_b", new SearchParams(true, "model-b", SearchParams.VectorDistance.COSINE)));
     IndexMapping mapping = new IndexMapping("idx", conf, fields);
-    SearchArgs.Hybrid args =
-        (SearchArgs.Hybrid) SearchArgs.fromBody("query", SearchQuery.Mode.HYBRID);
+    SearchMethod.Hybrid args =
+        (SearchMethod.Hybrid) SearchMethod.fromBody("query", SearchQuery.Mode.HYBRID);
 
-    assertThrows(SearchException.class, () -> HybridSearch.resolve(args, mapping));
+    HybridSearch.ResolvedHybridQuery resolved = HybridSearch.resolve(args, mapping);
+    assertEquals("query", resolved.queryText());
   }
 
   @Test
-  public void resolveSemanticUsesSoleSemanticField() throws Exception {
-    SearchArgs.Semantic args =
-        (SearchArgs.Semantic) SearchArgs.fromBody("sales revenue", SearchQuery.Mode.SEMANTIC);
+  public void resolveSemanticUsesDefaultSemanticFields() throws Exception {
+    SearchMethod.Semantic args =
+        (SearchMethod.Semantic) SearchMethod.fromBody("sales revenue", SearchQuery.Mode.SEMANTIC);
     SemanticSearch.ResolvedSemanticQuery resolved =
         SemanticSearch.resolve(args, hybridMapping());
-    assertEquals(MetastoreTableMapper.FIELD_SEARCH_TEXT, resolved.field());
     assertEquals("sales revenue", resolved.queryText());
   }
 
   @Test
-  public void resolveSemanticRejectsNonSemanticField() {
-    SearchArgs.Semantic args = new SearchArgs.Semantic("t1", MetastoreTableMapper.FIELD_TABLE);
-    assertThrows(SearchException.class, () -> SemanticSearch.resolve(args, hybridMapping()));
+  public void serializeMatchRoundTrip() throws Exception {
+    assertRoundTrip(new SearchMethod.Match("orders"), SearchQuery.Mode.MATCH);
+    assertEquals(Map.of("query", "orders"), SearchMethod.toBody(new SearchMethod.Match("orders")));
   }
 
   @Test
-  public void serializeMatchRoundTrip() throws Exception {
-    assertRoundTrip(new SearchArgs.Match("orders"), SearchQuery.Mode.MATCH);
-    assertEquals(Map.of("query", "orders"), SearchArgs.toBody(new SearchArgs.Match("orders")));
+  public void serializeMatchWithFieldRoundTrip() throws Exception {
+    SearchMethod.Match match =
+        new SearchMethod.Match("orders", MetastoreTableMapper.FIELD_TABLE);
+    assertRoundTrip(match, SearchQuery.Mode.MATCH);
+    Map<String, String> body = SearchMethod.toBody(match);
+    assertEquals("orders", body.get("query"));
+    assertEquals(MetastoreTableMapper.FIELD_TABLE, body.get("field"));
   }
 
   @Test
   public void serializeSemanticRoundTrip() throws Exception {
-    assertRoundTrip(new SearchArgs.Semantic("sales", null), SearchQuery.Mode.SEMANTIC);
-    assertRoundTrip(
-        new SearchArgs.Semantic("orders", MetastoreTableMapper.FIELD_SEARCH_TEXT),
-        SearchQuery.Mode.SEMANTIC);
-    assertEquals(
-        Map.of(
-            "query", "orders",
-            "field", MetastoreTableMapper.FIELD_SEARCH_TEXT),
-        SearchArgs.toBody(
-            new SearchArgs.Semantic("orders", MetastoreTableMapper.FIELD_SEARCH_TEXT)));
+    assertRoundTrip(new SearchMethod.Semantic("sales"), SearchQuery.Mode.SEMANTIC);
+    assertEquals(Map.of("query", "orders"), SearchMethod.toBody(new SearchMethod.Semantic("orders")));
   }
 
   @Test
   public void serializeHybridRoundTrip() throws Exception {
-    assertRoundTrip(new SearchArgs.Hybrid("sales", null, null, null), SearchQuery.Mode.HYBRID);
-    assertRoundTrip(
-        new SearchArgs.Hybrid("metrics", MetastoreTableMapper.FIELD_SEARCH_TEXT, null, null),
-        SearchQuery.Mode.HYBRID);
-    assertRoundTrip(
-        new SearchArgs.Hybrid("metrics", null, 0.7f, 0.3f),
-        SearchQuery.Mode.HYBRID);
-    assertRoundTrip(
-        new SearchArgs.Hybrid("metrics", MetastoreTableMapper.FIELD_SEARCH_TEXT, 0.7f, 0.3f),
-        SearchQuery.Mode.HYBRID);
+    assertRoundTrip(new SearchMethod.Hybrid("sales", null, null), SearchQuery.Mode.HYBRID);
+    assertRoundTrip(new SearchMethod.Hybrid("metrics", 0.7f, 0.3f), SearchQuery.Mode.HYBRID);
+    Map<String, String> body = SearchMethod.toBody(new SearchMethod.Hybrid("metrics", 0.7f, 0.3f));
+    assertEquals("metrics", body.get("query"));
+    assertEquals("0.7", body.get("match_weight"));
+    assertEquals("0.3", body.get("semantic_weight"));
   }
 
   @Test
@@ -219,8 +216,8 @@ public class TestSearchArgs {
     assertEquals(query.mode(), roundTripped.mode());
   }
 
-  private static void assertRoundTrip(SearchArgs args, SearchQuery.Mode mode) throws SearchException {
-    SearchArgs roundTripped = SearchArgs.fromBody(SearchArgs.toBody(args), mode);
+  private static void assertRoundTrip(SearchMethod args, SearchQuery.Mode mode) throws SearchException {
+    SearchMethod roundTripped = SearchMethod.fromBody(SearchMethod.toBody(args), mode);
     assertEquals(args, roundTripped);
   }
 }

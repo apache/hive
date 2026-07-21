@@ -24,7 +24,7 @@ import org.apache.hive.search.config.IndexStoreConfig;
 import org.apache.hive.search.config.InferenceConfig;
 import org.apache.hive.search.exception.IndexNotHealthyException;
 import org.apache.hive.search.mapping.IndexMapping;
-import org.apache.hive.search.metastore.MetastoreSchemas;
+import org.apache.hive.search.metastore.MetastoreIndexSchema;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -38,8 +38,8 @@ public class TestIndexManagerFailureRecovery {
     Configuration conf = new Configuration(false);
     conf.setBoolean(IndexStoreConfig.MEMORY, true);
     conf.set(IndexConfig.INDEX_NAME, "test_index");
-    conf.set(InferenceConfig.MODEL_NAME, "stub-model");
-    IndexMapping mapping = MetastoreSchemas.defaultHiveTablesMapping("test_index", "stub-model", conf);
+    conf.set(InferenceConfig.EMBEDDER_NAME, "stub-model");
+    IndexMapping mapping = MetastoreIndexSchema.defaultHiveTablesMapping("test_index", "stub-model", conf);
 
     try (IndexManager indexManager = IndexManager.open(mapping, conf)) {
       IndexNotHealthyException failure =

@@ -25,7 +25,16 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 @Category(MetastoreUnitTest.class)
-public class TestLocalOnnxEmbeddingModel {
+public class TestLocalOnnxEmbedder {
+
+  @Test
+  public void clsPoolUsesFirstTokenVector() {
+    float[][] tokenEmbeddings = {
+        {1f, 2f},
+        {9f, 9f}
+    };
+    assertArrayEquals(new float[] {1f, 2f}, LocalOnnxEmbedder.clsPool(tokenEmbeddings), 0.001f);
+  }
 
   @Test
   public void meanPoolAveragesAllTokenVectors() {
@@ -35,24 +44,13 @@ public class TestLocalOnnxEmbeddingModel {
         {9f, 9f}
     };
 
-    assertArrayEquals(new float[] {13f / 3f, 9f / 3f}, InferenceWorker.meanPool(tokenEmbeddings), 0.001f);
-  }
-
-  @Test
-  public void weightedAverageCombinesPartitionsByTokenCount() {
-    float[][] embeddings = {
-        {1f, 0f},
-        {3f, 0f}
-    };
-    int[] weights = {2, 1};
-
-    assertArrayEquals(new float[] {5f / 3f, 0f}, InferenceWorker.weightedAverage(embeddings, weights), 0.001f);
+    assertArrayEquals(new float[] {13f / 3f, 9f / 3f}, LocalOnnxEmbedder.meanPool(tokenEmbeddings), 0.001f);
   }
 
   @Test
   public void normalizeProducesUnitVector() {
     float[] vector = {3f, 4f};
-    InferenceWorker.normalize(vector);
+    LocalOnnxEmbedder.normalize(vector);
     float norm = 0f;
     for (float v : vector) {
       norm += v * v;
@@ -69,14 +67,14 @@ public class TestLocalOnnxEmbeddingModel {
         {3f, 0f}
     };
 
-    assertArrayEquals(new float[] {2f, 0f}, InferenceWorker.meanPool(chunks), 0.001f);
+    assertArrayEquals(new float[] {2f, 0f}, LocalOnnxEmbedder.meanPool(chunks), 0.001f);
   }
 
   @Test
   public void meanPoolVectorsReturnsSingleRowMean() {
     float[][] chunks = {{0.6f, 0.8f}};
 
-    assertArrayEquals(new float[] {0.6f, 0.8f}, InferenceWorker.meanPool(chunks), 0.001f);
+    assertArrayEquals(new float[] {0.6f, 0.8f}, LocalOnnxEmbedder.meanPool(chunks), 0.001f);
   }
 
   @Test
@@ -85,8 +83,8 @@ public class TestLocalOnnxEmbeddingModel {
         {1f, 0f},
         {0f, 1f}
     };
-    float[] pooled = InferenceWorker.meanPool(chunks);
-    InferenceWorker.normalize(pooled);
+    float[] pooled = LocalOnnxEmbedder.meanPool(chunks);
+    LocalOnnxEmbedder.normalize(pooled);
 
     float norm = 0f;
     for (float v : pooled) {

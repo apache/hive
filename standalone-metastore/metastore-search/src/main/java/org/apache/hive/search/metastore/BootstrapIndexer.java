@@ -198,6 +198,7 @@ final class BootstrapIndexer {
       AtomicInteger completedBatches) {
     Thread indexThread = new Thread(() -> {
       long lastProgressLog = System.currentTimeMillis();
+      long bootstrapWriterStart = System.currentTimeMillis();
       try {
         while (true) {
           List<TableDocument> documents = indexQueue.take();
@@ -210,10 +211,11 @@ final class BootstrapIndexer {
           indexer.addDocuments(documents);
           long indexed = indexedTables.addAndGet(documents.size());
           int done = completedBatches.incrementAndGet();
-          indexer.flush(-1000000L, false);
           long now = System.currentTimeMillis();
           if (now - lastProgressLog >= indexConfig.getBootstrapProgressIntervalMs()) {
-            LOG.info("Bootstrap progress: indexed {} table(s) in {} batch(es)", indexed, done);
+            double tablesPerSec = indexed * 1000.0 / Math.max(1, now - bootstrapWriterStart);
+            LOG.info("Bootstrap progress: indexed {} table(s) in {} batch(es), ~{}/s",
+             indexed, done, String.format("%.1f", tablesPerSec));
             lastProgressLog = now;
           }
         }

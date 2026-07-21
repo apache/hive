@@ -19,8 +19,9 @@ package org.apache.hive.search.mapping;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
-import org.apache.hive.search.metastore.MetastoreSchemas;
+import org.apache.hive.search.metastore.MetastoreIndexSchema;
 import org.apache.hive.search.metastore.MetastoreTableMapper;
+import org.apache.hive.search.metastore.SearchTextSegment;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -34,17 +35,18 @@ public class TestIndexMapping {
   @Test
   public void defaultSchemaExposesSingleHybridField() {
     Configuration conf = new Configuration(false);
-    IndexMapping mapping = MetastoreSchemas.defaultHiveTablesMapping("hive_tables", "bge-small", conf);
+    IndexMapping mapping = MetastoreIndexSchema.defaultHiveTablesMapping("hive_tables", "bge-small", conf);
 
     assertEquals(1, mapping.hybridFields().size());
     assertTrue(mapping.soleHybridField().isPresent());
-    assertEquals(MetastoreTableMapper.FIELD_SEARCH_TEXT, mapping.soleHybridField().get());
+    assertEquals(SearchTextSegment.segmentField(0), mapping.soleHybridField().get());
+    assertEquals(4, mapping.searchTextSegmentFields().size());
   }
 
   @Test
   public void lexicalFieldsAreConfiguredInDefaultSchema() {
     Configuration conf = new Configuration(false);
-    IndexMapping mapping = MetastoreSchemas.defaultHiveTablesMapping("hive_tables", "bge-small", conf);
+    IndexMapping mapping = MetastoreIndexSchema.defaultHiveTablesMapping("hive_tables", "bge-small", conf);
     FieldSchema tableSchema = mapping.fieldSchema(MetastoreTableMapper.FIELD_TABLE);
     FieldSchema commentSchema = mapping.fieldSchema(MetastoreTableMapper.FIELD_COMMENT);
     assertTrue(tableSchema instanceof FieldSchema.TextFieldSchema table

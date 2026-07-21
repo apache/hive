@@ -27,43 +27,42 @@ import org.apache.hive.search.exception.InitializeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public record EmbedModelRegistry(Map<String, EmbedModel> models) implements AutoCloseable {
-  private static final Logger LOG = LoggerFactory.getLogger(EmbedModelRegistry.class);
+public record EmbedderRegistry(Map<String, Embedder> embedders) implements AutoCloseable {
+  private static final Logger LOG = LoggerFactory.getLogger(EmbedderRegistry.class);
 
-  public EmbedModelRegistry(Map<String, EmbedModel> models) {
-    this.models = Map.copyOf(models);
+  public EmbedderRegistry(Map<String, Embedder> embedders) {
+    this.embedders = Map.copyOf(embedders);
   }
 
-  public static EmbedModelRegistry create(Configuration configuration)
+  public static EmbedderRegistry create(Configuration configuration)
       throws InitializeException, IOException {
     InferenceConfig inference = new InferenceConfig(configuration);
     long start = System.currentTimeMillis();
-    String modelName = inference.modelName();
-    EmbedModel embedModel = new LocalOnnxEmbeddingModel(inference);
+    String modelName = inference.embedderName();
+    Embedder embedder = new LocalOnnxEmbedder(inference);
     long warmupStart = System.currentTimeMillis();
     try {
-      embedModel.embed(EmbedModel.TaskType.QUERY, "warmup");
+      embedder.embed(Embedder.TaskType.QUERY, "warmup");
     } catch (InferenceException e) {
-      throw new InitializeException("Failed to warm up embedding model '" + modelName + "'", e);
+      throw new InitializeException("Failed to warm up embedder '" + modelName + "'", e);
     }
-    LOG.info("Loaded embedding model '{}' in {}ms (warmup {}ms)",
-        modelName, System.currentTimeMillis() - start,
-        System.currentTimeMillis() - warmupStart);
-    return new EmbedModelRegistry(Map.of(modelName, embedModel));
+    LOG.info("Loaded embedder '{}' in {}ms (warmup {}ms)",
+        modelName, System.currentTimeMillis() - start, System.currentTimeMillis() - warmupStart);
+    return new EmbedderRegistry(Map.of(modelName, embedder));
   }
 
-  public EmbedModel get(String modelRef) {
-    EmbedModel model = models.get(modelRef);
-    if (model == null) {
-      throw new IllegalStateException("Embedding model '" + modelRef + "' is not configured");
+  public Embedder get(String ref) {
+    Embedder embedder = embedders.get(ref);
+    if (embedder == null) {
+      throw new IllegalStateException("Embedder '" + ref + "' is not configured");
     }
-    return model;
+    return embedder;
   }
 
   @Override
   public void close() throws Exception {
-    for (EmbedModel model : models.values()) {
-      model.close();
+    for (Embedder embedder : embedders.values()) {
+      embedder.close();
     }
   }
 }

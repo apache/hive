@@ -92,7 +92,7 @@ public final class LuceneSearchBackend implements SearchBackend {
     }
     int limit = query.limit() > 0 ? query.limit() : searchConfig.getDefaultLimit();
     query = SearchQuery.of(query, fields, limit);
-    try (SearchInternal searcher = session.getSearcher()) {
+    try (Searcher searcher = session.getSearcher()) {
       return searcher.search(query);
     }
   }

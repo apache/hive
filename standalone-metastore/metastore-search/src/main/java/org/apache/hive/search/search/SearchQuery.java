@@ -24,7 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hive.search.exception.SearchException;
 
 public record SearchQuery(
-    SearchArgs args,
+    SearchMethod args,
     String catalogName,
     String databaseName,
     int limit,
@@ -43,23 +43,23 @@ public record SearchQuery(
 
   public Mode mode() {
     return switch (args) {
-      case SearchArgs.Match m -> Mode.MATCH;
-      case SearchArgs.Semantic s -> Mode.SEMANTIC;
-      case SearchArgs.Hybrid h -> Mode.HYBRID;
+      case SearchMethod.Match m -> Mode.MATCH;
+      case SearchMethod.Semantic s -> Mode.SEMANTIC;
+      case SearchMethod.Hybrid h -> Mode.HYBRID;
     };
   }
 
-  private static void validate(SearchArgs args, int limit) throws SearchException {
+  private static void validate(SearchMethod args, int limit) throws SearchException {
     String queryText = switch (args) {
-      case SearchArgs.Match m -> m.queryText();
-      case SearchArgs.Semantic s -> s.queryText();
-      case SearchArgs.Hybrid h -> h.queryText();
+      case SearchMethod.Match m -> m.queryText();
+      case SearchMethod.Semantic s -> s.queryText();
+      case SearchMethod.Hybrid h -> h.queryText();
     };
     validate(queryText, limit);
   }
 
   private static void validate(String queryText, int limit) throws SearchException {
-    if (StringUtils.isEmpty(queryText)) {
+    if (StringUtils.isBlank(queryText)) {
       throw new SearchException("queryText is required");
     }
     if (limit < 0) {
@@ -78,22 +78,22 @@ public record SearchQuery(
     if (queryBody == null || queryBody.isEmpty()) {
       throw new SearchException("missing query body for mode " + mode);
     }
-    SearchArgs args = SearchArgs.fromBody(queryBody, mode);
+    SearchMethod args = SearchMethod.fromBody(queryBody, mode);
     validate(args, limit);
     return new SearchQuery(args, catalogName, databaseName, limit, returnFields);
   }
 
   public static SearchQuery of(String queryText) throws SearchException {
     validate(queryText, 0);
-    return new SearchQuery(new SearchArgs.Hybrid(queryText, null, null, null), null, null, 0, List.of());
+    return new SearchQuery(new SearchMethod.Hybrid(queryText, null, null), null, null, 0, List.of());
   }
 
   public static SearchQuery of(String queryText, Mode mode, int limit) throws SearchException {
     validate(queryText, limit);
-    SearchArgs args = switch (mode) {
-      case MATCH -> new SearchArgs.Match(queryText);
-      case SEMANTIC -> new SearchArgs.Semantic(queryText, null);
-      case HYBRID -> new SearchArgs.Hybrid(queryText, null, null, null);
+    SearchMethod args = switch (mode) {
+      case MATCH -> new SearchMethod.Match(queryText);
+      case SEMANTIC -> new SearchMethod.Semantic(queryText);
+      case HYBRID -> new SearchMethod.Hybrid(queryText, null, null);
     };
     return new SearchQuery(args, null, null, limit, List.of());
   }
@@ -102,7 +102,7 @@ public record SearchQuery(
       throws SearchException {
     validate(keyWord, 0);
     return new SearchQuery(
-        new SearchArgs.Match(keyWord), catalogName, databaseName, 0, List.of());
+        new SearchMethod.Match(keyWord), catalogName, databaseName, 0, List.of());
   }
 
   public static SearchQuery of(SearchQuery query, List<String> returnFields, int limit) {
@@ -112,6 +112,6 @@ public record SearchQuery(
 
   /** Serializes this query to a flat Thrift-ready query body map. */
   public Map<String, String> toQueryBody() {
-    return SearchArgs.toQueryBody(args);
+    return SearchMethod.toQueryBody(args);
   }
 }

@@ -35,20 +35,19 @@ import org.apache.hive.search.mapping.IndexMapping;
 import org.apache.hive.search.mapping.TableDocument;
 import org.apache.hive.search.metastore.MetastoreTableMapper;
 import org.apache.hive.search.index.IndexManager;
-import org.apache.hive.search.inference.EmbedModel;
-import org.apache.hive.search.inference.EmbedModelRegistry;
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.hive.search.inference.Embedder;
+import org.apache.hive.search.inference.EmbedderRegistry;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queryparser.simple.SimpleQueryParser;
 import org.apache.lucene.search.BayesianScoreEstimator;
 import org.apache.lucene.search.BayesianScoreQuery;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.BoostQuery;
 import org.apache.lucene.search.ConstantScoreQuery;
+import org.apache.lucene.search.DisjunctionMaxQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.KnnFloatVectorQuery;
 import org.apache.lucene.search.LogOddsFusionQuery;
@@ -59,77 +58,73 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.TopDocs;
 
-public final class SearchInternal implements AutoCloseable {
-  private final EmbedModelRegistry modelRegistry;
+public final class Searcher implements AutoCloseable {
+  private final EmbedderRegistry embedderRegistry;
   private final IndexSearcher searcher;
   private final SearcherManager searcherManager;
   private final IndexMapping mapping;
   private final SearchConfig searchConfig;
   private final BayesianScoreEstimator.Parameters parameters;
-  private final long indexedNid;
+  private final long committedEventId;
+  private final long processedEventId;
 
-  public SearchInternal(SearcherManager manager,
+  public Searcher(SearcherManager manager,
       IndexManager indexManager,
-      EmbedModelRegistry registry,
+      EmbedderRegistry registry,
       SearchConfig searchConfig,
       BayesianScoreEstimator.Parameters parameters) throws IOException {
     this.searcherManager = manager;
-    this.indexedNid = indexManager.getIndexedNid();
+    this.committedEventId = indexManager.getCommittedEventId();
+    this.processedEventId = indexManager.getProcessedEventId();
     this.searcher = manager.acquire();
     this.mapping = indexManager.mapping();
     this.searchConfig = searchConfig;
     this.parameters = parameters;
-    this.modelRegistry = Objects.requireNonNull(registry, "Model registry");
+    this.embedderRegistry = Objects.requireNonNull(registry, "Embedder registry");
   }
-
-  public record RetrieverSpec(SearchArgs query, float weight, String name) {
-  }
-
-  public record FusionRequest(List<RetrieverSpec> retrievers, int size) {}
 
   public TableSearchResult search(SearchQuery request)
       throws SearchException, IOException {
+    validateQueryText(request);
     int size = request.limit() > 0 ? request.limit() : searchConfig.getDefaultLimit();
-    Query query = compileRootQuery(request, size);
+    int semanticK = searchConfig.semanticK(size);
+    Query query =
+        switch (request.args()) {
+          case SearchMethod.Match match ->
+              compileMatchQuery(LexicalSearch.resolve(match, mapping));
+          case SearchMethod.Semantic semantic ->
+              compileSemanticQuery(SemanticSearch.resolve(semantic, mapping), semanticK);
+          case SearchMethod.Hybrid hybrid ->
+              compileFusionQuery(HybridSearch.resolve(hybrid, mapping), semanticK);
+        };
     query = applyScopeFilter(query, request.catalogName(), request.databaseName());
     TopDocs topDocs = searcher.search(query, size);
     List<TableSearchHit> hits = new ArrayList<>();
     for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
       hits.add(readHit(scoreDoc, request.returnFields()));
     }
-    return new TableSearchResult(hits, topDocs.totalHits.value(), indexedNid);
+    return new TableSearchResult(hits, topDocs.totalHits.value(), committedEventId, processedEventId);
   }
 
-  private Query compileRootQuery(SearchQuery searchQuery, int size)
-      throws SearchException, IOException {
-    return switch (searchQuery.args()) {
-      case SearchArgs.Match match -> compileMatchQuery(match.queryText());
-      case SearchArgs.Semantic semantic ->
-          compileSemanticQuery(SemanticSearch.resolve(semantic, mapping), size);
-      case SearchArgs.Hybrid hybrid -> {
-        HybridSearch.ResolvedHybridQuery resolved = HybridSearch.resolve(hybrid, mapping);
-        yield compileFusionQuery(
-            HybridSearch.toFusionRequest(resolved, size, searchConfig), size);
-      }
+  private static void validateQueryText(SearchQuery request) throws SearchException {
+    String queryText = switch (request.args()) {
+      case SearchMethod.Match m -> m.queryText();
+      case SearchMethod.Semantic s -> s.queryText();
+      case SearchMethod.Hybrid h -> h.queryText();
     };
+    if (StringUtils.isBlank(queryText)) {
+      throw new SearchException("query text is required");
+    }
   }
 
-  private Query compileFusionQuery(FusionRequest fusion, int size)
+  private Query compileFusionQuery(HybridSearch.ResolvedHybridQuery query, int semanticK)
       throws SearchException, IOException {
-    int i = 0;
-    float[] weights = new float[fusion.retrievers.size()];
-    List<Query> queries = new ArrayList<>();
-    for (RetrieverSpec retriever : fusion.retrievers()) {
-      Query internalQuery = compileQuery(retriever.query(), size);
-      if (internalQuery instanceof KnnFloatVectorQuery) {
-        queries.add(internalQuery);
-      } else {
-        queries.add(new BayesianScoreQuery(internalQuery, parameters.alpha(),
-            parameters.beta(), parameters.baseRate()));
-      }
-      weights[i++] = retriever.weight();
-    }
-    return new LogOddsFusionQuery(queries, searchConfig.getFusionPrior(), weights);
+    Query matchQuery = new BayesianScoreQuery(compileMatchQuery(query.toMatchQuery()),
+        parameters.alpha(), parameters.beta(), parameters.baseRate());
+    Query semanticQuery = compileSemanticQuery(query.toSemanticQuery(), semanticK);
+    float[] weights = {1.0f - query.semanticWeight(), query.semanticWeight()};
+    return new LogOddsFusionQuery(List.of(matchQuery, semanticQuery),
+        searchConfig.getFusionPrior(), weights);
   }
 
   private Query applyScopeFilter(Query query, String catalogName, String databaseName) {
@@ -160,18 +155,11 @@ public final class SearchInternal implements AutoCloseable {
         MetastoreTableMapper.FIELD_DB + TableDocument.FILTER_SUFFIX, databaseName));
   }
 
-  private Query compileQuery(SearchArgs args, int knnK)
+  private Query compileMatchQuery(LexicalSearch.ResolvedMatchQuery match)
       throws SearchException, IOException {
-    return switch (args) {
-      case SearchArgs.Match match -> compileMatchQuery(match.queryText());
-      case SearchArgs.Semantic semantic ->
-          compileSemanticQuery(SemanticSearch.resolve(semantic, mapping), knnK);
-      case SearchArgs.Hybrid hybrid ->
-          throw new SearchException("Nested hybrid queries are not supported");
-    };
-  }
-
-  private Query compileMatchQuery(String queryText) throws SearchException, IOException {
+    if (StringUtils.isNotEmpty(match.field())) {
+      return compileMatchQuery(match.field(), match.queryText());
+    }
     BooleanQuery.Builder builder = new BooleanQuery.Builder();
     boolean added = false;
     for (MetastoreTableMapper.KeywordSearchField keywordField : MetastoreTableMapper.KEYWORD_SEARCH_FIELDS) {
@@ -182,12 +170,10 @@ public final class SearchInternal implements AutoCloseable {
         continue;
       }
       if (text.filter()) {
-        builder.add(
-            boostKeywordQuery(compileFilterKeywordQuery(field, queryText), boost),
+        builder.add(boostKeywordQuery(compileFilterKeywordQuery(field, match.queryText()), boost),
             BooleanClause.Occur.SHOULD);
         if (text.search().lexical()) {
-          builder.add(
-              boostKeywordQuery(compileMatchQuery(field, queryText), boost),
+          builder.add(boostKeywordQuery(compileFieldMatchQuery(field, match.queryText()), boost),
               BooleanClause.Occur.SHOULD);
         }
         added = true;
@@ -197,12 +183,34 @@ public final class SearchInternal implements AutoCloseable {
         continue;
       }
       builder.add(
-          boostKeywordQuery(compileMatchQuery(field, queryText), boost),
+          boostKeywordQuery(compileFieldMatchQuery(field, match.queryText()), boost),
           BooleanClause.Occur.SHOULD);
       added = true;
     }
     if (!added) {
       throw new SearchException("No lexically searchable table fields are configured");
+    }
+    return builder.build();
+  }
+
+  private Query compileMatchQuery(String field, String queryText)
+      throws SearchException {
+    FieldSchema schema = mapping.fieldSchema(field);
+    if (!(schema instanceof FieldSchema.TextFieldSchema text)) {
+      throw new SearchException("field '" + field + "' is not lexically searchable");
+    }
+    BooleanQuery.Builder builder = new BooleanQuery.Builder();
+    boolean added = false;
+    if (text.filter()) {
+      builder.add(compileFilterKeywordQuery(field, queryText), BooleanClause.Occur.SHOULD);
+      added = true;
+    }
+    if (text.search().lexical()) {
+      builder.add(compileFieldMatchQuery(field, queryText), BooleanClause.Occur.SHOULD);
+      added = true;
+    }
+    if (!added) {
+      throw new SearchException("field '" + field + "' is not lexically searchable");
     }
     return builder.build();
   }
@@ -219,46 +227,41 @@ public final class SearchInternal implements AutoCloseable {
     return new TermQuery(new Term(field + TableDocument.FILTER_SUFFIX, normalized));
   }
 
-  private Query compileMatchQuery(String field, String queryText)
-      throws SearchException, IOException {
-
+  private Query compileFieldMatchQuery(String field, String queryText)
+      throws SearchException {
     FieldSchema schema = mapping.fieldSchema(field);
     if (!(schema instanceof FieldSchema.TextFieldSchema text) || !text.search().lexical()) {
       throw new SearchException("field '" + field + "' is not lexically searchable");
     }
-
-    Analyzer analyzer = mapping.analyzer();
-    BooleanQuery.Builder builder = new BooleanQuery.Builder();
-    try (TokenStream stream = analyzer.tokenStream(field, queryText)) {
-      CharTermAttribute termAttr = stream.addAttribute(CharTermAttribute.class);
-      stream.reset();
-      while (stream.incrementToken()) {
-        builder.add(new TermQuery(new Term(field, termAttr.toString())), BooleanClause.Occur.SHOULD);
-      }
-      stream.end();
-    }
-    return builder.build();
+    return new SimpleQueryParser(mapping.analyzer(), field).parse(queryText);
   }
 
-  private org.apache.lucene.search.Query compileSemanticQuery(
+  private Query compileSemanticQuery(
       SemanticSearch.ResolvedSemanticQuery semantic, int knnK) throws SearchException {
-    FieldSchema schema = mapping.fieldSchema(semantic.field());
+    List<String> fields = mapping.resolveSemanticSearchFields(null);
+    FieldSchema schema = mapping.fieldSchema(fields.getFirst());
     if (!(schema instanceof FieldSchema.TextFieldSchema text) || !text.search().semantic()) {
-      throw new SearchException("field '" + semantic.field() + "' is not semantically searchable");
+      throw new SearchException("index has no semantically searchable fields configured");
     }
     float[] embedding;
     try {
-      embedding = modelRegistry.get(text.search().semanticModel())
-          .embed(EmbedModel.TaskType.QUERY, semantic.queryText());
+      embedding = embedderRegistry.get(text.search().semanticModel())
+          .embed(Embedder.TaskType.QUERY, semantic.queryText());
     } catch (InferenceException e) {
-      throw new SearchException(
-          "Failed to encode semantic query for field '" + semantic.field() + "'", e);
+      throw new SearchException("Failed to encode semantic query", e);
     }
     if (embedding == null) {
       throw new SearchException(
           "embedding model '" + text.search().semanticModel() + "' returned null vector");
     }
-    return new KnnFloatVectorQuery(semantic.field(), embedding, knnK);
+    if (fields.size() == 1) {
+      return new KnnFloatVectorQuery(fields.getFirst(), embedding, knnK);
+    }
+    List<Query> disjuncts = new ArrayList<>(fields.size());
+    for (String field : fields) {
+      disjuncts.add(new KnnFloatVectorQuery(field, embedding, knnK));
+    }
+    return new DisjunctionMaxQuery(disjuncts, 0.0f);
   }
 
   private TableSearchHit readHit(ScoreDoc scoreDoc, List<String> fields)

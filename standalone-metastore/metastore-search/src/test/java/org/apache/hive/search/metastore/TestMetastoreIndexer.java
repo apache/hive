@@ -30,13 +30,13 @@ import org.apache.hive.search.config.SearchConfig;
 import org.apache.hive.search.index.Indexer;
 import org.apache.hive.search.index.IndexManager;
 import org.apache.hive.search.index.store.LocalStateClient;
-import org.apache.hive.search.inference.EmbedModelRegistry;
+import org.apache.hive.search.inference.EmbedderRegistry;
 import org.apache.hive.search.mapping.IndexMapping;
 import org.apache.hive.search.mapping.TableDocument;
 import org.apache.hive.search.search.InMemorySearchFixture;
 import org.apache.hive.search.testutil.InMemoryIndexStateClient;
 import org.apache.hive.search.testutil.MetastoreBootstrapMocks;
-import org.apache.hive.search.testutil.StubEmbedModel;
+import org.apache.hive.search.testutil.StubEmbedder;
 import org.apache.hive.search.testutil.TestLeaderElection;
 import org.apache.lucene.store.ByteBuffersDirectory;
 import org.junit.Test;
@@ -107,10 +107,10 @@ public class TestMetastoreIndexer {
     Table customers = InMemorySearchFixture.table("hive", "sales", "customers", "sales customers");
     InMemoryIndexStateClient remote = new InMemoryIndexStateClient();
 
-    IndexMapping mapping = MetastoreSchemas.defaultHiveTablesMapping(
+    IndexMapping mapping = MetastoreIndexSchema.defaultHiveTablesMapping(
         "test_index", InMemorySearchFixture.MODEL_NAME, conf);
-    EmbedModelRegistry registry = new EmbedModelRegistry(
-        Map.of(InMemorySearchFixture.MODEL_NAME, new StubEmbedModel(InMemorySearchFixture.MODEL_NAME)));
+    EmbedderRegistry registry = new EmbedderRegistry(
+        Map.of(InMemorySearchFixture.MODEL_NAME, new StubEmbedder(InMemorySearchFixture.MODEL_NAME)));
 
     ByteBuffersDirectory leaderDir = new ByteBuffersDirectory();
     IndexManager leaderManager = new IndexManager(
@@ -142,7 +142,7 @@ public class TestMetastoreIndexer {
     Configuration conf = new Configuration(false);
     conf.setBoolean(IndexStoreConfig.MEMORY, true);
     conf.set(IndexConfig.INDEX_NAME, "test_index");
-    conf.set(InferenceConfig.MODEL_NAME, InMemorySearchFixture.MODEL_NAME);
+    conf.set(InferenceConfig.EMBEDDER_NAME, InMemorySearchFixture.MODEL_NAME);
     conf.setInt(IndexConfig.BOOTSTRAP_FETCH_THREADS, 1);
     conf.setInt(IndexConfig.BOOTSTRAP_QUEUE_DEPTH, 4);
     conf.setLong(IndexConfig.BOOTSTRAP_PROGRESS_INTERVAL_MS, Long.MAX_VALUE);
@@ -162,10 +162,10 @@ public class TestMetastoreIndexer {
   private static final class IndexerFixture implements AutoCloseable {
     IndexManager indexManager;
     Indexer indexer;
-    final EmbedModelRegistry modelRegistry;
+    final EmbedderRegistry modelRegistry;
 
     private IndexerFixture(
-        IndexManager indexManager, Indexer indexer, EmbedModelRegistry modelRegistry) {
+        IndexManager indexManager, Indexer indexer, EmbedderRegistry modelRegistry) {
       this.indexManager = indexManager;
       this.indexer = indexer;
       this.modelRegistry = modelRegistry;
@@ -173,10 +173,10 @@ public class TestMetastoreIndexer {
 
     static IndexerFixture create(Configuration conf, InMemoryIndexStateClient remote)
         throws Exception {
-      IndexMapping mapping = MetastoreSchemas.defaultHiveTablesMapping(
+      IndexMapping mapping = MetastoreIndexSchema.defaultHiveTablesMapping(
           "test_index", InMemorySearchFixture.MODEL_NAME, conf);
-      EmbedModelRegistry registry = new EmbedModelRegistry(
-          Map.of(InMemorySearchFixture.MODEL_NAME, new StubEmbedModel(InMemorySearchFixture.MODEL_NAME)));
+      EmbedderRegistry registry = new EmbedderRegistry(
+          Map.of(InMemorySearchFixture.MODEL_NAME, new StubEmbedder(InMemorySearchFixture.MODEL_NAME)));
       ByteBuffersDirectory directory = new ByteBuffersDirectory();
       LocalStateClient local = new LocalStateClient(directory, "test_index");
       IndexManager indexManager = remote == null
