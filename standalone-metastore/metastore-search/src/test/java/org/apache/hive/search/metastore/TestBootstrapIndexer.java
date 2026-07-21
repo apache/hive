@@ -22,7 +22,7 @@ import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hive.search.config.IndexConfig;
 import org.apache.hive.search.config.IndexStoreConfig;
-import org.apache.hive.search.exception.IndexException;
+import org.apache.hive.search.exception.IndexIOException;
 import org.apache.hive.search.index.Indexer;
 import org.apache.hive.search.index.IndexManager;
 import org.apache.hive.search.inference.EmbedModelRegistry;
@@ -94,7 +94,7 @@ public class TestBootstrapIndexer {
       when(client.getTableObjectsByName(eq("sales"), anyList()))
           .thenThrow(new RuntimeException("metastore unavailable"));
 
-      IndexException error = assertThrows(IndexException.class,
+      IndexIOException error = assertThrows(IndexIOException.class,
           () -> new BootstrapIndexer(conf, fixture.mapping(), fixture.indexer(), client, true)
               .run(1L));
       assertTrue(error.getMessage().contains("Bootstrap indexing failed")

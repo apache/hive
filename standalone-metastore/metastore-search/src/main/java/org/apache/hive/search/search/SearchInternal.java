@@ -28,7 +28,7 @@ import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hive.search.config.SearchConfig;
-import org.apache.hive.search.exception.IndexException;
+import org.apache.hive.search.exception.InferenceException;
 import org.apache.hive.search.exception.SearchException;
 import org.apache.hive.search.mapping.FieldSchema;
 import org.apache.hive.search.mapping.IndexMapping;
@@ -250,7 +250,7 @@ public final class SearchInternal implements AutoCloseable {
     try {
       embedding = modelRegistry.get(text.search().semanticModel())
           .embed(EmbedModel.TaskType.QUERY, semantic.queryText());
-    } catch (IndexException e) {
+    } catch (InferenceException e) {
       throw new SearchException(
           "Failed to encode semantic query for field '" + semantic.field() + "'", e);
     }

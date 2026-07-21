@@ -17,7 +17,7 @@
 
 package org.apache.hive.search.inference;
 
-import org.apache.hive.search.exception.IndexException;
+import org.apache.hive.search.exception.InferenceException;
 
 public interface EmbedModel extends AutoCloseable {
   enum TaskType {
@@ -27,9 +27,9 @@ public interface EmbedModel extends AutoCloseable {
 
   String name();
 
-  float[] embed(TaskType task, String text) throws IndexException;
+  float[] embed(TaskType task, String text) throws InferenceException;
 
-  default float[][] embedBatch(TaskType task, String[] texts) throws IndexException {
+  default float[][] embedBatch(TaskType task, String[] texts) throws InferenceException {
     float[][] result = new float[texts.length][];
     for (int i = 0; i < texts.length; i++) {
       result[i] = embed(task, texts[i]);

@@ -29,10 +29,10 @@ public class IndexIOException extends IOException {
     super(message, cause);
   }
 
-  public static IndexIOException wrap(Exception cause) {
+  public static IndexIOException wrap(String message, Exception cause) {
     if (cause instanceof IndexIOException indexIOException) {
       return indexIOException;
     }
-    return new IndexIOException(cause.getMessage(), cause);
+    return new IndexIOException(message, cause);
   }
 }

@@ -22,7 +22,7 @@ import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hive.search.config.InferenceConfig;
-import org.apache.hive.search.exception.IndexException;
+import org.apache.hive.search.exception.InferenceException;
 import org.apache.hive.search.exception.InitializeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +43,7 @@ public record EmbedModelRegistry(Map<String, EmbedModel> models) implements Auto
     long warmupStart = System.currentTimeMillis();
     try {
       embedModel.embed(EmbedModel.TaskType.QUERY, "warmup");
-    } catch (IndexException e) {
+    } catch (InferenceException e) {
       throw new InitializeException("Failed to warm up embedding model '" + modelName + "'", e);
     }
     LOG.info("Loaded embedding model '{}' in {}ms (warmup {}ms)",
@@ -52,10 +52,10 @@ public record EmbedModelRegistry(Map<String, EmbedModel> models) implements Auto
     return new EmbedModelRegistry(Map.of(modelName, embedModel));
   }
 
-  public EmbedModel get(String modelRef) throws IndexException {
+  public EmbedModel get(String modelRef) {
     EmbedModel model = models.get(modelRef);
     if (model == null) {
-      throw new IndexException("Embedding model '" + modelRef + "' is not configured");
+      throw new IllegalStateException("Embedding model '" + modelRef + "' is not configured");
     }
     return model;
   }

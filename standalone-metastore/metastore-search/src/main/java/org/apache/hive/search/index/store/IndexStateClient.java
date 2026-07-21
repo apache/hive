@@ -57,7 +57,7 @@ public interface IndexStateClient {
     return readManifest().orElse(null);
   }
 
-  default void validateRestoredIndex(IndexManifest expected) throws IndexIOException {
+  default void validateRestoredIndex(IndexManifest expected) throws IOException {
 
   }
 
