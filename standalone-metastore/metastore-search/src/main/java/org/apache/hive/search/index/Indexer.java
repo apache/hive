@@ -30,7 +30,7 @@ import java.util.Map;
 import org.apache.hadoop.hive.common.DatabaseName;
 import org.apache.hadoop.hive.metastore.Batchable;
 import org.apache.hive.search.config.IndexConfig;
-import org.apache.hive.search.exception.IndexException;
+import org.apache.hive.search.exception.IndexIOException;
 import org.apache.hive.search.inference.EmbedModel;
 import org.apache.hive.search.inference.EmbedModelRegistry;
 import org.apache.hive.search.mapping.FieldSchema;
@@ -97,7 +97,7 @@ public final class Indexer implements AutoCloseable {
   }
 
   /** Writes already-embedded documents to Lucene. */
-  private void writeDocuments(List<TableDocument> docs) throws IOException, IndexException {
+  private void writeDocuments(List<TableDocument> docs) throws IOException {
     List<Document> luceneDocs = new ArrayList<>();
     List<String> ids = new ArrayList<>();
     for (TableDocument doc : docs) {
@@ -109,7 +109,7 @@ public final class Indexer implements AutoCloseable {
   }
 
   public List<TableDocument> embedDocuments(List<TableDocument> tableDocs)
-      throws IndexException {
+      throws IOException {
     long start = System.currentTimeMillis();
     List<TableDocument> result = new ArrayList<>(tableDocs.size());
     Map<String, ListMultimap<TextField, TableDocument>> modelPerTxt = new HashMap<>();
@@ -152,7 +152,7 @@ public final class Indexer implements AutoCloseable {
   }
 
   private void embedInBatch(String modelRef, EmbedModel embedModel,
-      ListMultimap<TextField, TableDocument> textDocs) throws IndexException {
+      ListMultimap<TextField, TableDocument> textDocs) throws IOException {
     int uniqueTexts = textDocs.keySet().stream()
         .map(TextField::value)
         .collect(java.util.stream.Collectors.toSet())
@@ -162,7 +162,7 @@ public final class Indexer implements AutoCloseable {
       Batchable.runBatched(EMBED_BATCH_SIZE, new ArrayList<>(textDocs.keySet()),
           new Batchable<TextField, Void>() {
         @Override
-        public List<Void> run(List<TextField> batchFields) throws IndexException {
+        public List<Void> run(List<TextField> batchFields) throws Exception {
           long batchStart = System.currentTimeMillis();
           ListMultimap<String, TextField> valueToTxt = ArrayListMultimap.create();
           batchFields.forEach(f -> valueToTxt.put(f.value(), f));
@@ -181,7 +181,7 @@ public final class Indexer implements AutoCloseable {
         }
       });
     } catch (Exception e) {
-      throw IndexException.wrap("Error while embedding the documents with model '" + modelRef + "'",
+      throw IndexIOException.wrap("Error while embedding the documents with model '" + modelRef + "'",
           e);
     }
     LOG.info("Model '{}' embedded {} field(s) from {} unique text(s) in {}ms",
@@ -197,7 +197,7 @@ public final class Indexer implements AutoCloseable {
     }
   }
 
-  public void addDocuments(List<TableDocument> docs) throws IOException, IndexException {
+  public void addDocuments(List<TableDocument> docs) throws IOException {
     writeDocuments(embedDocuments(docs));
   }
 
@@ -249,6 +249,7 @@ public final class Indexer implements AutoCloseable {
         .toArray(Term[]::new);
     writer.deleteDocuments(terms);
     int after = writer.getDocStats().numDocs;
+    LOG.info("Deleted {} docs", before - after);
     return before - after;
   }
 
@@ -266,6 +267,7 @@ public final class Indexer implements AutoCloseable {
     }
     writer.deleteDocuments(builder.build());
     int after = writer.getDocStats().numDocs;
+    LOG.info("Deleted {} docs", before - after);
     return before - after;
   }
 

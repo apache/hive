@@ -21,7 +21,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.hive.search.exception.IndexException;
 import org.apache.hive.search.inference.EmbedModel;
 
 /** Deterministic embedding model for tests (no ONNX). */
@@ -78,7 +77,7 @@ public final class StubEmbedModel implements EmbedModel {
   }
 
   @Override
-  public float[][] embedBatch(TaskType task, String[] texts) throws IndexException {
+  public float[][] embedBatch(TaskType task, String[] texts) {
     encodeBatchCalls.incrementAndGet();
     return Arrays.stream(texts).map(text -> embed(task, text)).toArray(float[][]::new);
   }

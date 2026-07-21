@@ -17,20 +17,19 @@
 
 package org.apache.hive.search.exception;
 
-/** Failure while building, updating, or embedding content for the search index. */
-public class IndexException extends Exception {
-  public IndexException(String message) {
+public class InferenceException extends Exception {
+  public InferenceException(String message) {
     super(message);
   }
 
-  public IndexException(String message, Throwable cause) {
+  public InferenceException(String message, Throwable cause) {
     super(message, cause);
   }
 
-  public static IndexException wrap(String message, Throwable cause) {
-    if (cause instanceof IndexException indexException) {
-      return indexException;
+  public static InferenceException wrap(String message, Throwable cause) {
+    if (cause instanceof InferenceException inferenceException) {
+      return inferenceException;
     }
-    return new IndexException(message, cause);
+    return new InferenceException(message, cause);
   }
 }

@@ -20,7 +20,7 @@ package org.apache.hive.search.mapping;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hive.search.exception.IndexException;
+import org.apache.hive.search.exception.IndexIOException;
 import org.apache.hive.search.mapping.field.Field;
 import org.apache.hive.search.mapping.field.IdField;
 import org.apache.hive.search.mapping.field.TextField;
@@ -51,7 +51,7 @@ public class TableDocument {
   }
 
   public void fill(TextField field, FieldSchema.TextFieldSchema schema)
-      throws IndexException {
+      throws IndexIOException {
     String trimmed = trim(field.value(), MAX_FIELD_SEARCH_SIZE);
 
     if (schema.filter()) {
@@ -69,7 +69,7 @@ public class TableDocument {
     }
     if (schema.search().semantic()) {
       if (field.embedding() == null) {
-        throw new IndexException("semantic field '" + field.name() + "' requires embedding");
+        throw new IndexIOException("semantic field '" + field.name() + "' requires embedding");
       }
       VectorSimilarityFunction similarity = schema.search().distance() == SearchParams.VectorDistance.DOT ?
           VectorSimilarityFunction.DOT_PRODUCT : VectorSimilarityFunction.COSINE;
@@ -81,7 +81,7 @@ public class TableDocument {
     return value.length() > max ? value.substring(0, max) : value;
   }
 
-  public List<Document> toDocuments() throws IndexException {
+  public List<Document> toDocuments() throws IndexIOException {
     String id = idField().value();
     document.add(new BinaryDocValuesField("_id" + FILTER_SUFFIX, new BytesRef(id)));
     document.add(new StoredField("_id", id));

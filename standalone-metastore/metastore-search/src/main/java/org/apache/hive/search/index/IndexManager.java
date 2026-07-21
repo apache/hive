@@ -23,7 +23,6 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hive.search.exception.IndexException;
 import org.apache.hive.search.mapping.IndexMapping;
 import org.apache.hive.search.exception.IndexNotHealthyException;
 import org.apache.hive.search.index.manifest.IndexManifest;
@@ -156,7 +155,7 @@ public class IndexManager implements AutoCloseable, MetastoreEventListener {
   }
 
   @Override
-  public void notifyIndexTask(IndexTask task) throws IndexException, IOException {
+  public void notifyIndexTask(IndexTask task) {
     indexedNid = task.lastEventId;
   }
 

@@ -34,9 +34,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hive.search.exception.IndexIOException;
 import org.apache.hive.search.mapping.IndexMapping;
 import org.apache.hive.search.mapping.TableDocument;
-import org.apache.hive.search.exception.IndexException;
 import org.apache.hive.search.config.IndexConfig;
 import org.apache.hive.search.index.Indexer;
 import org.slf4j.Logger;
@@ -106,7 +106,7 @@ final class BootstrapIndexer {
           plan.expectedTableCount(), plan.batches().size(), elapsed);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-      throw new IndexException("Bootstrap indexing interrupted", e);
+      throw new IndexIOException("Bootstrap indexing interrupted", e);
     } finally {
       workQueue.offer(END_OF_WORK);
       fetchPool.shutdownNow();
@@ -240,10 +240,10 @@ final class BootstrapIndexer {
     rethrowFailure(failure);
   }
 
-  private void validateBootstrapTableCount(int expectedTableCount) throws IndexException {
+  private void validateBootstrapTableCount(int expectedTableCount) throws IndexIOException {
     int indexed = indexer.writer().getDocStats().numDocs;
     if (indexed != expectedTableCount) {
-      throw new IndexException(
+      throw new IndexIOException(
           "Bootstrap index doc count mismatch: indexed " + indexed
               + " documents but metastore has " + expectedTableCount + " tables");
     }
@@ -257,7 +257,7 @@ final class BootstrapIndexer {
   private static void rethrowFailure(AtomicReference<Exception> failure) throws Exception {
     Exception error = failure.get();
     if (error != null) {
-      if (error instanceof IndexException indexException) {
+      if (error instanceof IndexIOException indexException) {
         throw indexException;
       }
       if (error instanceof IOException ioException) {
@@ -267,7 +267,7 @@ final class BootstrapIndexer {
         Thread.currentThread().interrupt();
         throw interruptedException;
       }
-      throw new IndexException("Bootstrap indexing failed", error);
+      throw new IndexIOException("Bootstrap indexing failed", error);
     }
   }
 
