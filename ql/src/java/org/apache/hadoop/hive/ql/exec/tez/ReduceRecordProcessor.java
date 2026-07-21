@@ -324,16 +324,29 @@ public class ReduceRecordProcessor extends RecordProcessor {
    */
   private List<LogicalInput> getShuffleInputs(Map<String, LogicalInput> inputs) throws Exception {
     // the reduce plan inputs have tags, add all inputs that have tags
-    Map<Integer, String> tagToinput = reduceWork.getTagToInput();
     ArrayList<LogicalInput> shuffleInputs = new ArrayList<LogicalInput>();
-    for (String inpStr : tagToinput.values()) {
+    startTaggedInputs(reduceWork, inputs, shuffleInputs);
+    // Merge-join siblings (e.g. the DummyStore side of a reduce-side merge join) are separate
+    // ReduceWorks with their own tagged inputs. init() later reads from all of them via
+    // tagToReducerMap, so they must be started here as well or getReader() throws
+    // "Must start input before invoking this method".
+    if (mergeWorkList != null) {
+      for (BaseWork mergeWork : mergeWorkList) {
+        startTaggedInputs((ReduceWork) mergeWork, inputs, shuffleInputs);
+      }
+    }
+    return shuffleInputs;
+  }
+
+  private void startTaggedInputs(ReduceWork redWork, Map<String, LogicalInput> inputs,
+      List<LogicalInput> shuffleInputs) throws Exception {
+    for (String inpStr : redWork.getTagToInput().values()) {
       if (inputs.get(inpStr) == null) {
         throw new AssertionError("Cound not find input: " + inpStr);
       }
       inputs.get(inpStr).start();
       shuffleInputs.add(inputs.get(inpStr));
     }
-    return shuffleInputs;
   }
 
   @Override
