@@ -70,6 +70,16 @@ public class TestSearchProvider {
   }
 
   @Test
+  public void reloadReplacesBackend() throws Exception {
+    StubSearchBackend first = new StubSearchBackend();
+    SearchProvider.install(new Configuration(false), first);
+    StubSearchBackend second = new StubSearchBackend();
+    SearchProvider reloaded = SearchProvider.reload(new Configuration(false), second);
+    assertSame(second, reloaded.backend());
+    assertTrue(first.closed);
+  }
+
+  @Test
   public void searchDelegatesToBackend() throws Exception {
     StubSearchBackend backend = new StubSearchBackend();
     SearchProvider provider =
@@ -104,8 +114,8 @@ public class TestSearchProvider {
               TableName.fromString("default.t", "hive", "default"),
               1.0f,
               Map.of("table_name", "t"))),
-          1, 1);
-    }
+          1, 10, 12);
+  }
 
     @Override
     public void close() {

@@ -21,13 +21,14 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hive.search.config.SearchConfig;
 import org.apache.hive.search.mapping.FieldSchema;
 import org.apache.hive.search.mapping.IndexMapping;
 import org.apache.hive.search.mapping.SearchParams;
 
-public final class MetastoreSchemas {
+public final class MetastoreIndexSchema {
 
-  private MetastoreSchemas() {}
+  private MetastoreIndexSchema() {}
 
   public static IndexMapping defaultHiveTablesMapping(String indexName,
       String semanticModel, Configuration conf) {
@@ -42,9 +43,15 @@ public final class MetastoreSchemas {
     fields.put(
         MetastoreTableMapper.FIELD_COLUMN_COMMENTS,
         lexicalText(MetastoreTableMapper.FIELD_COLUMN_COMMENTS));
-    fields.put(
-        MetastoreTableMapper.FIELD_SEARCH_TEXT,
-        hybridText(MetastoreTableMapper.FIELD_SEARCH_TEXT, semanticModel));
+    int segmentMax = new SearchConfig(conf).getSemanticSegmentMax();
+    for (int i = 0; i < segmentMax; i++) {
+      String name = SearchTextSegment.segmentField(i);
+      if (i == 0) {
+        fields.put(name, hybridText(name, semanticModel));
+      } else {
+        fields.put(name, semanticText(name, semanticModel));
+      }
+    }
     return new IndexMapping(indexName, conf, fields);
   }
 
@@ -70,6 +77,14 @@ public final class MetastoreSchemas {
     return new FieldSchema.TextFieldSchema(
         name,
         new SearchParams(true, semanticModel, SearchParams.VectorDistance.COSINE),
+        false,
+        false);
+  }
+
+  private static FieldSchema.TextFieldSchema semanticText(String name, String semanticModel) {
+    return new FieldSchema.TextFieldSchema(
+        name,
+        new SearchParams(false, semanticModel, SearchParams.VectorDistance.COSINE),
         false,
         false);
   }

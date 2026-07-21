@@ -19,58 +19,37 @@ package org.apache.hive.search.search;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
-import org.apache.hive.search.exception.SearchException;
 import org.apache.hive.search.mapping.FieldSchema;
 import org.apache.hive.search.mapping.IndexMapping;
 import org.apache.hive.search.mapping.SearchParams;
-import org.apache.hive.search.metastore.MetastoreSchemas;
-import org.apache.hive.search.metastore.MetastoreTableMapper;
+import org.apache.hive.search.metastore.MetastoreIndexSchema;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
 
 @Category(MetastoreUnitTest.class)
 public class TestSemanticSearch {
 
   private static IndexMapping defaultMapping() {
     Configuration conf = new Configuration(false);
-    return MetastoreSchemas.defaultHiveTablesMapping("hive_tables", "bge-small", conf);
+    return MetastoreIndexSchema.defaultHiveTablesMapping("hive_tables", "bge-small", conf);
   }
 
   @Test
-  public void resolveStringUsesSoleSemanticField() throws Exception {
+  public void resolveUsesDefaultSemanticFields() throws Exception {
     SemanticSearch.ResolvedSemanticQuery resolved =
-        SemanticSearch.resolve(new SearchArgs.Semantic("sales revenue", null), defaultMapping());
-    assertEquals(MetastoreTableMapper.FIELD_SEARCH_TEXT, resolved.field());
+        SemanticSearch.resolve(new SearchMethod.Semantic("sales revenue"), defaultMapping());
     assertEquals("sales revenue", resolved.queryText());
+    assertEquals(4, defaultMapping().resolveSemanticSearchFields(null).size());
   }
 
   @Test
-  public void resolveExplicitField() throws Exception {
-    SemanticSearch.ResolvedSemanticQuery resolved = SemanticSearch.resolve(
-        new SearchArgs.Semantic("orders", MetastoreTableMapper.FIELD_SEARCH_TEXT),
-        defaultMapping());
-    assertEquals(MetastoreTableMapper.FIELD_SEARCH_TEXT, resolved.field());
-    assertEquals("orders", resolved.queryText());
-  }
-
-  @Test
-  public void resolveRejectsNonSemanticField() {
-    assertThrows(
-        SearchException.class,
-        () ->
-            SemanticSearch.resolve(
-                new SearchArgs.Semantic("t1", MetastoreTableMapper.FIELD_TABLE),
-                defaultMapping()));
-  }
-
-  @Test
-  public void resolveRequiresFieldWhenMultipleSemanticFieldsExist() {
+  public void resolveDefaultsToAllSemanticFieldsWhenNoSegments() throws Exception {
     Configuration conf = new Configuration(false);
     Map<String, FieldSchema> fields = new LinkedHashMap<>();
     fields.put(
@@ -83,8 +62,9 @@ public class TestSemanticSearch {
             "field_b", new SearchParams(true, "model-b", SearchParams.VectorDistance.COSINE)));
     IndexMapping mapping = new IndexMapping("idx", conf, fields);
 
-    assertThrows(
-        SearchException.class,
-        () -> SemanticSearch.resolve(new SearchArgs.Semantic("query", null), mapping));
+    SemanticSearch.ResolvedSemanticQuery resolved =
+        SemanticSearch.resolve(new SearchMethod.Semantic("query"), mapping);
+    assertEquals("query", resolved.queryText());
+    assertEquals(List.of("field_a", "field_b"), mapping.resolveSemanticSearchFields(null));
   }
 }

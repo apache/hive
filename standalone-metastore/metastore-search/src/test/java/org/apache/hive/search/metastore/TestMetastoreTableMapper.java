@@ -24,14 +24,16 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hive.search.config.IndexStoreConfig;
+import org.apache.hive.search.config.InferenceConfig;
 import org.apache.hive.search.index.IndexManager;
 import org.apache.hive.search.index.Indexer;
-import org.apache.hive.search.inference.EmbedModelRegistry;
+import org.apache.hive.search.inference.EmbedderRegistry;
 import org.apache.hive.search.mapping.IndexMapping;
 import org.apache.hive.search.mapping.TableDocument;
 import org.apache.hive.search.mapping.field.Field;
 import org.apache.hive.search.mapping.field.IdField;
 import org.apache.hive.search.mapping.field.TextField;
+import org.apache.hive.search.testutil.StubEmbedder;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
@@ -84,7 +86,7 @@ public class TestMetastoreTableMapper {
     table.setParameters(params);
 
     TableDocument document = MetastoreTableMapper.fromTable(table, mapping);
-    document = withSearchTextEmbedding(document, mapping, new float[] {0.1f, 0.2f, 0.3f});
+    document = withSegmentEmbeddings(document, mapping, new float[] {0.1f, 0.2f, 0.3f});
     assertEquals("hive.sales.orders", document.idField().value());
 
     List<Document> luceneDocs = document.toDocuments();
@@ -95,13 +97,13 @@ public class TestMetastoreTableMapper {
     assertEquals("sales", luceneDoc.get(MetastoreTableMapper.FIELD_DB));
     assertEquals("orders", luceneDoc.get(MetastoreTableMapper.FIELD_TABLE));
     assertTrue(hasIndexedField(luceneDoc, MetastoreTableMapper.FIELD_TABLE + ".filter"));
-    String searchText = luceneDoc.get(MetastoreTableMapper.FIELD_SEARCH_TEXT);
-    assertEquals(
-        "table: orders; comment: daily orders; column id: order id; column amount:",
-        searchText);
-    assertFalse(searchText.contains("hdfs://"));
-    assertFalse(searchText.contains("MANAGED_TABLE"));
-    assertFalse(searchText.contains("alice"));
+    assertEquals("table: orders; comment: daily orders",
+        luceneDoc.get(SearchTextSegment.segmentField(0)));
+    assertTrue(fieldValue(document, SearchTextSegment.segmentField(1)).contains("column id: order id"));
+    String combined = combinedSearchText(document);
+    assertFalse(combined.contains("hdfs://"));
+    assertFalse(combined.contains("MANAGED_TABLE"));
+    assertFalse(combined.contains("alice"));
     assertEquals("id amount", luceneDoc.get(MetastoreTableMapper.FIELD_COLUMNS));
     assertEquals("order id", luceneDoc.get(MetastoreTableMapper.FIELD_COLUMN_COMMENTS));
   }
@@ -143,9 +145,9 @@ public class TestMetastoreTableMapper {
         new FieldSchema("status", "string", "fulfillment status")));
 
     TableDocument document = MetastoreTableMapper.fromTable(table, mapping);
-    assertEquals(
-        "table: orders; column id: order id; column amount:; column status: fulfillment status",
-        fieldValue(document, MetastoreTableMapper.FIELD_SEARCH_TEXT));
+    assertTrue(fieldValue(document, SearchTextSegment.segmentField(0)).contains("column id"));
+    assertTrue(fieldValue(document, SearchTextSegment.segmentField(0)).contains("column status"));
+    assertFalse(fieldValue(document, SearchTextSegment.segmentField(0)).contains("column amount"));
     assertTrue(fieldValue(document, MetastoreTableMapper.FIELD_COLUMNS).contains("amount"));
   }
 
@@ -167,14 +169,14 @@ public class TestMetastoreTableMapper {
     table.getSd().setCols(cols);
 
     TableDocument document = MetastoreTableMapper.fromTable(table, mapping);
-    String searchText = fieldValue(document, MetastoreTableMapper.FIELD_SEARCH_TEXT);
+    String combined = combinedSearchText(document);
     String columnComments = fieldValue(document, MetastoreTableMapper.FIELD_COLUMN_COMMENTS);
     String storedColumns = fieldValue(document, MetastoreTableMapper.FIELD_COLUMNS);
 
-    assertTrue(searchText.contains("column col0: comment 0"));
-    assertTrue(searchText.contains(
+    assertTrue(combined.contains("column col0: comment 0"));
+    assertTrue(combined.contains(
         "column col" + (columnCount - 1) + ": comment " + (columnCount - 1)));
-    assertFalse(searchText.contains("(+"));
+    assertFalse(combined.contains("(+"));
     assertTrue(columnComments.contains("comment " + (columnCount - 1)));
     assertFalse(columnComments.contains("(+"));
     assertTrue(storedColumns.contains("col" + (columnCount - 1)));
@@ -194,18 +196,18 @@ public class TestMetastoreTableMapper {
     table.getSd().setCols(List.of(new FieldSchema("id", "bigint", null)));
 
     TableDocument document = MetastoreTableMapper.fromTable(table, mapping);
-    assertEquals("table: events; column id:", fieldValue(document, MetastoreTableMapper.FIELD_SEARCH_TEXT));
+    assertEquals(0, segmentFieldCount(document));
   }
 
   @Test
   public void embedDocumentsPreservesLexicalFields() throws Exception {
     Configuration conf = new Configuration(false);
     conf.setBoolean(IndexStoreConfig.MEMORY, true);
-    conf.set(org.apache.hive.search.config.InferenceConfig.MODEL_NAME, "stub-model");
+    conf.set(InferenceConfig.EMBEDDER_NAME, "stub-model");
     IndexMapping mapping = MetastoreSchemas.defaultHiveTablesMapping("hive_tables", "stub-model", conf);
     IndexManager indexManager = IndexManager.open(mapping, conf);
-    EmbedModelRegistry registry = new EmbedModelRegistry(
-        java.util.Map.of("stub-model", new org.apache.hive.search.testutil.StubEmbedModel("stub-model")));
+    EmbedderRegistry registry = new EmbedderRegistry(
+        java.util.Map.of("stub-model", new StubEmbedder("stub-model")));
     Indexer indexer = new Indexer(indexManager, registry);
     indexer.initialize();
 
@@ -223,7 +225,7 @@ public class TestMetastoreTableMapper {
       }
     }
     assertTrue(fieldNames.contains(MetastoreTableMapper.FIELD_COMMENT));
-    assertTrue(fieldNames.contains(MetastoreTableMapper.FIELD_SEARCH_TEXT));
+    assertTrue(fieldNames.contains(SearchTextSegment.segmentField(0)));
 
     ByteBuffersDirectory directory = new ByteBuffersDirectory();
     try (IndexWriter writer = new IndexWriter(directory, new IndexWriterConfig(mapping.analyzer()))) {
@@ -252,7 +254,7 @@ public class TestMetastoreTableMapper {
     table.setParameters(params);
 
     TableDocument document = MetastoreTableMapper.fromTable(table, mapping);
-    document = withSearchTextEmbedding(document, mapping, new float[] {0.1f, 0.2f, 0.3f});
+    document = withSegmentEmbeddings(document, mapping, new float[] {0.1f, 0.2f, 0.3f});
     ByteBuffersDirectory directory = new ByteBuffersDirectory();
     try (IndexWriter writer = new IndexWriter(directory, new IndexWriterConfig(mapping.analyzer()))) {
       writer.addDocuments(document.toDocuments());
@@ -269,7 +271,7 @@ public class TestMetastoreTableMapper {
     Configuration conf = new Configuration(false);
     IndexMapping mapping = MetastoreSchemas.defaultHiveTablesMapping("hive_tables", "bge-small", conf);
     TableDocument document = MetastoreTableMapper.fromTable(sampleTable(), mapping);
-    document.appendField(new TextField(MetastoreTableMapper.FIELD_SEARCH_TEXT, "sales data"));
+    document.appendField(new TextField(SearchTextSegment.segmentField(0), "sales data"));
     try {
       document.toDocuments();
       org.junit.Assert.fail("expected semantic field without embedding to fail");
@@ -343,7 +345,7 @@ public class TestMetastoreTableMapper {
     return table;
   }
 
-  private static TableDocument withSearchTextEmbedding(
+  private static TableDocument withSegmentEmbeddings(
       TableDocument document, IndexMapping mapping, float[] embedding) {
     java.util.List<Field> fields = new java.util.ArrayList<>();
     for (Field field : document.fields()) {
@@ -351,13 +353,33 @@ public class TestMetastoreTableMapper {
         continue;
       }
       if (field instanceof TextField textField
-          && MetastoreTableMapper.FIELD_SEARCH_TEXT.equals(textField.name())) {
+          && SearchTextSegment.isSegmentField(textField.name())) {
         fields.add(textField.withEmbedding(embedding));
       } else {
         fields.add(field);
       }
     }
     return new TableDocument(document.idField(), fields, mapping);
+  }
+
+  private static String combinedSearchText(TableDocument document) {
+    StringBuilder sb = new StringBuilder();
+    for (Field field : document.fields()) {
+      if (field instanceof TextField textField && SearchTextSegment.isSegmentField(textField.name())) {
+        sb.append(textField.value());
+      }
+    }
+    return sb.toString();
+  }
+
+  private static int segmentFieldCount(TableDocument document) {
+    int count = 0;
+    for (Field field : document.fields()) {
+      if (field instanceof TextField textField && SearchTextSegment.isSegmentField(textField.name())) {
+        count++;
+      }
+    }
+    return count;
   }
 
   private static boolean hasIndexedField(Document document, String fieldName) {

@@ -17,42 +17,27 @@
 
 package org.apache.hive.search.search;
 
-import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.hive.search.config.SearchConfig;
 import org.apache.hive.search.exception.SearchException;
-import org.apache.hive.search.mapping.FieldSchema;
 import org.apache.hive.search.mapping.IndexMapping;
 
 public final class HybridSearch {
   private HybridSearch() {}
 
-  public record ResolvedHybridQuery(String field, String queryText, Float semanticWeight) {}
+  public record ResolvedHybridQuery(String queryText, Float semanticWeight) {
+    public SemanticSearch.ResolvedSemanticQuery toSemanticQuery() {
+      return new SemanticSearch.ResolvedSemanticQuery(queryText);
+    }
 
-  public static ResolvedHybridQuery resolve(SearchArgs.Hybrid args, IndexMapping mapping)
-      throws SearchException {
-    String field = requireHybridField(mapping, args.field());
-    Float semanticWeight = resolveSemanticWeight(args.matchWeight(), args.semanticWeight());
-    return new ResolvedHybridQuery(field, args.queryText(), semanticWeight);
+    public LexicalSearch.ResolvedMatchQuery toMatchQuery() {
+      return new LexicalSearch.ResolvedMatchQuery(queryText, null);
+    }
   }
 
-  public static SearchInternal.FusionRequest toFusionRequest(
-      ResolvedHybridQuery hybrid, int defaultSize, SearchConfig searchConfig)
+  public static ResolvedHybridQuery resolve(SearchMethod.Hybrid args, IndexMapping mapping)
       throws SearchException {
-    float semanticWeight = hybrid.semanticWeight() != null ?
-        hybrid.semanticWeight() : searchConfig.getHybridSemanticWeight();
-    float matchWeight = 1.0f - semanticWeight;
-    List<SearchInternal.RetrieverSpec> retrievers =
-        List.of(
-            new SearchInternal.RetrieverSpec(
-                new SearchArgs.Match(hybrid.queryText()), matchWeight, SearchQuery.Mode.MATCH.name()),
-            new SearchInternal.RetrieverSpec(
-                new SearchArgs.Semantic(hybrid.queryText(), hybrid.field()),
-                semanticWeight,
-                SearchQuery.Mode.SEMANTIC.name())
-        );
-    return new SearchInternal.FusionRequest(retrievers, defaultSize);
+    mapping.resolveSemanticSearchFields(null);
+    Float semanticWeight = resolveSemanticWeight(args.matchWeight(), args.semanticWeight());
+    return new ResolvedHybridQuery(args.queryText(), semanticWeight);
   }
 
   private static Float resolveSemanticWeight(Float matchWeight, Float semanticWeight) {
@@ -63,30 +48,5 @@ public final class HybridSearch {
       return 1.0f - matchWeight;
     }
     return null;
-  }
-
-  private static String requireHybridField(IndexMapping mapping, String field)
-      throws SearchException {
-    if (StringUtils.isNotEmpty(field)) {
-      validateHybridField(mapping, field);
-      return field;
-    }
-    return mapping
-        .soleHybridField()
-        .orElseThrow(
-            () ->
-                new SearchException(
-                    "hybrid query requires field when index has "
-                        + mapping.hybridFields().size()
-                        + " hybrid field(s): "
-                        + mapping.hybridFields()));
-  }
-
-  private static void validateHybridField(IndexMapping mapping, String field)
-      throws SearchException {
-    FieldSchema schema = mapping.fieldSchema(field);
-    if (!(schema instanceof FieldSchema.TextFieldSchema text) || !text.search().hybrid()) {
-      throw new SearchException("field '" + field + "' is not configured for hybrid search");
-    }
   }
 }

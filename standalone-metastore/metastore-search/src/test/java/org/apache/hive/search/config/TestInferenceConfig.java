@@ -18,51 +18,23 @@
 package org.apache.hive.search.config;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hive.search.inference.EmbedderSpec;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 @Category(MetastoreUnitTest.class)
 public class TestInferenceConfig {
 
   @Test
-  public void embeddingThreadsDefaultsToAtLeastOne() {
-    Configuration conf = new Configuration(false);
-    InferenceConfig config = new InferenceConfig(conf);
-    assertTrue(config.getEmbeddingThreads() >= 1);
+  public void embeddingPoolingDefaultsToMean() {
+    assertEquals(EmbedderSpec.Pooling.MEAN, EmbedderSpec.Pooling.fromConfig(null));
   }
 
   @Test
-  public void embeddingThreadsHonorsConfiguration() {
-    Configuration conf = new Configuration(false);
-    conf.setInt(InferenceConfig.EMBEDDING_THREADS, 8);
-    InferenceConfig config = new InferenceConfig(conf);
-    assertEquals(8, config.getEmbeddingThreads());
-  }
-
-  @Test
-  public void embeddingThreadsRejectsNonPositiveValues() {
-    Configuration conf = new Configuration(false);
-    conf.setInt(InferenceConfig.EMBEDDING_THREADS, 0);
-    InferenceConfig config = new InferenceConfig(conf);
-    assertEquals(1, config.getEmbeddingThreads());
-  }
-
-  @Test
-  public void embeddingMaxSeqLengthDefaultsTo512() {
-    Configuration conf = new Configuration(false);
-    InferenceConfig config = new InferenceConfig(conf);
-    assertEquals(512, config.getEmbeddingMaxSeqLength());
-  }
-
-  @Test
-  public void embeddingMaxSeqLengthHonorsConfiguration() {
-    Configuration conf = new Configuration(false);
-    conf.setInt(InferenceConfig.EMBEDDING_MAX_SEQ_LENGTH, 256);
-    InferenceConfig config = new InferenceConfig(conf);
-    assertEquals(256, config.getEmbeddingMaxSeqLength());
+  public void embeddingPoolingHonorsCls() {
+    assertEquals(EmbedderSpec.Pooling.CLS, EmbedderSpec.Pooling.fromConfig("cls"));
   }
 }

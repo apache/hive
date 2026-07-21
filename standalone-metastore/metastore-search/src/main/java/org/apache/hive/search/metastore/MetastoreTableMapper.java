@@ -42,7 +42,7 @@ public final class MetastoreTableMapper {
   public static final String FIELD_COLUMNS = "columns";
   public static final String FIELD_COLUMN_COMMENTS = "column_comments";
   public static final String FIELD_SEARCH_TEXT = "search_text";
-  /** Relative boosts for {@code table_keyword} ranking: table name &gt; column name &gt; comment. */
+  /** Logical API name for semantic/hybrid search over {@link SearchTextSegment segment fields}. */
   public static final float KEYWORD_BOOST_TABLE_NAME = 4.0f;
   public static final float KEYWORD_BOOST_COLUMN_NAME = 2.0f;
   public static final float KEYWORD_BOOST_COMMENT = 1.0f;
@@ -76,7 +76,10 @@ public final class MetastoreTableMapper {
     String comment = tableComment(table);
     String columns = formatColumnNamesForSearch(table);
     String columnComments = formatColumnCommentsForSearch(table);
-    String searchText = buildSearchText(name, comment, table);
+    List<String> searchSegments = SearchTextSegment.build(
+        table,
+        indexMapping.search().getSemanticSegmentMax(),
+        indexMapping.search().getSemanticSegmentMaxChars());
 
     List<Field> fields = new ArrayList<>(10);
     fields.add(new TextField(FIELD_DB, db));
@@ -87,7 +90,9 @@ public final class MetastoreTableMapper {
     fields.add(new TextField(FIELD_COMMENT, comment));
     fields.add(new TextField(FIELD_COLUMNS, columns));
     fields.add(new TextField(FIELD_COLUMN_COMMENTS, columnComments));
-    fields.add(new TextField(FIELD_SEARCH_TEXT, searchText));
+    for (int i = 0; i < searchSegments.size(); i++) {
+      fields.add(new TextField(SearchTextSegment.segmentField(i), searchSegments.get(i)));
+    }
     return new TableDocument(new IdField("_id", id), fields, indexMapping);
   }
 
@@ -119,20 +124,6 @@ public final class MetastoreTableMapper {
     return nullToEmpty(table.getParameters().get("comment"));
   }
 
-  private static String buildSearchText(String tableName, String comment, Table table) {
-    List<String> parts = new ArrayList<>();
-    parts.add("table: " + tableName.toLowerCase(Locale.ROOT));
-    if (StringUtils.isNotEmpty(comment)) {
-      parts.add("comment: " + comment);
-    }
-    if (table.getSd() != null && table.getSd().getCols() != null) {
-      for (FieldSchema column : table.getSd().getCols()) {
-        parts.add(formatColumnForSearch(column));
-      }
-    }
-    return String.join("; ", parts);
-  }
-
   private static String formatColumnNamesForSearch(Table table) {
     if (table.getSd() == null || table.getSd().getCols() == null) {
       return "";
@@ -155,14 +146,6 @@ public final class MetastoreTableMapper {
       }
     }
     return String.join("; ", parts);
-  }
-
-  private static String formatColumnForSearch(FieldSchema column) {
-    String name = column.getName().toLowerCase(Locale.ROOT);
-    if (StringUtils.isNotEmpty(column.getComment())) {
-      return "column " + name + ": " + column.getComment();
-    }
-    return "column " + name + ":";
   }
 
   private static String nullToEmpty(String value) {

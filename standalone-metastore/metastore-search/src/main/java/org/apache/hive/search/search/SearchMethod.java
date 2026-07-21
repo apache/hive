@@ -18,7 +18,6 @@
 package org.apache.hive.search.search;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -26,29 +25,32 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hive.search.exception.SearchException;
 
 /** Typed search arguments. Map/JSON parsing belongs in {@link #fromBody(Object, SearchQuery.Mode)}. */
-public sealed interface SearchArgs permits SearchArgs.Match, SearchArgs.Semantic, SearchArgs.Hybrid {
+public sealed interface SearchMethod permits SearchMethod.Match, SearchMethod.Semantic, SearchMethod.Hybrid {
 
-  record Match(String queryText) implements SearchArgs {
+  record Match(String queryText, String field) implements SearchMethod {
+    public Match(String queryText) {
+      this(queryText, null);
+    }
+
     public Match {
       Objects.requireNonNull(queryText, "queryText");
     }
   }
 
-  record Semantic(String queryText, String field) implements SearchArgs {
+  record Semantic(String queryText) implements SearchMethod {
     public Semantic {
       Objects.requireNonNull(queryText, "queryText");
     }
   }
 
-  record Hybrid(String queryText, String field, Float matchWeight, Float semanticWeight)
-      implements SearchArgs {
+  record Hybrid(String queryText, Float matchWeight, Float semanticWeight) implements SearchMethod {
     public Hybrid {
       Objects.requireNonNull(queryText, "queryText");
     }
   }
 
   /** Deserializes an API/Thrift request body into typed search args. */
-  static SearchArgs fromBody(Object body, SearchQuery.Mode mode) throws SearchException {
+  static SearchMethod fromBody(Object body, SearchQuery.Mode mode) throws SearchException {
     return switch (mode) {
       case MATCH -> parseMatchBody(body);
       case SEMANTIC -> parseSemanticBody(body);
@@ -57,34 +59,22 @@ public sealed interface SearchArgs permits SearchArgs.Match, SearchArgs.Semantic
   }
 
   /** Serializes typed search args to a flat string map for Thrift. */
-  static Map<String, String> toBody(SearchArgs args) {
+  static Map<String, String> toBody(SearchMethod args) {
     return switch (args) {
-      case Match match -> Map.of("query", match.queryText());
-      case Semantic semantic -> toSemanticBody(semantic);
+      case Match match -> toMatchBody(match);
+      case Semantic semantic -> Map.of("query", semantic.queryText());
       case Hybrid hybrid -> toHybridBody(hybrid);
     };
   }
 
   /** Serializes typed search args to a Thrift-ready query body map. */
-  static Map<String, String> toQueryBody(SearchArgs args) {
+  static Map<String, String> toQueryBody(SearchMethod args) {
     return toBody(args);
-  }
-
-  private static Map<String, String> toSemanticBody(Semantic semantic) {
-    Map<String, String> body = new LinkedHashMap<>();
-    body.put("query", semantic.queryText());
-    if (StringUtils.isNotEmpty(semantic.field())) {
-      body.put("field", semantic.field());
-    }
-    return body;
   }
 
   private static Map<String, String> toHybridBody(Hybrid hybrid) {
     Map<String, String> body = new LinkedHashMap<>();
     body.put("query", hybrid.queryText());
-    if (StringUtils.isNotEmpty(hybrid.field())) {
-      body.put("field", hybrid.field());
-    }
     if (hybrid.matchWeight() != null) {
       body.put("match_weight", hybrid.matchWeight().toString());
     }
@@ -94,44 +84,41 @@ public sealed interface SearchArgs permits SearchArgs.Match, SearchArgs.Semantic
     return body;
   }
 
+  private static Map<String, String> toMatchBody(Match match) {
+    if (StringUtils.isEmpty(match.field())) {
+      return Map.of("query", match.queryText());
+    }
+    Map<String, String> body = new LinkedHashMap<>();
+    body.put("query", match.queryText());
+    body.put("field", match.field());
+    return body;
+  }
+
   private static Match parseMatchBody(Object body) throws SearchException {
     if (body instanceof String queryText) {
       return new Match(queryText);
     }
     if (body instanceof Map<?, ?> matchMap && matchMap.containsKey("query")) {
-      return new Match(matchMap.get("query").toString());
+      String field = matchMap.containsKey("field") ?
+          StringUtils.trimToNull(matchMap.get("field").toString()) : null;
+      return new Match(matchMap.get("query").toString(), field);
     }
-    throw new SearchException("match query must be a string or {query: text}");
+    throw new SearchException("match query must be a string or {query: text, field: name}");
   }
 
   private static Semantic parseSemanticBody(Object body) throws SearchException {
     if (body instanceof String queryText) {
-      return new Semantic(queryText, null);
+      return new Semantic(queryText);
     }
-    if (!(body instanceof Map<?, ?> semanticMap)) {
-      throw new SearchException("semantic query must be a string or object");
+    if (body instanceof Map<?, ?> semanticMap && semanticMap.containsKey("query")) {
+      return new Semantic(semanticMap.get("query").toString());
     }
-    if (semanticMap.containsKey("field") && semanticMap.containsKey("query")) {
-      return new Semantic(
-          semanticMap.get("query").toString(),
-          semanticMap.get("field").toString());
-    }
-    if (semanticMap.containsKey("query") && !semanticMap.containsKey("field")) {
-      return new Semantic(semanticMap.get("query").toString(), null);
-    }
-    var fieldEntries = semanticMap.entrySet().stream()
-        .filter(entry -> entry.getValue() != null)
-        .toList();
-    if (fieldEntries.size() == 1) {
-      Map.Entry<?, ?> entry = fieldEntries.getFirst();
-      return new Semantic(entry.getValue().toString(), entry.getKey().toString());
-    }
-    throw new SearchException("semantic query must be a string, {field:, query:}, or {<field>: text}");
+    throw new SearchException("semantic query must be a string or {query: text}");
   }
 
   private static Hybrid parseHybridBody(Object body) throws SearchException {
     if (body instanceof String queryText) {
-      return new Hybrid(queryText, null, null, null);
+      return new Hybrid(queryText, null, null);
     }
     if (!(body instanceof Map<?, ?> hybridMap)) {
       throw new SearchException("hybrid query must be a string or object");
@@ -142,34 +129,11 @@ public sealed interface SearchArgs permits SearchArgs.Match, SearchArgs.Semantic
     Float semanticWeight = parseHybridWeight(hybridBody, "semantic_weight", "semantic");
     validateHybridWeights(matchWeight, semanticWeight);
 
-    if (hybridBody.containsKey("field") && hybridBody.containsKey("query")) {
-      return new Hybrid(
-          hybridBody.get("query").toString(),
-          hybridBody.get("field").toString(),
-          matchWeight,
-          semanticWeight);
-    }
     if (hybridBody.containsKey("query")) {
-      return new Hybrid(
-          hybridBody.get("query").toString(),
-          null,
-          matchWeight,
-          semanticWeight);
-    }
-    List<Map.Entry<String, Object>> fieldEntries = hybridBody.entrySet().stream()
-        .filter(entry -> !isHybridOption(entry.getKey()))
-        .filter(entry -> entry.getValue() != null)
-        .toList();
-    if (fieldEntries.size() == 1) {
-      Map.Entry<String, Object> entry = fieldEntries.getFirst();
-      return new Hybrid(
-          entry.getValue().toString(),
-          entry.getKey(),
-          matchWeight,
-          semanticWeight);
+      return new Hybrid(hybridBody.get("query").toString(), matchWeight, semanticWeight);
     }
     throw new SearchException(
-        "hybrid query must be a string, {field:, query:}, {query:}, or {<hybrid_field>: text}");
+        "hybrid query must be a string or {query: text, match_weight:, semantic_weight:}");
   }
 
   private static Float parseHybridWeight(
@@ -219,11 +183,5 @@ public sealed interface SearchArgs permits SearchArgs.Match, SearchArgs.Semantic
 
   private static boolean isWeightValid(Float weight) {
     return weight == null || (weight > 0.0f && weight < 1.0f);
-  }
-
-  private static boolean isHybridOption(String key) {
-    return "match_weight".equals(key)
-        || "semantic_weight".equals(key)
-        || "weights".equals(key);
   }
 }
