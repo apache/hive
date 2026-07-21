@@ -187,8 +187,8 @@ public class TestLeaderElection {
       assertTrue("HMS should trigger abort action when either election fails",
           firstAbortLatch.await(10, TimeUnit.SECONDS));
 
-      // Give the second failing daemon time to fire its UncaughtExceptionHandler;
-      // the AtomicBoolean guard in LeaderElectionContext must prevent a second abort.
+      // Wait briefly so any race between the two failing daemons resolves,
+      // then verify the AtomicBoolean guard kept abortAction at a single invocation.
       Thread.sleep(500);
 
       assertEquals("Abort action must run exactly once even if both electors fail",

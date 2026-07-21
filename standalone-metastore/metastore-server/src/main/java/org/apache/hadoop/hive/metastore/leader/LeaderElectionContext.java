@@ -125,22 +125,7 @@ public class LeaderElectionContext {
           throw new RuntimeException("Error claiming to be leader: " + leaderElection.getName(), e);
         }
       });
-      daemon.setUncaughtExceptionHandler((t, ex) -> {
-        HiveMetaStore.LOG.error(
-            "Metastore leader election '{}' failed after {} retries in thread '{}'; "
-                + "aborting Metastore to avoid running with unelected tasks.",
-            leaderElection.getName(),
-            MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.LOCK_NUMRETRIES),
-            t.getName(),
-            ex);
-        if (isAborting.compareAndSet(false, true)) {
-          try {
-            abortAction.run();
-          } catch (Throwable t2) {
-            HiveMetaStore.LOG.error("Error while executing Metastore abort action", t2);
-          }
-        }
-      });
+      daemon.setUncaughtExceptionHandler(newAbortOnElectionFailureHandler(leaderElection));
 
       if (startAsDaemon) {
         daemon.setName("Metastore Election " + leaderElection.getName());
@@ -160,6 +145,32 @@ public class LeaderElectionContext {
         HiveMetaStore.LOG.warn("Error closing election: " + le.getName(), e);
       }
     });
+  }
+
+  /**
+   * Builds the {@link Thread.UncaughtExceptionHandler} attached to each election daemon.
+   * When the daemon terminates because {@code tryBeLeader} exhausted its retries, this
+   * handler logs the failure and invokes {@link #abortAction}. The {@link AtomicBoolean}
+   * guard ensures the abort runs at most once even if both electors fail concurrently.
+   */
+  private Thread.UncaughtExceptionHandler newAbortOnElectionFailureHandler(
+      LeaderElection<?> leaderElection) {
+    return (t, ex) -> {
+      HiveMetaStore.LOG.error(
+          "Metastore leader election '{}' failed after {} retries in thread '{}'; "
+              + "aborting Metastore to avoid running with unelected tasks.",
+          leaderElection.getName(),
+          MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.LOCK_NUMRETRIES),
+          t.getName(),
+          ex);
+      if (isAborting.compareAndSet(false, true)) {
+        try {
+          abortAction.run();
+        } catch (Exception e) {
+          HiveMetaStore.LOG.error("Error while executing Metastore abort action", e);
+        }
+      }
+    };
   }
 
   /**
