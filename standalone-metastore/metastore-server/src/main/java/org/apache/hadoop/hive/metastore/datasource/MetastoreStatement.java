@@ -109,8 +109,7 @@ public final class MetastoreStatement implements InvocationHandler {
             : (args != null && args.length > 0 ? (String) args[0] : "no sql found");
         LOG.debug("Jdbc query: {} completed in {} ms", statement, timeSpent);
       }
-      boolean isQueryExecution = QUERY_EXECUTION.contains(method.getName());
-      if (isQueryExecution) {
+      if (isQueryExecution(method)) {
         HMSHandlerContext.getCallCtx().ifPresent(callCtx -> callCtx.recordJdbcExecution(timeSpent));
         logExecution(timeSpent, rawSql, method, args);
       }
@@ -145,6 +144,10 @@ public final class MetastoreStatement implements InvocationHandler {
 
   private boolean isSlowExecution(long timeSpent) {
     return slowQueryThreshold > 0 && timeSpent > slowQueryThreshold;
+  }
+
+  private static boolean isQueryExecution(Method method) {
+    return QUERY_EXECUTION.contains(method.getName());
   }
 
   public interface MetastoreStatementHook {
@@ -195,10 +198,7 @@ public final class MetastoreStatement implements InvocationHandler {
 
     @Override
     public boolean profile(String sql, Method method, Object[] args) {
-      if (!QUERY_EXECUTION.contains(method.getName())) {
-        return false;
-      }
-      if (profiledApis.isEmpty()) {
+      if (!isQueryExecution(method) || profiledApis.isEmpty()) {
         return false;
       }
       Optional<HMSHandlerContext.CallCtx> ctxCall = HMSHandlerContext.getCallCtx();

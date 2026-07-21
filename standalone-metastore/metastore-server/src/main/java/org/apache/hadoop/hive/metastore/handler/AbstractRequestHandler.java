@@ -25,6 +25,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CancellationException;
@@ -41,6 +42,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
+import org.apache.hadoop.hive.metastore.HMSHandlerContext;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.api.AsyncOperationResp;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -139,21 +141,26 @@ public abstract class AbstractRequestHandler<T extends TBase, A extends Abstract
       timerContext = null;
     }
 
+    Optional<HMSHandlerContext.CallCtx> callCtx = HMSHandlerContext.getCallCtx();
     Future<Result> resultFuture = executor.submit(() -> {
+      if (async) {
+        callCtx.ifPresent(HMSHandlerContext::setCallCtx);
+      }
       A resultV = null;
-      beforeExecute();
       try {
-        resultV = execute();
-      } finally {
+        beforeExecute();
         try {
-          if (async) {
-            REQUEST_CLEANER.schedule(() -> ID_TO_HANDLER.remove(id), 1, TimeUnit.HOURS);
-          }
-          afterExecute(resultV);
+          resultV = execute();
         } finally {
-          if (timerContext != null) {
-            timerContext.stop();
-          }
+          afterExecute(resultV);
+        }
+      } finally {
+        if (async) {
+          HMSHandlerContext.clear();
+          REQUEST_CLEANER.schedule(() -> ID_TO_HANDLER.remove(id), 1, TimeUnit.HOURS);
+        }
+        if (timerContext != null) {
+          timerContext.stop();
         }
       }
       return async ? resultV.shrinkIfNecessary() : resultV;
