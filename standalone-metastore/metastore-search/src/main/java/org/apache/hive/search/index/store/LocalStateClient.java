@@ -128,40 +128,36 @@ public record LocalStateClient(Directory directory, String indexName)
   }
 
   @Override
-  public void validateRestoredIndex(IndexManifest expected) throws IndexIOException {
+  public void validateRestoredIndex(IndexManifest expected) throws IOException {
+    if (!expected.sameFilesAs(readLocalFileManifest())) {
+      throw new IndexIOException("Restored index files do not match staging manifest");
+    }
+    if (!isIndexReadable()) {
+      throw new IndexIOException("Restored index is not readable by Lucene");
+    }
+    SegmentInfos segmentInfos = SegmentInfos.readLatestCommit(directory);
+    Map<String, String> userData = segmentInfos.getUserData();
+    String nid = userData.get("nid");
+    if (StringUtils.isEmpty(nid)) {
+      throw new IndexIOException("Restored index is missing commit checkpoint");
+    }
+    String modelName = userData.get("model");
+    if (StringUtils.isEmpty(modelName)) {
+      throw new IndexIOException("Restored index is missing embedding model metadata");
+    }
+    long eventId;
     try {
-      if (!expected.sameFilesAs(readLocalFileManifest())) {
-        throw new IndexIOException("Restored index files do not match staging manifest");
-      }
-      if (!isIndexReadable()) {
-        throw new IndexIOException("Restored index is not readable by Lucene");
-      }
-      SegmentInfos segmentInfos = SegmentInfos.readLatestCommit(directory);
-      Map<String, String> userData = segmentInfos.getUserData();
-      String nid = userData.get("nid");
-      if (StringUtils.isEmpty(nid)) {
-        throw new IndexIOException("Restored index is missing commit checkpoint");
-      }
-      String modelName = userData.get("model");
-      if (StringUtils.isEmpty(modelName)) {
-        throw new IndexIOException("Restored index is missing embedding model metadata");
-      }
-      long eventId;
-      try {
-        eventId = Long.parseLong(nid);
-      } catch (NumberFormatException e) {
-        throw new IndexIOException("Restored index has invalid commit checkpoint: nid=" + nid, e);
-      }
-      if (eventId != expected.lastEventId()) {
-        throw new IndexIOException(
-            "Restored index checkpoint mismatch: expected nid=" + expected.lastEventId()
-                + " but found nid=" + eventId);
-      }
-      if (!expected.modelName().equals(modelName)) {
-        throw new IndexIOException("Restored index embedding model mismatch");
-      }
-    } catch (IOException e) {
-      throw IndexIOException.wrap(e);
+      eventId = Long.parseLong(nid);
+    } catch (NumberFormatException e) {
+      throw new IndexIOException("Restored index has invalid commit checkpoint: nid=" + nid, e);
+    }
+    if (eventId != expected.lastEventId()) {
+      throw new IndexIOException(
+          "Restored index checkpoint mismatch: expected nid=" + expected.lastEventId()
+              + " but found nid=" + eventId);
+    }
+    if (!expected.modelName().equals(modelName)) {
+      throw new IndexIOException("Restored index embedding model mismatch");
     }
   }
 

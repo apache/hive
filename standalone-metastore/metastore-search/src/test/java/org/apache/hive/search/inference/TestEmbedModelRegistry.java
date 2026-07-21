@@ -18,7 +18,6 @@
 package org.apache.hive.search.inference;
 
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
-import org.apache.hive.search.exception.IndexException;
 import org.apache.hive.search.testutil.StubEmbedModel;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -44,7 +43,7 @@ public class TestEmbedModelRegistry {
   @Test
   public void getThrowsForUnknownModel() {
     EmbedModelRegistry registry = new EmbedModelRegistry(Map.of());
-    IndexException error = assertThrows(IndexException.class, () -> registry.get("missing"));
+    IllegalStateException error = assertThrows(IllegalStateException.class, () -> registry.get("missing"));
     assertTrue(error.getMessage().contains("missing"));
   }
 

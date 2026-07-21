@@ -25,7 +25,6 @@ import java.util.Set;
 import org.apache.hadoop.hive.common.DatabaseName;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hive.search.exception.IndexException;
 import org.apache.hive.search.exception.IndexNotHealthyException;
 
 public interface MetastoreEventListener {
@@ -34,7 +33,7 @@ public interface MetastoreEventListener {
    * Apply a coalesced batch of index mutations. Implementations must either complete all
    * mutations or throw; partial success must remain safe to retry idempotently.
    */
-  default void notifyIndexTask(IndexTask task) throws IndexException, java.io.IOException {
+  default void notifyIndexTask(IndexTask task) throws java.io.IOException {
 
   }
 

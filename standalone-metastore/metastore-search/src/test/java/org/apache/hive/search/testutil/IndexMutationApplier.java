@@ -20,7 +20,6 @@ package org.apache.hive.search.testutil;
 import org.apache.hadoop.hive.common.DatabaseName;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hive.search.exception.IndexException;
 import org.apache.hive.search.index.Indexer;
 import org.apache.hive.search.index.IndexManager;
 import org.apache.hive.search.mapping.TableDocument;
@@ -41,7 +40,7 @@ public final class IndexMutationApplier {
   }
 
   public void apply(MetastoreEventListener.IndexTask task)
-      throws IndexException, IOException {
+      throws IOException {
     if (!task.databasesToDrop.isEmpty()) {
       indexer.deleteDatabases(task.databasesToDrop.toArray(new DatabaseName[0]));
     }
@@ -60,20 +59,20 @@ public final class IndexMutationApplier {
     }
   }
 
-  public void addTable(Table table) throws IndexException, IOException {
+  public void addTable(Table table) throws IOException {
     MetastoreEventListener.IndexTask task = new MetastoreEventListener.IndexTask();
     TableName tableName = new TableName(table.getCatName(), table.getDbName(), table.getTableName());
     task.tablesToAdd.put(tableName, table);
     apply(task);
   }
 
-  public void dropTable(TableName tableName) throws IndexException, IOException {
+  public void dropTable(TableName tableName) throws IOException {
     MetastoreEventListener.IndexTask task = new MetastoreEventListener.IndexTask();
     task.tablesToDrop.add(tableName);
     apply(task);
   }
 
-  public void replaceTable(Table before, Table after) throws IndexException, IOException {
+  public void replaceTable(Table before, Table after) throws IOException {
     MetastoreEventListener.IndexTask task = new MetastoreEventListener.IndexTask();
     task.tablesToDrop.add(new TableName(before.getCatName(), before.getDbName(), before.getTableName()));
     task.tablesToAdd.put(new TableName(after.getCatName(), after.getDbName(), after.getTableName()), after);
