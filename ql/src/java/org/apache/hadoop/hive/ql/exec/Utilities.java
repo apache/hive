@@ -1528,6 +1528,11 @@ public final class Utilities {
           renameOrMoveFilesInParallel(hconf, fs, tmpPath, specPath);
           perfLogger.perfLogEnd("FileSinkOperator", "RenameOrMoveFiles");
         }
+      } else if (!avoidRename) {
+        // Empty UNION branch: .moved staging dir was created (line 1474) but contains no output files.
+        // (e.g. UNION ALL branch produced 0 rows). Without this delete it remains in the final partition directory
+        Utilities.FILE_OP_LOGGER.debug("Deleting empty staging directory after commit: {}", tmpPath);
+        fs.delete(tmpPath, false);
       }
     } else {
       Utilities.FILE_OP_LOGGER.trace("deleting tmpPath {}", tmpPath);
