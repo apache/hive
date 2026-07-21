@@ -273,7 +273,7 @@ public class TestMetastoreTableMapper {
     try {
       document.toDocuments();
       org.junit.Assert.fail("expected semantic field without embedding to fail");
-    } catch (org.apache.hive.search.exception.IndexException expected) {
+    } catch (org.apache.hive.search.exception.IndexIOException expected) {
       assertTrue(expected.getMessage().contains("requires embedding"));
     }
   }

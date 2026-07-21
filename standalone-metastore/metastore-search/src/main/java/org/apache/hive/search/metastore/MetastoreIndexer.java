@@ -28,7 +28,6 @@ import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
 import org.apache.hadoop.hive.metastore.leader.LeaderElection;
 import org.apache.hive.search.mapping.TableDocument;
-import org.apache.hive.search.exception.IndexException;
 import org.apache.hive.search.exception.IndexNotHealthyException;
 import org.apache.hive.search.config.IndexConfig;
 import org.apache.hive.search.index.Indexer;
@@ -319,7 +318,7 @@ public final class MetastoreIndexer implements AutoCloseable {
     }
 
     @Override
-    public void notifyIndexTask(IndexTask task) throws IndexException, IOException {
+    public void notifyIndexTask(IndexTask task) throws IOException {
       if (!task.databasesToDrop.isEmpty()) {
         indexer.deleteDatabases(task.databasesToDrop.toArray(new DatabaseName[0]));
       }

@@ -20,7 +20,7 @@ package org.apache.hive.search.inference;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.hive.search.exception.IndexException;
+import org.apache.hive.search.exception.InferenceException;
 
 import ai.onnxruntime.OrtException;
 
@@ -61,19 +61,19 @@ final class EmbedRequest {
     done.countDown();
   }
 
-  float[] awaitResult() throws IndexException {
+  float[] awaitResult() throws InferenceException {
     try {
       done.await();
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-      throw IndexException.wrap("Embedding interrupted", e);
+      throw InferenceException.wrap("Embedding interrupted", e);
     }
     Exception failure = error.get();
     if (failure != null) {
       if (failure instanceof OrtException ort) {
-        throw IndexException.wrap("Failed to encode text", ort);
+        throw InferenceException.wrap("Failed to encode text", ort);
       }
-      throw IndexException.wrap("Failed to encode text", failure);
+      throw InferenceException.wrap("Failed to encode text", failure);
     }
     return result.get();
   }

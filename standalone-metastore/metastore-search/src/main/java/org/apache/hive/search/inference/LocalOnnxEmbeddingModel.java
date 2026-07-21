@@ -22,7 +22,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.hive.search.config.InferenceConfig;
-import org.apache.hive.search.exception.IndexException;
+import org.apache.hive.search.exception.InferenceException;
 import org.apache.hive.search.exception.InitializeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,12 +54,12 @@ public final class LocalOnnxEmbeddingModel implements EmbedModel {
   }
 
   @Override
-  public float[] embed(TaskType task, String text) throws IndexException {
+  public float[] embed(TaskType task, String text) throws InferenceException {
     return enqueue(task, text).awaitResult();
   }
 
   @Override
-  public float[][] embedBatch(TaskType task, String[] texts) throws IndexException {
+  public float[][] embedBatch(TaskType task, String[] texts) throws InferenceException {
     if (texts.length == 0) {
       return new float[0][];
     }
@@ -74,13 +74,13 @@ public final class LocalOnnxEmbeddingModel implements EmbedModel {
     return vectors;
   }
 
-  private EmbedRequest enqueue(TaskType task, String text) throws IndexException {
+  private EmbedRequest enqueue(TaskType task, String text) throws InferenceException {
     EmbedRequest request = new EmbedRequest(task, text);
     try {
       queue.put(request);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-      throw IndexException.wrap("Embedding interrupted for model '" + name + "'", e);
+      throw InferenceException.wrap("Embedding interrupted for model '" + name + "'", e);
     }
     return request;
   }
@@ -95,10 +95,8 @@ public final class LocalOnnxEmbeddingModel implements EmbedModel {
         break;
       }
     }
-    if (workers != null) {
-      for (InferenceWorker worker : workers) {
-        worker.awaitStop();
-      }
+    for (InferenceWorker worker : workers) {
+      worker.awaitStop();
     }
     LOG.debug("Closed embedding model '{}'", name);
   }
