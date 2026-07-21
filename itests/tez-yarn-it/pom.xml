@@ -12,8 +12,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache.hive</groupId>
@@ -118,9 +117,7 @@
             <configuration>
               <target>
                 <mkdir dir="${test.conf.dir}"/>
-                <copy file="${basedir}/src/test/resources/custom_hosts_file"
-                      tofile="${test.conf.dir}/custom_hosts_file"
-                      overwrite="true"/>
+                <copy file="${basedir}/src/test/resources/custom_hosts_file" tofile="${test.conf.dir}/custom_hosts_file" overwrite="true"/>
                 <exec executable="hostname" output="${test.conf.dir}/local_hostname.txt" failonerror="true"/>
                 <loadfile property="hive.tez.yarn.it.local.hostname" srcFile="${test.conf.dir}/local_hostname.txt">
                   <filterchain>
