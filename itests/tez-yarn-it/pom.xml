@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache.hive</groupId>
+    <artifactId>hive-it</artifactId>
+    <version>4.3.0-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+  <artifactId>hive-it-tez-yarn</artifactId>
+  <packaging>jar</packaging>
+  <name>Hive Integration - Tez on YARN localization tests</name>
+  <properties>
+    <hive.path.to.root>../..</hive.path.to.root>
+    <skip.tez.yarn.tests>true</skip.tez.yarn.tests>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>testcontainers</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!-- Explicit Tez dependencies: Hive's Tez compilation/execution path needs these classes
+         on the in-process HS2 JVM classpath. In the main Hive build they are often profile-gated. -->
+    <dependency>
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-common</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-dag</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-runtime-library</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-runtime-internals</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-mapreduce</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-service</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-jdbc</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-exec</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-it-util</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-common</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-mapreduce-client-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>generate-custom-hosts-file</id>
+            <!-- Must run after the parent "setup-test-dirs" execution (process-test-resources). -->
+            <phase>test-compile</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <mkdir dir="${test.conf.dir}"/>
+                <copy file="${basedir}/src/test/resources/custom_hosts_file"
+                      tofile="${test.conf.dir}/custom_hosts_file"
+                      overwrite="true"/>
+                <exec executable="hostname" output="${test.conf.dir}/local_hostname.txt" failonerror="true"/>
+                <loadfile property="hive.tez.yarn.it.local.hostname" srcFile="${test.conf.dir}/local_hostname.txt">
+                  <filterchain>
+                    <striplinebreaks/>
+                  </filterchain>
+                </loadfile>
+                <!--
+                  When -Djdk.net.hosts.file is set, Java hostname resolution uses only that file.
+                  Ensure the local machine hostname is resolvable so Hive can start/compile queries.
+                -->
+                <echo file="${test.conf.dir}/custom_hosts_file" append="true">127.0.0.1 ${hive.tez.yarn.it.local.hostname}</echo>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <skipTests>${skip.tez.yarn.tests}</skipTests>
+          <!-- Resolve docker-network hostnames (namenode, resourcemanager, …) to 127.0.0.1
+               so HDFS URIs embedded in Tez LocalResources are reachable from both the host JVM
+               and inside YARN containers (via the shared docker network alias). -->
+          <argLine>${maven.test.jvm.args} -Xshare:off -Djdk.net.hosts.file=${test.conf.dir}/custom_hosts_file</argLine>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  <profiles>
+    <profile>
+      <id>tez-yarn</id>
+      <properties>
+        <skip.tez.yarn.tests>false</skip.tez.yarn.tests>
+      </properties>
+    </profile>
+  </profiles>
+</project>
