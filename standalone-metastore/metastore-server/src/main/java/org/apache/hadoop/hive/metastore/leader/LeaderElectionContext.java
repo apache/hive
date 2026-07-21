@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore.leader;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.TableName;
@@ -33,6 +34,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Objects.requireNonNull;
 
@@ -74,6 +76,12 @@ public class LeaderElectionContext {
   private final Map<TTYPE, List<LeadershipStateListener>> listeners;
   // Collection of leader candidates
   private final List<LeaderElection<?>> leaderElections = new ArrayList<>();
+  // Ensures the abort action runs at most once even if both electors fail concurrently.
+  private final AtomicBoolean isAborting = new AtomicBoolean(false);
+  // Action to run when a leader election exhausts retries. Defaults to triggering an
+  // orderly JVM shutdown via System.exit, which fires the HMS shutdown-hook chain
+  // (election close, ZK deregistration, metrics, servlet server). Overridable for tests.
+  private Runnable abortAction = () -> System.exit(1);
   // Property for testing, a single leader will be created
 
   private LeaderElectionContext(String servHost, Configuration conf,
@@ -117,6 +125,22 @@ public class LeaderElectionContext {
           throw new RuntimeException("Error claiming to be leader: " + leaderElection.getName(), e);
         }
       });
+      daemon.setUncaughtExceptionHandler((t, ex) -> {
+        HiveMetaStore.LOG.error(
+            "Metastore leader election '{}' failed after {} retries in thread '{}'; "
+                + "aborting Metastore to avoid running with unelected tasks.",
+            leaderElection.getName(),
+            MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.LOCK_NUMRETRIES),
+            t.getName(),
+            ex);
+        if (isAborting.compareAndSet(false, true)) {
+          try {
+            abortAction.run();
+          } catch (Throwable t2) {
+            HiveMetaStore.LOG.error("Error while executing Metastore abort action", t2);
+          }
+        }
+      });
 
       if (startAsDaemon) {
         daemon.setName("Metastore Election " + leaderElection.getName());
@@ -136,6 +160,17 @@ public class LeaderElectionContext {
         HiveMetaStore.LOG.warn("Error closing election: " + le.getName(), e);
       }
     });
+  }
+
+  /**
+   * Overrides the action taken when a leader election exhausts its retries.
+   * Production code should leave the default ({@code System.exit(1)}), which
+   * triggers the HMS orderly-shutdown hook chain. Tests can inject a fake to
+   * assert the abort path fires without killing the test JVM.
+   */
+  @VisibleForTesting
+  void setAbortAction(Runnable abortAction) {
+    this.abortAction = requireNonNull(abortAction, "abortAction is null");
   }
 
   public static class ContextBuilder {
