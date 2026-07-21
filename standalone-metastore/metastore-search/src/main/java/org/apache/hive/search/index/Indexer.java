@@ -31,8 +31,8 @@ import org.apache.hadoop.hive.common.DatabaseName;
 import org.apache.hadoop.hive.metastore.Batchable;
 import org.apache.hive.search.config.IndexConfig;
 import org.apache.hive.search.exception.IndexIOException;
-import org.apache.hive.search.inference.EmbedModel;
-import org.apache.hive.search.inference.EmbedModelRegistry;
+import org.apache.hive.search.inference.Embedder;
+import org.apache.hive.search.inference.EmbedderRegistry;
 import org.apache.hive.search.mapping.FieldSchema;
 import org.apache.hive.search.mapping.TableDocument;
 import org.apache.hive.search.mapping.field.Field;
@@ -56,12 +56,12 @@ public final class Indexer implements AutoCloseable {
   private static final int EMBED_BATCH_SIZE = 10000;
 
   private final IndexManager indexManager;
-  private final EmbedModelRegistry modelRegistry;
+  private final EmbedderRegistry modelRegistry;
   private final int commitFlushThreshold;
   private SnapshotDeletionPolicy snapshotter;
   private FlushTrackingWriter writer;
 
-  public Indexer(IndexManager index, EmbedModelRegistry registry) {
+  public Indexer(IndexManager index, EmbedderRegistry registry) {
     this.indexManager = index;
     this.modelRegistry = registry;
     this.commitFlushThreshold =
@@ -151,7 +151,7 @@ public final class Indexer implements AutoCloseable {
     return result;
   }
 
-  private void embedInBatch(String modelRef, EmbedModel embedModel,
+  private void embedInBatch(String modelRef, Embedder embedModel,
       ListMultimap<TextField, TableDocument> textDocs) throws IOException {
     int uniqueTexts = textDocs.keySet().stream()
         .map(TextField::value)
@@ -169,7 +169,7 @@ public final class Indexer implements AutoCloseable {
           List<String> texts = new ArrayList<>(valueToTxt.keySet());
           if (!texts.isEmpty()) {
             String[] textArray = texts.toArray(new String[0]);
-            float[][] embeddings = embedModel.embedBatch(EmbedModel.TaskType.DOCUMENT, textArray);
+            float[][] embeddings = embedModel.embedBatch(Embedder.TaskType.DOCUMENT, textArray);
             for (int i = 0; i < textArray.length; i++) {
               applyEmbedding(valueToTxt, textDocs, textArray[i], embeddings[i]);
             }
@@ -214,10 +214,10 @@ public final class Indexer implements AutoCloseable {
     if (!force && (!hasPendingChanges() || !shouldCommit())) {
       return false;
     }
-    String model = indexManager.mapping().inference().modelName();
+    String embedder = indexManager.mapping().inference().embedderName();
     Map<String, String> metadata = Map.of(
         "nid", lastEventId + "",
-        "model", model,
+        "embedder", embedder,
         "commit_time", String.valueOf(System.currentTimeMillis())
     );
     writer.setLiveCommitData(metadata.entrySet());

@@ -30,15 +30,15 @@ import org.apache.hive.search.config.SearchConfig;
 import org.apache.hive.search.index.Indexer;
 import org.apache.hive.search.index.IndexManager;
 import org.apache.hive.search.index.store.LocalStateClient;
-import org.apache.hive.search.inference.EmbedModelRegistry;
+import org.apache.hive.search.inference.EmbedderRegistry;
 import org.apache.hive.search.mapping.IndexMapping;
-import org.apache.hive.search.search.SearchArgs;
-import org.apache.hive.search.search.SearchInternal;
+import org.apache.hive.search.search.SearchMethod;
+import org.apache.hive.search.search.Searcher;
 import org.apache.hive.search.search.SearchQuery;
 import org.apache.hive.search.search.TableSearchResult;
 import org.apache.hive.search.testutil.InMemoryIndexStateClient;
 import org.apache.hive.search.testutil.RealMetastoreServer;
-import org.apache.hive.search.testutil.StubEmbedModel;
+import org.apache.hive.search.testutil.StubEmbedder;
 import org.apache.hive.search.testutil.TestLeaderElection;
 import org.apache.lucene.search.BayesianScoreEstimator;
 import org.apache.lucene.search.IndexSearcher;
@@ -57,7 +57,7 @@ public final class RealMetastoreSearchSession implements AutoCloseable {
 
   private final IndexManager indexManager;
   private final Indexer indexer;
-  private final EmbedModelRegistry modelRegistry;
+  private final EmbedderRegistry modelRegistry;
   private final MetastoreIndexer metastoreIndexer;
   private final SearchConfig searchConfig;
 
@@ -67,7 +67,7 @@ public final class RealMetastoreSearchSession implements AutoCloseable {
   private RealMetastoreSearchSession(
       IndexManager indexManager,
       Indexer indexer,
-      EmbedModelRegistry modelRegistry,
+      EmbedderRegistry modelRegistry,
       MetastoreIndexer metastoreIndexer,
       SearchConfig searchConfig) {
     this.indexManager = indexManager;
@@ -84,7 +84,7 @@ public final class RealMetastoreSearchSession implements AutoCloseable {
   public static RealMetastoreSearchSession open(
       RealMetastoreServer server, InMemoryIndexStateClient sharedRemote) throws Exception {
     Configuration conf = searchConfiguration(server.conf());
-    IndexMapping mapping = MetastoreSchemas.defaultHiveTablesMapping(
+    IndexMapping mapping = MetastoreIndexSchema.defaultHiveTablesMapping(
         "test_index", MODEL_NAME, conf);
 
     ByteBuffersDirectory directory = new ByteBuffersDirectory();
@@ -93,8 +93,8 @@ public final class RealMetastoreSearchSession implements AutoCloseable {
         ? new IndexManager(mapping, directory, local, null)
         : new IndexManager(mapping, directory, local, sharedRemote);
 
-    EmbedModelRegistry modelRegistry = new EmbedModelRegistry(
-        Map.of(MODEL_NAME, new StubEmbedModel(MODEL_NAME)));
+    EmbedderRegistry modelRegistry = new EmbedderRegistry(
+        Map.of(MODEL_NAME, new StubEmbedder(MODEL_NAME)));
     Indexer indexer = new Indexer(indexManager, modelRegistry);
     HiveMetaStoreClient sessionClient = new HiveMetaStoreClient(server.conf());
     MetastoreIndexer metastoreIndexer =
@@ -115,7 +115,7 @@ public final class RealMetastoreSearchSession implements AutoCloseable {
     Configuration conf = new Configuration(false);
     conf.setBoolean(IndexStoreConfig.MEMORY, true);
     conf.set(IndexConfig.INDEX_NAME, "test_index");
-    conf.set(InferenceConfig.MODEL_NAME, MODEL_NAME);
+    conf.set(InferenceConfig.EMBEDDER_NAME, MODEL_NAME);
     conf.setInt(IndexConfig.BOOTSTRAP_FETCH_THREADS, 2);
     conf.setInt(IndexConfig.BOOTSTRAP_QUEUE_DEPTH, 8);
     conf.setLong(IndexConfig.BOOTSTRAP_PROGRESS_INTERVAL_MS, Long.MAX_VALUE);
@@ -210,10 +210,10 @@ public final class RealMetastoreSearchSession implements AutoCloseable {
 
   public TableSearchResult searchMatch(String text, int limit) throws Exception {
     refreshSearcher();
-    try (SearchInternal searchIO = new SearchInternal(
+    try (Searcher searchIO = new Searcher(
         searcherManager, indexManager, modelRegistry, searchConfig, bayesianParameters)) {
       return searchIO.search(new SearchQuery(
-          new SearchArgs.Match(text),
+          new SearchMethod.Match(text),
           null, null, limit,
           List.of(MetastoreTableMapper.FIELD_TABLE, MetastoreTableMapper.FIELD_COMMENT)));
     }
@@ -221,12 +221,10 @@ public final class RealMetastoreSearchSession implements AutoCloseable {
 
   public TableSearchResult searchHybrid(String queryText, int limit) throws Exception {
     refreshSearcher();
-    try (SearchInternal searchIO = new SearchInternal(
+    try (Searcher searchIO = new Searcher(
         searcherManager, indexManager, modelRegistry, searchConfig, bayesianParameters)) {
       return searchIO.search(SearchQuery.fromQueryBody(
-          Map.of(
-              "field", MetastoreTableMapper.FIELD_SEARCH_TEXT,
-              "query", queryText),
+          Map.of("query", queryText),
           SearchQuery.Mode.HYBRID,
           null, null, limit,
           List.of(MetastoreTableMapper.FIELD_TABLE, MetastoreTableMapper.FIELD_COMMENT)));

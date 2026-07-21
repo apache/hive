@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.hive.search.index.manifest;
+package org.apache.hive.search.index.store;
 
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.junit.Test;
@@ -83,8 +83,8 @@ public class TestIndexManifest {
 
     List<IndexManifest.ChangedFileOp> ops = source.diff(target);
     assertEquals(3, ops.size());
-    assertTrue(ops.contains(IndexManifest.ChangedFileOp.add("changed", 20L)));
-    assertTrue(ops.contains(IndexManifest.ChangedFileOp.add("added", 30L)));
+    assertTrue(ops.contains(IndexManifest.ChangedFileOp.add("changed", 20L, null)));
+    assertTrue(ops.contains(IndexManifest.ChangedFileOp.add("added", 30L, null)));
     assertTrue(ops.contains(IndexManifest.ChangedFileOp.del("removed")));
   }
 
@@ -98,7 +98,23 @@ public class TestIndexManifest {
 
     List<IndexManifest.ChangedFileOp> ops = source.diff(null);
     assertEquals(1, ops.size());
-    assertEquals(new IndexManifest.ChangedFileOp.Add("segments_1", 100L), ops.get(0));
+    assertEquals(new IndexManifest.ChangedFileOp.Add("segments_1", 100L, null), ops.get(0));
+  }
+
+  @Test
+  public void diffDetectsSameSizeDifferentChecksum() {
+    IndexManifest source = IndexManifest.create(
+        "idx",
+        List.of(new IndexManifest.IndexFile("segments_1", 100, 11L)),
+        "model",
+        1L);
+    IndexManifest target = IndexManifest.create(
+        "idx",
+        List.of(new IndexManifest.IndexFile("segments_1", 100, 22L)),
+        "model",
+        1L);
+    assertFalse(source.sameFilesAs(target));
+    assertEquals(1, source.diff(target).size());
   }
 
   @Test

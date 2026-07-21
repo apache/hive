@@ -32,7 +32,7 @@ import org.apache.hive.search.exception.IndexNotHealthyException;
 import org.apache.hive.search.config.IndexConfig;
 import org.apache.hive.search.index.Indexer;
 import org.apache.hive.search.index.IndexManager;
-import org.apache.hive.search.index.manifest.IndexManifest;
+import org.apache.hive.search.index.store.IndexManifest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,7 +70,7 @@ public final class MetastoreIndexer implements AutoCloseable {
     this.handler.addListeners(flushIndexListener, indexManager);
     this.cluster = new MetastoreCluster(configuration, flushIndexListener);
     this.lastEventId = initialize();
-    this.indexManager.setIndexedNid(lastEventId);
+    this.indexManager.setNid(lastEventId);
   }
 
   private boolean rebuildIndex() throws Exception {
@@ -95,9 +95,9 @@ public final class MetastoreIndexer implements AutoCloseable {
     if (indexManifest == null) {
       return false;
     }
-    String currentModelName = indexManager.mapping().inference().modelName();
-    String modelName = indexManifest.modelName();
-    if (!currentModelName.equals(modelName)) {
+    String current = indexManager.mapping().inference().embedderName();
+    String embedderName = indexManifest.embedder();
+    if (!current.equals(embedderName)) {
       return false;
     }
     long notificationId = indexManifest.lastEventId();
@@ -181,16 +181,16 @@ public final class MetastoreIndexer implements AutoCloseable {
    * @return restored notification id, or -1 if this instance became leader while waiting
    */
   private long waitForRemoteBackup() throws Exception {
-    String currentModelName = indexManager.mapping().inference().modelName();
+    String current = indexManager.mapping().inference().embedderName();
     for (; !cluster.isLeader(); Thread.sleep(3000)) {
       Optional<IndexManifest> indexManifest = indexManager.readRemoteManifest();
       if (indexManifest.isEmpty()) {
         continue;
       }
       IndexManifest manifest = indexManifest.get();
-      if (!currentModelName.equals(manifest.modelName())) {
+      if (!current.equals(manifest.embedder())) {
         LOG.debug("Remote index model {} does not match configured model {}, waiting",
-            manifest.modelName(), currentModelName);
+            manifest.embedder(), current);
         continue;
       }
       long notificationId = manifest.lastEventId();
@@ -255,10 +255,12 @@ public final class MetastoreIndexer implements AutoCloseable {
           try {
             if (indexer.flush(eventId, false)) {
               lastCommittedEventId = eventId;
+              indexManager.setCommittedEventId(eventId);
             } else if (eventId - lastCommittedEventId > indexConfig.getForceFlushEventGap()) {
               // Many events processed with no Lucene changes; advance checkpoint metadata.
               if (indexer.flush(eventId, true)) {
                 lastCommittedEventId = eventId;
+                indexManager.setCommittedEventId(eventId);
               }
             }
           } catch (IOException e) {
@@ -346,8 +348,10 @@ public final class MetastoreIndexer implements AutoCloseable {
         commitThread.interrupt();
       } finally {
         if (eventId > lastCommittedEventId) {
-          indexer.flush(eventId, true);
-          lastCommittedEventId = eventId;
+          if (indexer.flush(eventId, true)) {
+            lastCommittedEventId = eventId;
+            indexManager.setCommittedEventId(eventId);
+          }
         }
       }
     }

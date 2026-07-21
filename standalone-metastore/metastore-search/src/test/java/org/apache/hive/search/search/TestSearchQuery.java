@@ -32,8 +32,8 @@ public class TestSearchQuery {
   @Test
   public void ofTextDefaultsToHybridMode() throws Exception {
     SearchQuery query = SearchQuery.of("sales");
-    assertTrue(query.args() instanceof SearchArgs.Hybrid);
-    assertEquals("sales", ((SearchArgs.Hybrid) query.args()).queryText());
+    assertTrue(query.args() instanceof SearchMethod.Hybrid);
+    assertEquals("sales", ((SearchMethod.Hybrid) query.args()).queryText());
     assertEquals(SearchQuery.Mode.HYBRID, query.mode());
     assertEquals(0, query.limit());
   }
@@ -41,7 +41,7 @@ public class TestSearchQuery {
   @Test
   public void ofTextWithModeAndLimit() throws Exception {
     SearchQuery query = SearchQuery.of("sales", SearchQuery.Mode.SEMANTIC, 25);
-    assertTrue(query.args() instanceof SearchArgs.Semantic);
+    assertTrue(query.args() instanceof SearchMethod.Semantic);
     assertEquals(SearchQuery.Mode.SEMANTIC, query.mode());
     assertEquals(25, query.limit());
   }
@@ -49,8 +49,8 @@ public class TestSearchQuery {
   @Test
   public void ofTableNameUsesKeywordMode() throws Exception {
     SearchQuery query = SearchQuery.of("orders", "hive", "default");
-    assertTrue(query.args() instanceof SearchArgs.Match);
-    assertEquals("orders", ((SearchArgs.Match) query.args()).queryText());
+    assertTrue(query.args() instanceof SearchMethod.Match);
+    assertEquals("orders", ((SearchMethod.Match) query.args()).queryText());
     assertEquals(SearchQuery.Mode.MATCH, query.mode());
     assertEquals("hive", query.catalogName());
     assertEquals("default", query.databaseName());

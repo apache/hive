@@ -22,13 +22,13 @@ import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hive.search.config.IndexConfig;
 import org.apache.hive.search.config.IndexStoreConfig;
 import org.apache.hive.search.config.InferenceConfig;
-import org.apache.hive.search.inference.EmbedModelRegistry;
+import org.apache.hive.search.inference.EmbedderRegistry;
 import org.apache.hive.search.mapping.IndexMapping;
 import org.apache.hive.search.mapping.TableDocument;
-import org.apache.hive.search.metastore.MetastoreSchemas;
+import org.apache.hive.search.metastore.MetastoreIndexSchema;
 import org.apache.hive.search.metastore.MetastoreTableMapper;
 import org.apache.hive.search.search.InMemorySearchFixture;
-import org.apache.hive.search.testutil.StubEmbedModel;
+import org.apache.hive.search.testutil.StubEmbedder;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -78,7 +78,7 @@ public class TestIndexerFlushCommit {
     Configuration conf = new Configuration(false);
     conf.setBoolean(IndexStoreConfig.MEMORY, true);
     conf.set(IndexConfig.INDEX_NAME, "test_index");
-    conf.set(InferenceConfig.MODEL_NAME, InMemorySearchFixture.MODEL_NAME);
+    conf.set(InferenceConfig.EMBEDDER_NAME, InMemorySearchFixture.MODEL_NAME);
     return conf;
   }
 
@@ -91,21 +91,21 @@ public class TestIndexerFlushCommit {
   private static final class IndexerFixture implements AutoCloseable {
     private final IndexManager indexManager;
     private final Indexer indexer;
-    private final EmbedModelRegistry modelRegistry;
+    private final EmbedderRegistry modelRegistry;
 
-    private IndexerFixture(IndexManager indexManager, Indexer indexer, EmbedModelRegistry modelRegistry) {
+    private IndexerFixture(IndexManager indexManager, Indexer indexer, EmbedderRegistry modelRegistry) {
       this.indexManager = indexManager;
       this.indexer = indexer;
       this.modelRegistry = modelRegistry;
     }
 
     static IndexerFixture create(Configuration conf) throws IOException {
-      IndexMapping mapping = MetastoreSchemas.defaultHiveTablesMapping(
+      IndexMapping mapping = MetastoreIndexSchema.defaultHiveTablesMapping(
           "test_index", InMemorySearchFixture.MODEL_NAME, conf);
       IndexManager indexManager = IndexManager.open(mapping, conf);
-      EmbedModelRegistry registry = new EmbedModelRegistry(
+      EmbedderRegistry registry = new EmbedderRegistry(
           Map.of(InMemorySearchFixture.MODEL_NAME,
-              new StubEmbedModel(InMemorySearchFixture.MODEL_NAME)));
+              new StubEmbedder(InMemorySearchFixture.MODEL_NAME)));
       Indexer indexer = new Indexer(indexManager, registry);
       indexer.initialize();
       return new IndexerFixture(indexManager, indexer, registry);

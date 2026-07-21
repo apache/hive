@@ -22,15 +22,16 @@ import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hive.search.config.IndexConfig;
 import org.apache.hive.search.config.IndexStoreConfig;
+import org.apache.hive.search.config.InferenceConfig;
 import org.apache.hive.search.exception.IndexIOException;
 import org.apache.hive.search.index.Indexer;
 import org.apache.hive.search.index.IndexManager;
-import org.apache.hive.search.inference.EmbedModelRegistry;
+import org.apache.hive.search.inference.EmbedderRegistry;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hive.search.mapping.IndexMapping;
 import org.apache.hive.search.search.InMemorySearchFixture;
 import org.apache.hive.search.testutil.MetastoreBootstrapMocks;
-import org.apache.hive.search.testutil.StubEmbedModel;
+import org.apache.hive.search.testutil.StubEmbedder;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -114,13 +115,13 @@ public class TestBootstrapIndexer {
   private static final class BootstrapFixture implements AutoCloseable {
     private final IndexManager indexManager;
     private final Indexer indexer;
-    private final EmbedModelRegistry modelRegistry;
+    private final EmbedderRegistry modelRegistry;
     private final IMetaStoreClient client;
 
     private BootstrapFixture(
         IndexManager indexManager,
         Indexer indexer,
-        EmbedModelRegistry modelRegistry,
+        EmbedderRegistry modelRegistry,
         IMetaStoreClient client) {
       this.indexManager = indexManager;
       this.indexer = indexer;
@@ -132,15 +133,15 @@ public class TestBootstrapIndexer {
       conf = new Configuration(conf);
       conf.setBoolean(IndexStoreConfig.MEMORY, true);
       conf.set(IndexConfig.INDEX_NAME, "test_index");
-      conf.set(org.apache.hive.search.config.InferenceConfig.MODEL_NAME,
+      conf.set(InferenceConfig.EMBEDDER_NAME,
           InMemorySearchFixture.MODEL_NAME);
       org.apache.hive.search.mapping.IndexMapping mapping =
-          MetastoreSchemas.defaultHiveTablesMapping(
+          MetastoreIndexSchema.defaultHiveTablesMapping(
               "test_index", InMemorySearchFixture.MODEL_NAME, conf);
       IndexManager indexManager = IndexManager.open(mapping, conf);
-      EmbedModelRegistry registry = new EmbedModelRegistry(
+      EmbedderRegistry registry = new EmbedderRegistry(
           Map.of(InMemorySearchFixture.MODEL_NAME,
-              new StubEmbedModel(InMemorySearchFixture.MODEL_NAME)));
+              new StubEmbedder(InMemorySearchFixture.MODEL_NAME)));
       Indexer indexer = new Indexer(indexManager, registry);
       indexer.initialize();
       return new BootstrapFixture(indexManager, indexer, registry, mock(IMetaStoreClient.class));

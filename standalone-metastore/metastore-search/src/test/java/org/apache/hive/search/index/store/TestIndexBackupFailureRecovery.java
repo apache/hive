@@ -18,7 +18,6 @@
 package org.apache.hive.search.index.store;
 
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
-import org.apache.hive.search.index.manifest.IndexManifest;
 import org.apache.hive.search.testutil.InMemoryIndexStateClient;
 import org.junit.Before;
 import org.junit.Test;

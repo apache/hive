@@ -17,50 +17,17 @@
 
 package org.apache.hive.search.search;
 
-import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hive.search.exception.SearchException;
-import org.apache.hive.search.mapping.FieldSchema;
 import org.apache.hive.search.mapping.IndexMapping;
 
 public final class SemanticSearch {
   private SemanticSearch() {}
 
-  public record ResolvedSemanticQuery(String field, String queryText) {}
+  public record ResolvedSemanticQuery(String queryText) {}
 
-  public static ResolvedSemanticQuery resolve(SearchArgs.Semantic args, IndexMapping mapping)
+  public static ResolvedSemanticQuery resolve(SearchMethod.Semantic args, IndexMapping mapping)
       throws SearchException {
-    String field = requireSemanticField(mapping, args.field());
-    return new ResolvedSemanticQuery(field, args.queryText());
-  }
-
-  private static String requireSemanticField(IndexMapping mapping, String field)
-      throws SearchException {
-    if (StringUtils.isNotEmpty(field)) {
-      validateSemanticField(mapping, field);
-      return field;
-    }
-    List<String> semanticFields = mapping.fields().entrySet().stream()
-        .filter(entry -> entry.getValue() instanceof FieldSchema.TextFieldSchema text
-            && text.search().semantic())
-        .map(java.util.Map.Entry::getKey)
-        .toList();
-    if (semanticFields.size() == 1) {
-      return semanticFields.getFirst();
-    }
-    throw new SearchException(
-        "semantic query requires field when index has "
-            + semanticFields.size()
-            + " semantic field(s): "
-            + semanticFields);
-  }
-
-  private static void validateSemanticField(IndexMapping mapping, String field)
-      throws SearchException {
-    FieldSchema schema = mapping.fieldSchema(field);
-    if (!(schema instanceof FieldSchema.TextFieldSchema text) || !text.search().semantic()) {
-      throw new SearchException("field '" + field + "' is not semantically searchable");
-    }
+    mapping.resolveSemanticSearchFields(null);
+    return new ResolvedSemanticQuery(args.queryText());
   }
 }

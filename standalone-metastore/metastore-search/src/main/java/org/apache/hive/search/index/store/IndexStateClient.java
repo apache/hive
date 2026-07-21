@@ -22,9 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
 
-import org.apache.hive.search.exception.IndexIOException;
-import org.apache.hive.search.index.manifest.IndexManifest;
-
 public interface IndexStateClient {
 
   Optional<IndexManifest> readManifest() throws IOException;

@@ -27,10 +27,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.zip.CRC32;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hive.search.exception.IndexIOException;
-import org.apache.hive.search.index.manifest.IndexManifest;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.SegmentInfos;
 import org.apache.lucene.store.Directory;
@@ -62,8 +62,8 @@ public record LocalStateClient(Directory directory, String indexName)
     if (StringUtils.isEmpty(nid)) {
       return Optional.empty();
     }
-    String modelName = userData.get("model");
-    if (StringUtils.isEmpty(modelName)) {
+    String embedder = userData.get("embedder");
+    if (StringUtils.isEmpty(embedder)) {
       return Optional.empty();
     }
     long eventId;
@@ -74,9 +74,9 @@ public record LocalStateClient(Directory directory, String indexName)
     }
     List<IndexManifest.IndexFile> files = new ArrayList<>();
     for (String file : segmentInfos.files(true)) {
-      files.add(new IndexManifest.IndexFile(file, fileLength(file)));
+      files.add(indexFile(file));
     }
-    return Optional.of(IndexManifest.create(indexName, files, modelName, eventId));
+    return Optional.of(IndexManifest.create(indexName, files, embedder, eventId));
   }
 
   @Override
@@ -118,7 +118,7 @@ public record LocalStateClient(Directory directory, String indexName)
       if (isStagingFile(file)) {
         continue;
       }
-      files.add(new IndexManifest.IndexFile(file, fileLength(file)));
+      files.add(indexFile(file));
     }
     return IndexManifest.create(indexName, files, "", -1);
   }
@@ -141,7 +141,7 @@ public record LocalStateClient(Directory directory, String indexName)
     if (StringUtils.isEmpty(nid)) {
       throw new IndexIOException("Restored index is missing commit checkpoint");
     }
-    String modelName = userData.get("model");
+    String modelName = userData.get("embedder");
     if (StringUtils.isEmpty(modelName)) {
       throw new IndexIOException("Restored index is missing embedding model metadata");
     }
@@ -156,7 +156,7 @@ public record LocalStateClient(Directory directory, String indexName)
           "Restored index checkpoint mismatch: expected nid=" + expected.lastEventId()
               + " but found nid=" + eventId);
     }
-    if (!expected.modelName().equals(modelName)) {
+    if (!expected.embedder().equals(modelName)) {
       throw new IndexIOException("Restored index embedding model mismatch");
     }
   }
@@ -187,6 +187,22 @@ public record LocalStateClient(Directory directory, String indexName)
   public void clear() throws IOException {
     for (String file : directory.listAll()) {
       directory.deleteFile(file);
+    }
+  }
+
+  private IndexManifest.IndexFile indexFile(String fileName) throws IOException {
+    long length = fileLength(fileName);
+    try (IndexInput input = directory.openInput(fileName, IOContext.DEFAULT)) {
+      CRC32 crc = new CRC32();
+      byte[] buffer = new byte[8192];
+      long remaining = length;
+      while (remaining > 0) {
+        int toRead = (int) Math.min(buffer.length, remaining);
+        input.readBytes(buffer, 0, toRead);
+        crc.update(buffer, 0, toRead);
+        remaining -= toRead;
+      }
+      return new IndexManifest.IndexFile(fileName, length, crc.getValue());
     }
   }
 

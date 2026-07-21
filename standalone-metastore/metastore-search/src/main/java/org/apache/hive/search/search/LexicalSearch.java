@@ -15,28 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.hive.search.inference;
+package org.apache.hive.search.search;
 
-import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.hive.search.exception.SearchException;
+import org.apache.hive.search.mapping.IndexMapping;
 
-import static org.junit.Assert.assertEquals;
+public final class LexicalSearch {
+  private LexicalSearch() {}
 
-@Category(MetastoreUnitTest.class)
-public class TestEmbeddingPrompt {
+  public record ResolvedMatchQuery(String queryText, String field) {}
 
-  @Test
-  public void prefixForTaskType() {
-    EmbeddingPrompt prompt = EmbeddingPrompt.e5();
-    assertEquals("passage: ", prompt.prefixFor(EmbedModel.TaskType.DOCUMENT));
-    assertEquals("query: ", prompt.prefixFor(EmbedModel.TaskType.QUERY));
-  }
-
-  @Test
-  public void noneUsesEmptyPrefixes() {
-    EmbeddingPrompt prompt = EmbeddingPrompt.none();
-    assertEquals("", prompt.prefixFor(EmbedModel.TaskType.DOCUMENT));
-    assertEquals("", prompt.prefixFor(EmbedModel.TaskType.QUERY));
+  public static ResolvedMatchQuery resolve(SearchMethod.Match args, IndexMapping mapping)
+      throws SearchException {
+    String field = StringUtils.trimToNull(args.field());
+    if (field != null) {
+      mapping.validateLexicalSearchField(field);
+    }
+    return new ResolvedMatchQuery(args.queryText(), field);
   }
 }

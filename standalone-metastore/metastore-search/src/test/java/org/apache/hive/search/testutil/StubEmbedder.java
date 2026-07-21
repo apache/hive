@@ -21,16 +21,16 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.hive.search.inference.EmbedModel;
+import org.apache.hive.search.inference.Embedder;
 
 /** Deterministic embedding model for tests (no ONNX). */
-public final class StubEmbedModel implements EmbedModel {
+public final class StubEmbedder implements Embedder {
   private static final int DIMENSION = 8;
 
   private final String name;
   private final AtomicInteger encodeBatchCalls = new AtomicInteger();
 
-  public StubEmbedModel(String name) {
+  public StubEmbedder(String name) {
     this.name = name;
   }
 
