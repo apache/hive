@@ -26,7 +26,6 @@ import java.util.Optional;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hive.search.config.IndexStoreConfig;
 import org.apache.hive.search.exception.IndexIOException;
-import org.apache.hive.search.index.manifest.IndexManifest;
 
 public final class IndexBackupUtils {
   private IndexBackupUtils() {}
@@ -39,12 +38,18 @@ public final class IndexBackupUtils {
       return false;
     }
     Optional<IndexManifest> remoteManifest = remote.readManifest();
-    if (remoteManifest.isPresent()
-        && remoteManifest.get().lastEventId() >= localManifest.get().lastEventId()) {
-      return false;
+    IndexManifest localM = localManifest.get();
+    if (remoteManifest.isPresent()) {
+      IndexManifest remoteM = remoteManifest.get();
+      if (remoteM.lastEventId() > localM.lastEventId()) {
+        return false;
+      }
+      if (remoteM.lastEventId() == localM.lastEventId() && localM.sameFilesAs(remoteM)) {
+        return false;
+      }
     }
-    applyDiff(local, remote, localManifest.get().diff(remoteManifest.orElse(null)));
-    return remote.writeManifest(localManifest.get());
+    applyDiff(local, remote, localM.diff(remoteManifest.orElse(null)));
+    return remote.writeManifest(localM);
   }
 
   /**
@@ -91,7 +96,7 @@ public final class IndexBackupUtils {
     Optional<IndexManifest> staging = local.readStagingManifest();
     if (staging.isPresent()
         && staging.get().lastEventId() == target.lastEventId()
-        && staging.get().modelName().equals(target.modelName())) {
+        && staging.get().embedder().equals(target.embedder())) {
       return;
     }
     local.clearStagingManifest();

@@ -25,7 +25,7 @@ import java.util.Optional;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hive.search.mapping.IndexMapping;
 import org.apache.hive.search.exception.IndexNotHealthyException;
-import org.apache.hive.search.index.manifest.IndexManifest;
+import org.apache.hive.search.index.store.IndexManifest;
 import org.apache.hive.search.exception.IndexIOException;
 import org.apache.hive.search.index.store.LocalStateClient;
 import org.apache.hive.search.index.store.IndexBackupUtils;
@@ -45,7 +45,8 @@ public class IndexManager implements AutoCloseable, MetastoreEventListener {
   private final IndexStateClient localIndex;
   private final IndexStateClient remoteIndex;
   private volatile IndexNotHealthyException exception;
-  private volatile long indexedNid;
+  private volatile long processedEventId;
+  private volatile long committedEventId;
 
   public IndexManager(IndexMapping mapping, Directory directory, IndexStateClient localIndex,
       IndexStateClient remoteIndex) {
@@ -156,7 +157,24 @@ public class IndexManager implements AutoCloseable, MetastoreEventListener {
 
   @Override
   public void notifyIndexTask(IndexTask task) {
-    indexedNid = task.lastEventId;
+    processedEventId = task.lastEventId;
+  }
+
+  public void setCommittedEventId(long eventId) {
+    this.committedEventId = eventId;
+  }
+
+  public long getProcessedEventId() {
+    return processedEventId;
+  }
+
+  public long getCommittedEventId() {
+    return committedEventId;
+  }
+
+  public void setNid(long nid) {
+    this.committedEventId = nid;
+    this.processedEventId = nid;
   }
 
   public void checkIndexState() throws IndexNotHealthyException {
@@ -171,14 +189,6 @@ public class IndexManager implements AutoCloseable, MetastoreEventListener {
 
   public Directory directory() {
     return directory;
-  }
-
-  public long getIndexedNid() {
-    return indexedNid;
-  }
-
-  public void setIndexedNid(long nid) {
-    this.indexedNid = nid;
   }
 
   @Override

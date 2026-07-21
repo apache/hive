@@ -28,11 +28,11 @@ import org.apache.hive.search.exception.InitializeException;
 import org.apache.hive.search.config.IndexConfig;
 import org.apache.hive.search.config.InferenceConfig;
 import org.apache.hive.search.config.SearchConfig;
-import org.apache.hive.search.inference.EmbedModelRegistry;
+import org.apache.hive.search.inference.EmbedderRegistry;
 import org.apache.hive.search.metastore.MetastoreIndexer;
-import org.apache.hive.search.metastore.MetastoreSchemas;
-import org.apache.hive.search.metastore.MetastoreTableMapper;
-import org.apache.hive.search.search.SearchInternal;
+import org.apache.hive.search.metastore.MetastoreIndexSchema;
+import org.apache.hive.search.metastore.SearchTextSegment;
+import org.apache.hive.search.search.Searcher;
 import org.apache.lucene.search.BayesianScoreEstimator;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.SearcherManager;
@@ -44,7 +44,7 @@ public final class IndexSession implements AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(IndexSession.class);
   private final Configuration configuration;
   private final IndexManager indexManager;
-  private final EmbedModelRegistry modelRegistry;
+  private final EmbedderRegistry modelRegistry;
   private final SearchConfig searchConfig;
 
   private BayesianScoreEstimator.Parameters parameters;
@@ -61,9 +61,9 @@ public final class IndexSession implements AutoCloseable {
     this.searchConfig = new SearchConfig(configuration);
     InferenceConfig inferenceConfig = new InferenceConfig(configuration);
     this.indexManager = IndexManager.open(
-        MetastoreSchemas.defaultHiveTablesMapping(indexConfig.indexName(),
-            inferenceConfig.modelName(), configuration), configuration);
-    this.modelRegistry = EmbedModelRegistry.create(configuration);
+        MetastoreIndexSchema.defaultHiveTablesMapping(indexConfig.indexName(),
+            inferenceConfig.embedderName(), configuration), configuration);
+    this.modelRegistry = EmbedderRegistry.create(configuration);
   }
 
   public void maybeRefreshIndex() {
@@ -84,7 +84,7 @@ public final class IndexSession implements AutoCloseable {
     IndexSearcher searcher = searcherManager.acquire();
     try {
       parameters = BayesianScoreEstimator.estimate(searcher,
-          MetastoreTableMapper.FIELD_SEARCH_TEXT,
+          SearchTextSegment.segmentField(0),
           searchConfig.getBayesianSamples(),
           searchConfig.getBayesianTokensPerQuery(),
           searchConfig.getBayesianSeed());
@@ -95,12 +95,12 @@ public final class IndexSession implements AutoCloseable {
     }
   }
 
-  public SearchInternal getSearcher() throws IOException {
+  public Searcher getSearcher() throws IOException {
     if (parameters == null) {
       throw new IndexNotReadyException("Index session is not ready for search requests");
     }
     indexManager.checkIndexState();
-    return new SearchInternal(searcherManager, indexManager,
+    return new Searcher(searcherManager, indexManager,
         modelRegistry, searchConfig, parameters);
   }
 

@@ -17,20 +17,23 @@
 
 package org.apache.hive.search.inference;
 
-/** Model-specific text prefixes applied before tokenization. */
-public record EmbeddingPrompt(String documentPrefix, String queryPrefix) {
-  public static EmbeddingPrompt e5() {
-    return new EmbeddingPrompt("passage: ", "query: ");
+import org.apache.hive.search.exception.InferenceException;
+
+public interface Embedder extends AutoCloseable {
+  enum TaskType {
+    DOCUMENT,
+    QUERY
   }
 
-  public static EmbeddingPrompt none() {
-    return new EmbeddingPrompt("", "");
-  }
+  String name();
 
-  public String prefixFor(EmbedModel.TaskType task) {
-    return switch (task) {
-      case DOCUMENT -> documentPrefix;
-      case QUERY -> queryPrefix;
-    };
+  float[] embed(TaskType task, String text) throws InferenceException;
+
+  default float[][] embedBatch(TaskType task, String[] texts) throws InferenceException {
+    float[][] result = new float[texts.length][];
+    for (int i = 0; i < texts.length; i++) {
+      result[i] = embed(task, texts[i]);
+    }
+    return result;
   }
 }

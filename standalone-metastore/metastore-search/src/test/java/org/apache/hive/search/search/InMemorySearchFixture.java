@@ -26,12 +26,13 @@ import org.apache.hive.search.config.InferenceConfig;
 import org.apache.hive.search.config.SearchConfig;
 import org.apache.hive.search.index.Indexer;
 import org.apache.hive.search.index.IndexManager;
-import org.apache.hive.search.inference.EmbedModelRegistry;
+import org.apache.hive.search.inference.EmbedderRegistry;
 import org.apache.hive.search.mapping.IndexMapping;
-import org.apache.hive.search.metastore.MetastoreSchemas;
+import org.apache.hive.search.metastore.MetastoreIndexSchema;
 import org.apache.hive.search.metastore.MetastoreTableMapper;
+import org.apache.hive.search.metastore.SearchTextSegment;
 import org.apache.hive.search.testutil.IndexMutationApplier;
-import org.apache.hive.search.testutil.StubEmbedModel;
+import org.apache.hive.search.testutil.StubEmbedder;
 import org.apache.lucene.search.BayesianScoreEstimator;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.SearcherManager;
@@ -47,7 +48,7 @@ public final class InMemorySearchFixture implements AutoCloseable {
 
   private final IndexManager indexManager;
   private final Indexer indexer;
-  private final EmbedModelRegistry modelRegistry;
+  private final EmbedderRegistry modelRegistry;
   private final SearchConfig searchConfig;
   private final IndexMutationApplier mutations;
   private SearcherManager searcherManager;
@@ -56,7 +57,7 @@ public final class InMemorySearchFixture implements AutoCloseable {
   private InMemorySearchFixture(
       IndexManager indexManager,
       Indexer indexer,
-      EmbedModelRegistry modelRegistry,
+      EmbedderRegistry modelRegistry,
       SearchConfig searchConfig) {
     this.indexManager = indexManager;
     this.indexer = indexer;
@@ -69,16 +70,16 @@ public final class InMemorySearchFixture implements AutoCloseable {
     Configuration conf = new Configuration(false);
     conf.setBoolean(IndexStoreConfig.MEMORY, true);
     conf.set(IndexConfig.INDEX_NAME, "test_index");
-    conf.set(InferenceConfig.MODEL_NAME, MODEL_NAME);
+    conf.set(InferenceConfig.EMBEDDER_NAME, MODEL_NAME);
     conf.setInt(SearchConfig.BAYESIAN_SAMPLES, 5);
     conf.setInt(SearchConfig.BAYESIAN_TOKENS_PER_QUERY, 2);
     conf.setLong(SearchConfig.BAYESIAN_SEED, 1L);
 
-    IndexMapping mapping = MetastoreSchemas.defaultHiveTablesMapping(
+    IndexMapping mapping = MetastoreIndexSchema.defaultHiveTablesMapping(
         "test_index", MODEL_NAME, conf);
     IndexManager indexManager = IndexManager.open(mapping, conf);
-    EmbedModelRegistry registry =
-        new EmbedModelRegistry(Map.of(MODEL_NAME, new StubEmbedModel(MODEL_NAME)));
+    EmbedderRegistry registry =
+        new EmbedderRegistry(Map.of(MODEL_NAME, new StubEmbedder(MODEL_NAME)));
     Indexer indexer = new Indexer(indexManager, registry);
     indexer.initialize();
     return new InMemorySearchFixture(indexManager, indexer, registry, new SearchConfig(conf));
@@ -104,7 +105,7 @@ public final class InMemorySearchFixture implements AutoCloseable {
       try {
         bayesianParameters = BayesianScoreEstimator.estimate(
             searcher,
-            MetastoreTableMapper.FIELD_SEARCH_TEXT,
+            SearchTextSegment.segmentField(0),
             searchConfig.getBayesianSamples(),
             searchConfig.getBayesianTokensPerQuery(),
             searchConfig.getBayesianSeed());
@@ -115,14 +116,14 @@ public final class InMemorySearchFixture implements AutoCloseable {
   }
 
   public List<TableSearchHit> searchMatch(String text, int limit) throws Exception {
-    return search(new SearchArgs.Match(text), limit);
+    return search(new SearchMethod.Match(text), limit);
   }
 
-  public List<TableSearchHit> search(SearchArgs args, int limit) throws Exception {
+  public List<TableSearchHit> search(SearchMethod args, int limit) throws Exception {
     if (searcherManager == null || bayesianParameters == null) {
       throw new IllegalStateException("call commit() before searching");
     }
-    try (SearchInternal searchIO = new SearchInternal(
+    try (Searcher searchIO = new Searcher(
         searcherManager, indexManager, modelRegistry, searchConfig, bayesianParameters)) {
       TableSearchResult result = searchIO.search(new SearchQuery(
           args,

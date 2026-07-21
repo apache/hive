@@ -18,7 +18,7 @@
 package org.apache.hive.search.inference;
 
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
-import org.apache.hive.search.testutil.StubEmbedModel;
+import org.apache.hive.search.testutil.StubEmbedder;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -30,31 +30,31 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 @Category(MetastoreUnitTest.class)
-public class TestEmbedModelRegistry {
+public class TestEmbedderRegistry {
 
   @Test
   public void getReturnsConfiguredModel() throws Exception {
-    StubEmbedModel model = new StubEmbedModel("stub-model");
-    EmbedModelRegistry registry = new EmbedModelRegistry(Map.of("stub-model", model));
+    StubEmbedder model = new StubEmbedder("stub-model");
+    EmbedderRegistry registry = new EmbedderRegistry(Map.of("stub-model", model));
     assertTrue(registry.get("stub-model") == model);
     registry.close();
   }
 
   @Test
   public void getThrowsForUnknownModel() {
-    EmbedModelRegistry registry = new EmbedModelRegistry(Map.of());
+    EmbedderRegistry registry = new EmbedderRegistry(Map.of());
     IllegalStateException error = assertThrows(IllegalStateException.class, () -> registry.get("missing"));
     assertTrue(error.getMessage().contains("missing"));
   }
 
   @Test
   public void stubModelProducesDeterministicVectors() throws Exception {
-    StubEmbedModel model = new StubEmbedModel("stub-model");
-    float[] first = model.embed(EmbedModel.TaskType.QUERY, "sales");
-    float[] second = model.embed(EmbedModel.TaskType.QUERY, "sales");
+    StubEmbedder model = new StubEmbedder("stub-model");
+    float[] first = model.embed(Embedder.TaskType.QUERY, "sales");
+    float[] second = model.embed(Embedder.TaskType.QUERY, "sales");
     assertArrayEquals(first, second, 0.0001f);
 
-    float[] document = model.embed(EmbedModel.TaskType.DOCUMENT, "sales");
+    float[] document = model.embed(Embedder.TaskType.DOCUMENT, "sales");
     assertNotEquals(first[0], document[0], 0.0001f);
   }
 }

@@ -20,12 +20,15 @@ package org.apache.hive.search.testutil;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.zip.CRC32;
 
 import org.apache.hive.search.exception.IndexIOException;
-import org.apache.hive.search.index.manifest.IndexManifest;
+import org.apache.hive.search.index.store.IndexManifest;
 import org.apache.hive.search.index.store.IndexStateClient;
 
 /** In-memory {@link IndexStateClient} for unit tests. */
@@ -77,6 +80,26 @@ public final class InMemoryIndexStateClient implements IndexStateClient {
   public void clear() {
     files.clear();
     stagingManifest = null;
+  }
+
+  @Override
+  public IndexManifest readLocalFileManifest() throws IOException {
+    List<IndexManifest.IndexFile> indexFiles = new ArrayList<>();
+    for (Map.Entry<String, byte[]> entry : files.entrySet()) {
+      if (IndexManifest.MANIFEST_FILE_NAME.equals(entry.getKey())) {
+        continue;
+      }
+      byte[] bytes = entry.getValue();
+      indexFiles.add(new IndexManifest.IndexFile(
+          entry.getKey(), bytes.length, crc32C(bytes)));
+    }
+    return IndexManifest.create("test", indexFiles, "", -1);
+  }
+
+  public static long crc32C(byte[] bytes) {
+    CRC32 crc = new CRC32();
+    crc.update(bytes);
+    return crc.getValue();
   }
 
   public boolean hasFile(String fileName) {

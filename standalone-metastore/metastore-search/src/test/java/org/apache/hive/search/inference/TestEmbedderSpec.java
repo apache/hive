@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.hive.search.config;
+package org.apache.hive.search.inference;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hive.search.inference.EmbedderSpec;
+import java.nio.file.Path;
+
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -26,15 +26,27 @@ import org.junit.experimental.categories.Category;
 import static org.junit.Assert.assertEquals;
 
 @Category(MetastoreUnitTest.class)
-public class TestInferenceConfig {
+public class TestEmbedderSpec {
+
+  private static final Path MODEL_DIR = Path.of("/tmp/test-model");
 
   @Test
-  public void embeddingPoolingDefaultsToMean() {
-    assertEquals(EmbedderSpec.Pooling.MEAN, EmbedderSpec.Pooling.fromConfig(null));
+  public void prefixForTaskTypeE5() {
+    EmbedderSpec spec = EmbedderSpec.e5("m", MODEL_DIR);
+    assertEquals("passage: ", spec.prefixFor(Embedder.TaskType.DOCUMENT));
+    assertEquals("query: ", spec.prefixFor(Embedder.TaskType.QUERY));
   }
 
   @Test
-  public void embeddingPoolingHonorsCls() {
+  public void noneUsesEmptyPrefixes() {
+    EmbedderSpec spec = EmbedderSpec.none("m", MODEL_DIR);
+    assertEquals("", spec.prefixFor(Embedder.TaskType.DOCUMENT));
+    assertEquals("", spec.prefixFor(Embedder.TaskType.QUERY));
+  }
+
+  @Test
+  public void poolingFromConfig() {
+    assertEquals(EmbedderSpec.Pooling.MEAN, EmbedderSpec.Pooling.fromConfig("mean"));
     assertEquals(EmbedderSpec.Pooling.CLS, EmbedderSpec.Pooling.fromConfig("cls"));
   }
 }

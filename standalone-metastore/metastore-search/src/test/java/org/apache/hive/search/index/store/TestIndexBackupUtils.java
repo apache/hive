@@ -18,7 +18,6 @@
 package org.apache.hive.search.index.store;
 
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
-import org.apache.hive.search.index.manifest.IndexManifest;
 import org.apache.hive.search.testutil.InMemoryIndexStateClient;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +25,9 @@ import org.junit.experimental.categories.Category;
 
 import java.io.ByteArrayInputStream;
 import java.util.List;
+import java.util.zip.CRC32;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -51,6 +52,17 @@ public class TestIndexBackupUtils {
     assertTrue(remote.hasFile(IndexManifest.MANIFEST_FILE_NAME));
     assertTrue(remote.hasFile("segments_1"));
     assertEqualsEventId(10L, remote);
+  }
+
+  @Test
+  public void syncToBackupUpdatesWhenCrcDiffers() throws Exception {
+    writeManifest(local, manifest(10L, "segments_1", 100, 111L));
+    local.write("segments_1", new ByteArrayInputStream(new byte[] {1, 2, 3}));
+    writeManifest(remote, manifest(10L, "segments_1", 100, 222L));
+    remote.write("segments_1", new ByteArrayInputStream(new byte[] {9, 9, 9}));
+
+    assertTrue(IndexBackupUtils.syncToBackup(local, remote));
+    assertEquals(111L, (long) remote.readManifest().get().files().getFirst().crc32C());
   }
 
   @Test
@@ -81,7 +93,14 @@ public class TestIndexBackupUtils {
 
   @Test
   public void resolveInterruptedRestoreClearsMatchingStagingManifest() throws Exception {
-    IndexManifest target = manifest(15L, "segments_3", 300);
+    byte[] payload = new byte[] {1, 2, 3, 4};
+    local.write("segments_3", new ByteArrayInputStream(payload));
+    IndexManifest target = IndexManifest.create(
+        "hive_tables",
+        List.of(new IndexManifest.IndexFile(
+            "segments_3", payload.length, crc32C(payload))),
+        "bge-small",
+        15L);
     writeManifest(local, target);
     local.writeStagingManifest(target);
 
@@ -91,9 +110,13 @@ public class TestIndexBackupUtils {
   }
 
   private static IndexManifest manifest(long eventId, String fileName, long size) {
+    return manifest(eventId, fileName, size, null);
+  }
+
+  private static IndexManifest manifest(long eventId, String fileName, long size, Long crc32C) {
     return IndexManifest.create(
         "hive_tables",
-        List.of(new IndexManifest.IndexFile(fileName, size)),
+        List.of(new IndexManifest.IndexFile(fileName, size, crc32C)),
         "bge-small",
         eventId);
   }
@@ -107,5 +130,11 @@ public class TestIndexBackupUtils {
       throws Exception {
     assertTrue(client.readManifest().isPresent());
     assertTrue(expected == client.readManifest().get().lastEventId());
+  }
+
+  public static long crc32C(byte[] bytes) {
+    CRC32 crc = new CRC32();
+    crc.update(bytes);
+    return crc.getValue();
   }
 }

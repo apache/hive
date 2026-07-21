@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.hive.search.index.manifest;
+package org.apache.hive.search.index.store;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,19 +26,28 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record IndexManifest(String indexName, List<IndexFile> files, String modelName, long lastEventId) {
+public record IndexManifest(String indexName, List<IndexFile> files, String embedder, long lastEventId) {
   public static final String MANIFEST_FILE_NAME = "index.json";
   /** Local-only staging copy of the remote manifest while a restore is in progress. */
   public static final String STAGING_MANIFEST_FILE_NAME = ".index.json";
   private static final ObjectMapper JSON = new ObjectMapper();
 
-  public record IndexFile(String name, long size) {}
+  public record IndexFile(String name, long size, Long crc32C) {
+    public IndexFile {
+      Objects.requireNonNull(name, "name");
+    }
+
+    public IndexFile(String name, long size) {
+      this(name, size, null);
+    }
+  }
 
   public static IndexManifest create(String indexName, List<IndexFile> files,
-      String modelName, long lastEventId) {
-    return new IndexManifest(indexName, List.copyOf(files), modelName, lastEventId);
+      String embedder, long lastEventId) {
+    return new IndexManifest(indexName, List.copyOf(files), embedder, lastEventId);
   }
 
   public byte[] toJsonBytes() throws IOException {
@@ -50,47 +59,59 @@ public record IndexManifest(String indexName, List<IndexFile> files, String mode
   }
 
   public boolean sameFilesAs(IndexManifest other) {
-    return other != null && toMap(files).equals(toMap(other.files()));
+    return other != null && fileMap(files).equals(fileMap(other.files()));
   }
 
   public List<ChangedFileOp> diff(IndexManifest target) {
-    Map<String, Long> sourceMap = toMap(files);
-    Map<String, Long> destMap = target == null ? Map.of() : toMap(target.files());
+    Map<String, IndexFile> sourceMap = fileMap(files);
+    Map<String, IndexFile> destMap = target == null ? Map.of() : fileMap(target.files());
     HashSet<String> keys = new HashSet<>();
     keys.addAll(sourceMap.keySet());
     keys.addAll(destMap.keySet());
 
     List<ChangedFileOp> ops = new ArrayList<>();
     for (String key : keys) {
-      Long sourceSize = sourceMap.get(key);
-      Long destSize = destMap.get(key);
-      if (sourceSize != null && sourceSize.equals(destSize)) {
+      IndexFile source = sourceMap.get(key);
+      IndexFile dest = destMap.get(key);
+      if (source != null && dest != null && sameContent(source, dest)) {
         continue;
       }
-      if (sourceSize != null) {
-        ops.add(ChangedFileOp.add(key, sourceSize));
-      } else if (destSize != null) {
+      if (source != null) {
+        ops.add(ChangedFileOp.add(key, source.size(), source.crc32C()));
+      } else if (dest != null) {
         ops.add(ChangedFileOp.del(key));
       }
     }
     return ops;
   }
 
-  private static Map<String, Long> toMap(List<IndexFile> files) {
-    HashMap<String, Long> map = new HashMap<>();
+  private static boolean sameContent(IndexFile source, IndexFile dest) {
+    if (source.size() != dest.size()) {
+      return false;
+    }
+    Long sourceCrc = source.crc32C();
+    Long destCrc = dest.crc32C();
+    if (sourceCrc != null && destCrc != null) {
+      return sourceCrc.equals(destCrc);
+    }
+    return sourceCrc == null && destCrc == null;
+  }
+
+  private static Map<String, IndexFile> fileMap(List<IndexFile> files) {
+    HashMap<String, IndexFile> map = new HashMap<>();
     for (IndexFile file : files) {
-      map.put(file.name(), file.size());
+      map.put(file.name(), file);
     }
     return map;
   }
 
   public interface ChangedFileOp {
-    record Add(String fileName, Long size) implements ChangedFileOp {}
+    record Add(String fileName, Long size, Long crc32C) implements ChangedFileOp {}
 
     record Del(String fileName) implements ChangedFileOp {}
 
-    static Add add(String fileName, Long size) {
-      return new Add(fileName, size);
+    static Add add(String fileName, Long size, Long crc32C) {
+      return new Add(fileName, size, crc32C);
     }
 
     static Del del(String fileName) {
