@@ -64,7 +64,7 @@ public class ST_AsJson extends ST_Geometry {
       int wkid = GeometryUtils.getWKID(geomref);
       return new Text(EsriJsonConverter.geometryToEsriJson(jtsGeom, wkid));
     } catch (Exception e) {
-      LOG.error(e.getMessage());
+      LogUtils.Log_InternalError(LOG, "ST_AsJson: " + e);
       return null;
     }
   }

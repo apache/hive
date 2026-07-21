@@ -47,7 +47,7 @@ public class ST_AsShape extends ST_Geometry {
     try {
       return new BytesWritable(EsriShapeConverter.toEsriShape(jtsGeom));
     } catch (Exception e) {
-      LOG.error(e.getMessage());
+      LogUtils.Log_InternalError(LOG, "ST_AsShape: " + e);
       return null;
     }
   }

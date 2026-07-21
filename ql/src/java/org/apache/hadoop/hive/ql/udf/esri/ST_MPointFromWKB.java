@@ -62,7 +62,7 @@ public class ST_MPointFromWKB extends ST_Geometry {
         return null;
       }
     } catch (Exception e) {  // IllegalArgumentException, GeometryException
-      LOG.error(e.getMessage());
+      LogUtils.Log_InternalError(LOG, "ST_MPointFromWKB: " + e);
       return null;
     }
   }

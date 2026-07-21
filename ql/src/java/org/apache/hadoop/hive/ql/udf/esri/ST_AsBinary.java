@@ -55,7 +55,7 @@ public class ST_AsBinary extends ST_Geometry {
       byte[] byteArr = GeometryUtils.wkbWriterFor(geom).write(geom);
       return new BytesWritable(byteArr);
     } catch (Exception e) {
-      LOG.error(e.getMessage());
+      LogUtils.Log_InternalError(LOG, "ST_AsBinary: " + e);
       return null;
     }
   }

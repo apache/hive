@@ -61,7 +61,7 @@ public class ST_PolyFromWKB extends ST_Geometry {
         return null;
       }
     } catch (Exception e) {  // IllegalArgumentException, GeometryException
-      LOG.error(e.getMessage());
+      LogUtils.Log_InternalError(LOG, "ST_PolyFromWKB: " + e);
       return null;
     }
   }
