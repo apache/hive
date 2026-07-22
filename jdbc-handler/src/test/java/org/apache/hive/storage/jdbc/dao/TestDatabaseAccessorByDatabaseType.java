@@ -32,6 +32,7 @@ import java.sql.ResultSetMetaData;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Function;
 
 import static org.hamcrest.Matchers.equalTo;
@@ -425,16 +426,14 @@ public class TestDatabaseAccessorByDatabaseType {
           "Select * from (" + BASE + ") as \"tmp\" limit 0")
   };
 
-  private static Object[] row(Object... values) {
-    return values;
-  }
-
   private static Collection<Object[]> rowsFor(Function<AccessorCase, Object> expectedValue) {
     Object[][] rows = new Object[CASES.length][];
     for (int i = 0; i < CASES.length; i++) {
       AccessorCase database = CASES[i];
       Object expected = expectedValue.apply(database);
-      rows[i] = expected == null ? row(database.databaseType) : row(database.databaseType, expected);
+      rows[i] = expected == null
+          ? new Object[]{database.databaseType}
+          : new Object[]{database.databaseType, expected};
     }
     return Arrays.asList(rows);
   }
@@ -487,7 +486,7 @@ public class TestDatabaseAccessorByDatabaseType {
     config.set(JdbcStorageConfig.DATABASE_TYPE.getPropertyName(), databaseType.name());
     config.set(JdbcStorageConfig.JDBC_DRIVER_CLASS.getPropertyName(), H2_DRIVER);
     config.set(JdbcStorageConfig.JDBC_URL.getPropertyName(),
-        "jdbc:h2:mem:test_dbtype_integration_" + databaseType.name().toLowerCase()
+        "jdbc:h2:mem:test_dbtype_integration_" + databaseType.name().toLowerCase(Locale.ROOT)
             + ";MODE=MySQL;INIT=runscript from '" + scriptPath + "'");
     config.set(JdbcStorageConfig.QUERY.getPropertyName(), BASE);
     config.set(serdeConstants.LIST_COLUMNS,

@@ -503,8 +503,9 @@ public class TestGenericJdbcDatabaseAccessor {
         assertThat(rs.getInt("id"), is(equalTo(10)));
         assertThat(rs.getString("name"), is(equalTo("written")));
         assertThat(rs.next(), is(false));
+      } finally {
+        statement.execute("SHUTDOWN");
       }
-      statement.execute("SHUTDOWN");
     }
   }
 
@@ -551,8 +552,9 @@ public class TestGenericJdbcDatabaseAccessor {
         assertThat(rs.getString("name"), is(equalTo("second")));
 
         assertThat(rs.next(), is(false));
+      } finally {
+        statement.execute("SHUTDOWN");
       }
-      statement.execute("SHUTDOWN");
     }
   }
 
