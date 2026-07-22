@@ -74,6 +74,7 @@ public class RESTCatalogServer {
     conf.set(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL.varname, externalPath);
 
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SCHEMA_INFO_CLASS, schemaInfoClass.getCanonicalName());
+    MetastoreConf.setBoolVar(conf, ConfVars.ICEBERG_CATALOG_UNIQUE_TABLE_LOCATION, true);
 
     MetastoreConf.setClass(conf, ConfVars.HIVE_AUTHORIZATION_MANAGER, MockHiveAuthorizerFactory.class,
         HiveAuthorizerFactory.class);

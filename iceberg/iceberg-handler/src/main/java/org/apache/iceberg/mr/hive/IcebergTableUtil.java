@@ -77,8 +77,8 @@ import org.apache.iceberg.MetadataTableUtils;
 import org.apache.iceberg.PartitionData;
 import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
+import org.apache.iceberg.PartitionStatistics;
 import org.apache.iceberg.PartitionStatisticsFile;
-import org.apache.iceberg.PartitionStats;
 import org.apache.iceberg.Partitioning;
 import org.apache.iceberg.PartitionsTable;
 import org.apache.iceberg.Schema;
@@ -759,26 +759,19 @@ public class IcebergTableUtil {
     }
 
     Evaluator evaluator = new Evaluator(partitionsTable.schema().asStruct(), filter);
-    PartitionStats result;
 
     try (CloseableIterable<FileScanTask> fileScanTasks = scan.planFiles()) {
-      result = FluentIterable.from(fileScanTasks)
+      return FluentIterable.from(fileScanTasks)
           .transformAndConcat(task -> task.asDataTask().rows())
           .filter(evaluator::eval)
-          .transform(IcebergTableUtil::recordToPartitionStats)
-          .stream().reduce((left, right) -> {
-            left.appendStats(right);
-            return left;
-          }).orElse(null);
+          .transform(BasicPartitionStats::from)
+          .stream().reduce(BasicPartitionStats::merge)
+          .orElse(BasicPartitionStats.EMPTY)
+          .toStatsMap();
     }
-
-    if (result == null) {
-      result = new PartitionStats(null, 0);
-    }
-    return toStatsMap(result);
   }
 
-  static Map<String, String> toStatsMap(PartitionStats stats) {
+  static Map<String, String> toStatsMap(PartitionStatistics stats) {
     return ImmutableMap.of(
         SnapshotSummary.TOTAL_DATA_FILES_PROP, String.valueOf(stats.dataFileCount()),
         SnapshotSummary.TOTAL_RECORDS_PROP, String.valueOf(stats.dataRecordCount()),
@@ -788,12 +781,41 @@ public class IcebergTableUtil {
     );
   }
 
-  private static PartitionStats recordToPartitionStats(StructLike record) {
-    PartitionStats stats = new PartitionStats(record.get(PART_IDX, StructLike.class), -1);
-    for (int pos = 2; pos <= 7; pos++) {
-      stats.set(pos, record.get(pos, Object.class));
+  /** The subset of partition stats counters Hive reports, summed across PARTITIONS metadata table rows. */
+  private record BasicPartitionStats(
+      long recordCount, long fileCount, long totalFileSizeInBytes,
+      long positionDeleteRecordCount, long equalityDeleteRecordCount) {
+
+    static final BasicPartitionStats EMPTY = new BasicPartitionStats(0,
+        0, 0, 0, 0);
+
+    static BasicPartitionStats from(StructLike row) {
+      return new BasicPartitionStats(
+          row.get(2, Long.class),      // record_count
+          row.get(3, Integer.class),   // file_count
+          row.get(4, Long.class),      // total_data_file_size_in_bytes
+          row.get(5, Long.class),      // position_delete_record_count
+          row.get(7, Long.class));     // equality_delete_record_count
     }
-    return stats;
+
+    BasicPartitionStats merge(BasicPartitionStats other) {
+      return new BasicPartitionStats(
+          recordCount + other.recordCount,
+          fileCount + other.fileCount,
+          totalFileSizeInBytes + other.totalFileSizeInBytes,
+          positionDeleteRecordCount + other.positionDeleteRecordCount,
+          equalityDeleteRecordCount + other.equalityDeleteRecordCount);
+    }
+
+    Map<String, String> toStatsMap() {
+      return ImmutableMap.of(
+          SnapshotSummary.TOTAL_DATA_FILES_PROP, String.valueOf(fileCount),
+          SnapshotSummary.TOTAL_RECORDS_PROP, String.valueOf(recordCount),
+          SnapshotSummary.TOTAL_EQ_DELETES_PROP, String.valueOf(equalityDeleteRecordCount),
+          SnapshotSummary.TOTAL_POS_DELETES_PROP, String.valueOf(positionDeleteRecordCount),
+          SnapshotSummary.TOTAL_FILE_SIZE_PROP, String.valueOf(totalFileSizeInBytes)
+      );
+    }
   }
 
   public static PartitionSpec getPartitionSpec(Table icebergTable, String partitionPath)

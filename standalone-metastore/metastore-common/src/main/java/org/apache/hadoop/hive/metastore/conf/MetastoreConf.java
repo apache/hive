@@ -1961,6 +1961,10 @@ public class MetastoreConf {
         "hive.metastore.iceberg.catalog.cache.expiry", -1,
         "HMS Iceberg Catalog cache expiry."
     ),
+    ICEBERG_CATALOG_UNIQUE_TABLE_LOCATION("metastore.iceberg.catalog.unique.table.location",
+        "hive.metastore.iceberg.catalog.unique.table.location", false,
+        "Whether the HMS Iceberg REST catalog should assign a unique storage location for each new table."
+    ),
     ICEBERG_CATALOG_METRICS_REPORTERS("metastore.iceberg.catalog.metrics.reporters",
         "hive.metastore.iceberg.catalog.metrics.reporters", "org.apache.iceberg.rest.metrics.LoggingMetricsReporter",
         "A comma separated list of custom Iceberg Metrics Reporting plugins."

@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -149,8 +150,8 @@ import org.apache.iceberg.PartitionData;
 import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
+import org.apache.iceberg.PartitionStatistics;
 import org.apache.iceberg.PartitionStatisticsFile;
-import org.apache.iceberg.PartitionStats;
 import org.apache.iceberg.PartitionStatsHandler;
 import org.apache.iceberg.Partitioning;
 import org.apache.iceberg.RowLevelOperationMode;
@@ -600,33 +601,29 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
   private static Map<String, String> getPartishSummary(Partish partish, Table table, Snapshot snapshot) {
     if (partish.getPartition() != null) {
-      PartitionStatisticsFile statsFile = IcebergTableUtil.getPartitionStatsFile(table, snapshot.snapshotId());
-      if (statsFile != null) {
-        Types.StructType partitionType = Partitioning.partitionType(table);
-        Schema recordSchema = PartitionStatsHandler.schema(partitionType, TableUtil.formatVersion(table));
-
-        try (CloseableIterable<PartitionStats> recordIterator = PartitionStatsHandler.readPartitionStatsFile(
-            recordSchema, table.io().newInputFile(statsFile.path()))) {
-          PartitionStats partitionStats = Iterables.tryFind(recordIterator, stats -> {
-            PartitionSpec spec = table.specs().get(stats.specId());
-            PartitionData data = IcebergTableUtil.toPartitionData(stats.partition(), partitionType,
-                spec.partitionType());
-            return spec.partitionToPath(data).equals(partish.getPartition().getName());
-          }).orNull();
-
-          if (partitionStats != null) {
-            return IcebergTableUtil.toStatsMap(partitionStats);
-          } else {
-            LOG.warn("Partition {} not found in stats file: {}, falling back to metadata scan",
-                partish.getPartition().getName(), statsFile.path());
-            return IcebergTableUtil.getPartitionStats(table, partish.getPartition().getSpec(), snapshot);
-          }
-        } catch (IOException e) {
-          throw new UncheckedIOException(e);
+      Types.StructType partitionType = Partitioning.partitionType(table);
+      try (CloseableIterable<PartitionStatistics> records =
+                   table.newPartitionStatisticsScan().useSnapshot(snapshot.snapshotId()).scan()) {
+        Iterator<PartitionStatistics> recordsIterator = records.iterator();
+        if (!recordsIterator.hasNext()) {
+          LOG.warn("Partition stats file not found for snapshot: {}", snapshot.snapshotId());
+          return null;
         }
-      } else {
-        LOG.warn("Partition stats file not found for snapshot: {}", snapshot.snapshotId());
-        return null;
+        String partName = partish.getPartition().getName();
+        while (recordsIterator.hasNext()) {
+          PartitionStatistics stats = recordsIterator.next();
+          PartitionSpec spec = table.specs().get(stats.specId());
+          PartitionData data = IcebergTableUtil.toPartitionData(stats.partition(), partitionType,
+                  spec.partitionType());
+          if (spec.partitionToPath(data).equals(partName)) {
+            return IcebergTableUtil.toStatsMap(stats);
+          }
+        }
+
+        LOG.warn("Partition {} not found in partition stats, falling back to metadata scan", partName);
+        return IcebergTableUtil.getPartitionStats(table, partish.getPartition().getSpec(), snapshot);
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
       }
     }
     return snapshot.summary();
