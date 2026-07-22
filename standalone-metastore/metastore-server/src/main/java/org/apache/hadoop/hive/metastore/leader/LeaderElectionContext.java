@@ -68,8 +68,6 @@ public class LeaderElectionContext {
 
   private final Configuration conf;
   private final String servHost;
-  // Whether the context should be started as a daemon
-  private final boolean startAsDaemon;
   // Audit the event of election
   private AuditLeaderListener auditLeaderListener;
   // State change listeners group by type
@@ -82,16 +80,14 @@ public class LeaderElectionContext {
   // orderly JVM shutdown via System.exit, which fires the HMS shutdown-hook chain
   // (election close, ZK deregistration, metrics, servlet server). Overridable for tests.
   private Runnable abortAction = () -> System.exit(1);
-  // Property for testing, a single leader will be created
 
   private LeaderElectionContext(String servHost, Configuration conf,
       Map<TTYPE, List<LeadershipStateListener>> listeners,
-      boolean startAsDaemon, IHMSHandler handler) throws Exception {
+      IHMSHandler handler) throws Exception {
     requireNonNull(conf, "conf is null");
     requireNonNull(listeners, "listeners is null");
     this.servHost = servHost;
     this.conf = new Configuration(conf);
-    this.startAsDaemon = startAsDaemon;
     String tableName = MetastoreConf.getVar(conf,
         MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_AUDITTABLE);
     if (StringUtils.isNotEmpty(tableName)) {
@@ -125,15 +121,10 @@ public class LeaderElectionContext {
           throw new RuntimeException("Error claiming to be leader: " + leaderElection.getName(), e);
         }
       });
+      daemon.setName("Metastore Election " + leaderElection.getName());
+      daemon.setDaemon(true);
       daemon.setUncaughtExceptionHandler(newAbortOnElectionFailureHandler(leaderElection));
-
-      if (startAsDaemon) {
-        daemon.setName("Metastore Election " + leaderElection.getName());
-        daemon.setDaemon(true);
-        daemon.start();
-      } else {
-        daemon.run();
-      }
+      daemon.start();
     }
   }
 
@@ -186,7 +177,6 @@ public class LeaderElectionContext {
 
   public static class ContextBuilder {
     private Configuration configuration;
-    private boolean startAsDaemon;
     private String servHost;
     private IHMSHandler handler;
     private TTYPE ttype = TTYPE.HOUSEKEEPING;
@@ -229,14 +219,9 @@ public class LeaderElectionContext {
       return this;
     }
 
-    public ContextBuilder startAsDaemon(boolean daemon) {
-      this.startAsDaemon = daemon;
-      return this;
-    }
-
     public LeaderElectionContext build() throws Exception {
       return new LeaderElectionContext(servHost, configuration,
-          listeners, startAsDaemon, handler);
+          listeners, handler);
     }
   }
 }

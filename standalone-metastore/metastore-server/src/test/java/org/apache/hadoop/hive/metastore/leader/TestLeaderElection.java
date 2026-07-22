@@ -136,7 +136,6 @@ public class TestLeaderElection {
           .servHost("test-host")
           .setTType(LeaderElectionContext.TTYPE.HOUSEKEEPING)
           .addListener(new TestLeaderListener(new AtomicBoolean(false)))
-          .startAsDaemon(true)   // daemon.run() bypasses UncaughtExceptionHandler
           .build();
       context.setAbortAction(abortLatch::countDown);
 
@@ -175,7 +174,6 @@ public class TestLeaderElection {
           .addListener(new TestLeaderListener(new AtomicBoolean(false)))
           .setTType(LeaderElectionContext.TTYPE.ALWAYS_TASKS)
           .addListener(new TestLeaderListener(new AtomicBoolean(false)))
-          .startAsDaemon(true)
           .build();
       context.setAbortAction(() -> {
         abortCount.incrementAndGet();

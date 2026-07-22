@@ -869,7 +869,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
           context.start();
         } catch (Throwable e) {
-          LOG.error("Failure when starting the leader tasks, Compaction or Housekeeping tasks may not happen", e);
+          LOG.error("Failed to initialize Metastore leader elections; Metastore will start without leader-only tasks "
+              + "(compaction, housekeeping). Runtime election failures will abort the Metastore instead.", e);
         } finally {
           startLock.unlock();
         }
