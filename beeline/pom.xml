@@ -144,7 +144,7 @@
     <dependency>
       <!--
         Since hive-jdbc dependecy that is compile time has Utils.java
-        that directly imports HiveSQLException from hive-service, so hive-service should is needed at runtime and should
+        that directly imports HiveSQLException from hive-service, so hive-service is needed at runtime and should
         be a compile time dependecy also.
         -->
       <groupId>org.apache.hive</groupId>
