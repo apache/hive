@@ -85,17 +85,16 @@ public final class Searcher implements AutoCloseable {
 
   public TableSearchResult search(SearchQuery request)
       throws SearchException, IOException {
-    validateQueryText(request);
+    if (StringUtils.isBlank(request.body().queryText())) {
+      throw new SearchException("query text is required");
+    }
     int size = request.limit() > 0 ? request.limit() : searchConfig.getDefaultLimit();
     int semanticK = searchConfig.semanticK(size);
     Query query =
-        switch (request.args()) {
-          case SearchMethod.Match match ->
-              compileMatchQuery(LexicalSearch.resolve(match, mapping));
-          case SearchMethod.Semantic semantic ->
-              compileSemanticQuery(SemanticSearch.resolve(semantic, mapping), semanticK);
-          case SearchMethod.Hybrid hybrid ->
-              compileFusionQuery(HybridSearch.resolve(hybrid, mapping), semanticK);
+        switch (request.body()) {
+          case MatchQuery match -> compileMatchQuery(match.resolve(mapping));
+          case SemanticQuery semantic -> compileSemanticQuery(semantic.resolve(mapping), semanticK);
+          case HybridQuery hybrid -> compileFusionQuery(hybrid.resolve(mapping), semanticK);
         };
     query = applyScopeFilter(query, request.catalogName(), request.databaseName());
     TopDocs topDocs = searcher.search(query, size);
@@ -106,23 +105,14 @@ public final class Searcher implements AutoCloseable {
     return new TableSearchResult(hits, topDocs.totalHits.value(), committedEventId, processedEventId);
   }
 
-  private static void validateQueryText(SearchQuery request) throws SearchException {
-    String queryText = switch (request.args()) {
-      case SearchMethod.Match m -> m.queryText();
-      case SearchMethod.Semantic s -> s.queryText();
-      case SearchMethod.Hybrid h -> h.queryText();
-    };
-    if (StringUtils.isBlank(queryText)) {
-      throw new SearchException("query text is required");
-    }
-  }
-
-  private Query compileFusionQuery(HybridSearch.ResolvedHybridQuery query, int semanticK)
+  private Query compileFusionQuery(HybridQuery query, int semanticK)
       throws SearchException, IOException {
-    Query matchQuery = new BayesianScoreQuery(compileMatchQuery(query.toMatchQuery()),
+    Query matchQuery = new BayesianScoreQuery(
+        compileMatchQuery(query.toMatchQuery().resolve(mapping)),
         parameters.alpha(), parameters.beta(), parameters.baseRate());
-    Query semanticQuery = compileSemanticQuery(query.toSemanticQuery(), semanticK);
-    float[] weights = {1.0f - query.semanticWeight(), query.semanticWeight()};
+    Query semanticQuery = compileSemanticQuery(query.toSemanticQuery().resolve(mapping), semanticK);
+    float semanticWeight = query.semanticWeight(searchConfig);
+    float[] weights = {1.0f - semanticWeight, semanticWeight};
     return new LogOddsFusionQuery(List.of(matchQuery, semanticQuery),
         searchConfig.getFusionPrior(), weights);
   }
@@ -155,37 +145,20 @@ public final class Searcher implements AutoCloseable {
         MetastoreTableMapper.FIELD_DB + TableDocument.FILTER_SUFFIX, databaseName));
   }
 
-  private Query compileMatchQuery(LexicalSearch.ResolvedMatchQuery match)
-      throws SearchException, IOException {
+  private Query compileMatchQuery(MatchQuery match)
+      throws SearchException {
     if (StringUtils.isNotEmpty(match.field())) {
-      return compileMatchQuery(match.field(), match.queryText());
+      return booleanShould(lexicalClausesForField(match.field(), match.queryText(), 1.0f),
+          "field '" + match.field() + "' is not lexically searchable");
     }
     BooleanQuery.Builder builder = new BooleanQuery.Builder();
     boolean added = false;
     for (MetastoreTableMapper.KeywordSearchField keywordField : MetastoreTableMapper.KEYWORD_SEARCH_FIELDS) {
-      String field = keywordField.field();
-      float boost = keywordField.boost();
-      FieldSchema schema = mapping.fieldSchema(field);
-      if (!(schema instanceof FieldSchema.TextFieldSchema text)) {
-        continue;
-      }
-      if (text.filter()) {
-        builder.add(boostKeywordQuery(compileFilterKeywordQuery(field, match.queryText()), boost),
-            BooleanClause.Occur.SHOULD);
-        if (text.search().lexical()) {
-          builder.add(boostKeywordQuery(compileFieldMatchQuery(field, match.queryText()), boost),
-              BooleanClause.Occur.SHOULD);
-        }
+      for (Query clause : lexicalClausesForField(
+          keywordField.field(), match.queryText(), keywordField.boost())) {
+        builder.add(clause, BooleanClause.Occur.SHOULD);
         added = true;
-        continue;
       }
-      if (!text.search().lexical()) {
-        continue;
-      }
-      builder.add(
-          boostKeywordQuery(compileFieldMatchQuery(field, match.queryText()), boost),
-          BooleanClause.Occur.SHOULD);
-      added = true;
     }
     if (!added) {
       throw new SearchException("No lexically searchable table fields are configured");
@@ -193,26 +166,42 @@ public final class Searcher implements AutoCloseable {
     return builder.build();
   }
 
-  private Query compileMatchQuery(String field, String queryText)
+  private Query booleanShould(List<Query> clauses, String ifEmptyMessage) throws SearchException {
+    if (clauses.isEmpty()) {
+      throw new SearchException(ifEmptyMessage);
+    }
+    if (clauses.size() == 1) {
+      return clauses.getFirst();
+    }
+    BooleanQuery.Builder builder = new BooleanQuery.Builder();
+    for (Query clause : clauses) {
+      builder.add(clause, BooleanClause.Occur.SHOULD);
+    }
+    return builder.build();
+  }
+
+  private List<Query> lexicalClausesForField(String field, String queryText, float boost)
       throws SearchException {
     FieldSchema schema = mapping.fieldSchema(field);
     if (!(schema instanceof FieldSchema.TextFieldSchema text)) {
-      throw new SearchException("field '" + field + "' is not lexically searchable");
+      return List.of();
     }
-    BooleanQuery.Builder builder = new BooleanQuery.Builder();
-    boolean added = false;
+    List<Query> clauses = new ArrayList<>();
     if (text.filter()) {
-      builder.add(compileFilterKeywordQuery(field, queryText), BooleanClause.Occur.SHOULD);
-      added = true;
+      clauses.add(maybeBoost(compileFilterKeywordQuery(field, queryText), boost));
+      if (text.search().lexical()) {
+        clauses.add(maybeBoost(compileFieldMatchQuery(field, queryText), boost));
+      }
+      return clauses;
     }
     if (text.search().lexical()) {
-      builder.add(compileFieldMatchQuery(field, queryText), BooleanClause.Occur.SHOULD);
-      added = true;
+      clauses.add(maybeBoost(compileFieldMatchQuery(field, queryText), boost));
     }
-    if (!added) {
-      throw new SearchException("field '" + field + "' is not lexically searchable");
-    }
-    return builder.build();
+    return clauses;
+  }
+
+  private Query maybeBoost(Query query, float boost) {
+    return boost == 1.0f ? query : boostKeywordQuery(query, boost);
   }
 
   private static Query boostKeywordQuery(Query query, float boost) {
@@ -236,8 +225,7 @@ public final class Searcher implements AutoCloseable {
     return new SimpleQueryParser(mapping.analyzer(), field).parse(queryText);
   }
 
-  private Query compileSemanticQuery(
-      SemanticSearch.ResolvedSemanticQuery semantic, int knnK) throws SearchException {
+  private Query compileSemanticQuery(SemanticQuery semantic, int knnK) throws SearchException {
     List<String> fields = mapping.resolveSemanticSearchFields(null);
     FieldSchema schema = mapping.fieldSchema(fields.getFirst());
     if (!(schema instanceof FieldSchema.TextFieldSchema text) || !text.search().semantic()) {
