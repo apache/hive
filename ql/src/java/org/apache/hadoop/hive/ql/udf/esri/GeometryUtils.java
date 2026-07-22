@@ -409,9 +409,8 @@ public class GeometryUtils {
     int srid;
 
     if (bytes[4] == NEW_FORMAT_MAGIC) {
-      // New WKB format: bytes 0-3 = SRID (big-endian), byte 4 = 0xFF, bytes 5+ = WKB
-      srid = ((bytes[0] & 0xFF) << 24) | ((bytes[1] & 0xFF) << 16)
-           | ((bytes[2] & 0xFF) << 8) | (bytes[3] & 0xFF);
+      // New WKB format: bytes 0-3 = SRID (little-endian), byte 4 = 0xFF, bytes 5+ = WKB
+      srid = ByteBuffer.wrap(bytes, 0, 4).order(ByteOrder.LITTLE_ENDIAN).getInt();
       byte[] wkb = Arrays.copyOfRange(bytes, 5, length);
       try {
         geom = wkbReader().read(wkb);
@@ -520,34 +519,18 @@ public class GeometryUtils {
     if (geomref == null || geomref.getLength() < 4) {
       return WKID_UNKNOWN;
     }
-    byte[] bytes = geomref.getBytes();
-    if (geomref.getLength() > 4 && bytes[4] == NEW_FORMAT_MAGIC) {
-      // New format: big-endian SRID
-      return ((bytes[0] & 0xFF) << 24) | ((bytes[1] & 0xFF) << 16)
-           | ((bytes[2] & 0xFF) << 8) | (bytes[3] & 0xFF);
-    } else {
-      // Old format: little-endian WKID
-      return ByteBuffer.wrap(bytes, 0, 4).order(ByteOrder.LITTLE_ENDIAN).getInt();
-    }
+    // SRID/WKID is stored little-endian at bytes 0-3 in both the old and new formats.
+    return ByteBuffer.wrap(geomref.getBytes(), 0, 4).order(ByteOrder.LITTLE_ENDIAN).getInt();
   }
 
   /**
    * Sets the WKID/SRID (in place) for the given hive geometry bytes.
    */
   public static void setWKID(BytesWritable geomref, int wkid) {
-    byte[] bytes = geomref.getBytes();
-    if (geomref.getLength() > 4 && bytes[4] == NEW_FORMAT_MAGIC) {
-      // New format: big-endian
-      bytes[0] = (byte) (wkid >> 24);
-      bytes[1] = (byte) (wkid >> 16);
-      bytes[2] = (byte) (wkid >> 8);
-      bytes[3] = (byte) wkid;
-    } else {
-      // Old format: little-endian
-      ByteBuffer bb = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
-      bb.putInt(wkid);
-      System.arraycopy(bb.array(), 0, bytes, 0, SIZE_WKID);
-    }
+    // SRID/WKID is stored little-endian at bytes 0-3 in both the old and new formats.
+    ByteBuffer bb = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
+    bb.putInt(wkid);
+    System.arraycopy(bb.array(), 0, geomref.getBytes(), 0, SIZE_WKID);
   }
 
   /**
@@ -562,11 +545,11 @@ public class GeometryUtils {
     byte[] wkb = wkbWriterFor(geometry).write(geometry);
 
     byte[] result = new byte[SIZE_WKID + 1 + wkb.length];
-    // Write SRID big-endian
-    result[0] = (byte) (srid >> 24);
-    result[1] = (byte) (srid >> 16);
-    result[2] = (byte) (srid >> 8);
-    result[3] = (byte) srid;
+    // Write SRID little-endian (matches the old format's WKID byte order)
+    result[0] = (byte) srid;
+    result[1] = (byte) (srid >> 8);
+    result[2] = (byte) (srid >> 16);
+    result[3] = (byte) (srid >> 24);
     // Magic byte
     result[4] = NEW_FORMAT_MAGIC;
     // WKB payload

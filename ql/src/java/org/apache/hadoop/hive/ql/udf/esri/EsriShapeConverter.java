@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.ql.udf.esri;
 
 import org.locationtech.jts.algorithm.Orientation;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateXYM;
+import org.locationtech.jts.geom.CoordinateXYZM;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.LinearRing;
@@ -38,20 +40,31 @@ import java.util.List;
  * Reads and writes raw ESRI shape binary format directly from/to JTS geometries,
  * without any dependency on the ESRI Geometry library.
  *
- * <p>All binary values are little-endian as per the ESRI shape format specification.
+ * <p>All binary values are little-endian as per the ESRI shape format specification
+ * (ESRI Shapefile Technical Description, July 1998,
+ * <a href="https://www.esri.com/content/dam/esrisites/sitecore-archive/Files/Pdfs/library/whitepapers/pdfs/shapefile.pdf">
+ * shapefile.pdf</a>).
  *
- * <p>Supported shape types:
+ * <p>Supported shape types on read:
  * <ul>
  *   <li>0  - Null/Unknown</li>
  *   <li>1  - Point</li>
  *   <li>3  - Polyline (paths)</li>
  *   <li>5  - Polygon (rings)</li>
  *   <li>8  - MultiPoint</li>
- *   <li>11 - PointZ</li>
- *   <li>13 - PolylineZ</li>
- *   <li>15 - PolygonZ</li>
- *   <li>18 - MultiPointZ</li>
+ *   <li>11 - PointZ (optionally with M)</li>
+ *   <li>13 - PolylineZ (optionally with M)</li>
+ *   <li>15 - PolygonZ (optionally with M)</li>
+ *   <li>18 - MultiPointZ (optionally with M)</li>
+ *   <li>21 - PointM</li>
+ *   <li>23 - PolylineM</li>
+ *   <li>25 - PolygonM</li>
+ *   <li>28 - MultiPointM</li>
  * </ul>
+ *
+ * <p>The M-bearing types are read (to stay compatible with data serialized by the
+ * previous ESRI-library implementation) but never written; {@link #toEsriShape} emits
+ * only the XY and XYZ types.
  */
 public final class EsriShapeConverter {
 
@@ -64,6 +77,13 @@ public final class EsriShapeConverter {
   private static final int TYPE_POLYLINE_Z   = 13;
   private static final int TYPE_POLYGON_Z    = 15;
   private static final int TYPE_MULTIPOINT_Z = 18;
+  private static final int TYPE_POINT_M      = 21;
+  private static final int TYPE_POLYLINE_M   = 23;
+  private static final int TYPE_POLYGON_M    = 25;
+  private static final int TYPE_MULTIPOINT_M = 28;
+
+  // ESRI marks an absent measure with any value less than this sentinel.
+  private static final double NO_DATA_M = -1e38;
 
   private EsriShapeConverter() {
   }
@@ -82,29 +102,35 @@ public final class EsriShapeConverter {
 
     return switch (shapeType) {
       case TYPE_NULL -> null;
-      case TYPE_POINT -> readPoint(shapeBuffer, false);
-      case TYPE_POINT_Z -> readPoint(shapeBuffer, true);
-      case TYPE_MULTIPOINT -> readMultiPoint(shapeBuffer, false);
-      case TYPE_MULTIPOINT_Z -> readMultiPoint(shapeBuffer, true);
-      case TYPE_POLYLINE -> readPolyline(shapeBuffer, false);
-      case TYPE_POLYLINE_Z -> readPolyline(shapeBuffer, true);
-      case TYPE_POLYGON -> readPolygon(shapeBuffer, false);
-      case TYPE_POLYGON_Z -> readPolygon(shapeBuffer, true);
+      case TYPE_POINT -> readPoint(shapeBuffer, false, false);
+      case TYPE_POINT_Z -> readPoint(shapeBuffer, true, false);
+      case TYPE_POINT_M -> readPoint(shapeBuffer, false, true);
+      case TYPE_MULTIPOINT -> readMultiPoint(shapeBuffer, false, false);
+      case TYPE_MULTIPOINT_Z -> readMultiPoint(shapeBuffer, true, false);
+      case TYPE_MULTIPOINT_M -> readMultiPoint(shapeBuffer, false, true);
+      case TYPE_POLYLINE -> readPolyline(shapeBuffer, false, false);
+      case TYPE_POLYLINE_Z -> readPolyline(shapeBuffer, true, false);
+      case TYPE_POLYLINE_M -> readPolyline(shapeBuffer, false, true);
+      case TYPE_POLYGON -> readPolygon(shapeBuffer, false, false);
+      case TYPE_POLYGON_Z -> readPolygon(shapeBuffer, true, false);
+      case TYPE_POLYGON_M -> readPolygon(shapeBuffer, false, true);
       default -> throw new IllegalArgumentException("Unsupported ESRI shape type: " + shapeType);
     };
   }
 
-  private static Point readPoint(ByteBuffer buf, boolean hasZ) {
+  private static Point readPoint(ByteBuffer buf, boolean hasZ, boolean mandatoryM) {
     double x = buf.getDouble();
     double y = buf.getDouble();
-    if (hasZ) {
-      double z = buf.getDouble();
-      return GeometryUtils.GEOMETRY_FACTORY.createPoint(new Coordinate(x, y, z));
+    double z = hasZ ? buf.getDouble() : Double.NaN;
+    // M is mandatory for the *M types, and optional (trailing) for the *Z types.
+    double m = Double.NaN;
+    if (mandatoryM || (hasZ && buf.remaining() >= 8)) {
+      m = validM(buf.getDouble());
     }
-    return GeometryUtils.GEOMETRY_FACTORY.createPoint(new Coordinate(x, y));
+    return GeometryUtils.GEOMETRY_FACTORY.createPoint(buildCoord(x, y, z, m));
   }
 
-  private static MultiPoint readMultiPoint(ByteBuffer buf, boolean hasZ) {
+  private static MultiPoint readMultiPoint(ByteBuffer buf, boolean hasZ, boolean mandatoryM) {
     // skip bounding box (4 doubles = 32 bytes)
     buf.position(buf.position() + 32);
     int numPoints = buf.getInt();
@@ -114,29 +140,23 @@ public final class EsriShapeConverter {
       xs[i] = buf.getDouble();
       ys[i] = buf.getDouble();
     }
-    double[] zs = null;
-    if (hasZ) {
-      // skip zMin, zMax
-      buf.position(buf.position() + 16);
-      zs = new double[numPoints];
-      for (int i = 0; i < numPoints; i++) {
-        zs[i] = buf.getDouble();
-      }
-    }
+    double[] zs = hasZ ? readOrdinateBlock(buf, numPoints) : null;
+    double[] ms = readMeasureBlock(buf, numPoints, mandatoryM);
+
     Point[] points = new Point[numPoints];
     for (int i = 0; i < numPoints; i++) {
-      Coordinate coord = (zs != null) ? new Coordinate(xs[i], ys[i], zs[i])
-                                      : new Coordinate(xs[i], ys[i]);
+      Coordinate coord = buildCoord(xs[i], ys[i], zs != null ? zs[i] : Double.NaN,
+          ms != null ? ms[i] : Double.NaN);
       points[i] = GeometryUtils.GEOMETRY_FACTORY.createPoint(coord);
     }
     return GeometryUtils.GEOMETRY_FACTORY.createMultiPoint(points);
   }
 
   /**
-   * Read a Polyline or PolylineZ. Buffer is positioned just after the type int.
+   * Read a Polyline, PolylineZ or PolylineM. Buffer is positioned just after the type int.
    * Multiple parts become a MultiLineString; a single part becomes a LineString.
    */
-  private static Geometry readPolyline(ByteBuffer buf, boolean hasZ) {
+  private static Geometry readPolyline(ByteBuffer buf, boolean hasZ, boolean mandatoryM) {
     // skip bounding box
     buf.position(buf.position() + 32);
     int numParts  = buf.getInt();
@@ -147,10 +167,7 @@ public final class EsriShapeConverter {
       partStarts[i] = buf.getInt();
     }
 
-    Coordinate[] allCoords = readXYCoords(buf, numPoints);
-    if (hasZ) {
-      readZIntoCoords(buf, allCoords);
-    }
+    Coordinate[] allCoords = readCoords(buf, numPoints, hasZ, mandatoryM);
 
     LineString[] lines = new LineString[numParts];
     for (int i = 0; i < numParts; i++) {
@@ -167,13 +184,13 @@ public final class EsriShapeConverter {
   }
 
   /**
-   * Read a Polygon or PolygonZ. Buffer is positioned just after the type int.
+   * Read a Polygon, PolygonZ or PolygonM. Buffer is positioned just after the type int.
    *
    * <p>In ESRI shape format, exterior rings are wound clockwise (negative signed area)
    * and holes are wound counterclockwise (positive signed area). Multiple exterior rings
    * produce a MultiPolygon.
    */
-  private static Geometry readPolygon(ByteBuffer buf, boolean hasZ) {
+  private static Geometry readPolygon(ByteBuffer buf, boolean hasZ, boolean mandatoryM) {
     // skip bounding box
     buf.position(buf.position() + 32);
     int numParts  = buf.getInt();
@@ -184,10 +201,7 @@ public final class EsriShapeConverter {
       partStarts[i] = buf.getInt();
     }
 
-    Coordinate[] allCoords = readXYCoords(buf, numPoints);
-    if (hasZ) {
-      readZIntoCoords(buf, allCoords);
-    }
+    Coordinate[] allCoords = readCoords(buf, numPoints, hasZ, mandatoryM);
 
     // Split into per-ring coordinate arrays
     Coordinate[][] rings = new Coordinate[numParts][];
@@ -544,24 +558,73 @@ public final class EsriShapeConverter {
   }
 
   /** Read {@code n} (x, y) coordinate pairs from {@code buf} into a Coordinate array. */
-  private static Coordinate[] readXYCoords(ByteBuffer buf, int n) {
+  /**
+   * Read {@code n} vertices for a polyline/polygon: the XY block, then the optional Z block
+   * (for the *Z types) and the optional/mandatory M block, and assemble typed coordinates.
+   */
+  private static Coordinate[] readCoords(ByteBuffer buf, int n, boolean hasZ, boolean mandatoryM) {
+    double[] xs = new double[n];
+    double[] ys = new double[n];
+    for (int i = 0; i < n; i++) {
+      xs[i] = buf.getDouble();
+      ys[i] = buf.getDouble();
+    }
+    double[] zs = hasZ ? readOrdinateBlock(buf, n) : null;
+    double[] ms = readMeasureBlock(buf, n, mandatoryM);
+
     Coordinate[] coords = new Coordinate[n];
     for (int i = 0; i < n; i++) {
-      coords[i] = new Coordinate(buf.getDouble(), buf.getDouble());
+      coords[i] = buildCoord(xs[i], ys[i], zs != null ? zs[i] : Double.NaN,
+          ms != null ? ms[i] : Double.NaN);
     }
     return coords;
   }
 
-  /**
-   * Read Z values from {@code buf} into an existing coordinate array.
-   * Skips zMin and zMax (2 doubles) before reading the per-coordinate Z values.
-   */
-  private static void readZIntoCoords(ByteBuffer buf, Coordinate[] coords) {
-    // skip zMin, zMax
-    buf.position(buf.position() + 16);
-    for (Coordinate coord : coords) {
-      coord.setZ(buf.getDouble());
+  /** Skip the min/max pair (16 bytes) and read {@code n} ordinate values (Z or M). */
+  private static double[] readOrdinateBlock(ByteBuffer buf, int n) {
+    buf.position(buf.position() + 16);  // skip min, max
+    double[] values = new double[n];
+    for (int i = 0; i < n; i++) {
+      values[i] = buf.getDouble();
     }
+    return values;
+  }
+
+  /**
+   * Read the measure block if present. It is mandatory for the *M types and optional
+   * (trailing) for the *Z types, detected by whether enough bytes remain. Returns
+   * {@code null} when there is no measure data, or when every value is the no-data sentinel.
+   */
+  private static double[] readMeasureBlock(ByteBuffer buf, int n, boolean mandatoryM) {
+    if (!mandatoryM && buf.remaining() < 16 + 8L * n) {
+      return null;
+    }
+    double[] ms = readOrdinateBlock(buf, n);
+    boolean anyValid = false;
+    for (int i = 0; i < n; i++) {
+      ms[i] = validM(ms[i]);
+      anyValid |= !Double.isNaN(ms[i]);
+    }
+    return anyValid ? ms : null;
+  }
+
+  /** Maps ESRI's no-data measure sentinel to {@link Double#NaN}. */
+  private static double validM(double m) {
+    return (Double.isNaN(m) || m <= NO_DATA_M) ? Double.NaN : m;
+  }
+
+  /** Build the narrowest JTS coordinate that carries the ordinates actually present. */
+  private static Coordinate buildCoord(double x, double y, double z, double m) {
+    boolean hasZ = !Double.isNaN(z);
+    boolean hasM = !Double.isNaN(m);
+    if (hasZ && hasM) {
+      return new CoordinateXYZM(x, y, z, m);
+    } else if (hasM) {
+      return new CoordinateXYM(x, y, m);
+    } else if (hasZ) {
+      return new Coordinate(x, y, z);
+    }
+    return new Coordinate(x, y);
   }
 
   /** Copy a slice of a coordinate array. */

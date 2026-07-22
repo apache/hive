@@ -143,6 +143,120 @@ public class TestEsriShapeConverter {
     assertNull(EsriShapeConverter.fromEsriShape(ByteBuffer.wrap(EsriShapeConverter.toEsriShape(null))));
   }
 
+  private static byte[] hex(String s) {
+    byte[] out = new byte[s.length() / 2];
+    for (int i = 0; i < out.length; i++) {
+      out[i] = (byte) Integer.parseInt(s.substring(2 * i, 2 * i + 2), 16);
+    }
+    return out;
+  }
+
+  /**
+   * Golden bytes hand-encoded from the ESRI Shapefile spec (little-endian), so this checks
+   * the reader against the on-disk format itself rather than only against our own writer.
+   * Point shape: type(1) + X(1.0) + Y(2.0).
+   */
+  @Test
+  public void testReadSpecPointBytes() {
+    byte[] bytes = hex("01000000" + "000000000000F03F" + "0000000000000040");
+    Point point = (Point) EsriShapeConverter.fromEsriShape(ByteBuffer.wrap(bytes));
+    assertEquals(1, point.getX(), EPSILON);
+    assertEquals(2, point.getY(), EPSILON);
+  }
+
+  /**
+   * Golden MultiPoint bytes from the ESRI spec, which carry a bounding box between the shape
+   * type and the point count. Exercises the reader's bounding-box handling on input.
+   * MultiPoint: type(8) + bbox(10,30,40,40) + numPoints(2) + (10,40),(40,30).
+   */
+  @Test
+  public void testReadSpecMultiPointBytesWithBoundingBox() {
+    byte[] bytes = hex("08000000"
+        + "0000000000002440" + "0000000000003E40" + "0000000000004440" + "0000000000004440"  // bbox
+        + "02000000"
+        + "0000000000002440" + "0000000000004440"   // (10, 40)
+        + "0000000000004440" + "0000000000003E40"); // (40, 30)
+    MultiPoint mp = (MultiPoint) EsriShapeConverter.fromEsriShape(ByteBuffer.wrap(bytes));
+    assertEquals(2, mp.getNumGeometries());
+    assertTrue(mp.equalsTopo(GeometryUtils.GEOMETRY_FACTORY.createMultiPoint(new Point[] {
+        GeometryUtils.GEOMETRY_FACTORY.createPoint(new org.locationtech.jts.geom.Coordinate(10, 40)),
+        GeometryUtils.GEOMETRY_FACTORY.createPoint(new org.locationtech.jts.geom.Coordinate(40, 30))})));
+  }
+
+  /**
+   * The bounding box our writer emits (4 doubles right after the shape-type int) must match
+   * the geometry's actual envelope.
+   */
+  @Test
+  public void testWrittenBoundingBox() throws Exception {
+    byte[] shape = EsriShapeConverter.toEsriShape(wkt("linestring (2 4, 10 10, 7 8)"));
+    ByteBuffer buf = ByteBuffer.wrap(shape).order(ByteOrder.LITTLE_ENDIAN);
+    assertEquals(3, buf.getInt(0));            // Polyline
+    assertEquals(2.0, buf.getDouble(4), EPSILON);   // xmin
+    assertEquals(4.0, buf.getDouble(12), EPSILON);  // ymin
+    assertEquals(10.0, buf.getDouble(20), EPSILON); // xmax
+    assertEquals(10.0, buf.getDouble(28), EPSILON); // ymax
+  }
+
+  /**
+   * PointM (type 21): X(0) Y(3) M(1). M-bearing shapes are read for backward compatibility
+   * with data serialized by the old ESRI library, even though we no longer write them.
+   */
+  @Test
+  public void testReadSpecPointMBytes() {
+    byte[] bytes = hex("15000000" + "0000000000000000" + "0000000000000840" + "000000000000F03F");
+    Point point = (Point) EsriShapeConverter.fromEsriShape(ByteBuffer.wrap(bytes));
+    assertEquals(0, point.getX(), EPSILON);
+    assertEquals(3, point.getY(), EPSILON);
+    assertEquals(1, point.getCoordinate().getM(), EPSILON);
+    assertTrue("Z must be absent", Double.isNaN(point.getCoordinate().getZ()));
+  }
+
+  /**
+   * PointZ (type 11) carrying the optional trailing M value: X(0) Y(3) Z(1) M(2).
+   * This is how a {@code POINT ZM} was stored by the old library.
+   */
+  @Test
+  public void testReadSpecPointZMBytes() {
+    byte[] bytes = hex("0B000000"
+        + "0000000000000000" + "0000000000000840" + "000000000000F03F" + "0000000000000040");
+    Point point = (Point) EsriShapeConverter.fromEsriShape(ByteBuffer.wrap(bytes));
+    assertEquals(1, point.getCoordinate().getZ(), EPSILON);
+    assertEquals(2, point.getCoordinate().getM(), EPSILON);
+  }
+
+  /**
+   * PolylineM (type 23), one part, points (10 10 m=2), (20 20 m=4): XY block then the
+   * mandatory M block (Mmin, Mmax, per-vertex M).
+   */
+  @Test
+  public void testReadSpecPolylineMBytes() {
+    ByteBuffer buf = ByteBuffer.allocate(4 + 32 + 4 + 4 + 4 + 2 * 16 + 16 + 2 * 8)
+        .order(ByteOrder.LITTLE_ENDIAN);
+    buf.putInt(23);
+    buf.putDouble(10).putDouble(10).putDouble(20).putDouble(20);   // bbox
+    buf.putInt(1);                                                  // numParts
+    buf.putInt(2);                                                  // numPoints
+    buf.putInt(0);                                                  // part start
+    buf.putDouble(10).putDouble(10).putDouble(20).putDouble(20);    // XY
+    buf.putDouble(2).putDouble(4);                                  // Mmin, Mmax
+    buf.putDouble(2).putDouble(4);                                  // per-vertex M
+    buf.flip();
+
+    LineString line = (LineString) EsriShapeConverter.fromEsriShape(buf);
+    assertEquals(2, line.getCoordinateN(0).getM(), EPSILON);
+    assertEquals(4, line.getCoordinateN(1).getM(), EPSILON);
+    assertTrue("Z must be absent", Double.isNaN(line.getCoordinateN(0).getZ()));
+  }
+
+  /** A PolylineZ with no trailing M block must not be reported as measured. */
+  @Test
+  public void testZShapeWithoutMeasureStaysUnmeasured() throws Exception {
+    LineString back = (LineString) roundTrip("linestring z (0 0 1, 1 1 2)");
+    assertTrue("M must be absent", Double.isNaN(back.getCoordinateN(0).getM()));
+    assertEquals(1, back.getCoordinateN(0).getZ(), EPSILON);
+  }
+
   @Test
   public void testUnsupportedShapeAndGeometryType() throws Exception {
     ByteBuffer buffer = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
