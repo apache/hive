@@ -129,7 +129,7 @@ public record IndexMapping(
     }
   }
 
-  /** Validates a single field for lexical {@link org.apache.hive.search.search.SearchMethod.Match}. */
+  /** Validates a single field for lexical {@link MatchQuery}. */
   public void validateLexicalSearchField(String fieldName) throws SearchException {
     if (isSearchTextLogicalField(fieldName)) {
       throw new SearchException(
