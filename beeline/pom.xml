@@ -142,6 +142,11 @@
       </exclusions>
     </dependency>
     <dependency>
+      <!--
+        Since hive-jdbc dependecy that is compile time has Utils.java
+        that directly imports HiveSQLException from hive-service, so hive-service should is needed at runtime and should
+        be a compile time dependecy also.
+        -->
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-service</artifactId>
       <version>${project.version}</version>
@@ -253,7 +258,7 @@
                   </manifestEntries>
                 </transformer>
                 <!--
-                  Without this, the java.sql.Driver service file ends up containing only one implementation of the
+                  Without this, the META-INF/services/java.sql.Driver service file ends up with only one implementation of the
                   interface (the last writer wins) and HiveDriver is never registered, causing:
                     "No known driver to handle jdbc:hive2://..."
                 -->
