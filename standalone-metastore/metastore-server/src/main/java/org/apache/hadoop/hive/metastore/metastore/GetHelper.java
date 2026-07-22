@@ -47,8 +47,17 @@ import org.slf4j.LoggerFactory;
 @VisibleForTesting
 public abstract class GetHelper<A, T> {
   private static final Logger LOG = LoggerFactory.getLogger(GetHelper.class);
+  /** Global counter kept for JMX / metrics purposes only. */
   private static Counter directSqlErrors = Metrics.getRegistry() != null ?
       Metrics.getOrCreateCounter(MetricsConstants.DIRECTSQL_ERRORS) : new Counter();
+  /**
+   * Per-thread error count used by {@code DirectSqlConfigurator} to detect unexpected
+   * DirectSQL fallbacks. Using a ThreadLocal prevents background threads (e.g. LLAP
+   * worker threads) from contaminating the snapshot taken by the calling thread, which
+   * caused spurious "An unexpected direct sql error raised behind" failures in CI when
+   * multiple q-tests shared the same JVM (HIVE-29648 / HIVE-29656 follow-up).
+   */
+  private static final ThreadLocal<Long> threadLocalErrors = ThreadLocal.withInitial(() -> 0L);
   private final boolean isInTxn, doTrace, allowJdo;
   private boolean doUseDirectSql;
   private long start;
@@ -192,6 +201,7 @@ public abstract class GetHelper<A, T> {
     }
 
     directSqlErrors.inc();
+    threadLocalErrors.set(threadLocalErrors.get() + 1);
     doUseDirectSql = false;
   }
 
@@ -270,12 +280,14 @@ public abstract class GetHelper<A, T> {
   }
 
   public static long getDirectSqlErrors() {
-    return directSqlErrors.getCount();
+    return threadLocalErrors.get();
   }
 
   @VisibleForTesting
   public static Counter setDirectSqlErrors(Counter counter) {
     directSqlErrors = counter;
+    // Also reset the thread-local so tests start from a clean slate.
+    threadLocalErrors.set(0L);
     return counter;
   }
 }
