@@ -51,11 +51,8 @@ public abstract class GetHelper<A, T> {
   private static Counter directSqlErrors = Metrics.getRegistry() != null ?
       Metrics.getOrCreateCounter(MetricsConstants.DIRECTSQL_ERRORS) : new Counter();
   /**
-   * Per-thread error count used by {@code DirectSqlConfigurator} to detect unexpected
-   * DirectSQL fallbacks. Using a ThreadLocal prevents background threads (e.g. LLAP
-   * worker threads) from contaminating the snapshot taken by the calling thread, which
-   * caused spurious "An unexpected direct sql error raised behind" failures in CI when
-   * multiple q-tests shared the same JVM (HIVE-29648 / HIVE-29656 follow-up).
+   * Per-thread error count used by {@code DirectSqlConfigurator} to detect unexpected errors
+   * and disable direct SQL for the thread.  This is not a metric, just a thread-local counter.
    */
   private static final ThreadLocal<Long> threadLocalErrors = ThreadLocal.withInitial(() -> 0L);
   private final boolean isInTxn, doTrace, allowJdo;
