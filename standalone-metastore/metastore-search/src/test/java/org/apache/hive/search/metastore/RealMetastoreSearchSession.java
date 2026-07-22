@@ -32,7 +32,7 @@ import org.apache.hive.search.index.IndexManager;
 import org.apache.hive.search.index.store.LocalStateClient;
 import org.apache.hive.search.inference.EmbedderRegistry;
 import org.apache.hive.search.mapping.IndexMapping;
-import org.apache.hive.search.search.SearchMethod;
+import org.apache.hive.search.search.MatchQuery;
 import org.apache.hive.search.search.Searcher;
 import org.apache.hive.search.search.SearchQuery;
 import org.apache.hive.search.search.TableSearchResult;
@@ -213,7 +213,7 @@ public final class RealMetastoreSearchSession implements AutoCloseable {
     try (Searcher searchIO = new Searcher(
         searcherManager, indexManager, modelRegistry, searchConfig, bayesianParameters)) {
       return searchIO.search(new SearchQuery(
-          new SearchMethod.Match(text),
+          new MatchQuery(text),
           null, null, limit,
           List.of(MetastoreTableMapper.FIELD_TABLE, MetastoreTableMapper.FIELD_COMMENT)));
     }

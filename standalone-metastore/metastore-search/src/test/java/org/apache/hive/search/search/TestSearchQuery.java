@@ -23,7 +23,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 @Category(MetastoreUnitTest.class)
@@ -32,8 +31,8 @@ public class TestSearchQuery {
   @Test
   public void ofTextDefaultsToHybridMode() throws Exception {
     SearchQuery query = SearchQuery.of("sales");
-    assertTrue(query.args() instanceof SearchMethod.Hybrid);
-    assertEquals("sales", ((SearchMethod.Hybrid) query.args()).queryText());
+    assertTrue(query.body() instanceof HybridQuery);
+    assertEquals("sales", query.body().queryText());
     assertEquals(SearchQuery.Mode.HYBRID, query.mode());
     assertEquals(0, query.limit());
   }
@@ -41,7 +40,7 @@ public class TestSearchQuery {
   @Test
   public void ofTextWithModeAndLimit() throws Exception {
     SearchQuery query = SearchQuery.of("sales", SearchQuery.Mode.SEMANTIC, 25);
-    assertTrue(query.args() instanceof SearchMethod.Semantic);
+    assertTrue(query.body() instanceof SemanticQuery);
     assertEquals(SearchQuery.Mode.SEMANTIC, query.mode());
     assertEquals(25, query.limit());
   }
@@ -49,8 +48,8 @@ public class TestSearchQuery {
   @Test
   public void ofTableNameUsesKeywordMode() throws Exception {
     SearchQuery query = SearchQuery.of("orders", "hive", "default");
-    assertTrue(query.args() instanceof SearchMethod.Match);
-    assertEquals("orders", ((SearchMethod.Match) query.args()).queryText());
+    assertTrue(query.body() instanceof MatchQuery);
+    assertEquals("orders", query.body().queryText());
     assertEquals(SearchQuery.Mode.MATCH, query.mode());
     assertEquals("hive", query.catalogName());
     assertEquals("default", query.databaseName());
@@ -58,12 +57,12 @@ public class TestSearchQuery {
 
   @Test
   public void rejectsEmptyQueryText() {
-    assertThrows(SearchException.class, () -> SearchQuery.of(""));
+    org.junit.Assert.assertThrows(SearchException.class, () -> SearchQuery.of(""));
   }
 
   @Test
   public void rejectsNegativeLimit() {
-    assertThrows(SearchException.class,
+    org.junit.Assert.assertThrows(SearchException.class,
         () -> SearchQuery.of("sales", SearchQuery.Mode.HYBRID, -1));
   }
 }

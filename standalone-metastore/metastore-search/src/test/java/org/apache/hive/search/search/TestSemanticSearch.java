@@ -42,8 +42,8 @@ public class TestSemanticSearch {
 
   @Test
   public void resolveUsesDefaultSemanticFields() throws Exception {
-    SemanticSearch.ResolvedSemanticQuery resolved =
-        SemanticSearch.resolve(new SearchMethod.Semantic("sales revenue"), defaultMapping());
+    SemanticQuery resolved =
+        new SemanticQuery("sales revenue").resolve(defaultMapping());
     assertEquals("sales revenue", resolved.queryText());
     assertEquals(4, defaultMapping().resolveSemanticSearchFields(null).size());
   }
@@ -62,8 +62,7 @@ public class TestSemanticSearch {
             "field_b", new SearchParams(true, "model-b", SearchParams.VectorDistance.COSINE)));
     IndexMapping mapping = new IndexMapping("idx", conf, fields);
 
-    SemanticSearch.ResolvedSemanticQuery resolved =
-        SemanticSearch.resolve(new SearchMethod.Semantic("query"), mapping);
+    SemanticQuery resolved = new SemanticQuery("query").resolve(mapping);
     assertEquals("query", resolved.queryText());
     assertEquals(List.of("field_a", "field_b"), mapping.resolveSemanticSearchFields(null));
   }

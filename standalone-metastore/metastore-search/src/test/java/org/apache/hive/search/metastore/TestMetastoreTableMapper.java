@@ -68,7 +68,7 @@ public class TestMetastoreTableMapper {
   @Test
   public void fromTableBuildsSearchTextAndStoredFields() throws Exception {
     Configuration conf = new Configuration(false);
-    IndexMapping mapping = MetastoreSchemas.defaultHiveTablesMapping("hive_tables", "bge-small", conf);
+    IndexMapping mapping = MetastoreIndexSchema.defaultHiveTablesMapping("hive_tables", "bge-small", conf);
 
     Table table = new Table();
     table.setCatName("hive");
@@ -111,7 +111,7 @@ public class TestMetastoreTableMapper {
   @Test
   public void columnSearchFieldsSplitNamesAndComments() throws Exception {
     Configuration conf = new Configuration(false);
-    IndexMapping mapping = MetastoreSchemas.defaultHiveTablesMapping("hive_tables", "bge-small", conf);
+    IndexMapping mapping = MetastoreIndexSchema.defaultHiveTablesMapping("hive_tables", "bge-small", conf);
 
     Table table = new Table();
     table.setCatName("hive");
@@ -132,7 +132,7 @@ public class TestMetastoreTableMapper {
   @Test
   public void searchTextIncludesAllColumns() throws Exception {
     Configuration conf = new Configuration(false);
-    IndexMapping mapping = MetastoreSchemas.defaultHiveTablesMapping("hive_tables", "bge-small", conf);
+    IndexMapping mapping = MetastoreIndexSchema.defaultHiveTablesMapping("hive_tables", "bge-small", conf);
 
     Table table = new Table();
     table.setCatName("hive");
@@ -154,7 +154,7 @@ public class TestMetastoreTableMapper {
   @Test
   public void searchTextIncludesAllCommentedColumnsForWideTables() throws Exception {
     Configuration conf = new Configuration(false);
-    IndexMapping mapping = MetastoreSchemas.defaultHiveTablesMapping("hive_tables", "bge-small", conf);
+    IndexMapping mapping = MetastoreIndexSchema.defaultHiveTablesMapping("hive_tables", "bge-small", conf);
 
     Table table = new Table();
     table.setCatName("hive");
@@ -186,7 +186,7 @@ public class TestMetastoreTableMapper {
   @Test
   public void searchTextUsesStructuredLabelsWithoutComment() throws Exception {
     Configuration conf = new Configuration(false);
-    IndexMapping mapping = MetastoreSchemas.defaultHiveTablesMapping("hive_tables", "bge-small", conf);
+    IndexMapping mapping = MetastoreIndexSchema.defaultHiveTablesMapping("hive_tables", "bge-small", conf);
 
     Table table = new Table();
     table.setCatName("hive");
@@ -204,7 +204,7 @@ public class TestMetastoreTableMapper {
     Configuration conf = new Configuration(false);
     conf.setBoolean(IndexStoreConfig.MEMORY, true);
     conf.set(InferenceConfig.EMBEDDER_NAME, "stub-model");
-    IndexMapping mapping = MetastoreSchemas.defaultHiveTablesMapping("hive_tables", "stub-model", conf);
+    IndexMapping mapping = MetastoreIndexSchema.defaultHiveTablesMapping("hive_tables", "stub-model", conf);
     IndexManager indexManager = IndexManager.open(mapping, conf);
     EmbedderRegistry registry = new EmbedderRegistry(
         java.util.Map.of("stub-model", new StubEmbedder("stub-model")));
@@ -242,7 +242,7 @@ public class TestMetastoreTableMapper {
   @Test
   public void lexicalFieldsAreIndexedForKeywordSearch() throws Exception {
     Configuration conf = new Configuration(false);
-    IndexMapping mapping = MetastoreSchemas.defaultHiveTablesMapping("hive_tables", "bge-small", conf);
+    IndexMapping mapping = MetastoreIndexSchema.defaultHiveTablesMapping("hive_tables", "bge-small", conf);
 
     Table table = new Table();
     table.setCatName("hive");
@@ -269,7 +269,7 @@ public class TestMetastoreTableMapper {
   @Test
   public void semanticFieldRequiresEmbedding() throws Exception {
     Configuration conf = new Configuration(false);
-    IndexMapping mapping = MetastoreSchemas.defaultHiveTablesMapping("hive_tables", "bge-small", conf);
+    IndexMapping mapping = MetastoreIndexSchema.defaultHiveTablesMapping("hive_tables", "bge-small", conf);
     TableDocument document = MetastoreTableMapper.fromTable(sampleTable(), mapping);
     document.appendField(new TextField(SearchTextSegment.segmentField(0), "sales data"));
     try {

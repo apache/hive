@@ -17,21 +17,34 @@
 
 package org.apache.hive.search.search;
 
-import org.apache.commons.lang3.StringUtils;
+import java.util.Map;
+import java.util.Objects;
+
 import org.apache.hive.search.exception.SearchException;
 import org.apache.hive.search.mapping.IndexMapping;
 
-public final class LexicalSearch {
-  private LexicalSearch() {}
+/** Semantic (vector) table search over configured segment fields. */
+public record SemanticQuery(String queryText) implements SearchQuery.QueryBody {
+  public SemanticQuery {
+    Objects.requireNonNull(queryText, "queryText");
+  }
 
-  public record ResolvedMatchQuery(String queryText, String field) {}
-
-  public static ResolvedMatchQuery resolve(SearchMethod.Match args, IndexMapping mapping)
-      throws SearchException {
-    String field = StringUtils.trimToNull(args.field());
-    if (field != null) {
-      mapping.validateLexicalSearchField(field);
+  public static SemanticQuery fromBody(Object body) throws SearchException {
+    if (body instanceof String queryText) {
+      return new SemanticQuery(queryText);
     }
-    return new ResolvedMatchQuery(args.queryText(), field);
+    if (body instanceof Map<?, ?> semanticMap && semanticMap.containsKey("query")) {
+      return new SemanticQuery(semanticMap.get("query").toString());
+    }
+    throw new SearchException("semantic query must be a string or {query: text}");
+  }
+
+  public Map<String, String> toBody() {
+    return Map.of("query", queryText());
+  }
+
+  public SemanticQuery resolve(IndexMapping mapping) throws SearchException {
+    mapping.resolveSemanticSearchFields(null);
+    return this;
   }
 }
