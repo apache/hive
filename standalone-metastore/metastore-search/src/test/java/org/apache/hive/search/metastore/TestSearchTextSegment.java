@@ -31,7 +31,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 @Category(MetastoreUnitTest.class)
-public class TestSearchTextSegments {
+public class TestSearchTextSegment {
 
   @Test
   public void headSegmentWhenTableHasComment() {
@@ -46,18 +46,19 @@ public class TestSearchTextSegments {
   }
 
   @Test
-  public void noHeadWhenTableHasNoComment() {
+  public void headSegmentWithTableNameWhenNoComment() {
     Table table = tableWithColumns(0);
     List<String> segments = SearchTextSegment.build(table, 4, 1800);
-    assertTrue(segments.isEmpty());
+    assertEquals("table: t", segments.getFirst());
   }
 
   @Test
-  public void columnsPackFromZeroWhenNoHead() {
+  public void columnsPackAfterHead() {
     Table table = tableWithColumns(3);
     List<String> segments = SearchTextSegment.build(table, 2, 50);
     assertEquals(2, segments.size());
-    assertTrue(segments.get(0).contains("column col0"));
+    assertEquals("table: t", segments.get(0));
+    assertTrue(segments.get(1).contains("column col0"));
   }
 
   @Test
