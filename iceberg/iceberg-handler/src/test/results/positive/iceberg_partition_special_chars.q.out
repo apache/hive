@@ -1,0 +1,97 @@
+PREHOOK: query: CREATE TABLE studenttab10k(
+ name string,
+ age int,
+ gpa double
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@studenttab10k
+POSTHOOK: query: CREATE TABLE studenttab10k(
+ name string,
+ age int,
+ gpa double
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@studenttab10k
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/studenttab10k' OVERWRITE INTO TABLE studenttab10k
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@studenttab10k
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/studenttab10k' OVERWRITE INTO TABLE studenttab10k
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@studenttab10k
+PREHOOK: query: drop table if exists quoted_identifier_2_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists quoted_identifier_2_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table quoted_identifier_2_1(`-+={[<_name_>]}?/|` string, `!@#$%^&*()_age` int) partitioned by(`gpa_!@#$%^&*()` double) stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@quoted_identifier_2_1
+POSTHOOK: query: create table quoted_identifier_2_1(`-+={[<_name_>]}?/|` string, `!@#$%^&*()_age` int) partitioned by(`gpa_!@#$%^&*()` double) stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@quoted_identifier_2_1
+PREHOOK: query: insert into table quoted_identifier_2_1 select name,age,gpa from studenttab10k where gpa=3.5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@studenttab10k
+PREHOOK: Output: default@quoted_identifier_2_1
+POSTHOOK: query: insert into table quoted_identifier_2_1 select name,age,gpa from studenttab10k where gpa=3.5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@studenttab10k
+POSTHOOK: Output: default@quoted_identifier_2_1
+PREHOOK: query: drop view if exists quoted_identifier_2_2
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: drop view if exists quoted_identifier_2_2
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: create view quoted_identifier_2_2 as select `!@#$%^&*()_age`,count(*)  from quoted_identifier_2_1 group by `!@#$%^&*()_age`
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@quoted_identifier_2_1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@quoted_identifier_2_2
+POSTHOOK: query: create view quoted_identifier_2_2 as select `!@#$%^&*()_age`,count(*)  from quoted_identifier_2_1 group by `!@#$%^&*()_age`
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@quoted_identifier_2_1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@quoted_identifier_2_2
+POSTHOOK: Lineage: quoted_identifier_2_2.!@#$%^&*()_age SIMPLE [(quoted_identifier_2_1)quoted_identifier_2_1.FieldSchema(name:!@#$%^&*()_age, type:int, comment:null), ]
+POSTHOOK: Lineage: quoted_identifier_2_2._c1 EXPRESSION [(quoted_identifier_2_1)quoted_identifier_2_1.null, ]
+PREHOOK: query: drop table if exists quoted_identifier_2_3
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists quoted_identifier_2_3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table quoted_identifier_2_3(`name_col` string) partitioned by(age int, `gpa_!@#$%^&*()` double) stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@quoted_identifier_2_3
+POSTHOOK: query: create table quoted_identifier_2_3(`name_col` string) partitioned by(age int, `gpa_!@#$%^&*()` double) stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@quoted_identifier_2_3
+PREHOOK: query: insert into table quoted_identifier_2_3 select name,age,gpa from studenttab10k where gpa=4.5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@studenttab10k
+PREHOOK: Output: default@quoted_identifier_2_3
+POSTHOOK: query: insert into table quoted_identifier_2_3 select name,age,gpa from studenttab10k where gpa=4.5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@studenttab10k
+POSTHOOK: Output: default@quoted_identifier_2_3
+PREHOOK: query: select count(*) from quoted_identifier_2_3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@quoted_identifier_2_3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from quoted_identifier_2_3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@quoted_identifier_2_3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
