@@ -24,11 +24,17 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hive.search.exception.SearchException;
 
 public record SearchQuery(
-    SearchMethod args,
+    QueryBody body,
     String catalogName,
     String databaseName,
     int limit,
     List<String> returnFields) {
+
+  /** Union of mode-specific query payloads. */
+  public sealed interface QueryBody permits MatchQuery, SemanticQuery, HybridQuery {
+
+    String queryText();
+  }
 
   /** Public search mode exposed on the Metastore Thrift API. */
   public enum Mode {
@@ -42,20 +48,15 @@ public record SearchQuery(
   }
 
   public Mode mode() {
-    return switch (args) {
-      case SearchMethod.Match m -> Mode.MATCH;
-      case SearchMethod.Semantic s -> Mode.SEMANTIC;
-      case SearchMethod.Hybrid h -> Mode.HYBRID;
+    return switch (body) {
+      case MatchQuery m -> Mode.MATCH;
+      case SemanticQuery s -> Mode.SEMANTIC;
+      case HybridQuery h -> Mode.HYBRID;
     };
   }
 
-  private static void validate(SearchMethod args, int limit) throws SearchException {
-    String queryText = switch (args) {
-      case SearchMethod.Match m -> m.queryText();
-      case SearchMethod.Semantic s -> s.queryText();
-      case SearchMethod.Hybrid h -> h.queryText();
-    };
-    validate(queryText, limit);
+  private static void validate(QueryBody body, int limit) throws SearchException {
+    validate(body.queryText(), limit);
   }
 
   private static void validate(String queryText, int limit) throws SearchException {
@@ -78,40 +79,51 @@ public record SearchQuery(
     if (queryBody == null || queryBody.isEmpty()) {
       throw new SearchException("missing query body for mode " + mode);
     }
-    SearchMethod args = SearchMethod.fromBody(queryBody, mode);
-    validate(args, limit);
-    return new SearchQuery(args, catalogName, databaseName, limit, returnFields);
+    QueryBody body = parseBody(queryBody, mode);
+    validate(body, limit);
+    return new SearchQuery(body, catalogName, databaseName, limit, returnFields);
+  }
+
+  private static QueryBody parseBody(Object queryBody, Mode mode) throws SearchException {
+    return switch (mode) {
+      case MATCH -> MatchQuery.fromBody(queryBody);
+      case SEMANTIC -> SemanticQuery.fromBody(queryBody);
+      case HYBRID -> HybridQuery.fromBody(queryBody);
+    };
   }
 
   public static SearchQuery of(String queryText) throws SearchException {
     validate(queryText, 0);
-    return new SearchQuery(new SearchMethod.Hybrid(queryText, null, null), null, null, 0, List.of());
+    return new SearchQuery(new HybridQuery(queryText, null, null), null, null, 0, List.of());
   }
 
   public static SearchQuery of(String queryText, Mode mode, int limit) throws SearchException {
     validate(queryText, limit);
-    SearchMethod args = switch (mode) {
-      case MATCH -> new SearchMethod.Match(queryText);
-      case SEMANTIC -> new SearchMethod.Semantic(queryText);
-      case HYBRID -> new SearchMethod.Hybrid(queryText, null, null);
+    QueryBody body = switch (mode) {
+      case MATCH -> new MatchQuery(queryText);
+      case SEMANTIC -> new SemanticQuery(queryText);
+      case HYBRID -> new HybridQuery(queryText, null, null);
     };
-    return new SearchQuery(args, null, null, limit, List.of());
+    return new SearchQuery(body, null, null, limit, List.of());
   }
 
   public static SearchQuery of(String keyWord, String catalogName, String databaseName)
       throws SearchException {
     validate(keyWord, 0);
-    return new SearchQuery(
-        new SearchMethod.Match(keyWord), catalogName, databaseName, 0, List.of());
+    return new SearchQuery(new MatchQuery(keyWord), catalogName, databaseName, 0, List.of());
   }
 
   public static SearchQuery of(SearchQuery query, List<String> returnFields, int limit) {
     return new SearchQuery(
-        query.args(), query.catalogName(), query.databaseName(), limit, returnFields);
+        query.body(), query.catalogName(), query.databaseName(), limit, returnFields);
   }
 
   /** Serializes this query to a flat Thrift-ready query body map. */
   public Map<String, String> toQueryBody() {
-    return SearchMethod.toQueryBody(args);
+    return switch (body) {
+      case MatchQuery match -> match.toBody();
+      case SemanticQuery semantic -> semantic.toBody();
+      case HybridQuery hybrid -> hybrid.toBody();
+    };
   }
 }

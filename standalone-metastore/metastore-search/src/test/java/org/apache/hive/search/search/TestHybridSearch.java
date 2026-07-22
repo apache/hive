@@ -25,24 +25,22 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 @Category(MetastoreUnitTest.class)
 public class TestHybridSearch {
 
   @Test
-  public void toFusionRequestUsesDefaultsFromSearchConfig() throws SearchException {
-    HybridSearch.ResolvedHybridQuery resolved = new HybridSearch.ResolvedHybridQuery("sales", null);
+  public void resolvedQueryUsesDefaultSemanticWeightFromSearchConfig() throws SearchException {
+    HybridQuery resolved = new HybridQuery("sales", null, null);
     SearchConfig searchConfig = new SearchConfig(new Configuration(false));
-    Searcher.FusionRequest request =
-        HybridSearch.toFusionRequest(resolved, 20, searchConfig);
+    assertEquals(searchConfig.getHybridSemanticWeight(), resolved.semanticWeight(searchConfig), 0.001f);
+    assertEquals(searchConfig.getHybridMatchWeight(), 1.0f - resolved.semanticWeight(searchConfig), 0.001f);
+  }
 
-    assertEquals(20, request.size());
-    assertEquals(2, request.retrievers().size());
-    assertEquals(SearchQuery.Mode.MATCH.name(), request.retrievers().get(0).name());
-    assertTrue(request.retrievers().get(0).query() instanceof SearchMethod.Match);
-    assertEquals("sales", ((SearchMethod.Match) request.retrievers().get(0).query()).queryText());
-    assertEquals(searchConfig.getHybridMatchWeight(), request.retrievers().get(0).weight(), 0.001f);
-    assertEquals(searchConfig.getHybridSemanticWeight(), request.retrievers().get(1).weight(), 0.001f);
+  @Test
+  public void resolvedQueryKeepsExplicitSemanticWeight() throws SearchException {
+    HybridQuery resolved = new HybridQuery("sales", null, 0.3f);
+    SearchConfig searchConfig = new SearchConfig(new Configuration(false));
+    assertEquals(0.3f, resolved.semanticWeight(searchConfig), 0.001f);
   }
 }
