@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.leader.LeaderElection.LeadershipStateListener;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.util.ExitUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -76,10 +77,11 @@ public class LeaderElectionContext {
   private final List<LeaderElection<?>> leaderElections = new ArrayList<>();
   // Ensures the abort action runs at most once even if both electors fail concurrently.
   private final AtomicBoolean isAborting = new AtomicBoolean(false);
-  // Action to run when a leader election exhausts retries. Defaults to triggering an
-  // orderly JVM shutdown via System.exit, which fires the HMS shutdown-hook chain
-  // (election close, ZK deregistration, metrics, servlet server). Overridable for tests.
-  private Runnable abortAction = () -> System.exit(1);
+  // Action to run when a leader election exhausts retries. Defaults to ExitUtil.terminate,
+  // which fires the HMS shutdown-hook chain (election close, ZK deregistration, metrics,
+  // servlet server). ExitUtil is preferred over raw System.exit for JDK 21 compatibility
+  // and test-time exit interception. Overridable for tests.
+  private Runnable abortAction = () -> ExitUtil.terminate(1);
 
   private LeaderElectionContext(String servHost, Configuration conf,
       Map<TTYPE, List<LeadershipStateListener>> listeners,
@@ -129,7 +131,10 @@ public class LeaderElectionContext {
   }
 
   public void close() {
-    leaderElections.forEach(le -> {
+    // Iterate over a snapshot: closing an election may fire listener callbacks that
+    // touch the context, which could mutate leaderElections mid-iteration.
+    List<LeaderElection<?>> snapshot = new ArrayList<>(leaderElections);
+    snapshot.forEach(le -> {
       try {
         le.close();
       } catch (Exception e) {
@@ -155,6 +160,14 @@ public class LeaderElectionContext {
           t.getName(),
           ex);
       if (isAborting.compareAndSet(false, true)) {
+        // Best-effort close the electors so the mutex/lease is released promptly,
+        // letting other HMS instances proceed with election rather than waiting for
+        // the JVM shutdown hook to release resources.
+        try {
+          close();
+        } catch (Exception e) {
+          HiveMetaStore.LOG.warn("Error closing elections during abort", e);
+        }
         try {
           abortAction.run();
         } catch (Exception e) {
