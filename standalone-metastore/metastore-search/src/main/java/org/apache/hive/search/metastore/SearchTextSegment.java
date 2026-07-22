@@ -25,7 +25,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Table;
 
-/** Structured split of table search text: optional head (table comment) then column batches. */
+/**
+ * Structured split of table search text: head ({@code search_text_0}) with table name and optional
+ * table comment, then column-comment batches. Comments are never truncated or split.
+ */
 public final class SearchTextSegment {
   public static final String SEGMENT_PREFIX = "search_text_";
 
@@ -54,22 +57,15 @@ public final class SearchTextSegment {
   }
 
   /**
-   * @param maxSegments max {@code search_text_N} fields for this table
-   * @param maxCharsPerSegment soft char limit per segment
+   * @param maxSegments max {@code search_text_N} fields for this table (includes head)
+   * @param maxCharsPerSegment soft char limit when packing multiple column comments into one segment
    */
   public static List<String> build(Table table, int maxSegments, int maxCharsPerSegment) {
     if (maxSegments < 1) {
       throw new IllegalArgumentException("maxSegments must be >= 1");
     }
     List<String> result = new ArrayList<>(maxSegments);
-    String comment = tableComment(table);
-    if (StringUtils.isNotEmpty(comment)) {
-      String head = buildHead(table.getTableName(), comment);
-      if (head.length() > maxCharsPerSegment) {
-        head = head.substring(0, maxCharsPerSegment);
-      }
-      result.add(head);
-    }
+    result.add(buildHead(table.getTableName(), tableComment(table)));
     appendColumnSegments(result, table, maxSegments, maxCharsPerSegment);
     return result;
   }
@@ -83,10 +79,10 @@ public final class SearchTextSegment {
         return;
       }
       if (batch.isEmpty()) {
-        if (columnPart.length() <= maxCharsPerSegment) {
-          batch.append(columnPart);
-        } else {
-          result.add(columnPart.substring(0, maxCharsPerSegment));
+        batch.append(columnPart);
+        if (batch.length() > maxCharsPerSegment) {
+          result.add(batch.toString());
+          batch.setLength(0);
         }
         continue;
       }
@@ -100,10 +96,10 @@ public final class SearchTextSegment {
         if (result.size() >= maxSegments) {
           return;
         }
-        if (columnPart.length() <= maxCharsPerSegment) {
-          batch.append(columnPart);
-        } else {
-          result.add(columnPart.substring(0, maxCharsPerSegment));
+        batch.append(columnPart);
+        if (batch.length() > maxCharsPerSegment) {
+          result.add(batch.toString());
+          batch.setLength(0);
         }
       }
     }
@@ -113,7 +109,11 @@ public final class SearchTextSegment {
   }
 
   private static String buildHead(String tableName, String comment) {
-    return "table: " + tableName.toLowerCase(Locale.ROOT) + "; comment: " + comment;
+    String head = "table: " + tableName.toLowerCase(Locale.ROOT);
+    if (StringUtils.isNotEmpty(comment)) {
+      head += "; comment: " + comment;
+    }
+    return head;
   }
 
   private static String tableComment(Table table) {

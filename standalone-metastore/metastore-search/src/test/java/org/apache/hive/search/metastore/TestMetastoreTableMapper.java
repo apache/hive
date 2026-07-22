@@ -145,9 +145,10 @@ public class TestMetastoreTableMapper {
         new FieldSchema("status", "string", "fulfillment status")));
 
     TableDocument document = MetastoreTableMapper.fromTable(table, mapping);
-    assertTrue(fieldValue(document, SearchTextSegment.segmentField(0)).contains("column id"));
-    assertTrue(fieldValue(document, SearchTextSegment.segmentField(0)).contains("column status"));
-    assertFalse(fieldValue(document, SearchTextSegment.segmentField(0)).contains("column amount"));
+    assertEquals("table: orders", fieldValue(document, SearchTextSegment.segmentField(0)));
+    assertTrue(fieldValue(document, SearchTextSegment.segmentField(1)).contains("column id"));
+    assertTrue(fieldValue(document, SearchTextSegment.segmentField(1)).contains("column status"));
+    assertFalse(combinedSearchText(document).contains("column amount: "));
     assertTrue(fieldValue(document, MetastoreTableMapper.FIELD_COLUMNS).contains("amount"));
   }
 
@@ -196,7 +197,8 @@ public class TestMetastoreTableMapper {
     table.getSd().setCols(List.of(new FieldSchema("id", "bigint", null)));
 
     TableDocument document = MetastoreTableMapper.fromTable(table, mapping);
-    assertEquals(0, segmentFieldCount(document));
+    assertEquals(1, segmentFieldCount(document));
+    assertEquals("table: events", fieldValue(document, SearchTextSegment.segmentField(0)));
   }
 
   @Test
