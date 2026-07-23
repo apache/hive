@@ -47,6 +47,10 @@ abstract public class StringTrimColScalarBase extends StringUnaryUDFDirect {
     return shouldTrimByte((byte) character, trimChars, 0, trimChars.length);
   }
 
+  protected byte[] getTrimChars() {
+    return trimChars;
+  }
+
   static boolean shouldTrimByte(byte character, byte[] trimBytes, int trimStart, int trimLen) {
     final int trimEnd = trimStart + trimLen;
     for (int i = trimStart; i < trimEnd; ++i) {

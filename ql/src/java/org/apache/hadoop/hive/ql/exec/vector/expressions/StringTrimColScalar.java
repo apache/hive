@@ -39,29 +39,8 @@ public class StringTrimColScalar extends StringTrimColScalarBase {
    */
   protected void func(BytesColumnVector outV, byte[][] vector, int[] start, int[] length,
       int batchIndex) {
-
-    byte[] bytes = vector[batchIndex];
-    final int startIndex = start[batchIndex];
-    final int end = startIndex + length[batchIndex];
-    int leftIndex = startIndex;
-    while(leftIndex < end && shouldTrim(bytes[leftIndex])) {
-      leftIndex++;
-    }
-    if (leftIndex == end) {
-      outV.setVal(batchIndex, EMPTY_BYTES, 0, 0);
-      return;
-    }
-
-    // Have at least 1 non-blank; Skip trailing blank characters.
-    int rightIndex = end - 1;
-    final int rightLimit = leftIndex + 1;
-    while(rightIndex >= rightLimit && shouldTrim(bytes[rightIndex])) {
-      rightIndex--;
-    }
-    final int resultLength = rightIndex - leftIndex + 1;
-    if (resultLength <= 0) {
-      throw new RuntimeException("Not expected");
-    }
-    outV.setVal(batchIndex, bytes, leftIndex, resultLength);
+    byte[] trimChars = getTrimChars();
+    trimBoth(outV, vector[batchIndex], start[batchIndex], length[batchIndex],
+        trimChars, 0, trimChars.length, batchIndex);
   }
 }

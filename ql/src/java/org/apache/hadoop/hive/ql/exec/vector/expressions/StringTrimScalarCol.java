@@ -66,7 +66,7 @@ public class StringTrimScalarCol extends VectorExpression {
     if (trimV.isRepeating) {
       if (trimV.noNulls || !trimIsNull[0]) {
         outputIsNull[0] = false;
-        applyTrim(outV, trimV, 0, 0);
+        func(outV, trimV, 0, 0);
       } else {
         outputIsNull[0] = true;
         outV.noNulls = false;
@@ -81,12 +81,12 @@ public class StringTrimScalarCol extends VectorExpression {
           for (int j = 0; j != n; j++) {
             final int i = sel[j];
             outputIsNull[i] = false;
-            applyTrim(outV, trimV, i, i);
+            func(outV, trimV, i, i);
           }
         } else {
           for (int j = 0; j != n; j++) {
             final int i = sel[j];
-            applyTrim(outV, trimV, i, i);
+            func(outV, trimV, i, i);
           }
         }
       } else {
@@ -95,7 +95,7 @@ public class StringTrimScalarCol extends VectorExpression {
           outV.noNulls = true;
         }
         for (int i = 0; i != n; i++) {
-          applyTrim(outV, trimV, i, i);
+          func(outV, trimV, i, i);
         }
       }
     } else {
@@ -105,21 +105,21 @@ public class StringTrimScalarCol extends VectorExpression {
           int i = sel[j];
           outputIsNull[i] = trimIsNull[i];
           if (!trimIsNull[i]) {
-            applyTrim(outV, trimV, i, i);
+            func(outV, trimV, i, i);
           }
         }
       } else {
         System.arraycopy(trimIsNull, 0, outputIsNull, 0, n);
         for (int i = 0; i != n; i++) {
           if (!trimIsNull[i]) {
-            applyTrim(outV, trimV, i, i);
+            func(outV, trimV, i, i);
           }
         }
       }
     }
   }
 
-  private void applyTrim(BytesColumnVector outV, BytesColumnVector trimV, int trimIndex,
+  private void func(BytesColumnVector outV, BytesColumnVector trimV, int trimIndex,
       int outIndex) {
     StringTrimColScalarBase.trimBoth(outV, stringToTrim, 0, stringToTrim.length,
         trimV.vector[trimIndex], trimV.start[trimIndex], trimV.length[trimIndex], outIndex);
