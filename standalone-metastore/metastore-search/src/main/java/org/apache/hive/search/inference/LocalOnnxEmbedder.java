@@ -97,7 +97,9 @@ public final class LocalOnnxEmbedder implements Embedder {
     }
     ensureOpen();
     for (String text : texts) {
-      requireEmbeddableText(text);
+      if (StringUtils.isBlank(text)) {
+        throw new InferenceException("Cannot embed null or blank text");
+      }
     }
     synchronized (inferenceLock) {
       try {
@@ -174,12 +176,6 @@ public final class LocalOnnxEmbedder implements Embedder {
     return vectors;
   }
 
-  static void requireEmbeddableText(String text) throws InferenceException {
-    if (text == null || StringUtils.isBlank(text)) {
-      throw new InferenceException("Cannot embed null or blank text");
-    }
-  }
-  
   private float[] poolTokenMatrix(float[][] tokenRows, long[] attentionMask) {
     if (tokenRows.length == 0) {
       throw new IllegalStateException("ONNX embedding returned zero token rows");
