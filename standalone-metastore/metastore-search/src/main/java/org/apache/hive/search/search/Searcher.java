@@ -27,7 +27,7 @@ import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hive.search.config.SearchConfig;
+import org.apache.hive.search.config.SearchOptions;
 import org.apache.hive.search.exception.InferenceException;
 import org.apache.hive.search.exception.SearchException;
 import org.apache.hive.search.mapping.FieldSchema;
@@ -63,7 +63,7 @@ public final class Searcher implements AutoCloseable {
   private final IndexSearcher searcher;
   private final SearcherManager searcherManager;
   private final IndexMapping mapping;
-  private final SearchConfig searchConfig;
+  private final SearchOptions searchConfig;
   private final BayesianScoreEstimator.Parameters parameters;
   private final long committedEventId;
   private final long processedEventId;
@@ -71,7 +71,7 @@ public final class Searcher implements AutoCloseable {
   public Searcher(SearcherManager manager,
       IndexManager indexManager,
       EmbedderRegistry registry,
-      SearchConfig searchConfig,
+      SearchOptions searchConfig,
       BayesianScoreEstimator.Parameters parameters) throws IOException {
     this.searcherManager = manager;
     this.committedEventId = indexManager.getCommittedEventId();

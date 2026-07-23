@@ -17,7 +17,6 @@
 
 package org.apache.hive.search.config;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hive.search.inference.EmbedderSpec;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.junit.Test;
@@ -26,7 +25,7 @@ import org.junit.experimental.categories.Category;
 import static org.junit.Assert.assertEquals;
 
 @Category(MetastoreUnitTest.class)
-public class TestInferenceConfig {
+public class TestInferenceOptions {
 
   @Test
   public void embeddingPoolingDefaultsToMean() {

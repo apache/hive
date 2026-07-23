@@ -23,10 +23,10 @@ import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder;
-import org.apache.hive.search.config.IndexConfig;
-import org.apache.hive.search.config.IndexStoreConfig;
-import org.apache.hive.search.config.InferenceConfig;
-import org.apache.hive.search.config.SearchConfig;
+import org.apache.hive.search.config.IndexOptions;
+import org.apache.hive.search.config.IndexStoreOptions;
+import org.apache.hive.search.config.InferenceOptions;
+import org.apache.hive.search.config.SearchOptions;
 import org.apache.hive.search.index.Indexer;
 import org.apache.hive.search.index.IndexManager;
 import org.apache.hive.search.index.store.LocalStateClient;
@@ -140,18 +140,18 @@ public class TestMetastoreIndexer {
 
   private static Configuration indexerConf(boolean leader) {
     Configuration conf = new Configuration(false);
-    conf.setBoolean(IndexStoreConfig.MEMORY, true);
-    conf.set(IndexConfig.INDEX_NAME, "test_index");
-    conf.set(InferenceConfig.EMBEDDER_NAME, InMemorySearchFixture.MODEL_NAME);
-    conf.setInt(IndexConfig.BOOTSTRAP_FETCH_THREADS, 1);
-    conf.setInt(IndexConfig.BOOTSTRAP_QUEUE_DEPTH, 4);
-    conf.setLong(IndexConfig.BOOTSTRAP_PROGRESS_INTERVAL_MS, Long.MAX_VALUE);
-    conf.setLong(IndexConfig.EVENT_FAILURE_BACKOFF_MS, 0L);
-    conf.setLong(IndexConfig.FLUSH_INTERVAL_MS, 60_000L);
-    conf.setLong(IndexConfig.INDEX_SYNC_INTERVAL, 60_000L);
-    conf.setInt(SearchConfig.BAYESIAN_SAMPLES, 5);
-    conf.setInt(SearchConfig.BAYESIAN_TOKENS_PER_QUERY, 2);
-    conf.setLong(SearchConfig.BAYESIAN_SEED, 1L);
+    conf.setBoolean(IndexStoreOptions.MEMORY, true);
+    conf.set(IndexOptions.INDEX_NAME, "test_index");
+    conf.set(InferenceOptions.EMBEDDER_NAME, InMemorySearchFixture.MODEL_NAME);
+    conf.setInt(IndexOptions.BOOTSTRAP_FETCH_THREADS, 1);
+    conf.setInt(IndexOptions.BOOTSTRAP_QUEUE_DEPTH, 4);
+    conf.setLong(IndexOptions.BOOTSTRAP_PROGRESS_INTERVAL_MS, Long.MAX_VALUE);
+    conf.setLong(IndexOptions.EVENT_FAILURE_BACKOFF_MS, 0L);
+    conf.setLong(IndexOptions.FLUSH_INTERVAL_MS, 60_000L);
+    conf.setLong(IndexOptions.INDEX_SYNC_INTERVAL, 60_000L);
+    conf.setInt(SearchOptions.BAYESIAN_SAMPLES, 5);
+    conf.setInt(SearchOptions.BAYESIAN_TOKENS_PER_QUERY, 2);
+    conf.setLong(SearchOptions.BAYESIAN_SEED, 1L);
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY,
         JSONMessageEncoder.class.getName());
     TestLeaderElection election = new TestLeaderElection(leader);

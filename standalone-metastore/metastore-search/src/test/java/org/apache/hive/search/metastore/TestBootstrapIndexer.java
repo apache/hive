@@ -20,9 +20,9 @@ package org.apache.hive.search.metastore;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hive.search.config.IndexConfig;
-import org.apache.hive.search.config.IndexStoreConfig;
-import org.apache.hive.search.config.InferenceConfig;
+import org.apache.hive.search.config.IndexOptions;
+import org.apache.hive.search.config.IndexStoreOptions;
+import org.apache.hive.search.config.InferenceOptions;
 import org.apache.hive.search.exception.IndexIOException;
 import org.apache.hive.search.index.Indexer;
 import org.apache.hive.search.index.IndexManager;
@@ -70,8 +70,8 @@ public class TestBootstrapIndexer {
   @Test
   public void bootstrapHonorsBatchSize() throws Exception {
     Configuration conf = bootstrapConf();
-    conf.setInt(IndexConfig.BOOTSTRAP_BATCH_SIZE, 1);
-    conf.setInt(IndexConfig.BOOTSTRAP_FETCH_THREADS, 1);
+    conf.setInt(IndexOptions.BOOTSTRAP_BATCH_SIZE, 1);
+    conf.setInt(IndexOptions.BOOTSTRAP_FETCH_THREADS, 1);
     Table orders = InMemorySearchFixture.table("hive", "sales", "orders", "sales orders");
     Table customers = InMemorySearchFixture.table("hive", "sales", "customers", "sales customers");
 
@@ -105,10 +105,10 @@ public class TestBootstrapIndexer {
 
   private static Configuration bootstrapConf() {
     Configuration conf = new Configuration(false);
-    conf.setInt(IndexConfig.BOOTSTRAP_FETCH_THREADS, 1);
-    conf.setInt(IndexConfig.BOOTSTRAP_QUEUE_DEPTH, 4);
-    conf.setInt(IndexConfig.COMMIT_FLUSHES, 1);
-    conf.setLong(IndexConfig.BOOTSTRAP_PROGRESS_INTERVAL_MS, Long.MAX_VALUE);
+    conf.setInt(IndexOptions.BOOTSTRAP_FETCH_THREADS, 1);
+    conf.setInt(IndexOptions.BOOTSTRAP_QUEUE_DEPTH, 4);
+    conf.setInt(IndexOptions.COMMIT_FLUSHES, 1);
+    conf.setLong(IndexOptions.BOOTSTRAP_PROGRESS_INTERVAL_MS, Long.MAX_VALUE);
     return conf;
   }
 
@@ -131,9 +131,9 @@ public class TestBootstrapIndexer {
 
     static BootstrapFixture create(Configuration conf) throws Exception {
       conf = new Configuration(conf);
-      conf.setBoolean(IndexStoreConfig.MEMORY, true);
-      conf.set(IndexConfig.INDEX_NAME, "test_index");
-      conf.set(InferenceConfig.EMBEDDER_NAME,
+      conf.setBoolean(IndexStoreOptions.MEMORY, true);
+      conf.set(IndexOptions.INDEX_NAME, "test_index");
+      conf.set(InferenceOptions.EMBEDDER_NAME,
           InMemorySearchFixture.MODEL_NAME);
       org.apache.hive.search.mapping.IndexMapping mapping =
           MetastoreIndexSchema.defaultHiveTablesMapping(

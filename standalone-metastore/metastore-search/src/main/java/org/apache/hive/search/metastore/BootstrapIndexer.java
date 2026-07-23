@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hive.search.exception.IndexIOException;
 import org.apache.hive.search.mapping.IndexMapping;
 import org.apache.hive.search.mapping.TableDocument;
-import org.apache.hive.search.config.IndexConfig;
+import org.apache.hive.search.config.IndexOptions;
 import org.apache.hive.search.index.Indexer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +48,7 @@ final class BootstrapIndexer {
   private static final TableBatch END_OF_WORK = new TableBatch(null, List.of());
 
   private final Configuration configuration;
-  private final IndexConfig indexConfig;
+  private final IndexOptions indexConfig;
   private final IndexMapping mapping;
   private final Indexer indexer;
   private final IMetaStoreClient client;
@@ -59,7 +59,7 @@ final class BootstrapIndexer {
       IndexMapping mapping, Indexer indexer,
       IMetaStoreClient client, boolean shareFetchClient) {
     this.configuration = configuration;
-    this.indexConfig = new IndexConfig(configuration);
+    this.indexConfig = new IndexOptions(configuration);
     this.mapping = mapping;
     this.indexer = indexer;
     this.client = client;
@@ -259,9 +259,6 @@ final class BootstrapIndexer {
   private static void rethrowFailure(AtomicReference<Exception> failure) throws Exception {
     Exception error = failure.get();
     if (error != null) {
-      if (error instanceof IndexIOException indexException) {
-        throw indexException;
-      }
       if (error instanceof IOException ioException) {
         throw ioException;
       }

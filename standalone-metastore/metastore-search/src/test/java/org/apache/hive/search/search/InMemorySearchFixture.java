@@ -20,10 +20,10 @@ package org.apache.hive.search.search;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hive.search.config.IndexConfig;
-import org.apache.hive.search.config.IndexStoreConfig;
-import org.apache.hive.search.config.InferenceConfig;
-import org.apache.hive.search.config.SearchConfig;
+import org.apache.hive.search.config.IndexOptions;
+import org.apache.hive.search.config.IndexStoreOptions;
+import org.apache.hive.search.config.InferenceOptions;
+import org.apache.hive.search.config.SearchOptions;
 import org.apache.hive.search.index.Indexer;
 import org.apache.hive.search.index.IndexManager;
 import org.apache.hive.search.inference.EmbedderRegistry;
@@ -49,7 +49,7 @@ public final class InMemorySearchFixture implements AutoCloseable {
   private final IndexManager indexManager;
   private final Indexer indexer;
   private final EmbedderRegistry modelRegistry;
-  private final SearchConfig searchConfig;
+  private final SearchOptions searchConfig;
   private final IndexMutationApplier mutations;
   private SearcherManager searcherManager;
   private BayesianScoreEstimator.Parameters bayesianParameters;
@@ -58,7 +58,7 @@ public final class InMemorySearchFixture implements AutoCloseable {
       IndexManager indexManager,
       Indexer indexer,
       EmbedderRegistry modelRegistry,
-      SearchConfig searchConfig) {
+      SearchOptions searchConfig) {
     this.indexManager = indexManager;
     this.indexer = indexer;
     this.modelRegistry = modelRegistry;
@@ -68,12 +68,12 @@ public final class InMemorySearchFixture implements AutoCloseable {
 
   public static InMemorySearchFixture create() throws Exception {
     Configuration conf = new Configuration(false);
-    conf.setBoolean(IndexStoreConfig.MEMORY, true);
-    conf.set(IndexConfig.INDEX_NAME, "test_index");
-    conf.set(InferenceConfig.EMBEDDER_NAME, MODEL_NAME);
-    conf.setInt(SearchConfig.BAYESIAN_SAMPLES, 5);
-    conf.setInt(SearchConfig.BAYESIAN_TOKENS_PER_QUERY, 2);
-    conf.setLong(SearchConfig.BAYESIAN_SEED, 1L);
+    conf.setBoolean(IndexStoreOptions.MEMORY, true);
+    conf.set(IndexOptions.INDEX_NAME, "test_index");
+    conf.set(InferenceOptions.EMBEDDER_NAME, MODEL_NAME);
+    conf.setInt(SearchOptions.BAYESIAN_SAMPLES, 5);
+    conf.setInt(SearchOptions.BAYESIAN_TOKENS_PER_QUERY, 2);
+    conf.setLong(SearchOptions.BAYESIAN_SEED, 1L);
 
     IndexMapping mapping = MetastoreIndexSchema.defaultHiveTablesMapping(
         "test_index", MODEL_NAME, conf);
@@ -82,7 +82,7 @@ public final class InMemorySearchFixture implements AutoCloseable {
         new EmbedderRegistry(Map.of(MODEL_NAME, new StubEmbedder(MODEL_NAME)));
     Indexer indexer = new Indexer(indexManager, registry);
     indexer.initialize();
-    return new InMemorySearchFixture(indexManager, indexer, registry, new SearchConfig(conf));
+    return new InMemorySearchFixture(indexManager, indexer, registry, new SearchOptions(conf));
   }
 
   public IndexMutationApplier mutations() {

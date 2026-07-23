@@ -23,8 +23,8 @@ import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hive.search.config.IndexStoreConfig;
-import org.apache.hive.search.config.InferenceConfig;
+import org.apache.hive.search.config.IndexStoreOptions;
+import org.apache.hive.search.config.InferenceOptions;
 import org.apache.hive.search.index.IndexManager;
 import org.apache.hive.search.index.Indexer;
 import org.apache.hive.search.inference.EmbedderRegistry;
@@ -204,8 +204,8 @@ public class TestMetastoreTableMapper {
   @Test
   public void embedDocumentsPreservesLexicalFields() throws Exception {
     Configuration conf = new Configuration(false);
-    conf.setBoolean(IndexStoreConfig.MEMORY, true);
-    conf.set(InferenceConfig.EMBEDDER_NAME, "stub-model");
+    conf.setBoolean(IndexStoreOptions.MEMORY, true);
+    conf.set(InferenceOptions.EMBEDDER_NAME, "stub-model");
     IndexMapping mapping = MetastoreIndexSchema.defaultHiveTablesMapping("hive_tables", "stub-model", conf);
     IndexManager indexManager = IndexManager.open(mapping, conf);
     EmbedderRegistry registry = new EmbedderRegistry(
