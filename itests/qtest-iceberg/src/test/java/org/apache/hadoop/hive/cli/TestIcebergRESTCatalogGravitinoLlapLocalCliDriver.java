@@ -150,7 +150,7 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
     conf.set(restCatalogPrefix + "oauth2-server-uri", oAuth2AuthorizationServer.getTokenEndpoint());
     conf.set(restCatalogPrefix + "credential", oAuth2AuthorizationServer.getClientCredential());
     conf.set(
-        restCatalogPrefix + RestCatalogAccessDelegation.ACCESS_DELEGATION_HEADER_PROPERTY,
+        restCatalogPrefix + RestCatalogAccessDelegation.ACCESS_DELEGATION_PROPERTY,
         RestAccessDelegationMode.VENDED_CREDENTIALS.modeName());
 
     applyHostS3FilesystemSettings(conf);

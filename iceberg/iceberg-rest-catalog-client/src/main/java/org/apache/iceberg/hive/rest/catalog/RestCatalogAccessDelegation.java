@@ -24,27 +24,27 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
 
 /**
- * REST catalog access-delegation configuration for Hive, including the
- * {@code X-Iceberg-Access-Delegation} catalog property and vended-credential opt-in.
+ * Utilities for Iceberg REST catalog access delegation, including the {@code X-Iceberg-Access-Delegation}
+ * catalog property and vended-credential configuration.
  */
 public final class RestCatalogAccessDelegation {
 
   /** Iceberg REST catalog property prefix for {@code X-Iceberg-Access-Delegation}. */
-  public static final String ACCESS_DELEGATION_HEADER_PROPERTY = "header.X-Iceberg-Access-Delegation";
+  public static final String ACCESS_DELEGATION_PROPERTY = "header.X-Iceberg-Access-Delegation";
 
   private RestCatalogAccessDelegation() {
   }
 
   /**
    * Returns true when the catalog is configured to request REST vended storage credentials via
-   * {@link #ACCESS_DELEGATION_HEADER_PROPERTY}.
+   * {@link #ACCESS_DELEGATION_PROPERTY}.
    */
   public static boolean requestsVendedCredentials(String catalogName, Configuration conf) {
     if (conf == null || StringUtils.isEmpty(catalogName)) {
       return false;
     }
     String headerValue =
-        conf.get(IcebergCatalogProperties.catalogPropertyConfigKey(catalogName, ACCESS_DELEGATION_HEADER_PROPERTY));
+        conf.get(IcebergCatalogProperties.catalogPropertyConfigKey(catalogName, ACCESS_DELEGATION_PROPERTY));
     return RestAccessDelegationMode.headerRequestsVendedCredentials(headerValue);
   }
 }

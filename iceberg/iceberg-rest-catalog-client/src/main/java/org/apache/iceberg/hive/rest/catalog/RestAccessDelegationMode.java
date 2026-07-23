@@ -26,7 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * Values for the Iceberg REST catalog {@code X-Iceberg-Access-Delegation} request header. The header
  * accepts a comma-separated list of these modes; configure via
- * {@link RestCatalogAccessDelegation#ACCESS_DELEGATION_HEADER_PROPERTY}.
+ * {@link RestCatalogAccessDelegation#ACCESS_DELEGATION_PROPERTY}.
  *
  * @see <a href="https://github.com/apache/iceberg/blob/main/open-api/rest-catalog-open-api.yaml">REST catalog spec</a>
  */
@@ -45,7 +45,7 @@ public enum RestAccessDelegationMode {
     return modeName;
   }
 
-  /** Comma-separated list suitable for {@link RestCatalogAccessDelegation#ACCESS_DELEGATION_HEADER_PROPERTY}. */
+  /** Comma-separated list suitable for {@link RestCatalogAccessDelegation#ACCESS_DELEGATION_PROPERTY}. */
   public static String toHeaderValue(RestAccessDelegationMode... modes) {
     return Arrays.stream(modes).map(RestAccessDelegationMode::modeName).collect(Collectors.joining(","));
   }
