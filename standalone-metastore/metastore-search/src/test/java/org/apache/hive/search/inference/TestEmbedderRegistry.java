@@ -25,6 +25,7 @@ import org.junit.experimental.categories.Category;
 import java.util.Map;
 
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -45,6 +46,41 @@ public class TestEmbedderRegistry {
     EmbedderRegistry registry = new EmbedderRegistry(Map.of());
     IllegalStateException error = assertThrows(IllegalStateException.class, () -> registry.get("missing"));
     assertTrue(error.getMessage().contains("missing"));
+  }
+
+  @Test
+  public void cosineSimilarityOfIdenticalVectorsIsOne() {
+    float[] vector = {0.6f, 0.8f};
+    assertEquals(1f, EmbedderRegistry.cosineSimilarity(vector, vector.clone()), 0.0001f);
+  }
+
+  @Test
+  public void cosineSimilarityOfOrthogonalVectorsIsZero() {
+    assertEquals(
+        0f,
+        EmbedderRegistry.cosineSimilarity(new float[] {1f, 0f}, new float[] {0f, 1f}),
+        0.0001f);
+  }
+
+  @Test
+  public void cosineSimilarityRejectsMismatchedDimensions() {
+    IllegalArgumentException error =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> EmbedderRegistry.cosineSimilarity(new float[] {1f}, new float[] {1f, 2f}));
+    assertTrue(error.getMessage().contains("dimensions differ"));
+  }
+
+  @Test
+  public void cosineSimilarityUsesStubModelEmbeddings() throws Exception {
+    StubEmbedder model = new StubEmbedder("stub-model");
+    float[] salesQuery = model.embed(Embedder.TaskType.QUERY, "sales");
+    float[] salesQueryAgain = model.embed(Embedder.TaskType.QUERY, "sales");
+    float[] salesDoc = model.embed(Embedder.TaskType.DOCUMENT, "sales");
+
+    assertEquals(
+        1f, EmbedderRegistry.cosineSimilarity(salesQuery, salesQueryAgain), 0.0001f);
+    assertTrue(EmbedderRegistry.cosineSimilarity(salesQuery, salesDoc) < 1f);
   }
 
   @Test
