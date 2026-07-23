@@ -239,7 +239,6 @@ public class CoreBeeLineDriver extends CliAdapter {
           + "ms");
       qOutProcessor.maskPatterns(qFile.getOutputFile().getPath());
 
-
       if (!overwrite) {
         QTestProcessExecResult result = qFile.compareResults();
 
