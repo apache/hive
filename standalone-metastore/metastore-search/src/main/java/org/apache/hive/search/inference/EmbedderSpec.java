@@ -27,7 +27,10 @@ public record EmbedderSpec(
     Path modelDir,
     String documentPrefix,
     String queryPrefix,
-    Pooling pooling) {
+    Pooling pooling,
+    String modelOutputName) {
+
+  public static final String DEFAULT_MODEL_OUTPUT_NAME = "last_hidden_state";
 
   public EmbedderSpec {
     if (StringUtils.isEmpty(name)) {
@@ -38,6 +41,9 @@ public record EmbedderSpec(
     }
     if (pooling == null) {
       pooling = Pooling.MEAN;
+    }
+    if (StringUtils.isBlank(modelOutputName)) {
+      modelOutputName = DEFAULT_MODEL_OUTPUT_NAME;
     }
   }
 
@@ -70,10 +76,11 @@ public record EmbedderSpec(
 
   /** E5-style prefixes for tests and documentation. */
   public static EmbedderSpec e5(String name, Path modelDir) {
-    return new EmbedderSpec(name, modelDir, "passage: ", "query: ", Pooling.MEAN);
+    return new EmbedderSpec(
+        name, modelDir, "passage: ", "query: ", Pooling.MEAN, DEFAULT_MODEL_OUTPUT_NAME);
   }
 
   public static EmbedderSpec none(String name, Path modelDir) {
-    return new EmbedderSpec(name, modelDir, "", "", Pooling.MEAN);
+    return new EmbedderSpec(name, modelDir, "", "", Pooling.MEAN, DEFAULT_MODEL_OUTPUT_NAME);
   }
 }

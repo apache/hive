@@ -17,6 +17,8 @@
 
 package org.apache.hive.search.inference;
 
+import java.util.Arrays;
+
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -44,7 +46,22 @@ public class TestLocalOnnxEmbedder {
         {9f, 9f}
     };
 
-    assertArrayEquals(new float[] {13f / 3f, 9f / 3f}, LocalOnnxEmbedder.meanPool(tokenEmbeddings), 0.001f);
+    assertArrayEquals(
+        new float[] {13f / 3f, 9f / 3f},
+        LocalOnnxEmbedder.meanPool(tokenEmbeddings, allOnes(tokenEmbeddings.length)),
+        0.001f);
+  }
+
+  @Test
+  public void meanPoolExcludesPaddingTokens() {
+    float[][] tokenEmbeddings = {
+        {2f, 0f},
+        {4f, 0f},
+        {100f, 100f}
+    };
+    long[] mask = {1L, 1L, 0L};
+
+    assertArrayEquals(new float[] {3f, 0f}, LocalOnnxEmbedder.meanPool(tokenEmbeddings, mask), 0.001f);
   }
 
   @Test
@@ -67,14 +84,16 @@ public class TestLocalOnnxEmbedder {
         {3f, 0f}
     };
 
-    assertArrayEquals(new float[] {2f, 0f}, LocalOnnxEmbedder.meanPool(chunks), 0.001f);
+    assertArrayEquals(
+        new float[] {2f, 0f}, LocalOnnxEmbedder.meanPool(chunks, allOnes(chunks.length)), 0.001f);
   }
 
   @Test
   public void meanPoolVectorsReturnsSingleRowMean() {
     float[][] chunks = {{0.6f, 0.8f}};
 
-    assertArrayEquals(new float[] {0.6f, 0.8f}, LocalOnnxEmbedder.meanPool(chunks), 0.001f);
+    assertArrayEquals(
+        new float[] {0.6f, 0.8f}, LocalOnnxEmbedder.meanPool(chunks, allOnes(chunks.length)), 0.001f);
   }
 
   @Test
@@ -83,7 +102,7 @@ public class TestLocalOnnxEmbedder {
         {1f, 0f},
         {0f, 1f}
     };
-    float[] pooled = LocalOnnxEmbedder.meanPool(chunks);
+    float[] pooled = LocalOnnxEmbedder.meanPool(chunks, allOnes(chunks.length));
     LocalOnnxEmbedder.normalize(pooled);
 
     float norm = 0f;
@@ -93,5 +112,11 @@ public class TestLocalOnnxEmbedder {
     assertEquals(1f, norm, 0.001f);
     assertEquals(0.7071f, pooled[0], 0.001f);
     assertEquals(0.7071f, pooled[1], 0.001f);
+  }
+
+  private static long[] allOnes(int length) {
+    long[] mask = new long[length];
+    Arrays.fill(mask, 1L);
+    return mask;
   }
 }

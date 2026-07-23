@@ -40,8 +40,11 @@ public record InferenceConfig(Configuration configuration) {
   public static final String EMBEDDER_PROMPT_DOC = "metastore.inference.embedder.prompt.doc";
   public static final String EMBEDDER_PROMPT_QUERY = "metastore.inference.embedder.prompt.query";
 
-  /** Token pooling for ONNX output: {@code mean} (default) or {@code cls} (Snowflake Arctic, etc.). */
+  /** Token pooling for ONNX output: {@code mean} (default) or {@code cls}. */
   public static final String EMBEDDER_POOLING = "metastore.inference.embedder.pooling";
+
+  /** ONNX graph output tensor for token embeddings */
+  public static final String EMBEDDER_MODEL_OUTPUT_NAME = "metastore.inference.embedder.onnx.model-output-name";
 
   public EmbedderSpec spec() throws InitializeException, IOException {
     String name = embedderName();
@@ -72,7 +75,8 @@ public record InferenceConfig(Configuration configuration) {
         java.nio.file.Path.of(new Path(lPath, name).toUri()),
         configuration.get(EMBEDDER_PROMPT_DOC, "passage: "),
         configuration.get(EMBEDDER_PROMPT_QUERY, "query: "),
-        EmbedderSpec.Pooling.fromConfig(configuration.get(EMBEDDER_POOLING, "mean")));
+        EmbedderSpec.Pooling.fromConfig(configuration.get(EMBEDDER_POOLING, "mean")),
+        configuration.get(EMBEDDER_MODEL_OUTPUT_NAME, EmbedderSpec.DEFAULT_MODEL_OUTPUT_NAME));
   }
 
   private boolean requireConfigured(Path modelPath, String modelName) {
