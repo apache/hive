@@ -107,6 +107,9 @@ public class MetastoreConf {
   static final String ACID_OPEN_TXNS_COUNTER_SERVICE_CLASS =
       "org.apache.hadoop.hive.metastore.txn.service.AcidOpenTxnsCounterService";
   @VisibleForTesting
+  static final String DEADLOCK_DETECTOR_SERVICE_CLASS =
+      "org.apache.hadoop.hive.metastore.txn.service.DeadlockDetectorService";
+  @VisibleForTesting
   static final String ICEBERG_TABLE_SNAPSHOT_EXPIRY_SERVICE_CLASS =
       "org.apache.iceberg.mr.hive.metastore.task.IcebergHouseKeeperService";
   public static final String METASTORE_AUTHENTICATION_LDAP_USERMEMBERSHIPKEY_NAME =
@@ -315,6 +318,17 @@ public class MetastoreConf {
     ACID_TXN_CLEANER_INTERVAL("metastore.acid.txn.cleaner.interval",
         "hive.metastore.acid.txn.cleaner.interval", 10, TimeUnit.SECONDS,
         "Time interval describing how often aborted and committed txns are cleaned."),
+    TXN_DEADLOCK_DETECTOR_ENABLED("metastore.txn.deadlock.detector.enabled",
+        "hive.metastore.txn.deadlock.detector.enabled", false,
+        "Run a metastore background thread that scans HIVE_LOCKS for wait-for cycles among "
+            + "ACID transactions. The youngest transaction in each cycle that holds a lock "
+            + "while waiting for another (i.e. a multi-statement transaction) is aborted "
+            + "with ABORT_DEADLOCK; single-statement transactions are never aborted. "
+            + "When false, cycles resolve only via lock/txn timeouts."),
+    TXN_DEADLOCK_DETECTOR_INTERVAL("metastore.txn.deadlock.detector.interval",
+        "hive.metastore.txn.deadlock.detector.interval", 30, TimeUnit.SECONDS,
+        "Interval between deadlock-detector scans. Lower values shorten detection latency "
+            + "at the cost of extra metastore DB load."),
     ADDED_JARS("metastore.added.jars.path", "hive.added.jars.path", "",
         "This an internal parameter."),
     AGGREGATE_STATS_CACHE_CLEAN_UNTIL("metastore.aggregate.stats.cache.clean.until",
@@ -1560,6 +1574,7 @@ public class MetastoreConf {
                 COMPACTION_HOUSEKEEPER_SERVICE_CLASS + "," +
             ACID_TXN_CLEANER_SERVICE_CLASS + "," +
             ACID_OPEN_TXNS_COUNTER_SERVICE_CLASS + "," +
+            DEADLOCK_DETECTOR_SERVICE_CLASS + "," +
             MATERIALZIATIONS_REBUILD_LOCK_CLEANER_TASK_CLASS + "," +
             PARTITION_MANAGEMENT_TASK_CLASS + "," +
             ICEBERG_TABLE_SNAPSHOT_EXPIRY_SERVICE_CLASS,

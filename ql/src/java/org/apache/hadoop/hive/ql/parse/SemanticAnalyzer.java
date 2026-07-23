@@ -13047,10 +13047,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_START_TRANSACTION:
     case HiveParser.TOK_COMMIT:
     case HiveParser.TOK_ROLLBACK:
-      if(!(conf.getBoolVar(ConfVars.HIVE_IN_TEST) || conf.getBoolVar(ConfVars.HIVE_IN_TEZ_TEST))) {
-        throw new IllegalStateException(HiveOperation.operationForToken(ast.getToken().getType()) +
-            " is not supported yet.");
-      }
       queryState.setCommandType(HiveOperation.operationForToken(ast.getToken().getType()));
       return false;
     }
