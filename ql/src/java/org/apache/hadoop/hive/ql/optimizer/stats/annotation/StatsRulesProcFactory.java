@@ -2670,22 +2670,14 @@ public class StatsRulesProcFactory {
         if (oldDV >= 0) {
           boolean useCalciteForNdvReadjustment
               = HiveConf.getBoolVar(conf, ConfVars.HIVE_STATS_JOIN_NDV_READJUSTMENT);
-          long newDV = oldDV;
+          long newDV;
           if (useCalciteForNdvReadjustment) {
             Double approxNdv = RelMdUtil.numDistinctVals(oldDV * 1.0, newNumRows * 1.0);
             Preconditions.checkNotNull(approxNdv, "approximate NDV is null");
             newDV = approxNdv.longValue();
           } else {
             long oldRowCount = rowCountParents.get(pos);
-            double ratio = (double) newNumRows / (double) oldRowCount;
-
-            // if ratio is greater than 1, then number of rows increases. This can happen
-            // when some operators like GROUPBY duplicates the input rows in which case
-            // number of distincts should not change. Update the distinct count only when
-            // the output number of rows is less than input number of rows.
-            if (ratio < 1.0) {
-              newDV = (long) Math.ceil(ratio * oldDV);
-            }
+            newDV = StatsUtils.scaleDownNDV(oldDV, (double) newNumRows / (double) oldRowCount);
           }
           cs.setCountDistint(newDV);
         }

@@ -338,6 +338,38 @@ class TestStatsUtils {
     );
   }
 
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("maxOrUnknownCases")
+  void testMaxPropagatingUnknown(String name, long a, long b, long expected) {
+    assertEquals(expected, StatsUtils.maxOrUnknown(a, b));
+  }
+
+  private static Stream<Arguments> maxOrUnknownCases() {
+    return Stream.of(
+        Arguments.of("bothKnownPicksMax",   3L,  7L,  7L),
+        Arguments.of("firstUnknown",       -1L,  7L, -1L),
+        Arguments.of("secondUnknown",       7L, -1L, -1L),
+        Arguments.of("bothUnknown",        -1L, -1L, -1L),
+        Arguments.of("verifiedZeroIsKnown", 0L,  0L,  0L)
+    );
+  }
+
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("scaleDownNDVCases")
+  void testScaleDownNDV(String name, long ndv, double ratio, long expected) {
+    assertEquals(expected, StatsUtils.scaleDownNDV(ndv, ratio));
+  }
+
+  private static Stream<Arguments> scaleDownNDVCases() {
+    return Stream.of(
+        Arguments.of("shrinksByRatio",           100L, 0.5, 50L),
+        Arguments.of("ratioOneKeepsNdv",         100L, 1.0, 100L),
+        Arguments.of("ratioAboveOneKeepsNdv",    100L, 2.0, 100L),
+        Arguments.of("hugeNdvExactAtRatioOne",   (1L << 53) + 1, 1.0, (1L << 53) + 1),
+        Arguments.of("zeroRatioZeroesNdv",       100L, 0.0, 0L)
+    );
+  }
+
   @Test
   void testAddWithExpDecayReturnsUnknownWhenAnyInputIsUnknown() {
     Long result = StatsUtils.addWithExpDecay(Arrays.asList(10L, -1L, 5L));
@@ -754,6 +786,20 @@ class TestStatsUtils {
 
     assertEquals(hugeNdv, stats.getColumnStats().get(0).getCountDistint(),
         "NDV above 2^53 must survive a ratio == 1.0 update bit-exactly");
+  }
+
+  @Test
+  void testScaleColStatisticsScalesDownKnownNDV() {
+    ColStatistics cs = createColStats("col1", 100, 0);
+    StatsUtils.scaleColStatistics(Collections.singletonList(cs), 0.5);
+    assertEquals(50, cs.getCountDistint(), "Known NDV should scale with the factor");
+  }
+
+  @Test
+  void testScaleColStatisticsKeepsNDVWhenFactorAboveOne() {
+    ColStatistics cs = createColStats("col1", 100, 0);
+    StatsUtils.scaleColStatistics(Collections.singletonList(cs), 2.0);
+    assertEquals(100, cs.getCountDistint(), "Row growth cannot add distinct values");
   }
 
   @Test

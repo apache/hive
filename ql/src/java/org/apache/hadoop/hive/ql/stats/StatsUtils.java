@@ -1947,6 +1947,14 @@ public class StatsUtils {
     }
   }
 
+  /** Max of two stats values - a negative "unknown" input makes the result unknown (-1). */
+  public static long maxOrUnknown(long a, long b) {
+    if (a < 0 || b < 0) {
+      return -1;
+    }
+    return Math.max(a, b);
+  }
+
   public static boolean hasDiscreteRange(ColStatistics colStat) {
     if (colStat.getRange() != null) {
       TypeInfo colType = TypeInfoUtils.getTypeInfoFromTypeString(colStat.getColumnType());
@@ -2063,17 +2071,8 @@ public class StatsUtils {
           cs.setFilterColumn();
           // countDistinct < 0 means "unknown" - skip the NDV math
           if (oldDV >= 0) {
-            long newDV = oldDV;
-
-            // if ratio is greater than 1, then number of rows increases. This can happen
-            // when some operators like GROUPBY duplicates the input rows in which case
-            // number of distincts should not change. Update the distinct count only when
-            // the output number of rows is less than input number of rows.
-            if (ratio < 1.0) {
-              newDV = (long) Math.ceil(ratio * oldDV);
-            }
-            cs.setCountDistint(newDV);
-            oldDV = newDV;
+            oldDV = scaleDownNDV(oldDV, ratio);
+            cs.setCountDistint(oldDV);
           }
         }
         if (oldDV >= 0 && oldDV > newNumRows) {
@@ -2094,6 +2093,18 @@ public class StatsUtils {
     }
   }
 
+  /**
+   * Scales a known NDV by the row-count ratio. Ratios of 1 and above leave the NDV
+   * unchanged: row growth (e.g. GROUP BY duplicating input rows) cannot add distinct
+   * values, and skipping the math keeps NDVs above 2^53 exact.
+   */
+  public static long scaleDownNDV(long ndv, double ratio) {
+    if (ratio >= 1.0) {
+      return ndv;
+    }
+    return (long) Math.ceil(ratio * ndv);
+  }
+
   public static void scaleColStatistics(List<ColStatistics> colStats, double factor) {
     for (ColStatistics cs : colStats) {
       // numTrues/numFalses < 0 means "unknown" - preserve the sentinel value
@@ -2108,9 +2119,8 @@ public class StatsUtils {
         cs.setNumNulls(StatsUtils.safeMult(cs.getNumNulls(), factor));
       }
       // countDistinct < 0 means "unknown" - preserve the sentinel value
-      if (factor < 1.0 && cs.getCountDistint() >= 0) {
-        final double newNDV = Math.ceil(cs.getCountDistint() * factor);
-        cs.setCountDistint(newNDV > Long.MAX_VALUE ? Long.MAX_VALUE : (long) newNDV);
+      if (cs.getCountDistint() >= 0) {
+        cs.setCountDistint(scaleDownNDV(cs.getCountDistint(), factor));
       }
     }
   }
