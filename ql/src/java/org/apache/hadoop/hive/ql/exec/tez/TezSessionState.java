@@ -73,6 +73,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.LocalResourceType;
+import org.apache.hadoop.yarn.client.api.YarnClient;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.tez.client.TezClient;
 import org.apache.tez.common.TezUtils;
@@ -119,6 +120,7 @@ public class TezSessionState implements TezSession {
   Path tezScratchDir;
   protected LocalResource appJarLr;
   private TezClient session;
+  private YarnClient yarnClient;
   private Future<TezClient> sessionFuture;
   /** Console used for user feedback during async session opening. */
   private LogHelper console;
@@ -752,6 +754,17 @@ public class TezSessionState implements TezSession {
           closeClient(asyncSession);
         }
       }
+
+      // Stop YarnClient if it was initialized
+      if (yarnClient != null) {
+        try {
+          LOG.info("Stopping YarnClient for session: {}", sessionId);
+          yarnClient.stop();
+          yarnClient = null;
+        } catch (Exception e) {
+          LOG.warn("Error stopping YarnClient for session {}: {}", sessionId, e.getMessage());
+        }
+      }
     } finally {
       try {
         cleanupScratchDir();
@@ -797,6 +810,19 @@ public class TezSessionState implements TezSession {
 
   protected final void setTezClient(TezClient session) {
     this.session = session;
+
+    // Initialize YarnClient for queue metrics collection
+    if (session != null && yarnClient == null) {
+      try {
+        yarnClient = YarnClient.createYarnClient();
+        yarnClient.init(conf);
+        yarnClient.start();
+        LOG.info("YarnClient initialized for session: {}", sessionId);
+      } catch (Exception e) {
+        LOG.warn("Failed to initialize YarnClient for metrics collection", e);
+        yarnClient = null;
+      }
+    }
   }
 
   @Override
@@ -820,6 +846,11 @@ public class TezSessionState implements TezSession {
       }
     }
     return session;
+  }
+
+  @Override
+  public YarnClient getYarnClient() {
+    return yarnClient;
   }
 
   @Override

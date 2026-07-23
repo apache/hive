@@ -77,6 +77,7 @@ import org.apache.hadoop.hive.ql.ServiceContext;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager;
+import org.apache.hadoop.hive.ql.exec.tez.monitoring.yarnqueue.QueueMetricsRefreshPool;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
@@ -934,8 +935,11 @@ public class HiveServer2 extends CompositeService {
       // will be invoked anyway in TezTask. Doing it early to initialize triggers for non-pool tez session.
       LOG.info("Initializing tez session pool manager. Active resource plan: {}",
         resourcePlan == null || resourcePlan.getPlan() == null ? "null" : resourcePlan.getPlan().getName());
-      tezSessionPoolManager = TezSessionPoolManager.getInstance();
       HiveConf hiveConf = getHiveConf();
+      // Initialize the queue metrics refresh pool for collecting YARN queue metrics during query execution.
+      // Pool is shared across all queries and sized by hive.server2.tez.queue.metrics.refresh.threads config.
+      initializeQueueMetricsPool(hiveConf);
+      tezSessionPoolManager = TezSessionPoolManager.getInstance();
       if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS)) {
         tezSessionPoolManager.setupPool(hiveConf);
       } else {
@@ -963,6 +967,20 @@ public class HiveServer2 extends CompositeService {
     } else {
       LOG.info("Workload management is not enabled as {} config is not set",
         ConfVars.HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE.varname);
+    }
+  }
+
+  /**
+   * Initializes the queue metrics refresh pool and HTTP exporter.
+   * Failures are non-fatal — logged as warnings so the server can start without queue metrics.
+   */
+  private void initializeQueueMetricsPool(HiveConf hiveConf) {
+    try {
+      int refreshThreads = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_TEZ_QUEUE_METRICS_REFRESH_THREADS);
+      QueueMetricsRefreshPool.init(refreshThreads);
+      LOG.info("Queue metrics refresh pool initialized with {} threads", refreshThreads);
+    } catch (Exception e) {
+      LOG.warn("Failed to initialize queue metrics refresh pool: {}", e.getMessage());
     }
   }
 
