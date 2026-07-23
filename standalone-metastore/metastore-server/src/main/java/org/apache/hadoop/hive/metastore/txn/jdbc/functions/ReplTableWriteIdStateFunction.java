@@ -20,14 +20,11 @@ package org.apache.hadoop.hive.metastore.txn.jdbc.functions;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
-import org.apache.hadoop.hive.metastore.api.CompactionRequest;
-import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.ReplTblWriteIdStateRequest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
-import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.jdbc.MultiDataSourceJdbcResource;
 import org.apache.hadoop.hive.metastore.txn.jdbc.TransactionalFunction;
 import org.slf4j.Logger;
@@ -43,22 +40,21 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-public class ReplTableWriteIdStateFunction implements TransactionalFunction<Void> {
+public class ReplTableWriteIdStateFunction implements TransactionalFunction<Boolean> {
 
   private static final Logger LOG = LoggerFactory.getLogger(ReplTableWriteIdStateFunction.class);
   
   private final ReplTblWriteIdStateRequest rqst;
-  private final TxnStore.MutexAPI mutexAPI;
   private final List<TransactionalMetaStoreEventListener> transactionalListeners;
 
-  public ReplTableWriteIdStateFunction(ReplTblWriteIdStateRequest rqst, TxnStore.MutexAPI mutexAPI, List<TransactionalMetaStoreEventListener> transactionalListeners) {
+  public ReplTableWriteIdStateFunction(ReplTblWriteIdStateRequest rqst,
+      List<TransactionalMetaStoreEventListener> transactionalListeners) {
     this.rqst = rqst;
-    this.mutexAPI = mutexAPI;
     this.transactionalListeners = transactionalListeners;
   }
 
   @Override
-  public Void execute(MultiDataSourceJdbcResource jdbcResource) throws MetaException {
+  public Boolean execute(MultiDataSourceJdbcResource jdbcResource) throws MetaException {
     long openTxnTimeOutMillis = MetastoreConf.getTimeVar(jdbcResource.getConf(), MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS);
 
     String dbName = rqst.getDbName().toLowerCase();
@@ -79,7 +75,7 @@ public class ReplTableWriteIdStateFunction implements TransactionalFunction<Void
     if (found) {
       LOG.info("Idempotent flow: WriteId state <{}> is already applied for the table: {}.{}",
           validWriteIdList, dbName, tblName);
-      return null;
+      return false;
     }
 
     // Get the abortedWriteIds which are already sorted in ascending order.
@@ -131,21 +127,7 @@ public class ReplTableWriteIdStateFunction implements TransactionalFunction<Void
             .addValue("tableName", tblName)
             .addValue("nextWriteId", nextWriteId));
     LOG.info("WriteId state <{}> is applied for the table: {}.{}", validWriteIdList, dbName, tblName);
-
-    // Schedule Major compaction on all the partitions/table to clean aborted data
-    if (numAbortedWrites > 0) {
-      CompactionRequest compactRqst = new CompactionRequest(rqst.getDbName(), rqst.getTableName(),
-          CompactionType.MAJOR);
-      if (rqst.isSetPartNames()) {
-        for (String partName : rqst.getPartNames()) {
-          compactRqst.setPartitionname(partName);
-          new CompactFunction(compactRqst, openTxnTimeOutMillis, mutexAPI).execute(jdbcResource);
-        }
-      } else {
-        new CompactFunction(compactRqst, openTxnTimeOutMillis, mutexAPI).execute(jdbcResource);
-      }
-    }
-    return null;
+    return numAbortedWrites > 0;
   }
 
   private List<Long> getAbortedWriteIds(ValidWriteIdList validWriteIdList) {
