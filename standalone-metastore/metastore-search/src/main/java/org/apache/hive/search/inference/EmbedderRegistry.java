@@ -42,7 +42,16 @@ public record EmbedderRegistry(Map<String, Embedder> embedders) implements AutoC
     Embedder embedder = new LocalOnnxEmbedder(inference);
     long warmupStart = System.currentTimeMillis();
     try {
-      embedder.embedBatch(Embedder.TaskType.QUERY, new String[] {"warmup", "Local onnx for embedding query"});
+      float[] warmupA = embedder.embed(Embedder.TaskType.QUERY, "warmup");
+      float[] warmupB = embedder.embed(Embedder.TaskType.QUERY, "Local onnx for embedding query");
+      float[][] warmupBatch =
+          embedder.embedBatch(
+              Embedder.TaskType.QUERY, new String[] {"warmup", "Local onnx for embedding query"});
+      LOG.debug(
+          "Embedder warmup cosine: same text={} different text={} repeated phrase={}",
+          cosineSimilarity(warmupA, warmupBatch[0]),
+          cosineSimilarity(warmupA, warmupBatch[1]),
+          cosineSimilarity(warmupB, warmupBatch[1]));
     } catch (InferenceException e) {
       throw new InitializeException("Failed to warm up embedder '" + modelName + "'", e);
     }
@@ -57,6 +66,29 @@ public record EmbedderRegistry(Map<String, Embedder> embedders) implements AutoC
       throw new IllegalStateException("Embedder '" + ref + "' is not configured");
     }
     return embedder;
+  }
+
+  /**
+   * Cosine similarity in [-1, 1]. Works for arbitrary vectors; for L2-normalized embeddings
+   * (as produced by {@link LocalOnnxEmbedder}) this equals the dot product.
+   */
+  public static float cosineSimilarity(float[] left, float[] right) {
+    if (left.length != right.length) {
+      throw new IllegalArgumentException(
+          "Embedding dimensions differ: " + left.length + " vs " + right.length);
+    }
+    double dot = 0;
+    double normLeft = 0;
+    double normRight = 0;
+    for (int i = 0; i < left.length; i++) {
+      dot += (double) left[i] * right[i];
+      normLeft += (double) left[i] * left[i];
+      normRight += (double) right[i] * right[i];
+    }
+    if (normLeft == 0 || normRight == 0) {
+      return 0f;
+    }
+    return (float) (dot / (Math.sqrt(normLeft) * Math.sqrt(normRight)));
   }
 
   @Override

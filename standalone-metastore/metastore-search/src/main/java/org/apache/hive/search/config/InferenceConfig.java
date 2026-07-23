@@ -49,18 +49,18 @@ public record InferenceConfig(Configuration configuration) {
   public EmbedderSpec spec() throws InitializeException, IOException {
     String name = embedderName();
     if (StringUtils.isEmpty(name)) {
-      throw new InitializeException("No model configured for embedding the search");
+      throw new InitializeException("No embedder configured");
     }
     URI modelPath = URI.create(configuration.get(EMBEDDER_LOCAL_DIR, EMBEDDER_LOCAL_DIR_DEFAULT));
     Path lPath = new Path("file://" + modelPath.getPath());
-    if (requireConfigured(lPath, name)) {
+    if (modelMissingInPath(lPath, name)) {
       String remotePath = configuration.get(EMBEDDER_REMOTE_DIR);
       String message = "Can't find the model or tokenizer in %s for " + name;
       if (StringUtils.isEmpty(remotePath)) {
         throw new InitializeException(String.format(message, lPath));
       }
       Path rPath = new Path(remotePath);
-      if (requireConfigured(rPath, name)) {
+      if (modelMissingInPath(rPath, name)) {
         throw new InitializeException(String.format(message, rPath));
       }
       Path dest = new Path(lPath, name);
@@ -79,7 +79,7 @@ public record InferenceConfig(Configuration configuration) {
         configuration.get(EMBEDDER_MODEL_OUTPUT_NAME, EmbedderSpec.DEFAULT_MODEL_OUTPUT_NAME));
   }
 
-  private boolean requireConfigured(Path modelPath, String modelName) {
+  private boolean modelMissingInPath(Path modelPath, String modelName) {
     try {
       FileSystem fileSystem = modelPath.getFileSystem(configuration);
       FileStatus[] fileStatuses = fileSystem.listStatus(new Path(modelPath, modelName), path -> {
