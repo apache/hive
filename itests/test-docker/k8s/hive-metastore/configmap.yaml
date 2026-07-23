@@ -41,4 +41,8 @@ data:
         <name>metastore.catalog.servlet.auth</name>
         <value>none</value>
       </property>
+      <property>
+        <name>metastore.iceberg.catalog.unique.table.location</name>
+        <value>true</value>
+      </property>
     </configuration>
