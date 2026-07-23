@@ -247,14 +247,16 @@ public final class EsriShapeConverter {
       }
     }
 
-    // Build JTS Polygons
+    // Build JTS Polygons in OGC orientation (exterior CCW, holes CW). ESRI shape stores the
+    // opposite winding (exterior CW, holes CCW), so reverse rings as needed; this matches what
+    // the previous ESRI-library round-trip produced.
     Polygon[] polygons = new Polygon[exteriorCount];
     for (int e = 0; e < exteriorCount; e++) {
-      LinearRing shell = GeometryUtils.GEOMETRY_FACTORY.createLinearRing(rings[exteriorIndices.get(e)]);
+      LinearRing shell = GeometryUtils.GEOMETRY_FACTORY.createLinearRing(toCCW(rings[exteriorIndices.get(e)]));
       List<Integer> holeIndices = holesByExterior.get(e);
       LinearRing[] holes = new LinearRing[holeIndices.size()];
       for (int h = 0; h < holes.length; h++) {
-        holes[h] = GeometryUtils.GEOMETRY_FACTORY.createLinearRing(rings[holeIndices.get(h)]);
+        holes[h] = GeometryUtils.GEOMETRY_FACTORY.createLinearRing(toCW(rings[holeIndices.get(h)]));
       }
       polygons[e] = GeometryUtils.GEOMETRY_FACTORY.createPolygon(shell, holes);
     }
@@ -295,19 +297,19 @@ public final class EsriShapeConverter {
   private static byte[] writeLineString(LineString ls) {
     Coordinate[] coords = ls.getCoordinates();
     Coordinate[][] parts = {coords};
-    return writePolylineBuffer(parts, coordsHaveZ(coords));
+    return writePolylineBuffer(parts, coordsHaveZ(coords), coordsHaveM(coords));
   }
 
   private static byte[] writeMultiLineString(MultiLineString mls) {
     Coordinate[][] parts = new Coordinate[mls.getNumGeometries()][];
     boolean hasZ = false;
+    boolean hasM = false;
     for (int i = 0; i < parts.length; i++) {
       parts[i] = mls.getGeometryN(i).getCoordinates();
-      if (!hasZ && coordsHaveZ(parts[i])) {
-        hasZ = true;
-      }
+      hasZ = hasZ || coordsHaveZ(parts[i]);
+      hasM = hasM || coordsHaveM(parts[i]);
     }
-    return writePolylineBuffer(parts, hasZ);
+    return writePolylineBuffer(parts, hasZ, hasM);
   }
 
   private static byte[] writeMultiPolygonShape(MultiPolygon mp) {
@@ -331,7 +333,25 @@ public final class EsriShapeConverter {
   private static byte[] writePoint(Point point) {
     Coordinate c = point.getCoordinate();
     boolean hasZ = !Double.isNaN(c.getZ());
-    if (hasZ) {
+    boolean hasM = !Double.isNaN(c.getM());
+    if (hasZ && hasM) {
+      // PointZ carrying the optional trailing M value: type + X + Y + Z + M
+      ByteBuffer buf = ByteBuffer.allocate(4 + 8 * 4).order(ByteOrder.LITTLE_ENDIAN);
+      buf.putInt(TYPE_POINT_Z);
+      buf.putDouble(c.getX());
+      buf.putDouble(c.getY());
+      buf.putDouble(c.getZ());
+      buf.putDouble(c.getM());
+      return buf.array();
+    } else if (hasM) {
+      // PointM: type + X + Y + M
+      ByteBuffer buf = ByteBuffer.allocate(4 + 8 * 3).order(ByteOrder.LITTLE_ENDIAN);
+      buf.putInt(TYPE_POINT_M);
+      buf.putDouble(c.getX());
+      buf.putDouble(c.getY());
+      buf.putDouble(c.getM());
+      return buf.array();
+    } else if (hasZ) {
       ByteBuffer buf = ByteBuffer.allocate(4 + 8 + 8 + 8).order(ByteOrder.LITTLE_ENDIAN);
       buf.putInt(TYPE_POINT_Z);
       buf.putDouble(c.getX());
@@ -354,12 +374,14 @@ public final class EsriShapeConverter {
       coords[i] = mp.getGeometryN(i).getCoordinate();
     }
     boolean hasZ = coordsHaveZ(coords);
+    boolean hasM = coordsHaveM(coords);
 
     double[] bbox = bbox2D(coords);
-    // type(4) + bbox(32) + numPoints(4) + points*16 [+ zMin+zMax(16) + n*8 if Z]
-    int baseSize = 4 + 32 + 4 + n * 16;
-    int size = hasZ ? baseSize + 16 + n * 8 : baseSize;
-    int shapeType = hasZ ? TYPE_MULTIPOINT_Z : TYPE_MULTIPOINT;
+    // type(4) + bbox(32) + numPoints(4) + points*16 [+ Z section] [+ M section]
+    int size = 4 + 32 + 4 + n * 16
+        + (hasZ ? 16 + n * 8 : 0)
+        + (hasM ? 16 + n * 8 : 0);
+    int shapeType = hasZ ? TYPE_MULTIPOINT_Z : (hasM ? TYPE_MULTIPOINT_M : TYPE_MULTIPOINT);
 
     ByteBuffer buf = ByteBuffer.allocate(size).order(ByteOrder.LITTLE_ENDIAN);
     buf.putInt(shapeType);
@@ -372,13 +394,16 @@ public final class EsriShapeConverter {
     if (hasZ) {
       writeZSection(buf, coords);
     }
+    if (hasM) {
+      writeMSection(buf, coords);
+    }
     return buf.array();
   }
 
   /**
-   * Write Polyline (type 3 or 13) from an array of coordinate rings/paths.
+   * Write Polyline (type 3, 13 or 23) from an array of coordinate rings/paths.
    */
-  private static byte[] writePolylineBuffer(Coordinate[][] parts, boolean hasZ) {
+  private static byte[] writePolylineBuffer(Coordinate[][] parts, boolean hasZ, boolean hasM) {
     int numParts  = parts.length;
     int numPoints = 0;
     for (Coordinate[] part : parts) {
@@ -387,11 +412,12 @@ public final class EsriShapeConverter {
 
     Coordinate[] allCoords = flattenParts(parts);
     double[] bbox = bbox2D(allCoords);
-    int shapeType = hasZ ? TYPE_POLYLINE_Z : TYPE_POLYLINE;
+    int shapeType = hasZ ? TYPE_POLYLINE_Z : (hasM ? TYPE_POLYLINE_M : TYPE_POLYLINE);
 
-    // type(4) + bbox(32) + numParts(4) + numPoints(4) + parts*4 + points*16 [+ Z section]
-    int baseSize = 4 + 32 + 4 + 4 + numParts * 4 + numPoints * 16;
-    int size = hasZ ? baseSize + 16 + numPoints * 8 : baseSize;
+    // type(4) + bbox(32) + numParts(4) + numPoints(4) + parts*4 + points*16 [+ Z section] [+ M section]
+    int size = 4 + 32 + 4 + 4 + numParts * 4 + numPoints * 16
+        + (hasZ ? 16 + numPoints * 8 : 0)
+        + (hasM ? 16 + numPoints * 8 : 0);
 
     ByteBuffer buf = ByteBuffer.allocate(size).order(ByteOrder.LITTLE_ENDIAN);
     buf.putInt(shapeType);
@@ -410,6 +436,9 @@ public final class EsriShapeConverter {
     }
     if (hasZ) {
       writeZSection(buf, allCoords);
+    }
+    if (hasM) {
+      writeMSection(buf, allCoords);
     }
     return buf.array();
   }
@@ -458,11 +487,13 @@ public final class EsriShapeConverter {
     }
 
     boolean hasZ = coordsHaveZ(allCoords);
+    boolean hasM = coordsHaveM(allCoords);
     double[] bbox = bbox2D(allCoords);
-    int shapeType = hasZ ? TYPE_POLYGON_Z : TYPE_POLYGON;
+    int shapeType = hasZ ? TYPE_POLYGON_Z : (hasM ? TYPE_POLYGON_M : TYPE_POLYGON);
 
-    int baseSize = 4 + 32 + 4 + 4 + numParts * 4 + numPoints * 16;
-    int size = hasZ ? baseSize + 16 + numPoints * 8 : baseSize;
+    int size = 4 + 32 + 4 + 4 + numParts * 4 + numPoints * 16
+        + (hasZ ? 16 + numPoints * 8 : 0)
+        + (hasM ? 16 + numPoints * 8 : 0);
 
     ByteBuffer buf = ByteBuffer.allocate(size).order(ByteOrder.LITTLE_ENDIAN);
     buf.putInt(shapeType);
@@ -481,6 +512,9 @@ public final class EsriShapeConverter {
     }
     if (hasZ) {
       writeZSection(buf, allCoords);
+    }
+    if (hasM) {
+      writeMSection(buf, allCoords);
     }
     return buf.array();
   }
@@ -516,6 +550,49 @@ public final class EsriShapeConverter {
     }
   }
 
+  /**
+   * Write the M (measure) section: mMin (double), mMax (double), then one M per coordinate.
+   * A coordinate without a measure (NaN) is written as the ESRI no-data sentinel so it reads
+   * back as absent.
+   */
+  private static void writeMSection(ByteBuffer buf, Coordinate[] coords) {
+    double mMin = Double.MAX_VALUE;
+    double mMax = -Double.MAX_VALUE;
+    boolean any = false;
+    for (Coordinate c : coords) {
+      double m = c.getM();
+      if (!Double.isNaN(m)) {
+        any = true;
+        if (m < mMin) {
+          mMin = m;
+        }
+        if (m > mMax) {
+          mMax = m;
+        }
+      }
+    }
+    if (!any) {
+      mMin = 0.0;
+      mMax = 0.0;
+    }
+    buf.putDouble(mMin);
+    buf.putDouble(mMax);
+    for (Coordinate c : coords) {
+      double m = c.getM();
+      buf.putDouble(Double.isNaN(m) ? NO_DATA_M : m);
+    }
+  }
+
+  /** Return the ring wound counter-clockwise (reversing it if currently clockwise). */
+  private static Coordinate[] toCCW(Coordinate[] ring) {
+    return Orientation.isCCW(ring) ? ring : reverse(ring);
+  }
+
+  /** Return the ring wound clockwise (reversing it if currently counter-clockwise). */
+  private static Coordinate[] toCW(Coordinate[] ring) {
+    return Orientation.isCCW(ring) ? reverse(ring) : ring;
+  }
+
   /** Reverse a coordinate array (returns a new array, does not modify the original). */
   private static Coordinate[] reverse(Coordinate[] coords) {
     Coordinate[] reversed = new Coordinate[coords.length];
@@ -529,6 +606,16 @@ public final class EsriShapeConverter {
   private static boolean coordsHaveZ(Coordinate[] coords) {
     for (Coordinate c : coords) {
       if (!Double.isNaN(c.getZ())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /** Return true if any coordinate in the array has a non-NaN M (measure) value. */
+  private static boolean coordsHaveM(Coordinate[] coords) {
+    for (Coordinate c : coords) {
+      if (!Double.isNaN(c.getM())) {
         return true;
       }
     }

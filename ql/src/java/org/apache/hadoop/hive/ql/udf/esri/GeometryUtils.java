@@ -45,7 +45,6 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Arrays;
 import java.util.Set;
 
 public class GeometryUtils {
@@ -56,10 +55,6 @@ public class GeometryUtils {
   private static final int SIZE_TYPE = 1;
 
   public static final int WKID_UNKNOWN = 0;
-
-  // Magic byte at offset 4 to distinguish new WKB format from old ESRI format.
-  // Old format stores OGC type tag (0-6) at byte 4; 0xFF is outside that range.
-  public static final byte NEW_FORMAT_MAGIC = (byte) 0xFF;
 
   public static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
 
@@ -278,13 +273,6 @@ public class GeometryUtils {
       CacheBuilder.newBuilder().maximumSize(1024).build();
 
   /**
-   * Detect whether the given bytes use the new WKB format.
-   */
-  public static boolean isNewFormat(BytesWritable geomref) {
-    return geomref != null && geomref.getLength() > 4 && geomref.getBytes()[4] == NEW_FORMAT_MAGIC;
-  }
-
-  /**
    * Compare spatial references of two geometry byte arrays.
    */
   public static boolean compareSpatialReferences(BytesWritable geomref1, BytesWritable geomref2) {
@@ -371,7 +359,7 @@ public class GeometryUtils {
   }
 
   /**
-   * Deserialize geometry bytes (either old ESRI format or new WKB format) to a JTS Geometry.
+   * Deserialize Hive geometry transport bytes (WKID + type + ESRI shape) to a JTS Geometry.
    */
   public static Geometry geometryFromEsriShape(BytesWritable geomref) {
     return geometryFromEsriShape(geomref, true);
@@ -405,41 +393,31 @@ public class GeometryUtils {
       return null;
     }
 
+    // Transport bytes: WKID (0-3, little-endian) + OGC type (4) + ESRI shape body (5+).
+    int srid = ByteBuffer.wrap(bytes, 0, 4).order(ByteOrder.LITTLE_ENDIAN).getInt();
+    ByteBuffer shapeBuffer = ByteBuffer.wrap(bytes, SIZE_WKID + SIZE_TYPE, length - SIZE_WKID - SIZE_TYPE)
+        .slice().order(ByteOrder.LITTLE_ENDIAN);
+
+    if (shapeBuffer.limit() < 4) {
+      return null;
+    }
+
+    // Null shape body: reconstruct an empty geometry of the type recorded in the header,
+    // so empty geometries (e.g. POINT EMPTY) round-trip instead of collapsing to NULL.
+    if (shapeBuffer.getInt(0) == 0) {
+      Geometry empty = emptyGeometryForType(getType(geomref));
+      if (empty != null) {
+        empty.setSRID(srid);
+      }
+      return empty;
+    }
+
     Geometry geom;
-    int srid;
-
-    if (bytes[4] == NEW_FORMAT_MAGIC) {
-      // New WKB format: bytes 0-3 = SRID (little-endian), byte 4 = 0xFF, bytes 5+ = WKB
-      srid = ByteBuffer.wrap(bytes, 0, 4).order(ByteOrder.LITTLE_ENDIAN).getInt();
-      byte[] wkb = Arrays.copyOfRange(bytes, 5, length);
-      try {
-        geom = wkbReader().read(wkb);
-      } catch (ParseException e) {
-        LOG.warn("Failed to parse WKB geometry", e);
-        return null;
-      }
-    } else {
-      // Old ESRI format: bytes 0-3 = WKID (little-endian), byte 4 = OGC type (0-6), bytes 5+ = ESRI shape
-      srid = ByteBuffer.wrap(bytes, 0, 4).order(ByteOrder.LITTLE_ENDIAN).getInt();
-      ByteBuffer shapeBuffer = ByteBuffer.wrap(bytes, SIZE_WKID + SIZE_TYPE, length - SIZE_WKID - SIZE_TYPE)
-          .slice().order(ByteOrder.LITTLE_ENDIAN);
-
-      if (shapeBuffer.limit() < 4) {
-        return null;
-      }
-
-      // Check if shape type is Unknown (empty geometry)
-      if (shapeBuffer.getInt(0) == 0) {
-        return null;
-      }
-
-      // Use native EsriShapeConverter to read the old ESRI shape format
-      try {
-        geom = EsriShapeConverter.fromEsriShapeBody(shapeBuffer);
-      } catch (Exception e) {
-        LOG.warn("Failed to parse ESRI shape geometry", e);
-        return null;
-      }
+    try {
+      geom = EsriShapeConverter.fromEsriShapeBody(shapeBuffer);
+    } catch (Exception e) {
+      LOG.warn("Failed to parse ESRI shape geometry", e);
+      return null;
     }
 
     if (geom != null) {
@@ -453,45 +431,35 @@ public class GeometryUtils {
   }
 
   /**
-   * Gets the geometry type for the given hive geometry bytes.
-   * For new WKB format, reads the type directly from the WKB header
-   * without full deserialization.
+   * Gets the geometry type for the given hive geometry bytes, read directly from the
+   * OGC type tag at byte 4 without deserializing the shape.
    */
   public static OGCType getType(BytesWritable geomref) {
     if (geomref == null || geomref.getLength() < 5) {
       return OGCType.UNKNOWN;
     }
     byte[] bytes = geomref.getBytes();
-    if (bytes[4] == NEW_FORMAT_MAGIC) {
-      // New format: bytes 5+ are WKB. WKB layout: byte 5 = byte order,
-      // bytes 6-9 = geometry type int (in the indicated byte order).
-      if (geomref.getLength() < 10) {
-        return OGCType.UNKNOWN;
-      }
-      ByteOrder order = (bytes[5] == 1) ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN;
-      int wkbType = ByteBuffer.wrap(bytes, 6, 4).order(order).getInt();
-      // JTS uses extended WKB: bit 31 (0x80000000) = Z, bit 30 (0x40000000) = M,
-      // bit 29 (0x20000000) = SRID. Strip these flag bits to get the base type.
-      // Also handle ISO WKB encoding (type + 1000/2000/3000) for compatibility.
-      int baseType = wkbType & 0x1FFFFFFF; // strip Z/M/SRID flag bits
-      if (baseType >= 1000) {
-        baseType = baseType % 1000; // ISO WKB encoding
-      }
-      return switch (baseType) {
-        case 1 -> OGCType.ST_POINT;
-        case 2 -> OGCType.ST_LINESTRING;
-        case 3 -> OGCType.ST_POLYGON;
-        case 4 -> OGCType.ST_MULTIPOINT;
-        case 5 -> OGCType.ST_MULTILINESTRING;
-        case 6 -> OGCType.ST_MULTIPOLYGON;
-        default -> OGCType.UNKNOWN;
-      };
-    }
     int typeIdx = bytes[SIZE_WKID] & 0xFF;
     if (typeIdx >= OGCTypeLookup.length) {
       return OGCType.UNKNOWN;
     }
     return OGCTypeLookup[typeIdx];
+  }
+
+  /**
+   * Build an empty JTS geometry for the given OGC type, or {@code null} if the type is unknown.
+   * Used to round-trip empty geometries whose ESRI shape body is the Null shape.
+   */
+  private static Geometry emptyGeometryForType(OGCType type) {
+    return switch (type) {
+      case ST_POINT -> GEOMETRY_FACTORY.createPoint();
+      case ST_LINESTRING -> GEOMETRY_FACTORY.createLineString();
+      case ST_POLYGON -> GEOMETRY_FACTORY.createPolygon();
+      case ST_MULTIPOINT -> GEOMETRY_FACTORY.createMultiPoint();
+      case ST_MULTILINESTRING -> GEOMETRY_FACTORY.createMultiLineString();
+      case ST_MULTIPOLYGON -> GEOMETRY_FACTORY.createMultiPolygon();
+      default -> null;
+    };
   }
 
   /**
@@ -519,7 +487,7 @@ public class GeometryUtils {
     if (geomref == null || geomref.getLength() < 4) {
       return WKID_UNKNOWN;
     }
-    // SRID/WKID is stored little-endian at bytes 0-3 in both the old and new formats.
+    // WKID is stored little-endian at bytes 0-3.
     return ByteBuffer.wrap(geomref.getBytes(), 0, 4).order(ByteOrder.LITTLE_ENDIAN).getInt();
   }
 
@@ -527,33 +495,35 @@ public class GeometryUtils {
    * Sets the WKID/SRID (in place) for the given hive geometry bytes.
    */
   public static void setWKID(BytesWritable geomref, int wkid) {
-    // SRID/WKID is stored little-endian at bytes 0-3 in both the old and new formats.
+    // WKID is stored little-endian at bytes 0-3.
     ByteBuffer bb = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
     bb.putInt(wkid);
     System.arraycopy(bb.array(), 0, geomref.getBytes(), 0, SIZE_WKID);
   }
 
   /**
-   * Serialize a JTS Geometry to the new WKB wire format bytes.
-   * Uses dimension-aware WKBWriter to preserve Z/M coordinates.
+   * Serialize a JTS Geometry to the Hive geometry transport bytes:
+   * WKID (4 bytes, little-endian) + OGC type tag (1 byte) + ESRI shape body.
+   * This is the same wire format the previous ESRI-library implementation produced, so the
+   * bytes remain readable by other engines (Impala, Trino, Spark) that understand it.
    */
   private static BytesWritable serializeJts(Geometry geometry) {
     if (geometry == null) {
       return null;
     }
     int srid = geometry.getSRID();
-    byte[] wkb = wkbWriterFor(geometry).write(geometry);
+    byte[] shape = EsriShapeConverter.toEsriShape(geometry);
 
-    byte[] result = new byte[SIZE_WKID + 1 + wkb.length];
-    // Write SRID little-endian (matches the old format's WKID byte order)
+    byte[] result = new byte[SIZE_WKID + SIZE_TYPE + shape.length];
+    // WKID little-endian at bytes 0-3
     result[0] = (byte) srid;
     result[1] = (byte) (srid >> 8);
     result[2] = (byte) (srid >> 16);
     result[3] = (byte) (srid >> 24);
-    // Magic byte
-    result[4] = NEW_FORMAT_MAGIC;
-    // WKB payload
-    System.arraycopy(wkb, 0, result, 5, wkb.length);
+    // OGC type tag at byte 4
+    result[SIZE_WKID] = (byte) inferOGCType(geometry).getIndex();
+    // ESRI shape body
+    System.arraycopy(shape, 0, result, SIZE_WKID + SIZE_TYPE, shape.length);
     return new BytesWritable(result);
   }
 

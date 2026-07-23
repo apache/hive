@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
+import org.apache.hadoop.io.BytesWritable;
 import org.junit.Test;
+import org.locationtech.jts.algorithm.Orientation;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.MultiLineString;
@@ -32,6 +34,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
@@ -148,6 +151,27 @@ public class TestEsriShapeConverter {
     assertTrue("Expected a MultiPolygon!", back instanceof MultiPolygon);
     assertEquals(2, back.getNumGeometries());
     assertEqualsNormalized(wkt(text), back);
+  }
+
+  /**
+   * ESRI shape stores exterior rings clockwise; the reader must hand back OGC orientation
+   * (exterior CCW, holes CW) so that WKT output matches the previous ESRI-library behavior.
+   */
+  @Test
+  public void testPolygonRoundTripUsesOgcOrientation() throws Exception {
+    Polygon back = (Polygon) roundTrip("polygon ((0 0, 10 0, 10 10, 0 10, 0 0), (2 2, 2 4, 4 4, 4 2, 2 2))");
+    assertTrue("Exterior ring must be CCW", Orientation.isCCW(back.getExteriorRing().getCoordinates()));
+    assertFalse("Hole must be CW", Orientation.isCCW(back.getInteriorRingN(0).getCoordinates()));
+  }
+
+  /** An empty geometry must round-trip as an empty geometry of the same type, not NULL. */
+  @Test
+  public void testEmptyGeometryTransportRoundTrip() throws Exception {
+    BytesWritable bytes = GeometryUtils.geometryToEsriShapeBytesWritable(wkt("point empty"), 0);
+    Geometry back = GeometryUtils.geometryFromEsriShape(bytes);
+    assertNotNull(back);
+    assertTrue("Expected an empty geometry", back.isEmpty());
+    assertTrue("Expected a Point", back instanceof Point);
   }
 
   /**
@@ -277,6 +301,48 @@ public class TestEsriShapeConverter {
     assertEquals(2, line.getCoordinateN(0).getM(), EPSILON);
     assertEquals(4, line.getCoordinateN(1).getM(), EPSILON);
     assertTrue("Z must be absent", Double.isNaN(line.getCoordinateN(0).getZ()));
+  }
+
+  @Test
+  public void testPointMRoundTrip() throws Exception {
+    Point point = (Point) roundTrip("point m (1 2 7)");
+    assertEquals(1, point.getX(), EPSILON);
+    assertEquals(2, point.getY(), EPSILON);
+    assertEquals(7, point.getCoordinate().getM(), EPSILON);
+    assertTrue("Z must be absent", Double.isNaN(point.getCoordinate().getZ()));
+    assertEquals(21, shapeType(EsriShapeConverter.toEsriShape(wkt("point m (1 2 7)"))));
+  }
+
+  @Test
+  public void testPointZMRoundTrip() throws Exception {
+    Point point = (Point) roundTrip("point zm (1 2 3 7)");
+    assertEquals(3, point.getCoordinate().getZ(), EPSILON);
+    assertEquals(7, point.getCoordinate().getM(), EPSILON);
+    assertEquals(11, shapeType(EsriShapeConverter.toEsriShape(wkt("point zm (1 2 3 7)"))));
+  }
+
+  @Test
+  public void testLineStringMRoundTrip() throws Exception {
+    LineString back = (LineString) roundTrip("linestring m (10 10 2, 20 20 4)");
+    assertEquals(2, back.getCoordinateN(0).getM(), EPSILON);
+    assertEquals(4, back.getCoordinateN(1).getM(), EPSILON);
+    assertTrue("Z must be absent", Double.isNaN(back.getCoordinateN(0).getZ()));
+    assertEquals(23, shapeType(EsriShapeConverter.toEsriShape(wkt("linestring m (10 10 2, 20 20 4)"))));
+  }
+
+  @Test
+  public void testLineStringZMRoundTrip() throws Exception {
+    LineString back = (LineString) roundTrip("linestring zm (0 0 1 5, 1 1 2 6)");
+    assertEquals(1, back.getCoordinateN(0).getZ(), EPSILON);
+    assertEquals(5, back.getCoordinateN(0).getM(), EPSILON);
+    assertEquals(6, back.getCoordinateN(1).getM(), EPSILON);
+  }
+
+  @Test
+  public void testMultiPointMRoundTrip() throws Exception {
+    MultiPoint back = (MultiPoint) roundTrip("multipoint m ((1 2 3), (4 5 6))");
+    assertEquals(3, back.getGeometryN(0).getCoordinate().getM(), EPSILON);
+    assertEquals(6, back.getGeometryN(1).getCoordinate().getM(), EPSILON);
   }
 
   /** A PolylineZ with no trailing M block must not be reported as measured. */
