@@ -104,6 +104,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.shims.CombineHiveKey;
@@ -2624,7 +2625,7 @@ public class TestInputOutputFormat {
     assertEquals("mock:/combinationAcid/p=0/base_0000010/bucket_00000",
         split.getPath().toString());
     assertEquals(0, split.getStart());
-    assertEquals(784, split.getLength());
+    assertEquals(791, split.getLength());
     split = (HiveInputFormat.HiveInputSplit) splits[1];
     assertEquals("org.apache.hadoop.hive.ql.io.orc.OrcInputFormat",
         split.inputFormatClassName());
@@ -4172,21 +4173,19 @@ public class TestInputOutputFormat {
       // d
       ((BytesColumnVector) scv.fields[2]).setVal(r,
           Integer.toHexString(r).getBytes(StandardCharsets.UTF_8));
-      indexBuilder.addKey(OrcRecordUpdater.INSERT_OPERATION,
-          1, (int)(((LongColumnVector) batch.cols[2]).vector[0]), r);
     }
 
-    // Minimum 5000 rows per stripe.
+    // Match OrcRecordUpdater: addKey before rows are written. If addKey runs after addRowBatch,
+    // a mid-batch flush can snapshot the index with the previous statement id while the stripe
+    // already contains rows from the current batch.
     for (int idx = 0; idx < 8; ++idx) {
-      writer.addRowBatch(batch);
-      // bucket
-      batch.cols[2].isRepeating = true;
-      ((LongColumnVector) batch.cols[2]).vector[0] = BucketCodec.V1.encode(new AcidOutputFormat
-          .Options(conf).bucket(0).statementId(idx + 1));
-      for(long row_id : ((LongColumnVector) batch.cols[3]).vector) {
-        indexBuilder.addKey(OrcRecordUpdater.INSERT_OPERATION,
-            1, (int)(((LongColumnVector) batch.cols[2]).vector[0]), row_id);
+      final int bucketForBatch = (int) ((LongColumnVector) batch.cols[2]).vector[0];
+      for (long row_id : ((LongColumnVector) batch.cols[3]).vector) {
+        indexBuilder.addKey(OrcRecordUpdater.INSERT_OPERATION, 1, bucketForBatch, row_id);
       }
+      writer.addRowBatch(batch);
+      ((LongColumnVector) batch.cols[2]).vector[0] = BucketCodec.V1.encode(
+          new AcidOutputFormat.Options(conf).bucket(0).statementId(idx + 1));
     }
     writer.close();
     long fileLength = fs.getFileStatus(testFilePath).getLen();
@@ -4194,21 +4193,43 @@ public class TestInputOutputFormat {
     // Find the last stripe.
     List<StripeInformation> stripes;
     RecordIdentifier[] keyIndex;
-    try (Reader orcReader = OrcFile.createReader(fs, testFilePath)) {
+    try (Reader orcReader = OrcFile.createReader(fs, testFilePath);
+        RecordReader rr = orcReader.rows()) {
       stripes = orcReader.getStripes();
       keyIndex = OrcRecordUpdater.parseKeyIndex(orcReader);
+
+      StructObjectInspector soi = (StructObjectInspector) orcReader.getObjectInspector();
+      List<? extends StructField> structFields = soi.getAllStructFieldRefs();
+      StructField transactionField = structFields.get(1);
+      LongObjectInspector transactionOI =
+          (LongObjectInspector) transactionField.getFieldObjectInspector();
+      StructField bucketField = structFields.get(2);
+      IntObjectInspector bucketOI =
+          (IntObjectInspector) bucketField.getFieldObjectInspector();
+      StructField rowIdField = structFields.get(3);
+      LongObjectInspector rowIdOI =
+          (LongObjectInspector) rowIdField.getFieldObjectInspector();
+
+      Assert.assertEquals("Index length doesn't match number of stripes",
+          stripes.size(), keyIndex.length);
+      long rowsProcessed = 0;
+      for (int i = 0; i < stripes.size(); i++) {
+        rowsProcessed += stripes.get(i).getNumberOfRows();
+        rr.seekToRow(rowsProcessed - 1);
+        OrcStruct row = (OrcStruct) rr.next(null);
+        long lastTransaction =
+            transactionOI.get(soi.getStructFieldData(row, transactionField));
+        int lastBucket = bucketOI.get(soi.getStructFieldData(row, bucketField));
+        long lastRowId = rowIdOI.get(soi.getStructFieldData(row, rowIdField));
+        RecordIdentifier expected =
+            new RecordIdentifier(lastTransaction, lastBucket, lastRowId);
+        Assert.assertEquals("Index entry mismatch for stripe " + i, expected, keyIndex[i]);
+      }
     }
 
     StripeInformation lastStripe = stripes.get(stripes.size() - 1);
     long lastStripeOffset = lastStripe.getOffset();
     long lastStripeLength = lastStripe.getLength();
-
-    Assert.assertEquals("Index length doesn't match number of stripes",
-        stripes.size(), keyIndex.length);
-    Assert.assertEquals("1st Index entry mismatch",
-        new RecordIdentifier(1, 536870916, 999), keyIndex[0]);
-    Assert.assertEquals("2nd Index entry mismatch",
-        new RecordIdentifier(1, 536870920, 999), keyIndex[1]);
 
     // test with same schema with include
     conf.set(ValidTxnList.VALID_TXNS_KEY, "100:99:");

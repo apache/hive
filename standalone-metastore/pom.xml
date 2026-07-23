@@ -99,7 +99,7 @@
     <libthrift.version>0.16.0</libthrift.version>
     <log4j2.version>2.25.3</log4j2.version>
     <mockito-core.version>5.17.0</mockito-core.version>
-    <orc.version>2.1.2</orc.version>
+    <orc.version>2.3.0</orc.version>
     <protobuf.version>3.25.5</protobuf.version>
     <protoc-jar-maven-plugin.version>3.11.4</protoc-jar-maven-plugin.version>
     <protoc.path>${env.PROTOC_PATH}</protoc.path>
@@ -107,6 +107,7 @@
     <io.grpc.version>1.72.0</io.grpc.version>
     <sqlline.version>1.9.0</sqlline.version>
     <netty.version>4.1.127.Final</netty.version>
+    <jetbrains-annotations.version>26.0.2</jetbrains-annotations.version>
     <!-- HIVE-28992: only upgrade to newer than 3.25.0 if you tested the prompt -->
     <jline.version>3.25.0</jline.version>
     <ST4.version>4.0.4</ST4.version>
@@ -374,6 +375,11 @@
             <artifactId>*</artifactId>
           </exclusion>
         </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.jetbrains</groupId>
+        <artifactId>annotations</artifactId>
+        <version>${jetbrains-annotations.version}</version>
       </dependency>
       <dependency>
         <groupId>org.jline</groupId>
