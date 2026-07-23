@@ -19,9 +19,9 @@ package org.apache.hive.search.index;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
-import org.apache.hive.search.config.IndexConfig;
-import org.apache.hive.search.config.IndexStoreConfig;
-import org.apache.hive.search.config.InferenceConfig;
+import org.apache.hive.search.config.IndexOptions;
+import org.apache.hive.search.config.IndexStoreOptions;
+import org.apache.hive.search.config.InferenceOptions;
 import org.apache.hive.search.inference.EmbedderRegistry;
 import org.apache.hive.search.mapping.IndexMapping;
 import org.apache.hive.search.mapping.TableDocument;
@@ -46,8 +46,8 @@ public class TestIndexerFlushCommit {
   @Test
   public void commitsAfterConfiguredFlushCount() throws Exception {
     Configuration conf = baseConf();
-    conf.setInt(IndexConfig.INDEX_RAM_SIZE, 1024);
-    conf.setInt(IndexConfig.COMMIT_FLUSHES, 2);
+    conf.setInt(IndexOptions.INDEX_RAM_SIZE, 1024);
+    conf.setInt(IndexOptions.COMMIT_FLUSHES, 2);
 
     try (IndexerFixture fixture = IndexerFixture.create(conf)) {
       fixture.indexer.addDocuments(List.of(tableDoc(fixture.mapping(), "hive.sales.orders", "orders")));
@@ -64,7 +64,7 @@ public class TestIndexerFlushCommit {
   @Test
   public void forceCommitIgnoresFlushThreshold() throws Exception {
     Configuration conf = baseConf();
-    conf.setInt(IndexConfig.COMMIT_FLUSHES, 5);
+    conf.setInt(IndexOptions.COMMIT_FLUSHES, 5);
 
     try (IndexerFixture fixture = IndexerFixture.create(conf)) {
       fixture.indexer.addDocuments(List.of(tableDoc(fixture.mapping(), "hive.sales.orders", "orders")));
@@ -76,9 +76,9 @@ public class TestIndexerFlushCommit {
 
   private static Configuration baseConf() {
     Configuration conf = new Configuration(false);
-    conf.setBoolean(IndexStoreConfig.MEMORY, true);
-    conf.set(IndexConfig.INDEX_NAME, "test_index");
-    conf.set(InferenceConfig.EMBEDDER_NAME, InMemorySearchFixture.MODEL_NAME);
+    conf.setBoolean(IndexStoreOptions.MEMORY, true);
+    conf.set(IndexOptions.INDEX_NAME, "test_index");
+    conf.set(InferenceOptions.EMBEDDER_NAME, InMemorySearchFixture.MODEL_NAME);
     return conf;
   }
 

@@ -19,7 +19,7 @@ package org.apache.hive.search.search;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
-import org.apache.hive.search.config.SearchConfig;
+import org.apache.hive.search.config.SearchOptions;
 import org.apache.hive.search.exception.SearchException;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -32,7 +32,7 @@ public class TestHybridSearch {
   @Test
   public void resolvedQueryUsesDefaultSemanticWeightFromSearchConfig() throws SearchException {
     HybridQuery resolved = new HybridQuery("sales", null, null);
-    SearchConfig searchConfig = new SearchConfig(new Configuration(false));
+    SearchOptions searchConfig = new SearchOptions(new Configuration(false));
     assertEquals(searchConfig.getHybridSemanticWeight(), resolved.semanticWeight(searchConfig), 0.001f);
     assertEquals(searchConfig.getHybridMatchWeight(), 1.0f - resolved.semanticWeight(searchConfig), 0.001f);
   }
@@ -40,7 +40,7 @@ public class TestHybridSearch {
   @Test
   public void resolvedQueryKeepsExplicitSemanticWeight() throws SearchException {
     HybridQuery resolved = new HybridQuery("sales", null, 0.3f);
-    SearchConfig searchConfig = new SearchConfig(new Configuration(false));
+    SearchOptions searchConfig = new SearchOptions(new Configuration(false));
     assertEquals(0.3f, resolved.semanticWeight(searchConfig), 0.001f);
   }
 }

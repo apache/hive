@@ -48,5 +48,7 @@ public class TestEmbedderSpec {
   public void poolingFromConfig() {
     assertEquals(EmbedderSpec.Pooling.MEAN, EmbedderSpec.Pooling.fromConfig("mean"));
     assertEquals(EmbedderSpec.Pooling.CLS, EmbedderSpec.Pooling.fromConfig("cls"));
+    assertEquals(EmbedderSpec.Pooling.LAST, EmbedderSpec.Pooling.fromConfig("last"));
+    assertEquals(EmbedderSpec.Pooling.LAST, EmbedderSpec.Pooling.fromConfig("eos"));
   }
 }

@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
-import org.apache.hive.search.config.IndexConfig;
+import org.apache.hive.search.config.IndexOptions;
 import org.apache.hive.search.search.InMemorySearchFixture;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -53,8 +53,8 @@ public class TestMetastoreEventHandlerIntegration {
     Configuration conf = new Configuration(false);
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY,
         JSONMessageEncoder.class.getName());
-    conf.setLong(IndexConfig.EVENT_FAILURE_BACKOFF_MS, 0L);
-    conf.setInt(IndexConfig.EVENT_BATCH_MAX_FAILURES, 1);
+    conf.setLong(IndexOptions.EVENT_FAILURE_BACKOFF_MS, 0L);
+    conf.setInt(IndexOptions.EVENT_BATCH_MAX_FAILURES, 1);
 
     MessageBuilder messageBuilder = MessageBuilder.getInstance();
     Table salesOrders = InMemorySearchFixture.table("hive", "sales", "orders", "daily sales orders");

@@ -22,7 +22,7 @@ import java.time.Duration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 
-public record IndexConfig(Configuration configuration) {
+public record IndexOptions(Configuration configuration) {
   public static final String INDEX_RAM_SIZE = "metastore.index.write.ram.size";
   public static final int INDEX_RAM_SIZE_DEFAULT = 128 * 1024 * 1024;
 

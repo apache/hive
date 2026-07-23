@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hive.search.config.IndexStoreConfig;
+import org.apache.hive.search.config.IndexStoreOptions;
 import org.apache.hive.search.exception.IndexIOException;
 
 public final class IndexBackupUtils {
@@ -120,7 +120,7 @@ public final class IndexBackupUtils {
 
   public static IndexStateClient openRemote(String remoteUri, String indexName, Configuration conf)
       throws IOException {
-    IndexStoreConfig.validateRemoteUri(remoteUri);
+    IndexStoreOptions.validateRemoteUri(remoteUri);
     return new RemoteStateClient(URI.create(remoteUri), conf, indexName);
   }
 }

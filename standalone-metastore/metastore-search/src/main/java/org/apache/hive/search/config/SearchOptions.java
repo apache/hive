@@ -22,7 +22,7 @@ import java.time.Duration;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hive.search.exception.SearchException;
 
-public record SearchConfig(Configuration configuration) {
+public record SearchOptions(Configuration configuration) {
   public static final String REFRESH_INTERVAL_SECONDS = "metastore.search.refresh.interval.seconds";
   public static final long REFRESH_INTERVAL_SECONDS_DEFAULT = 1L;
 

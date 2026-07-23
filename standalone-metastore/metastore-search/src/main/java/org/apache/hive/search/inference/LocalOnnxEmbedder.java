@@ -33,7 +33,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.hive.search.config.InferenceConfig;
+import org.apache.hive.search.config.InferenceOptions;
 import org.apache.hive.search.exception.InferenceException;
 import org.apache.hive.search.exception.InitializeException;
 import org.slf4j.Logger;
@@ -56,7 +56,7 @@ public final class LocalOnnxEmbedder implements Embedder {
   private final Object inferenceLock = new Object();
   private final AtomicBoolean closed = new AtomicBoolean(false);
 
-  public LocalOnnxEmbedder(InferenceConfig config) throws InitializeException, IOException {
+  public LocalOnnxEmbedder(InferenceOptions config) throws InitializeException, IOException {
     EmbedderSpec spec = config.spec();
     this.name = spec.name();
     this.modelSpec = spec;
@@ -67,7 +67,7 @@ public final class LocalOnnxEmbedder implements Embedder {
       OrtSession.SessionOptions opts = new OrtSession.SessionOptions();
       opts.setIntraOpNumThreads(Math.max(1, Runtime.getRuntime().availableProcessors()));
       this.session = ortEnv.createSession(
-          modelDir.resolve(InferenceConfig.MODEL_ONNX_FILE).toString(), opts);
+          modelDir.resolve(InferenceOptions.MODEL_ONNX_FILE).toString(), opts);
       this.sessionInputNames = new HashSet<>(session.getInputNames());
       Set<String> outputNames = session.getOutputNames();
       if (!outputNames.contains(modelOutputName)) {
@@ -76,7 +76,7 @@ public final class LocalOnnxEmbedder implements Embedder {
                 + String.join(", ", outputNames));
       }
       this.tokenizer = HuggingFaceTokenizer.newInstance(
-          modelDir.resolve(InferenceConfig.TOKENIZER));
+          modelDir.resolve(InferenceOptions.TOKENIZER));
     } catch (OrtException e) {
       throw InitializeException.wrap("Failed to initialize ONNX embedder", e);
     }
@@ -116,22 +116,26 @@ public final class LocalOnnxEmbedder implements Embedder {
     for (int i = 0; i < texts.length; i++) {
       inputs[i] = prefix + texts[i];
     }
+    
     Encoding[] encodings = tokenizer.batchEncode(inputs);
     int batchSize = encodings.length;
     long[][] inputIds = new long[batchSize][];
     long[][] attentionMask = new long[batchSize][];
     long[][] tokenTypeIds = new long[batchSize][];
+    long[][] positionIds = new long[batchSize][];
     for (int i = 0; i < batchSize; i++) {
       inputIds[i] = encodings[i].getIds();
       attentionMask[i] = encodings[i].getAttentionMask();
       tokenTypeIds[i] = encodings[i].getTypeIds();
+      positionIds[i] = positionIdsFromMask(attentionMask[i]);
     }
 
     float[][] pooled;
     Map<String, OnnxTensor> tensors = new HashMap<>();
     try (OnnxTensor idsTensor = createTensor("input_ids", inputIds, tensors);
          OnnxTensor maskTensor = createTensor("attention_mask", attentionMask, tensors);
-         OnnxTensor typeTensor = createTensor("token_type_ids", tokenTypeIds, tensors)) {
+         OnnxTensor typeTensor = createTensor("token_type_ids", tokenTypeIds, tensors);
+         OnnxTensor positionTensor = createTensor("position_ids", positionIds, tensors)) {
       if (tensors.isEmpty()) {
         throw new OrtException("ONNX model has no supported inputs: " + sessionInputNames);
       }
@@ -154,6 +158,23 @@ public final class LocalOnnxEmbedder implements Embedder {
       return onnxTensor;
     }
     return null;
+  }
+
+  /**
+   * Position ids for transformer ONNX graphs.
+   */
+  static long[] positionIdsFromMask(long[] attentionMask) {
+    long[] positionIds = new long[attentionMask.length];
+    long running = 0;
+    for (int i = 0; i < attentionMask.length; i++) {
+      if (attentionMask[i] == 0) {
+        positionIds[i] = 0;
+      } else {
+        positionIds[i] = running;
+        running++;
+      }
+    }
+    return positionIds;
   }
 
   private float[][][] readModelOutput(OrtSession.Result result) throws OrtException {
@@ -183,11 +204,30 @@ public final class LocalOnnxEmbedder implements Embedder {
     return switch (modelSpec.pooling()) {
       case MEAN -> meanPool(tokenRows, attentionMask);
       case CLS -> clsPool(tokenRows);
+      case LAST -> lastPool(tokenRows, attentionMask);
     };
   }
 
   static float[] clsPool(float[][] tokenRows) {
     return tokenRows[0].clone();
+  }
+
+  /** Last real token index: {@code sum(attention_mask) - 1} */
+  static float[] lastPool(float[][] tokenRows, long[] attentionMask) {
+    if (attentionMask.length != tokenRows.length) {
+      throw new IllegalArgumentException(
+          "attention mask length " + attentionMask.length + " != token rows " + tokenRows.length);
+    }
+    int last = -1;
+    for (int i = 0; i < attentionMask.length; i++) {
+      if (attentionMask[i] > 0) {
+        last = i;
+      }
+    }
+    if (last < 0) {
+      throw new IllegalStateException("attention mask has no active tokens");
+    }
+    return tokenRows[last].clone();
   }
 
   static float[] meanPool(float[][] vectors, long[] attentionMask) {
