@@ -59,7 +59,7 @@ public class MetastoreEventHandler implements AutoCloseable {
   private final IndexOptions indexConfig;
   private final IMetaStoreClient client;
   private final MessageDeserializer deserializer;
-  private Thread metaRefresher;
+  private Thread eventPoller;
   private long lastEventId;
 
   /** Consecutive batch failures at {@link #failedBatchStartId}. */
@@ -95,10 +95,10 @@ public class MetastoreEventHandler implements AutoCloseable {
 
   public MetastoreEventHandler start(long nid) throws Exception {
     this.lastEventId = nid;
-    final long sleepInterval = indexConfig.getPollNotificationInterval();
-    final int pollMax = indexConfig.getEventPollMax();
-    final long unhealthyBackoffMs = indexConfig.getEventUnhealthyBackoffMs();
-    this.metaRefresher = new Thread(() -> {
+    long sleepInterval = indexConfig.getPollNotificationInterval();
+    int pollMax = indexConfig.getEventPollMax();
+    long unhealthyBackoffMs = indexConfig.getEventUnhealthyBackoffMs();
+    this.eventPoller = new Thread(() -> {
       while (!stopped.get()) {
         try {
           int processed = getNextMetastoreEvents(pollMax);
@@ -120,17 +120,17 @@ public class MetastoreEventHandler implements AutoCloseable {
         }
       }
     });
-    this.metaRefresher.setName("Metastore-Event-Poller");
-    this.metaRefresher.start();
+    this.eventPoller.setName("Metastore-Event-Poller");
+    this.eventPoller.start();
     return this;
   }
 
   @Override
   public void close() throws Exception {
     stopped.set(true);
-    if (metaRefresher != null) {
-      metaRefresher.interrupt();
-      metaRefresher.join();
+    if (eventPoller != null) {
+      eventPoller.interrupt();
+      eventPoller.join();
     }
     if (client != null) {
       client.close();
@@ -146,9 +146,9 @@ public class MetastoreEventHandler implements AutoCloseable {
         LOG.debug("No event found since the last event id: {}", lastEventId);
         return 0;
       }
+
       List<NotificationEvent> events = resp.getEvents();
       long batchStartId = events.get(0).getEventId();
-
       MetastoreEventListener.IndexTask task;
       try {
         task = buildTask(events);
@@ -166,6 +166,7 @@ public class MetastoreEventHandler implements AutoCloseable {
         backoffAfterFailure();
         return 0;
       }
+
       try {
         notifyListeners(task);
         lastEventId = task.lastEventId;
@@ -209,8 +210,7 @@ public class MetastoreEventHandler implements AutoCloseable {
           new MetastoreEventListener.IndexTask();
       task.firstEventId = event.getEventId();
       try {
-        dispatchEvent(event, task);
-        task.lastEventId = event.getEventId();
+        mergeEvent(event, task);
         notifyListeners(task);
         lastEventId = event.getEventId();
         applied++;
@@ -263,6 +263,7 @@ public class MetastoreEventHandler implements AutoCloseable {
     for (int i = 0; i < events.size(); i++) {
       NotificationEvent event = events.get(i);
       if (lastEventId >= event.getEventId()) {
+        // this should not happen
         throw new IllegalStateException(
             "Out-of-order metastore notification event: lastEventId=" + lastEventId
                 + ", eventId=" + event.getEventId());
@@ -270,8 +271,7 @@ public class MetastoreEventHandler implements AutoCloseable {
       if (i == 0) {
         task.firstEventId = event.getEventId();
       }
-      dispatchEvent(event, task);
-      task.lastEventId = event.getEventId();
+      mergeEvent(event, task);
     }
     return task;
   }
@@ -327,7 +327,7 @@ public class MetastoreEventHandler implements AutoCloseable {
     }
   }
 
-  private void dispatchEvent(
+  private void mergeEvent(
       NotificationEvent event,
       MetastoreEventListener.IndexTask task)
       throws Exception {
@@ -381,5 +381,6 @@ public class MetastoreEventHandler implements AutoCloseable {
         // Ignored event types still advance the notification cursor when applied individually.
       }
     }
+    task.lastEventId = event.getEventId();
   }
 }

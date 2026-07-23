@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
 public class IndexManager implements AutoCloseable, MetastoreEventListener {
   private static final Logger LOG = LoggerFactory.getLogger(IndexManager.class);
+
   private final IndexMapping mapping;
   private final Directory directory;
   private final IndexStateClient localIndex;
@@ -48,7 +49,9 @@ public class IndexManager implements AutoCloseable, MetastoreEventListener {
   private volatile long processedEventId;
   private volatile long committedEventId;
 
-  public IndexManager(IndexMapping mapping, Directory directory, IndexStateClient localIndex,
+  public IndexManager(IndexMapping mapping,
+      Directory directory,
+      IndexStateClient localIndex,
       IndexStateClient remoteIndex) {
     this.mapping = mapping;
     this.directory = directory;
@@ -56,7 +59,8 @@ public class IndexManager implements AutoCloseable, MetastoreEventListener {
     this.remoteIndex = remoteIndex;
   }
 
-  public static IndexManager open(IndexMapping mapping, Configuration conf) throws IOException {
+  public static IndexManager open(IndexMapping mapping, Configuration conf)
+      throws IOException {
     IndexStoreOptions store = mapping.store();
     Directory directory;
     if (store.useMemory()) {
@@ -64,12 +68,11 @@ public class IndexManager implements AutoCloseable, MetastoreEventListener {
     } else {
       directory = openDiskDirectory(mapping.indexName(), store.getLocalPath());
     }
-
-    IndexStateClient local =
-        new LocalStateClient(directory, mapping.indexName());
+    IndexStateClient local = new LocalStateClient(directory, mapping.indexName());
     IndexStateClient remote = null;
     if (store.hasRemote()) {
-      remote = IndexBackupUtils.openRemote(store.getRemoteUri(), mapping.indexName(), conf);
+      remote = IndexBackupUtils
+          .openRemote(store.getRemoteUri(), mapping.indexName(), conf);
     }
     return new IndexManager(mapping, directory, local, remote);
   }

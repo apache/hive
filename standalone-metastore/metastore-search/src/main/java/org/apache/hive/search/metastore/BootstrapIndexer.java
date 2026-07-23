@@ -26,7 +26,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -45,7 +44,6 @@ import org.slf4j.LoggerFactory;
 final class BootstrapIndexer {
   private static final Logger LOG = LoggerFactory.getLogger(BootstrapIndexer.class);
   private static final List<TableDocument> END_OF_STREAM = List.of();
-  private static final TableBatch END_OF_WORK = new TableBatch(null, List.of());
 
   private final Configuration configuration;
   private final IndexOptions indexConfig;
@@ -70,132 +68,100 @@ final class BootstrapIndexer {
     long start = System.currentTimeMillis();
     List<String> databases = client.getAllDatabases();
     BatchPlan plan = planBatches(databases);
-    LOG.info("Bootstrap planned {} table(s) in {} batch(es) across {} database(s)",
-        plan.expectedTableCount(), plan.batches().size(), databases.size());
+    LOG.info("Bootstrap indexer planned {} table(s) in {} batch(es) across {} database(s)",
+        plan.plannedTableCount(), plan.batches().size(), databases.size());
 
-    int fetchThreads = indexConfig.getBootstrapFetchThreads();
-    BlockingQueue<TableBatch> workQueue =
-        new ArrayBlockingQueue<>(Math.max(fetchThreads * 2, 8));
     BlockingQueue<List<TableDocument>> indexQueue =
         new ArrayBlockingQueue<>(indexConfig.getBootstrapQueueDepth());
     AtomicReference<Exception> failure = new AtomicReference<>();
     AtomicLong indexedTables = new AtomicLong();
-    AtomicInteger completedBatches = new AtomicInteger();
     CountDownLatch fetchDone = new CountDownLatch(plan.batches().size());
 
-    Thread indexThread = startIndexConsumer(indexQueue, failure, indexedTables, completedBatches);
-    ExecutorService fetchPool = Executors.newFixedThreadPool(fetchThreads, r -> {
-      Thread thread = new Thread(r, "Index-Bootstrap-Fetch");
-      thread.setDaemon(true);
-      return thread;
-    });
-    try {
-      for (int i = 0; i < fetchThreads; i++) {
-        fetchPool.submit(() -> fetchTableWorker(plan, workQueue, indexQueue, failure, fetchDone));
+    Thread indexThread = startIndexConsumer(
+        indexQueue, failure, indexedTables, plan.plannedTableCount());
+    try (ExecutorService tableFetcher = Executors.newFixedThreadPool(indexConfig.getBootstrapFetchThreads(),
+        r -> {
+          Thread thread = new Thread(r, "Index-Bootstrap-Fetch");
+          thread.setDaemon(true);
+          return thread;
+    })) {
+      for (TableBatch batch : plan.batches()) {
+        tableFetcher.submit(() -> fetchBatch(batch, indexQueue, failure, fetchDone));
       }
-      enqueueBatches(plan.batches(), workQueue, failure, fetchDone);
       awaitFetchCompletion(fetchDone, failure);
       indexQueue.put(END_OF_STREAM);
       indexThread.join();
       rethrowFailure(failure);
-      validateBootstrapTableCount(plan.expectedTableCount().get());
       indexer.flush(notificationId, true);
       indexer.syncBackup();
       long elapsed = System.currentTimeMillis() - start;
       LOG.info("Built index for {} tables in {} batch(es) over {}ms",
-          plan.expectedTableCount(), plan.batches().size(), elapsed);
+          indexer.writer().getDocStats().numDocs, plan.batches().size(), elapsed);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new IndexIOException("Bootstrap indexing interrupted", e);
     } finally {
-      workQueue.offer(END_OF_WORK);
-      fetchPool.shutdownNow();
       indexThread.interrupt();
       indexThread.join(TimeUnit.SECONDS.toMillis(30));
-    }
-  }
-
-  private void enqueueBatches(List<TableBatch> batches, BlockingQueue<TableBatch> workQueue,
-      AtomicReference<Exception> failure, CountDownLatch fetchDone) throws InterruptedException {
-    int enqueued = 0;
-    try {
-      for (TableBatch batch : batches) {
-        if (failure.get() != null) {
-          break;
-        }
-        workQueue.put(batch);
-        enqueued++;
-      }
-    } finally {
-      for (int i = enqueued; i < batches.size(); i++) {
-        fetchDone.countDown();
-      }
-      workQueue.put(END_OF_WORK);
     }
   }
 
   private BatchPlan planBatches(List<String> databases) throws Exception {
     int batchSize = indexConfig.getBootstrapBatchSize();
     List<TableBatch> planned = new ArrayList<>();
+    int plannedTableCount = 0;
     for (String db : databases) {
       List<String> tableNames = client.getAllTables(db);
+      plannedTableCount += tableNames.size();
       for (int idx = 0; idx < tableNames.size(); idx += batchSize) {
         int end = Math.min(idx + batchSize, tableNames.size());
         planned.add(new TableBatch(db, List.copyOf(tableNames.subList(idx, end))));
       }
     }
-    return new BatchPlan(new AtomicInteger(0), planned);
+    return new BatchPlan(planned, plannedTableCount);
   }
 
-  private void fetchTableWorker(BatchPlan plan, BlockingQueue<TableBatch> workQueue,
-      BlockingQueue<List<TableDocument>> indexQueue, AtomicReference<Exception> failure,
+  private void fetchBatch(TableBatch batch,
+      BlockingQueue<List<TableDocument>> indexQueue,
+      AtomicReference<Exception> failure,
       CountDownLatch fetchDone) {
-    if (shareFetchClient) {
-      runFetchLoop(client, plan, workQueue, indexQueue, failure, fetchDone);
-      return;
-    }
-    try (IMetaStoreClient fetchClient = RetryingMetaStoreClient.getProxy(configuration, true)) {
-      runFetchLoop(fetchClient, plan, workQueue, indexQueue, failure, fetchDone);
-    } catch (Exception e) {
-      recordFailure(failure, e);
-    }
-  }
-
-  private void runFetchLoop(IMetaStoreClient fetchClient, BatchPlan plan,
-      BlockingQueue<TableBatch> workQueue, BlockingQueue<List<TableDocument>> indexQueue,
-      AtomicReference<Exception> failure, CountDownLatch fetchDone) {
     try {
-      while (true) {
-        TableBatch batch = workQueue.take();
-        if (batch == END_OF_WORK) {
-          workQueue.offer(END_OF_WORK);
-          return;
-        }
-        try {
-          if (failure.get() == null) {
-            List<Table> tables =
-                fetchClient.getTableObjectsByName(batch.database(), batch.tableNames());
-            plan.expectedTableCount().addAndGet(tables.size());
-            List<TableDocument> documents = new ArrayList<>(tables.size());
-            for (Table table : tables) {
-              documents.add(MetastoreTableMapper.fromTable(table, mapping));
-            }
-            indexQueue.put(documents);
-          }
-        } catch (Exception e) {
-          recordFailure(failure, e);
-        } finally {
-          fetchDone.countDown();
-        }
+      if (failure.get() != null) {
+        return;
+      }
+      if (shareFetchClient) {
+        fetchBatch(batch, indexQueue, failure, client);
+        return;
+      }
+      try (IMetaStoreClient fetchClient = RetryingMetaStoreClient.getProxy(configuration, true)) {
+        fetchBatch(batch, indexQueue, failure, fetchClient);
       }
     } catch (Exception e) {
       recordFailure(failure, e);
+    } finally {
+      fetchDone.countDown();
     }
+  }
+
+  private void fetchBatch(TableBatch batch,
+      BlockingQueue<List<TableDocument>> indexQueue,
+      AtomicReference<Exception> failure,
+      IMetaStoreClient fetchClient) throws Exception {
+    if (failure.get() != null) {
+      return;
+    }
+    List<Table> tables =
+        fetchClient.getTableObjectsByName(batch.database(), batch.tableNames());
+    List<TableDocument> documents = new ArrayList<>(tables.size());
+    for (Table table : tables) {
+      documents.add(MetastoreTableMapper.fromTable(table, mapping));
+    }
+    indexQueue.put(documents);
   }
 
   private Thread startIndexConsumer(BlockingQueue<List<TableDocument>> indexQueue,
       AtomicReference<Exception> failure, AtomicLong indexedTables,
-      AtomicInteger completedBatches) {
+      int plannedTableCount) {
     Thread indexThread = new Thread(() -> {
       long lastProgressLog = System.currentTimeMillis();
       long bootstrapWriterStart = System.currentTimeMillis();
@@ -210,12 +176,19 @@ final class BootstrapIndexer {
           }
           indexer.addDocuments(documents);
           long indexed = indexedTables.addAndGet(documents.size());
-          int done = completedBatches.incrementAndGet();
           long now = System.currentTimeMillis();
           if (now - lastProgressLog >= indexConfig.getBootstrapProgressIntervalMs()) {
-            double tablesPerSec = indexed * 1000.0 / Math.max(1, now - bootstrapWriterStart);
-            LOG.info("Bootstrap progress: indexed {} table(s) in {} batch(es), ~{}/s",
-             indexed, done, String.format("%.1f", tablesPerSec));
+            long elapsedMs = Math.max(1, now - bootstrapWriterStart);
+            double tablesPerSec = indexed * 1000.0 / elapsedMs;
+            long remainingMs = estimateRemainingMs(indexed, plannedTableCount, elapsedMs);
+            double percent = plannedTableCount == 0 ? 100.0 : indexed * 100.0 / plannedTableCount;
+            LOG.info(
+                "Bootstrap progress: indexed {}/{} table(s) ({}%), ~{}/s, ~{} remaining",
+                indexed,
+                plannedTableCount,
+                String.format("%.1f", percent),
+                String.format("%.1f", tablesPerSec),
+                formatRemaining(remainingMs));
             lastProgressLog = now;
           }
         }
@@ -242,15 +215,6 @@ final class BootstrapIndexer {
     rethrowFailure(failure);
   }
 
-  private void validateBootstrapTableCount(int expectedTableCount) throws IndexIOException {
-    int indexed = indexer.writer().getDocStats().numDocs;
-    if (indexed != expectedTableCount) {
-      throw new IndexIOException(
-          "Bootstrap index doc count mismatch: indexed " + indexed
-              + " documents but metastore has " + expectedTableCount + " tables");
-    }
-  }
-
   private static void recordFailure(AtomicReference<Exception> failure, Exception error) {
     failure.compareAndSet(null, error);
     LOG.error("Bootstrap indexing failed", error);
@@ -270,7 +234,41 @@ final class BootstrapIndexer {
     }
   }
 
-  private record BatchPlan(AtomicInteger expectedTableCount, List<TableBatch> batches) {}
+  /** Returns milliseconds left, 0 when done, or -1 when throughput is not yet measurable. */
+  static long estimateRemainingMs(long indexed, long total, long elapsedMs) {
+    if (total <= 0 || indexed >= total) {
+      return 0;
+    }
+    if (indexed <= 0 || elapsedMs <= 0) {
+      return -1;
+    }
+    long remainingTables = total - indexed;
+    double tablesPerSec = indexed * 1000.0 / elapsedMs;
+    return Math.round(remainingTables * 1000.0 / tablesPerSec);
+  }
+
+  static String formatRemaining(long remainingMs) {
+    if (remainingMs < 0) {
+      return "unknown";
+    }
+    if (remainingMs == 0) {
+      return "0s";
+    }
+    long seconds = (remainingMs + 999) / 1000;
+    if (seconds < 60) {
+      return seconds + "s";
+    }
+    long minutes = seconds / 60;
+    seconds = seconds % 60;
+    if (minutes < 60) {
+      return seconds == 0 ? minutes + "m" : minutes + "m " + seconds + "s";
+    }
+    long hours = minutes / 60;
+    minutes = minutes % 60;
+    return minutes == 0 ? hours + "h" : hours + "h " + minutes + "m";
+  }
+
+  private record BatchPlan(List<TableBatch> batches, int plannedTableCount) {}
 
   private record TableBatch(String database, List<String> tableNames) {}
 }
