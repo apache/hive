@@ -1,0 +1,148 @@
+PREHOOK: query: drop table if exists tbl_bps_src
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists tbl_bps_src
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists parquet_bps_sink
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists parquet_bps_sink
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table tbl_bps_src (`rate(bps)` double, id int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_bps_src
+POSTHOOK: query: create table tbl_bps_src (`rate(bps)` double, id int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_bps_src
+PREHOOK: query: insert into tbl_bps_src values (12.5, 1), (25.0, 2), (37.5, 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_bps_src
+POSTHOOK: query: insert into tbl_bps_src values (12.5, 1), (25.0, 2), (37.5, 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_bps_src
+POSTHOOK: Lineage: tbl_bps_src.id SCRIPT []
+POSTHOOK: Lineage: tbl_bps_src.rate(bps) SCRIPT []
+PREHOOK: query: create table parquet_bps_sink (
+  `rate(bps)` double,
+  id int,
+  `st(rate)` struct<`val`:double>,
+  `arr(data)` array<struct<`item`:int>>,
+  `map(data)` map<string, struct<`code`:string>>
+) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_bps_sink
+POSTHOOK: query: create table parquet_bps_sink (
+  `rate(bps)` double,
+  id int,
+  `st(rate)` struct<`val`:double>,
+  `arr(data)` array<struct<`item`:int>>,
+  `map(data)` map<string, struct<`code`:string>>
+) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_bps_sink
+PREHOOK: query: insert overwrite table parquet_bps_sink
+select `rate(bps)`, id,
+named_struct('val', `rate(bps)`),
+array(named_struct('item', id)),
+map(concat('k', cast(id as string)), named_struct('code', concat('n', cast(id as string))))
+from tbl_bps_src
+order by id
+limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_bps_src
+PREHOOK: Output: default@parquet_bps_sink
+POSTHOOK: query: insert overwrite table parquet_bps_sink
+select `rate(bps)`, id,
+named_struct('val', `rate(bps)`),
+array(named_struct('item', id)),
+map(concat('k', cast(id as string)), named_struct('code', concat('n', cast(id as string))))
+from tbl_bps_src
+order by id
+limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_bps_src
+POSTHOOK: Output: default@parquet_bps_sink
+POSTHOOK: Lineage: parquet_bps_sink.arr(data) EXPRESSION [(tbl_bps_src)tbl_bps_src.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_bps_sink.id SIMPLE [(tbl_bps_src)tbl_bps_src.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_bps_sink.map(data) EXPRESSION [(tbl_bps_src)tbl_bps_src.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_bps_sink.rate(bps) SIMPLE [(tbl_bps_src)tbl_bps_src.FieldSchema(name:rate(bps), type:double, comment:null), ]
+POSTHOOK: Lineage: parquet_bps_sink.st(rate) EXPRESSION [(tbl_bps_src)tbl_bps_src.FieldSchema(name:rate(bps), type:double, comment:null), ]
+PREHOOK: query: select `rate(bps)`, id, `st(rate)`, `arr(data)`, `map(data)` from parquet_bps_sink order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_bps_sink
+#### A masked pattern was here ####
+POSTHOOK: query: select `rate(bps)`, id, `st(rate)`, `arr(data)`, `map(data)` from parquet_bps_sink order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_bps_sink
+#### A masked pattern was here ####
+12.5	1	{"val":12.5}	[{"item":1}]	{"k1":{"code":"n1"}}
+25.0	2	{"val":25.0}	[{"item":2}]	{"k2":{"code":"n2"}}
+37.5	3	{"val":37.5}	[{"item":3}]	{"k3":{"code":"n3"}}
+PREHOOK: query: select id from parquet_bps_sink order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_bps_sink
+#### A masked pattern was here ####
+POSTHOOK: query: select id from parquet_bps_sink order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_bps_sink
+#### A masked pattern was here ####
+1
+2
+3
+PREHOOK: query: insert overwrite table parquet_bps_sink
+select `rate(bps)`, id,
+named_struct('val', `rate(bps)`),
+array(named_struct('item', id)),
+map(concat('k', cast(id as string)), named_struct('code', concat('n', cast(id as string))))
+from tbl_bps_src
+order by id
+limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_bps_src
+PREHOOK: Output: default@parquet_bps_sink
+POSTHOOK: query: insert overwrite table parquet_bps_sink
+select `rate(bps)`, id,
+named_struct('val', `rate(bps)`),
+array(named_struct('item', id)),
+map(concat('k', cast(id as string)), named_struct('code', concat('n', cast(id as string))))
+from tbl_bps_src
+order by id
+limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_bps_src
+POSTHOOK: Output: default@parquet_bps_sink
+POSTHOOK: Lineage: parquet_bps_sink.arr(data) EXPRESSION [(tbl_bps_src)tbl_bps_src.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_bps_sink.id SIMPLE [(tbl_bps_src)tbl_bps_src.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_bps_sink.map(data) EXPRESSION [(tbl_bps_src)tbl_bps_src.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_bps_sink.rate(bps) SIMPLE [(tbl_bps_src)tbl_bps_src.FieldSchema(name:rate(bps), type:double, comment:null), ]
+POSTHOOK: Lineage: parquet_bps_sink.st(rate) EXPRESSION [(tbl_bps_src)tbl_bps_src.FieldSchema(name:rate(bps), type:double, comment:null), ]
+PREHOOK: query: select `rate(bps)`, id, `st(rate)`, `arr(data)`, `map(data)` from parquet_bps_sink order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_bps_sink
+#### A masked pattern was here ####
+POSTHOOK: query: select `rate(bps)`, id, `st(rate)`, `arr(data)`, `map(data)` from parquet_bps_sink order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_bps_sink
+#### A masked pattern was here ####
+12.5	1	{"val":12.5}	[{"item":1}]	{"k1":{"code":"n1"}}
+25.0	2	{"val":25.0}	[{"item":2}]	{"k2":{"code":"n2"}}
+37.5	3	{"val":37.5}	[{"item":3}]	{"k3":{"code":"n3"}}
+PREHOOK: query: select id from parquet_bps_sink order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_bps_sink
+#### A masked pattern was here ####
+POSTHOOK: query: select id from parquet_bps_sink order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_bps_sink
+#### A masked pattern was here ####
+1
+2
+3
