@@ -42,7 +42,7 @@ public record EmbedderRegistry(Map<String, Embedder> embedders) implements AutoC
     Embedder embedder = new LocalOnnxEmbedder(inference);
     long warmupStart = System.currentTimeMillis();
     try {
-      embedder.embed(Embedder.TaskType.QUERY, "warmup");
+      embedder.embedBatch(Embedder.TaskType.QUERY, new String[] {"warmup", "Local onnx for embedding query"});
     } catch (InferenceException e) {
       throw new InitializeException("Failed to warm up embedder '" + modelName + "'", e);
     }
