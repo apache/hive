@@ -50,6 +50,21 @@ import static org.mockito.Mockito.when;
 public class TestBootstrapIndexer {
 
   @Test
+  public void estimateRemainingMsUsesWriterThroughput() {
+    assertEquals(-1, BootstrapIndexer.estimateRemainingMs(0, 1000, 5000));
+    assertEquals(0, BootstrapIndexer.estimateRemainingMs(1000, 1000, 5000));
+    assertEquals(10_000, BootstrapIndexer.estimateRemainingMs(500, 1000, 10_000));
+  }
+
+  @Test
+  public void formatRemainingRendersHumanReadableDurations() {
+    assertEquals("unknown", BootstrapIndexer.formatRemaining(-1));
+    assertEquals("45s", BootstrapIndexer.formatRemaining(45_000));
+    assertEquals("2m 30s", BootstrapIndexer.formatRemaining(150_000));
+    assertEquals("1h 5m", BootstrapIndexer.formatRemaining(3_900_000));
+  }
+
+  @Test
   public void bootstrapsAllTablesAcrossDatabases() throws Exception {
     Configuration conf = bootstrapConf();
     Table orders = InMemorySearchFixture.table("hive", "sales", "orders", "sales orders");
