@@ -25,12 +25,9 @@ import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
 
 import java.io.IOException;
-import java.nio.LongBuffer;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -43,8 +40,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * ONNX Runtime-backed embedding model (langchain4j OnnxBertBiEncoder-style pooling).
- * Single shared session; {@link #embed} is synchronized.
+ * ONNX Runtime-backed embedding model.
+ * Single shared session; {@link #embed} / {@link #embedBatch} share one ONNX run per batch.
  */
 public final class LocalOnnxEmbedder implements Embedder {
   private static final Logger LOG = LoggerFactory.getLogger(LocalOnnxEmbedder.class);
@@ -55,6 +52,7 @@ public final class LocalOnnxEmbedder implements Embedder {
   private final OrtSession session;
   private final HuggingFaceTokenizer tokenizer;
   private final Set<String> sessionInputNames;
+  private final String modelOutputName;
   private final Object inferenceLock = new Object();
   private final AtomicBoolean closed = new AtomicBoolean(false);
 
@@ -62,6 +60,7 @@ public final class LocalOnnxEmbedder implements Embedder {
     EmbedderSpec spec = config.spec();
     this.name = spec.name();
     this.modelSpec = spec;
+    this.modelOutputName = spec.modelOutputName();
     Path modelDir = spec.modelDir();
     try {
       this.ortEnv = OrtEnvironment.getEnvironment();
@@ -70,33 +69,25 @@ public final class LocalOnnxEmbedder implements Embedder {
       this.session = ortEnv.createSession(
           modelDir.resolve(InferenceConfig.MODEL_ONNX_FILE).toString(), opts);
       this.sessionInputNames = new HashSet<>(session.getInputNames());
+      Set<String> outputNames = session.getOutputNames();
+      if (!outputNames.contains(modelOutputName)) {
+        throw new OrtException(
+            "ONNX output '" + modelOutputName + "' is not in the model; available outputs: "
+                + String.join(", ", outputNames));
+      }
       this.tokenizer = HuggingFaceTokenizer.newInstance(
-          modelDir.resolve(InferenceConfig.TOKENIZER),
-          Collections.singletonMap("padding", "false"));
+          modelDir.resolve(InferenceConfig.TOKENIZER));
     } catch (OrtException e) {
       throw InitializeException.wrap("Failed to initialize ONNX embedder", e);
     }
     LOG.info(
-        "Loaded ONNX embedding model '{}' from {}, inputs {}, pooling {}",
-        name, modelDir, sessionInputNames, spec.pooling());
-  }
-
-  @Override
-  public String name() {
-    return name;
+        "Loaded ONNX embedding model '{}' from {}, inputs {}, output {}, pooling {}",
+        name, modelDir, sessionInputNames, modelOutputName, spec.pooling());
   }
 
   @Override
   public float[] embed(TaskType task, String text) throws InferenceException {
-    ensureOpen();
-    requireEmbeddableText(text);
-    synchronized (inferenceLock) {
-      try {
-        return embedLocked(task, text);
-      } catch (OrtException e) {
-        throw InferenceException.wrap("Failed to encode text", e);
-      }
-    }
+    return embedBatch(task, new String[] {text})[0];
   }
 
   @Override
@@ -105,22 +96,82 @@ public final class LocalOnnxEmbedder implements Embedder {
       return new float[0][];
     }
     ensureOpen();
-    float[][] vectors = new float[texts.length][];
-    for (int i = 0; i < texts.length; i++) {
-      vectors[i] = embed(task, texts[i]);
+    for (String text : texts) {
+      requireEmbeddableText(text);
     }
-    return vectors;
+    synchronized (inferenceLock) {
+      try {
+        return embedBatchLocked(task, texts);
+      } catch (OrtException e) {
+        throw InferenceException.wrap("Failed to encode text batch", e);
+      }
+    }
   }
 
-  private float[] embedLocked(TaskType task, String text) throws OrtException {
-    String input = modelSpec.prefixFor(task) + text;
-    List<String> tokens = tokenizer.tokenize(input);
-    if (tokens.isEmpty()) {
-      throw new OrtException("Cannot embed empty text");
+  private float[][] embedBatchLocked(TaskType task, String[] texts) throws OrtException {
+    String prefix = modelSpec.prefixFor(task);
+    String[] inputs = new String[texts.length];
+    for (int i = 0; i < texts.length; i++) {
+      inputs[i] = prefix + texts[i];
     }
-    Encoding encoding = tokenizer.encode(input, true, false);
-    float[] pooled = embedInternal(encoding.getIds(), encoding.getAttentionMask(), encoding.getIds().length);
-    return normalize(pooled);
+    Encoding[] encodings = tokenizer.batchEncode(inputs);
+    int batchSize = encodings.length;
+    long[][] inputIds = new long[batchSize][];
+    long[][] attentionMask = new long[batchSize][];
+    long[][] tokenTypeIds = new long[batchSize][];
+    for (int i = 0; i < batchSize; i++) {
+      inputIds[i] = encodings[i].getIds();
+      attentionMask[i] = encodings[i].getAttentionMask();
+      tokenTypeIds[i] = encodings[i].getTypeIds();
+    }
+
+    float[][] pooled;
+    Map<String, OnnxTensor> tensors = new HashMap<>();
+    try (OnnxTensor idsTensor = createTensor("input_ids", inputIds, tensors);
+         OnnxTensor maskTensor = createTensor("attention_mask", attentionMask, tensors);
+         OnnxTensor typeTensor = createTensor("token_type_ids", tokenTypeIds, tensors)) {
+      if (tensors.isEmpty()) {
+        throw new OrtException("ONNX model has no supported inputs: " + sessionInputNames);
+      }
+      try (OrtSession.Result result = session.run(tensors)) {
+        pooled = poolOutput(readModelOutput(result), attentionMask, batchSize);
+      }
+    }
+    float[][] normalized = new float[batchSize][];
+    for (int i = 0; i < batchSize; i++) {
+      normalized[i] = normalize(pooled[i]);
+    }
+    return normalized;
+  }
+
+  private OnnxTensor createTensor(String inputName, long[][] data,
+      Map<String, OnnxTensor> inputs) throws OrtException {
+    if (sessionInputNames.contains(inputName)) {
+      OnnxTensor onnxTensor = OnnxTensor.createTensor(ortEnv, data);
+      inputs.put(inputName, onnxTensor);
+      return onnxTensor;
+    }
+    return null;
+  }
+
+  private float[][][] readModelOutput(OrtSession.Result result) throws OrtException {
+    var output = result.get(modelOutputName);
+    if (output.isEmpty()) {
+      throw new OrtException("ONNX result missing output '" + modelOutputName + "'");
+    }
+    return (float[][][]) output.get().getValue();
+  }
+
+  private float[][] poolOutput(float[][][] tokenEmbeddings, long[][] attentionMask, int batchSize) {
+    if (tokenEmbeddings.length != batchSize) {
+      throw new IllegalStateException(
+          "ONNX batch size " + tokenEmbeddings.length + " != " + batchSize);
+    }
+    float[][] vectors = new float[batchSize][];
+    for (int i = 0; i < batchSize; i++) {
+      vectors[i] = poolTokenMatrix(tokenEmbeddings[i], attentionMask[i]);
+    }
+    return vectors;
   }
 
   static void requireEmbeddableText(String text) throws InferenceException {
@@ -128,73 +179,13 @@ public final class LocalOnnxEmbedder implements Embedder {
       throw new InferenceException("Cannot embed null or blank text");
     }
   }
-
-  private float[] embedInternal(long[] inputIds, long[] attentionMask, int seqLen) throws OrtException {
-    long[] ids = new long[seqLen];
-    long[] mask = new long[seqLen];
-    long[] tokenTypeIds = new long[seqLen];
-    System.arraycopy(inputIds, 0, ids, 0, seqLen);
-    System.arraycopy(attentionMask, 0, mask, 0, seqLen);
-
-    long[] shape = {1, seqLen};
-    OnnxTensor idsTensor = null;
-    OnnxTensor maskTensor = null;
-    OnnxTensor typeTensor = null;
-    try {
-      Map<String, OnnxTensor> inputs = new HashMap<>();
-      if (sessionInputNames.contains("input_ids")) {
-        idsTensor = OnnxTensor.createTensor(ortEnv, LongBuffer.wrap(ids), shape);
-        inputs.put("input_ids", idsTensor);
-      }
-      if (sessionInputNames.contains("attention_mask")) {
-        maskTensor = OnnxTensor.createTensor(ortEnv, LongBuffer.wrap(mask), shape);
-        inputs.put("attention_mask", maskTensor);
-      }
-      if (sessionInputNames.contains("token_type_ids")) {
-        typeTensor = OnnxTensor.createTensor(ortEnv, LongBuffer.wrap(tokenTypeIds), shape);
-        inputs.put("token_type_ids", typeTensor);
-      }
-      if (inputs.isEmpty()) {
-        throw new OrtException("ONNX model has no supported inputs: " + sessionInputNames);
-      }
-      try (OrtSession.Result result = session.run(inputs)) {
-        return poolOutput(result.get(0).getValue());
-      }
-    } finally {
-      closeQuietly(typeTensor);
-      closeQuietly(maskTensor);
-      closeQuietly(idsTensor);
-    }
-  }
-
-  private static void closeQuietly(OnnxTensor tensor) {
-    if (tensor != null) {
-      tensor.close();
-    }
-  }
-
-  private float[] poolOutput(Object value) {
-    if (value instanceof float[][][] tokenEmbeddings) {
-      return poolTokenMatrix(tokenEmbeddings[0]);
-    }
-    if (value instanceof float[][] matrix) {
-      if (matrix.length == 1) {
-        return matrix[0].clone();
-      }
-      return poolTokenMatrix(matrix);
-    }
-    if (value instanceof float[] vector) {
-      return vector.clone();
-    }
-    throw new IllegalStateException("Unsupported ONNX embedding output type: " + value.getClass());
-  }
-
-  private float[] poolTokenMatrix(float[][] tokenRows) {
+  
+  private float[] poolTokenMatrix(float[][] tokenRows, long[] attentionMask) {
     if (tokenRows.length == 0) {
       throw new IllegalStateException("ONNX embedding returned zero token rows");
     }
     return switch (modelSpec.pooling()) {
-      case MEAN -> meanPool(tokenRows);
+      case MEAN -> meanPool(tokenRows, attentionMask);
       case CLS -> clsPool(tokenRows);
     };
   }
@@ -203,17 +194,22 @@ public final class LocalOnnxEmbedder implements Embedder {
     return tokenRows[0].clone();
   }
 
-  static float[] meanPool(float[][] vectors) {
+  static float[] meanPool(float[][] vectors, long[] attentionMask) {
     int numVectors = vectors.length;
+    int activeTokens = 0;
     int vectorLength = vectors[0].length;
     float[] averagedVector = new float[vectorLength];
-    for (float[] vector : vectors) {
+    for (int i = 0; i < numVectors; i++) {
+      if (attentionMask[i] == 0) {
+        continue;
+      }
+      activeTokens++;
       for (int j = 0; j < vectorLength; j++) {
-        averagedVector[j] += vector[j];
+        averagedVector[j] += vectors[i][j];
       }
     }
     for (int j = 0; j < vectorLength; j++) {
-      averagedVector[j] /= numVectors;
+      averagedVector[j] /= activeTokens;
     }
     return averagedVector;
   }
@@ -254,5 +250,10 @@ public final class LocalOnnxEmbedder implements Embedder {
       }
     }
     LOG.debug("Closed embedding model '{}'", name);
+  }
+
+  @Override
+  public String name() {
+    return name;
   }
 }
