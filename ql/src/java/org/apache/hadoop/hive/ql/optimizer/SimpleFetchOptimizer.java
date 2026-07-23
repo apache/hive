@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.ContentSummaryInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -148,8 +149,14 @@ public class SimpleFetchOptimizer extends Transform {
     if (fetch != null && checkThreshold(fetch, limit, pctx)) {
       FetchWork fetchWork = fetch.convertToWork();
       FetchTask fetchTask = (FetchTask) TaskFactory.get(fetchWork);
-      fetchTask.setCachingEnabled(HiveConf.getBoolVar(pctx.getConf(),
-              HiveConf.ConfVars.HIVE_FETCH_TASK_CACHING));
+      boolean cachingEnabled = HiveConf.getBoolVar(pctx.getConf(),
+          HiveConf.ConfVars.HIVE_FETCH_TASK_CACHING);
+      if (cachingEnabled && !AcidUtils.isTransactionalTable(fetch.table)) {
+        LOG.debug("Fetch task caching is enabled but table {} is not transactional. " +
+            "Caching is only supported for ACID tables. Disabling.", fetch.table.getCompleteName());
+        cachingEnabled = false;
+      }
+      fetchTask.setCachingEnabled(cachingEnabled);
       fetchWork.setSink(fetch.completed(pctx, fetchWork));
       fetchWork.setSource(source);
       fetchWork.setLimit(limit);
