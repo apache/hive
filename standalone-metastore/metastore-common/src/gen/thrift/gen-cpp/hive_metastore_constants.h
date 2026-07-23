@@ -47,7 +47,6 @@ class hive_metastoreConstants {
   std::string NO_AUTO_COMPACT;
   std::string TABLE_TRANSACTIONAL_PROPERTIES;
   std::string TABLE_BUCKETING_VERSION;
-  std::string DRUID_CONFIG_PREFIX;
   std::string JDBC_CONFIG_PREFIX;
   std::string TABLE_IS_CTAS;
   std::string TABLE_IS_CTLT;
