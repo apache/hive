@@ -61,6 +61,7 @@ public class ReplTableWriteIdStateFunction implements TransactionalFunction<Void
   public Void execute(MultiDataSourceJdbcResource jdbcResource) throws MetaException {
     long openTxnTimeOutMillis = MetastoreConf.getTimeVar(jdbcResource.getConf(), MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS);
 
+    String catName = rqst.getCatName().toLowerCase();
     String dbName = rqst.getDbName().toLowerCase();
     String tblName = rqst.getTableName().toLowerCase();
     ValidWriteIdList validWriteIdList = ValidReaderWriteIdList.fromValue(rqst.getValidWriteIdlist());
@@ -69,16 +70,17 @@ public class ReplTableWriteIdStateFunction implements TransactionalFunction<Void
     // Check if this txn state is already replicated for this given table. If yes, then it is
     // idempotent case and just return.
     boolean found = Boolean.TRUE.equals(npjdbcTemplate.query(
-        "SELECT \"NWI_NEXT\" FROM \"NEXT_WRITE_ID\" WHERE \"NWI_DATABASE\" = :dbName AND \"NWI_TABLE\" = :tableName", 
+        "SELECT \"NWI_NEXT\" FROM \"NEXT_WRITE_ID\" WHERE \"NWI_CATALOG\" = :catName AND \"NWI_DATABASE\" = :dbName AND \"NWI_TABLE\" = :tableName",
         new MapSqlParameterSource()
+            .addValue("catName", catName)
             .addValue("dbName", dbName)
             .addValue("tableName", tblName),
         ResultSet::next
     ));
 
     if (found) {
-      LOG.info("Idempotent flow: WriteId state <{}> is already applied for the table: {}.{}",
-          validWriteIdList, dbName, tblName);
+      LOG.info("Idempotent flow: WriteId state <{}> is already applied for the table: {}.{}.{}",
+          validWriteIdList, catName, dbName, tblName);
       return null;
     }
 
@@ -98,18 +100,19 @@ public class ReplTableWriteIdStateFunction implements TransactionalFunction<Void
       // Map each aborted write id with each allocated txn.
       List<Object[]> params = new ArrayList<>(txnIds.size());
       for (int i = 0; i < txnIds.size(); i++) {
-        params.add(new Object[] {txnIds.get(i), dbName, tblName, abortedWriteIds.get(i)});
+        params.add(new Object[] {txnIds.get(i), catName, dbName, tblName, abortedWriteIds.get(i)});
         LOG.info("Allocated writeID: {} for txnId: {}", abortedWriteIds.get(i), txnIds.get(i));
       }
       
       int maxBatchSize = MetastoreConf.getIntVar(jdbcResource.getConf(), MetastoreConf.ConfVars.JDBC_MAX_BATCH_SIZE);
       jdbcResource.getJdbcTemplate().getJdbcTemplate().batchUpdate(
-          "INSERT INTO \"TXN_TO_WRITE_ID\" (\"T2W_TXNID\", \"T2W_DATABASE\", \"T2W_TABLE\", \"T2W_WRITEID\") VALUES (?, ?, ?, ?)",
+          "INSERT INTO \"TXN_TO_WRITE_ID\" (\"T2W_TXNID\", \"T2W_CATALOG\", \"T2W_DATABASE\", \"T2W_TABLE\", \"T2W_WRITEID\") VALUES (?, ?, ?, ?, ?)",
           params, maxBatchSize, (PreparedStatement ps, Object[] statementParams) -> {
             ps.setLong(1, (Long)statementParams[0]);
             ps.setString(2, statementParams[1].toString());
             ps.setString(3, statementParams[2].toString());
-            ps.setLong(4, (Long)statementParams[3]);
+            ps.setString(4, statementParams[3].toString());
+            ps.setLong(5, (Long)statementParams[4]);
           });
 
       // Abort all the allocated txns so that the mapped write ids are referred as aborted ones.
@@ -125,17 +128,19 @@ public class ReplTableWriteIdStateFunction implements TransactionalFunction<Void
 
     // First allocation of write id (hwm+1) should add the table to the next_write_id meta table.
     npjdbcTemplate.update(
-        "INSERT INTO \"NEXT_WRITE_ID\" (\"NWI_DATABASE\", \"NWI_TABLE\", \"NWI_NEXT\") VALUES (:dbName, :tableName, :nextWriteId)",
+        "INSERT INTO \"NEXT_WRITE_ID\" (\"NWI_CATALOG\", \"NWI_DATABASE\", \"NWI_TABLE\", \"NWI_NEXT\") VALUES (:catName, :dbName, :tableName, :nextWriteId)",
         new MapSqlParameterSource()
+            .addValue("catName", catName)
             .addValue("dbName", dbName)
             .addValue("tableName", tblName)
             .addValue("nextWriteId", nextWriteId));
-    LOG.info("WriteId state <{}> is applied for the table: {}.{}", validWriteIdList, dbName, tblName);
+    LOG.info("WriteId state <{}> is applied for the table: {}.{}.{}", validWriteIdList, catName, dbName, tblName);
 
     // Schedule Major compaction on all the partitions/table to clean aborted data
     if (numAbortedWrites > 0) {
       CompactionRequest compactRqst = new CompactionRequest(rqst.getDbName(), rqst.getTableName(),
           CompactionType.MAJOR);
+      compactRqst.setCatName(rqst.getCatName());
       if (rqst.isSetPartNames()) {
         for (String partName : rqst.getPartNames()) {
           compactRqst.setPartitionname(partName);

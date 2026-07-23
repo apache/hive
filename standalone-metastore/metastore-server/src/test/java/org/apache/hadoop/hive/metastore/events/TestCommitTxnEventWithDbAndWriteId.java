@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.events;
 
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
@@ -45,12 +46,12 @@ public class TestCommitTxnEventWithDbAndWriteId {
 
     @Test
     public void testSerializeDeserialize() {
-        
+        List<String> catalogs = Arrays.asList(Warehouse.DEFAULT_CATALOG_NAME, Warehouse.DEFAULT_CATALOG_NAME);
         List<String> databases = Arrays.asList("db1", "db22");
         List<Long> writeIds = Arrays.asList(1L, 2L);
-        CommitTxnEvent event = new CommitTxnEvent(999L, TxnType.DEFAULT, null, databases, writeIds);
+        CommitTxnEvent event = new CommitTxnEvent(999L, TxnType.DEFAULT, null, catalogs, databases, writeIds);
         CommitTxnMessage msg =
-                MessageBuilder.getInstance().buildCommitTxnMessage(event.getTxnId(), event.getDatabases(), event.getWriteId());
+                MessageBuilder.getInstance().buildCommitTxnMessage(event.getTxnId(), event.getCatalogs(), event.getDatabases(), event.getWriteId());
         JSONMessageEncoder msgEncoder = new JSONMessageEncoder();
         String json = msgEncoder.getSerializer().serialize(msg);
 

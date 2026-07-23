@@ -36,7 +36,7 @@ public class JSONUpdateTableColumnStatMessage extends UpdateTableColumnStatMessa
   private Long writeId, timestamp;
 
   @JsonProperty
-  private String server, servicePrincipal, database;
+  private String server, servicePrincipal, catalog, database;
 
   @JsonProperty
   private String colStatsJson;
@@ -60,6 +60,7 @@ public class JSONUpdateTableColumnStatMessage extends UpdateTableColumnStatMessa
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.writeId = writeId;
+    this.catalog = colStats.getStatsDesc().getCatName();
     this.database = colStats.getStatsDesc().getDbName();
     try {
       this.colStatsJson = MessageBuilder.createTableColumnStatJson(colStats);
@@ -73,6 +74,11 @@ public class JSONUpdateTableColumnStatMessage extends UpdateTableColumnStatMessa
   @Override
   public Long getTimestamp() {
     return timestamp;
+  }
+
+  @Override
+  public String getCat() {
+    return catalog;
   }
 
   @Override

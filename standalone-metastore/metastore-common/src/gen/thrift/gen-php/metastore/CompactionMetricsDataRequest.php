@@ -42,6 +42,11 @@ class CompactionMetricsDataRequest
             'type' => TType::I32,
             'class' => '\metastore\CompactionMetricsMetricType',
         ),
+        5 => array(
+            'var' => 'catName',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -60,6 +65,10 @@ class CompactionMetricsDataRequest
      * @var int
      */
     public $type = null;
+    /**
+     * @var string
+     */
+    public $catName = "hive";
 
     public function __construct($vals = null)
     {
@@ -75,6 +84,9 @@ class CompactionMetricsDataRequest
             }
             if (isset($vals['type'])) {
                 $this->type = $vals['type'];
+            }
+            if (isset($vals['catName'])) {
+                $this->catName = $vals['catName'];
             }
         }
     }
@@ -126,6 +138,13 @@ class CompactionMetricsDataRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 5:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->catName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -158,6 +177,11 @@ class CompactionMetricsDataRequest
         if ($this->type !== null) {
             $xfer += $output->writeFieldBegin('type', TType::I32, 4);
             $xfer += $output->writeI32($this->type);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->catName !== null) {
+            $xfer += $output->writeFieldBegin('catName', TType::STRING, 5);
+            $xfer += $output->writeString($this->catName);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

@@ -55,7 +55,8 @@ public class InsertHandler extends AbstractMessageHandler {
     InsertMessage insertMessage = deserializer.getInsertMessage(withinContext.dmd.getPayload());
     String actualDbName =
         withinContext.isDbNameEmpty() ? insertMessage.getDB() : withinContext.dbName;
-    Context currentContext = new Context(withinContext, actualDbName,
+    String actualCatName = withinContext.isCatNameEmpty() ? insertMessage.getCat() : withinContext.catName;
+    Context currentContext = new Context(withinContext, actualCatName, actualDbName,
                                          withinContext.getDumpDirectory(), withinContext.getMetricCollector());
 
     // Piggybacking in Import logic for now

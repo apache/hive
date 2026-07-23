@@ -267,6 +267,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       replicationSpec.setReplSpecType(ReplicationSpec.Type.IMPORT);
     }
 
+    String catname = rv.getTable().getCatName();
     String dbname = rv.getTable().getDbName();
     if ((overrideDBName != null) && (!overrideDBName.isEmpty())) {
       // If the parsed statement contained a db.tablename specification, prefer that.
@@ -278,7 +279,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     ImportTableDesc tblDesc;
     org.apache.hadoop.hive.metastore.api.Table tblObj = rv.getTable();
     try {
-      tblDesc = getBaseCreateTableDescFromTable(dbname, tblObj);
+      tblDesc = getBaseCreateTableDescFromTable(catname, dbname, tblObj);
     } catch (Exception e) {
       throw new HiveException(e);
     }
@@ -320,7 +321,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     for (Partition partition : partitions) {
       // TODO: this should ideally not create AddPartitionDesc per partition
       AlterTableAddPartitionDesc partsDesc =
-              getBaseAddPartitionDescFromPartition(fromPath, dbname, tblDesc, partition,
+              getBaseAddPartitionDescFromPartition(fromPath, catname, dbname, tblDesc, partition,
                       replicationSpec, x.getConf());
       partitionDescs.add(partsDesc);
     }
@@ -388,7 +389,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     return tableExists;
   }
 
-  private static AlterTableAddPartitionDesc getBaseAddPartitionDescFromPartition(Path fromPath, String dbName,
+  private static AlterTableAddPartitionDesc getBaseAddPartitionDescFromPartition(Path fromPath, String catName, String dbName,
       ImportTableDesc tblDesc, Partition partition, ReplicationSpec replicationSpec, HiveConf conf)
           throws MetaException, SemanticException {
     Map<String, String> partitionSpec = EximUtil.makePartSpec(tblDesc.getPartCols(), partition.getValues());
@@ -412,14 +413,14 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         partitionSpec, location, partition.getParameters(), sd.getInputFormat(), sd.getOutputFormat(),
         sd.getNumBuckets(), sd.getCols(), sd.getSerdeInfo().getSerializationLib(), sd.getSerdeInfo().getParameters(),
         sd.getBucketCols(), sd.getSortCols(), null, writeId);
-    return new AlterTableAddPartitionDesc(dbName, tblDesc.getTableName(), true, ImmutableList.of(partitionDesc));
+    return new AlterTableAddPartitionDesc(catName, dbName, tblDesc.getTableName(), true, ImmutableList.of(partitionDesc));
   }
 
-  private static ImportTableDesc getBaseCreateTableDescFromTable(String dbName,
+  private static ImportTableDesc getBaseCreateTableDescFromTable(String catName, String dbName,
                                                                  org.apache.hadoop.hive.metastore.api.Table tblObj)
           throws Exception {
     Table table = new Table(tblObj);
-    return new ImportTableDesc(dbName, table);
+    return new ImportTableDesc(catName, dbName, table);
   }
 
   private static Task<?> loadTable(URI fromURI, ImportTableDesc tblDesc, boolean replace, Path tgtPath,

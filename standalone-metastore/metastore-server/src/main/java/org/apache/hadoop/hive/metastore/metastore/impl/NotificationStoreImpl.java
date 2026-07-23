@@ -398,10 +398,13 @@ public class NotificationStoreImpl extends RawStoreBundle implements Notificatio
   }
 
   @Override
-  public List<WriteEventInfo> getAllWriteEventInfo(long txnId, String dbName, String tableName) throws MetaException {
+  public List<WriteEventInfo> getAllWriteEventInfo(long txnId, String catName, String dbName, String tableName) throws MetaException {
     List<WriteEventInfo> writeEventInfoList = null;
     List<String> parameterVals = new ArrayList<>();
     StringBuilder filterBuilder = new StringBuilder(" txnId == " + Long.toString(txnId));
+    if (catName != null && !"*".equals(catName)) { // * means get all catalogs, so no need to add filter
+      appendSimpleCondition(filterBuilder, "catalog", new String[]{catName}, parameterVals);
+    }
     if (dbName != null && !"*".equals(dbName)) { // * means get all database, so no need to add filter
       appendSimpleCondition(filterBuilder, "database", new String[]{dbName}, parameterVals);
     }
@@ -409,7 +412,7 @@ public class NotificationStoreImpl extends RawStoreBundle implements Notificatio
       appendSimpleCondition(filterBuilder, "table", new String[]{tableName}, parameterVals);
     }
     Query query = pm.newQuery(MTxnWriteNotificationLog.class, filterBuilder.toString());
-    query.setOrdering("database,table ascending");
+    query.setOrdering("catalog,database,table ascending");
     List<MTxnWriteNotificationLog> mplans = (List<MTxnWriteNotificationLog>) query.executeWithArray(
         parameterVals.toArray(new String[0]));
     pm.retrieveAll(mplans);
@@ -418,6 +421,7 @@ public class NotificationStoreImpl extends RawStoreBundle implements Notificatio
       for (MTxnWriteNotificationLog mplan : mplans) {
         WriteEventInfo writeEventInfo = new WriteEventInfo(mplan.getWriteId(), mplan.getDatabase(),
             mplan.getTable(), mplan.getFiles());
+        writeEventInfo.setCatalog(mplan.getCatalog());
         writeEventInfo.setPartition(mplan.getPartition());
         writeEventInfo.setPartitionObj(mplan.getPartObject());
         writeEventInfo.setTableObj(mplan.getTableObject());

@@ -672,8 +672,14 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   @Override
   public void replTableWriteIdState(String validWriteIdList, String dbName, String tableName, List<String> partNames)
           throws LockException {
+    replTableWriteIdState(validWriteIdList, HiveUtils.getCurrentCatalogOrDefault(conf), dbName, tableName, partNames);
+  }
+
+  @Override
+  public void replTableWriteIdState(String validWriteIdList, String catName, String dbName, String tableName, List<String> partNames)
+      throws LockException {
     try {
-      getMS().replTableWriteIdState(validWriteIdList, dbName, tableName, partNames);
+      getMS().replTableWriteIdState(validWriteIdList, catName, dbName, tableName, partNames);
     } catch (TException e) {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
     }

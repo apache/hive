@@ -2385,8 +2385,20 @@ public interface RawStore extends Configurable {
    * @param dbName the name of db for which dump is being taken
    * @param tableName the name of the table for which the dump is being taken
    */
+  @Deprecated
   default List<WriteEventInfo> getAllWriteEventInfo(long txnId, String dbName, String tableName) throws MetaException {
-    return unwrap(NotificationStore.class).getAllWriteEventInfo(txnId, dbName, tableName);
+    return getAllWriteEventInfo(txnId, Warehouse.DEFAULT_CATALOG_NAME, dbName, tableName);
+  }
+
+  /**
+   * Get all write events for a specific transaction .
+   * @param txnId get all the events done by this transaction
+   * @param catName the name of catalog for which dump is being taken
+   * @param dbName the name of db for which dump is being taken
+   * @param tableName the name of the table for which the dump is being taken
+   */
+  default List<WriteEventInfo> getAllWriteEventInfo(long txnId, String catName, String dbName, String tableName) throws MetaException {
+    return unwrap(NotificationStore.class).getAllWriteEventInfo(txnId, catName, dbName, tableName);
   }
 
   /**

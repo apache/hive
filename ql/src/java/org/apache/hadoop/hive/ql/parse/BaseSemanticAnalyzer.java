@@ -523,14 +523,14 @@ public abstract class BaseSemanticAnalyzer {
         throw new SemanticException(ASTErrorUtils.getMsg(
             ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(), tabNameNode));
       }
-      return HiveTableName.ofNullable(tableName, dbName);
+      return HiveTableName.ofNullable(catalogName, tableName, dbName, null);
     }
     final String tableName = unescapeIdentifier(tabNameNode.getChild(0).getText());
     if (tableName.contains(".")) {
       throw new SemanticException(ASTErrorUtils.getMsg(
           ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(), tabNameNode));
     }
-    return HiveTableName.ofNullable(tableName);
+    return HiveTableName.ofNullable(catalogName, tableName, SessionState.get().getCurrentDatabase(), null);
   }
 
   /**
@@ -2178,14 +2178,16 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   /**
-   * @return table name in db.table form with proper quoting/escaping to be used in a SQL statement
+   * @return table name in cat.db.table form with proper quoting/escaping to be used in a SQL statement
    */
   protected String getFullTableNameForSQL(ASTNode n) throws SemanticException {
     switch (n.getType()) {
       case HiveParser.TOK_TABNAME:
-        TableName tableName = getQualifiedTableName(n);
-        return HiveTableName.ofNullable(HiveUtils.unparseIdentifier(tableName.getTable(), this.conf),
-                HiveUtils.unparseIdentifier(tableName.getDb(), this.conf), tableName.getTableMetaRef()).getNotEmptyDbTable();
+        TableName tableName = getQualifiedTableName(n, HiveUtils.getCurrentCatalogOrDefault(this.conf));
+        return HiveTableName.ofNullable(HiveUtils.unparseIdentifier(tableName.getCat(), this.conf),
+            HiveUtils.unparseIdentifier(tableName.getTable(), this.conf),
+                HiveUtils.unparseIdentifier(tableName.getDb(), this.conf),
+            tableName.getTableMetaRef()).getNotEmptyDbTable();
       case HiveParser.TOK_TABREF:
         return getFullTableNameForSQL((ASTNode) n.getChild(0));
       default:
