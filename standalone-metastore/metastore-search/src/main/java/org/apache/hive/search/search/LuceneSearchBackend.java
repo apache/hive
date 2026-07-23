@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hive.search.config.SearchConfig;
+import org.apache.hive.search.config.SearchOptions;
 import org.apache.hive.search.exception.IndexNotReadyException;
 import org.apache.hive.search.exception.InitializeException;
 import org.apache.hive.search.exception.SearchException;
@@ -41,12 +41,12 @@ public final class LuceneSearchBackend implements SearchBackend {
   private static final Logger LOG = LoggerFactory.getLogger(LuceneSearchBackend.class);
   private IndexSession session;
   private Future<Void> future;
-  private SearchConfig searchConfig;
+  private SearchOptions searchConfig;
 
   @Override
   public void initialize(Configuration configuration)
       throws InitializeException, IOException {
-    searchConfig = new SearchConfig(configuration);
+    searchConfig = new SearchOptions(configuration);
     session = new IndexSession(configuration);
     ExecutorService initThread = Executors.newFixedThreadPool(1);
     future = initThread.submit(() -> {

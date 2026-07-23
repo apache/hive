@@ -25,10 +25,10 @@ import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hive.search.config.IndexConfig;
-import org.apache.hive.search.config.IndexStoreConfig;
-import org.apache.hive.search.config.InferenceConfig;
-import org.apache.hive.search.config.SearchConfig;
+import org.apache.hive.search.config.IndexOptions;
+import org.apache.hive.search.config.IndexStoreOptions;
+import org.apache.hive.search.config.InferenceOptions;
+import org.apache.hive.search.config.SearchOptions;
 import org.apache.hive.search.exception.SearchException;
 import org.apache.hive.search.metastore.MetastoreTableMapper;
 import org.apache.hive.search.metastore.SearchTextSegment;
@@ -40,20 +40,20 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 public record IndexMapping(
     String indexName, Configuration configuration, Map<String, FieldSchema> fields) {
 
-  public IndexConfig config() {
-    return new IndexConfig(configuration);
+  public IndexOptions config() {
+    return new IndexOptions(configuration);
   }
 
-  public IndexStoreConfig store() {
-    return new IndexStoreConfig(configuration, indexName);
+  public IndexStoreOptions store() {
+    return new IndexStoreOptions(configuration, indexName);
   }
 
-  public InferenceConfig inference() {
-    return new InferenceConfig(configuration);
+  public InferenceOptions inference() {
+    return new InferenceOptions(configuration);
   }
 
-  public SearchConfig search() {
-    return new SearchConfig(configuration);
+  public SearchOptions search() {
+    return new SearchOptions(configuration);
   }
 
   public FieldSchema fieldSchema(String fieldName) {

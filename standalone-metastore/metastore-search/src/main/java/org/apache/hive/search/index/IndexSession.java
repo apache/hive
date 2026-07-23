@@ -25,9 +25,9 @@ import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hive.search.exception.IndexNotReadyException;
 import org.apache.hive.search.exception.InitializeException;
-import org.apache.hive.search.config.IndexConfig;
-import org.apache.hive.search.config.InferenceConfig;
-import org.apache.hive.search.config.SearchConfig;
+import org.apache.hive.search.config.IndexOptions;
+import org.apache.hive.search.config.InferenceOptions;
+import org.apache.hive.search.config.SearchOptions;
 import org.apache.hive.search.inference.EmbedderRegistry;
 import org.apache.hive.search.metastore.MetastoreIndexer;
 import org.apache.hive.search.metastore.MetastoreIndexSchema;
@@ -45,7 +45,7 @@ public final class IndexSession implements AutoCloseable {
   private final Configuration configuration;
   private final IndexManager indexManager;
   private final EmbedderRegistry modelRegistry;
-  private final SearchConfig searchConfig;
+  private final SearchOptions searchConfig;
 
   private BayesianScoreEstimator.Parameters parameters;
   private MetastoreIndexer metastoreIndexer;
@@ -57,9 +57,9 @@ public final class IndexSession implements AutoCloseable {
   public IndexSession(Configuration configuration)
       throws InitializeException, IOException {
     this.configuration = configuration;
-    IndexConfig indexConfig = new IndexConfig(configuration);
-    this.searchConfig = new SearchConfig(configuration);
-    InferenceConfig inferenceConfig = new InferenceConfig(configuration);
+    IndexOptions indexConfig = new IndexOptions(configuration);
+    this.searchConfig = new SearchOptions(configuration);
+    InferenceOptions inferenceConfig = new InferenceOptions(configuration);
     this.indexManager = IndexManager.open(
         MetastoreIndexSchema.defaultHiveTablesMapping(indexConfig.indexName(),
             inferenceConfig.embedderName(), configuration), configuration);

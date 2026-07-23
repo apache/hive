@@ -52,7 +52,9 @@ public record EmbedderSpec(
     /** Average all token embeddings (E5 and many ST exports). */
     MEAN,
     /** First token ([CLS]). */
-    CLS;
+    CLS,
+    /** Last non-padding token. */
+    LAST;
 
     public static Pooling fromConfig(String value) {
       if (StringUtils.isBlank(value)) {
@@ -61,8 +63,9 @@ public record EmbedderSpec(
       return switch (value.trim().toLowerCase()) {
         case "mean", "average" -> MEAN;
         case "cls", "first" -> CLS;
+        case "last", "eos" -> LAST;
         default -> throw new IllegalArgumentException(
-            "Unknown embedding pooling '" + value + "'; use mean or cls");
+            "Unknown embedding pooling '" + value + "'; use mean, cls, or last");
       };
     }
   }

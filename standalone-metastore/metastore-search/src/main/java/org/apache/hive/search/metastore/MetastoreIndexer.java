@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
 import org.apache.hadoop.hive.metastore.leader.LeaderElection;
 import org.apache.hive.search.mapping.TableDocument;
 import org.apache.hive.search.exception.IndexNotHealthyException;
-import org.apache.hive.search.config.IndexConfig;
+import org.apache.hive.search.config.IndexOptions;
 import org.apache.hive.search.index.Indexer;
 import org.apache.hive.search.index.IndexManager;
 import org.apache.hive.search.index.store.IndexManifest;
@@ -226,10 +226,10 @@ public final class MetastoreIndexer implements AutoCloseable {
     private volatile Thread replicateThread;
     private volatile boolean started = false;
     private final Thread commitThread;
-    private final IndexConfig indexConfig;
+    private final IndexOptions indexConfig;
 
     public FlushIndexListener(Configuration configuration) {
-      this.indexConfig = new IndexConfig(configuration);
+      this.indexConfig = new IndexOptions(configuration);
       this.commitThread = getIndexCommitThread();
     }
 

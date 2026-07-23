@@ -28,7 +28,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hive.search.exception.InitializeException;
 import org.apache.hive.search.inference.EmbedderSpec;
 
-public record InferenceConfig(Configuration configuration) {
+public record InferenceOptions(Configuration configuration) {
   public static final String MODEL_ONNX_FILE = "model.onnx";
   public static final String TOKENIZER = "tokenizer.json";
 
@@ -40,7 +40,7 @@ public record InferenceConfig(Configuration configuration) {
   public static final String EMBEDDER_PROMPT_DOC = "metastore.inference.embedder.prompt.doc";
   public static final String EMBEDDER_PROMPT_QUERY = "metastore.inference.embedder.prompt.query";
 
-  /** Token pooling for ONNX output: {@code mean} (default) or {@code cls}. */
+  /** Token pooling for ONNX output: {@code mean} (default), {@code cls}, or {@code last}. */
   public static final String EMBEDDER_POOLING = "metastore.inference.embedder.pooling";
 
   /** ONNX graph output tensor for token embeddings */

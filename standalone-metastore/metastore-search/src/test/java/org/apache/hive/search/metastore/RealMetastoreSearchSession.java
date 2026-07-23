@@ -23,10 +23,10 @@ import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder;
-import org.apache.hive.search.config.IndexConfig;
-import org.apache.hive.search.config.IndexStoreConfig;
-import org.apache.hive.search.config.InferenceConfig;
-import org.apache.hive.search.config.SearchConfig;
+import org.apache.hive.search.config.IndexOptions;
+import org.apache.hive.search.config.IndexStoreOptions;
+import org.apache.hive.search.config.InferenceOptions;
+import org.apache.hive.search.config.SearchOptions;
 import org.apache.hive.search.index.Indexer;
 import org.apache.hive.search.index.IndexManager;
 import org.apache.hive.search.index.store.LocalStateClient;
@@ -59,7 +59,7 @@ public final class RealMetastoreSearchSession implements AutoCloseable {
   private final Indexer indexer;
   private final EmbedderRegistry modelRegistry;
   private final MetastoreIndexer metastoreIndexer;
-  private final SearchConfig searchConfig;
+  private final SearchOptions searchConfig;
 
   private SearcherManager searcherManager;
   private BayesianScoreEstimator.Parameters bayesianParameters;
@@ -69,7 +69,7 @@ public final class RealMetastoreSearchSession implements AutoCloseable {
       Indexer indexer,
       EmbedderRegistry modelRegistry,
       MetastoreIndexer metastoreIndexer,
-      SearchConfig searchConfig) {
+      SearchOptions searchConfig) {
     this.indexManager = indexManager;
     this.indexer = indexer;
     this.modelRegistry = modelRegistry;
@@ -100,7 +100,7 @@ public final class RealMetastoreSearchSession implements AutoCloseable {
     MetastoreIndexer metastoreIndexer =
         new MetastoreIndexer(conf, indexManager, indexer, sessionClient, false);
     return new RealMetastoreSearchSession(
-        indexManager, indexer, modelRegistry, metastoreIndexer, new SearchConfig(conf));
+        indexManager, indexer, modelRegistry, metastoreIndexer, new SearchOptions(conf));
   }
 
   public static InMemoryIndexStateClient newSharedRemoteBackup() {
@@ -113,18 +113,18 @@ public final class RealMetastoreSearchSession implements AutoCloseable {
 
   private static Configuration searchConfiguration(Configuration hmsConf) {
     Configuration conf = new Configuration(false);
-    conf.setBoolean(IndexStoreConfig.MEMORY, true);
-    conf.set(IndexConfig.INDEX_NAME, "test_index");
-    conf.set(InferenceConfig.EMBEDDER_NAME, MODEL_NAME);
-    conf.setInt(IndexConfig.BOOTSTRAP_FETCH_THREADS, 2);
-    conf.setInt(IndexConfig.BOOTSTRAP_QUEUE_DEPTH, 8);
-    conf.setLong(IndexConfig.BOOTSTRAP_PROGRESS_INTERVAL_MS, Long.MAX_VALUE);
-    conf.setLong(IndexConfig.EVENT_FAILURE_BACKOFF_MS, 0L);
-    conf.setLong(IndexConfig.FLUSH_INTERVAL_MS, 60_000L);
-    conf.setLong(IndexConfig.INDEX_SYNC_INTERVAL, 60_000L);
-    conf.setInt(SearchConfig.BAYESIAN_SAMPLES, 8);
-    conf.setInt(SearchConfig.BAYESIAN_TOKENS_PER_QUERY, 3);
-    conf.setLong(SearchConfig.BAYESIAN_SEED, 1L);
+    conf.setBoolean(IndexStoreOptions.MEMORY, true);
+    conf.set(IndexOptions.INDEX_NAME, "test_index");
+    conf.set(InferenceOptions.EMBEDDER_NAME, MODEL_NAME);
+    conf.setInt(IndexOptions.BOOTSTRAP_FETCH_THREADS, 2);
+    conf.setInt(IndexOptions.BOOTSTRAP_QUEUE_DEPTH, 8);
+    conf.setLong(IndexOptions.BOOTSTRAP_PROGRESS_INTERVAL_MS, Long.MAX_VALUE);
+    conf.setLong(IndexOptions.EVENT_FAILURE_BACKOFF_MS, 0L);
+    conf.setLong(IndexOptions.FLUSH_INTERVAL_MS, 60_000L);
+    conf.setLong(IndexOptions.INDEX_SYNC_INTERVAL, 60_000L);
+    conf.setInt(SearchOptions.BAYESIAN_SAMPLES, 8);
+    conf.setInt(SearchOptions.BAYESIAN_TOKENS_PER_QUERY, 3);
+    conf.setLong(SearchOptions.BAYESIAN_SEED, 1L);
     MetastoreConf.setVar(conf, ConfVars.EVENT_MESSAGE_FACTORY, JSONMessageEncoder.class.getName());
     MetastoreConf.setBoolVar(conf, ConfVars.CAPABILITY_CHECK, false);
     MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, MetastoreConf.getVar(hmsConf, ConfVars.THRIFT_URIS));

@@ -30,6 +30,28 @@ import static org.junit.Assert.assertEquals;
 public class TestLocalOnnxEmbedder {
 
   @Test
+  public void positionIdsFromMaskMatchesCumsumMinusOne() {
+    assertArrayEquals(
+        new long[] {0L, 1L, 2L},
+        LocalOnnxEmbedder.positionIdsFromMask(new long[] {1L, 1L, 1L}));
+    assertArrayEquals(
+        new long[] {0L, 1L, 2L, 0L, 0L},
+        LocalOnnxEmbedder.positionIdsFromMask(new long[] {1L, 1L, 1L, 0L, 0L}));
+  }
+
+  @Test
+  public void lastPoolUsesLastNonPaddingToken() {
+    float[][] tokenEmbeddings = {
+        {1f, 0f},
+        {3f, 0f},
+        {9f, 9f}
+    };
+    long[] mask = {1L, 1L, 0L};
+
+    assertArrayEquals(new float[] {3f, 0f}, LocalOnnxEmbedder.lastPool(tokenEmbeddings, mask), 0.001f);
+  }
+
+  @Test
   public void clsPoolUsesFirstTokenVector() {
     float[][] tokenEmbeddings = {
         {1f, 2f},

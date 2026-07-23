@@ -21,7 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hive.search.config.SearchConfig;
+import org.apache.hive.search.config.SearchOptions;
 import org.apache.hive.search.mapping.FieldSchema;
 import org.apache.hive.search.mapping.IndexMapping;
 import org.apache.hive.search.mapping.SearchParams;
@@ -43,7 +43,7 @@ public final class MetastoreIndexSchema {
     fields.put(
         MetastoreTableMapper.FIELD_COLUMN_COMMENTS,
         lexicalText(MetastoreTableMapper.FIELD_COLUMN_COMMENTS));
-    int segmentMax = new SearchConfig(conf).getSemanticSegmentMax();
+    int segmentMax = new SearchOptions(conf).getSemanticSegmentMax();
     for (int i = 0; i < segmentMax; i++) {
       String name = SearchTextSegment.segmentField(i);
       if (i == 0) {

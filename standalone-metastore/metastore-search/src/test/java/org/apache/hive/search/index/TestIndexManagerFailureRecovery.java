@@ -19,9 +19,9 @@ package org.apache.hive.search.index;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
-import org.apache.hive.search.config.IndexConfig;
-import org.apache.hive.search.config.IndexStoreConfig;
-import org.apache.hive.search.config.InferenceConfig;
+import org.apache.hive.search.config.IndexOptions;
+import org.apache.hive.search.config.IndexStoreOptions;
+import org.apache.hive.search.config.InferenceOptions;
 import org.apache.hive.search.exception.IndexNotHealthyException;
 import org.apache.hive.search.mapping.IndexMapping;
 import org.apache.hive.search.metastore.MetastoreIndexSchema;
@@ -36,9 +36,9 @@ public class TestIndexManagerFailureRecovery {
   @Test
   public void unhealthyStatusBlocksSearchUntilRecovered() throws Exception {
     Configuration conf = new Configuration(false);
-    conf.setBoolean(IndexStoreConfig.MEMORY, true);
-    conf.set(IndexConfig.INDEX_NAME, "test_index");
-    conf.set(InferenceConfig.EMBEDDER_NAME, "stub-model");
+    conf.setBoolean(IndexStoreOptions.MEMORY, true);
+    conf.set(IndexOptions.INDEX_NAME, "test_index");
+    conf.set(InferenceOptions.EMBEDDER_NAME, "stub-model");
     IndexMapping mapping = MetastoreIndexSchema.defaultHiveTablesMapping("test_index", "stub-model", conf);
 
     try (IndexManager indexManager = IndexManager.open(mapping, conf)) {
