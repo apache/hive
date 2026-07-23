@@ -164,7 +164,7 @@ OVERWRITE INTO TABLE test_orc_ppd
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@test_orc_ppd
-Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Map 2' is a cross product
 PREHOOK: query: explain vectorization expression
 select tint.rnum, tsint.rnum, tint.cint, tsint.csint, (case when (tint.cint between tsint.csint and tsint.csint) then "Ok" else "NoOk" end) as between_col from tint , tsint
 PREHOOK: type: QUERY
@@ -191,7 +191,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (XPROD_EDGE), Map 3 (XPROD_EDGE)
+        Map 2 <- Map 1 (BROADCAST_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -229,7 +229,7 @@ STAGE PLANS:
                 allNative: true
                 usesVectorUDFAdaptor: false
                 vectorized: true
-        Map 3 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: tsint
@@ -244,15 +244,40 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [0, 1, 1]
                     Statistics: Num rows: 6 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      null sort order: 
-                      sort order: 
-                      Reduce Sink Vectorization:
-                          className: VectorReduceSinkEmptyKeyOperator
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 
+                        1 
+                      Map Join Vectorization:
+                          className: VectorMapJoinInnerMultiKeyOperator
                           native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      Statistics: Num rows: 6 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: int), _col1 (type: smallint), _col2 (type: int)
+                          nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                          hashTableImplementationType: OPTIMIZED
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      input vertices:
+                        0 Map 1
+                      Statistics: Num rows: 36 Data size: 708 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: _col0 (type: int), _col2 (type: int), _col1 (type: int), _col3 (type: smallint), if(_col4 BETWEEN _col1 AND _col1, 'Ok', 'NoOk') (type: string)
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                        Select Vectorization:
+                            className: VectorSelectOperator
+                            native: true
+                            projectedOutputColumnNums: [4, 0, 5, 1, 7]
+                            selectExpressions: IfExprStringScalarStringScalar(col 6:boolean, val Ok, val NoOk)(children: VectorUDFAdaptor(_col4 BETWEEN _col1 AND _col1) -> 6:boolean) -> 7:string
+                        Statistics: Num rows: 36 Data size: 3736 Basic stats: COMPLETE Column stats: COMPLETE
+                        File Output Operator
+                          compressed: false
+                          File Sink Vectorization:
+                              className: VectorFileSinkOperator
+                              native: false
+                          Statistics: Num rows: 36 Data size: 3736 Basic stats: COMPLETE Column stats: COMPLETE
+                          table:
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -261,34 +286,9 @@ STAGE PLANS:
                 inputFormatFeatureSupport: [DECIMAL_64]
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                allNative: true
-                usesVectorUDFAdaptor: false
+                allNative: false
+                usesVectorUDFAdaptor: true
                 vectorized: true
-        Reducer 2 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 
-                  1 
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                Statistics: Num rows: 36 Data size: 708 Basic stats: COMPLETE Column stats: COMPLETE
-                Select Operator
-                  expressions: _col0 (type: int), _col2 (type: int), _col1 (type: int), _col3 (type: smallint), if(_col4 BETWEEN _col1 AND _col1, 'Ok', 'NoOk') (type: string)
-                  outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                  Statistics: Num rows: 36 Data size: 3736 Basic stats: COMPLETE Column stats: COMPLETE
-                  File Output Operator
-                    compressed: false
-                    Statistics: Num rows: 36 Data size: 3736 Basic stats: COMPLETE Column stats: COMPLETE
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            MergeJoin Vectorization:
-                enabled: false
-                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
 
   Stage: Stage-0
     Fetch Operator
@@ -296,7 +296,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Map 2' is a cross product
 PREHOOK: query: select tint.rnum, tsint.rnum, tint.cint, tsint.csint, (case when (tint.cint between tsint.csint and tsint.csint) then "Ok" else "NoOk" end) as between_col from tint , tsint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tint
@@ -344,7 +344,7 @@ NULL	2	NULL	0	NoOk
 NULL	3	NULL	1	NoOk
 NULL	4	NULL	10	NoOk
 NULL	NULL	NULL	NULL	NoOk
-Warning: Shuffle Join MERGEJOIN[10][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Map Join MAPJOIN[10][bigTable=?] in task 'Map 2' is a cross product
 PREHOOK: query: explain vectorization expression
 select tint.rnum, tsint.rnum, tint.cint, tsint.csint from tint , tsint where tint.cint between tsint.csint and tsint.csint
 PREHOOK: type: QUERY
@@ -371,7 +371,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (XPROD_EDGE), Map 3 (XPROD_EDGE)
+        Map 2 <- Map 1 (BROADCAST_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -409,7 +409,7 @@ STAGE PLANS:
                 allNative: true
                 usesVectorUDFAdaptor: false
                 vectorized: true
-        Map 3 
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: tsint
@@ -424,15 +424,46 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [0, 1, 1]
                     Statistics: Num rows: 6 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      null sort order: 
-                      sort order: 
-                      Reduce Sink Vectorization:
-                          className: VectorReduceSinkEmptyKeyOperator
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 
+                        1 
+                      Map Join Vectorization:
+                          className: VectorMapJoinInnerMultiKeyOperator
                           native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      Statistics: Num rows: 6 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: int), _col1 (type: smallint), _col2 (type: int)
+                          nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                          hashTableImplementationType: OPTIMIZED
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      input vertices:
+                        0 Map 1
+                      Statistics: Num rows: 36 Data size: 708 Basic stats: COMPLETE Column stats: COMPLETE
+                      Filter Operator
+                        Filter Vectorization:
+                            className: VectorFilterOperator
+                            native: true
+                            predicateExpression: SelectColumnIsTrue(col 6:boolean)(children: VectorUDFAdaptor(_col4 BETWEEN _col1 AND _col1) -> 6:boolean)
+                        predicate: _col4 BETWEEN _col1 AND _col1 (type: boolean)
+                        Statistics: Num rows: 4 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
+                        Select Operator
+                          expressions: _col0 (type: int), _col2 (type: int), _col1 (type: int), _col3 (type: smallint)
+                          outputColumnNames: _col0, _col1, _col2, _col3
+                          Select Vectorization:
+                              className: VectorSelectOperator
+                              native: true
+                              projectedOutputColumnNums: [4, 0, 5, 1]
+                          Statistics: Num rows: 4 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                          File Output Operator
+                            compressed: false
+                            File Sink Vectorization:
+                                className: VectorFileSinkOperator
+                                native: false
+                            Statistics: Num rows: 4 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                            table:
+                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -441,37 +472,9 @@ STAGE PLANS:
                 inputFormatFeatureSupport: [DECIMAL_64]
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                allNative: true
-                usesVectorUDFAdaptor: false
+                allNative: false
+                usesVectorUDFAdaptor: true
                 vectorized: true
-        Reducer 2 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 
-                  1 
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                Statistics: Num rows: 36 Data size: 708 Basic stats: COMPLETE Column stats: COMPLETE
-                Filter Operator
-                  predicate: _col4 BETWEEN _col1 AND _col1 (type: boolean)
-                  Statistics: Num rows: 4 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: _col0 (type: int), _col2 (type: int), _col1 (type: int), _col3 (type: smallint)
-                    outputColumnNames: _col0, _col1, _col2, _col3
-                    Statistics: Num rows: 4 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 4 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            MergeJoin Vectorization:
-                enabled: false
-                enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
 
   Stage: Stage-0
     Fetch Operator
@@ -479,7 +482,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[10][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Map Join MAPJOIN[10][bigTable=?] in task 'Map 2' is a cross product
 PREHOOK: query: select tint.rnum, tsint.rnum, tint.cint, tsint.csint from tint , tsint where tint.cint between tsint.csint and tsint.csint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tint
