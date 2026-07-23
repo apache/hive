@@ -331,26 +331,12 @@ public final class QFile {
     }
   }
 
-  // These are the filters which are common for every QTest.
-  // Check specificFilterSet for QTest specific ones.
+  // BeeLine-specific filters. Volatile-value masking is applied in-stream via QOutProcessor.
   private static RegexFilterSet getStaticFilterSet() {
-    // Pattern to remove the timestamp and other infrastructural info from the out file
     return new RegexFilterSet()
         .addFilter("Reading log file: .*\n", "")
         .addFilter("INFO  : ", "")
-        .addFilter(".*/tmp/.*\n", MASK_PATTERN)
-        .addFilter(".*file:.*\n", MASK_PATTERN)
-        .addFilter(".*file\\..*\n", MASK_PATTERN)
-        .addFilter(".*Location.*\n", MASK_PATTERN)
-        .addFilter(".*LOCATION '.*\n", MASK_PATTERN)
-        .addFilter(".*Output:.*/data/files/.*\n", MASK_PATTERN)
-        .addFilter(".*CreateTime.*\n", MASK_PATTERN)
-        .addFilter(".*last_modified_.*\n", MASK_PATTERN)
-        .addFilter(".*transient_lastDdlTime.*\n", MASK_PATTERN)
-        .addFilter(".*lastUpdateTime.*\n", MASK_PATTERN)
-        .addFilter(".*lastAccessTime.*\n", MASK_PATTERN)
-        .addFilter(".*[Oo]wner.*\n", MASK_PATTERN)
-        .addFilter("(?s)(" + MASK_PATTERN + ")+", MASK_PATTERN);
+        .addFilter(".*Output:.*/data/files/.*\n", MASK_PATTERN);
   }
 
   /**

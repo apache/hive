@@ -19,7 +19,7 @@
 package org.apache.hive.beeline;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.hadoop.hive.ql.QTestUtil;
+import org.apache.hadoop.hive.ql.QOutProcessor;
 import org.apache.hadoop.hive.ql.dataset.QTestDatasetHandler;
 import org.apache.hive.beeline.ConvertedOutputFile.Converter;
 
@@ -43,6 +43,8 @@ public class QFileBeeLineClient implements AutoCloseable {
   private BeeLine beeLine;
   private PrintStream beelineOutputStream;
   private File logFile;
+  private QOutProcessor qOutProcessor;
+  private QOutProcessor.MaskingFoldState maskingFoldState;
   private String[] TEST_FIRST_COMMANDS = new String[] {
     "!set outputformat tsv2",
     "!set verbose false",
@@ -126,13 +128,30 @@ public class QFileBeeLineClient implements AutoCloseable {
     return views;
   }
 
+  public void setOutputMasking(QOutProcessor qOutProcessor,
+      QOutProcessor.MaskingFoldState maskingFoldState) {
+    this.qOutProcessor = qOutProcessor;
+    this.maskingFoldState = maskingFoldState;
+  }
+
   public void execute(String[] commands, File resultFile, Converter converter)
+      throws Exception {
+    execute(commands, resultFile, converter, false);
+  }
+
+  private void execute(String[] commands, File resultFile, Converter converter, boolean applyMasking)
       throws Exception {
     beeLine.runCommands(
         new String[] {
           "!record " + resultFile.getAbsolutePath()
         });
-    beeLine.setRecordOutputFile(new ConvertedOutputFile(beeLine.getRecordOutputFile(), converter));
+    OutputFile recordOutputFile = beeLine.getRecordOutputFile();
+    if (applyMasking) {
+      beeLine.setRecordOutputFile(
+          new ConvertedOutputFile(recordOutputFile, converter, qOutProcessor, maskingFoldState));
+    } else {
+      beeLine.setRecordOutputFile(new ConvertedOutputFile(recordOutputFile, converter));
+    }
 
     int lastSuccessfulCommand = beeLine.runCommands(commands);
     if (commands.length != lastSuccessfulCommand) {
@@ -208,7 +227,7 @@ public class QFileBeeLineClient implements AutoCloseable {
     }
 
     String[] commands = beeLine.getCommands(qFile.getInputFile());
-    execute(qFile.filterCommands(commands), qFile.getRawOutputFile(), qFile.getConverter());
+    execute(qFile.filterCommands(commands), qFile.getRawOutputFile(), qFile.getConverter(), true);
     afterExecute(qFile);
   }
 

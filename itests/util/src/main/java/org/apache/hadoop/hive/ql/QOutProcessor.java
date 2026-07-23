@@ -18,12 +18,8 @@
 package org.apache.hadoop.hive.ql;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -31,7 +27,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.FsType;
@@ -89,6 +84,11 @@ public class QOutProcessor {
     public String get() {
       return line;
     }
+  }
+
+  public static final class MaskingFoldState {
+    private boolean lastWasMasked;
+    private boolean lastWasVertexKilled;
   }
 
   private final Pattern[] planMask = toPattern(new String[] {
@@ -184,55 +184,66 @@ public class QOutProcessor {
     return patterns;
   }
 
-  public void maskPatterns(String fname) throws Exception {
+  /**
+   * Applies {@link #processLine(String)} and consecutive-line folding.
+   *
+   * @return the line to emit, or {@code null} if the line should be suppressed
+   */
+  public String maskAndFoldLine(String line, MaskingFoldState state) {
+    LineProcessingResult result = processLine(line);
 
-    String line;
-    BufferedReader in;
-    BufferedWriter out;
+    if (result.line.equals(MASK_PATTERN)) {
+      // We're folding multiple masked lines into one.
+      if (state.lastWasMasked) {
+        state.lastWasVertexKilled = false;
+        return null;
+      }
+      state.lastWasMasked = true;
+      state.lastWasVertexKilled = false;
+      return result.line;
+    }
+    if (result.line.equals(MASKED_VERTEX_KILLED_PATTERN)) {
+      // Deduplicate consecutive standalone vertex-killed lines — the number of sibling
+      // vertices still alive when the kill propagates is non-deterministic.
+      if (state.lastWasVertexKilled) {
+        state.lastWasMasked = false;
+        return null;
+      }
+      state.lastWasVertexKilled = true;
+      state.lastWasMasked = false;
+      return result.line;
+    }
+    state.lastWasMasked = false;
+    state.lastWasVertexKilled = false;
+    return result.line;
+  }
 
-    File file = new File(fname);
-    File fileOrig = new File(fname + ".orig");
-    FileUtils.copyFile(file, fileOrig);
-
-    in = new BufferedReader(new InputStreamReader(new FileInputStream(fileOrig), "UTF-8"));
-    out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
-
-    boolean lastWasMasked = false;
-    boolean lastWasVertexKilled = false;
-
-    while (null != (line = in.readLine())) {
-      LineProcessingResult result = processLine(line);
-
-      if (result.line.equals(MASK_PATTERN)) {
-        // We're folding multiple masked lines into one.
-        if (!lastWasMasked) {
-          out.write(result.line);
-          out.write("\n");
-          lastWasMasked = true;
-          result.partialMaskWasMatched = false;
-        }
-        lastWasVertexKilled = false;
-      } else if (result.line.equals(MASKED_VERTEX_KILLED_PATTERN)) {
-        // Deduplicate consecutive standalone vertex-killed lines — the number of sibling
-        // vertices still alive when the kill propagates is non-deterministic.
-        if (!lastWasVertexKilled) {
-          out.write(result.line);
-          out.write("\n");
-          lastWasVertexKilled = true;
-        }
-        lastWasMasked = false;
-        result.partialMaskWasMatched = false;
-      } else {
-        out.write(result.line);
-        out.write("\n");
-        lastWasMasked = false;
-        lastWasVertexKilled = false;
-        result.partialMaskWasMatched = false;
+  public List<String> maskLines(List<String> lines) {
+    MaskingFoldState state = new MaskingFoldState();
+    List<String> masked = new ArrayList<>(lines.size());
+    for (String line : lines) {
+      String folded = maskAndFoldLine(line, state);
+      if (folded != null) {
+        masked.add(folded);
       }
     }
+    return masked;
+  }
 
-    in.close();
-    out.close();
+  /** Applies masking and folding to multiline text */
+  public String maskContent(String content) throws IOException {
+    List<String> lines = new ArrayList<>();
+    try (BufferedReader reader = new BufferedReader(new StringReader(content))) {
+      String line;
+      while ((line = reader.readLine()) != null) {
+        lines.add(line);
+      }
+    }
+    StringBuilder out = new StringBuilder();
+    for (String line : maskLines(lines)) {
+      out.append(line).append('\n');
+    }
+    return out.toString();
   }
 
   LineProcessingResult processLine(String line) {
