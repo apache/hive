@@ -19,6 +19,7 @@ package org.apache.hive.search.config;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
+import org.apache.hive.search.exception.SearchException;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -27,23 +28,24 @@ import java.time.Duration;
 import static org.junit.Assert.assertEquals;
 
 @Category(MetastoreUnitTest.class)
-public class TestIndexConfig {
+public class TestSearchOptions {
 
   @Test
-  public void usesDefaultsWhenUnset() {
-    IndexConfig config = new IndexConfig(new Configuration(false));
-    assertEquals(IndexConfig.INDEX_NAME_DEFAULT, config.indexName());
-    assertEquals(IndexConfig.INDEX_RAM_SIZE_DEFAULT, config.getWriteBufferSize());
-    assertEquals(Duration.ofMillis(IndexConfig.FLUSH_INTERVAL_MS_DEFAULT), config.getFlushInterval());
+  public void usesDefaultsWhenUnset() throws SearchException {
+    SearchOptions config = new SearchOptions(new Configuration(false));
+    assertEquals(Duration.ofSeconds(SearchOptions.REFRESH_INTERVAL_SECONDS_DEFAULT),
+        config.getRefreshInterval());
+    assertEquals(SearchOptions.DEFAULT_LIMIT_DEFAULT, config.getDefaultLimit());
+    assertEquals(SearchOptions.HYBRID_SEMANTIC_WEIGHT_DEFAULT, config.getHybridSemanticWeight(), 0.001f);
   }
 
   @Test
-  public void readsConfiguredValues() {
+  public void readsConfiguredValues() throws SearchException  {
     Configuration conf = new Configuration(false);
-    conf.set(IndexConfig.INDEX_NAME, "custom_index");
-    conf.setInt(IndexConfig.BOOTSTRAP_BATCH_SIZE, 500);
-    IndexConfig config = new IndexConfig(conf);
-    assertEquals("custom_index", config.indexName());
-    assertEquals(500, config.getBootstrapBatchSize());
+    conf.setInt(SearchOptions.DEFAULT_LIMIT, 50);
+    conf.setFloat(SearchOptions.HYBRID_SEMANTIC_WEIGHT, 0.2f);
+    SearchOptions config = new SearchOptions(conf);
+    assertEquals(50, config.getDefaultLimit());
+    assertEquals(0.8f, config.getHybridMatchWeight(), 0.001f);
   }
 }

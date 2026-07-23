@@ -21,7 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import org.apache.hive.search.config.SearchConfig;
+import org.apache.hive.search.config.SearchOptions;
 import org.apache.hive.search.exception.SearchException;
 import org.apache.hive.search.mapping.IndexMapping;
 
@@ -80,7 +80,7 @@ public record HybridQuery(String queryText, Float matchWeight, Float semanticWei
   }
 
   /** Semantic fraction for fusion; uses config when the request omitted weights. */
-  public float semanticWeight(SearchConfig searchConfig) throws SearchException {
+  public float semanticWeight(SearchOptions searchConfig) throws SearchException {
     return semanticWeight != null ? semanticWeight : searchConfig.getHybridSemanticWeight();
   }
 

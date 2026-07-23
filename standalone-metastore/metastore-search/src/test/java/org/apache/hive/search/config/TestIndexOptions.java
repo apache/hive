@@ -19,36 +19,31 @@ package org.apache.hive.search.config;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
-import org.apache.hive.search.exception.IndexIOException;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import java.time.Duration;
+
+import static org.junit.Assert.assertEquals;
 
 @Category(MetastoreUnitTest.class)
-public class TestIndexStateConfig {
+public class TestIndexOptions {
 
   @Test
-  public void detectsRemoteAndMemoryFlags() {
+  public void usesDefaultsWhenUnset() {
+    IndexOptions config = new IndexOptions(new Configuration(false));
+    assertEquals(IndexOptions.INDEX_NAME_DEFAULT, config.indexName());
+    assertEquals(IndexOptions.INDEX_RAM_SIZE_DEFAULT, config.getWriteBufferSize());
+    assertEquals(Duration.ofMillis(IndexOptions.FLUSH_INTERVAL_MS_DEFAULT), config.getFlushInterval());
+  }
+
+  @Test
+  public void readsConfiguredValues() {
     Configuration conf = new Configuration(false);
-    conf.set(IndexStoreConfig.REMOTE_URI, "file:///tmp/backup");
-    conf.setBoolean(IndexStoreConfig.MEMORY, true);
-    IndexStoreConfig config = new IndexStoreConfig(conf, "hive_tables");
-    assertTrue(config.hasRemote());
-    assertTrue(config.isDistributed());
-    assertTrue(config.useMemory());
-  }
-
-  @Test
-  public void validateRemoteUriRejectsInvalidValue() {
-    assertThrows(IndexIOException.class, () -> IndexStoreConfig.validateRemoteUri("://bad"));
-  }
-
-  @Test
-  public void localPathDefaultsToWorkdir() {
-    IndexStoreConfig config = new IndexStoreConfig(new Configuration(false), "hive_tables");
-    assertFalse(config.getLocalPath().toString().isEmpty());
+    conf.set(IndexOptions.INDEX_NAME, "custom_index");
+    conf.setInt(IndexOptions.BOOTSTRAP_BATCH_SIZE, 500);
+    IndexOptions config = new IndexOptions(conf);
+    assertEquals("custom_index", config.indexName());
+    assertEquals(500, config.getBootstrapBatchSize());
   }
 }

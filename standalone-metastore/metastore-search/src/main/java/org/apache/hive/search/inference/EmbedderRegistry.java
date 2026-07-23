@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hive.search.config.InferenceConfig;
+import org.apache.hive.search.config.InferenceOptions;
 import org.apache.hive.search.exception.InferenceException;
 import org.apache.hive.search.exception.InitializeException;
 import org.slf4j.Logger;
@@ -36,22 +36,35 @@ public record EmbedderRegistry(Map<String, Embedder> embedders) implements AutoC
 
   public static EmbedderRegistry create(Configuration configuration)
       throws InitializeException, IOException {
-    InferenceConfig inference = new InferenceConfig(configuration);
+    InferenceOptions inference = new InferenceOptions(configuration);
     long start = System.currentTimeMillis();
     String modelName = inference.embedderName();
     Embedder embedder = new LocalOnnxEmbedder(inference);
     long warmupStart = System.currentTimeMillis();
     try {
-      float[] warmupA = embedder.embed(Embedder.TaskType.QUERY, "warmup");
-      float[] warmupB = embedder.embed(Embedder.TaskType.QUERY, "Local onnx for embedding query");
-      float[][] warmupBatch =
-          embedder.embedBatch(
-              Embedder.TaskType.QUERY, new String[] {"warmup", "Local onnx for embedding query"});
-      LOG.debug(
-          "Embedder warmup cosine: same text={} different text={} repeated phrase={}",
-          cosineSimilarity(warmupA, warmupBatch[0]),
-          cosineSimilarity(warmupA, warmupBatch[1]),
-          cosineSimilarity(warmupB, warmupBatch[1]));
+      String repeatText = "warmup";
+      String queryText = "What's the weather like today?";
+      String docText = "hot and sunny";
+
+      float[] repeatSingle = embedder.embed(Embedder.TaskType.QUERY, repeatText);
+      float[][] repeatBatch =
+          embedder.embedBatch(Embedder.TaskType.QUERY, new String[] {repeatText, queryText});
+      float[] querySingle = embedder.embed(Embedder.TaskType.QUERY, queryText);
+      float[] docSingle = embedder.embed(Embedder.TaskType.DOCUMENT, docText);
+
+      float repeatCos = cosineSimilarity(repeatSingle, repeatBatch[0]);
+      float queryRepeatCos = cosineSimilarity(querySingle, repeatBatch[1]);
+      float crossTaskCos = cosineSimilarity(docSingle, repeatBatch[1]);
+
+      LOG.info(
+          "Embedder warmup cosine: repeat single vs batch={} query single vs batch={} "
+              + "doc vs query (semantic)={}",
+          repeatCos, queryRepeatCos, crossTaskCos);
+      if (repeatCos < 0.99f) {
+        LOG.warn(
+            "Warmup repeatability check below 0.99 ({}); batch and single embed may disagree",
+            repeatCos);
+      }
     } catch (InferenceException e) {
       throw new InitializeException("Failed to warm up embedder '" + modelName + "'", e);
     }

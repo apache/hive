@@ -30,7 +30,7 @@ import org.apache.hive.search.exception.IndexIOException;
 import org.apache.hive.search.index.store.LocalStateClient;
 import org.apache.hive.search.index.store.IndexBackupUtils;
 import org.apache.hive.search.index.store.IndexStateClient;
-import org.apache.hive.search.config.IndexStoreConfig;
+import org.apache.hive.search.config.IndexStoreOptions;
 import org.apache.hive.search.metastore.MetastoreEventListener;
 import org.apache.lucene.store.ByteBuffersDirectory;
 import org.apache.lucene.store.Directory;
@@ -57,7 +57,7 @@ public class IndexManager implements AutoCloseable, MetastoreEventListener {
   }
 
   public static IndexManager open(IndexMapping mapping, Configuration conf) throws IOException {
-    IndexStoreConfig store = mapping.store();
+    IndexStoreOptions store = mapping.store();
     Directory directory;
     if (store.useMemory()) {
       directory = new ByteBuffersDirectory();

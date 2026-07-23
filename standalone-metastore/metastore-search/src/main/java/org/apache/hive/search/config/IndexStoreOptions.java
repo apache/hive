@@ -25,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hive.search.exception.IndexIOException;
 
-public record IndexStoreConfig(Configuration configuration, String indexName) {
+public record IndexStoreOptions(Configuration configuration, String indexName) {
   public static final String LOCAL_PATH = "metastore.index.local.path";
   public static final String REMOTE_URI = "metastore.index.backup.remote.uri";
   public static final String MEMORY = "metastore.index.use.memory";

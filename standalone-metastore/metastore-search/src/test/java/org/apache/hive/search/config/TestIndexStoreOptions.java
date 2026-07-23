@@ -19,33 +19,36 @@ package org.apache.hive.search.config;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
-import org.apache.hive.search.exception.SearchException;
+import org.apache.hive.search.exception.IndexIOException;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.time.Duration;
-
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 @Category(MetastoreUnitTest.class)
-public class TestSearchConfig {
+public class TestIndexStoreOptions {
 
   @Test
-  public void usesDefaultsWhenUnset() throws SearchException {
-    SearchConfig config = new SearchConfig(new Configuration(false));
-    assertEquals(Duration.ofSeconds(SearchConfig.REFRESH_INTERVAL_SECONDS_DEFAULT),
-        config.getRefreshInterval());
-    assertEquals(SearchConfig.DEFAULT_LIMIT_DEFAULT, config.getDefaultLimit());
-    assertEquals(SearchConfig.HYBRID_SEMANTIC_WEIGHT_DEFAULT, config.getHybridSemanticWeight(), 0.001f);
+  public void detectsRemoteAndMemoryFlags() {
+    Configuration conf = new Configuration(false);
+    conf.set(IndexStoreOptions.REMOTE_URI, "file:///tmp/backup");
+    conf.setBoolean(IndexStoreOptions.MEMORY, true);
+    IndexStoreOptions config = new IndexStoreOptions(conf, "hive_tables");
+    assertTrue(config.hasRemote());
+    assertTrue(config.isDistributed());
+    assertTrue(config.useMemory());
   }
 
   @Test
-  public void readsConfiguredValues() throws SearchException  {
-    Configuration conf = new Configuration(false);
-    conf.setInt(SearchConfig.DEFAULT_LIMIT, 50);
-    conf.setFloat(SearchConfig.HYBRID_SEMANTIC_WEIGHT, 0.2f);
-    SearchConfig config = new SearchConfig(conf);
-    assertEquals(50, config.getDefaultLimit());
-    assertEquals(0.8f, config.getHybridMatchWeight(), 0.001f);
+  public void validateRemoteUriRejectsInvalidValue() {
+    assertThrows(IndexIOException.class, () -> IndexStoreOptions.validateRemoteUri("://bad"));
+  }
+
+  @Test
+  public void localPathDefaultsToWorkdir() {
+    IndexStoreOptions config = new IndexStoreOptions(new Configuration(false), "hive_tables");
+    assertFalse(config.getLocalPath().toString().isEmpty());
   }
 }

@@ -40,7 +40,7 @@ import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hive.search.exception.IndexNotHealthyException;
-import org.apache.hive.search.config.IndexConfig;
+import org.apache.hive.search.config.IndexOptions;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +56,7 @@ public class MetastoreEventHandler implements AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(MetastoreEventHandler.class);
   private final AtomicBoolean stopped = new AtomicBoolean(false);
   private final List<MetastoreEventListener> listeners = Collections.synchronizedList(new ArrayList<>());
-  private final IndexConfig indexConfig;
+  private final IndexOptions indexConfig;
   private final IMetaStoreClient client;
   private final MessageDeserializer deserializer;
   private Thread metaRefresher;
@@ -73,7 +73,7 @@ public class MetastoreEventHandler implements AutoCloseable {
   /** Package-private for unit tests with a stub {@link IMetaStoreClient}. */
   MetastoreEventHandler(Configuration configuration, IMetaStoreClient client) {
     Configuration conf = new Configuration(Objects.requireNonNull(configuration));
-    this.indexConfig = new IndexConfig(conf);
+    this.indexConfig = new IndexOptions(conf);
     this.client = Objects.requireNonNull(client);
     this.deserializer = MessageFactory.getDefaultInstance(conf).getDeserializer();
   }
@@ -245,7 +245,7 @@ public class MetastoreEventHandler implements AutoCloseable {
                   + "committed lastEventId="
                   + lastEventId
                   + ". Fix root cause, set "
-                  + IndexConfig.EVENT_SKIP_POISON
+                  + IndexOptions.EVENT_SKIP_POISON
                   + "=true to skip, or rebuild the index.",
               e);
         }

@@ -29,7 +29,7 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.common.DatabaseName;
 import org.apache.hadoop.hive.metastore.Batchable;
-import org.apache.hive.search.config.IndexConfig;
+import org.apache.hive.search.config.IndexOptions;
 import org.apache.hive.search.exception.IndexIOException;
 import org.apache.hive.search.inference.Embedder;
 import org.apache.hive.search.inference.EmbedderRegistry;
@@ -53,7 +53,7 @@ import org.slf4j.LoggerFactory;
 
 public final class Indexer implements AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(Indexer.class);
-  private static final int EMBED_BATCH_SIZE = 10000;
+  private static final int EMBED_BATCH_SIZE = 100;
 
   private final IndexManager indexManager;
   private final EmbedderRegistry modelRegistry;
@@ -65,7 +65,7 @@ public final class Indexer implements AutoCloseable {
     this.indexManager = index;
     this.modelRegistry = registry;
     this.commitFlushThreshold =
-        new IndexConfig(index.mapping().configuration()).getCommitFlushes();
+        new IndexOptions(index.mapping().configuration()).getCommitFlushes();
   }
 
   int flushesSinceCommit() {
@@ -94,18 +94,6 @@ public final class Indexer implements AutoCloseable {
     } finally {
       snapshotter.release(snapshot);
     }
-  }
-
-  /** Writes already-embedded documents to Lucene. */
-  private void writeDocuments(List<TableDocument> docs) throws IOException {
-    List<Document> luceneDocs = new ArrayList<>();
-    List<String> ids = new ArrayList<>();
-    for (TableDocument doc : docs) {
-      ids.add(doc.idField().value());
-      luceneDocs.addAll(doc.toDocuments());
-    }
-    delete(ids.toArray(new String[0]));
-    writer.addDocuments(luceneDocs);
   }
 
   public List<TableDocument> embedDocuments(List<TableDocument> tableDocs)
@@ -198,7 +186,18 @@ public final class Indexer implements AutoCloseable {
   }
 
   public void addDocuments(List<TableDocument> docs) throws IOException {
-    writeDocuments(embedDocuments(docs));
+    if (docs == null || docs.isEmpty()) {
+      return;
+    }
+    List<Document> luceneDocs = new ArrayList<>();
+    docs = embedDocuments(docs);
+    List<String> ids = new ArrayList<>();
+    for (TableDocument doc : docs) {
+      ids.add(doc.idField().value());
+      luceneDocs.addAll(doc.toDocuments());
+    }
+    delete(ids.toArray(new String[0]));
+    writer.addDocuments(luceneDocs);
   }
 
   public IndexWriter writer() {
@@ -239,12 +238,12 @@ public final class Indexer implements AutoCloseable {
         || writer.hasDeletions();
   }
 
-  public int delete(String... docIds) throws IOException {
-    if (docIds == null || docIds.length == 0) {
+  public int delete(String... ids) throws IOException {
+    if (ids == null || ids.length == 0) {
       return 0;
     }
     int before = writer.getDocStats().numDocs;
-    Term[] terms = Arrays.stream(docIds)
+    Term[] terms = Arrays.stream(ids)
         .map(id -> new Term("_id" + TableDocument.FILTER_SUFFIX, id))
         .toArray(Term[]::new);
     writer.deleteDocuments(terms);
@@ -253,10 +252,10 @@ public final class Indexer implements AutoCloseable {
     return before - after;
   }
 
-  public int deleteDatabases(DatabaseName... databases)
+  public void deleteDatabases(DatabaseName... databases)
       throws IOException {
     if (databases == null || databases.length == 0) {
-      return 0;
+      return;
     }
     int before = writer.getDocStats().numDocs;
     BooleanQuery.Builder builder = new BooleanQuery.Builder();
@@ -268,7 +267,6 @@ public final class Indexer implements AutoCloseable {
     writer.deleteDocuments(builder.build());
     int after = writer.getDocStats().numDocs;
     LOG.info("Deleted {} docs", before - after);
-    return before - after;
   }
 
   @Override
