@@ -512,7 +512,7 @@ public class UpgradeTool {
     if(!TableType.MANAGED_TABLE.name().equalsIgnoreCase(t.getTableType())) {
       return;
     }
-    //todo: are HBase, Druid talbes managed in 2.x? 3.0?
+    //todo: are HBase managed in 2.x? 3.0?
     String fullTableName = Warehouse.getQualifiedName(t);
     /*
      * ORC uses table props for settings so things like bucketing, I/O Format, etc should

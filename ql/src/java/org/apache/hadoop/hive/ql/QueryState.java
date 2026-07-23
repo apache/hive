@@ -378,8 +378,6 @@ public class QueryState {
         queryConf.setVar(HiveConf.ConfVars.HIVE_QUERY_ID, queryId);
         setApplicationTag(queryConf, queryId);
 
-        // FIXME: druid storage handler relies on query.id to maintain some staging directories
-        // expose queryid to session level
         if (hiveConf != null) {
           hiveConf.setVar(HiveConf.ConfVars.HIVE_QUERY_ID, queryId);
         }
