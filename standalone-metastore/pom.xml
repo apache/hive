@@ -88,7 +88,7 @@
     <hadoop.version>3.4.2</hadoop.version>
     <hikaricp.version>4.0.3</hikaricp.version>
     <iceberg.version>1.11.0</iceberg.version>
-    <jackson.version>2.18.6</jackson.version>
+    <jackson.version>2.21.5</jackson.version>
     <jexl.version>3.3</jexl.version>
     <javolution.version>5.5.1</javolution.version>
     <junit.version>4.13.2</junit.version>
