@@ -66,6 +66,22 @@
       <artifactId>hive-standalone-metastore-server</artifactId>
       <version>${standalone-metastore.version}</version>
     </dependency>
+    <dependency>
+      <!--
+        Since the compile-time hive-jdbc dependency contains Utils.java,
+        which directly imports HiveSQLException from hive-service,
+        hive-service is also required at runtime and should therefore be declared as a compile-time dependency.
+        -->
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-service</artifactId>
+      <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>*</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
     <!-- inter-project -->
     <dependency>
       <groupId>commons-cli</groupId>
@@ -127,7 +143,60 @@
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j-impl</artifactId>
     </dependency>
-    <!-- test intra-project -->
+  <!-- test intra-project -->
+  <!--
+    hive-exec, hive-llap-server, and hive-hplsql are declared test scope here so that
+    are all needed to run BeelineCli test to manage the embedded HS2 session.
+  -->
+  <dependency>
+    <groupId>org.apache.hive</groupId>
+    <artifactId>hive-exec</artifactId>
+    <version>${project.version}</version>
+    <scope>test</scope>
+    <exclusions>
+      <exclusion>
+        <groupId>*</groupId>
+        <artifactId>*</artifactId>
+      </exclusion>
+    </exclusions>
+  </dependency>
+  <dependency>
+    <groupId>org.apache.hive</groupId>
+    <artifactId>hive-exec</artifactId>
+    <version>${project.version}</version>
+    <classifier>tests</classifier>
+    <scope>test</scope>
+    <exclusions>
+      <exclusion>
+        <groupId>log4j</groupId>
+        <artifactId>log4j</artifactId>
+      </exclusion>
+    </exclusions>
+  </dependency>
+  <dependency>
+    <groupId>org.apache.hive</groupId>
+    <artifactId>hive-llap-server</artifactId>
+    <version>${project.version}</version>
+    <scope>test</scope>
+    <exclusions>
+      <exclusion>
+        <groupId>*</groupId>
+        <artifactId>*</artifactId>
+      </exclusion>
+    </exclusions>
+  </dependency>
+  <dependency>
+    <groupId>org.apache.hive</groupId>
+    <artifactId>hive-hplsql</artifactId>
+    <version>${project.version}</version>
+    <scope>test</scope>
+    <exclusions>
+      <exclusion>
+        <groupId>*</groupId>
+        <artifactId>*</artifactId>
+      </exclusion>
+    </exclusions>
+  </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-exec</artifactId>
@@ -138,22 +207,6 @@
         <exclusion>
           <groupId>log4j</groupId>
           <artifactId>log4j</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <!--
-        Since the compile-time hive-jdbc dependency contains Utils.java,
-        which directly imports HiveSQLException from hive-service,
-        hive-service is also required at runtime and should therefore be declared as a compile-time dependency.
-        -->
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-service</artifactId>
-      <version>${project.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>*</groupId>
-          <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
