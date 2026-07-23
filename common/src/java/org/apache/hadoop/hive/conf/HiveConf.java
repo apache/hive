@@ -2578,6 +2578,14 @@ public class HiveConf extends Configuration {
     HIVE_OPTIMIZE_CONSTRAINTS_JOIN("hive.optimize.constraints.join", true, "Whether to use referential constraints\n" +
         "to optimize (remove or transform) join operators"),
 
+    HIVE_CBO_JOIN_REORDER_SHUFFLE_COST("hive.cbo.join.reorder.shuffle.cost", true,
+        "Whether the multi-way join reordering should account for data movement: candidate join\n" +
+        "orders are generated preferring joins whose build side fits the broadcast (map-join) size\n" +
+        "threshold, and the order with the lowest estimated shuffle cost is selected. This sequences\n" +
+        "selective broadcast joins before large shuffle joins, reducing the data shuffled across the\n" +
+        "network. If the cost cannot be estimated (e.g. missing column statistics), the reordering\n" +
+        "falls back to the row-count based join order selection."),
+
     HIVE_OPTIMIZE_SORT_PREDS_WITH_STATS("hive.optimize.filter.preds.sort", true, "Whether to sort conditions in filters\n" +
         "based on estimated selectivity and compute cost"),
 
