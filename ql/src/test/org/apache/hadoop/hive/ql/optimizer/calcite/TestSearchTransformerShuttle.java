@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite;
 import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
+import com.google.common.collect.TreeRangeSet;
 
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.rel.type.RelDataType;
@@ -97,6 +98,21 @@ public class TestSearchTransformerShuttle {
 
     expressions.add(new Object[] { searchFalse, TRUE, "AND(IS NOT NULL($0), BETWEEN(false, $0, 10, 20))" });
     expressions.add(new Object[] { searchFalse, UNKNOWN, "AND(IS NOT NULL($0), BETWEEN(false, $0, 10, 20))" });
+
+    // NOT BETWEEN tests
+    final RexNode searchNotBetweenUnknown = createNotBetweenSearchNode(rexBuilder, 10, 20, UNKNOWN);
+    final RexNode searchNotBetweenFalse = createNotBetweenSearchNode(rexBuilder, 10, 20, FALSE);
+    final RexNode searchNotBetweenTrue = createNotBetweenSearchNode(rexBuilder, 10, 20, TRUE);
+    expressions.add(new Object[] { searchNotBetweenFalse, UNKNOWN, "AND(IS NOT NULL($0), BETWEEN(true, $0, 10, 20))" });
+    expressions.add(new Object[] { searchNotBetweenFalse, TRUE, "AND(IS NOT NULL($0), BETWEEN(true, $0, 10, 20))" });
+    expressions.add(new Object[] { searchNotBetweenFalse, FALSE, "BETWEEN(true, $0, 10, 20)" });
+    expressions.add(new Object[] { searchNotBetweenTrue, UNKNOWN, "OR(IS NULL($0), BETWEEN(true, $0, 10, 20))" });
+    expressions.add(new Object[] { searchNotBetweenTrue, TRUE, "BETWEEN(true, $0, 10, 20)" });
+    expressions.add(new Object[] { searchNotBetweenTrue, FALSE, "OR(IS NULL($0), BETWEEN(true, $0, 10, 20))" });
+    expressions.add(new Object[] { searchNotBetweenUnknown, UNKNOWN, "BETWEEN(true, $0, 10, 20)" });
+    expressions.add(new Object[] { searchNotBetweenUnknown, TRUE, "BETWEEN(true, $0, 10, 20)" });
+    expressions.add(new Object[] { searchNotBetweenUnknown, FALSE, "BETWEEN(true, $0, 10, 20)" });
+
     return expressions;
   }
 
@@ -105,6 +121,16 @@ public class TestSearchTransformerShuttle {
         .createTypeWithNullability(builder.getTypeFactory().createSqlType(SqlTypeName.INTEGER), true);
     RangeSet<BigDecimal> rangeSet =
         ImmutableRangeSet.of(Range.closed(BigDecimal.valueOf(lower), BigDecimal.valueOf(upper)));
+    Sarg sarg = Sarg.of(nullAs, rangeSet);
+    return builder.makeCall(SEARCH, builder.makeInputRef(intType, 0), builder.makeSearchArgumentLiteral(sarg, intType));
+  }
+
+  private static RexNode createNotBetweenSearchNode(RexBuilder builder, int lower, int upper, RexUnknownAs nullAs) {
+    final RelDataType intType = builder.getTypeFactory()
+        .createTypeWithNullability(builder.getTypeFactory().createSqlType(SqlTypeName.INTEGER), true);
+    RangeSet<BigDecimal> rangeSet = TreeRangeSet.create();
+    rangeSet.add(Range.lessThan(BigDecimal.valueOf(lower)));
+    rangeSet.add(Range.greaterThan(BigDecimal.valueOf(upper)));
     Sarg sarg = Sarg.of(nullAs, rangeSet);
     return builder.makeCall(SEARCH, builder.makeInputRef(intType, 0), builder.makeSearchArgumentLiteral(sarg, intType));
   }
