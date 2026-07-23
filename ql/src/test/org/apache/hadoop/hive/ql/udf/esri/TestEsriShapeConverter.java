@@ -50,9 +50,23 @@ public class TestEsriShapeConverter {
   private static Geometry roundTrip(String text) throws ParseException {
     Geometry geom = wkt(text);
     byte[] shape = EsriShapeConverter.toEsriShape(geom);
-    Geometry back = EsriShapeConverter.fromEsriShape(ByteBuffer.wrap(shape));
+    Geometry back = EsriShapeConverter.fromEsriShapeBody(ByteBuffer.wrap(shape));
     assertNotNull("Round-trip of " + text + " must not be null!", back);
     return back;
+  }
+
+  /**
+   * Asserts coordinate-level equality after canonicalizing both geometries with
+   * {@link Geometry#normalize()}. Unlike {@code equalsTopo}, this catches ring reordering,
+   * ring/hole misassignment and orientation bugs (normalize fixes orientation and vertex
+   * order, so anything left is a real coordinate difference).
+   */
+  private static void assertEqualsNormalized(Geometry expected, Geometry actual) {
+    Geometry e = expected.copy();
+    Geometry a = actual.copy();
+    e.normalize();
+    a.normalize();
+    assertTrue("Expected " + e + " but was " + a, e.equalsExact(a, EPSILON));
   }
 
   private static int shapeType(byte[] shape) {
@@ -116,7 +130,7 @@ public class TestEsriShapeConverter {
     String text = "polygon ((0 0, 4 0, 4 4, 0 4, 0 0))";
     Geometry back = roundTrip(text);
     assertTrue("Expected a Polygon!", back instanceof Polygon);
-    assertTrue(back.equalsTopo(wkt(text)));
+    assertEqualsNormalized(wkt(text), back);
   }
 
   @Test
@@ -124,7 +138,7 @@ public class TestEsriShapeConverter {
     String text = "polygon ((0 0, 10 0, 10 10, 0 10, 0 0), (2 2, 2 4, 4 4, 4 2, 2 2))";
     Polygon back = (Polygon) roundTrip(text);
     assertEquals(1, back.getNumInteriorRing());
-    assertTrue(back.equalsTopo(wkt(text)));
+    assertEqualsNormalized(wkt(text), back);
   }
 
   @Test
@@ -133,14 +147,30 @@ public class TestEsriShapeConverter {
     Geometry back = roundTrip(text);
     assertTrue("Expected a MultiPolygon!", back instanceof MultiPolygon);
     assertEquals(2, back.getNumGeometries());
-    assertTrue(back.equalsTopo(wkt(text)));
+    assertEqualsNormalized(wkt(text), back);
+  }
+
+  /**
+   * The most complex (de)serialization case: a MultiPolygon whose members carry holes.
+   * Exercises ring-orientation handling and correct hole-to-shell assignment on read.
+   */
+  @Test
+  public void testMultiPolygonWithHolesRoundTrip() throws Exception {
+    String text = "multipolygon ("
+        + "((0 0, 10 0, 10 10, 0 10, 0 0), (2 2, 2 4, 4 4, 4 2, 2 2)), "
+        + "((20 20, 30 20, 30 30, 20 30, 20 20), (22 22, 22 24, 24 24, 24 22, 22 22)))";
+    MultiPolygon back = (MultiPolygon) roundTrip(text);
+    assertEquals(2, back.getNumGeometries());
+    assertEquals(1, ((Polygon) back.getGeometryN(0)).getNumInteriorRing());
+    assertEquals(1, ((Polygon) back.getGeometryN(1)).getNumInteriorRing());
+    assertEqualsNormalized(wkt(text), back);
   }
 
   @Test
   public void testEmptyAndNullGeometryWriteNullShape() throws Exception {
     assertEquals(0, shapeType(EsriShapeConverter.toEsriShape(null)));
     assertEquals(0, shapeType(EsriShapeConverter.toEsriShape(wkt("point empty"))));
-    assertNull(EsriShapeConverter.fromEsriShape(ByteBuffer.wrap(EsriShapeConverter.toEsriShape(null))));
+    assertNull(EsriShapeConverter.fromEsriShapeBody(ByteBuffer.wrap(EsriShapeConverter.toEsriShape(null))));
   }
 
   private static byte[] hex(String s) {
@@ -159,7 +189,7 @@ public class TestEsriShapeConverter {
   @Test
   public void testReadSpecPointBytes() {
     byte[] bytes = hex("01000000" + "000000000000F03F" + "0000000000000040");
-    Point point = (Point) EsriShapeConverter.fromEsriShape(ByteBuffer.wrap(bytes));
+    Point point = (Point) EsriShapeConverter.fromEsriShapeBody(ByteBuffer.wrap(bytes));
     assertEquals(1, point.getX(), EPSILON);
     assertEquals(2, point.getY(), EPSILON);
   }
@@ -176,7 +206,7 @@ public class TestEsriShapeConverter {
         + "02000000"
         + "0000000000002440" + "0000000000004440"   // (10, 40)
         + "0000000000004440" + "0000000000003E40"); // (40, 30)
-    MultiPoint mp = (MultiPoint) EsriShapeConverter.fromEsriShape(ByteBuffer.wrap(bytes));
+    MultiPoint mp = (MultiPoint) EsriShapeConverter.fromEsriShapeBody(ByteBuffer.wrap(bytes));
     assertEquals(2, mp.getNumGeometries());
     assertTrue(mp.equalsTopo(GeometryUtils.GEOMETRY_FACTORY.createMultiPoint(new Point[] {
         GeometryUtils.GEOMETRY_FACTORY.createPoint(new org.locationtech.jts.geom.Coordinate(10, 40)),
@@ -205,7 +235,7 @@ public class TestEsriShapeConverter {
   @Test
   public void testReadSpecPointMBytes() {
     byte[] bytes = hex("15000000" + "0000000000000000" + "0000000000000840" + "000000000000F03F");
-    Point point = (Point) EsriShapeConverter.fromEsriShape(ByteBuffer.wrap(bytes));
+    Point point = (Point) EsriShapeConverter.fromEsriShapeBody(ByteBuffer.wrap(bytes));
     assertEquals(0, point.getX(), EPSILON);
     assertEquals(3, point.getY(), EPSILON);
     assertEquals(1, point.getCoordinate().getM(), EPSILON);
@@ -220,7 +250,7 @@ public class TestEsriShapeConverter {
   public void testReadSpecPointZMBytes() {
     byte[] bytes = hex("0B000000"
         + "0000000000000000" + "0000000000000840" + "000000000000F03F" + "0000000000000040");
-    Point point = (Point) EsriShapeConverter.fromEsriShape(ByteBuffer.wrap(bytes));
+    Point point = (Point) EsriShapeConverter.fromEsriShapeBody(ByteBuffer.wrap(bytes));
     assertEquals(1, point.getCoordinate().getZ(), EPSILON);
     assertEquals(2, point.getCoordinate().getM(), EPSILON);
   }
@@ -243,7 +273,7 @@ public class TestEsriShapeConverter {
     buf.putDouble(2).putDouble(4);                                  // per-vertex M
     buf.flip();
 
-    LineString line = (LineString) EsriShapeConverter.fromEsriShape(buf);
+    LineString line = (LineString) EsriShapeConverter.fromEsriShapeBody(buf);
     assertEquals(2, line.getCoordinateN(0).getM(), EPSILON);
     assertEquals(4, line.getCoordinateN(1).getM(), EPSILON);
     assertTrue("Z must be absent", Double.isNaN(line.getCoordinateN(0).getZ()));
@@ -262,7 +292,7 @@ public class TestEsriShapeConverter {
     ByteBuffer buffer = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN);
     buffer.putInt(23);  // not a shape type this converter handles
     buffer.flip();
-    assertThrows(IllegalArgumentException.class, () -> EsriShapeConverter.fromEsriShape(buffer));
+    assertThrows(IllegalArgumentException.class, () -> EsriShapeConverter.fromEsriShapeBody(buffer));
 
     Geometry collection = wkt("geometrycollection (point (1 2))");
     assertThrows(IllegalArgumentException.class, () -> EsriShapeConverter.toEsriShape(collection));

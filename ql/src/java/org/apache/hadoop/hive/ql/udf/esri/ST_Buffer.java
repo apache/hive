@@ -43,6 +43,8 @@ import org.slf4j.LoggerFactory;
       return null;
     }
 
+    // 24 quadrant segments approximates the curve density the ESRI library produced,
+    // keeping results close to the previous implementation.
     Geometry bufferedGeometry = geom.buffer(distance.get(), 24);
     return GeometryUtils.geometryToEsriShapeBytesWritable(bufferedGeometry);
   }

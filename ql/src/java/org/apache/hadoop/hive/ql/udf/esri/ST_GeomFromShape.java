@@ -41,9 +41,11 @@ import java.nio.ByteOrder;
 
   public BytesWritable evaluate(BytesWritable shape, int wkid) throws UDFArgumentException {
     try {
+      // The argument is a raw ESRI shape body (as produced by ST_AsShape), i.e. the legacy
+      // ESRI shape encoding without the Hive transport header.
       ByteBuffer shapeBuffer = ByteBuffer.wrap(shape.getBytes(), 0, shape.getLength())
           .order(ByteOrder.LITTLE_ENDIAN);
-      Geometry jtsGeom = EsriShapeConverter.fromEsriShape(shapeBuffer);
+      Geometry jtsGeom = EsriShapeConverter.fromEsriShapeBody(shapeBuffer);
       if (jtsGeom == null) {
         return null;
       }

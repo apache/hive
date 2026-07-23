@@ -89,14 +89,15 @@ public final class EsriShapeConverter {
   }
 
   /**
-   * Reads the ESRI shape binary from {@code shapeBuffer} (already positioned at start,
-   * little-endian byte order will be set internally) and returns a JTS {@link Geometry}.
+   * Reads an ESRI shape body (the shape record itself, without any Hive transport header)
+   * from {@code shapeBuffer} (already positioned at start, little-endian byte order will be
+   * set internally) and returns a JTS {@link Geometry}.
    *
-   * @param shapeBuffer buffer containing raw ESRI shape bytes starting at its current position
+   * @param shapeBuffer buffer containing the raw ESRI shape body starting at its current position
    * @return a JTS Geometry, or {@code null} for the Null/Unknown shape type
    * @throws IllegalArgumentException if the buffer contains an unsupported or malformed shape
    */
-  public static Geometry fromEsriShape(ByteBuffer shapeBuffer) {
+  public static Geometry fromEsriShapeBody(ByteBuffer shapeBuffer) {
     shapeBuffer.order(ByteOrder.LITTLE_ENDIAN);
     int shapeType = shapeBuffer.getInt();
 
@@ -211,7 +212,10 @@ public final class EsriShapeConverter {
       rings[i] = copyRange(allCoords, start, end);
     }
 
-    // Classify rings: clockwise = exterior (ESRI convention); CCW = hole
+    // Classify rings: clockwise = exterior (ESRI convention); CCW = hole.
+    // Note: the ESRI spec does not mandate an ordering between exterior rings and their
+    // holes; this reader assumes each exterior ring is followed by its holes, which is the
+    // convention the ESRI library produced (so it holds for data it wrote), not a spec guarantee.
     // Build list of (exterior ring index, list of hole ring indices)
     List<Integer> exteriorIndices = new ArrayList<>();
     List<List<Integer>> holesByExterior = new ArrayList<>();

@@ -435,7 +435,7 @@ public class GeometryUtils {
 
       // Use native EsriShapeConverter to read the old ESRI shape format
       try {
-        geom = EsriShapeConverter.fromEsriShape(shapeBuffer);
+        geom = EsriShapeConverter.fromEsriShapeBody(shapeBuffer);
       } catch (Exception e) {
         LOG.warn("Failed to parse ESRI shape geometry", e);
         return null;
