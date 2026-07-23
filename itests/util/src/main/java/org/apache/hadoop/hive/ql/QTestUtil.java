@@ -143,6 +143,8 @@ public class QTestUtil {
   QTestOptionDispatcher dispatcher = new QTestOptionDispatcher();
 
   private boolean isSessionStateStarted = false;
+  private QOutProcessor.MaskingFoldState outMaskingFoldState;
+  private QOutProcessor.MaskingFoldState errMaskingFoldState;
 
   public CliDriver getCliDriver() {
     if (cliDriver == null) {
@@ -688,16 +690,24 @@ public class QTestUtil {
 
     qTestResultProcessor.setOutputs(ss, fo);
 
+    outMaskingFoldState = new QOutProcessor.MaskingFoldState();
     ss.out = new QTestFetchConverter(ss.out, false, "UTF-8", line -> {
       notifyOutputLine(line);
       if (qOutProcessor != null) {
         // ensure that the masking is done before the sorting of the query results
-        return qOutProcessor.processLine(line).get();
+        return qOutProcessor.maskAndFoldLine(line, outMaskingFoldState);
       }
       return line;
     });
 
+    errMaskingFoldState = new QOutProcessor.MaskingFoldState();
     ss.err = new CachingPrintStream(fo, true, "UTF-8");
+    ss.err = new QTestFetchConverter(ss.err, false, "UTF-8", line ->{
+      if (qOutProcessor != null) {
+        return qOutProcessor.maskAndFoldLine(line, errMaskingFoldState);
+      }
+      return line;
+    });
     ss.setIsSilent(true);
     ss.setIsQtestLogging(true);
   }
@@ -1014,7 +1024,6 @@ public class QTestUtil {
     String outFileName = outPath(outDir, tname + outFileExtension);
 
     File f = new File(logDir, tname + outFileExtension);
-    qOutProcessor.maskPatterns(f.getPath());
 
     if (QTestSystemProperties.shouldOverwriteResults()) {
       qTestResultProcessor.overwriteResults(f.getPath(), outFileName);

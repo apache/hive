@@ -20,8 +20,10 @@ package org.apache.hive.beeline;
 
 import org.apache.hadoop.hive.common.io.DigestPrintStream;
 import org.apache.hadoop.hive.common.io.FetchCallback;
+import org.apache.hadoop.hive.common.io.QTestFetchConverter;
 import org.apache.hadoop.hive.common.io.SortAndDigestPrintStream;
 import org.apache.hadoop.hive.common.io.SortPrintStream;
+import org.apache.hadoop.hive.ql.QOutProcessor;
 
 import java.io.PrintStream;
 
@@ -33,8 +35,28 @@ public class ConvertedOutputFile extends OutputFile {
   private final boolean hasFetchCallback;
 
   public ConvertedOutputFile(OutputFile inner, Converter converter) throws Exception {
-    super(converter.getConvertedPrintStream(inner.getOut()), inner.getFilename());
+    this(inner, converter, null, null);
+  }
+
+  public ConvertedOutputFile(OutputFile inner, Converter converter, QOutProcessor qOutProcessor,
+      QOutProcessor.MaskingFoldState maskingFoldState) throws Exception {
+    super(wrapStream(inner.getOut(), converter, qOutProcessor, maskingFoldState), inner.getFilename());
     hasFetchCallback = (getOut() instanceof FetchCallback);
+  }
+
+  private static PrintStream wrapStream(PrintStream inner, Converter converter,
+      QOutProcessor qOutProcessor, QOutProcessor.MaskingFoldState maskingFoldState) throws Exception {
+    if (qOutProcessor == null || maskingFoldState == null) {
+      return converter.getConvertedPrintStream(inner);
+    }
+    // Sort before mask: identical MASK lines must not be created by sorting already-masked rows.
+    PrintStream masked = new QTestFetchConverter(inner, false, "UTF-8", line -> {
+      if (line.startsWith("Reading log file:")) {
+        return null;
+      }
+      return qOutProcessor.maskAndFoldLine(line, maskingFoldState);
+    });
+    return converter.getConvertedPrintStream(masked);
   }
 
   @Override

@@ -109,6 +109,7 @@ public class CoreCliDriver extends CliAdapter {
       System.err.println("Begin query: " + fname);
 
       qt.setInputFile(fpath);
+      setupAdditionalPartialMasks();
       qt.cliInit();
 
       try {
@@ -118,7 +119,6 @@ public class CoreCliDriver extends CliAdapter {
         qt.failedQuery(e.getCause(), e.getResponseCode(), fname, QTestUtil.DEBUG_HINT);
       }
 
-      setupAdditionalPartialMasks();
       QTestProcessExecResult result = qt.checkCliDriverResults();
       resetAdditionalPartialMasks();
       if (result.getReturnCode() != 0) {
