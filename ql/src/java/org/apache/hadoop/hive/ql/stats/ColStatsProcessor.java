@@ -22,7 +22,9 @@ import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -38,6 +40,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -97,7 +100,8 @@ public class ColStatsProcessor implements IStatsProcessor {
     return persistColumnStats(db, tbl);
   }
 
-  private boolean constructColumnStatsFromPackedRows(Table tbl, List<ColumnStatistics> stats, long maxNumStats)
+  private boolean constructColumnStatsFromPackedRows(Table tbl, List<ColumnStatistics> stats, 
+      long maxNumStats, Map<String, List<String>> failedColumnStatsByTarget)
       throws HiveException, MetaException, IOException {
     String partName = null;
     List<String> colName = colStatDesc.getColName();
@@ -118,6 +122,7 @@ public class ColStatsProcessor implements IStatsProcessor {
 
       // Partition columns are appended at end, we only care about stats column
       int pos = 0;
+      List<String> failedColumns = new ArrayList<>();
       for (int i = 0; i < colName.size(); i++) {
         String columnName = colName.get(i);
         String columnType = colType.get(i);
@@ -133,13 +138,14 @@ public class ColStatsProcessor implements IStatsProcessor {
           if (isStatsReliable) {
             throw new HiveException("Statistics collection failed while (hive.stats.reliable)", e);
           } else {
+            failedColumns.add(columnName);
             LOG.debug("Because {} is infinite or NaN, we skip stats.", columnName, e);
           }
         }
         pos += columnStatsFields.size();
       }
 
-      if (!statsObjs.isEmpty()) {
+      if (!statsObjs.isEmpty() || !failedColumns.isEmpty()) {
         if (!isTblLevel) {
           List<FieldSchema> partColSchema = new ArrayList<>();
           List<String> partVals = new ArrayList<>();
@@ -168,14 +174,22 @@ public class ColStatsProcessor implements IStatsProcessor {
           partName = Warehouse.makePartName(partColSchema, partVals);
         }
 
-        ColumnStatisticsDesc statsDesc = buildColumnStatsDesc(tbl, partName, isTblLevel);
-        ColumnStatistics colStats = new ColumnStatistics();
-        colStats.setStatsDesc(statsDesc);
-        colStats.setStatsObj(statsObjs);
-        colStats.setEngine(Constants.HIVE_ENGINE);
-        stats.add(colStats);
-        if (numStats >= maxNumStats) {
-          return false;
+        if (!failedColumns.isEmpty()) {
+          String statsTarget = isTblLevel ? tbl.getFullyQualifiedName() : partName;
+          failedColumnStatsByTarget.computeIfAbsent(statsTarget, k -> new ArrayList<>())
+              .addAll(failedColumns);
+        }
+
+        if (!statsObjs.isEmpty()) {
+          ColumnStatisticsDesc statsDesc = buildColumnStatsDesc(tbl, partName, isTblLevel);
+          ColumnStatistics colStats = new ColumnStatistics();
+          colStats.setStatsDesc(statsDesc);
+          colStats.setStatsObj(statsObjs);
+          colStats.setEngine(Constants.HIVE_ENGINE);
+          stats.add(colStats);
+          if (numStats >= maxNumStats) {
+            return false;
+          }
         }
       }
     }
@@ -215,11 +229,44 @@ public class ColStatsProcessor implements IStatsProcessor {
     long maxNumStats = conf.getLongVar(HiveConf.ConfVars.HIVE_STATS_MAX_NUM_STATS);
     while (!done) {
       List<ColumnStatistics> colStats = new ArrayList<>();
+      Map<String, List<String>> failedColumnStatsByTarget = new HashMap<>();
 
-      long start = System. currentTimeMillis();
-      done = constructColumnStatsFromPackedRows(tbl, colStats, maxNumStats);
+      long start = System.currentTimeMillis();
+      done = constructColumnStatsFromPackedRows(tbl, colStats, maxNumStats, failedColumnStatsByTarget);
       long end = System.currentTimeMillis();
       LOG.info("Time taken to build " + colStats.size() + " stats desc : " + ((end - start)/1000F) + " seconds.");
+
+      // Remove inaccurate column stats markers
+      List<Partition> partitionsToUpdate = new ArrayList<>();
+      for (Map.Entry<String, List<String>> entry : failedColumnStatsByTarget.entrySet()) {
+        List<String> failedColumns = entry.getValue();
+        if (CollectionUtils.isEmpty(failedColumns)) {
+          continue;
+        }
+
+        if (tbl.isNonNative() && tbl.getStorageHandler().canSetColStatistics(tbl)) {
+          if (!(tbl.isMaterializedView() || tbl.isView() || tbl.isTemporary())) {
+            // table level COLUMN_STATS_ACCURATE cleanup only for non-native tables
+            // partition level cleanup is not done due to no storage-handler API.
+            setOrRemoveColumnStatsAccurateProperty(db, tbl, failedColumns, false);
+          }
+        } else {
+          if (colStatDesc.isTblLevel()) {
+            setOrRemoveColumnStatsAccurateProperty(db, tbl, failedColumns, false);
+          } else if (!tbl.hasNonNativePartitionSupport()) { // Native HMS partitions only
+            Map<String, String> partSpec = Warehouse.makeSpecFromName(entry.getKey());
+            Partition partition = db.getPartition(tbl, partSpec, false);
+            if (partition == null) {
+              LOG.debug("Skipping removal of column stats accurate marker for missing partition {}",
+                  entry.getKey());
+              continue;
+            }
+            StatsSetupConst.removeColumnStatsState(partition.getParameters(), failedColumns);
+            partitionsToUpdate.add(partition);
+          }
+        }
+      }
+      removePartitionColumnStatsAccurateProperty(db, tbl, partitionsToUpdate);
 
       // Persist the column statistics object to the metastore
       // Note, this function is shared for both table and partition column stats.
@@ -235,7 +282,7 @@ public class ColStatsProcessor implements IStatsProcessor {
         }
       }
 
-      start = System. currentTimeMillis();
+      start = System.currentTimeMillis();
       if (tbl.isNonNative() && tbl.getStorageHandler().canSetColStatistics(tbl)) {
         boolean success = tbl.getStorageHandler().setColStatistics(tbl, colStats);
         if (!(tbl.isMaterializedView() || tbl.isView() || tbl.isTemporary())) {
@@ -265,7 +312,23 @@ public class ColStatsProcessor implements IStatsProcessor {
     } else {
       StatsSetupConst.removeColumnStatsState(tbl.getParameters(), colNames);
     }
-    db.alterTable(tbl.getFullyQualifiedName(), tbl, environmentContext, false);
+    boolean transactional = AcidUtils.isTransactionalTable(tbl);
+    db.alterTable(tbl.getFullyQualifiedName(), tbl, environmentContext, transactional);
+  }
+
+  private void removePartitionColumnStatsAccurateProperty(Hive db, Table tbl, List<Partition> partitions)
+      throws HiveException {
+    if (CollectionUtils.isEmpty(partitions)) {
+      return;
+    }
+    EnvironmentContext environmentContext = new EnvironmentContext();
+    environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
+    boolean transactional = AcidUtils.isTransactionalTable(tbl);
+    try {
+      db.alterPartitions(tbl.getFullyQualifiedName(), partitions, environmentContext, transactional);
+    } catch (InvalidOperationException e) {
+      throw new HiveException(e);
+    }
   }
 
   /**
