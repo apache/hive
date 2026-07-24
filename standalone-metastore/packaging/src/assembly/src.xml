@@ -43,6 +43,7 @@
         <include>metastore-server/**/*</include>
         <include>metastore-tools/**/*</include>
         <include>metastore-rest-catalog/**/*</include>
+        <include>metastore-search/**/*</include>
         <include>packaging/**/*</include>
         <include>checkstyle/**/*</include>
         <include>spotbugs/**/*</include>
