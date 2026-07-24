@@ -566,6 +566,9 @@ public class HiveMaterializedViewUtils {
       throw new CalciteCteException("Failed to create temporary location", e);
     }
     Table hiveTable = new Table(metaTable);
+    hiveTable.setFields(columns.stream()
+        .map(columnInfo -> new FieldSchema(columnInfo.getInternalName(), columnInfo.getTypeName(), null))
+        .toList());
     hiveTable.setMaterializedTable(true);
     RelOptHiveTable optTable =
         new RelOptHiveTable(null, cluster.getTypeFactory(), fullName, body.getRowType(), hiveTable, columns,
