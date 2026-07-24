@@ -56,6 +56,10 @@ class HiveIcebergRESTCatalogClient {
     return restCatalog;
   }
 
+  Configuration getHadoopConf() {
+    return conf;
+  }
+
   void cleanupWarehouse() throws Exception {
     restCatalog.listNamespaces().stream().filter(namespace -> !DEFAULT_NS.equals(namespace)).forEach(namespace -> {
       restCatalog.listTables(namespace).forEach(restCatalog::dropTable);
