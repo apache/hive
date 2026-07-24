@@ -52,7 +52,100 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * The property-maps servlet.
+ * HTTP servlet exposing the {@link org.apache.hadoop.hive.metastore.properties.PropertyManager}
+ * API over JSON.
+ *
+ * <p>The servlet is mounted at a configurable path and port (see
+ * {@code MetastoreConf.ConfVars.PROPERTIES_SERVLET_PORT} and
+ * {@code MetastoreConf.ConfVars.PROPERTIES_SERVLET_PATH}). The last segment of the request URI is
+ * used as the property manager <em>namespace</em>, so the same servlet instance can serve multiple
+ * independent namespaces.</p>
+ *
+ * <h2>Namespace and Schema resolution</h2>
+ * <p>The last URI segment is the <em>namespace</em>. Each namespace must be registered in advance
+ * by calling {@link org.apache.hadoop.hive.metastore.properties.PropertyManager#declare(String, Class)}
+ * with a concrete {@link org.apache.hadoop.hive.metastore.properties.PropertyManager} subclass.
+ * That subclass is instantiated per request via its {@code (String, PropertyStore)} constructor.</p>
+ *
+ * <p>Within a namespace, the {@link org.apache.hadoop.hive.metastore.properties.PropertySchema} is
+ * <em>not</em> fixed — it is resolved dynamically by the manager from the number of dot-separated
+ * key fragments. For example, {@link org.apache.hadoop.hive.metastore.properties.HMSPropertyManager}
+ * (registered under {@code "hms"}) uses:</p>
+ * <table border="1">
+ *   <caption>HMSPropertyManager key-to-schema mapping</caption>
+ *   <tr><th>Fragments</th><th>Example key</th><th>Schema</th></tr>
+ *   <tr><td>1</td><td>{@code name}</td><td>CLUSTER_SCHEMA</td></tr>
+ *   <tr><td>2</td><td>{@code db.name}</td><td>DATABASE_SCHEMA</td></tr>
+ *   <tr><td>3+</td><td>{@code db.table.name}</td><td>TABLE_SCHEMA</td></tr>
+ * </table>
+ * <p>A namespace with no registered manager throws {@code NoSuchObjectException} (HTTP 400).</p>
+ *
+ * <h2>HTTP Methods</h2>
+ *
+ * <h3>GET — fetch properties by key</h3>
+ * <p>One or more {@code key} query parameters select individual property values.
+ * Returns a JSON object mapping each found key to its string value.</p>
+ * <pre>{@code
+ * GET /properties/mynamespace?key=db1.table1.owner&key=db1.table1.created_time
+ * → { "db1.table1.owner": "alice", "db1.table1.created_time": "2024-01-15T08:00:00.00Z" }
+ * }</pre>
+ *
+ * <h3>PUT — set properties</h3>
+ * <p>Request body must be a JSON object mapping qualified keys to values. All updates are
+ * committed atomically; any error triggers a rollback.</p>
+ * <pre>{@code
+ * PUT /properties/mynamespace
+ * { "db1.table1.owner": "bob", "db1.table1.is_external": "true" }
+ * }</pre>
+ *
+ * <h3>POST — query or script</h3>
+ * <p>The request body is a single JSON action object or a JSON array of action objects.
+ * Each action must have a {@code "method"} field (defaults to {@code "selectProperties"} if absent).
+ * Returns a single result object, or an array when multiple actions are submitted.
+ * All actions in one request share a transaction; any failure rolls back the entire batch.</p>
+ *
+ * <p>Supported methods:</p>
+ * <dl>
+ *   <dt>{@code fetchProperties}</dt>
+ *   <dd>Fetches exact values for a list of fully-qualified keys.
+ *   <pre>{@code
+ * { "method": "fetchProperties", "keys": ["db1.table1.owner", "db1.table1.tags"] }
+ * → { "db1.table1.owner": "alice" }
+ *   }</pre></dd>
+ *
+ *   <dt>{@code selectProperties}</dt>
+ *   <dd>Selects property maps whose key starts with {@code prefix}, optionally filtered by a
+ *   JEXL {@code predicate} expression and projected to a subset of property names via
+ *   {@code selection}.
+ *   <pre>{@code
+ * { "method": "selectProperties",
+ *   "prefix": "db1.",
+ *   "predicate": "owner == 'alice'",
+ *   "selection": ["owner", "is_external"] }
+ * → { "db1.table1": { "owner": "alice", "is_external": "true" } }
+ *   }</pre></dd>
+ *
+ *   <dt>{@code script}</dt>
+ *   <dd>Executes a JEXL script via {@link org.apache.hadoop.hive.metastore.properties.PropertyManager#runScript}.
+ *   <pre>{@code
+ * { "method": "script", "source": "select('db1.', null, null)" }
+ *   }</pre></dd>
+ *
+ *   <dt>{@code echo}</dt>
+ *   <dd>Returns the action object unchanged. Useful for health checks and round-trip testing.</dd>
+ * </dl>
+ *
+ * <h2>Error handling</h2>
+ * <p>{@link org.apache.hadoop.hive.metastore.properties.PropertyException} and
+ * {@code NoSuchObjectException} map to HTTP 400 (Bad Request);
+ * all other exceptions map to HTTP 500 (Internal Server Error).</p>
+ *
+ * <h2>Configuration</h2>
+ * <ul>
+ *   <li>{@code MetastoreConf.ConfVars.PROPERTIES_SERVLET_PORT} — listening port (negative disables the servlet)</li>
+ *   <li>{@code MetastoreConf.ConfVars.PROPERTIES_SERVLET_PATH} — URL path prefix</li>
+ *   <li>{@code MetastoreConf.ConfVars.PROPERTIES_SERVLET_AUTH} — authentication type</li>
+ * </ul>
  */
 public class PropertyServlet extends HttpServlet {
   /** The common prefix for errors. */

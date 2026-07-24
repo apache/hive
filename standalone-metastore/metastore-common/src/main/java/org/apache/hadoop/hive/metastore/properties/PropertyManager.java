@@ -75,14 +75,14 @@ public abstract class PropertyManager {
   /** A Jexl engine for convenience. */
   static final JexlEngine JEXL;
   static {
-    JexlFeatures features = new JexlFeatures()
+    JexlFeatures features = JexlFeatures.createDefault()
         .sideEffect(false)
         .sideEffectGlobal(false);
-    JexlPermissions p = JexlPermissions.RESTRICTED
+    JexlPermissions permissions = JexlPermissions.RESTRICTED
         .compose("org.apache.hadoop.hive.metastore.properties.*");
     JEXL = new JexlBuilder()
         .features(features)
-        .permissions(p)
+        .permissions(permissions)
         .create();
   }
 
