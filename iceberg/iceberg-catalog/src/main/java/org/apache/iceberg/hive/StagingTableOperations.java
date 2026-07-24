@@ -23,6 +23,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.iceberg.ClientPool;
 import org.apache.iceberg.TableMetadata;
+import org.apache.iceberg.encryption.KeyManagementClient;
 import org.apache.iceberg.io.FileIO;
 import org.apache.thrift.TException;
 
@@ -38,10 +39,11 @@ public class StagingTableOperations extends HiveTableOperations {
       Configuration conf,
       ClientPool<IMetaStoreClient, TException> metaClients,
       FileIO fileIO,
+      KeyManagementClient keyManagementClient,
       String catalogName,
       String database,
       String table) {
-    super(conf, metaClients, fileIO, catalogName, database, table);
+    super(conf, metaClients, fileIO, keyManagementClient, catalogName, database, table);
   }
 
   @Override
