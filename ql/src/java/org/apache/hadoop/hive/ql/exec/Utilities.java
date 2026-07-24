@@ -1434,21 +1434,19 @@ public final class Utilities {
   }
 
   public static void mvFileToFinalPath(Path specPath, String unionSuffix, Configuration hconf,
-                                       boolean success, Logger log, DynamicPartitionCtx dpCtx, FileSinkDesc conf,
+                                       boolean success, DynamicPartitionCtx dpCtx, FileSinkDesc conf,
                                        Reporter reporter) throws IOException,
       HiveException {
 
-    // There are following two paths this could could take based on the value of shouldAvoidRename
-    //  shouldAvoidRename indicate if tmpPath should be renamed/moved or now.
-    //    if false:
-    //      Skip renaming/moving the tmpPath
-    //      Deduplicate and keep a list of files
-    //      Pass on the list of files to conf (to be used later by fetch operator)
-    //    if true:
-    //       1) Rename tmpPath to a new directory name to prevent additional files
-    //          from being added by runaway processes.
-    //       2) Remove duplicates from the temp directory
-    //       3) Rename/move the temp directory to specPath
+    // On success, delegates to three helpers. The key flag is avoidRename:
+    //  avoidRename=true -  set for SELECT statements or CTAS/Create MV on blob storage.
+    //                      tmpPath is not renamed; files are deduplicated and either
+    //                      passed to the fetch operator (SELECT) or moved in place (CTAS).
+    // avoidRename=false -  set for INSERT, LOAD and similar write statements.
+    //                      1) renameTmpIfNeeded  : rename tmpPath to *.moved to fence
+    //                                              runaway processes from adding more files
+    //                      2) deduplicateAndMove : remove duplicates, move to specPath;
+    //                                              if output is empty, delete the .moved dir.
 
     FileSystem fs = specPath.getFileSystem(hconf);
     Path tmpPath = Utilities.toTempPath(specPath);
@@ -1456,85 +1454,106 @@ public final class Utilities {
     if (!StringUtils.isEmpty(unionSuffix)) {
       specPath = specPath.getParent();
     }
-    PerfLogger perfLogger = SessionState.getPerfLogger();
-    boolean isBlobStorage = BlobStorageUtils.isBlobStorageFileSystem(hconf, fs);
-    boolean avoidRename = false;
-    boolean shouldAvoidRename = shouldAvoidRename(conf, hconf);
-
-    if(isBlobStorage && (shouldAvoidRename|| ((conf != null) && conf.isCTASorCM()))
-        || (!isBlobStorage && shouldAvoidRename)) {
-      avoidRename = true;
-    }
+    boolean avoidRename = computeAvoidRename(conf, hconf, fs);
     if (success) {
-      if (!avoidRename && fs.exists(tmpPath)) {
-        //   1) Rename tmpPath to a new directory name to prevent additional files
-        //      from being added by runaway processes.
-        // this is only done for all statements except SELECT, CTAS and Create MV
-        Path tmpPathOriginal = tmpPath;
-        tmpPath = new Path(tmpPath.getParent(), tmpPath.getName() + ".moved");
-        LOG.debug("shouldAvoidRename is false therefore moving/renaming " + tmpPathOriginal + " to " + tmpPath);
-        perfLogger.perfLogBegin("FileSinkOperator", "rename");
-        Utilities.rename(fs, tmpPathOriginal, tmpPath);
-        perfLogger.perfLogEnd("FileSinkOperator", "rename");
-      }
-
-      // Remove duplicates from tmpPath
-      List<FileStatus> statusList = HiveStatsUtils.getFileStatusRecurse(
-          tmpPath, ((dpCtx == null) ? 1 : dpCtx.getNumDPCols()), fs);
-      FileStatus[] statuses = statusList.toArray(new FileStatus[statusList.size()]);
-      if(statuses != null && statuses.length > 0) {
-        Set<FileStatus> filesKept = new HashSet<>();
-        perfLogger.perfLogBegin("FileSinkOperator", "RemoveTempOrDuplicateFiles");
-        // remove any tmp file or double-committed output files
-        int dpLevels = dpCtx == null ? 0 : dpCtx.getNumDPCols(),
-            numBuckets = (conf != null && conf.getTable() != null) ? conf.getTable().getNumBuckets() : 0;
-        List<Path> emptyBuckets = removeTempOrDuplicateFiles(
-            fs, statuses, unionSuffix, dpLevels, numBuckets, hconf, null, 0, false, filesKept, false);
-        perfLogger.perfLogEnd("FileSinkOperator", "RemoveTempOrDuplicateFiles");
-        // create empty buckets if necessary
-        if (!emptyBuckets.isEmpty()) {
-          perfLogger.perfLogBegin("FileSinkOperator", "CreateEmptyBuckets");
-          createEmptyBuckets(
-              hconf, emptyBuckets, conf.getCompressed(), conf.getTableInfo(), reporter);
-          for(Path p:emptyBuckets) {
-            FileStatus[] items = fs.listStatus(p);
-            filesKept.addAll(Arrays.asList(items));
-          }
-          perfLogger.perfLogEnd("FileSinkOperator", "CreateEmptyBuckets");
-        }
-
-        // move to the file destination
-        Utilities.FILE_OP_LOGGER.trace("Moving tmp dir: {} to: {}", tmpPath, specPath);
-        if(shouldAvoidRename(conf, hconf)){
-          // for SELECT statements
-          LOG.debug("Skipping rename/move files. Files to be kept are: " + filesKept.toString());
-          conf.getFilesToFetch().addAll(filesKept);
-        } else if (conf !=null && conf.isCTASorCM() && isBlobStorage) {
-          // for CTAS or Create MV statements
-          perfLogger.perfLogBegin("FileSinkOperator", "moveSpecifiedFileStatus");
-          LOG.debug("CTAS/Create MV: Files being renamed:  " + filesKept.toString());
-          if (conf.getTable() != null && conf.getTable().getTableType().equals(TableType.EXTERNAL_TABLE)) {
-            // Do this optimisation only for External tables.
-            createFileList(filesKept, tmpPath, specPath, fs);
-          } else {
-            Set<String> filesKeptPaths = filesKept.stream().map(x -> x.getPath().toString()).collect(Collectors.toSet());
-            moveSpecifiedFilesInParallel(hconf, fs, tmpPath, specPath, filesKeptPaths);
-          }
-          perfLogger.perfLogEnd("FileSinkOperator", "moveSpecifiedFileStatus");
-        } else {
-          // for rest of the statement e.g. INSERT, LOAD etc
-          perfLogger.perfLogBegin("FileSinkOperator", "RenameOrMoveFiles");
-          LOG.debug("Final renaming/moving. Source: " + tmpPath + " .Destination: " + specPath);
-          renameOrMoveFilesInParallel(hconf, fs, tmpPath, specPath);
-          perfLogger.perfLogEnd("FileSinkOperator", "RenameOrMoveFiles");
-        }
-      }
+      tmpPath = renameTmpIfNeeded(fs, tmpPath, avoidRename);
+      deduplicateAndMove(hconf, fs, tmpPath, specPath, unionSuffix, dpCtx, conf, reporter, avoidRename);
     } else {
       Utilities.FILE_OP_LOGGER.trace("deleting tmpPath {}", tmpPath);
       fs.delete(tmpPath, true);
     }
     Utilities.FILE_OP_LOGGER.trace("deleting taskTmpPath {}", taskTmpPath);
     fs.delete(taskTmpPath, true);
+  }
+
+  private static boolean computeAvoidRename(FileSinkDesc conf, Configuration hconf, FileSystem fs) {
+    boolean isBlobStorage = BlobStorageUtils.isBlobStorageFileSystem(hconf, fs);
+    boolean shouldAvoidRename = shouldAvoidRename(conf, hconf);
+    return (isBlobStorage && (shouldAvoidRename || (conf != null && conf.isCTASorCM())))
+        || (!isBlobStorage && shouldAvoidRename);
+  }
+
+  private static Path renameTmpIfNeeded(FileSystem fs, Path tmpPath, boolean avoidRename)
+          throws IOException, HiveException {
+    if (!avoidRename && fs.exists(tmpPath)) {
+      Path moved = new Path(tmpPath.getParent(), tmpPath.getName() + ".moved");
+      LOG.debug("shouldAvoidRename is false therefore moving/renaming " + tmpPath + " to " + moved);
+      PerfLogger perfLogger = SessionState.getPerfLogger();
+      perfLogger.perfLogBegin("FileSinkOperator", "rename");
+      Utilities.rename(fs, tmpPath, moved);
+      perfLogger.perfLogEnd("FileSinkOperator", "rename");
+      return moved;
+    }
+    return tmpPath;
+  }
+
+  private static void deduplicateAndMove(Configuration hconf, FileSystem fs, Path tmpPath,
+      Path specPath, String unionSuffix, DynamicPartitionCtx dpCtx, FileSinkDesc conf,
+      Reporter reporter, boolean avoidRename) throws IOException, HiveException {
+    List<FileStatus> statusList = HiveStatsUtils.getFileStatusRecurse(
+        tmpPath, (dpCtx == null ? 1 : dpCtx.getNumDPCols()), fs);
+    FileStatus[] statuses = statusList.toArray(new FileStatus[0]);
+    if (statuses.length > 0) {
+      Set<FileStatus> filesKept = removeDuplicatesAndFillBuckets(
+          hconf, fs, statuses, unionSuffix, dpCtx, conf, reporter);
+      moveKeptFiles(hconf, fs, tmpPath, specPath, conf, filesKept);
+    } else if (!avoidRename) {
+      // Empty UNION branch: .moved staging dir was created (line 1474) but contains no output files.
+      // (e.g. UNION ALL branch produced 0 rows). Without this delete it remains in the final partition directory
+      Utilities.FILE_OP_LOGGER.debug("Deleting empty staging directory after commit: {}", tmpPath);
+      fs.delete(tmpPath, false);
+    }
+  }
+
+  private static Set<FileStatus> removeDuplicatesAndFillBuckets(Configuration hconf, FileSystem fs,
+      FileStatus[] statuses, String unionSuffix, DynamicPartitionCtx dpCtx,
+      FileSinkDesc conf, Reporter reporter) throws IOException, HiveException {
+    Set<FileStatus> filesKept = new HashSet<>();
+    PerfLogger perfLogger = SessionState.getPerfLogger();
+    int dpLevels = dpCtx == null ? 0 : dpCtx.getNumDPCols();
+    int numBuckets = (conf != null && conf.getTable() != null) ? conf.getTable().getNumBuckets() : 0;
+    perfLogger.perfLogBegin("FileSinkOperator", "RemoveTempOrDuplicateFiles");
+    List<Path> emptyBuckets = removeTempOrDuplicateFiles(
+        fs, statuses, unionSuffix, dpLevels, numBuckets, hconf, null, 0, false, filesKept, false);
+    perfLogger.perfLogEnd("FileSinkOperator", "RemoveTempOrDuplicateFiles");
+    if (conf != null && !emptyBuckets.isEmpty()) {
+      perfLogger.perfLogBegin("FileSinkOperator", "CreateEmptyBuckets");
+      createEmptyBuckets(hconf, emptyBuckets, conf.getCompressed(), conf.getTableInfo(), reporter);
+      for (Path p : emptyBuckets) {
+        filesKept.addAll(Arrays.asList(fs.listStatus(p)));
+      }
+      perfLogger.perfLogEnd("FileSinkOperator", "CreateEmptyBuckets");
+    }
+    return filesKept;
+  }
+
+  private static void moveKeptFiles(Configuration hconf, FileSystem fs, Path tmpPath,
+      Path specPath, FileSinkDesc conf, Set<FileStatus> filesKept) throws IOException, HiveException {
+    Utilities.FILE_OP_LOGGER.trace("Moving tmp dir: {} to: {}", tmpPath, specPath);
+    PerfLogger perfLogger = SessionState.getPerfLogger();
+    if (shouldAvoidRename(conf, hconf)) {
+      // SELECT statements: pass files to fetch operator
+      LOG.debug("Skipping rename/move files. Files to be kept are: " + filesKept);
+      conf.getFilesToFetch().addAll(filesKept);
+    } else if (conf != null && conf.isCTASorCM()
+        && BlobStorageUtils.isBlobStorageFileSystem(hconf, fs)) {
+      // CTAS / Create MV on blob storage
+      perfLogger.perfLogBegin("FileSinkOperator", "moveSpecifiedFileStatus");
+      LOG.debug("CTAS/Create MV: Files being renamed: " + filesKept);
+      if (conf.getTable() != null && conf.getTable().getTableType().equals(TableType.EXTERNAL_TABLE)) {
+        createFileList(filesKept, tmpPath, specPath, fs);
+      } else {
+        Set<String> paths = filesKept.stream().map(x -> x.getPath().toString()).collect(Collectors.toSet());
+        moveSpecifiedFilesInParallel(hconf, fs, tmpPath, specPath, paths);
+      }
+      perfLogger.perfLogEnd("FileSinkOperator", "moveSpecifiedFileStatus");
+    } else {
+      // INSERT, LOAD, etc.
+      perfLogger.perfLogBegin("FileSinkOperator", "RenameOrMoveFiles");
+      LOG.debug("Final renaming/moving. Source: " + tmpPath + " .Destination: " + specPath);
+      renameOrMoveFilesInParallel(hconf, fs, tmpPath, specPath);
+      perfLogger.perfLogEnd("FileSinkOperator", "RenameOrMoveFiles");
+    }
   }
 
   private static void createFileList(Set<FileStatus> filesKept, Path srcPath, Path targetPath, FileSystem fs)
