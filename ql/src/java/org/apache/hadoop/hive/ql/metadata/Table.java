@@ -301,12 +301,15 @@ public class Table implements Serializable {
       }
     }
 
-    if (isView() || isMaterializedView()) {
-      assert (getViewOriginalText() != null);
-      assert (getViewExpandedText() != null);
-    } else {
-      assert(getViewOriginalText() == null);
-      assert(getViewExpandedText() == null);
+    if (!(DDLUtils.isIcebergTable(this) && isMaterializedView() &&
+            "iceberg".equals(HiveConf.getVar(conf, ConfVars.HIVE_ICEBERG_MATERIALIZEDVIEW_METADATA_LOCATION)))) {
+      if (isView() || isMaterializedView()) {
+        assert (getViewOriginalText() != null);
+        assert (getViewExpandedText() != null);
+      } else {
+        assert (getViewOriginalText() == null);
+        assert (getViewExpandedText() == null);
+      }
     }
   }
 
@@ -1086,7 +1089,8 @@ public class Table implements Serializable {
   }
 
   public boolean isMaterializedView() {
-    return TableType.MATERIALIZED_VIEW.equals(getTableType());
+    TableType tableType = getTableType();
+    return TableType.ALL_MATERIALIZED_VIEWS.contains(tableType);
   }
 
   /**
