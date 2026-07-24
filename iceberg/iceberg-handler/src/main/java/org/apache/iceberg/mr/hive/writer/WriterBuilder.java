@@ -28,12 +28,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
+import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.IcebergHiveBucketingConf;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.mapred.TaskAttemptID;
 import org.apache.iceberg.BatchScan;
@@ -82,16 +85,20 @@ public class WriterBuilder {
   public static final boolean ICEBERG_DELETE_SKIPROWDATA_DEFAULT = true;
   private boolean shouldAddRowLineageColumns = false;
 
-  private WriterBuilder(Table table, UnaryOperator<String> ops) {
+  private WriterBuilder(Table table, Configuration configuration, UnaryOperator<String> ops) {
     this.table = table;
     this.tableName = ops.apply(Catalogs.NAME);
-    this.context = new Context(table.properties(), ops, tableName);
+    this.context = new Context(table.properties(), ops, tableName, configuration);
     this.operation = HiveCustomStorageHandlerUtils.getWriteOperation(ops, tableName);
     this.rewritableDeletes = () -> rewritableDeletes(ops);
   }
 
   public static WriterBuilder builderFor(Table table, UnaryOperator<String> ops) {
-    return new WriterBuilder(table, ops);
+    return builderFor(table, null, ops);
+  }
+
+  public static WriterBuilder builderFor(Table table, Configuration configuration, UnaryOperator<String> ops) {
+    return new WriterBuilder(table, configuration, ops);
   }
 
   public WriterBuilder attemptID(TaskAttemptID newAttemptID) {
@@ -139,14 +146,23 @@ public class WriterBuilder {
     boolean isCOW = IcebergTableUtil.isCopyOnWriteMode(operation, table.properties()::getOrDefault);
 
     if (isCOW) {
-      writer = new HiveIcebergCopyOnWriteRecordWriter(table, writerFactory, dataFileFactory, shouldAddRowLineageColumns,
-          context);
+      if (context.hiveBucketingRouteEnabled()) {
+        writer = bucketRoutingWriter(taskId, operationId, perBucketFactory ->
+            new HiveIcebergCopyOnWriteRecordWriter(table, writerFactory, perBucketFactory,
+                shouldAddRowLineageColumns, context));
+      } else {
+        writer = new HiveIcebergCopyOnWriteRecordWriter(table, writerFactory, dataFileFactory,
+            shouldAddRowLineageColumns, context);
+      }
     } else {
       writer = switch (operation) {
         case DELETE ->
             new HiveIcebergDeleteWriter(table, rewritableDeletes.get(), writerFactory, deleteFileFactory, context);
         case OTHER ->
-            new HiveIcebergRecordWriter(table, writerFactory, dataFileFactory, context);
+            context.hiveBucketingRouteEnabled() ?
+                bucketRoutingWriter(taskId, operationId, perBucketFactory ->
+                    new HiveIcebergRecordWriter(table, writerFactory, perBucketFactory, context))
+                : new HiveIcebergRecordWriter(table, writerFactory, dataFileFactory, context);
         default ->
             // Update and Merge should be split to inserts and deletes
             throw new IllegalArgumentException("Unsupported operation when creating IcebergRecordWriter: " +
@@ -156,6 +172,19 @@ public class WriterBuilder {
 
     WriterRegistry.registerWriter(attemptID, tableName, writer);
     return writer;
+  }
+
+  private HiveIcebergWriter bucketRoutingWriter(int taskId, String operationId,
+      Function<OutputFileFactory, HiveIcebergWriter> writerCreator) {
+    return new HiveIcebergHiveBucketRoutingWriter(bucketId -> writerCreator.apply(
+        outputFileFactoryForBucket(bucketId, taskId, operationId)), context.hiveBucketingNumBuckets());
+  }
+
+  private OutputFileFactory outputFileFactoryForBucket(int bucketId, int taskId, String operationId) {
+    return OutputFileFactory.builderFor(table, bucketId, taskId)
+        .format(context.dataFileFormat())
+        .operationId(operationId)
+        .build();
   }
 
   private Map<String, DeleteFileSet> rewritableDeletes(UnaryOperator<String> ops) {
@@ -230,8 +259,11 @@ public class WriterBuilder {
     private final boolean skipRowData;
     private final boolean useDVs;
     private final Set<String> missingColumns;
+    private final boolean hiveBucketingRouteEnabled;
+    private final int hiveBucketingNumBuckets;
 
-    Context(Map<String, String> properties, UnaryOperator<String> ops, String tableName) {
+    Context(Map<String, String> properties, UnaryOperator<String> ops, String tableName,
+        Configuration configuration) {
       String dataFileFormatName =
           properties.getOrDefault(DEFAULT_FILE_FORMAT, DEFAULT_FILE_FORMAT_DEFAULT);
       this.dataFileFormat = FileFormat.valueOf(dataFileFormatName.toUpperCase(Locale.ENGLISH));
@@ -248,6 +280,11 @@ public class WriterBuilder {
       this.inputOrdered = HiveCustomStorageHandlerUtils.getWriteOperationIsSorted(ops, tableName);
       this.useFanoutWriter = !inputOrdered && IcebergTableUtil.isFanoutEnabled(properties);
       this.isMergeTask = HiveCustomStorageHandlerUtils.isMergeTaskEnabled(ops, tableName);
+
+      this.hiveBucketingRouteEnabled = HiveCustomStorageHandlerUtils.getIcebergHiveBucketingRouteEnabled(ops,
+          tableName);
+      this.hiveBucketingNumBuckets = resolveHiveBucketingNumBuckets(configuration, tableName,
+          hiveBucketingRouteEnabled);
 
       this.deleteGranularity = DeleteGranularity.PARTITION;
       this.useDVs = IcebergTableUtil.formatVersion(properties) > 2;
@@ -289,6 +326,14 @@ public class WriterBuilder {
       return inputOrdered;
     }
 
+    boolean hiveBucketingRouteEnabled() {
+      return hiveBucketingRouteEnabled;
+    }
+
+    int hiveBucketingNumBuckets() {
+      return hiveBucketingNumBuckets;
+    }
+
     boolean isMergeTask() {
       return isMergeTask;
     }
@@ -299,6 +344,21 @@ public class WriterBuilder {
 
     public boolean useDVs() {
       return useDVs;
+    }
+
+    private static int resolveHiveBucketingNumBuckets(Configuration configuration, String tableName,
+        boolean routeEnabled) {
+      if (!routeEnabled) {
+        return -1;
+      }
+      if (configuration == null) {
+        throw new IllegalStateException("Hive bucket routing requires task configuration for table " + tableName);
+      }
+      return HiveCustomStorageHandlerUtils.readIcebergHiveBucketingMetadata(configuration::get, tableName)
+          .filter(IcebergHiveBucketingConf::hasHiveBucketing)
+          .map(IcebergHiveBucketingConf::numBuckets)
+          .orElseThrow(() -> new IllegalStateException(
+              "Bucket routing enabled but Hive bucketing metadata missing from jobconf for table: " + tableName));
     }
 
     public Set<String> missingColumns() {

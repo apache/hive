@@ -20,9 +20,6 @@ package org.apache.hadoop.hive.ql.exec;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_TEMPORARY_TABLE_STORAGE;
 import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.MERGE_TASK_ENABLED;
-import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setMergeTaskEnabled;
-import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setWriteOperation;
-import static org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils.setWriteOperationIsSorted;
 
 import com.google.common.collect.Lists;
 import java.io.IOException;
@@ -77,6 +74,7 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.SkewedColumnPositionPair;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -638,12 +636,17 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       fs = specPath.getFileSystem(hconf);
 
       jc = new JobConf(hconf);
-      setWriteOperation(jc, getConf().getTableInfo().getTableName(), getConf().getWriteOperation());
-      setWriteOperationIsSorted(jc, getConf().getTableInfo().getTableName(),
+      final String targetTableName = getConf().getTableInfo().getTableName();
+      HiveCustomStorageHandlerUtils.setWriteOperation(jc, targetTableName, getConf().getWriteOperation());
+      HiveCustomStorageHandlerUtils.setWriteOperationIsSorted(jc, targetTableName,
               dpCtx != null && dpCtx.hasCustomPartitionOrSortExpression());
-      setMergeTaskEnabled(jc, getConf().getTableInfo().getTableName(),
+      HiveCustomStorageHandlerUtils.setMergeTaskEnabled(jc, targetTableName,
           Boolean.parseBoolean((String) getConf().getTableInfo().getProperties().get(
-              MERGE_TASK_ENABLED + getConf().getTableInfo().getTableName())));
+              MERGE_TASK_ENABLED + targetTableName)));
+
+      // Iceberg: propagate Hive-native bucketing routing flag and metadata (set by SDPO).
+      HiveCustomStorageHandlerUtils.propagateIcebergHiveBucketingFromTableInfo(
+          getConf().getTableInfo().getProperties(), jc, targetTableName);
 
       try {
         createHiveOutputFormat(jc);
