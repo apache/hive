@@ -434,23 +434,8 @@
                     },
                     "operands": [
                       {
-                        "op": {
-                          "name": "CAST",
-                          "kind": "CAST",
-                          "syntax": "SPECIAL"
-                        },
-                        "operands": [
-                          {
-                            "input": 9,
-                            "name": "$9"
-                          }
-                        ],
-                        "type": {
-                          "type": "DECIMAL",
-                          "nullable": true,
-                          "precision": 10,
-                          "scale": 0
-                        }
+                        "input": 9,
+                        "name": "$9"
                       }
                     ]
                   }

@@ -874,7 +874,7 @@ public class ASTConverter {
           return ASTBuilder.literal(literal);
         }
         nullLiteralMap.put(literal, true);
-        RexNode r = rexBuilder.makeAbstractCast(literal.getType(), literal);
+        RexNode r = rexBuilder.makeAbstractCast(literal.getType(), literal, false);
 
         return r.accept(this);
       }

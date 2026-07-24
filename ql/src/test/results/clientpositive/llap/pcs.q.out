@@ -1302,7 +1302,7 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ds`
 FROM `default`.`pcs_t1`
-WHERE (`ds`, `key`, RAND(100)) IN (('2000-04-08', 1, 0.2), ('2000-04-09', 2, 0.3))
+WHERE (`ds`, `key`, RAND(100)) IN (('2000-04-08', 1, 2E-1), ('2000-04-09', 2, 3E-1))
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

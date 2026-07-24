@@ -353,10 +353,24 @@
                       <pattern>io.netty</pattern>
                       <shadedPattern>org.apache.hive.druid.io.netty</shadedPattern>
                     </relocation>
+                    <!--
+                    Calcite is intentionally NOT included or relocated here.
+                    Calcite's calcite-core ships org/apache/calcite/runtime/SqlFunctions.class with a
+                    malformed RuntimeVisibleTypeAnnotations attribute (LOCAL_VARIABLE start_pc/length
+                    pointing inside instruction operands in the static initializer). The JVM tolerates it;
+                    ASM's ClassRemapper does not, and shading + javadoc fails with
+                    "Index 65536 out of bounds for length 334 [...] Error in ASM processing class".
+                    Present in Calcite 1.35.0 through at least 1.42.0. Upstream: ASM gitlab issue
+                    https://gitlab.ow2.org/asm/asm/-/issues/318008 (closed as invalid: root cause is on
+                    Calcite's side); Calcite ticket: https://issues.apache.org/jira/browse/CALCITE-6393
+                    (still unresolved). Druid 0.17.1 uses Calcite APIs compatible with Hive's Calcite 1.42+,
+                    so skipping this relocation is safe. If Druid is upgraded to an incompatible Calcite,
+                    restore the relocation (either after Calcite fixes their bytecode or by adding a shade
+                    filter that excludes SqlFunctions.class from remapping).
                     <relocation>
                       <pattern>org.apache.calcite</pattern>
                       <shadedPattern>org.apache.hive.druid.org.apache.calcite</shadedPattern>
-                    </relocation>
+                    </relocation> -->
                     <relocation>
                       <pattern>org.jboss.netty</pattern>
                       <shadedPattern>org.apache.hive.druid.org.jboss.netty</shadedPattern>
@@ -379,7 +393,8 @@
                       <include>org.apache.druid:*</include>
                       <include>org.apache.druid.extensions:*</include>
                       <include>io.netty:*</include>
-                      <include>org.apache.calcite:*</include>
+                      <!-- See comment above about Calcite not being relocated & included -->
+                      <!-- <include>org.apache.calcite:*</include> -->
                       <include>com.fasterxml.jackson.core:*</include>
                       <include>com.fasterxml.jackson.datatype:*</include>
                       <include>com.fasterxml.jackson.dataformat:*</include>

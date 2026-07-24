@@ -966,7 +966,7 @@ STAGE PLANS:
           Limit
             Number of rows: 1
             Select Operator
-              expressions: null (type: double)
+              expressions: (UDFToDouble(key) / null) (type: double)
               outputColumnNames: _col0
               ListSink
 

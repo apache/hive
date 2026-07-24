@@ -480,10 +480,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: UDFToDouble(key) is not null (type: boolean)
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 242 Data size: 22990 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: UDFToDouble(key) is not null (type: boolean)
+                    predicate: key is not null (type: boolean)
                     Statistics: Num rows: 242 Data size: 22990 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: string), UDFToDouble(key) (type: double)
@@ -571,10 +571,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: UDFToDouble(key) is not null (type: boolean)
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 242 Data size: 22990 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: UDFToDouble(key) is not null (type: boolean)
+                    predicate: key is not null (type: boolean)
                     Statistics: Num rows: 242 Data size: 22990 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: string), UDFToDouble(key) (type: double)
@@ -1380,10 +1380,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: (UDFToDouble(key) is not null or UDFToDouble(value) is not null) (type: boolean)
+                  filterExpr: (key is not null or UDFToDouble(value) is not null) (type: boolean)
                   Statistics: Num rows: 242 Data size: 22990 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: UDFToDouble(key) is not null (type: boolean)
+                    predicate: key is not null (type: boolean)
                     Statistics: Num rows: 242 Data size: 22990 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: value (type: string), UDFToDouble(key) (type: double)
@@ -1488,10 +1488,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: (UDFToDouble(key) is not null or UDFToDouble(value) is not null) (type: boolean)
+                  filterExpr: (key is not null or UDFToDouble(value) is not null) (type: boolean)
                   Statistics: Num rows: 242 Data size: 22990 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: UDFToDouble(key) is not null (type: boolean)
+                    predicate: key is not null (type: boolean)
                     Statistics: Num rows: 242 Data size: 22990 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: value (type: string), UDFToDouble(key) (type: double)
@@ -2349,7 +2349,7 @@ POSTHOOK: Input: default@my_fact
 OPTIMIZED SQL: SELECT `t0`.`bucket_col`, `t2`.`join_col` AS `account1`, `t0`.`accounting_period` AS `my_fact.accounting_period`
 FROM (SELECT `bucket_col`, `join_col`, `accounting_period`
 FROM `default`.`my_fact`
-WHERE `fiscal_year` = '2015' AND `accounting_period` = 10 AND `join_col` IS NOT NULL) AS `t0`
+WHERE `fiscal_year` = '2015' AND `accounting_period` = 1.00E1 AND `join_col` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `join_col`
 FROM `default`.`my_dim`
 WHERE `filter_col` IN ('VAL1', 'VAL2') AND `join_col` IS NOT NULL) AS `t2` ON `t0`.`join_col` = `t2`.`join_col`

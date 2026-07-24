@@ -491,12 +491,6 @@ Warning: Map Join MAPJOIN[168][bigTable=?] in task 'Map 1' is a cross product
         },
         "colStats": [
           {
-            "name": "d_date_sk",
-            "ndv": 67850,
-            "minValue": 2415022,
-            "maxValue": 2488070
-          },
-          {
             "name": "d_month_seq",
             "ndv": 2439,
             "minValue": 0,
@@ -513,6 +507,12 @@ Warning: Map Join MAPJOIN[168][bigTable=?] in task 'Map 1' is a cross product
             "ndv": 12,
             "minValue": 1,
             "maxValue": 12
+          },
+          {
+            "name": "d_date_sk",
+            "ndv": 67850,
+            "minValue": 2415022,
+            "maxValue": 2488070
           },
           {
             "name": "d_date_id",
@@ -1982,12 +1982,6 @@ Warning: Map Join MAPJOIN[168][bigTable=?] in task 'Map 1' is a cross product
         },
         "colStats": [
           {
-            "name": "i_item_sk",
-            "ndv": 464811,
-            "minValue": 1,
-            "maxValue": 462000
-          },
-          {
             "name": "i_current_price",
             "ndv": 9391,
             "minValue": 0.09,
@@ -1996,6 +1990,12 @@ Warning: Map Join MAPJOIN[168][bigTable=?] in task 'Map 1' is a cross product
           {
             "name": "i_category",
             "ndv": 11
+          },
+          {
+            "name": "i_item_sk",
+            "ndv": 464811,
+            "minValue": 1,
+            "maxValue": 462000
           },
           {
             "name": "i_item_id",
@@ -2172,41 +2172,26 @@ Warning: Map Join MAPJOIN[168][bigTable=?] in task 'Map 1' is a cross product
               "operands": [
                 {
                   "op": {
-                    "name": "CAST",
-                    "kind": "CAST",
-                    "syntax": "SPECIAL"
+                    "name": "/",
+                    "kind": "DIVIDE",
+                    "syntax": "BINARY"
                   },
                   "operands": [
                     {
-                      "op": {
-                        "name": "/",
-                        "kind": "DIVIDE",
-                        "syntax": "BINARY"
-                      },
-                      "operands": [
-                        {
-                          "input": 1,
-                          "name": "$1"
-                        },
-                        {
-                          "input": 2,
-                          "name": "$2"
-                        }
-                      ]
+                      "input": 1,
+                      "name": "$1"
+                    },
+                    {
+                      "input": 2,
+                      "name": "$2"
                     }
-                  ],
-                  "type": {
-                    "type": "DECIMAL",
-                    "nullable": true,
-                    "precision": 11,
-                    "scale": 6
-                  }
+                  ]
                 }
               ],
               "type": {
                 "type": "DECIMAL",
                 "nullable": true,
-                "precision": 16,
+                "precision": 11,
                 "scale": 6
               }
             }

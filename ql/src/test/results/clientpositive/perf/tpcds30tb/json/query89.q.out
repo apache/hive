@@ -718,51 +718,51 @@
                   "name": "$10"
                 },
                 {
-                  "literal": "birdal",
+                  "literal": "birdal                                            ",
                   "type": {
                     "type": "CHAR",
                     "nullable": false,
-                    "precision": 6
+                    "precision": 50
                   }
                 },
                 {
-                  "literal": "musical",
+                  "literal": "musical                                           ",
                   "type": {
                     "type": "CHAR",
                     "nullable": false,
-                    "precision": 7
+                    "precision": 50
                   }
                 },
                 {
-                  "literal": "pants",
+                  "literal": "pants                                             ",
                   "type": {
                     "type": "CHAR",
                     "nullable": false,
-                    "precision": 5
+                    "precision": 50
                   }
                 },
                 {
-                  "literal": "parenting",
+                  "literal": "parenting                                         ",
                   "type": {
                     "type": "CHAR",
                     "nullable": false,
-                    "precision": 9
+                    "precision": 50
                   }
                 },
                 {
-                  "literal": "wallpaper",
+                  "literal": "wallpaper                                         ",
                   "type": {
                     "type": "CHAR",
                     "nullable": false,
-                    "precision": 9
+                    "precision": 50
                   }
                 },
                 {
-                  "literal": "womens",
+                  "literal": "womens                                            ",
                   "type": {
                     "type": "CHAR",
                     "nullable": false,
-                    "precision": 6
+                    "precision": 50
                   }
                 }
               ]
@@ -779,51 +779,51 @@
                   "name": "$12"
                 },
                 {
-                  "literal": "Books",
+                  "literal": "Books                                             ",
                   "type": {
                     "type": "CHAR",
                     "nullable": false,
-                    "precision": 5
+                    "precision": 50
                   }
                 },
                 {
-                  "literal": "Electronics",
+                  "literal": "Electronics                                       ",
                   "type": {
                     "type": "CHAR",
                     "nullable": false,
-                    "precision": 11
+                    "precision": 50
                   }
                 },
                 {
-                  "literal": "Home",
+                  "literal": "Home                                              ",
                   "type": {
                     "type": "CHAR",
                     "nullable": false,
-                    "precision": 4
+                    "precision": 50
                   }
                 },
                 {
-                  "literal": "Jewelry",
+                  "literal": "Jewelry                                           ",
                   "type": {
                     "type": "CHAR",
                     "nullable": false,
-                    "precision": 7
+                    "precision": 50
                   }
                 },
                 {
-                  "literal": "Men",
+                  "literal": "Men                                               ",
                   "type": {
                     "type": "CHAR",
                     "nullable": false,
-                    "precision": 3
+                    "precision": 50
                   }
                 },
                 {
-                  "literal": "Shoes",
+                  "literal": "Shoes                                             ",
                   "type": {
                     "type": "CHAR",
                     "nullable": false,
-                    "precision": 5
+                    "precision": 50
                   }
                 }
               ]
@@ -854,27 +854,27 @@
                           "name": "$12"
                         },
                         {
-                          "literal": "Books",
+                          "literal": "Books                                             ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 5
+                            "precision": 50
                           }
                         },
                         {
-                          "literal": "Electronics",
+                          "literal": "Electronics                                       ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 11
+                            "precision": 50
                           }
                         },
                         {
-                          "literal": "Home",
+                          "literal": "Home                                              ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 4
+                            "precision": 50
                           }
                         }
                       ]
@@ -891,27 +891,27 @@
                           "name": "$10"
                         },
                         {
-                          "literal": "musical",
+                          "literal": "musical                                           ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 7
+                            "precision": 50
                           }
                         },
                         {
-                          "literal": "parenting",
+                          "literal": "parenting                                         ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 9
+                            "precision": 50
                           }
                         },
                         {
-                          "literal": "wallpaper",
+                          "literal": "wallpaper                                         ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 9
+                            "precision": 50
                           }
                         }
                       ]
@@ -937,27 +937,27 @@
                           "name": "$12"
                         },
                         {
-                          "literal": "Jewelry",
+                          "literal": "Jewelry                                           ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 7
+                            "precision": 50
                           }
                         },
                         {
-                          "literal": "Men",
+                          "literal": "Men                                               ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 3
+                            "precision": 50
                           }
                         },
                         {
-                          "literal": "Shoes",
+                          "literal": "Shoes                                             ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 5
+                            "precision": 50
                           }
                         }
                       ]
@@ -974,27 +974,27 @@
                           "name": "$10"
                         },
                         {
-                          "literal": "birdal",
+                          "literal": "birdal                                            ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 6
+                            "precision": 50
                           }
                         },
                         {
-                          "literal": "pants",
+                          "literal": "pants                                             ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 5
+                            "precision": 50
                           }
                         },
                         {
-                          "literal": "womens",
+                          "literal": "womens                                            ",
                           "type": {
                             "type": "CHAR",
                             "nullable": false,
-                            "precision": 6
+                            "precision": 50
                           }
                         }
                       ]
@@ -2175,7 +2175,13 @@
                               "input": 7,
                               "name": "$7"
                             }
-                          ]
+                          ],
+                          "type": {
+                            "type": "DECIMAL",
+                            "nullable": true,
+                            "precision": 22,
+                            "scale": 6
+                          }
                         }
                       ]
                     },
@@ -2269,7 +2275,13 @@
                 "input": 7,
                 "name": "$7"
               }
-            ]
+            ],
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 22,
+              "scale": 6
+            }
           }
         ],
         "rowCount": 760058726253485952

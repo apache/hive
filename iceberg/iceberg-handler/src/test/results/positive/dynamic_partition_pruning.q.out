@@ -1458,37 +1458,40 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_double_hour_n0
-                  filterExpr: ((UDFToDouble(hour) = 11.0D) and CAST( UDFToInteger((hr / 2.0D)) AS STRING) is not null) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToDouble(hour) = 11.0D) and CAST( UDFToInteger((hr / 2.0D)) AS STRING) is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: CAST( UDFToInteger((hr / 2.0D)) AS STRING) (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
+                      Filter Operator
+                        predicate: _col0 is not null (type: boolean)
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                      Select Operator
-                        expressions: _col0 (type: string)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                        Group By Operator
-                          keys: _col0 (type: string)
-                          minReductionHashAggr: 0.4
-                          mode: hash
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                        Select Operator
+                          expressions: _col0 (type: string)
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                          Dynamic Partitioning Event Operator
-                            Target column: hr (string)
-                            Target Input: srcpart_iceberg
-                            Partition key expr: hr
+                          Group By Operator
+                            keys: _col0 (type: string)
+                            minReductionHashAggr: 0.4
+                            mode: hash
+                            outputColumnNames: _col0
                             Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                            Target Vertex: Map 1
+                            Dynamic Partitioning Event Operator
+                              Target column: hr (string)
+                              Target Input: srcpart_iceberg
+                              Partition key expr: hr
+                              Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                              Target Vertex: Map 1
             Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
@@ -1587,21 +1590,24 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_double_hour_n0
-                  filterExpr: ((UDFToDouble(hour) = 11.0D) and CAST( UDFToInteger((hr / 2.0D)) AS STRING) is not null) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToDouble(hour) = 11.0D) and CAST( UDFToInteger((hr / 2.0D)) AS STRING) is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: CAST( UDFToInteger((hr / 2.0D)) AS STRING) (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
+                      Filter Operator
+                        predicate: _col0 is not null (type: boolean)
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized
         Reducer 2 
             Reduce Operator Tree:
@@ -3480,37 +3486,40 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_double_hour_n0
-                  filterExpr: ((UDFToDouble(hour) = 11.0D) and CAST( UDFToInteger((hr / 2.0D)) AS STRING) is not null) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToDouble(hour) = 11.0D) and CAST( UDFToInteger((hr / 2.0D)) AS STRING) is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: CAST( UDFToInteger((hr / 2.0D)) AS STRING) (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
+                      Filter Operator
+                        predicate: _col0 is not null (type: boolean)
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                      Select Operator
-                        expressions: _col0 (type: string)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                        Group By Operator
-                          keys: _col0 (type: string)
-                          minReductionHashAggr: 0.4
-                          mode: hash
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                        Select Operator
+                          expressions: _col0 (type: string)
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                          Dynamic Partitioning Event Operator
-                            Target column: hr (string)
-                            Target Input: srcpart_iceberg
-                            Partition key expr: hr
+                          Group By Operator
+                            keys: _col0 (type: string)
+                            minReductionHashAggr: 0.4
+                            mode: hash
+                            outputColumnNames: _col0
                             Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                            Target Vertex: Map 1
+                            Dynamic Partitioning Event Operator
+                              Target column: hr (string)
+                              Target Input: srcpart_iceberg
+                              Partition key expr: hr
+                              Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                              Target Vertex: Map 1
             Execution mode: vectorized
         Reducer 2 
             Execution mode: vectorized
