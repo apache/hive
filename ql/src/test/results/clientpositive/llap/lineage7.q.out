@@ -1,0 +1,14 @@
+PREHOOK: query: create table table_1 (id1 int, id2 int, key string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_1
+PREHOOK: query: create table table_2 as select
+sum(id1) over(partition by key ) sum1,
+sum(id2) over(partition by key ) sum2
+from table_1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@table_1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_2
+Result schema has 2 fields, but we don't get as many dependencies
+{"version":"1.0","engine":"tez","database":"default","hash":"f81777f9774d12cc77dd583ea9ff99b3","queryText":"create table table_2 as select\nsum(id1) over(partition by key ) sum1,\nsum(id2) over(partition by key ) sum2\nfrom table_1","edges":[{"sources":[2,3],"targets":[0],"expression":"sum(table_1.id1) over (partition by table_1.key order by table_1.key ROWS between unbounded and unbounded)","edgeType":"PROJECTION"},{"sources":[4,3],"targets":[1],"expression":"sum(table_1.id2) over (partition by table_1.key order by table_1.key ROWS between unbounded and unbounded)","edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"default.table_2.sum1"},{"id":1,"vertexType":"COLUMN","vertexId":"default.table_2.sum2"},{"id":2,"vertexType":"COLUMN","vertexId":"default.table_1.id1"},{"id":3,"vertexType":"COLUMN","vertexId":"default.table_1.key"},{"id":4,"vertexType":"COLUMN","vertexId":"default.table_1.id2"}]}

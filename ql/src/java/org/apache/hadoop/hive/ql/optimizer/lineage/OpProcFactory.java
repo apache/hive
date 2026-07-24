@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.optimizer.lineage;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -713,158 +714,178 @@ public class OpProcFactory {
       Operator<? extends OperatorDesc> inpOp = getParent(stack);
       lCtx.getIndex().copyPredicates(inpOp, op);
 
-      Dependency dep = new Dependency();
-      DependencyType newType = DependencyType.EXPRESSION;
-      dep.setType(newType);
-
-      Set<String> columns = new HashSet<>();
       PartitionedTableFunctionDef funcDef = op.getConf().getFuncDef();
-      StringBuilder sb = new StringBuilder();
-      WindowFrameDef windowFrameDef = null;
+      int numWinFns = 1;
+      if (funcDef instanceof WindowTableFunctionDef) {
+        numWinFns = ((WindowTableFunctionDef) funcDef).getWindowFunctions().size();
+      }
+      List<Dependency> windowDeps = new ArrayList<>(numWinFns);
 
-      if (!(funcDef.getTFunction() instanceof Noop)) {
+      for (int winIdx = 0; winIdx < numWinFns; winIdx++) {
+        Dependency dep = new Dependency();
+        DependencyType newType = DependencyType.EXPRESSION;
+        dep.setType(newType);
 
-        if (funcDef instanceof WindowTableFunctionDef) {
-          // function name
-          WindowFunctionDef windowFunctionDef = ((WindowTableFunctionDef) funcDef).getWindowFunctions().getFirst();
-          sb.append(windowFunctionDef.getName()).append("(");
+        Set<String> columns = new HashSet<>();
+        StringBuilder sb = new StringBuilder();
+        WindowFrameDef windowFrameDef = null;
 
-          addArgs(sb, columns, lCtx, inpOp, op.getSchema(), windowFunctionDef.getArgs());
+        if (!(funcDef.getTFunction() instanceof Noop)) {
 
-          windowFrameDef = windowFunctionDef.getWindowFrame();
+          if (funcDef instanceof WindowTableFunctionDef) {
+            // function name
+            WindowFunctionDef windowFunctionDef = ((WindowTableFunctionDef) funcDef).getWindowFunctions().get(winIdx);
+            sb.append(windowFunctionDef.getName()).append("(");
 
-          if (sb.charAt(sb.length() - 2) == ',') {
-            sb.delete(sb.length() - 2, sb.length());
-          }
-          sb.append(")");
-          sb.append(" over (");
-        } else /* PartitionedTableFunctionDef */ {
-          // function name
-          sb.append(funcDef.getName()).append("(");
-          addArgs(sb, columns, lCtx, inpOp, funcDef.getRawInputShape().getRr().getRowSchema(), funcDef.getArgs());
+            addArgs(sb, columns, lCtx, inpOp, op.getSchema(), windowFunctionDef.getArgs());
 
-          // matchpath has argument pattern like matchpath(<input expression>, <argument methods: arg1(), arg2()...>)
-          if (funcDef.getInput() != null) {
-            sb.append("on ").append(funcDef.getInput().getAlias()).append(" ");
+            windowFrameDef = windowFunctionDef.getWindowFrame();
 
-            int counter = 1;
-            for (PTFExpressionDef arg : funcDef.getArgs()) {
-              ExprNodeDesc exprNode = arg.getExprNode();
-
-              addIfNotNull(columns, exprNode.getCols());
-
-              sb.append("arg").append(counter++).append("(");
-              sb.append(ExprProcFactory.getExprString(funcDef.getRawInputShape().getRr().getRowSchema(), arg.getExprNode(), lCtx, inpOp, null));
-              sb.append("), ");
+            if (sb.charAt(sb.length() - 2) == ',') {
+              sb.delete(sb.length() - 2, sb.length());
             }
+            sb.append(")");
+            sb.append(" over (");
+          } else /* PartitionedTableFunctionDef */ {
+            // function name
+            sb.append(funcDef.getName()).append("(");
+            addArgs(sb, columns, lCtx, inpOp, funcDef.getRawInputShape().getRr().getRowSchema(), funcDef.getArgs());
 
-            sb.delete(sb.length() - 2, sb.length());
+            // matchpath has argument pattern like matchpath(<input expression>, <argument methods: arg1(), arg2()...>)
+            if (funcDef.getInput() != null) {
+              sb.append("on ").append(funcDef.getInput().getAlias()).append(" ");
+
+              int counter = 1;
+              for (PTFExpressionDef arg : funcDef.getArgs()) {
+                ExprNodeDesc exprNode = arg.getExprNode();
+
+                addIfNotNull(columns, exprNode.getCols());
+
+                sb.append("arg").append(counter++).append("(");
+                sb.append(
+                    ExprProcFactory.getExprString(funcDef.getRawInputShape().getRr().getRowSchema(), arg.getExprNode(),
+                        lCtx, inpOp, null));
+                sb.append("), ");
+              }
+
+              sb.delete(sb.length() - 2, sb.length());
+            }
           }
         }
-      }
 
       /*
         Collect partition by and distribute by information.
         Please note, at the expression node level, there is no difference between those.
         That means distribute by gets a string partition by in the expression string.
        */
-      if (funcDef.getPartition() != null ) {
-        List<PTFExpressionDef> partitionExpressions = funcDef.getPartition().getExpressions();
+        if (funcDef.getPartition() != null) {
+          List<PTFExpressionDef> partitionExpressions = funcDef.getPartition().getExpressions();
 
-        boolean isPartitionByAdded = false;
-        for (PTFExpressionDef partitionExpr : partitionExpressions) {
-          ExprNodeDesc partitionExprNode = partitionExpr.getExprNode();
+          boolean isPartitionByAdded = false;
+          for (PTFExpressionDef partitionExpr : partitionExpressions) {
+            ExprNodeDesc partitionExprNode = partitionExpr.getExprNode();
 
-          if (partitionExprNode.getCols() != null && !partitionExprNode.getCols().isEmpty()) {
-            if (!isPartitionByAdded) {
-              sb.append("partition by ");
-              isPartitionByAdded = true;
+            if (partitionExprNode.getCols() != null && !partitionExprNode.getCols().isEmpty()) {
+              if (!isPartitionByAdded) {
+                sb.append("partition by ");
+                isPartitionByAdded = true;
+              }
+
+              addIfNotNull(columns, partitionExprNode.getCols());
+
+              if (partitionExprNode instanceof ExprNodeColumnDesc) {
+                sb.append(
+                    ExprProcFactory.getExprString(funcDef.getRawInputShape().getRr().getRowSchema(), partitionExprNode,
+                        lCtx, inpOp, null));
+                sb.append(", ");
+              }
+
+              sb.delete(sb.length() - 2, sb.length());
             }
-
-            addIfNotNull(columns, partitionExprNode.getCols());
-
-            if (partitionExprNode instanceof ExprNodeColumnDesc) {
-              sb.append(ExprProcFactory.getExprString(funcDef.getRawInputShape().getRr().getRowSchema(), partitionExprNode, lCtx, inpOp, null));
-              sb.append(", ");
-            }
-
-            sb.delete(sb.length() - 2, sb.length());
           }
-        }
 
-      }
+        }
 
       /*
         Collects the order by and sort by information.
         Please note, at the expression node level, there is no difference between those.
         That means sort by gets a string partition by in the expression string.
        */
-      if (funcDef.getOrder() != null) {
+        if (funcDef.getOrder() != null) {
         /*
         Order by is sometimes added by the compiler to make the PTF call deterministic.
         At this point of the code execution, we don't know if it is added by the compiler or
         it was originally part of the query string.
         */
-        List<OrderExpressionDef> orderExpressions = funcDef.getOrder().getExpressions();
+          List<OrderExpressionDef> orderExpressions = funcDef.getOrder().getExpressions();
 
-        if (!sb.isEmpty() && sb.charAt(sb.length() - 1) != '(') {
-          sb.append(" ");
-        }
-        sb.append("order by ");
-
-        for (OrderExpressionDef orderExpr : orderExpressions) {
-          ExprNodeDesc orderExprNode = orderExpr.getExprNode();
-          addIfNotNull(columns, orderExprNode.getCols());
-
-          sb.append(ExprProcFactory.getExprString(funcDef.getRawInputShape().getRr().getRowSchema(), orderExprNode, lCtx, inpOp, null));
-          if (PTFInvocationSpec.Order.DESC.equals(orderExpr.getOrder())) {
-            sb.append(" desc");
+          if (!sb.isEmpty() && sb.charAt(sb.length() - 1) != '(') {
+            sb.append(" ");
           }
-          sb.append(", ");
-        }
+          sb.append("order by ");
 
-        sb.delete(sb.length() - 2, sb.length());
-      }
+          for (OrderExpressionDef orderExpr : orderExpressions) {
+            ExprNodeDesc orderExprNode = orderExpr.getExprNode();
+            addIfNotNull(columns, orderExprNode.getCols());
+
+            sb.append(
+                ExprProcFactory.getExprString(funcDef.getRawInputShape().getRr().getRowSchema(), orderExprNode, lCtx,
+                    inpOp, null));
+            if (PTFInvocationSpec.Order.DESC.equals(orderExpr.getOrder())) {
+              sb.append(" desc");
+            }
+            sb.append(", ");
+          }
+
+          sb.delete(sb.length() - 2, sb.length());
+        }
 
       /*
       Window frame is sometimes added by the compiler to make the PTF call deterministic.
       At this point of the code execution, we don't know if it is added by the compiler or
       it was originally part of the query string.
       */
-      if (windowFrameDef != null) {
-        sb.append(" ").append(windowFrameDef.getWindowType()).append(" between ");
+        if (windowFrameDef != null) {
+          sb.append(" ").append(windowFrameDef.getWindowType()).append(" between ");
 
-        appendBoundary(windowFrameDef.getStart(), sb, " preceding");
+          appendBoundary(windowFrameDef.getStart(), sb, " preceding");
 
-        sb.append(" and ");
+          sb.append(" and ");
 
-        appendBoundary(windowFrameDef.getEnd(), sb, " following");
-      }
+          appendBoundary(windowFrameDef.getEnd(), sb, " following");
+        }
 
-      sb.append(")");
-      dep.setExpr(sb.toString());
+        sb.append(")");
+        dep.setExpr(sb.toString());
 
-      LinkedHashSet<BaseColumnInfo> colSet = new LinkedHashSet<>();
-      for(ColumnInfo ci : inpOp.getSchema().getSignature()) {
-        Dependency d = lCtx.getIndex().getDependency(inpOp, ci);
-        if (d != null) {
-          newType = LineageCtx.getNewDependencyType(d.getType(), newType);
-          if (!ci.isHiddenVirtualCol() && columns.contains(ci.getInternalName())) {
-            colSet.addAll(d.getBaseCols());
+        LinkedHashSet<BaseColumnInfo> colSet = new LinkedHashSet<>();
+        for (ColumnInfo ci : inpOp.getSchema().getSignature()) {
+          Dependency d = lCtx.getIndex().getDependency(inpOp, ci);
+          if (d != null) {
+            newType = LineageCtx.getNewDependencyType(d.getType(), newType);
+            if (!ci.isHiddenVirtualCol() && columns.contains(ci.getInternalName())) {
+              colSet.addAll(d.getBaseCols());
+            }
           }
         }
+
+        dep.setType(newType);
+        dep.setBaseCols(colSet);
+        windowDeps.add(dep);
       }
 
-      dep.setType(newType);
-      dep.setBaseCols(colSet);
-
       // This dependency is then set for all the colinfos of the script operator
+      int windowIdx = 0;
       for(ColumnInfo ci : op.getSchema().getSignature()) {
-        Dependency d = dep;
-          Dependency depCi = lCtx.getIndex().getDependency(inpOp, ci);
-          if (depCi != null) {
-            d = depCi;
-          }
+        Dependency d = null;
+        Dependency depCi = lCtx.getIndex().getDependency(inpOp, ci);
+        if (depCi != null) {
+          d = depCi;
+        } else if (windowIdx < windowDeps.size() && windowDeps.size() > 1) {
+          d = windowDeps.get(windowIdx++);
+        } else {
+          d = windowDeps.getFirst();
+        }
         lCtx.getIndex().putDependency(op, ci, d);
       }
 
