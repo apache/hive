@@ -50,6 +50,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Types;
 import org.apache.parquet.crypto.ParquetCryptoRuntimeException;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -59,16 +60,20 @@ import static org.apache.iceberg.Files.localInput;
 
 public class TestHiveCatalogEncryption extends HiveIcebergStorageHandlerWithEngineBase {
 
-  private static final String ENCRYPTION_PROPS = String.format(
-      "TBLPROPERTIES ('%s'='%s', '%s'='3')",
-      TableProperties.ENCRYPTION_TABLE_KEY, UnitestKMS.MASTER_KEY_NAME1,
-      TableProperties.FORMAT_VERSION);
+  private String encryptionProps() {
+    return String.format(
+        "TBLPROPERTIES ('%s'='%s', '%s'='3', '%s'='%s')",
+        TableProperties.ENCRYPTION_TABLE_KEY, UnitestKMS.MASTER_KEY_NAME1,
+        TableProperties.FORMAT_VERSION,
+        TableProperties.DEFAULT_FILE_FORMAT, fileFormat.toString());
+  }
 
   @Parameters(name = "fileFormat={0}, catalog={1}, isVectorized={2}, formatVersion={3}")
   public static Collection<Object[]> parameters() {
     return HiveIcebergStorageHandlerWithEngineBase.getParameters(p ->
-        p.testTableType() == TestTableType.HIVE_CATALOG &&
-        p.formatVersion() == 3 && p.isVectorized() && p.fileFormat() == FileFormat.PARQUET);
+        p.testTableType() == TestTableType.HIVE_CATALOG && p.formatVersion() == 3 &&
+        // Iceberg has no native ORC encryption (org.apache.iceberg.orc.ORC#writeData throws), so ORC is excluded.
+        p.fileFormat() != FileFormat.ORC);
   }
 
   @BeforeClass
@@ -87,7 +92,7 @@ public class TestHiveCatalogEncryption extends HiveIcebergStorageHandlerWithEngi
     TableIdentifier identifier = TableIdentifier.of("default", "encrypted_v3_table");
     shell.executeStatement(String.format(
         "CREATE EXTERNAL TABLE %s (id bigint, data string) STORED BY iceberg %s",
-        identifier.name(), ENCRYPTION_PROPS));
+        identifier.name(), encryptionProps()));
 
     // Insert initial set of rows
     shell.executeStatement(String.format(
@@ -119,7 +124,7 @@ public class TestHiveCatalogEncryption extends HiveIcebergStorageHandlerWithEngi
     TableIdentifier identifier = TableIdentifier.of("default", "manifest_check");
     shell.executeStatement(String.format(
         "CREATE EXTERNAL TABLE %s (id bigint) STORED BY iceberg %s",
-        identifier.name(), ENCRYPTION_PROPS));
+        identifier.name(), encryptionProps()));
     shell.executeStatement("INSERT INTO " + identifier.name() + " VALUES (1)");
 
     Table table = testTables.loadTable(identifier);
@@ -143,7 +148,7 @@ public class TestHiveCatalogEncryption extends HiveIcebergStorageHandlerWithEngi
 
     shell.executeStatement(String.format(
         "CREATE EXTERNAL TABLE %s (id bigint, data string) STORED BY iceberg %s",
-        identifier.name(), ENCRYPTION_PROPS));
+        identifier.name(), encryptionProps()));
 
     shell.executeStatement(String.format(
         "INSERT INTO %s VALUES (1, 'a')", identifier.name()));
@@ -173,7 +178,7 @@ public class TestHiveCatalogEncryption extends HiveIcebergStorageHandlerWithEngi
 
     shell.executeStatement(String.format(
         "CREATE EXTERNAL TABLE %s (id bigint, data string) STORED BY iceberg %s",
-        identifier.name(), ENCRYPTION_PROPS));
+        identifier.name(), encryptionProps()));
 
     shell.executeStatement(String.format(
         "INSERT INTO %s VALUES (1, 'a')", identifier.name()));
@@ -210,7 +215,7 @@ public class TestHiveCatalogEncryption extends HiveIcebergStorageHandlerWithEngi
 
     shell.executeStatement(String.format(
         "CREATE EXTERNAL TABLE %s (id bigint, data string) STORED BY iceberg %s",
-        identifier.name(), ENCRYPTION_PROPS));
+        identifier.name(), encryptionProps()));
 
     shell.executeStatement(String.format(
         "INSERT INTO %s VALUES (1, 'a')", identifier.name()));
@@ -250,7 +255,7 @@ public class TestHiveCatalogEncryption extends HiveIcebergStorageHandlerWithEngi
 
     shell.executeStatement(String.format(
         "CREATE EXTERNAL TABLE %s (id bigint, data string) STORED BY iceberg %s",
-        identifier.name(), ENCRYPTION_PROPS));
+        identifier.name(), encryptionProps()));
     shell.executeStatement(String.format(
         "INSERT INTO %s VALUES (1, 'a')", identifier.name()));
 
@@ -276,7 +281,7 @@ public class TestHiveCatalogEncryption extends HiveIcebergStorageHandlerWithEngi
 
     shell.executeStatement(String.format(
         "CREATE EXTERNAL TABLE %s (id bigint, data string) STORED BY iceberg %s",
-        identifier.name(), ENCRYPTION_PROPS));
+        identifier.name(), encryptionProps()));
     shell.executeStatement(String.format(
         "INSERT INTO %s VALUES (1, 'a')", identifier.name()));
     shell.executeStatement(String.format(
@@ -308,7 +313,7 @@ public class TestHiveCatalogEncryption extends HiveIcebergStorageHandlerWithEngi
 
     shell.executeStatement(String.format(
         "CREATE EXTERNAL TABLE %s (id bigint) STORED BY iceberg %s",
-        identifier.name(), ENCRYPTION_PROPS));
+        identifier.name(), encryptionProps()));
 
     AssertHelpers.assertThrows("Should not allow removing encryption key",
         IllegalArgumentException.class,
@@ -324,7 +329,7 @@ public class TestHiveCatalogEncryption extends HiveIcebergStorageHandlerWithEngi
 
     shell.executeStatement(String.format(
         "CREATE EXTERNAL TABLE %s (id bigint) STORED BY iceberg %s",
-        identifier.name(), ENCRYPTION_PROPS));
+        identifier.name(), encryptionProps()));
 
     AssertHelpers.assertThrows("Should not allow modifying encryption key",
         IllegalArgumentException.class,
@@ -336,11 +341,13 @@ public class TestHiveCatalogEncryption extends HiveIcebergStorageHandlerWithEngi
 
   @Test
   public void testDirectDataFileRead() {
+    // Reads the raw data file and asserts a Parquet encrypted-footer exception, so it is Parquet-specific.
+    Assume.assumeTrue(fileFormat == FileFormat.PARQUET);
     TableIdentifier identifier = TableIdentifier.of("default", "encrypted_direct_read_table");
 
     shell.executeStatement(String.format(
         "CREATE EXTERNAL TABLE %s (id int, data string) STORED BY iceberg %s",
-        identifier.name(), ENCRYPTION_PROPS));
+        identifier.name(), encryptionProps()));
     shell.executeStatement(String.format(
         "INSERT INTO %s VALUES (1, 'a')", identifier.name()));
 
