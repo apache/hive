@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS test_strategy;
+DROP TABLE IF EXISTS test_writer;
 
 CREATE TABLE IF NOT EXISTS test_strategy (
   strategy_id int(11) NOT NULL,
@@ -17,6 +18,12 @@ INSERT INTO test_strategy (strategy_id, name, referrer, landing, priority, imple
 INSERT INTO test_strategy (strategy_id, name, referrer, landing, priority, implementation, last_modified) VALUES (3,'S3','ccc','ghi',1000,NULL,'2012-05-08 15:01:15');
 INSERT INTO test_strategy (strategy_id, name, referrer, landing, priority, implementation, last_modified) VALUES (4,'S4','ddd','jkl',980,NULL,'2012-05-08 15:01:15');
 INSERT INTO test_strategy (strategy_id, name, referrer, landing, priority, implementation, last_modified) VALUES (5,'S5','eee',NULL,NULL,NULL,'2012-05-08 15:01:15');
+
+CREATE TABLE IF NOT EXISTS test_writer (
+  id int(11) NOT NULL,
+  name varchar(50) DEFAULT NULL,
+  PRIMARY KEY (id)
+);
 
 CREATE TABLE IF NOT EXISTS all_types_table (
     char_col CHAR,
