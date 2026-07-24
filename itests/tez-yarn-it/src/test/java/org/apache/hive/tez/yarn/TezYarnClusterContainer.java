@@ -96,6 +96,11 @@ public class TezYarnClusterContainer {
   // DataNode ports (Hadoop 3.x defaults). Host JVM must reach 9866 for HDFS writes.
   private static final int DN_HTTP_PORT = 9864;
   private static final int DN_XFER_PORT = 9866;
+  // Fixed port for the Tez AM's client-facing DAGClientRPCServer. The AM runs inside the
+  // NodeManager container and advertises its address to the host JVM (HiveServer2). Pinning the
+  // port (via tez.am.client.am.port-range) and publishing it, together with the NM hostname set
+  // to "nodemanager" (resolvable to 127.0.0.1 via custom_hosts_file), lets the host reach the AM.
+  public static final int AM_CLIENT_PORT = 41000;
 
   private final Network network;
   private final GenericContainer<?> namenode;
@@ -170,11 +175,24 @@ public class TezYarnClusterContainer {
           .withEnv(COMMON_ENV);
     }
 
-    nodemanager = new GenericContainer<>(HADOOP_IMAGE)
-        .withNetwork(network)
-        .withNetworkAliases("nodemanager")
-        .withCommand("yarn", "nodemanager")
-        .withEnv(COMMON_ENV);
+    if (fixedPorts) {
+      // Fix the container hostname to "nodemanager" so the Tez AM (which runs here) advertises
+      // its DAGClientRPCServer as nodemanager:<AM_CLIENT_PORT> instead of the random container id,
+      // and publish that port so the host JVM (HiveServer2 / Tez client) can reach the AM.
+      nodemanager = new FixedHostPortGenericContainer<>(HADOOP_IMAGE)
+          .withFixedExposedPort(AM_CLIENT_PORT, AM_CLIENT_PORT)
+          .withCreateContainerCmdModifier(cmd -> cmd.withHostName("nodemanager"))
+          .withNetwork(network)
+          .withNetworkAliases("nodemanager")
+          .withCommand("yarn", "nodemanager")
+          .withEnv(COMMON_ENV);
+    } else {
+      nodemanager = new GenericContainer<>(HADOOP_IMAGE)
+          .withNetwork(network)
+          .withNetworkAliases("nodemanager")
+          .withCommand("yarn", "nodemanager")
+          .withEnv(COMMON_ENV);
+    }
   }
 
   /**
