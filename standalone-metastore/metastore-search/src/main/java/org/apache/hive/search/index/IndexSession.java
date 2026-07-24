@@ -25,8 +25,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hive.search.exception.IndexNotReadyException;
 import org.apache.hive.search.exception.InitializeException;
-import org.apache.hive.search.config.IndexOptions;
-import org.apache.hive.search.config.InferenceOptions;
 import org.apache.hive.search.config.SearchOptions;
 import org.apache.hive.search.inference.EmbedderRegistry;
 import org.apache.hive.search.metastore.MetastoreIndexer;
@@ -57,12 +55,9 @@ public final class IndexSession implements AutoCloseable {
   public IndexSession(Configuration configuration)
       throws InitializeException, IOException {
     this.configuration = configuration;
-    IndexOptions indexConfig = new IndexOptions(configuration);
     this.searchConfig = new SearchOptions(configuration);
-    InferenceOptions inferenceConfig = new InferenceOptions(configuration);
     this.indexManager = IndexManager.open(
-        MetastoreIndexSchema.defaultHiveTablesMapping(indexConfig.indexName(),
-            inferenceConfig.embedderName(), configuration), configuration);
+        MetastoreIndexSchema.tableIndexMapping(configuration), configuration);
     this.modelRegistry = EmbedderRegistry.create(configuration);
   }
 

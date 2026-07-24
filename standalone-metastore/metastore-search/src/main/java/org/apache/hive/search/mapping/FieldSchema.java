@@ -18,17 +18,13 @@
 package org.apache.hive.search.mapping;
 
 public interface FieldSchema {
+
   String name();
 
   boolean store();
 
   boolean filter();
 
-  record TextFieldSchema(
-      String name, SearchParams search, boolean store, boolean filter)
-      implements FieldSchema {
-    public TextFieldSchema(String name, SearchParams search) {
-      this(name, search, true, false);
-    }
-  }
+  boolean lexical();
+
 }

@@ -100,8 +100,9 @@ public class TestIndexerFlushCommit {
     }
 
     static IndexerFixture create(Configuration conf) throws IOException {
-      IndexMapping mapping = MetastoreIndexSchema.defaultHiveTablesMapping(
-          "test_index", InMemorySearchFixture.MODEL_NAME, conf);
+      conf.set(InferenceOptions.EMBEDDER_NAME, InMemorySearchFixture.MODEL_NAME);
+      conf.set(IndexOptions.INDEX_NAME, "test_index");
+      IndexMapping mapping = MetastoreIndexSchema.tableIndexMapping(conf);
       IndexManager indexManager = IndexManager.open(mapping, conf);
       EmbedderRegistry registry = new EmbedderRegistry(
           Map.of(InMemorySearchFixture.MODEL_NAME,

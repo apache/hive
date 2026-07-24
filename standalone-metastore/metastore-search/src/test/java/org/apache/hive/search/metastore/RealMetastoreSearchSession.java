@@ -84,8 +84,9 @@ public final class RealMetastoreSearchSession implements AutoCloseable {
   public static RealMetastoreSearchSession open(
       RealMetastoreServer server, InMemoryIndexStateClient sharedRemote) throws Exception {
     Configuration conf = searchConfiguration(server.conf());
-    IndexMapping mapping = MetastoreIndexSchema.defaultHiveTablesMapping(
-        "test_index", MODEL_NAME, conf);
+    conf.set(InferenceOptions.EMBEDDER_NAME, MODEL_NAME);
+    conf.set(IndexOptions.INDEX_NAME, "test_index");
+    IndexMapping mapping = MetastoreIndexSchema.tableIndexMapping(conf);
 
     ByteBuffersDirectory directory = new ByteBuffersDirectory();
     LocalStateClient local = new LocalStateClient(directory, "test_index");
