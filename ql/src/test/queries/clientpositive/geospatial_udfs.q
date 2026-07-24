@@ -1,3 +1,6 @@
+-- Truncate floating-point numbers to 12 decimal places for cross-platform reproducibility
+-- (JTS buffer uses Math.cos/sin which can differ by 1 ULP across JDK implementations)
+--! qt:replace:/(\d+\.\d{12})\d+/$1/
 -- create a table with two columns one for each point.
 create table geom_binary
 (

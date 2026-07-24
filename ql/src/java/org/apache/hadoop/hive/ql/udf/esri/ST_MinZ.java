@@ -17,10 +17,11 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.ogc.OGCGeometry;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.BytesWritable;
+import org.locationtech.jts.geom.CoordinateFilter;
+import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,17 +64,32 @@ public class ST_MinZ extends ST_GeometryAccessor {
       return null;
     }
 
-    OGCGeometry ogcGeometry = GeometryUtils.geometryFromEsriShape(geomref);
-    if (ogcGeometry == null) {
+    Geometry geom = GeometryUtils.geometryFromEsriShape(geomref);
+    if (geom == null) {
       LogUtils.Log_ArgumentsNull(LOG);
       return null;
     }
-    if (!ogcGeometry.is3D()) {
+
+    // Avoid walking every coordinate when the geometry has no Z ordinate at all.
+    if (!GeometryUtils.is3D(geom)) {
       LogUtils.Log_Not3D(LOG);
       return null;
     }
 
-    resultDouble.set(ogcGeometry.MinZ());
+    double[] min = {Double.NaN};
+    geom.apply((CoordinateFilter) coord -> {
+      double z = coord.getZ();
+      if (!Double.isNaN(z)) {
+        min[0] = Double.isNaN(min[0]) ? z : Math.min(min[0], z);
+      }
+    });
+
+    if (Double.isNaN(min[0])) {
+      LogUtils.Log_Not3D(LOG);
+      return null;
+    }
+
+    resultDouble.set(min[0]);
     return resultDouble;
   }
 

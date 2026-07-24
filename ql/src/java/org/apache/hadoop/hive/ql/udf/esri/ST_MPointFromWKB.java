@@ -17,15 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.SpatialReference;
-import com.esri.core.geometry.ogc.OGCGeometry;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.io.BytesWritable;
+import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.nio.ByteBuffer;
 
 @Description(name = "ST_MPointFromWKB",
     value = "_FUNC_(wkb) - construct an ST_MultiPoint from OGC well-known binary",
@@ -55,24 +52,17 @@ public class ST_MPointFromWKB extends ST_Geometry {
   public BytesWritable evaluate(BytesWritable wkb, int wkid) throws UDFArgumentException {
 
     try {
-      SpatialReference spatialReference = null;
-      if (wkid != GeometryUtils.WKID_UNKNOWN) {
-        spatialReference = SpatialReference.create(wkid);
-      }
-      byte[] byteArr = wkb.getBytes();
-      ByteBuffer byteBuf = ByteBuffer.allocate(byteArr.length);
-      byteBuf.put(byteArr);
-      OGCGeometry ogcObj = OGCGeometry.fromBinary(byteBuf);
-      ogcObj.setSpatialReference(spatialReference);
-      String gType = ogcObj.geometryType();
+      Geometry geom = GeometryUtils.wkbReader().read(wkb.getBytes());
+      String gType = geom.getGeometryType();
       if (gType.equals("MultiPoint") || gType.equals("Point")) {
-        return GeometryUtils.geometryToEsriShapeBytesWritable(ogcObj);
+        geom.setSRID(wkid);
+        return GeometryUtils.geometryToEsriShapeBytesWritable(geom, wkid);
       } else {
-        LogUtils.Log_InvalidType(LOG, GeometryUtils.OGCType.ST_LINESTRING, GeometryUtils.OGCType.UNKNOWN);
+        LogUtils.Log_InvalidType(LOG, GeometryUtils.OGCType.ST_MULTIPOINT, GeometryUtils.OGCType.UNKNOWN);
         return null;
       }
     } catch (Exception e) {  // IllegalArgumentException, GeometryException
-      LOG.error(e.getMessage());
+      LogUtils.Log_InternalError(LOG, "ST_MPointFromWKB: " + e);
       return null;
     }
   }

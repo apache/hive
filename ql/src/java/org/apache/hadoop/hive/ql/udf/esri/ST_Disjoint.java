@@ -17,12 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.OperatorDisjoint;
-import com.esri.core.geometry.OperatorSimpleRelation;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.prep.PreparedGeometry;
 
 @Description(name = "ST_Disjoint",
-    value = "_FUNC_(ST_Geometry1, ST_Geometry2) - return true if ST_Geometry1 intersects ST_Geometry2",
+    value = "_FUNC_(ST_Geometry1, ST_Geometry2) - return true if ST_Geometry1 is disjoint from ST_Geometry2",
     extended = "Example:\n"
         + "SELECT _FUNC_(ST_LineString(0,0, 0,1), ST_LineString(1,1, 1,0)) from src LIMIT 1;  -- return true\n"
         + "SELECT _FUNC_(ST_LineString(0,0, 1,1), ST_LineString(1,0, 0,1)) from src LIMIT 1;  -- return false\n")
@@ -30,8 +30,13 @@ import org.apache.hadoop.hive.ql.exec.Description;
 public class ST_Disjoint extends ST_GeometryRelational {
 
   @Override
-  protected OperatorSimpleRelation getRelationOperator() {
-    return OperatorDisjoint.local();
+  protected boolean executeRelation(Geometry geom1, Geometry geom2) {
+    return geom1.disjoint(geom2);
+  }
+
+  @Override
+  protected boolean executeRelationPrepared(PreparedGeometry prepGeom1, Geometry geom2) {
+    return prepGeom1.disjoint(geom2);
   }
 
   @Override

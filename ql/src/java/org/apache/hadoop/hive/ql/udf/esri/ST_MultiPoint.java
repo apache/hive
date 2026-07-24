@@ -17,14 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.MultiPoint;
-import com.esri.core.geometry.ogc.OGCGeometry;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
     extended = "Example:\n" + "  SELECT _FUNC_(1, 1, 2, 2, 3, 3) from src LIMIT 1; -- multipoint with 3 points\n"
         + "  SELECT _FUNC_('MULTIPOINT ((10 40), (40 30))') from src LIMIT 1; -- multipoint of 2 points")
 //@HivePdkUnitTests(
-//	cases = { 
+//	cases = {
 //		@HivePdkUnitTest(
 //			query = "select st_asjson(st_multipoint(1, 1, 2, 2, 3, 3)) from onerow",
 //			result = "{\"points\":[[1.0,1.0],[2.0,2.0],[3.0,3.0]]}"
@@ -63,13 +63,12 @@ public class ST_MultiPoint extends ST_Geometry {
     }
 
     try {
-      MultiPoint mPoint = new MultiPoint();
-
+      Coordinate[] coords = new Coordinate[xyPairs.length / 2];
       for (int i = 0; i < xyPairs.length; i += 2) {
-        mPoint.add(xyPairs[i].get(), xyPairs[i + 1].get());
+        coords[i / 2] = new Coordinate(xyPairs[i].get(), xyPairs[i + 1].get());
       }
-
-      return GeometryUtils.geometryToEsriShapeBytesWritable(OGCGeometry.createFromEsriGeometry(mPoint, null, true));
+      Geometry mPoint = GeometryUtils.GEOMETRY_FACTORY.createMultiPointFromCoords(coords);
+      return GeometryUtils.geometryToEsriShapeBytesWritable(mPoint);
     } catch (Exception e) {
       LogUtils.Log_InternalError(LOG, "ST_MultiPoint: " + e);
       return null;
@@ -80,10 +79,9 @@ public class ST_MultiPoint extends ST_Geometry {
   public BytesWritable evaluate(Text wkwrap) throws UDFArgumentException {
     String wkt = wkwrap.toString();
     try {
-      OGCGeometry ogcObj = OGCGeometry.fromText(wkt);
-      ogcObj.setSpatialReference(null);
-      if (ogcObj.geometryType().equals("MultiPoint")) {
-        return GeometryUtils.geometryToEsriShapeBytesWritable(ogcObj);
+      Geometry geom = GeometryUtils.wktReader().read(wkt);
+      if (geom.getGeometryType().equals("MultiPoint")) {
+        return GeometryUtils.geometryToEsriShapeBytesWritable(geom);
       } else {
         LogUtils.Log_InvalidType(LOG, GeometryUtils.OGCType.ST_MULTIPOINT, GeometryUtils.OGCType.UNKNOWN);
         return null;

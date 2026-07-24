@@ -31,7 +31,7 @@ import static org.junit.Assert.assertTrue;
 
 public class TestStAsShape {
 
-  private final static double Epsilon = 0.0001;
+  private final static double EPSILON = 1e-9;
 
   @Test
   public void testPointAsShape() {
@@ -51,7 +51,7 @@ public class TestStAsShape {
     assertTrue("Geometry type point expected!", esriGeometry instanceof Point);
 
     Point esriPoint = (Point) esriGeometry;
-    assertEquals("Longitude is different!", longitude, esriPoint.getX(), Epsilon);
-    assertEquals("Latitude is different!", latitude, esriPoint.getY(), Epsilon);
+    assertEquals("Longitude is different!", longitude, esriPoint.getX(), EPSILON);
+    assertEquals("Latitude is different!", latitude, esriPoint.getY(), EPSILON);
   }
 }

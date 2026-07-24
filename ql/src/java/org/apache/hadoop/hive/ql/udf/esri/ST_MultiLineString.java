@@ -17,14 +17,15 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.Polyline;
-import com.esri.core.geometry.ogc.OGCGeometry;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.LineString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,24 +62,25 @@ public class ST_MultiLineString extends ST_Geometry {
     }
 
     try {
-      Polyline mPolyline = new Polyline();
-
+      LineString[] lineStrings = new LineString[multipaths.length];
       int arg_idx = 0;
+
       for (List<DoubleWritable> multipath : multipaths) {
         if (multipath.size() % 2 != 0) {
           LogUtils.Log_VariableArgumentLengthXY(LOG, arg_idx);
           return null;
         }
 
-        mPolyline.startPath(multipath.get(0).get(), multipath.get(1).get());
-
-        for (int i = 2; i < multipath.size(); i += 2) {
-          mPolyline.lineTo(multipath.get(i).get(), multipath.get(i + 1).get());
+        Coordinate[] coords = new Coordinate[multipath.size() / 2];
+        for (int i = 0; i < multipath.size(); i += 2) {
+          coords[i / 2] = new Coordinate(multipath.get(i).get(), multipath.get(i + 1).get());
         }
+        lineStrings[arg_idx] = GeometryUtils.GEOMETRY_FACTORY.createLineString(coords);
         arg_idx++;
       }
 
-      return GeometryUtils.geometryToEsriShapeBytesWritable(OGCGeometry.createFromEsriGeometry(mPolyline, null, true));
+      Geometry mLineString = GeometryUtils.GEOMETRY_FACTORY.createMultiLineString(lineStrings);
+      return GeometryUtils.geometryToEsriShapeBytesWritable(mLineString);
     } catch (Exception e) {
       LogUtils.Log_InternalError(LOG, "ST_MultiLineString: " + e);
       return null;
@@ -89,10 +91,9 @@ public class ST_MultiLineString extends ST_Geometry {
   public BytesWritable evaluate(Text wkwrap) throws UDFArgumentException {
     String wkt = wkwrap.toString();
     try {
-      OGCGeometry ogcObj = OGCGeometry.fromText(wkt);
-      ogcObj.setSpatialReference(null);
-      if (ogcObj.geometryType().equals("MultiLineString")) {
-        return GeometryUtils.geometryToEsriShapeBytesWritable(ogcObj);
+      Geometry geom = GeometryUtils.wktReader().read(wkt);
+      if (geom.getGeometryType().equals("MultiLineString")) {
+        return GeometryUtils.geometryToEsriShapeBytesWritable(geom);
       } else {
         LogUtils.Log_InvalidType(LOG, GeometryUtils.OGCType.ST_MULTILINESTRING, GeometryUtils.OGCType.UNKNOWN);
         return null;

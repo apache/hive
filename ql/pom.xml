@@ -861,10 +861,16 @@
       <version>${jersey.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.esri.geometry</groupId>
-      <artifactId>esri-geometry-api</artifactId>
+      <groupId>org.locationtech.jts</groupId>
+      <artifactId>jts-core</artifactId>
+      <version>${jts.version}</version>
       <scope>compile</scope>
-      <version>${esri.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.locationtech.jts.io</groupId>
+      <artifactId>jts-io-common</artifactId>
+      <version>${jts.version}</version>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.roaringbitmap</groupId>
@@ -1104,10 +1110,10 @@
                   <include>org.apache.datasketches:*</include>
                   <include>org.apache.calcite:*</include>
                   <include>org.apache.calcite.avatica:*</include>
-                  <include>com.esri.geometry:esri-geometry-api</include>
                   <include>org.roaringbitmap:RoaringBitmap</include>
                   <include>com.github.luben:zstd-jni</include>
                   <include>org.locationtech.jts:jts-core</include>
+                  <include>org.locationtech.jts.io:jts-io-common</include>
                   <include>org.apache.tez:tez-protobuf-history-plugin</include>
                 </includes>
               </artifactSet>

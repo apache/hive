@@ -17,12 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.Envelope;
-import com.esri.core.geometry.Geometry;
-import com.esri.core.geometry.ogc.OGCGeometry;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
+import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,20 +62,14 @@ public class ST_EnvIntersects extends ST_Geometry {
       return null;
     }
 
-    OGCGeometry ogcGeom1 = GeometryUtils.geometryFromEsriShape(geometryref1);
-    OGCGeometry ogcGeom2 = GeometryUtils.geometryFromEsriShape(geometryref2);
-    if (ogcGeom1 == null || ogcGeom2 == null) {
+    Geometry geom1 = GeometryUtils.geometryFromEsriShape(geometryref1);
+    Geometry geom2 = GeometryUtils.geometryFromEsriShape(geometryref2);
+    if (geom1 == null || geom2 == null) {
       LogUtils.Log_ArgumentsNull(LOG);
       return null;
     }
 
-    Geometry geometry1 = ogcGeom1.getEsriGeometry();
-    Geometry geometry2 = ogcGeom2.getEsriGeometry();
-    Envelope env1 = new Envelope(), env2 = new Envelope();
-    geometry1.queryEnvelope(env1);
-    geometry2.queryEnvelope(env2);
-
-    resultBoolean.set(env1.isIntersecting(env2));
+    resultBoolean.set(geom1.getEnvelopeInternal().intersects(geom2.getEnvelopeInternal()));
     return resultBoolean;
   }
 

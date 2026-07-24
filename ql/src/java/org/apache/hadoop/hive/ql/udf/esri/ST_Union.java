@@ -17,15 +17,15 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.Geometry;
-import com.esri.core.geometry.GeometryEngine;
-import com.esri.core.geometry.SpatialReference;
-import com.esri.core.geometry.ogc.OGCGeometry;
-import org.apache.hadoop.hive.ql.udf.esri.GeometryUtils.OGCType;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.BytesWritable;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.operation.union.UnaryUnionOp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Description(name = "ST_Union",
     value = "_FUNC_(ST_Geometry, ST_Geometry, ...) - returns an ST_Geometry as the union of the supplied ST_Geometries",
@@ -59,8 +59,6 @@ public class ST_Union extends ST_GeometryProcessing {
 
     int firstWKID = 0;
 
-    SpatialReference spatialRef = null;
-
     // validate spatial references and geometries first
     for (int i = 0; i < geomrefs.length; i++) {
 
@@ -73,44 +71,34 @@ public class ST_Union extends ST_GeometryProcessing {
 
       if (i == 0) {
         firstWKID = GeometryUtils.getWKID(geomref);
-        if (firstWKID != GeometryUtils.WKID_UNKNOWN) {
-          spatialRef = SpatialReference.create(firstWKID);
-        }
       } else if (firstWKID != GeometryUtils.getWKID(geomref)) {
         LogUtils.Log_SRIDMismatch(LOG, geomrefs[0], geomref);
         return null;
       }
     }
 
-    // now build geometry array to pass to GeometryEngine.union
-    Geometry[] geomsToUnion = new Geometry[geomrefs.length];
+    // build geometry list to pass to UnaryUnionOp
+    List<Geometry> geomsToUnion = new ArrayList<>(geomrefs.length);
 
     for (int i = 0; i < geomrefs.length; i++) {
-      //HiveGeometry hiveGeometry = GeometryUtils.geometryFromEsriShape(geomrefs[i]);
-      OGCGeometry ogcGeometry = GeometryUtils.geometryFromEsriShape(geomrefs[i]);
+      Geometry geom = GeometryUtils.geometryFromEsriShape(geomrefs[i]);
 
-      // if (i==0){   // get from ogcGeometry rather than re-create above?
-      // 	spatialRef = hiveGeometry.spatialReference;
-      // }
-
-      if (ogcGeometry == null) {
+      if (geom == null) {
         LogUtils.Log_ArgumentsNull(LOG);
         return null;
       }
 
-      geomsToUnion[i] = ogcGeometry.getEsriGeometry();
+      geomsToUnion.add(geom);
     }
 
     try {
-      Geometry unioned = GeometryEngine.union(geomsToUnion, spatialRef);
+      Geometry unioned = UnaryUnionOp.union(geomsToUnion);
 
-      // we have to infer the type of the differenced geometry because we don't know
+      // we have to infer the type of the unioned geometry because we don't know
       // if it's going to end up as a single or multi-part geometry
-      OGCType inferredType = GeometryUtils.getInferredOGCType(unioned);
-
-      return GeometryUtils.geometryToEsriShapeBytesWritable(unioned, firstWKID, inferredType);
+      return GeometryUtils.geometryToEsriShapeBytesWritable(unioned, firstWKID);
     } catch (Exception e) {
-      LogUtils.Log_ExceptionThrown(LOG, "GeometryEngine.union", e);
+      LogUtils.Log_ExceptionThrown(LOG, "ST_Union", e);
       return null;
     }
   }

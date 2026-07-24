@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.io.esriJson;
 
-import com.esri.core.geometry.Geometry;
+import org.locationtech.jts.geom.Geometry;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
@@ -34,7 +34,7 @@ public class EsriFeature {
   public Map<String, Object> attributes;
 
   /**
-   * Geometry associated with this feature
+   * JTS Geometry associated with this feature
    */
   public Geometry geometry;
 

@@ -17,19 +17,41 @@
  */
 package org.apache.hadoop.hive.serde2.esriJson.serializer;
 
-import com.esri.core.geometry.Geometry;
 import com.esri.core.geometry.GeometryEngine;
+import com.esri.core.geometry.ogc.OGCGeometry;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.WKBWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
+/**
+ * Serializes a JTS Geometry to Esri JSON format.
+ * Converts JTS -> ESRI via WKB round-trip, then uses GeometryEngine.geometryToJson().
+ */
 public class GeometryJsonSerializer extends JsonSerializer<Geometry> {
+
+  private static final Logger LOG = LoggerFactory.getLogger(GeometryJsonSerializer.class);
+
+  // WKBWriter is not thread-safe, so keep one instance per thread rather than
+  // allocating a new one for every row.
+  private static final ThreadLocal<WKBWriter> WKB_WRITER = ThreadLocal.withInitial(WKBWriter::new);
 
   @Override
   public void serialize(Geometry geometry, JsonGenerator jsonGenerator, SerializerProvider arg2) throws IOException {
-
-    jsonGenerator.writeRawValue(GeometryEngine.geometryToJson(null, geometry));
+    try {
+      byte[] wkb = WKB_WRITER.get().write(geometry);
+      OGCGeometry ogcGeom = OGCGeometry.fromBinary(ByteBuffer.wrap(wkb));
+      com.esri.core.geometry.Geometry esriGeom = ogcGeom.getEsriGeometry();
+      jsonGenerator.writeRawValue(GeometryEngine.geometryToJson(geometry.getSRID(), esriGeom));
+    } catch (Exception e) {
+      LOG.warn("Failed to serialize geometry to Esri JSON", e);
+      jsonGenerator.writeNull();
+    }
   }
 }

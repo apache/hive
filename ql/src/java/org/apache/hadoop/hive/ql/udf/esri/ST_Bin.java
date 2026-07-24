@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.ogc.OGCPoint;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -29,6 +28,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.locationtech.jts.geom.Point;
 
 import java.util.EnumSet;
 
@@ -72,13 +72,13 @@ public class ST_Bin extends GenericUDF {
       bins = new BinUtils(binSize);
     }
 
-    OGCPoint point = geomHelper.getPoint(args);
+    Point point = geomHelper.getPoint(args);
 
     if (point == null) {
       return null;
     }
 
-    return bins.getId(point.X(), point.Y());
+    return bins.getId(point.getX(), point.getY());
   }
 
   @Override

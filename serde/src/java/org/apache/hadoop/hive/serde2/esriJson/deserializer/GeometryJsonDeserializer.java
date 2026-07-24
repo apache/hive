@@ -17,20 +17,37 @@
  */
 package org.apache.hadoop.hive.serde2.esriJson.deserializer;
 
-import com.esri.core.geometry.Geometry;
 import com.esri.core.geometry.GeometryEngine;
+import com.esri.core.geometry.MapGeometry;
+import com.esri.core.geometry.ogc.OGCGeometry;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.io.WKBReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  *
- * Deserializes a JSON geometry definition into a Geometry instance
+ * Deserializes a JSON geometry definition into a JTS Geometry instance.
+ * Uses the ESRI API to parse Esri JSON, then converts to JTS via WKB round-trip.
  */
 public class GeometryJsonDeserializer extends JsonDeserializer<Geometry> {
+
+  private static final Logger LOG = LoggerFactory.getLogger(GeometryJsonDeserializer.class);
+
+  private static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
+
+  // WKBReader is not thread-safe, so keep one instance per thread rather than
+  // allocating a new one for every row.
+  private static final ThreadLocal<WKBReader> WKB_READER =
+      ThreadLocal.withInitial(() -> new WKBReader(GEOMETRY_FACTORY));
 
   public GeometryJsonDeserializer() {
   }
@@ -38,6 +55,24 @@ public class GeometryJsonDeserializer extends JsonDeserializer<Geometry> {
   @Override
   public Geometry deserialize(JsonParser arg0, DeserializationContext arg1)
       throws IOException, JsonProcessingException {
-    return GeometryEngine.jsonToGeometry(arg0).getGeometry();
+    try {
+      MapGeometry mapGeom = GeometryEngine.jsonToGeometry(arg0);
+      if (mapGeom == null || mapGeom.getGeometry() == null) {
+        return null;
+      }
+      OGCGeometry ogcGeom = OGCGeometry.createFromEsriGeometry(
+          mapGeom.getGeometry(), mapGeom.getSpatialReference());
+      ByteBuffer wkbBuf = ogcGeom.asBinary();
+      byte[] wkbBytes = new byte[wkbBuf.remaining()];
+      wkbBuf.get(wkbBytes);
+      Geometry jtsGeom = WKB_READER.get().read(wkbBytes);
+      if (mapGeom.getSpatialReference() != null) {
+        jtsGeom.setSRID(mapGeom.getSpatialReference().getID());
+      }
+      return jtsGeom;
+    } catch (Exception e) {
+      LOG.debug("Failed to deserialize Esri JSON geometry, returning null", e);
+      return null;
+    }
   }
 }

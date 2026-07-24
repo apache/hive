@@ -17,9 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.ogc.OGCGeometry;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.BytesWritable;
+import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,13 +41,13 @@ public class ST_Centroid extends ST_GeometryAccessor {
       return null;
     }
 
-    OGCGeometry ogcGeometry = GeometryUtils.geometryFromEsriShape(geomref);
-    if (ogcGeometry == null) {
+    Geometry geom = GeometryUtils.geometryFromEsriShape(geomref);
+    if (geom == null) {
       LogUtils.Log_ArgumentsNull(LOG);
       return null;
     }
 
-    return GeometryUtils.geometryToEsriShapeBytesWritable(ogcGeometry.centroid());
+    return GeometryUtils.geometryToEsriShapeBytesWritable(geom.getCentroid());
   }
 
 }
