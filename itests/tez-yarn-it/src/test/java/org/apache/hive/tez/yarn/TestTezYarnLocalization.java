@@ -86,6 +86,7 @@ public class TestTezYarnLocalization {
     cluster.start();
 
     GenericContainer<?> nn = cluster.namenodeContainer();
+    nn.execInContainer("hdfs", "dfs", "-chmod", "777", "/tmp");
     nn.execInContainer("hdfs", "dfs", "-mkdir", "-p", HDFS_ROOT + "/warehouse");
     nn.execInContainer("hdfs", "dfs", "-mkdir", "-p", HDFS_ROOT + "/scratch");
     nn.execInContainer("hdfs", "dfs", "-mkdir", "-p", HDFS_ROOT + "/user-install");
