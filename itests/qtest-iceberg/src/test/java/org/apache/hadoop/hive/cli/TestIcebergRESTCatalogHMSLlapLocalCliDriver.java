@@ -80,7 +80,7 @@ public class TestIcebergRESTCatalogHMSLlapLocalCliDriver {
 
     Configuration conf = SessionState.get().getConf();
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_IMPL,
-        "org.apache.iceberg.hive.client.HiveRESTCatalogClient");
+        "org.apache.iceberg.hive.rest.catalog.client.HiveRESTCatalogClient");
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CATALOG_DEFAULT, CATALOG_NAME);
     conf.set(restCatalogPrefix + "uri", REST_CATALOG_EXTENSION.getRestEndpoint());
     conf.set(restCatalogPrefix + "type", CatalogUtil.ICEBERG_CATALOG_TYPE_REST);

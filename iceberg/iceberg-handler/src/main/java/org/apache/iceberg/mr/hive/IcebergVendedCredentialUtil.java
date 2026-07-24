@@ -42,6 +42,7 @@ import org.apache.iceberg.aws.AwsClientProperties;
 import org.apache.iceberg.aws.s3.S3FileIOProperties;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
+import org.apache.iceberg.hive.rest.catalog.RestCatalogAccessDelegation;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.StorageCredential;
 import org.apache.iceberg.io.SupportsStorageCredentials;
@@ -214,7 +215,7 @@ public final class IcebergVendedCredentialUtil {
    */
   private static boolean shouldSkipApplyFromJobConf(String tableName, String catalogName, Configuration conf) {
     return StringUtils.isBlank(conf.get(InputFormatConfig.vendedCredentialsKey(tableName))) &&
-        !IcebergCatalogProperties.requestsVendedCredentials(catalogName, conf);
+        !RestCatalogAccessDelegation.requestsVendedCredentials(catalogName, conf);
   }
 
   /**
@@ -247,7 +248,7 @@ public final class IcebergVendedCredentialUtil {
     if (properties == null) {
       return false;
     }
-    return IcebergCatalogProperties.requestsVendedCredentials(
+    return RestCatalogAccessDelegation.requestsVendedCredentials(
         properties.getProperty(InputFormatConfig.CATALOG_NAME), configuration);
   }
 

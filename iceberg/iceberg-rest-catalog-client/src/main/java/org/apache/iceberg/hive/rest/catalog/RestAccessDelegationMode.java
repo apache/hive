@@ -17,17 +17,16 @@
  * under the License.
  */
 
-package org.apache.iceberg.hive.client;
+package org.apache.iceberg.hive.rest.catalog;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.iceberg.hive.IcebergCatalogProperties;
 
 /**
  * Values for the Iceberg REST catalog {@code X-Iceberg-Access-Delegation} request header. The header
  * accepts a comma-separated list of these modes; configure via
- * {@link IcebergCatalogProperties#REST_ACCESS_DELEGATION_HEADER_PROPERTY}.
+ * {@link RestCatalogAccessDelegation#ACCESS_DELEGATION_PROPERTY}.
  *
  * @see <a href="https://github.com/apache/iceberg/blob/main/open-api/rest-catalog-open-api.yaml">REST catalog spec</a>
  */
@@ -46,7 +45,7 @@ public enum RestAccessDelegationMode {
     return modeName;
   }
 
-  /** Comma-separated list suitable for {@link IcebergCatalogProperties#REST_ACCESS_DELEGATION_HEADER_PROPERTY}. */
+  /** Comma-separated list suitable for {@link RestCatalogAccessDelegation#ACCESS_DELEGATION_PROPERTY}. */
   public static String toHeaderValue(RestAccessDelegationMode... modes) {
     return Arrays.stream(modes).map(RestAccessDelegationMode::modeName).collect(Collectors.joining(","));
   }

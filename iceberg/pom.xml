@@ -41,6 +41,7 @@
     <module>patched-iceberg-core</module>
     <module>iceberg-shading</module>
     <module>iceberg-catalog</module>
+    <module>iceberg-rest-catalog-client</module>
     <module>iceberg-handler</module>
   </modules>
   <dependencies>
@@ -96,6 +97,11 @@
       <dependency>
         <groupId>org.apache.hive</groupId>
         <artifactId>hive-iceberg-catalog</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hive</groupId>
+        <artifactId>hive-iceberg-rest-catalog-client</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>

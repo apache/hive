@@ -92,7 +92,7 @@ public abstract class TestHiveRESTCatalogClientITBase {
     conf = restCatalogExtension.getConf();
 
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_IMPL,
-        "org.apache.iceberg.hive.client.HiveRESTCatalogClient");
+        "org.apache.iceberg.hive.rest.catalog.client.HiveRESTCatalogClient");
     conf.set(MetastoreConf.ConfVars.CATALOG_DEFAULT.getVarname(), CATALOG_NAME);
     conf.set(REST_CATALOG_PREFIX + "uri", restCatalogExtension.getRestEndpoint());
     conf.set(REST_CATALOG_PREFIX + "type", CatalogUtil.ICEBERG_CATALOG_TYPE_REST);
