@@ -1,0 +1,71 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+version: "2"
+services:
+  namenode:
+    image: apache/hadoop:3.4.2
+    hostname: namenode
+    command: ["hdfs", "namenode"]
+    env_file:
+      - ./config
+    environment:
+      ENSURE_NAMENODE_DIR: "/tmp/hadoop-hadoop/dfs/name"
+    ports:
+      - "9870:9870"
+      - "8020:8020"
+    networks:
+      - hive-yarn-it
+
+  datanode:
+    image: apache/hadoop:3.4.2
+    command: ["hdfs", "datanode"]
+    env_file:
+      - ./config
+    depends_on:
+      - namenode
+    networks:
+      - hive-yarn-it
+
+  resourcemanager:
+    image: apache/hadoop:3.4.2
+    hostname: resourcemanager
+    command: ["yarn", "resourcemanager"]
+    env_file:
+      - ./config
+    ports:
+      - "8088:8088"
+      - "8032:8032"
+    depends_on:
+      - namenode
+    networks:
+      - hive-yarn-it
+
+  nodemanager:
+    image: apache/hadoop:3.4.2
+    command: ["yarn", "nodemanager"]
+    env_file:
+      - ./config
+    ports:
+      - "8042:8042"
+    depends_on:
+      - resourcemanager
+    networks:
+      - hive-yarn-it
+
+networks:
+  hive-yarn-it:
+    name: hive-yarn-it
