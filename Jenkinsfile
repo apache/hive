@@ -97,8 +97,9 @@ sw java 21 && . /etc/profile.d/java.sh
 mkdir -p .m2/repository
 cp $SETTINGS .m2/settings.xml
 OPTS=" -s $PWD/.m2/settings.xml -B -Dtest.groups= "
-OPTS+=" -Pitests,qsplits,dist,errorProne"
+OPTS+=" -Pitests,qsplits,dist,errorProne,thriftif"
 OPTS+=" -Dmaven.repo.local=$PWD/.m2/repository"
+OPTS+=" -Dthrift.home=/work/thrift-0.16.0"
 git config extra.mavenOpts "$OPTS"
 OPTS=" $M_OPTS -Dmaven.test.failure.ignore "
 if [ -s inclusions.txt ]; then OPTS+=" -Dsurefire.includesFile=$PWD/inclusions.txt";fi
@@ -284,6 +285,19 @@ fi
       }
       stage('Compile') {
         buildHive("install -Dtest=noMatches")
+      }
+      stage('Thrift validation') {
+          sh '''#!/bin/bash -e
+set -x
+n=$(git diff -- '*/src/gen/thrift/*' | wc -l)
+if [ $n != 0 ]; then
+  echo "ERROR: Thrift generated code is out of date!" >&2
+  echo "The following files differ:" >&2
+  git diff --stat -- '*/src/gen/thrift/*' >&2
+  exit 1
+fi
+echo "Thrift generated code is up to date."
+'''
       }
       checkPrHead()
       stage('Upload') {
