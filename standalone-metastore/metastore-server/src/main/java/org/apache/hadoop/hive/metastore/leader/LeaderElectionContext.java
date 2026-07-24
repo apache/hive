@@ -103,6 +103,7 @@ public class LeaderElectionContext {
   public void start() throws Exception {
     List<TTYPE> ttypes = new ArrayList<>(listeners.keySet());
     Collections.shuffle(ttypes);
+    List<Thread> daemons = new ArrayList<>();
     for (TTYPE ttype : ttypes) {
       List<LeadershipStateListener> listenerList = listeners.get(ttype);
       if (listenerList.isEmpty()) {
@@ -127,6 +128,12 @@ public class LeaderElectionContext {
       daemon.setDaemon(true);
       daemon.setUncaughtExceptionHandler(newAbortOnElectionFailureHandler(leaderElection));
       daemon.start();
+      daemons.add(daemon);
+    }
+    // Wait for each initial tryBeLeader() to complete so listeners have fired before
+    // start() returns. Daemons are started before joining so elections still run in parallel.
+    for (Thread daemon : daemons) {
+      daemon.join();
     }
   }
 
