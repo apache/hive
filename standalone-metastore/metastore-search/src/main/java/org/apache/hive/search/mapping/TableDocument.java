@@ -50,7 +50,7 @@ public class TableDocument {
     document = new Document();
   }
 
-  public void fill(TextField field, FieldSchema.TextFieldSchema schema)
+  public void fill(TextField field, TextFieldSchema schema)
       throws IndexIOException {
     String trimmed = trim(field.value(), MAX_FIELD_SEARCH_SIZE);
 
@@ -59,21 +59,19 @@ public class TableDocument {
           new StringField(field.name() + FILTER_SUFFIX, field.value(),
               org.apache.lucene.document.Field.Store.NO));
     }
-    if (schema.search().lexical()) {
-      org.apache.lucene.document.Field.Store store =
-          schema.store() ? org.apache.lucene.document.Field.Store.YES
-              : org.apache.lucene.document.Field.Store.NO;
+
+    if (schema.lexical()) {
+      org.apache.lucene.document.Field.Store store = schema.store() ?
+          org.apache.lucene.document.Field.Store.YES : org.apache.lucene.document.Field.Store.NO;
       document.add(new org.apache.lucene.document.TextField(field.name(), trimmed, store));
-    } else if (schema.store()) {
-      document.add(new StoredField(field.name(), field.value()));
     }
-    if (schema.search().semantic()) {
+
+    if (schema.semantic()) {
       if (field.embedding() == null) {
         throw new IndexIOException("semantic field '" + field.name() + "' requires embedding");
       }
-      VectorSimilarityFunction similarity = schema.search().distance() == SearchParams.VectorDistance.DOT ?
-          VectorSimilarityFunction.DOT_PRODUCT : VectorSimilarityFunction.COSINE;
-      document.add(new KnnFloatVectorField(field.name(), field.embedding(), similarity));
+      document.add(new KnnFloatVectorField(field.name(), field.embedding(),
+          VectorSimilarityFunction.COSINE));
     }
   }
 
@@ -95,7 +93,7 @@ public class TableDocument {
       if (schema == null) {
         continue;
       }
-      if (schema instanceof FieldSchema.TextFieldSchema text
+      if (schema instanceof TextFieldSchema text
           && field instanceof TextField tf) {
         fill(tf, text);
       }

@@ -151,8 +151,7 @@ public class TestBootstrapIndexer {
       conf.set(InferenceOptions.EMBEDDER_NAME,
           InMemorySearchFixture.MODEL_NAME);
       org.apache.hive.search.mapping.IndexMapping mapping =
-          MetastoreIndexSchema.defaultHiveTablesMapping(
-              "test_index", InMemorySearchFixture.MODEL_NAME, conf);
+          MetastoreIndexSchema.tableIndexMapping(conf);
       IndexManager indexManager = IndexManager.open(mapping, conf);
       EmbedderRegistry registry = new EmbedderRegistry(
           Map.of(InMemorySearchFixture.MODEL_NAME,

@@ -19,9 +19,10 @@ package org.apache.hive.search.search;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
+import org.apache.hive.search.config.InferenceOptions;
 import org.apache.hive.search.mapping.FieldSchema;
 import org.apache.hive.search.mapping.IndexMapping;
-import org.apache.hive.search.mapping.SearchParams;
+import org.apache.hive.search.mapping.TextFieldSchema;
 import org.apache.hive.search.metastore.MetastoreIndexSchema;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -37,7 +38,8 @@ public class TestSemanticSearch {
 
   private static IndexMapping defaultMapping() {
     Configuration conf = new Configuration(false);
-    return MetastoreIndexSchema.defaultHiveTablesMapping("hive_tables", "bge-small", conf);
+    conf.set(InferenceOptions.EMBEDDER_NAME, "bge-small");
+    return MetastoreIndexSchema.tableIndexMapping(conf);
   }
 
   @Test
@@ -54,13 +56,12 @@ public class TestSemanticSearch {
     Map<String, FieldSchema> fields = new LinkedHashMap<>();
     fields.put(
         "field_a",
-        new FieldSchema.TextFieldSchema(
-            "field_a", new SearchParams(true, "model-a", SearchParams.VectorDistance.COSINE)));
+        new TextFieldSchema("field_a", true).semanticField("model-a"));
     fields.put(
         "field_b",
-        new FieldSchema.TextFieldSchema(
-            "field_b", new SearchParams(true, "model-b", SearchParams.VectorDistance.COSINE)));
-    IndexMapping mapping = new IndexMapping("idx", conf, fields);
+        new TextFieldSchema(
+            "field_b", true).semanticField("model-b"));
+    IndexMapping mapping = new IndexMapping(conf, fields);
 
     SemanticQuery resolved = new SemanticQuery("query").resolve(mapping);
     assertEquals("query", resolved.queryText());

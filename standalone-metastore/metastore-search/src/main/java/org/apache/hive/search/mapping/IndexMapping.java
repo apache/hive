@@ -17,11 +17,9 @@
 
 package org.apache.hive.search.mapping;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -37,15 +35,14 @@ import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
-public record IndexMapping(
-    String indexName, Configuration configuration, Map<String, FieldSchema> fields) {
+public record IndexMapping(Configuration configuration, Map<String, FieldSchema> fields) {
 
   public IndexOptions config() {
     return new IndexOptions(configuration);
   }
 
   public IndexStoreOptions store() {
-    return new IndexStoreOptions(configuration, indexName);
+    return new IndexStoreOptions(configuration, indexName());
   }
 
   public InferenceOptions inference() {
@@ -60,19 +57,8 @@ public record IndexMapping(
     return fields.get(fieldName);
   }
 
-  public List<String> hybridFields() {
-    List<String> result = new ArrayList<>();
-    for (Map.Entry<String, FieldSchema> entry : fields.entrySet()) {
-      if (entry.getValue() instanceof FieldSchema.TextFieldSchema text && text.search().hybrid()) {
-        result.add(entry.getKey());
-      }
-    }
-    return result;
-  }
-
-  public Optional<String> soleHybridField() {
-    List<String> hybridFields = hybridFields();
-    return hybridFields.size() == 1 ? Optional.of(hybridFields.getFirst()) : Optional.empty();
+  public String indexName() {
+    return config().indexName();
   }
 
   public List<String> searchTextSegmentFields() {
@@ -106,25 +92,22 @@ public record IndexMapping(
       }
       return semanticFields;
     }
-    if (SearchTextSegment.isSegmentField(fieldName)) {
-      validateSemanticField(fieldName);
-      return List.of(fieldName);
-    }
+    SearchTextSegment.isSegmentField(fieldName);
     validateSemanticField(fieldName);
     return List.of(fieldName);
   }
 
   private List<String> semanticFieldNames() {
     return fields.entrySet().stream()
-        .filter(entry -> entry.getValue() instanceof FieldSchema.TextFieldSchema text
-            && text.search().semantic())
+        .filter(entry -> entry.getValue() instanceof TextFieldSchema text
+            && text.semantic())
         .map(Map.Entry::getKey)
         .toList();
   }
 
   private void validateSemanticField(String fieldName) throws SearchException {
     FieldSchema schema = fieldSchema(fieldName);
-    if (!(schema instanceof FieldSchema.TextFieldSchema text) || !text.search().semantic()) {
+    if (!(schema instanceof TextFieldSchema text) || !text.semantic()) {
       throw new SearchException("field '" + fieldName + "' is not semantically searchable");
     }
   }
@@ -132,13 +115,13 @@ public record IndexMapping(
   public void validateLexicalSearchField(String fieldName) throws SearchException {
     if (isSearchTextLogicalField(fieldName)) {
       throw new SearchException(
-          "field '" + MetastoreTableMapper.FIELD_SEARCH_TEXT + "' is not lexically searchable");
+          "field '" + fieldName + "' is not lexically searchable");
     }
     FieldSchema schema = fieldSchema(fieldName);
-    if (!(schema instanceof FieldSchema.TextFieldSchema text)) {
+    if (!(schema instanceof TextFieldSchema text)) {
       throw new SearchException("field '" + fieldName + "' is not lexically searchable");
     }
-    if (!text.search().lexical() && !text.filter()) {
+    if (!text.lexical() && !text.filter()) {
       throw new SearchException("field '" + fieldName + "' is not lexically searchable");
     }
   }
@@ -146,7 +129,7 @@ public record IndexMapping(
   public Analyzer analyzer() {
     Map<String, Analyzer> fieldAnalyzers = new HashMap<>();
     for (Map.Entry<String, FieldSchema> entry : fields.entrySet()) {
-      if (entry.getValue() instanceof FieldSchema.TextFieldSchema text && text.search().lexical()) {
+      if (entry.getValue() instanceof TextFieldSchema text && text.lexical()) {
         fieldAnalyzers.put(entry.getKey(), new StandardAnalyzer());
       }
     }

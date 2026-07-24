@@ -39,7 +39,7 @@ public class TestIndexManagerFailureRecovery {
     conf.setBoolean(IndexStoreOptions.MEMORY, true);
     conf.set(IndexOptions.INDEX_NAME, "test_index");
     conf.set(InferenceOptions.EMBEDDER_NAME, "stub-model");
-    IndexMapping mapping = MetastoreIndexSchema.defaultHiveTablesMapping("test_index", "stub-model", conf);
+    IndexMapping mapping = MetastoreIndexSchema.tableIndexMapping(conf);
 
     try (IndexManager indexManager = IndexManager.open(mapping, conf)) {
       IndexNotHealthyException failure =
