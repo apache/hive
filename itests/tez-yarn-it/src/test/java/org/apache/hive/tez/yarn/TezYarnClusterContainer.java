@@ -321,16 +321,18 @@ public class TezYarnClusterContainer {
   }
 
   /**
-   * Discovers Tez jars from the running JVM's classpath using two complementary strategies:
+   * Discovers Tez framework jars from the running JVM's classpath using two complementary strategies:
    * <ol>
    *   <li>Reflection on known Tez probe classes — works regardless of how Surefire
    *       passes the classpath (direct {@code -cp} or manifest-only argfile JAR).</li>
    *   <li>Scanning {@link ManagementFactory#getRuntimeMXBean() RuntimeMXBean#getClassPath()}
-   *       for entries whose filename contains {@code "tez"} — a safety net when the
-   *       reflection approach misses a jar (e.g. classes not loaded yet).</li>
+   *       — a safety net when the reflection approach misses a jar (e.g. classes not loaded yet).</li>
    * </ol>
-   * Only regular {@code .jar} files whose filename contains {@code "tez"} and does
-   * not end with {@code "-tests.jar"} are returned.
+   * Returns regular {@code .jar} files that belong to the Tez framework (see
+   * {@link #isTezFrameworkJar(String)}); this includes {@code hadoop-shim-*.jar}, which does not
+   * contain "tez" in its filename but provides {@code org.apache.tez.hadoop.shim.HadoopShimsLoader}
+   * required by {@code DAGAppMaster.serviceInit()} — omitting it makes the Tez AM fail at startup
+   * with {@code NoClassDefFoundError: org/apache/tez/hadoop/shim/HadoopShimsLoader}.
    */
   private static Set<Path> findTezJarsFromClasspath() {
     Set<Path> jars = new LinkedHashSet<>();
@@ -343,7 +345,8 @@ public class TezYarnClusterContainer {
         "org.apache.tez.dag.app.DAGAppMaster",             // tez-dag (the Tez AM)
         "org.apache.tez.mapreduce.hadoop.MRHelpers",       // tez-mapreduce
         "org.apache.tez.runtime.LogicalIOProcessorRuntimeTask", // tez-runtime-internals
-        "org.apache.tez.runtime.library.api.KeyValueReader"    // tez-runtime-library
+        "org.apache.tez.runtime.library.api.KeyValueReader",   // tez-runtime-library
+        "org.apache.tez.hadoop.shim.HadoopShimsLoader"     // hadoop-shim (loaded by DAGAppMaster)
     };
     for (String className : probeClassNames) {
       try {
@@ -353,8 +356,7 @@ public class TezYarnClusterContainer {
           String path = cs.getLocation().getPath();
           if (path.endsWith(".jar")) {
             Path p = Paths.get(path);
-            String name = p.getFileName().toString();
-            if (name.contains("tez") && !name.endsWith("-tests.jar") && Files.isRegularFile(p)) {
+            if (isTezFrameworkJar(p.getFileName().toString()) && Files.isRegularFile(p)) {
               jars.add(p);
             }
           }
@@ -364,20 +366,32 @@ public class TezYarnClusterContainer {
       }
     }
 
-    // Strategy 2: scan the JVM classpath string for jars with "tez" in the name.
+    // Strategy 2: scan the JVM classpath string for Tez framework jars.
     String cp = ManagementFactory.getRuntimeMXBean().getClassPath();
     for (String entry : cp.split(File.pathSeparator)) {
       if (!entry.endsWith(".jar")) {
         continue;
       }
       Path p = Paths.get(entry);
-      String name = p.getFileName().toString();
-      if (name.contains("tez") && !name.endsWith("-tests.jar") && Files.isRegularFile(p)) {
+      if (isTezFrameworkJar(p.getFileName().toString()) && Files.isRegularFile(p)) {
         jars.add(p);
       }
     }
 
     return jars;
+  }
+
+  /**
+   * Whether a jar filename belongs to the Tez framework and should be staged into
+   * {@code tez.lib.uris}. Matches {@code tez-*} jars plus {@code hadoop-shim-*} (which carries
+   * {@code org.apache.tez.hadoop.shim.HadoopShimsLoader} but has no "tez" in its name), excluding
+   * test jars.
+   */
+  private static boolean isTezFrameworkJar(String name) {
+    if (name.endsWith("-tests.jar")) {
+      return false;
+    }
+    return name.contains("tez") || name.startsWith("hadoop-shim");
   }
 
   // Package-private: only test classes in this package need direct exec access.
