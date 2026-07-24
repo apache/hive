@@ -107,8 +107,7 @@ public class TestMetastoreIndexer {
     Table customers = InMemorySearchFixture.table("hive", "sales", "customers", "sales customers");
     InMemoryIndexStateClient remote = new InMemoryIndexStateClient();
 
-    IndexMapping mapping = MetastoreIndexSchema.defaultHiveTablesMapping(
-        "test_index", InMemorySearchFixture.MODEL_NAME, conf);
+    IndexMapping mapping = MetastoreIndexSchema.tableIndexMapping(conf);
     EmbedderRegistry registry = new EmbedderRegistry(
         Map.of(InMemorySearchFixture.MODEL_NAME, new StubEmbedder(InMemorySearchFixture.MODEL_NAME)));
 
@@ -173,8 +172,7 @@ public class TestMetastoreIndexer {
 
     static IndexerFixture create(Configuration conf, InMemoryIndexStateClient remote)
         throws Exception {
-      IndexMapping mapping = MetastoreIndexSchema.defaultHiveTablesMapping(
-          "test_index", InMemorySearchFixture.MODEL_NAME, conf);
+      IndexMapping mapping = MetastoreIndexSchema.tableIndexMapping(conf);
       EmbedderRegistry registry = new EmbedderRegistry(
           Map.of(InMemorySearchFixture.MODEL_NAME, new StubEmbedder(InMemorySearchFixture.MODEL_NAME)));
       ByteBuffersDirectory directory = new ByteBuffersDirectory();

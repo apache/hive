@@ -146,12 +146,12 @@ final class BootstrapIndexer {
   private void fetchBatch(TableBatch batch,
       BlockingQueue<List<TableDocument>> indexQueue,
       AtomicReference<Exception> failure,
-      IMetaStoreClient fetchClient) throws Exception {
+      IMetaStoreClient client) throws Exception {
     if (failure.get() != null) {
       return;
     }
     List<Table> tables =
-        fetchClient.getTableObjectsByName(batch.database(), batch.tableNames());
+        client.getTableObjectsByName(batch.database(), batch.tableNames());
     List<TableDocument> documents = new ArrayList<>(tables.size());
     for (Table table : tables) {
       documents.add(MetastoreTableMapper.fromTable(table, mapping));

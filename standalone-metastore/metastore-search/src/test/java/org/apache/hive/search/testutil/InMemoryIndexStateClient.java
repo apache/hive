@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.zip.CRC32;
+import java.util.zip.CRC32C;
 
 import org.apache.hive.search.exception.IndexIOException;
 import org.apache.hive.search.index.store.IndexManifest;
@@ -97,7 +97,7 @@ public final class InMemoryIndexStateClient implements IndexStateClient {
   }
 
   public static long crc32C(byte[] bytes) {
-    CRC32 crc = new CRC32();
+    CRC32C crc = new CRC32C();
     crc.update(bytes);
     return crc.getValue();
   }

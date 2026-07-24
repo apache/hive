@@ -19,13 +19,12 @@ package org.apache.hive.search.mapping;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
+import org.apache.hive.search.config.InferenceOptions;
 import org.apache.hive.search.metastore.MetastoreIndexSchema;
 import org.apache.hive.search.metastore.MetastoreTableMapper;
-import org.apache.hive.search.metastore.SearchTextSegment;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -33,29 +32,18 @@ import static org.junit.Assert.assertTrue;
 public class TestIndexMapping {
 
   @Test
-  public void defaultSchemaExposesSingleHybridField() {
-    Configuration conf = new Configuration(false);
-    IndexMapping mapping = MetastoreIndexSchema.defaultHiveTablesMapping("hive_tables", "bge-small", conf);
-
-    assertEquals(1, mapping.hybridFields().size());
-    assertTrue(mapping.soleHybridField().isPresent());
-    assertEquals(SearchTextSegment.segmentField(0), mapping.soleHybridField().get());
-    assertEquals(4, mapping.searchTextSegmentFields().size());
-  }
-
-  @Test
   public void lexicalFieldsAreConfiguredInDefaultSchema() {
     Configuration conf = new Configuration(false);
-    IndexMapping mapping = MetastoreIndexSchema.defaultHiveTablesMapping("hive_tables", "bge-small", conf);
+    conf.set(InferenceOptions.EMBEDDER_NAME, "bge-small");
+    IndexMapping mapping = MetastoreIndexSchema.tableIndexMapping(conf);
     FieldSchema tableSchema = mapping.fieldSchema(MetastoreTableMapper.FIELD_TABLE);
     FieldSchema commentSchema = mapping.fieldSchema(MetastoreTableMapper.FIELD_COMMENT);
-    assertTrue(tableSchema instanceof FieldSchema.TextFieldSchema table
-        && table.search().lexical());
-    assertTrue(commentSchema instanceof FieldSchema.TextFieldSchema comment
-        && comment.search().lexical());
+    assertTrue(tableSchema instanceof TextFieldSchema table && table.lexical());
+    assertTrue(commentSchema instanceof TextFieldSchema comment
+        && comment.lexical());
     FieldSchema columnCommentsSchema = mapping.fieldSchema(MetastoreTableMapper.FIELD_COLUMN_COMMENTS);
-    assertTrue(columnCommentsSchema instanceof FieldSchema.TextFieldSchema columnComments
-        && columnComments.search().lexical());
+    assertTrue(columnCommentsSchema instanceof TextFieldSchema columnComments
+        && columnComments.lexical());
     assertNotNull(mapping.analyzer());
   }
 }

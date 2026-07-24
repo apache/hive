@@ -35,6 +35,7 @@ import org.apache.hive.search.inference.Embedder;
 import org.apache.hive.search.inference.EmbedderRegistry;
 import org.apache.hive.search.mapping.FieldSchema;
 import org.apache.hive.search.mapping.TableDocument;
+import org.apache.hive.search.mapping.TextFieldSchema;
 import org.apache.hive.search.mapping.field.Field;
 import org.apache.hive.search.mapping.field.TextField;
 import org.apache.lucene.document.Document;
@@ -110,12 +111,12 @@ public final class Indexer implements AutoCloseable {
         }
         if (field instanceof TextField text) {
           FieldSchema schema = indexManager.mapping().fieldSchema(text.name());
-          if (schema instanceof FieldSchema.TextFieldSchema textSchema
-              && textSchema.search().semantic()) {
+          if (schema instanceof TextFieldSchema textSchema
+              && textSchema.semantic()) {
             if (text.embedding() != null) {
               newDoc.appendField(field);
             } else {
-              String modelRef = textSchema.search().semanticModel();
+              String modelRef = textSchema.semanticModel();
               ListMultimap<TextField, TableDocument> multimapText =
                   modelPerTxt.computeIfAbsent(modelRef, s -> ArrayListMultimap.create());
               multimapText.put(text, newDoc);

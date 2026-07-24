@@ -21,71 +21,53 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hive.search.config.InferenceOptions;
 import org.apache.hive.search.config.SearchOptions;
 import org.apache.hive.search.mapping.FieldSchema;
 import org.apache.hive.search.mapping.IndexMapping;
-import org.apache.hive.search.mapping.SearchParams;
+import org.apache.hive.search.mapping.TextFieldSchema;
 
 public final class MetastoreIndexSchema {
 
   private MetastoreIndexSchema() {}
 
-  public static IndexMapping defaultHiveTablesMapping(String indexName,
-      String semanticModel, Configuration conf) {
+  public static IndexMapping tableIndexMapping(Configuration conf) {
     Map<String, FieldSchema> fields = new LinkedHashMap<>();
-    fields.put(MetastoreTableMapper.FIELD_DB, filterText(MetastoreTableMapper.FIELD_DB));
-    fields.put(MetastoreTableMapper.FIELD_TABLE, tableNameText(MetastoreTableMapper.FIELD_TABLE));
+    fields.put(MetastoreTableMapper.FIELD_DB, filterLexicalText(MetastoreTableMapper.FIELD_DB));
+    fields.put(MetastoreTableMapper.FIELD_TABLE, filterLexicalText(MetastoreTableMapper.FIELD_TABLE));
+
     fields.put(MetastoreTableMapper.FIELD_OWNER, filterText(MetastoreTableMapper.FIELD_OWNER));
     fields.put(MetastoreTableMapper.FIELD_TABLE_TYPE, filterText(MetastoreTableMapper.FIELD_TABLE_TYPE));
-    fields.put(MetastoreTableMapper.FIELD_LOCATION, storedText(MetastoreTableMapper.FIELD_LOCATION));
+
+    fields.put(MetastoreTableMapper.FIELD_LOCATION, lexicalText(MetastoreTableMapper.FIELD_LOCATION));
     fields.put(MetastoreTableMapper.FIELD_COMMENT, lexicalText(MetastoreTableMapper.FIELD_COMMENT));
     fields.put(MetastoreTableMapper.FIELD_COLUMNS, lexicalText(MetastoreTableMapper.FIELD_COLUMNS));
-    fields.put(
-        MetastoreTableMapper.FIELD_COLUMN_COMMENTS,
+    fields.put(MetastoreTableMapper.FIELD_COLUMN_COMMENTS,
         lexicalText(MetastoreTableMapper.FIELD_COLUMN_COMMENTS));
+
     int segmentMax = new SearchOptions(conf).getSemanticSegmentMax();
+    String model = new InferenceOptions(conf).embedderName();
     for (int i = 0; i < segmentMax; i++) {
       String name = SearchTextSegment.segmentField(i);
-      if (i == 0) {
-        fields.put(name, hybridText(name, semanticModel));
-      } else {
-        fields.put(name, semanticText(name, semanticModel));
-      }
+      fields.put(name, semanticText(name, model));
     }
-    return new IndexMapping(indexName, conf, fields);
+    return new IndexMapping(conf, fields);
   }
 
-  private static FieldSchema.TextFieldSchema filterText(String name) {
-    return new FieldSchema.TextFieldSchema(name, SearchParams.disabled(), true, true);
+  private static TextFieldSchema filterText(String name) {
+    return new TextFieldSchema(name, false).storeField(false).filterField(true);
   }
 
-  private static FieldSchema.TextFieldSchema storedText(String name) {
-    return new FieldSchema.TextFieldSchema(name, SearchParams.disabled(), true, false);
+  private static TextFieldSchema lexicalText(String name) {
+    return new TextFieldSchema(name, true).storeField(true).filterField(false);
   }
 
-  private static FieldSchema.TextFieldSchema lexicalText(String name) {
-    return new FieldSchema.TextFieldSchema(
-        name, new SearchParams(true, null, SearchParams.VectorDistance.COSINE), true, false);
+  private static TextFieldSchema filterLexicalText(String name) {
+    return new TextFieldSchema(name, true).filterField(true).storeField(false);
   }
 
-  private static FieldSchema.TextFieldSchema tableNameText(String name) {
-    return new FieldSchema.TextFieldSchema(
-        name, new SearchParams(true, null, SearchParams.VectorDistance.COSINE), true, true);
+  private static TextFieldSchema semanticText(String name, String model) {
+    return new TextFieldSchema(name, false).semanticField(model).filterField(false).storeField(false);
   }
 
-  private static FieldSchema.TextFieldSchema hybridText(String name, String semanticModel) {
-    return new FieldSchema.TextFieldSchema(
-        name,
-        new SearchParams(true, semanticModel, SearchParams.VectorDistance.COSINE),
-        false,
-        false);
-  }
-
-  private static FieldSchema.TextFieldSchema semanticText(String name, String semanticModel) {
-    return new FieldSchema.TextFieldSchema(
-        name,
-        new SearchParams(false, semanticModel, SearchParams.VectorDistance.COSINE),
-        false,
-        false);
-  }
 }

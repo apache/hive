@@ -19,6 +19,7 @@ package org.apache.hive.search.search;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
+import org.apache.hive.search.config.InferenceOptions;
 import org.apache.hive.search.exception.SearchException;
 import org.apache.hive.search.mapping.IndexMapping;
 import org.apache.hive.search.metastore.MetastoreIndexSchema;
@@ -36,7 +37,8 @@ public class TestSearchMethod {
 
   private static IndexMapping hybridMapping() {
     Configuration conf = new Configuration(false);
-    return MetastoreIndexSchema.defaultHiveTablesMapping("hive_tables", "bge-small", conf);
+    conf.set(InferenceOptions.EMBEDDER_NAME, "bge-small");
+    return MetastoreIndexSchema.tableIndexMapping(conf);
   }
 
   @Test

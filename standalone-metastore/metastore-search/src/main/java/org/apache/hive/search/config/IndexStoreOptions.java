@@ -58,7 +58,7 @@ public record IndexStoreOptions(Configuration configuration, String indexName) {
     try {
       URI.create(uriText);
     } catch (IllegalArgumentException e) {
-      throw new IndexIOException("invalid store.remote.uri: " + uriText, e);
+      throw new IndexIOException("Invalid " + REMOTE_URI + ": " + uriText, e);
     }
   }
 }

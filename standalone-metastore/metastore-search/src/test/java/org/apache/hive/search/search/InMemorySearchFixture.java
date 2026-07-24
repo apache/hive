@@ -75,8 +75,7 @@ public final class InMemorySearchFixture implements AutoCloseable {
     conf.setInt(SearchOptions.BAYESIAN_TOKENS_PER_QUERY, 2);
     conf.setLong(SearchOptions.BAYESIAN_SEED, 1L);
 
-    IndexMapping mapping = MetastoreIndexSchema.defaultHiveTablesMapping(
-        "test_index", MODEL_NAME, conf);
+    IndexMapping mapping = MetastoreIndexSchema.tableIndexMapping(conf);
     IndexManager indexManager = IndexManager.open(mapping, conf);
     EmbedderRegistry registry =
         new EmbedderRegistry(Map.of(MODEL_NAME, new StubEmbedder(MODEL_NAME)));

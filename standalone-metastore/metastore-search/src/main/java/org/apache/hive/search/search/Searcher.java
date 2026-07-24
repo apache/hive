@@ -33,6 +33,7 @@ import org.apache.hive.search.exception.SearchException;
 import org.apache.hive.search.mapping.FieldSchema;
 import org.apache.hive.search.mapping.IndexMapping;
 import org.apache.hive.search.mapping.TableDocument;
+import org.apache.hive.search.mapping.TextFieldSchema;
 import org.apache.hive.search.metastore.MetastoreTableMapper;
 import org.apache.hive.search.index.IndexManager;
 import org.apache.hive.search.inference.Embedder;
@@ -183,18 +184,18 @@ public final class Searcher implements AutoCloseable {
   private List<Query> lexicalClausesForField(String field, String queryText, float boost)
       throws SearchException {
     FieldSchema schema = mapping.fieldSchema(field);
-    if (!(schema instanceof FieldSchema.TextFieldSchema text)) {
+    if (!(schema instanceof TextFieldSchema text)) {
       return List.of();
     }
     List<Query> clauses = new ArrayList<>();
     if (text.filter()) {
       clauses.add(maybeBoost(compileFilterKeywordQuery(field, queryText), boost));
-      if (text.search().lexical()) {
+      if (text.lexical()) {
         clauses.add(maybeBoost(compileFieldMatchQuery(field, queryText), boost));
       }
       return clauses;
     }
-    if (text.search().lexical()) {
+    if (text.lexical()) {
       clauses.add(maybeBoost(compileFieldMatchQuery(field, queryText), boost));
     }
     return clauses;
@@ -219,7 +220,7 @@ public final class Searcher implements AutoCloseable {
   private Query compileFieldMatchQuery(String field, String queryText)
       throws SearchException {
     FieldSchema schema = mapping.fieldSchema(field);
-    if (!(schema instanceof FieldSchema.TextFieldSchema text) || !text.search().lexical()) {
+    if (!(schema instanceof TextFieldSchema text) || !text.lexical()) {
       throw new SearchException("field '" + field + "' is not lexically searchable");
     }
     return new SimpleQueryParser(mapping.analyzer(), field).parse(queryText);
@@ -228,19 +229,19 @@ public final class Searcher implements AutoCloseable {
   private Query compileSemanticQuery(SemanticQuery semantic, int knnK) throws SearchException {
     List<String> fields = mapping.resolveSemanticSearchFields(null);
     FieldSchema schema = mapping.fieldSchema(fields.getFirst());
-    if (!(schema instanceof FieldSchema.TextFieldSchema text) || !text.search().semantic()) {
+    if (!(schema instanceof TextFieldSchema text) || !text.semantic()) {
       throw new SearchException("index has no semantically searchable fields configured");
     }
     float[] embedding;
     try {
-      embedding = embedderRegistry.get(text.search().semanticModel())
+      embedding = embedderRegistry.get(text.semanticModel())
           .embed(Embedder.TaskType.QUERY, semantic.queryText());
     } catch (InferenceException e) {
       throw new SearchException("Failed to encode semantic query", e);
     }
     if (embedding == null) {
       throw new SearchException(
-          "embedding model '" + text.search().semanticModel() + "' returned null vector");
+          "embedding model '" + text.semanticModel() + "' returned null vector");
     }
     if (fields.size() == 1) {
       return new KnnFloatVectorQuery(fields.getFirst(), embedding, knnK);

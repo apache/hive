@@ -25,7 +25,7 @@ import org.junit.experimental.categories.Category;
 
 import java.io.ByteArrayInputStream;
 import java.util.List;
-import java.util.zip.CRC32;
+import java.util.zip.CRC32C;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -133,7 +133,7 @@ public class TestIndexBackupUtils {
   }
 
   public static long crc32C(byte[] bytes) {
-    CRC32 crc = new CRC32();
+    CRC32C crc = new CRC32C();
     crc.update(bytes);
     return crc.getValue();
   }
