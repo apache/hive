@@ -26,7 +26,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Sets;
-import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.adapter.jdbc.JdbcConvention;
 import org.apache.calcite.adapter.jdbc.JdbcRel;
 import org.apache.calcite.adapter.jdbc.JdbcRules;
@@ -264,10 +263,6 @@ public class PlanModifierForASTConv {
 
     @Override
     public RelNode visit(final RelNode rel) {
-      if (rel instanceof DruidQuery dq) {
-        aliases.add(((HiveTableScan) dq.getTableScan()).getTableAlias().toLowerCase());
-        return dq;
-      }
       if (rel instanceof TableSpool spool) {
         aliases.add(spool.getTable().getQualifiedName().getLast().toLowerCase());
         return spool;

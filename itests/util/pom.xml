@@ -270,26 +270,19 @@
       <classifier>tests</classifier>
     </dependency>
     <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-it-druid</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>com.sun.jersey</groupId>
-          <artifactId>jersey-bundle</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-log4j12</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-logging</groupId>
-          <artifactId>commons-logging</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka_2.12</artifactId>
+      <version>${kafka.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka-clients</artifactId>
+      <version>${kafka.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka-server</artifactId>
+      <version>${kafka.version}</version>
     </dependency>
   </dependencies>
 </project>

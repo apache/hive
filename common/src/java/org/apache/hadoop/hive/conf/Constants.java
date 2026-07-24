@@ -30,23 +30,6 @@ public class Constants {
   public static final String LLAP_NUM_BUCKETS = "llap.num.buckets";
   public static final String LLAP_BUCKET_ID = "llap.bucket.id";
 
-  /* Constants for Druid storage handler */
-  public static final String DRUID_HIVE_STORAGE_HANDLER_ID =
-          "org.apache.hadoop.hive.druid.DruidStorageHandler";
-  public static final String DRUID_HIVE_OUTPUT_FORMAT =
-          "org.apache.hadoop.hive.druid.io.DruidOutputFormat";
-  public static final String DRUID_DATA_SOURCE = "druid.datasource";
-  public static final String DRUID_SEGMENT_GRANULARITY = "druid.segment.granularity";
-
-  public static final String DRUID_TARGET_SHARDS_PER_GRANULARITY =
-      "druid.segment.targetShardsPerGranularity";
-  public static final String DRUID_TIMESTAMP_GRANULARITY_COL_NAME = "__time_granularity";
-  public static final String DRUID_SHARD_KEY_COL_NAME = "__druid_extra_partition_key";
-  public static final String DRUID_QUERY_JSON = "druid.query.json";
-  public static final String DRUID_QUERY_FIELD_NAMES = "druid.fieldNames";
-  public static final String DRUID_QUERY_FIELD_TYPES = "druid.fieldTypes";
-  public static final String DRUID_QUERY_TYPE = "druid.query.type";
-
   public static final String JDBC_HIVE_STORAGE_HANDLER_ID =
       "org.apache.hive.storage.jdbc.JdbcStorageHandler";
   public static final String JDBC_CONFIG_PREFIX = "hive.sql";

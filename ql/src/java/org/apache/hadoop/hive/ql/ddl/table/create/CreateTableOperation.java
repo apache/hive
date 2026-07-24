@@ -194,7 +194,6 @@ public class CreateTableOperation extends DDLOperation<CreateTableDesc> {
       // TODO: why doesn't this check class name rather than toString?
       String sh = tbl.getStorageHandler().toString();
       retval = !"org.apache.hadoop.hive.hbase.HBaseStorageHandler".equals(sh) &&
-          !Constants.DRUID_HIVE_STORAGE_HANDLER_ID.equals(sh) &&
           !Constants.JDBC_HIVE_STORAGE_HANDLER_ID.equals(sh) &&
           !"org.apache.hadoop.hive.accumulo.AccumuloStorageHandler".equals(sh);
     }
