@@ -28,8 +28,9 @@ import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.aws.AwsClientProperties;
 import org.apache.iceberg.aws.s3.S3FileIOProperties;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
-import org.apache.iceberg.hive.client.RestAccessDelegationMode;
-import org.apache.iceberg.hive.client.HiveRESTCatalogClient;
+import org.apache.iceberg.hive.rest.catalog.RestAccessDelegationMode;
+import org.apache.iceberg.hive.rest.catalog.RestCatalogAccessDelegation;
+import org.apache.iceberg.hive.rest.catalog.client.HiveRESTCatalogClient;
 import org.apache.iceberg.rest.extension.OAuth2AuthorizationServer;
 import org.junit.After;
 import org.junit.Before;
@@ -149,7 +150,7 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
     conf.set(restCatalogPrefix + "oauth2-server-uri", oAuth2AuthorizationServer.getTokenEndpoint());
     conf.set(restCatalogPrefix + "credential", oAuth2AuthorizationServer.getClientCredential());
     conf.set(
-        restCatalogPrefix + IcebergCatalogProperties.REST_ACCESS_DELEGATION_HEADER_PROPERTY,
+        restCatalogPrefix + RestCatalogAccessDelegation.ACCESS_DELEGATION_PROPERTY,
         RestAccessDelegationMode.VENDED_CREDENTIALS.modeName());
 
     applyHostS3FilesystemSettings(conf);

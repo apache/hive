@@ -27,7 +27,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.CatalogUtil;
-import org.apache.iceberg.hive.client.RestAccessDelegationMode;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 
 public class IcebergCatalogProperties {
@@ -39,7 +38,6 @@ public class IcebergCatalogProperties {
   public static final String ICEBERG_HADOOP_TABLE_NAME = "location_based_table";
   public static final String ICEBERG_DEFAULT_CATALOG_NAME = "default_iceberg";
   public static final String NO_CATALOG_TYPE = "no catalog";
-  public static final String REST_ACCESS_DELEGATION_HEADER_PROPERTY = "header.X-Iceberg-Access-Delegation";
 
   private IcebergCatalogProperties() {
 
@@ -104,19 +102,6 @@ public class IcebergCatalogProperties {
    */
   public static String catalogPropertyConfigKey(String catalogName, String catalogProperty) {
     return String.format("%s%s.%s", CATALOG_CONFIG_PREFIX, catalogName, catalogProperty);
-  }
-
-  /**
-   * Returns true when the catalog is configured to request REST vended storage credentials via
-   * {@link #REST_ACCESS_DELEGATION_HEADER_PROPERTY}.
-   */
-  public static boolean requestsVendedCredentials(String catalogName, Configuration conf) {
-    if (conf == null || StringUtils.isEmpty(catalogName)) {
-      return false;
-    }
-    String headerValue =
-        conf.get(catalogPropertyConfigKey(catalogName, REST_ACCESS_DELEGATION_HEADER_PROPERTY));
-    return RestAccessDelegationMode.headerRequestsVendedCredentials(headerValue);
   }
 
   /**

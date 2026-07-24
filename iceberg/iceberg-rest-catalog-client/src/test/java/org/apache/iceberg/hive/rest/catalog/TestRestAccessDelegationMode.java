@@ -17,9 +17,8 @@
  * under the License.
  */
 
-package org.apache.iceberg.hive.client;
+package org.apache.iceberg.hive.rest.catalog;
 
-import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -65,11 +64,11 @@ class TestRestAccessDelegationMode {
   @Test
   void requestsVendedCredentialsFromConfiguration() {
     org.apache.hadoop.conf.Configuration conf = new org.apache.hadoop.conf.Configuration();
-    assertThat(IcebergCatalogProperties.requestsVendedCredentials("ice01", conf)).isFalse();
+    assertThat(RestCatalogAccessDelegation.requestsVendedCredentials("ice01", conf)).isFalse();
 
     conf.set(
         "iceberg.catalog.ice01.header.X-Iceberg-Access-Delegation",
         RestAccessDelegationMode.VENDED_CREDENTIALS.modeName());
-    assertThat(IcebergCatalogProperties.requestsVendedCredentials("ice01", conf)).isTrue();
+    assertThat(RestCatalogAccessDelegation.requestsVendedCredentials("ice01", conf)).isTrue();
   }
 }
