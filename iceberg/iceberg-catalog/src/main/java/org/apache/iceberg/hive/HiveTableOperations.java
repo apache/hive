@@ -266,7 +266,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
         BaseMetastoreOperations.CommitStatus.FAILURE;
     boolean updateHiveTable = false;
 
-    HiveLock lock = lockObject(base != null ? base : metadata);
+    HiveLock lock = lockObject(base != null ? base : tableMetadata);
     try {
       lock.lock();
 
@@ -286,7 +286,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
         LOG.debug("Committing existing table: {}", fullName);
       } else {
         tbl = newHmsTable(
-            metadata.property(HiveCatalog.HMS_TABLE_OWNER, HiveHadoopUtil.currentUser())
+            tableMetadata.property(HiveCatalog.HMS_TABLE_OWNER, HiveHadoopUtil.currentUser())
         );
         LOG.debug("Committing new table: {}", fullName);
       }
