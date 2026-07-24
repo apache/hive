@@ -237,9 +237,9 @@ public class CoreBeeLineDriver extends CliAdapter {
       long filterEndTime = System.currentTimeMillis();
       System.err.println(">>> FILTERED " + qFile.getName() + ": " + (filterEndTime - queryEndTime)
           + "ms");
+      qOutProcessor.maskPatterns(qFile.getOutputFile().getPath());
 
       if (!overwrite) {
-        qOutProcessor.maskPatterns(qFile.getOutputFile().getPath());
         QTestProcessExecResult result = qFile.compareResults();
 
         long compareEndTime = System.currentTimeMillis();
