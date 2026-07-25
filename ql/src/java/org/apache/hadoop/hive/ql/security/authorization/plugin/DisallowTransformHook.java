@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.security.authorization.plugin;
 import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.QueryProperties;
+import org.apache.hadoop.hive.ql.QueryProperties.QueryFeature;
 
 public class DisallowTransformHook implements ExecuteWithHookContext {
 
@@ -30,7 +31,7 @@ public class DisallowTransformHook implements ExecuteWithHookContext {
     if (null == qProps) {
       return; // its a ddl query.
     } 
-    if (qProps.usesScript()) {
+    if (qProps.hasFeature(QueryFeature.USES_SCRIPT)) {
        throw new HiveAccessControlException("Query with transform clause is disallowed in"
            + " current configuration.");
     }

@@ -46,7 +46,6 @@ public class VectorPTFEvaluatorCount extends VectorPTFEvaluatorBase {
   public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
-    evaluateInputExpr(batch);
 
     // Count non-null column rows.
 

@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryProperties;
+import org.apache.hadoop.hive.ql.QueryProperties.QueryFeature;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
@@ -129,7 +130,7 @@ public class TestQueryProperties {
     }
     QueryProperties properties = analyze(
         "SELECT t1 FROM test_db.test_table EXCEPT ALL SELECT t2 FROM test_db.test_table", false);
-    Assert.assertTrue(properties.hasExcept());
+    Assert.assertTrue(properties.hasFeature(QueryFeature.EXCEPT));
   }
 
   @Test
@@ -140,7 +141,7 @@ public class TestQueryProperties {
     }
     QueryProperties properties = analyze(
         "SELECT t1 FROM test_db.test_table EXCEPT DISTINCT SELECT t2 FROM test_db.test_table", false);
-    Assert.assertTrue(properties.hasExcept());
+    Assert.assertTrue(properties.hasFeature(QueryFeature.EXCEPT));
   }
 
   @Test
@@ -151,7 +152,7 @@ public class TestQueryProperties {
     }
     QueryProperties properties = analyze(
         "SELECT t1 FROM test_db.test_table INTERSECT ALL SELECT t2 FROM test_db.test_table", false);
-    Assert.assertTrue(properties.hasIntersect());
+    Assert.assertTrue(properties.hasFeature(QueryFeature.INTERSECT));
   }
 
   @Test
@@ -162,7 +163,7 @@ public class TestQueryProperties {
     }
     QueryProperties properties = analyze(
         "SELECT t1 FROM test_db.test_table INTERSECT DISTINCT SELECT t2 FROM test_db.test_table", false);
-    Assert.assertTrue(properties.hasIntersect());
+    Assert.assertTrue(properties.hasFeature(QueryFeature.INTERSECT));
   }
 
   @Test
@@ -173,7 +174,7 @@ public class TestQueryProperties {
     }
     QueryProperties properties = analyze(
         "SELECT t1 FROM test_db.test_table QUALIFY row_number() OVER (PARTITION BY t1 ORDER BY t2) = 1", false);
-    Assert.assertTrue(properties.hasQualify());
+    Assert.assertTrue(properties.hasFeature(QueryFeature.QUALIFY));
   }
 
   @Test

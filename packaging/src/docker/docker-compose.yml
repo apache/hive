@@ -32,11 +32,17 @@ services:
       - hive-db:/var/lib/postgresql
     networks:
       - hive
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hive -d metastore_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
 
   metastore:
     image: apache/hive:${HIVE_VERSION}
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
     container_name: metastore
     hostname: metastore
@@ -67,11 +73,18 @@ services:
         - ./jars:/tmp/ext-jars:ro
     networks:
       - hive
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/9083'"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
 
   hiveserver2:
     image: apache/hive:${HIVE_VERSION}
     depends_on:
-      - metastore
+      metastore:
+        condition: service_healthy
     restart: unless-stopped
     container_name: hiveserver2
     hostname: hiveserver2
@@ -125,6 +138,12 @@ services:
       - ./jars:/tmp/ext-jars:ro
     networks:
       - hive
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/10000'"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 40s
 
   zookeeper:
     profiles:
@@ -137,10 +156,17 @@ services:
       - '2181:2181'
     networks:
       - hive
+    environment:
+      ZOO_4LW_COMMANDS_WHITELIST: ruok
     volumes:
       - zookeeper_data:/data
       - zookeeper_datalog:/datalog
       - zookeeper_logs:/logs
+    healthcheck:
+      test: ["CMD-SHELL", "echo ruok | nc -w 2 127.0.0.1 2181 | grep imok"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
 
   tezam:
     profiles:
@@ -149,7 +175,8 @@ services:
     container_name: tezam
     hostname: tezam
     depends_on:
-      - zookeeper
+      zookeeper:
+        condition: service_healthy
     restart: on-failure:3
     environment:
       USER: hive
@@ -157,6 +184,7 @@ services:
 
       TEZ_FRAMEWORK_MODE: STANDALONE_ZOOKEEPER
       TEZ_AM_ZOOKEEPER_QUORUM: zookeeper:2181
+      TEZ_AM_RPC_PORT: '15100'
 
       # LLAP daemon discovery
       HIVE_ZOOKEEPER_QUORUM: zookeeper:2181
@@ -171,13 +199,20 @@ services:
       - scratch:/opt/hive/scratch
     networks:
       - hive
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/$${TEZ_AM_RPC_PORT}'"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
 
   llapdaemon:
     profiles:
       - llap
     image: apache/hive:${HIVE_VERSION}
     depends_on:
-      - zookeeper
+      zookeeper:
+        condition: service_healthy
     restart: unless-stopped
     environment:
       USER: hive
@@ -205,6 +240,12 @@ services:
       - scratch:/opt/hive/scratch
     networks:
       - hive
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/15001'"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
 
 volumes:
   hive-db:

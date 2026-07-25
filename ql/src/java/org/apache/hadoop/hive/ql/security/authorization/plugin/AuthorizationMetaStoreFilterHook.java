@@ -33,9 +33,6 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import static org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObjectUtils.TablePrivilegeLookup;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Metastore filter hook for filtering out the list of objects that the current authorization
  * implementation does not allow user to see
@@ -56,38 +53,32 @@ public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHook
     return getFilteredObjectNames(getFilteredObjects(listObjs));
   }
 
+  /**
+   * Filters the given list of tables down to those the current user is authorized to see.
+   *
+   * <p>The method delegates authorization decisions to {@link HiveAuthorizer#filterListCmdObjects},
+   * then uses a {@link TablePrivilegeLookup} (binary-search index) to match the returned
+   * privilege objects back to the original {@link Table} objects in O(n log n), replacing an
+   * earlier O(nÂ²) nested-loop implementation that was prohibitively slow for large table lists.
+   *
+   * <p>A table's catName is normalized to the default catalog before the lookup when it is
+   * {@code null}, consistent with how {@code tablesToPrivilegeObjs} builds the privilege objects
+   * that are sent to the authorizer.
+   *
+   * @param tableList the full list of tables returned by the MetaStore before authorization
+   * @return the sub-list of tables the current user is permitted to list
+   * @throws MetaException if the authorizer throws an exception
+   */
   @Override
   public List<Table> filterTables(List<Table> tableList) throws MetaException {
     List<HivePrivilegeObject> listObjs = tablesToPrivilegeObjs(tableList);
-    return getFilteredTableList(getFilteredObjects(listObjs),tableList);
-  }
-
-  private List<Table> getFilteredTableList(List<HivePrivilegeObject> hivePrivilegeObjects, List<Table> tableList) {
+    TablePrivilegeLookup index = new TablePrivilegeLookup(getFilteredObjects(listObjs));
     List<Table> ret = new ArrayList<>();
-    for(HivePrivilegeObject hivePrivilegeObject:hivePrivilegeObjects) {
-      String catName = hivePrivilegeObject.getCatName();
-      String dbName  = hivePrivilegeObject.getDbname();
-      String tblName = hivePrivilegeObject.getObjectName();
-      Table  table   = getFilteredTable(catName, dbName, tblName, tableList);
-      if (table != null) {
+    String defaultCatName = MetaStoreUtils.getDefaultCatalog(HivePrivilegeObject.getConf());
+    for (Table table : tableList) {
+      String catName = table.getCatName() != null ? table.getCatName() : defaultCatName;
+      if (index.lookup(catName, table.getDbName(), table.getTableName()) != null) {
         ret.add(table);
-      }
-    }
-    return ret;
-  }
-
-  private Table getFilteredTable(String catName, String dbName, String tblName, List<Table> tableList) {
-    Table ret = null;
-    for (Table table: tableList) {
-      // do not check catalog name if catName is null
-      if (catName != null && table.getCatName() != null && !catName.equals(table.getCatName())) {
-        continue;
-      }
-      String databaseName = table.getDbName();
-      String tableName = table.getTableName();
-      if (dbName.equals(databaseName) && tblName.equals(tableName)) {
-        ret = table;
-        break;
       }
     }
     return ret;

@@ -257,38 +257,83 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
   }
 
 
-  @SuppressWarnings({ "rawtypes", "unchecked" })
+  @SuppressWarnings("unchecked")
   private LlapBufferOrBuffers wrapBbForFile(LlapBufferOrBuffers result,
       Object fileKey, int length, InputStream stream, CacheTag tag, AtomicBoolean isStopped) throws IOException {
-    if (result != null) return result;
+    if (result != null) {
+      return result;
+    }
     int maxAlloc = allocator.getMaxAllocation();
-    LlapMetadataBuffer<Object>[] largeBuffers = null;
-    if (maxAlloc < length) {
-      largeBuffers = new LlapMetadataBuffer[length / maxAlloc];
-      for (int i = 0; i < largeBuffers.length; ++i) {
-        largeBuffers[i] = new LlapMetadataBuffer<>(fileKey, tag);
+    // Buffers are locked and handed to the cache only after this returns, so release whatever we
+    // allocated if a later read or allocation throws - otherwise it leaks (nothing else reclaims it).
+    if (length <= maxAlloc) {
+      // The whole footer fits in a single buffer - the overwhelmingly common case.
+      LlapMetadataBuffer<Object> buffer = new LlapMetadataBuffer<>(fileKey, tag);
+      allocator.allocateMultiple(new MemoryBuffer[] { buffer }, length, null, isStopped);
+      boolean done = false;
+      try {
+        readIntoCacheBuffer(stream, length, buffer);
+        done = true;
+        return buffer;
+      } finally {
+        if (!done) {
+          deallocateQuietly(buffer);
+        }
       }
-      allocator.allocateMultiple(largeBuffers, maxAlloc, null, isStopped);
+    }
+    // Larger footers are split across maxAlloc-sized chunks, the last one holding the remainder.
+    LlapMetadataBuffer<Object>[] largeBuffers = new LlapMetadataBuffer[length / maxAlloc];
+    for (int i = 0; i < largeBuffers.length; ++i) {
+      largeBuffers[i] = new LlapMetadataBuffer<>(fileKey, tag);
+    }
+    // allocateMultiple is all-or-nothing: on success every chunk is allocated; on failure it
+    // releases whatever it reserved.
+    allocator.allocateMultiple(largeBuffers, maxAlloc, null, isStopped);
+
+    LlapMetadataBuffer<Object> smallBuffer = null;
+    boolean done = false;
+    try {
       for (int i = 0; i < largeBuffers.length; ++i) {
         readIntoCacheBuffer(stream, maxAlloc, largeBuffers[i]);
       }
-    }
-    int smallSize = length % maxAlloc;
-    if (smallSize == 0) {
-      return new LlapMetadataBuffers(largeBuffers);
-    } else {
-      LlapMetadataBuffer<Object>[] smallBuffer = new LlapMetadataBuffer[1];
-      smallBuffer[0] = new LlapMetadataBuffer(fileKey, tag);
-      allocator.allocateMultiple(smallBuffer, length, null, isStopped);
-      readIntoCacheBuffer(stream, smallSize, smallBuffer[0]);
-      if (largeBuffers == null) {
-        return smallBuffer[0]; // This is the overwhelmingly common case.
-      } else {
-        LlapMetadataBuffer<Object>[] cacheData = new LlapMetadataBuffer[largeBuffers.length + 1];
-        System.arraycopy(largeBuffers, 0, cacheData, 0, largeBuffers.length);
-        cacheData[largeBuffers.length] = smallBuffer[0];
-        return new LlapMetadataBuffers<>(cacheData);
+      int smallSize = length % maxAlloc;
+      if (smallSize == 0) {
+        done = true;
+        return new LlapMetadataBuffers<>(largeBuffers);
       }
+      // Allocate the remainder only; the last chunk is smaller than maxAlloc.
+      LlapMetadataBuffer<Object> remainder = new LlapMetadataBuffer<>(fileKey, tag);
+      allocator.allocateMultiple(new MemoryBuffer[] { remainder }, smallSize, null, isStopped);
+      smallBuffer = remainder; // Registered for cleanup only now that allocation succeeded.
+      readIntoCacheBuffer(stream, smallSize, remainder);
+
+      LlapMetadataBuffer<Object>[] cacheData = new LlapMetadataBuffer[largeBuffers.length + 1];
+      System.arraycopy(largeBuffers, 0, cacheData, 0, largeBuffers.length);
+      cacheData[largeBuffers.length] = remainder;
+
+      done = true;
+      return new LlapMetadataBuffers<>(cacheData);
+    } finally {
+      if (!done) {
+        for (LlapMetadataBuffer<Object> buffer : largeBuffers) {
+          deallocateQuietly(buffer);
+        }
+        if (smallBuffer != null) {
+          deallocateQuietly(smallBuffer);
+        }
+      }
+    }
+  }
+
+  /**
+   * Releases a footer buffer that was allocated but not yet published to the cache. The buffer must
+   * be unlocked (refCount 0, as deallocate asserts); callers here run before it is ever locked.
+   */
+  private void deallocateQuietly(MemoryBuffer buffer) {
+    try {
+      allocator.deallocate(buffer);
+    } catch (Throwable t) {
+      LlapIoImpl.LOG.error("Ignoring the cleanup error after another error", t);
     }
   }
 

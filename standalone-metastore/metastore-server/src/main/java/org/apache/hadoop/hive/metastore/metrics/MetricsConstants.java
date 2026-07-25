@@ -71,6 +71,8 @@ public class MetricsConstants {
   public static final String DELETE_TOTAL_PARTITIONS = "delete_total_count_partitions";
 
   public static final String DIRECTSQL_ERRORS = "directsql_errors";
+  public static final String JDBC_SLOW_QUERIES = "jdbc_slow_queries";
+  public static final String JDBC_EXECUTION = "jdbc_";
 
   public static final String JVM_PAUSE_INFO = "jvm.pause.info-threshold";
   public static final String JVM_PAUSE_WARN = "jvm.pause.warn-threshold";

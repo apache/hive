@@ -34,6 +34,10 @@
         <value>${TEZ_AM_REGISTRY_NAMESPACE}</value>
     </property>
     <property>
+        <name>tez.am.rpc.port</name>
+        <value>${TEZ_AM_RPC_PORT}</value>
+    </property>
+    <property>
         <name>tez.local.mode</name>
         <value>false</value>
     </property>

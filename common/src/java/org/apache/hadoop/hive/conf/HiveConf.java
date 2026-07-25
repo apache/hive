@@ -5600,6 +5600,11 @@ public class HiveConf extends Configuration {
         + ",fs.s3a.access.key"
         + ",fs.s3a.secret.key"
         + ",fs.s3a.proxy.password"
+        + ",iceberg.vended.storage.credentials"
+        // Iceberg FileIO vended credential keys (S3FileIOProperties)
+        + ",s3.access-key-id"
+        + ",s3.secret-access-key"
+        + ",s3.session-token"
         + ",dfs.adls.oauth2.credential"
         + ",fs.adl.oauth2.credential"
         + ",fs.azure.account.oauth2.client.secret"

@@ -54,7 +54,6 @@ public class VectorPTFEvaluatorDecimalAvg
   public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
-    evaluateInputExpr(batch);
 
     // Sum all non-null decimal column values for avg; maintain isGroupResultNull; after last row of
     // last group batch compute the group avg when sum is non-null.

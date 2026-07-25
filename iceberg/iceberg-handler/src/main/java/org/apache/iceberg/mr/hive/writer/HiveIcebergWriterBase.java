@@ -70,6 +70,11 @@ abstract class HiveIcebergWriterBase implements HiveIcebergWriter {
   }
 
   @Override
+  public FileIO io() {
+    return io;
+  }
+
+  @Override
   public void close(boolean abort) throws IOException {
     writer.close();
     FilesForCommit result = files();

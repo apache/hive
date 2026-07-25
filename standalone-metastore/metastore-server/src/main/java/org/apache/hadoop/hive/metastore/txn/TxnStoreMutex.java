@@ -189,6 +189,8 @@ public class TxnStoreMutex implements TxnStore.MutexAPI {
           jdbcResource.getTransactionManager().commit(context);
         } catch (DataAccessException ex) {
           LOG.warn("Unable to update MT_KEY2 value for MT_KEY1=" + key, ex);
+        } finally {
+          context.close();
         }
         
         if (derbySemaphore != null) {

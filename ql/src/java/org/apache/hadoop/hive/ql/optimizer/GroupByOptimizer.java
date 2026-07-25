@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.QueryProperties.QueryFeature;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -212,7 +213,7 @@ public class GroupByOptimizer extends Transform {
         convertGroupByMapSideSortedGroupBy(hiveConf, groupByOp, depth);
       }
       else if (optimizeDistincts && !HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)) {
-        pGraphContext.getQueryProperties().setHasMapGroupBy(true);
+        pGraphContext.getQueryProperties().addFeature(QueryFeature.MAP_GROUP_BY);
         ReduceSinkOperator reduceSinkOp =
             (ReduceSinkOperator)groupByOp.getChildOperators().get(0);
         GroupByDesc childGroupByDesc =
@@ -514,7 +515,7 @@ public class GroupByOptimizer extends Transform {
     // The operators specified by depth and removed from the tree.
     protected void convertGroupByMapSideSortedGroupBy(
         HiveConf conf, GroupByOperator groupByOp, int depth) {
-      pGraphContext.getQueryProperties().setHasMapGroupBy(true);
+      pGraphContext.getQueryProperties().addFeature(QueryFeature.MAP_GROUP_BY);
 
       if (removeChildren(groupByOp, depth)) {
         // Use bucketized hive input format - that makes sure that one mapper reads the entire file

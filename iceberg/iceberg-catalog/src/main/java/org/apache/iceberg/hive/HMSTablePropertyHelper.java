@@ -144,7 +144,8 @@ public class HMSTablePropertyHelper {
       ViewMetadata metadata,
       Set<String> obsoleteProps,
       long maxHiveTablePropertySize,
-      String currentLocation) {
+      String currentLocation,
+      String sqlQuery) {
     Map<String, String> parameters =
         Optional.ofNullable(tbl.getParameters()).orElseGet(Maps::newHashMap);
 
@@ -163,6 +164,10 @@ public class HMSTablePropertyHelper {
         maxHiveTablePropertySize);
     parameters.put(hive_metastoreConstants.META_TABLE_STORAGE, HIVE_ICEBERG_STORAGE_HANDLER);
     tbl.setParameters(parameters);
+    if (sqlQuery != null) {
+      tbl.setViewExpandedText(sqlQuery);
+      tbl.setViewOriginalText(sqlQuery);
+    }
   }
 
   public static SortOrder getSortOrder(Properties props, Schema schema) {

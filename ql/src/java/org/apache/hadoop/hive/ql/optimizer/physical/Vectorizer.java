@@ -102,6 +102,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext.HiveVectorAdap
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext.InConstantType;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContextRegion;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedSupport.Support;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.ConvertDecimal64ToDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
@@ -4796,15 +4797,19 @@ public class Vectorizer implements PhysicalPlanResolver {
     vContext.markActualScratchColumns();
 
     VectorExpression[] vectorSelectExprs = new VectorExpression[size];
+    VectorExpression[] selectColumnExprs = new VectorExpression[size];
     int[] projectedOutputColumns = new int[size];
+    int[] vectorSelectExprIndexForCol = new int[size];
+    Arrays.fill(vectorSelectExprIndexForCol, -1);
     for (int i = 0; i < size; i++) {
       ExprNodeDesc expr = colList.get(i);
       VectorExpression ve = vContext.getVectorExpression(expr);
-      projectedOutputColumns[i] = ve.getOutputColumnNum();
+      selectColumnExprs[i] = ve;
       if (ve instanceof IdentityExpression) {
         // Suppress useless evaluation.
         continue;
       }
+      vectorSelectExprIndexForCol[i] = index;
       vectorSelectExprs[index++] = ve;
     }
     if (index < size) {
@@ -4817,6 +4822,13 @@ public class Vectorizer implements PhysicalPlanResolver {
     // The following method introduces a cast if x or y is DECIMAL_64 and parent expression (x % y) is DECIMAL.
     try {
       fixDecimalDataTypePhysicalVariations(vContext, vectorSelectExprs);
+      for (int i = 0; i < size; i++) {
+        int exprIndex = vectorSelectExprIndexForCol[i];
+        VectorExpression ve = (exprIndex >= 0)
+            ? vectorSelectExprs[exprIndex]
+            : selectColumnExprs[i];
+        projectedOutputColumns[i] = ve.getOutputColumnNum();
+      }
     } finally {
       vContext.freeMarkedScratchColumns();
     }
@@ -4879,7 +4891,6 @@ public class Vectorizer implements PhysicalPlanResolver {
           }
         } else {
           Object[] arguments;
-          int argumentCount = children.length + (parent.getOutputColumnNum() == -1 ? 0 : 1);
           // VectorCoalesce receives arguments as an array.
           // Need to handle it as a special case to avoid instantiation failure.
           if (parent instanceof VectorCoalesce) {
@@ -4891,20 +4902,7 @@ public class Vectorizer implements PhysicalPlanResolver {
             }
             arguments[1] = parent.getOutputColumnNum();
           } else {
-            if (parent instanceof DecimalColDivideDecimalScalar) {
-              arguments = new Object[argumentCount + 1];
-              arguments[children.length] = ((DecimalColDivideDecimalScalar) parent).getValue();
-            } else {
-              arguments = new Object[argumentCount];
-            }
-            for (int i = 0; i < children.length; i++) {
-              VectorExpression vce = children[i];
-              arguments[i] = vce.getOutputColumnNum();
-            }
-          }
-          // retain output column number from parent
-          if (parent.getOutputColumnNum() != -1) {
-            arguments[arguments.length - 1] = parent.getOutputColumnNum();
+            arguments = buildReinstantiationArgsForDecimal64(parent, children);
           }
           // re-instantiate the parent expression with new arguments
           VectorExpression newParent = vContext.instantiateExpression(parent.getClass(), parent.getOutputTypeInfo(),
@@ -4913,12 +4911,84 @@ public class Vectorizer implements PhysicalPlanResolver {
           newParent.setOutputDataTypePhysicalVariation(parent.getOutputDataTypePhysicalVariation());
           newParent.setInputTypeInfos(parent.getInputTypeInfos());
           newParent.setInputDataTypePhysicalVariations(dataTypePhysicalVariations);
-          newParent.setChildExpressions(parent.getChildExpressions());
+          newParent.setChildExpressions(children);
           return newParent;
         }
       }
     }
     return parent;
+  }
+
+  /**
+   * Rebuild constructor arguments for a vector expression after wrapping DECIMAL_64 child
+   * expressions with {@link ConvertDecimal64ToDecimal}. Column reference inputs live in
+   * {@link VectorExpression#inputColumnNum} and are not included in childExpressions, so they
+   * must be preserved when re-instantiating the parent.
+   */
+  static Object[] buildReinstantiationArgsForDecimal64(VectorExpression parent,
+      VectorExpression[] children) {
+    int[] inputColNums = extractParentInputColumnNums(parent);
+    replaceInputColsWithConvertedChildOutputs(inputColNums, children);
+    return buildParentConstructorArguments(inputColNums, parent);
+  }
+
+  private static int[] extractParentInputColumnNums(VectorExpression parent) {
+    int inputCount = 0;
+    for (int col : parent.inputColumnNum) {
+      if (col != -1) {
+        inputCount++;
+      }
+    }
+
+    int[] inputColNums = new int[inputCount];
+    int idx = 0;
+    for (int col : parent.inputColumnNum) {
+      if (col != -1) {
+        inputColNums[idx++] = col;
+      }
+    }
+    return inputColNums;
+  }
+
+  /**
+   * For each wrapped DECIMAL_64 child, replace its pre-conversion input column slot in
+   * {@code inputColNums} with the {@link ConvertDecimal64ToDecimal} output column.
+   */
+  private static void replaceInputColsWithConvertedChildOutputs(int[] inputColNums,
+      VectorExpression[] children) {
+    for (VectorExpression child : children) {
+      int preConversionCol = getPreConversionColumnNum(child);
+      int convertedCol = child.getOutputColumnNum();
+      for (int i = 0; i < inputColNums.length; i++) {
+        if (inputColNums[i] == preConversionCol) {
+          inputColNums[i] = convertedCol;
+          break;
+        }
+      }
+    }
+  }
+
+  private static Object[] buildParentConstructorArguments(int[] inputColNums,
+      VectorExpression parent) {
+    int extraArgs = parent instanceof DecimalColDivideDecimalScalar ? 2 : 1;
+    Object[] arguments = new Object[inputColNums.length + extraArgs];
+    for (int i = 0; i < inputColNums.length; i++) {
+      arguments[i] = inputColNums[i];
+    }
+    int outputIndex = inputColNums.length;
+    if (parent instanceof DecimalColDivideDecimalScalar) {
+      arguments[outputIndex++] = ((DecimalColDivideDecimalScalar) parent).getValue();
+    }
+    arguments[outputIndex] = parent.getOutputColumnNum();
+    return arguments;
+  }
+
+  /** Column to match in {@code inputColNums} before replacing with a converted child output. */
+  private static int getPreConversionColumnNum(VectorExpression child) {
+    if (child instanceof ConvertDecimal64ToDecimal) {
+      return child.inputColumnNum[0];
+    }
+    return child.getOutputColumnNum();
   }
 
   private static void fillInPTFEvaluators(

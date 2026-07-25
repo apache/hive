@@ -45,7 +45,6 @@ public class VectorPTFEvaluatorDoubleMax extends VectorPTFEvaluatorBase {
   public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
-    evaluateInputExpr(batch);
 
     // Determine maximum of all non-null double column values; maintain isGroupResultNull.
 
