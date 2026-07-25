@@ -98,7 +98,9 @@ public class TestTezYarnLocalization {
     String tezLibUris = cluster.uploadTezLibsToHdfs();
     LOG.info("Staged Tez libs to HDFS: {}", tezLibUris);
 
-    Path localScratch = Files.createTempDirectory("hive-tez-loc-");
+    // Force /tmp prefix so the path is valid inside both macOS host and Linux Docker containers
+    Path localScratch = Files.createDirectories(
+            java.nio.file.Paths.get("/tmp", "hive-tez-loc-" + System.currentTimeMillis()));
     HiveConf conf = buildHiveConf(tezLibUris, localScratch);
 
     hs2 = new HiveServer2();
