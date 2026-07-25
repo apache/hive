@@ -259,6 +259,11 @@ public class TestTezYarnLocalization {
     conf.set("javax.jdo.option.ConnectionURL",
         "jdbc:derby:" + localScratch.resolve("metastore_db").toAbsolutePath() + ";create=true");
 
+// Disable Direct SQL in embedded Derby to prevent JDO transaction corruption
+    // when querying uninitialized schema tables during race conditions.
+    conf.setBoolVar(HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL, false);
+    conf.set("hive.stats.autogather", "false");
+    conf.set("hive.stats.column.autogather", "false");
     conf.set("yarn.resourcemanager.hostname",       "resourcemanager");
     conf.set("yarn.resourcemanager.address",        "resourcemanager:8032");
     conf.set("yarn.resourcemanager.webapp.address", "resourcemanager:8088");
