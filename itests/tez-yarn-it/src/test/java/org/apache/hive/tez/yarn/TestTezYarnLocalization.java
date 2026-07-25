@@ -282,14 +282,18 @@ public class TestTezYarnLocalization {
     // HADOOP_HOME must be set explicitly: the apache/hadoop image does not export it into YARN
     // container environments, so tez.use.cluster.hadoop-libs's "${HADOOP_HOME}/bin/hadoop classpath"
     // call would silently produce an empty classpath without it.
+    //
+    // IMPORTANT: set the container env ONLY via the Tez properties. Hive's DagUtils also injects
+    // mapreduce.map.env / mapreduce.reduce.env into each task vertex (via MRHelpers), and Tez then
+    // appends tez.task.launch.env on top. Setting the same JAVA_HOME in both sources makes YARN
+    // concatenate them with the path separator, yielding JAVA_HOME=/opt/jdk21:/opt/jdk21 -- so the
+    // task container runs "/opt/jdk21:/opt/jdk21/bin/java" and dies with exit 127 (No such file).
+    // The AM is unaffected because it only reads tez.am.launch.env.
     String containerEnv = "JAVA_HOME=" + TezYarnClusterContainer.CONTAINER_JAVA_21_HOME
         + ",HADOOP_HOME=/opt/hadoop"
         + ",HADOOP_MAPRED_HOME=/opt/hadoop";
     conf.set("tez.am.launch.env", containerEnv);
     conf.set("tez.task.launch.env", containerEnv);
-    conf.set("yarn.app.mapreduce.am.env", containerEnv);
-    conf.set("mapreduce.map.env", containerEnv);
-    conf.set("mapreduce.reduce.env", containerEnv);
 
     hs2Port = findFreePort();
     conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_PORT, hs2Port);
