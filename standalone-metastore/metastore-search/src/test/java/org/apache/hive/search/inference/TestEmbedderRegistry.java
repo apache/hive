@@ -72,7 +72,7 @@ public class TestEmbedderRegistry {
   }
 
   @Test
-  public void cosineSimilarityUsesStubModelEmbeddings() throws Exception {
+  public void cosineSimilarityUsesStubModelEmbeddings() {
     StubEmbedder model = new StubEmbedder("stub-model");
     float[] salesQuery = model.embed(Embedder.TaskType.QUERY, "sales");
     float[] salesQueryAgain = model.embed(Embedder.TaskType.QUERY, "sales");
@@ -84,7 +84,7 @@ public class TestEmbedderRegistry {
   }
 
   @Test
-  public void stubModelProducesDeterministicVectors() throws Exception {
+  public void stubModelProducesDeterministicVectors() {
     StubEmbedder model = new StubEmbedder("stub-model");
     float[] first = model.embed(Embedder.TaskType.QUERY, "sales");
     float[] second = model.embed(Embedder.TaskType.QUERY, "sales");

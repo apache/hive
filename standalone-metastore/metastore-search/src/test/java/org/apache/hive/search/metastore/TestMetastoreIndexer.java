@@ -46,7 +46,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -170,8 +169,7 @@ public class TestMetastoreIndexer {
       this.modelRegistry = modelRegistry;
     }
 
-    static IndexerFixture create(Configuration conf, InMemoryIndexStateClient remote)
-        throws Exception {
+    static IndexerFixture create(Configuration conf, InMemoryIndexStateClient remote) {
       IndexMapping mapping = MetastoreIndexSchema.tableIndexMapping(conf);
       EmbedderRegistry registry = new EmbedderRegistry(
           Map.of(InMemorySearchFixture.MODEL_NAME, new StubEmbedder(InMemorySearchFixture.MODEL_NAME)));

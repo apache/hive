@@ -61,7 +61,7 @@ import org.apache.lucene.search.TopDocs;
 
 public final class Searcher implements AutoCloseable {
   private final EmbedderRegistry embedderRegistry;
-  private final IndexSearcher searcher;
+  private final IndexSearcher indexSearcher;
   private final SearcherManager searcherManager;
   private final IndexMapping mapping;
   private final SearchOptions searchConfig;
@@ -77,7 +77,7 @@ public final class Searcher implements AutoCloseable {
     this.searcherManager = manager;
     this.committedEventId = indexManager.getCommittedEventId();
     this.processedEventId = indexManager.getProcessedEventId();
-    this.searcher = manager.acquire();
+    this.indexSearcher = manager.acquire();
     this.mapping = indexManager.mapping();
     this.searchConfig = searchConfig;
     this.parameters = parameters;
@@ -98,7 +98,7 @@ public final class Searcher implements AutoCloseable {
           case HybridQuery hybrid -> compileFusionQuery(hybrid.resolve(mapping), semanticK);
         };
     query = applyScopeFilter(query, request.catalogName(), request.databaseName());
-    TopDocs topDocs = searcher.search(query, size);
+    TopDocs topDocs = indexSearcher.search(query, size);
     List<TableSearchHit> hits = new ArrayList<>();
     for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
       hits.add(readHit(scoreDoc, request.returnFields()));
@@ -107,7 +107,7 @@ public final class Searcher implements AutoCloseable {
   }
 
   private Query compileFusionQuery(HybridQuery query, int semanticK)
-      throws SearchException, IOException {
+      throws SearchException {
     Query matchQuery = new BayesianScoreQuery(
         compileMatchQuery(query.toMatchQuery().resolve(mapping)),
         parameters.alpha(), parameters.beta(), parameters.baseRate());
@@ -255,7 +255,7 @@ public final class Searcher implements AutoCloseable {
 
   private TableSearchHit readHit(ScoreDoc scoreDoc, List<String> fields)
       throws IOException {
-    Document stored = searcher.storedFields().document(scoreDoc.doc);
+    Document stored = indexSearcher.storedFields().document(scoreDoc.doc);
     Map<String, String> fieldHits = new LinkedHashMap<>();
     List<String> requested = fields.isEmpty() ?
         mapping.fields().keySet().stream().toList() : fields;
@@ -275,6 +275,6 @@ public final class Searcher implements AutoCloseable {
 
   @Override
   public void close() throws IOException {
-    searcherManager.release(searcher);
+    searcherManager.release(indexSearcher);
   }
 }

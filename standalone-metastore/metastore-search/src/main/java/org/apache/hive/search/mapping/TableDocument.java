@@ -33,8 +33,6 @@ import org.apache.lucene.index.VectorSimilarityFunction;
 import org.apache.lucene.util.BytesRef;
 
 public class TableDocument {
-  private static final int MAX_FIELD_SEARCH_SIZE = 32_768;
-
   private final List<Field> fields;
   private final Document document;
   private final IndexMapping indexMapping;
@@ -52,8 +50,6 @@ public class TableDocument {
 
   public void fill(TextField field, TextFieldSchema schema)
       throws IndexIOException {
-    String trimmed = trim(field.value(), MAX_FIELD_SEARCH_SIZE);
-
     if (schema.filter()) {
       document.add(
           new StringField(field.name() + FILTER_SUFFIX, field.value(),
@@ -63,7 +59,7 @@ public class TableDocument {
     if (schema.lexical()) {
       org.apache.lucene.document.Field.Store store = schema.store() ?
           org.apache.lucene.document.Field.Store.YES : org.apache.lucene.document.Field.Store.NO;
-      document.add(new org.apache.lucene.document.TextField(field.name(), trimmed, store));
+      document.add(new org.apache.lucene.document.TextField(field.name(), field.value(), store));
     }
 
     if (schema.semantic()) {
@@ -73,10 +69,6 @@ public class TableDocument {
       document.add(new KnnFloatVectorField(field.name(), field.embedding(),
           VectorSimilarityFunction.COSINE));
     }
-  }
-
-  private static String trim(String value, int max) {
-    return value.length() > max ? value.substring(0, max) : value;
   }
 
   public List<Document> toDocuments() throws IndexIOException {

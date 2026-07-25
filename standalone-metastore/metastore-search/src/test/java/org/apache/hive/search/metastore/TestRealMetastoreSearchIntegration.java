@@ -24,9 +24,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.util.List;
-import java.util.Map;
-
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -41,7 +38,7 @@ public class TestRealMetastoreSearchIntegration {
   }
 
   @AfterClass
-  public static void stopMetastore() throws Exception {
+  public static void stopMetastore() {
     if (metastore != null) {
       metastore.close();
     }
