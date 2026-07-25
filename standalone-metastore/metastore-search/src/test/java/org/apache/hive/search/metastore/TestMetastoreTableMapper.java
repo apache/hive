@@ -108,7 +108,7 @@ public class TestMetastoreTableMapper {
   }
 
   @Test
-  public void columnSearchFieldsSplitNamesAndComments() throws Exception {
+  public void columnSearchFieldsSplitNamesAndComments() {
     Configuration conf = getConfiguration("hive_tables", "bge-small");
     IndexMapping mapping = MetastoreIndexSchema.tableIndexMapping(conf);
 
@@ -129,7 +129,7 @@ public class TestMetastoreTableMapper {
   }
 
   @Test
-  public void searchTextIncludesAllColumns() throws Exception {
+  public void searchTextIncludesAllColumns() {
     Configuration conf = getConfiguration("hive_tables", "bge-small");
     IndexMapping mapping = MetastoreIndexSchema.tableIndexMapping(conf);
 
@@ -152,7 +152,7 @@ public class TestMetastoreTableMapper {
   }
 
   @Test
-  public void searchTextIncludesAllCommentedColumnsForWideTables() throws Exception {
+  public void searchTextIncludesAllCommentedColumnsForWideTables() {
     Configuration conf = getConfiguration("hive_tables", "bge-small");
     IndexMapping mapping = MetastoreIndexSchema.tableIndexMapping(conf);
 
@@ -184,7 +184,7 @@ public class TestMetastoreTableMapper {
   }
 
   @Test
-  public void searchTextUsesStructuredLabelsWithoutComment() throws Exception {
+  public void searchTextUsesStructuredLabelsWithoutComment() {
     Configuration conf = getConfiguration("hive_tables", "bge-small");
     IndexMapping mapping = MetastoreIndexSchema.tableIndexMapping(conf);
 
@@ -267,7 +267,7 @@ public class TestMetastoreTableMapper {
   }
 
   @Test
-  public void semanticFieldRequiresEmbedding() throws Exception {
+  public void semanticFieldRequiresEmbedding() {
     Configuration conf = getConfiguration("hive_tables", "bge-small");
     IndexMapping mapping = MetastoreIndexSchema.tableIndexMapping(conf);
     TableDocument document = MetastoreTableMapper.fromTable(sampleTable(), mapping);

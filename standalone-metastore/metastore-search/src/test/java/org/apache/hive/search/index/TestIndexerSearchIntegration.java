@@ -22,12 +22,10 @@ import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hive.search.search.InMemorySearchFixture;
 import org.apache.hive.search.search.TableSearchHit;
-import org.apache.hive.search.search.TableSearchResult;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

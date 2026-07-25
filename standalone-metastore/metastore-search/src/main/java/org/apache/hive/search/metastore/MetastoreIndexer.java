@@ -223,12 +223,12 @@ public final class MetastoreIndexer implements AutoCloseable {
     private volatile long eventId;
     private volatile long lastCommittedEventId;
     private volatile boolean isLeader;
-    private volatile Thread replicateThread;
     private volatile boolean started = false;
     private final Thread commitThread;
     private final IndexOptions indexConfig;
+    private Thread replicateThread;
 
-    public FlushIndexListener(Configuration configuration) {
+    FlushIndexListener(Configuration configuration) {
       this.indexConfig = new IndexOptions(configuration);
       this.commitThread = getIndexCommitThread();
     }
@@ -241,7 +241,7 @@ public final class MetastoreIndexer implements AutoCloseable {
     }
 
     private Thread getIndexCommitThread() {
-      Thread commitThread = new Thread(() -> {
+      Thread commitTask = new Thread(() -> {
         while (!Thread.currentThread().isInterrupted()) {
           try {
             Thread.sleep(indexConfig.getFlushInterval());
@@ -250,31 +250,31 @@ public final class MetastoreIndexer implements AutoCloseable {
             break;
           }
           if (eventId <= lastCommittedEventId) {
+            // do we really need to check this case?
             continue;
           }
           try {
             if (indexer.flush(eventId, false)) {
               lastCommittedEventId = eventId;
               indexManager.setCommittedEventId(eventId);
-            } else if (eventId - lastCommittedEventId > indexConfig.getForceFlushEventGap()) {
+            } else if (eventId - lastCommittedEventId > indexConfig.getForceFlushEventGap()
+                && indexer.flush(eventId, true)) {
               // Many events processed with no Lucene changes; advance checkpoint metadata.
-              if (indexer.flush(eventId, true)) {
-                lastCommittedEventId = eventId;
-                indexManager.setCommittedEventId(eventId);
-              }
+              lastCommittedEventId = eventId;
+              indexManager.setCommittedEventId(eventId);
             }
           } catch (IOException e) {
             LOG.warn("Error flushing the index", e);
           }
         }
       });
-      commitThread.setName("Index-Commit");
-      commitThread.setDaemon(true);
-      return commitThread;
+      commitTask.setName("Index-Commit");
+      commitTask.setDaemon(true);
+      return commitTask;
     }
 
     private Thread getIndexReplicateThread() {
-      Thread replicateThread = new Thread(() -> {
+      Thread replicateTask = new Thread(() -> {
         while (isLeader && !Thread.currentThread().isInterrupted()) {
           long interval = 10000;
           if (started) {
@@ -293,9 +293,9 @@ public final class MetastoreIndexer implements AutoCloseable {
           }
         }
       });
-      replicateThread.setDaemon(true);
-      replicateThread.setName("Index-Replica");
-      return replicateThread;
+      replicateTask.setDaemon(true);
+      replicateTask.setName("Index-Replica");
+      return replicateTask;
     }
 
     @Override
