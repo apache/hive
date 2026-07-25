@@ -33,12 +33,6 @@ import java.util.TreeMap;
  *   <li>db.name : when it refers to a database property named 'name' for the database 'db'</li>
  *   <li>db.table.name : when it refers to a table property named 'name' for the table 'table' in the database 'db'</li>
  * </ul>
- * <p>
- *   This is meant as the base of a property manager that could be used to manage properties in the HiveMetaStore
- *   for Iceberg table maintenance operations.
- *   It is not meant to be a complete implementation, but rather a starting point for further development.
- *   A potential extension would be to add maintenance operation properties at the cluster and database levels to the schema
- *   so they could act as default values for table properties used by maintenance operations.
  */
 public class HMSPropertyManager extends PropertyManager {
   private static final  String CLUSTER_PREFIX = "cluster";
@@ -51,13 +45,14 @@ public class HMSPropertyManager extends PropertyManager {
 
   /** Table maintenance operation type. */
   public enum MaintenanceOpType {
-    EXPIRE_SNAPSHOT,
-    REWRITE_DATA_FILES,
-    COMPRESS_DATA_FILES,
-    REWRITE_MANIFEST,
-    DELETE_ORPHAN_FILES,
-    REWRITE_POSITION_DELETE,
-    COMPUTE_TABLE_STATS
+    COMPACTION,
+    SNAPSHOT_EXPIRY,
+    STATS_REBUILD,
+    MV_BUILD,
+    MV_REFRESH,
+    SHUFFLE_TO_NEW_PART,
+    RECOMPRESS,
+    REORG
   }
 
   /**
@@ -78,7 +73,12 @@ public class HMSPropertyManager extends PropertyManager {
 
   /** Table maintenance operation status. */
   public enum MaintenanceOpStatus {
-    INIT, CANCELED, SUBMITTED, COMPLETED, FAILED
+    MAINTENANCE_NEEDED,
+    SCHEDULED,
+    IN_PROGRESS,
+    DONE,
+    CLEANUP_NEEDED,
+    FAILED
   }
   
   /** The map from ordinal to OpStatus. */
