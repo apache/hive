@@ -43,7 +43,7 @@ public class TestRealMetastoreSearchFailureRecovery {
   }
 
   @AfterClass
-  public static void stopMetastore() throws Exception {
+  public static void stopMetastore() {
     if (metastore != null) {
       metastore.close();
     }

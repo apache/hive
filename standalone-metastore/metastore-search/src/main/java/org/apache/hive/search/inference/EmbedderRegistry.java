@@ -43,9 +43,8 @@ public record EmbedderRegistry(Map<String, Embedder> embedders) implements AutoC
     long warmupStart = System.currentTimeMillis();
     try {
       String repeatText = "warmup";
-      String queryText = "What's the weather like today?";
-      String docText = "hot and sunny";
-
+      String queryText = "How's the weather today?";
+      String docText = "Wet yet hot";
       float[] repeatSingle = embedder.embed(Embedder.TaskType.QUERY, repeatText);
       float[][] repeatBatch =
           embedder.embedBatch(Embedder.TaskType.QUERY, new String[] {repeatText, queryText});
@@ -55,7 +54,6 @@ public record EmbedderRegistry(Map<String, Embedder> embedders) implements AutoC
       float repeatCos = cosineSimilarity(repeatSingle, repeatBatch[0]);
       float queryRepeatCos = cosineSimilarity(querySingle, repeatBatch[1]);
       float crossTaskCos = cosineSimilarity(docSingle, repeatBatch[1]);
-
       LOG.info(
           "Embedder warmup cosine: repeat single vs batch={} query single vs batch={} "
               + "doc vs query (semantic)={}",
