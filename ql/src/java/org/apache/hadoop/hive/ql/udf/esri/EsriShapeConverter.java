@@ -700,11 +700,14 @@ public final class EsriShapeConverter {
   }
 
   /**
-   * Maps ESRI's no-data measure sentinel to {@link Double#NaN}, matching
-   * {@code Interop.translateFromAVNaN}: any value strictly below the threshold is no-data.
+   * Maps the ESRI no-data measure sentinel to {@link Double#NaN}. Uses {@code <=} so that a
+   * measure written as exactly {@code -1e38} (the marker emitted by ArcView/GDAL and other
+   * tools) is treated as no-data too, not only values strictly below it (ESRI's own library
+   * writes {@code -Double.MAX_VALUE} and reads with strict {@code <}). A legitimate measure is
+   * never exactly {@code -1e38}, so widening to {@code <=} is safe.
    */
   private static double validM(double m) {
-    return (m < NO_DATA_M_READ_THRESHOLD) ? Double.NaN : m;
+    return (m <= NO_DATA_M_READ_THRESHOLD) ? Double.NaN : m;
   }
 
   /** Build the narrowest JTS coordinate that carries the ordinates actually present. */
