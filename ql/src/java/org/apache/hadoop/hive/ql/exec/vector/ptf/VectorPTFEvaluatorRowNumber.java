@@ -44,7 +44,6 @@ public class VectorPTFEvaluatorRowNumber extends VectorPTFEvaluatorBase {
   public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
-    evaluateInputExpr(batch);
 
     final int size = batch.size;
     LongColumnVector longColVector = (LongColumnVector) batch.cols[outputColumnNum];

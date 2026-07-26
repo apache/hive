@@ -108,6 +108,7 @@ class TestStatsUtils {
     exclusions.add(serdeConstants.STRUCT_TYPE_NAME);
     exclusions.add(serdeConstants.UNION_TYPE_NAME);
     exclusions.add(serdeConstants.VARIANT_TYPE_NAME);
+    exclusions.add(serdeConstants.UNKNOWN_TYPE_NAME);
     Field[] serdeFields = serdeConstants.class.getFields();
     for (Field field : serdeFields) {
       if (!Modifier.isStatic(field.getModifiers())) {

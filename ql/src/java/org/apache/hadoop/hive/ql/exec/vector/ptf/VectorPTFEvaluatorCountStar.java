@@ -42,7 +42,6 @@ public class VectorPTFEvaluatorCountStar extends VectorPTFEvaluatorBase {
   @Override
   public void evaluateGroupBatch(VectorizedRowBatch batch) {
     // No input expression for COUNT(*).
-    // evaluateInputExpr(batch);
 
     // Count all rows.
     count += batch.size;

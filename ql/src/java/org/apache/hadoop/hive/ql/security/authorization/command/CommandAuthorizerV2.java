@@ -72,6 +72,7 @@ final class CommandAuthorizerV2 {
     List<ReadEntity> inputList = new ArrayList<ReadEntity>(inputs);
     List<WriteEntity> outputList = new ArrayList<WriteEntity>(outputs);
     addPermanentFunctionEntities(ss, inputList);
+    enrichAvroSchemaUrlInputs(inputList);
 
     List<HivePrivilegeObject> inputsHObjs = getHivePrivObjects(inputList, selectTab2Cols, hiveOpType, sem);
     List<HivePrivilegeObject> outputHObjs = getHivePrivObjects(outputList, updateTab2Cols, hiveOpType, sem);
@@ -82,6 +83,13 @@ final class CommandAuthorizerV2 {
     authzContextBuilder.setCommandString(command);
 
     ss.getAuthorizerV2().checkPrivileges(hiveOpType, inputsHObjs, outputHObjs, authzContextBuilder.build());
+  }
+
+  private static void enrichAvroSchemaUrlInputs(List<ReadEntity> inputList) {
+    List<ReadEntity> snapshot = new ArrayList<>(inputList);
+    for (ReadEntity readEntity : snapshot) {
+      AuthorizationUtils.addAvroSchemaUrlInputForReadEntity(inputList, readEntity);
+    }
   }
 
   private static void addPermanentFunctionEntities(SessionState ss, List<ReadEntity> inputList) throws HiveException {

@@ -86,11 +86,13 @@ POSTHOOK: Lineage: avro_extschema_insert1 PARTITION(p1=part1).col2 SCRIPT []
 POSTHOOK: Lineage: avro_extschema_insert1 PARTITION(p1=part1).col3 SCRIPT []
 PREHOOK: query: insert overwrite table avro_extschema_insert2 partition (p1) select * from avro_extschema_insert1
 PREHOOK: type: QUERY
+#### A masked pattern was here ####
 PREHOOK: Input: default@avro_extschema_insert1
 PREHOOK: Input: default@avro_extschema_insert1@p1=part1
 PREHOOK: Output: default@avro_extschema_insert2
 POSTHOOK: query: insert overwrite table avro_extschema_insert2 partition (p1) select * from avro_extschema_insert1
 POSTHOOK: type: QUERY
+#### A masked pattern was here ####
 POSTHOOK: Input: default@avro_extschema_insert1
 POSTHOOK: Input: default@avro_extschema_insert1@p1=part1
 POSTHOOK: Output: default@avro_extschema_insert2
@@ -100,11 +102,13 @@ POSTHOOK: Lineage: avro_extschema_insert2 PARTITION(p1=part1).col2 SIMPLE [(avro
 POSTHOOK: Lineage: avro_extschema_insert2 PARTITION(p1=part1).col3 SIMPLE [(avro_extschema_insert1)avro_extschema_insert1.FieldSchema(name:col3, type:string, comment:), ]
 PREHOOK: query: select * from avro_extschema_insert2
 PREHOOK: type: QUERY
+#### A masked pattern was here ####
 PREHOOK: Input: default@avro_extschema_insert2
 PREHOOK: Input: default@avro_extschema_insert2@p1=part1
 #### A masked pattern was here ####
 POSTHOOK: query: select * from avro_extschema_insert2
 POSTHOOK: type: QUERY
+#### A masked pattern was here ####
 POSTHOOK: Input: default@avro_extschema_insert2
 POSTHOOK: Input: default@avro_extschema_insert2@p1=part1
 #### A masked pattern was here ####

@@ -564,6 +564,8 @@ public class VectorExtractRow {
         standardUnion.setObject(object);
         return standardUnion;
       }
+    case UNKNOWN:
+      return null;
     default:
       throw new RuntimeException("Category " + category.name() + " not supported");
     }

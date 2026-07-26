@@ -16,31 +16,31 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.metastore.metastore;
+package org.apache.hadoop.hive.serde2.objectinspector;
 
-import javax.jdo.PersistenceManager;
+/**
+ * ObjectInspector for Iceberg V3 unknown type columns.
+ * <p>
+ * Unknown values are always null and are not stored in data files.
+ */
+public final class UnknownObjectInspector implements ObjectInspector {
 
-import java.util.Objects;
+  private static final ObjectInspector INSTANCE = new UnknownObjectInspector();
 
-import org.apache.hadoop.hive.metastore.RawStore;
-
-public abstract class RawStoreAware {
-  protected RawStore baseStore;
-  protected PersistenceManager pm;
-
-  public void setBaseStore(RawStore store) {
-    this.baseStore = Objects.requireNonNull(store);
+  private UnknownObjectInspector() {
   }
 
-  public void setPersistentManager(PersistenceManager manager) {
-    this.pm = Objects.requireNonNull(manager);
+  public static ObjectInspector get() {
+    return INSTANCE;
   }
 
-  public RawStore getBaseStore() {
-    return baseStore;
+  @Override
+  public Category getCategory() {
+    return Category.UNKNOWN;
   }
 
-  public PersistenceManager getPersistentManager() {
-    return pm;
+  @Override
+  public String getTypeName() {
+    return "unknown";
   }
 }

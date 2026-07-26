@@ -72,8 +72,8 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_t
 a                   	int                 	                    
 b                   	string              	                    
-c                   	int                 	                    
-d                   	string              	                    
+c                   	int                 	Transform: identity 
+d                   	string              	Transform: identity 
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -97,8 +97,6 @@ POSTHOOK: Input: default@ice_t
 # col_name            	data_type           	comment             
 a                   	int                 	                    
 b                   	string              	                    
-c                   	int                 	                    
-d                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -218,9 +216,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_t
 # col_name            	data_type           	comment             
 a                   	int                 	                    
-b                   	string              	                    
-c                   	int                 	                    
-d                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -260,9 +255,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_t
 # col_name            	data_type           	comment             
 a                   	int                 	                    
-b                   	string              	                    
-c                   	int                 	                    
-d                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
@@ -302,9 +294,6 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@ice_t
 # col_name            	data_type           	comment             
 a                   	int                 	                    
-b                   	string              	                    
-c                   	int                 	                    
-d                   	string              	                    
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             

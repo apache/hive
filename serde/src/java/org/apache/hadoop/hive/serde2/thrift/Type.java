@@ -109,7 +109,10 @@ public enum Type {
   USER_DEFINED_TYPE("USER_DEFINED",
       java.sql.Types.OTHER,
       TTypeId.USER_DEFINED_TYPE,
-      true, false);
+      true, false),
+  UNKNOWN_TYPE(serdeConstants.UNKNOWN_TYPE_NAME.toUpperCase(),
+      java.sql.Types.NULL,
+      TTypeId.UNKNOWN_TYPE);
 
   private final String name;
   private final TTypeId tType;
@@ -261,6 +264,9 @@ public enum Type {
     }
     case UNION: {
       return Type.UNION_TYPE;
+    }
+    case UNKNOWN: {
+      return Type.UNKNOWN_TYPE;
     }
     default: {
       throw new RuntimeException("Unrecognized type: " + typeInfo.getCategory());

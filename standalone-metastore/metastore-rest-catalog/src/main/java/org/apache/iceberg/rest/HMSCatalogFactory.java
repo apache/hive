@@ -94,6 +94,9 @@ public class HMSCatalogFactory {
       // multiple HMS instances, we need a unique cache key.
       properties.put(CatalogProperties.CLIENT_POOL_CACHE_KEYS, String.format("conf:%s", SERVLET_ID_KEY));
     }
+    if (MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.ICEBERG_CATALOG_UNIQUE_TABLE_LOCATION)) {
+      properties.put(CatalogProperties.UNIQUE_TABLE_LOCATION, "true");
+    }
     final HiveCatalog hiveCatalog = new org.apache.iceberg.hive.HiveCatalog();
     hiveCatalog.setConf(configuration);
     final String catalogName = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.CATALOG_DEFAULT);

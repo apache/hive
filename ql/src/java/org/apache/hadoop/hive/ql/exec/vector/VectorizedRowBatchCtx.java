@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.IntStream;
 
@@ -287,7 +286,7 @@ public class VectorizedRowBatchCtx {
   public static void getPartitionValues(VectorizedRowBatchCtx vrbCtx, PartitionDesc partDesc,
       Object[] partitionValues) {
 
-    LinkedHashMap<String, String> partSpec = partDesc.getPartSpec();
+    Map<String, String> partSpec = partDesc.getPartSpec();
 
     for (int i = 0; i < vrbCtx.partitionColumnCount; i++) {
       Object objectValue;

@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -149,8 +150,8 @@ import org.apache.iceberg.PartitionData;
 import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
+import org.apache.iceberg.PartitionStatistics;
 import org.apache.iceberg.PartitionStatisticsFile;
-import org.apache.iceberg.PartitionStats;
 import org.apache.iceberg.PartitionStatsHandler;
 import org.apache.iceberg.Partitioning;
 import org.apache.iceberg.RowLevelOperationMode;
@@ -285,6 +286,21 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   }
 
   @Override
+  public void configureInputJobCredentials(TableDesc tableDesc, Map<String, String> secrets) {
+    if (!IcebergVendedCredentialUtil.requestsVendedCredentials(tableDesc.getProperties(), conf)) {
+      return;
+    }
+    try {
+      Table table =
+          IcebergVendedCredentialUtil.getTableWithVendedCredentials(tableDesc.getProperties(), conf);
+      String catalogName = tableDesc.getProperties().getProperty(InputFormatConfig.CATALOG_NAME);
+      IcebergVendedCredentialUtil.propagateToJob(table, catalogName, null, secrets, conf);
+    } catch (NoSuchTableException ex) {
+      // Table may not exist yet for CTAS; credentials will not be available.
+    }
+  }
+
+  @Override
   public void configureInputJobProperties(TableDesc tableDesc, Map<String, String> map) {
     overlayTableProperties(conf, tableDesc, map);
     // Until the vectorized reader can handle delete files, let's fall back to non-vector mode for V2 tables
@@ -335,32 +351,9 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   @Override
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
     setCommonJobConf(jobConf);
-    if (tableDesc != null && tableDesc.getProperties() != null &&
-        tableDesc.getProperties().get(InputFormatConfig.OPERATION_TYPE_PREFIX + tableDesc.getTableName()) != null) {
-      String tableName = tableDesc.getTableName();
-      String opKey = InputFormatConfig.OPERATION_TYPE_PREFIX + tableName;
-      // set operation type into job conf too
-      jobConf.set(opKey, tableDesc.getProperties().getProperty(opKey));
-      Preconditions.checkArgument(!tableName.contains(TABLE_NAME_SEPARATOR),
-          "Can not handle table " + tableName + ". Its name contains '" + TABLE_NAME_SEPARATOR + "'");
-      if (HiveCustomStorageHandlerUtils.getWriteOperation(tableDesc.getProperties()::getProperty, tableName) != null) {
-        HiveCustomStorageHandlerUtils.setWriteOperation(jobConf, tableName,
-            Operation.valueOf(tableDesc.getProperties().getProperty(
-                HiveCustomStorageHandlerUtils.WRITE_OPERATION_CONFIG_PREFIX + tableName)));
-      }
-      boolean isMergeTaskEnabled = Boolean.parseBoolean(tableDesc.getProperty(
-          HiveCustomStorageHandlerUtils.MERGE_TASK_ENABLED + tableName));
-      if (isMergeTaskEnabled) {
-        HiveCustomStorageHandlerUtils.setMergeTaskEnabled(jobConf, tableName, true);
-      }
-      String tables = jobConf.get(InputFormatConfig.OUTPUT_TABLES);
-      tables = (tables == null) ? tableName : tables + TABLE_NAME_SEPARATOR + tableName;
-      jobConf.set(InputFormatConfig.OUTPUT_TABLES, tables);
-
-      String catalogName = tableDesc.getProperties().getProperty(InputFormatConfig.CATALOG_NAME);
-      if (catalogName != null) {
-        jobConf.set(InputFormatConfig.TABLE_CATALOG_PREFIX + tableName, catalogName);
-      }
+    configureOutputTableJobConf(tableDesc, jobConf);
+    if (IcebergVendedCredentialUtil.requestsVendedCredentials(tableDesc.getProperties(), conf)) {
+      IcebergVendedCredentialUtil.refreshVendedCredentialsIfMissing(tableDesc, jobConf, conf);
     }
     try {
       if (!jobConf.getBoolean(ConfVars.HIVE_IN_TEST_IDE.varname, false)) {
@@ -370,6 +363,37 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  private static void configureOutputTableJobConf(TableDesc tableDesc, JobConf jobConf) {
+    if (tableDesc == null || tableDesc.getProperties() == null ||
+        tableDesc.getProperties().get(InputFormatConfig.OPERATION_TYPE_PREFIX + tableDesc.getTableName()) == null) {
+      return;
+    }
+    String tableName = tableDesc.getTableName();
+    String opKey = InputFormatConfig.OPERATION_TYPE_PREFIX + tableName;
+    // set operation type into job conf too
+    jobConf.set(opKey, tableDesc.getProperties().getProperty(opKey));
+    Preconditions.checkArgument(!tableName.contains(TABLE_NAME_SEPARATOR),
+        "Can not handle table " + tableName + ". Its name contains '" + TABLE_NAME_SEPARATOR + "'");
+    if (HiveCustomStorageHandlerUtils.getWriteOperation(tableDesc.getProperties()::getProperty, tableName) != null) {
+      HiveCustomStorageHandlerUtils.setWriteOperation(jobConf, tableName,
+          Operation.valueOf(tableDesc.getProperties().getProperty(
+              HiveCustomStorageHandlerUtils.WRITE_OPERATION_CONFIG_PREFIX + tableName)));
+    }
+    boolean isMergeTaskEnabled = Boolean.parseBoolean(tableDesc.getProperty(
+        HiveCustomStorageHandlerUtils.MERGE_TASK_ENABLED + tableName));
+    if (isMergeTaskEnabled) {
+      HiveCustomStorageHandlerUtils.setMergeTaskEnabled(jobConf, tableName, true);
+    }
+    String tables = jobConf.get(InputFormatConfig.OUTPUT_TABLES);
+    tables = (tables == null) ? tableName : tables + TABLE_NAME_SEPARATOR + tableName;
+    jobConf.set(InputFormatConfig.OUTPUT_TABLES, tables);
+
+    String catalogName = tableDesc.getProperties().getProperty(InputFormatConfig.CATALOG_NAME);
+    if (catalogName != null) {
+      jobConf.set(InputFormatConfig.TABLE_CATALOG_PREFIX + tableName, catalogName);
     }
   }
 
@@ -433,7 +457,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     if (!getStatsSource().equals(HiveMetaHook.ICEBERG)) {
       return false;
     }
-    if (BaseHiveIcebergMetaHook.isIcebergView(hmsTable.getTTable())) {
+    if (HiveTableUtil.isIcebergView(hmsTable.getTTable())) {
       return false;
     }
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
@@ -577,33 +601,29 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
   private static Map<String, String> getPartishSummary(Partish partish, Table table, Snapshot snapshot) {
     if (partish.getPartition() != null) {
-      PartitionStatisticsFile statsFile = IcebergTableUtil.getPartitionStatsFile(table, snapshot.snapshotId());
-      if (statsFile != null) {
-        Types.StructType partitionType = Partitioning.partitionType(table);
-        Schema recordSchema = PartitionStatsHandler.schema(partitionType, TableUtil.formatVersion(table));
-
-        try (CloseableIterable<PartitionStats> recordIterator = PartitionStatsHandler.readPartitionStatsFile(
-            recordSchema, table.io().newInputFile(statsFile.path()))) {
-          PartitionStats partitionStats = Iterables.tryFind(recordIterator, stats -> {
-            PartitionSpec spec = table.specs().get(stats.specId());
-            PartitionData data = IcebergTableUtil.toPartitionData(stats.partition(), partitionType,
-                spec.partitionType());
-            return spec.partitionToPath(data).equals(partish.getPartition().getName());
-          }).orNull();
-
-          if (partitionStats != null) {
-            return IcebergTableUtil.toStatsMap(partitionStats);
-          } else {
-            LOG.warn("Partition {} not found in stats file: {}, falling back to metadata scan",
-                partish.getPartition().getName(), statsFile.path());
-            return IcebergTableUtil.getPartitionStats(table, partish.getPartition().getSpec(), snapshot);
-          }
-        } catch (IOException e) {
-          throw new UncheckedIOException(e);
+      Types.StructType partitionType = Partitioning.partitionType(table);
+      try (CloseableIterable<PartitionStatistics> records =
+                   table.newPartitionStatisticsScan().useSnapshot(snapshot.snapshotId()).scan()) {
+        Iterator<PartitionStatistics> recordsIterator = records.iterator();
+        if (!recordsIterator.hasNext()) {
+          LOG.warn("Partition stats file not found for snapshot: {}", snapshot.snapshotId());
+          return null;
         }
-      } else {
-        LOG.warn("Partition stats file not found for snapshot: {}", snapshot.snapshotId());
-        return null;
+        String partName = partish.getPartition().getName();
+        while (recordsIterator.hasNext()) {
+          PartitionStatistics stats = recordsIterator.next();
+          PartitionSpec spec = table.specs().get(stats.specId());
+          PartitionData data = IcebergTableUtil.toPartitionData(stats.partition(), partitionType,
+                  spec.partitionType());
+          if (spec.partitionToPath(data).equals(partName)) {
+            return IcebergTableUtil.toStatsMap(stats);
+          }
+        }
+
+        LOG.warn("Partition {} not found in partition stats, falling back to metadata scan", partName);
+        return IcebergTableUtil.getPartitionStats(table, partish.getPartition().getSpec(), snapshot);
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
       }
     }
     return snapshot.summary();
@@ -899,7 +919,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
   @Override
   public List<TransformSpec> getPartitionTransformSpec(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
-    if (BaseHiveIcebergMetaHook.isIcebergView(hmsTable.getTTable())) {
+    if (HiveTableUtil.isIcebergView(hmsTable.getTTable())) {
       return Collections.emptyList();
     }
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
@@ -916,7 +936,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   @Override
   public Map<Integer, List<TransformSpec>> getPartitionTransformSpecs(
       org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
-    if (BaseHiveIcebergMetaHook.isIcebergView(hmsTable.getTTable())) {
+    if (HiveTableUtil.isIcebergView(hmsTable.getTTable())) {
       return Collections.emptyMap();
     }
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
@@ -1550,10 +1570,10 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       case DELETE ->
         // TODO: make it configurable whether we want to include the table columns in the select query.
         // It might make delete writes faster if we don't have to write out the row object
-          ListUtils.union(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getCols());
+          ListUtils.union(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getAllCols());
       case UPDATE -> shouldOverwrite(table, operation) ?
           ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA :
-          ListUtils.union(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getCols());
+          ListUtils.union(ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA, table.getAllCols());
       case MERGE -> ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA;
       default -> ImmutableList.of();
     };
@@ -1584,7 +1604,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
   @Override
   public List<FieldSchema> sortColumns(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
-    if (BaseHiveIcebergMetaHook.isIcebergView(hmsTable.getTTable())) {
+    if (HiveTableUtil.isIcebergView(hmsTable.getTTable())) {
       return Collections.emptyList();
     }
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
@@ -1681,13 +1701,12 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     PartitionSpec spec;
     String bytes;
     try {
-      Table table = IcebergTableUtil.getTable(configuration, props);
+      boolean isVendedCredentials =
+          IcebergVendedCredentialUtil.requestsVendedCredentials(props, configuration);
+      Table table = isVendedCredentials ?
+          IcebergVendedCredentialUtil.getTableWithVendedCredentials(props, configuration) :
+          IcebergTableUtil.getTable(configuration, props);
       location = table.location();
-      // set table format-version and write-mode information from tableDesc
-      bytes = HiveTableUtil.serializeTable(table, configuration, props,
-          ImmutableList.of(
-              TableProperties.FORMAT_VERSION,
-              TableProperties.DELETE_MODE, TableProperties.UPDATE_MODE, TableProperties.MERGE_MODE));
       schema = table.schema();
       spec = table.spec();
 
@@ -1703,6 +1722,20 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
           map.put(InputFormatConfig.TABLE_METADATA_LOCATION, metadataPath);
         }
       }
+
+      if (isVendedCredentials) {
+        String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
+        IcebergVendedCredentialUtil.propagateToJob(table, catalogName, map, null, configuration);
+        // Serializing the table as-is would embed its FileIO, and with it the vended credentials,
+        // into plain job properties: ship a copy over a secret-free FileIO instead; executors
+        // restore the credentials from the Credentials channel (setCredentials).
+        table = IcebergVendedCredentialUtil.secretFreeCopy(table, configuration);
+      }
+      // set table format-version and write-mode information from tableDesc
+      bytes = HiveTableUtil.serializeTable(table, configuration, props,
+          ImmutableList.of(
+              TableProperties.FORMAT_VERSION,
+              TableProperties.DELETE_MODE, TableProperties.UPDATE_MODE, TableProperties.MERGE_MODE));
 
     } catch (NoSuchTableException ex) {
       if (!HiveTableUtil.isCtas(props)) {
@@ -1989,8 +2022,9 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       desc.setIsExternal(true);
     }
 
-    // If source is Iceberg table set the schema and the partition spec
-    if (MetaStoreUtils.isIcebergTable(origParams)) {
+    // parameter table_type is set to "ICEBERG" in case of Iceberg tables
+    // set the schema and the partition spec accordingly
+    if (HiveTableUtil.isTableTypeSet(origParams)) {
       tbl.getParameters()
           .put(InputFormatConfig.TABLE_SCHEMA, origParams.get(InputFormatConfig.TABLE_SCHEMA));
       tbl.getParameters()
@@ -2147,12 +2181,11 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   }
 
   public boolean isPartitioned(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
-    if (BaseHiveIcebergMetaHook.isIcebergView(hmsTable.getTTable())) {
-      List<FieldSchema> partCols = hmsTable.getPartCols();
-      return partCols != null && !partCols.isEmpty();
-    }
-    if (!hmsTable.getTTable().isSetId()) {
+    if (hmsTable.getMetaTable() != null) {
       return false;
+    }
+    if (!HiveTableUtil.isRegistered(hmsTable) || HiveTableUtil.isIcebergView(hmsTable.getTTable())) {
+      return !hmsTable.getPartitionKeys().isEmpty();
     }
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, hmsTable);
@@ -2296,12 +2329,11 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
   @Override
   public List<FieldSchema> getPartitionKeys(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
-    if (BaseHiveIcebergMetaHook.isIcebergView(hmsTable.getTTable())) {
-      List<FieldSchema> partCols = hmsTable.getPartCols();
-      return partCols != null ? partCols : Collections.emptyList();
-    }
-    if (!hmsTable.getTTable().isSetId()) {
+    if (hmsTable.getMetaTable() != null) {
       return Collections.emptyList();
+    }
+    if (!HiveTableUtil.isRegistered(hmsTable) || HiveTableUtil.isIcebergView(hmsTable.getTTable())) {
+      return hmsTable.getPartitionKeys();
     }
     Table icebergTable = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     return MetastoreUtil.getPartitionKeys(icebergTable, icebergTable.spec().specId());

@@ -126,16 +126,19 @@ public class MRCompactor implements Compactor {
     } else {
       UserGroupInformation ugi = UserGroupInformation.createProxyUser(context.getCompactionInfo().runAs,
               UserGroupInformation.getLoginUser());
-      ugi.doAs((PrivilegedExceptionAction<Object>) () -> {
-        run(context.getConf(), context.getTable(), context.getSd(),
-                context.getValidWriteIdList(), context.getCompactionInfo(), context.getAcidDirectory());
-        return null;
-      });
       try {
-        FileSystem.closeAllForUGI(ugi);
-      } catch (IOException exception) {
-        LOG.error("Could not clean up file-system handles for UGI: " + ugi + " for " + context.getCompactionInfo().getFullPartitionName(),
-            exception);
+        ugi.doAs((PrivilegedExceptionAction<Void>) () -> {
+          run(context.getConf(), context.getTable(), context.getSd(),
+                  context.getValidWriteIdList(), context.getCompactionInfo(), context.getAcidDirectory());
+          return null;
+        });
+      } finally {
+        try {
+          FileSystem.closeAllForUGI(ugi);
+        } catch (IOException exception) {
+          LOG.error("Could not clean up file-system handles for UGI: " + ugi + " for " + context.getCompactionInfo().getFullPartitionName(),
+                  exception);
+        }
       }
     }
     return true;

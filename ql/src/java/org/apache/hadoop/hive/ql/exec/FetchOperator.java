@@ -375,6 +375,13 @@ public class FetchOperator implements Serializable {
 
       Class<? extends InputFormat> formatter = currDesc.getInputFileFormatClass();
       Utilities.copyTableJobPropertiesToConf(currDesc.getTableDesc(), job);
+      // A fetch task runs in-process without a DAG, so storage-handler secrets (HIVE-20651) are
+      // never restored from the job Credentials as on a task. Surface them into this process-local
+      // conf (never serialized or shown in EXPLAIN) so in-process readers can access storage.
+      Map<String, String> jobSecrets = currDesc.getTableDesc().getJobSecrets();
+      if (jobSecrets != null) {
+        jobSecrets.forEach(job::set);
+      }
       InputFormat inputFormat = getInputFormatFromCache(formatter, job);
       if(inputFormat instanceof HiveSequenceFileInputFormat) {
         // input format could be cached, in which case we need to reset the list of files to fetch

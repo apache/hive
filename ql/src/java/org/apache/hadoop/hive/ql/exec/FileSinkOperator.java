@@ -942,6 +942,11 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
       updateDPCounters(fsp, filesIdx);
 
+      try {
+        Utilities.copyJobSecretToTableProperties(conf.getTableInfo());
+      } catch (IOException e) {
+        throw new HiveException(e);
+      }
       Utilities.copyTableJobPropertiesToConf(conf.getTableInfo(), jc);
       // only create bucket files only if no dynamic partitions,
       // buckets of dynamic partitions will be created for each newly created partition
@@ -1669,6 +1674,11 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
   private void createHiveOutputFormat(JobConf job) throws HiveException {
     if (hiveOutputFormat == null) {
+      try {
+        Utilities.copyJobSecretToTableProperties(conf.getTableInfo());
+      } catch (IOException e) {
+        throw new HiveException(e);
+      }
       Utilities.copyTableJobPropertiesToConf(conf.getTableInfo(), job);
     }
     try {

@@ -2420,7 +2420,8 @@ type
     | structType
     | mapType
     | unionType
-    | variantType;
+    | variantType
+    | unknownType;
 
 primitiveType
 @init { pushMsg("primitive type specification", state); }
@@ -2484,6 +2485,12 @@ variantType
 @init { pushMsg("variant type", state); }
 @after { popMsg(state); }
     : KW_VARIANT -> TOK_VARIANT
+    ;
+
+unknownType
+@init { pushMsg("unknown type", state); }
+@after { popMsg(state); }
+    : KW_UNKNOWN -> TOK_UNKNOWN
     ;
 
 setOperator

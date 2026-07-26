@@ -186,3 +186,46 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 333	Changed forever	56
 444	The last one	800
 555	Changed again	801
+PREHOOK: query: drop table if exists tbl_ice_all_part
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists tbl_ice_all_part
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create external table tbl_ice_all_part(a int, b string) partitioned by spec (a, b) stored by iceberg stored as orc tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_ice_all_part
+POSTHOOK: query: create external table tbl_ice_all_part(a int, b string) partitioned by spec (a, b) stored by iceberg stored as orc tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_ice_all_part
+PREHOOK: query: insert into tbl_ice_all_part values (1, 'one'), (2, 'two'), (3, 'three')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_ice_all_part
+POSTHOOK: query: insert into tbl_ice_all_part values (1, 'one'), (2, 'two'), (3, 'three')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_ice_all_part
+PREHOOK: query: update tbl_ice_all_part set b='updated' where a = 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice_all_part
+PREHOOK: Output: default@tbl_ice_all_part
+PREHOOK: Output: default@tbl_ice_all_part
+POSTHOOK: query: update tbl_ice_all_part set b='updated' where a = 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice_all_part
+POSTHOOK: Output: default@tbl_ice_all_part
+POSTHOOK: Output: default@tbl_ice_all_part
+PREHOOK: query: select * from tbl_ice_all_part order by a, b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice_all_part
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_ice_all_part order by a, b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice_all_part
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	one
+2	updated
+3	three

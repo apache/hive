@@ -49,6 +49,7 @@ import org.apache.iceberg.exceptions.NoSuchNamespaceException;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.exceptions.NoSuchViewException;
 import org.apache.iceberg.exceptions.NotAuthorizedException;
+import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.exceptions.UnprocessableEntityException;
 import org.apache.iceberg.exceptions.ValidationException;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
@@ -61,6 +62,7 @@ import org.apache.iceberg.rest.requests.CreateNamespaceRequest;
 import org.apache.iceberg.rest.requests.CreateTableRequest;
 import org.apache.iceberg.rest.requests.CreateViewRequest;
 import org.apache.iceberg.rest.requests.RegisterTableRequest;
+import org.apache.iceberg.rest.requests.RegisterViewRequest;
 import org.apache.iceberg.rest.requests.RenameTableRequest;
 import org.apache.iceberg.rest.requests.ReportMetricsRequest;
 import org.apache.iceberg.rest.requests.UpdateNamespacePropertiesRequest;
@@ -97,6 +99,7 @@ public class HMSCatalogAdapter implements Closeable {
           .put(ForbiddenException.class, 403)
           .put(NoSuchNamespaceException.class, 404)
           .put(NoSuchTableException.class, 404)
+          .put(NotFoundException.class, 404)
           .put(NoSuchViewException.class, 404)
           .put(NoSuchIcebergTableException.class, 404)
           .put(NoSuchIcebergViewException.class, 404)
@@ -148,7 +151,8 @@ public class HMSCatalogAdapter implements Closeable {
     CREATE_VIEW(HTTPMethod.POST, ResourcePaths.V1_VIEWS, CreateViewRequest.class),
     UPDATE_VIEW(HTTPMethod.POST, ResourcePaths.V1_VIEW, UpdateTableRequest.class),
     RENAME_VIEW(HTTPMethod.POST, ResourcePaths.V1_VIEW_RENAME, RenameTableRequest.class),
-    DROP_VIEW(HTTPMethod.DELETE, ResourcePaths.V1_VIEW);
+    DROP_VIEW(HTTPMethod.DELETE, ResourcePaths.V1_VIEW),
+    REGISTER_VIEW(HTTPMethod.POST, ResourcePaths.V1_VIEW_REGISTER, RegisterViewRequest.class);
 
     private final HTTPMethod method;
     private final int requiredLength;
@@ -391,6 +395,13 @@ public class HMSCatalogAdapter implements Closeable {
     return null;
   }
 
+  private LoadViewResponse registerView(Map<String, String> vars, Object body) {
+    Namespace namespace = namespaceFromPathVars(vars);
+    RegisterViewRequest request = castRequest(RegisterViewRequest.class, body);
+    return castResponse(
+        LoadViewResponse.class, CatalogHandlers.registerView(asViewCatalog, namespace, request));
+  }
+
   /**
    * This is a very simplistic approach that only validates the requirements for each table and does
    * not do any other conflict detection. Therefore, it does not guarantee true transactional
@@ -420,33 +431,87 @@ public class HMSCatalogAdapter implements Closeable {
   }
   
   @SuppressWarnings({"MethodLength", "unchecked"})
-  private <T extends RESTResponse> T handleRequest(Route route, Map<String, String> vars, Object body) {
-    return switch (route) {
-      case CONFIG -> (T) config();
-      case LIST_NAMESPACES -> (T) listNamespaces(vars);
-      case CREATE_NAMESPACE -> (T) createNamespace(body);
-      case NAMESPACE_EXISTS -> (T) namespaceExists(vars);
-      case LOAD_NAMESPACE -> (T) loadNamespace(vars);
-      case DROP_NAMESPACE -> (T) dropNamespace(vars);
-      case UPDATE_NAMESPACE -> (T) updateNamespace(vars, body);
-      case LIST_TABLES -> (T) listTables(vars);
-      case CREATE_TABLE -> (T) createTable(vars, body);
-      case DROP_TABLE -> (T) dropTable(vars);
-      case TABLE_EXISTS -> (T) tableExists(vars);
-      case LOAD_TABLE -> (T) loadTable(vars);
-      case REGISTER_TABLE -> (T) registerTable(vars, body);
-      case UPDATE_TABLE -> (T) updateTable(vars, body);
-      case RENAME_TABLE -> (T) renameTable(body);
-      case REPORT_METRICS -> (T) reportMetrics(vars, body);
-      case COMMIT_TRANSACTION -> (T) commitTransaction(body);
-      case LIST_VIEWS -> (T) listViews(vars);
-      case CREATE_VIEW -> (T) createView(vars, body);
-      case VIEW_EXISTS -> (T) viewExists(vars);
-      case LOAD_VIEW -> (T) loadView(vars);
-      case UPDATE_VIEW -> (T) updateView(vars, body);
-      case RENAME_VIEW -> (T) renameView(body);
-      case DROP_VIEW -> (T) dropView(vars);
-    };
+  private <T extends RESTResponse> T handleRequest(
+      Route route, Map<String, String> vars, Object body) {
+    switch (route) {
+      case CONFIG:
+        return (T) config();
+
+      case LIST_NAMESPACES:
+        return (T) listNamespaces(vars);
+
+      case CREATE_NAMESPACE:
+        return (T) createNamespace(body);
+
+      case NAMESPACE_EXISTS:
+        return (T) namespaceExists(vars);
+
+      case LOAD_NAMESPACE:
+        return (T) loadNamespace(vars);
+
+      case DROP_NAMESPACE:
+        return (T) dropNamespace(vars);
+
+      case UPDATE_NAMESPACE:
+        return (T) updateNamespace(vars, body);
+
+      case LIST_TABLES:
+        return (T) listTables(vars);
+
+      case CREATE_TABLE:
+        return (T) createTable(vars, body);
+
+      case DROP_TABLE:
+        return (T) dropTable(vars);
+
+      case TABLE_EXISTS:
+        return (T) tableExists(vars);
+
+      case LOAD_TABLE:
+        return (T) loadTable(vars);
+
+      case REGISTER_TABLE:
+        return (T) registerTable(vars, body);
+
+      case UPDATE_TABLE:
+        return (T) updateTable(vars, body);
+
+      case RENAME_TABLE:
+        return (T) renameTable(body);
+
+      case REPORT_METRICS:
+        return (T) reportMetrics(vars, body);
+
+      case COMMIT_TRANSACTION:
+        return (T) commitTransaction(body);
+        
+      case LIST_VIEWS:
+        return (T) listViews(vars);
+
+      case CREATE_VIEW:
+          return (T) createView(vars, body);
+
+      case VIEW_EXISTS:
+        return (T) viewExists(vars);
+
+      case LOAD_VIEW:
+        return (T) loadView(vars);
+
+      case UPDATE_VIEW:
+        return (T) updateView(vars, body);
+        
+      case RENAME_VIEW:
+        return (T) renameView(body);
+        
+      case DROP_VIEW:
+        return (T) dropView(vars);
+
+      case REGISTER_VIEW:
+        return (T) registerView(vars, body);
+
+      default:
+    }
+    return null;
   }
 
   <T extends RESTResponse> T execute(

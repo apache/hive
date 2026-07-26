@@ -90,11 +90,11 @@ public abstract class CacheTag implements Comparable<CacheTag> {
     return build(catalogName + "." + dbAndTableName);
   }
 
-  public static final CacheTag build(String catalogName, String dbAndTableName, LinkedHashMap<String, String> partDescMap) {
+  public static final CacheTag build(String catalogName, String dbAndTableName, Map<String, String> partDescMap) {
     return build(catalogName + "." + dbAndTableName, partDescMap);
   }
 
-  public static final CacheTag build(String fullTableName, LinkedHashMap<String, String> partDescMap) {
+  public static final CacheTag build(String fullTableName, Map<String, String> partDescMap) {
     if (StringUtils.isEmpty(fullTableName) || partDescMap == null || partDescMap.isEmpty()) {
       throw new IllegalArgumentException();
     }

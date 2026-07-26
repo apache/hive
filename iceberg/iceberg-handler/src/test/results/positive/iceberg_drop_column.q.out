@@ -27,8 +27,8 @@ POSTHOOK: Input: default@ice_tbl
 col_name	data_type	comment
 strcol              	string              	                    
 intcol              	int                 	                    
-pcol                	string              	                    
-datecol             	date                	                    
+pcol                	string              	Transform: identity 
+datecol             	date                	Transform: identity 
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             

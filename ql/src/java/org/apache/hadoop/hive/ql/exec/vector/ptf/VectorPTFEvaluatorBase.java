@@ -86,12 +86,6 @@ public abstract class VectorPTFEvaluatorBase {
     this.nullsLast = nullsLast;
   }
 
-  // Evaluate the aggregation input argument expression.
-  public void evaluateInputExpr(VectorizedRowBatch batch) throws HiveException {
-    if (inputVecExpr != null) {
-      inputVecExpr.evaluate(batch);
-    }
-  }
 
   /*
    * Evaluate the aggregation over one of the group's batches. In this mode, evaluator is not

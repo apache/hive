@@ -54,8 +54,6 @@ public class ColumnInfo implements Serializable {
    * Indicates whether the column is a virtual column.
    */
   private boolean isVirtualCol;
-  
-  private boolean isHiddenPartitionCol;
 
   private ObjectInspector objectInspector;
 
@@ -129,7 +127,6 @@ public class ColumnInfo implements Serializable {
     this.isSkewedCol = columnInfo.isSkewedCol();
     this.tabAlias = columnInfo.getTabAlias();
     this.isVirtualCol = columnInfo.getIsVirtualCol();
-    this.isHiddenPartitionCol = columnInfo.isHiddenPartitionCol();
     this.isHiddenVirtualCol = columnInfo.isHiddenVirtualCol();
     this.nullable = columnInfo.nullable;
     this.setType(columnInfo.getType());
@@ -170,13 +167,9 @@ public class ColumnInfo implements Serializable {
   }
 
   public boolean getIsVirtualCol() {
-    return isVirtualCol || isHiddenPartitionCol;
+    return isVirtualCol;
   }
 
-  public boolean isHiddenPartitionCol() {
-    return isHiddenPartitionCol;
-  }
-  
   public boolean isHiddenVirtualCol() {
     return isHiddenVirtualCol;
   }
@@ -209,10 +202,6 @@ public class ColumnInfo implements Serializable {
     this.isHiddenVirtualCol = isHiddenVirtualCol;
   }
 
-  public void setHiddenPartitionCol(boolean isPartitionCol) {
-    this.isHiddenPartitionCol = isPartitionCol;
-  }
-  
   /**
    * @return the isSkewedCol
    */

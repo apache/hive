@@ -129,7 +129,9 @@ public class HiveSchemaConverter {
         return Types.primitive(PrimitiveTypeName.INT32, repetition)
             .as(LogicalTypeAnnotation.dateType()).named(name);
       } else if (typeInfo.equals(TypeInfoFactory.unknownTypeInfo)) {
-        throw new UnsupportedOperationException("Unknown type not implemented");
+        throw new UnsupportedOperationException("Legacy unknown primitive type is not supported for Parquet");
+      } else if (typeInfo.equals(TypeInfoFactory.getUnknownTypeInfo())) {
+        throw new UnsupportedOperationException("Unknown type is not stored in Parquet data files");
       } else {
         throw new IllegalArgumentException("Unknown type: " + typeInfo);
       }

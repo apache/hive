@@ -23,17 +23,17 @@ import java.util.List;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 
 public abstract class GetListHelper<A, T> extends GetHelper<A, List<T>> {
-  public GetListHelper(RawStoreAware rsa, A args) throws MetaException {
-    super(rsa, args, null);
+  public GetListHelper(RawStoreBundle rsb, A args) throws MetaException {
+    super(rsb, args, null);
   }
 
-  public GetListHelper(RawStoreAware rsa,
+  public GetListHelper(RawStoreBundle rsb,
       A args, List<String> fields) throws MetaException {
-    super(rsa, args, fields);
+    super(rsb, args, fields);
   }
 
   @Override
   protected String describeResult() {
-    return results.size() + " entries";
+    return (results != null ? results.size() : 0) + " entries";
   }
 }

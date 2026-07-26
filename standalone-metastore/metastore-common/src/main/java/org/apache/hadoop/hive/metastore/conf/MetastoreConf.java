@@ -312,9 +312,6 @@ public class MetastoreConf {
     ACID_HOUSEKEEPER_SERVICE_INTERVAL("metastore.acid.housekeeper.interval",
         "hive.metastore.acid.housekeeper.interval", 60, TimeUnit.SECONDS,
         "Time interval describing how often the acid housekeeper runs."),
-    COMPACTION_HOUSEKEEPER_SERVICE_INTERVAL("metastore.compaction.housekeeper.interval",
-        "hive.metastore.compaction.housekeeper.interval", 300, TimeUnit.SECONDS,
-        "Time interval describing how often the acid compaction housekeeper runs."),
     ACID_TXN_CLEANER_INTERVAL("metastore.acid.txn.cleaner.interval",
         "hive.metastore.acid.txn.cleaner.interval", 10, TimeUnit.SECONDS,
         "Time interval describing how often aborted and committed txns are cleaned."),
@@ -432,6 +429,9 @@ public class MetastoreConf {
             TimeUnit.SECONDS, "MetaStore Client socket timeout in seconds"),
     CLIENT_CONNECTION_TIMEOUT("metastore.client.connection.timeout", "hive.metastore.client.connection.timeout", 600,
             TimeUnit.SECONDS, "MetaStore Client connection timeout in seconds"),
+    COMPACTION_HOUSEKEEPER_SERVICE_INTERVAL("metastore.compaction.housekeeper.interval",
+        "hive.metastore.compaction.housekeeper.interval", 300, TimeUnit.SECONDS,
+        "Time interval describing how often the acid compaction housekeeper runs."),
     COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE("metastore.compactor.history.retention.did.not.initiate",
         "hive.compactor.history.retention.did.not.initiate", 2,
         new RangeValidator(0, 100), "Determines how many compaction records in state " +
@@ -652,6 +652,16 @@ public class MetastoreConf {
         "hive.txn.acid.metrics.delta.pct.threshold", 0.01f,
         "Percentage (fractional) size of the delta files relative to the base directory. Deltas smaller than this threshold " +
             "count as small deltas. Default 0.01 = 1%.)"),
+    METASTORE_JDBC_SLOW_QUERY_THRESHOLD("metastore.jdbc.execution.logSlowQueriesThreshold", "metastore.jdbc.execution.logSlowQueriesThreshold",
+        3000, TimeUnit.MILLISECONDS, "Log the slow jdbc query that Metastore has been waiting for the result beyond the threshold(ms), " +
+        "should turn on the metastore.profile.jdbc.execution first"),
+    METASTORE_PROFILE_JDBC_EXECUTION("metastore.profile.jdbc.execution", "metastore.profile.jdbc.execution", false,
+        "Turn on to profile JDBC executions at the statement layer (slow-query logging, per-query metrics\n" +
+            "about metastore.jdbc.profile.thrift.apis, and aggregate JDBC summaries for Thrift APIs )."),
+    METASTORE_PROFILE_JDBC_THRIFT_APIS("metastore.jdbc.profile.thrift.apis", "metastore.jdbc.profile.thrift.apis",
+        "get_table_req,get_database_req",
+        "Thrift API method names for which to record the per-query metrics.\n" +
+            "Per-query slow detection applies to all JDBC executions while profiling is on."),
     COMPACTOR_INITIATOR_ON("metastore.compactor.initiator.on", "hive.compactor.initiator.on", true,
         "Whether to run the initiator thread on this metastore instance or not.\n" +
             "Set this to true on one instance of the Thrift metastore service as part of turning\n" +
@@ -1373,6 +1383,9 @@ public class MetastoreConf {
         "hive.metastore.partition.order.expr", "\"PART_NAME\" asc",
         "The default partition order if the metastore does not return all partitions. \n" +
             "It can be sorted based on any column in the PARTITIONS table (e.g., \"PARTITIONS\".\"CREATE_TIME\" desc, \"PARTITIONS\".\"LAST_ACCESS_TIME\" desc etc)"),
+    PARTITION_REUSE_COLUMN_DESCRIPTORS("metastore.partition.reuse.column.descriptors",
+        "hive.metastore.partition.reuse.column.descriptors", false,
+        "Add partition reuse existing column descriptors to avoid metadata bloat on schema evolution."),
     PART_INHERIT_TBL_PROPS("metastore.partition.inherit.table.properties",
         "hive.metastore.partition.inherit.table.properties", "",
         "List of comma separated keys occurring in table properties which will get inherited to newly created partitions. \n" +
@@ -1957,6 +1970,10 @@ public class MetastoreConf {
     ICEBERG_CATALOG_CACHE_EXPIRY("metastore.iceberg.catalog.cache.expiry",
         "hive.metastore.iceberg.catalog.cache.expiry", -1,
         "HMS Iceberg Catalog cache expiry."
+    ),
+    ICEBERG_CATALOG_UNIQUE_TABLE_LOCATION("metastore.iceberg.catalog.unique.table.location",
+        "hive.metastore.iceberg.catalog.unique.table.location", false,
+        "Whether the HMS Iceberg REST catalog should assign a unique storage location for each new table."
     ),
     ICEBERG_CATALOG_METRICS_REPORTERS("metastore.iceberg.catalog.metrics.reporters",
         "hive.metastore.iceberg.catalog.metrics.reporters", "org.apache.iceberg.rest.metrics.LoggingMetricsReporter",

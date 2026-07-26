@@ -83,6 +83,7 @@ public class ColumnType {
   public static final String UNION_TYPE_NAME = "uniontype";
 
   public static final String VARIANT_TYPE_NAME = "variant";
+  public static final String UNKNOWN_TYPE_NAME = "unknown";
 
   public static final String LIST_COLUMNS = "columns";
 
@@ -200,6 +201,7 @@ public class ColumnType {
     STRUCT_TYPE_NAME,
     UNION_TYPE_NAME,
     VARIANT_TYPE_NAME,
+    UNKNOWN_TYPE_NAME,
     LIST_COLUMNS,
     LIST_COLUMN_TYPES,
     COLUMN_NAME_DELIMITER

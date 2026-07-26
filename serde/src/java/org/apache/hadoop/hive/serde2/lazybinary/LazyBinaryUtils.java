@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.io.WritableUtils;
 
@@ -513,6 +514,11 @@ public final class LazyBinaryUtils {
             .getLazyBinaryUnionObjectInspector(fieldObjectInspectors);
         break;
       }
+      case UNKNOWN:
+        // Unknown columns are always null and are not stored in data files.
+        result = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
+            TypeInfoFactory.voidTypeInfo);
+        break;
       default: {
         result = null;
       }

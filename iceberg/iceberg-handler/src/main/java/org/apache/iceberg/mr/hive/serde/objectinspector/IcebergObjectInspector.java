@@ -23,6 +23,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.UnknownObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -106,6 +107,8 @@ public final class IcebergObjectInspector extends TypeUtil.SchemaVisitor<ObjectI
             IcebergTimestampObjectInspectorHive3.get(9);
       case TIME:
         return IcebergTimeObjectInspector.get();
+      case UNKNOWN:
+        return UnknownObjectInspector.get();
       default:
         throw new IllegalArgumentException(primitiveType.typeId() + " type is not supported");
     }

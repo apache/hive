@@ -52,7 +52,7 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.metastore.RawStoreAware;
+import org.apache.hadoop.hive.metastore.metastore.RawStoreBundle;
 import org.apache.hadoop.hive.metastore.metastore.iface.TableStore;
 import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
 import org.apache.hadoop.hive.metastore.model.MDCPrivilege;
@@ -67,7 +67,6 @@ import org.apache.hadoop.hive.metastore.model.MRoleMap;
 import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
-import org.apache.hadoop.hive.metastore.metastore.GetHelper;
 import org.apache.hadoop.hive.metastore.metastore.GetListHelper;
 import org.apache.hadoop.hive.metastore.metastore.iface.PrivilegeStore;
 import org.slf4j.Logger;
@@ -77,7 +76,7 @@ import static org.apache.hadoop.hive.metastore.ObjectStore.convert;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
-public class PrivilegeStoreImpl extends RawStoreAware implements PrivilegeStore {
+public class PrivilegeStoreImpl extends RawStoreBundle implements PrivilegeStore {
   private static final Logger LOG = LoggerFactory.getLogger(PrivilegeStoreImpl.class);
   private Configuration conf;
 
@@ -336,7 +335,8 @@ public class PrivilegeStoreImpl extends RawStoreAware implements PrivilegeStore 
     LOG.debug("Executing listMSecurityPrincipalMembershipRole");
     Query query = pm.newQuery(MRoleMap.class, "principalName == t1 && principalType == t2");
     query.declareParameters("java.lang.String t1, java.lang.String t2");
-    final List<MRoleMap> mRoleMemebership = (List<MRoleMap>) query.execute(roleName, principalType.toString());
+    final List<MRoleMap> mRoleMemebership =
+        (List<MRoleMap>) query.execute(roleName, principalType.toString());
 
     LOG.debug("Retrieving all objects for listMSecurityPrincipalMembershipRole");
     pm.retrieveAll(mRoleMemebership);
@@ -760,6 +760,7 @@ public class PrivilegeStoreImpl extends RawStoreAware implements PrivilegeStore 
     if (CollectionUtils.isNotEmpty(privilegeList)) {
       Iterator<HiveObjectPrivilege> privIter = privilegeList.iterator();
       Set<String> privSet = new HashSet<>();
+      TableStore tableStore = siblingStore(TableStore.class);
       while (privIter.hasNext()) {
         HiveObjectPrivilege privDef = privIter.next();
         HiveObjectRef hiveObject = privDef.getHiveObject();
@@ -836,8 +837,8 @@ public class PrivilegeStoreImpl extends RawStoreAware implements PrivilegeStore 
             persistentObjs.add(mDc);
           }
         } else if (hiveObject.getObjectType() == HiveObjectType.TABLE) {
-          MTable tblObj = baseStore.ensureGetMTable(catName, hiveObject.getDbName(), hiveObject
-              .getObjectName());
+          MTable tblObj = tableStore
+              .ensureGetMTable(new TableName(catName, hiveObject.getDbName(), hiveObject.getObjectName()));
           if (tblObj != null) {
             List<MTablePrivilege> tablePrivs = this
                 .listAllMTableGrants(userName, principalType,
@@ -862,7 +863,7 @@ public class PrivilegeStoreImpl extends RawStoreAware implements PrivilegeStore 
             }
           }
         } else if (hiveObject.getObjectType() == HiveObjectType.PARTITION) {
-          MPartition partObj = baseStore.ensureGetMPartition(new TableName(catName, hiveObject.getDbName(),
+          MPartition partObj = tableStore.ensureGetMPartition(new TableName(catName, hiveObject.getDbName(),
               hiveObject.getObjectName()), hiveObject.getPartValues());
           String partName = null;
           if (partObj != null) {
@@ -891,14 +892,15 @@ public class PrivilegeStoreImpl extends RawStoreAware implements PrivilegeStore 
             }
           }
         } else if (hiveObject.getObjectType() == HiveObjectType.COLUMN) {
-          MTable tblObj = baseStore.ensureGetMTable(catName, hiveObject.getDbName(), hiveObject
-              .getObjectName());
+          MTable tblObj = tableStore
+              .ensureGetMTable(new TableName(catName, hiveObject.getDbName(), hiveObject.getObjectName()));
           if (tblObj != null) {
             if (hiveObject.getPartValues() != null) {
               MPartition partObj = null;
               List<MPartitionColumnPrivilege> colPrivs = null;
-              partObj = baseStore.ensureGetMPartition(new TableName(catName, hiveObject.getDbName(), hiveObject
-                  .getObjectName()), hiveObject.getPartValues());
+              partObj = tableStore
+                  .ensureGetMPartition(new TableName(catName, hiveObject.getDbName(), hiveObject.getObjectName()),
+                      hiveObject.getPartValues());
               if (partObj == null) {
                 continue;
               }
@@ -973,7 +975,7 @@ public class PrivilegeStoreImpl extends RawStoreAware implements PrivilegeStore 
 
     if (CollectionUtils.isNotEmpty(privilegeList)) {
       Iterator<HiveObjectPrivilege> privIter = privilegeList.iterator();
-
+      TableStore tableStore = siblingStore(TableStore.class);
       while (privIter.hasNext()) {
         HiveObjectPrivilege privDef = privIter.next();
         HiveObjectRef hiveObject = privDef.getHiveObject();
@@ -1100,7 +1102,7 @@ public class PrivilegeStoreImpl extends RawStoreAware implements PrivilegeStore 
           }
         } else if (hiveObject.getObjectType() == HiveObjectType.PARTITION) {
           boolean found = false;
-          Table tabObj = baseStore.unwrap(TableStore.class).getTable(
+          Table tabObj = tableStore.getTable(
               new TableName(catName, hiveObject.getDbName(), hiveObject.getObjectName()), null, -1);
           String partName = null;
           if (hiveObject.getPartValues() != null) {
@@ -1133,7 +1135,7 @@ public class PrivilegeStoreImpl extends RawStoreAware implements PrivilegeStore 
             }
           }
         } else if (hiveObject.getObjectType() == HiveObjectType.COLUMN) {
-          Table tabObj = baseStore.unwrap(TableStore.class).getTable(
+          Table tabObj = tableStore.getTable(
               new TableName(catName, hiveObject.getDbName(), hiveObject.getObjectName()), null, -1);
           String partName = null;
           if (hiveObject.getPartValues() != null) {
@@ -1258,7 +1260,8 @@ public class PrivilegeStoreImpl extends RawStoreAware implements PrivilegeStore 
       }
       break;
     case TABLE:
-      grants = listTableGrantsAll(new TableName(catName, objToRefresh.getDbName(), objToRefresh.getObjectName()), authorizer);
+      grants = listTableGrantsAll(new TableName(catName, objToRefresh.getDbName(),
+          objToRefresh.getObjectName()), authorizer);
       break;
     case COLUMN:
       Preconditions.checkArgument(objToRefresh.getColumnName()==null, "columnName must be null");

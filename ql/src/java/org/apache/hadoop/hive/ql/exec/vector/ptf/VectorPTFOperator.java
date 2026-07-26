@@ -28,7 +28,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -349,6 +348,7 @@ public class VectorPTFOperator extends Operator<PTFDesc>
         bufferedTypeInfos,
         orderColumnMap,
         keyWithoutOrderColumnMap,
+        vectorPTFInfo.getPartitionColumnMap(),
         overflowBatch);
 
     isFirstPartition = true;
@@ -386,6 +386,18 @@ public class VectorPTFOperator extends Operator<PTFDesc>
     if (partitionExpressions != null) {
       for (VectorExpression partitionExpression : partitionExpressions) {
         partitionExpression.evaluate(batch);
+      }
+    }
+
+    /*
+     Evaluate input expressions on the original batch before it gets buffered.
+     This ensures that complex expressions read from the correct columns in
+     the original batch and write their results to scratch columns, which
+     are then buffered.
+    */
+    for (VectorPTFEvaluatorBase evaluator : evaluators) {
+      if (evaluator.inputVecExpr != null) {
+        evaluator.inputVecExpr.evaluate(batch);
       }
     }
 
@@ -476,39 +488,27 @@ public class VectorPTFOperator extends Operator<PTFDesc>
   }
 
   private void initExpressionColumns() {
-    for (int i = 0; i < evaluators.length; i++) {
-      VectorPTFEvaluatorBase evaluator = evaluators[i];
+    for (VectorPTFEvaluatorBase evaluator : evaluators) {
       /*
-       * Non-streaming evaluators work on buffered batches, we need to adapt them. Before PTF
-       * bounded start vectorization (HIVE-24761), VectorExpression.outputColumnNum was closed and
-       * VectorExpression.inputColumnNum didn't even exist (even though the vast majority of
-       * VectorExpression subclasses use at least 1 input column). Since VectorPTFOperator and
-       * VectorPTFGroupBatches work on modified batches (by not storing all the columns, and having
-       * ordering columns first), the expressions planned in compile-time won't work with the
-       * original config (column layout). It would make sense to move this logic to compile time,
-       * because here in runtime, a very simple mapping (bufferedColumnMap) is used, so it might be
-       * used. However, vectorized expression compilation affects many layers of code (having
-       * VectorizationContext as the common scope), and moving the calculation of bufferedColumnMap
-       * and this override logic to compile-time would create much more complicated behavior there
-       * (probably involving hacking most of the time, or maybe a great re-design) just because of
-       * the optimized column layout of the PTF vectorization.
+       * Non-streaming window function evaluators (like SUM or LEAD) work on packed, buffered batches.
+       * VectorPTFOperator and VectorPTFGroupBatches significantly modify the batch structure to save memory
+       * (e.g. by dropping unused columns and moving ordering columns to the front).
+       *
+       * Because of this dense packing, the absolute column indices assigned by the compiler (e.g., Index 15)
+       * are no longer valid for the buffer (where it might now be Index 2).
+       * Therefore, we must dynamically map the evaluator's inputColumnNum to its new location in the packed array.
+       *
+       * NOTE: We ONLY patch the evaluator's input index here. We specifically DO NOT patch
+       * evaluator.inputVecExpr (the math expressions like A+B) because those are now evaluated eagerly
+       * on the original batch before any packing occurs, so their absolute indices remain perfectly valid.
        */
       if (!evaluator.streamsResult()) {
-        evaluator.inputColumnNum = IntStream.range(0, bufferedColumnMap.length)
-            .filter(j -> bufferedColumnMap[j] == evaluator.inputColumnNum).findFirst()
-            .orElseGet(() -> evaluator.inputColumnNum);
+        evaluator.inputColumnNum =
+            IntStream.range(0, bufferedColumnMap.length)
+                .filter(j -> bufferedColumnMap[j] == evaluator.inputColumnNum)
+                .findFirst()
+                .orElseGet(() -> evaluator.inputColumnNum);
 
-        if (evaluator.inputVecExpr != null) {
-          for (int j = 0; j <  evaluator.inputVecExpr.inputColumnNum.length; j++){
-            final int jj = j; // need a final in stream filter
-            evaluator.inputVecExpr.inputColumnNum[jj] = IntStream.range(0, bufferedColumnMap.length)
-                .filter(k -> bufferedColumnMap[k] == evaluator.inputVecExpr.inputColumnNum[jj])
-                .findFirst().orElseGet(() -> evaluator.inputVecExpr.inputColumnNum[jj]);
-          }
-          evaluator.inputVecExpr.outputColumnNum = IntStream.range(0, bufferedColumnMap.length)
-              .filter(j -> bufferedColumnMap[j] == evaluator.inputVecExpr.outputColumnNum)
-              .findFirst().orElseGet(() -> evaluator.inputVecExpr.outputColumnNum);
-        }
         evaluator.mapCustomColumns(bufferedColumnMap);
       }
     }

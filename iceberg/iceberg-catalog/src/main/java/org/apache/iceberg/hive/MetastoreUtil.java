@@ -210,17 +210,14 @@ public class MetastoreUtil {
         metadata,
         Collections.emptySet(),
         maxHiveTablePropertySize,
-        null);
+        null,
+        sqlText);
 
     hmsTable.setCreateTime((int) (metadata.version(1).timestampMillis() / 1000));
     hmsTable.setLastAccessTime((int) (metadata.currentVersion().timestampMillis() / 1000));
     hmsTable.setOwner(
         PropertyUtil.propertyAsString(
             metadata.properties(), HiveCatalog.HMS_TABLE_OWNER, HiveHadoopUtil.currentUser()));
-
-    // In-memory overlay for compile/describe: authoritative SQL comes from Iceberg metadata.
-    hmsTable.setViewOriginalText(sqlText);
-    hmsTable.setViewExpandedText(sqlText);
 
     String catalogType = IcebergCatalogProperties.getCatalogType(conf);
     if (!StringUtils.isEmpty(catalogType) && !IcebergCatalogProperties.NO_CATALOG_TYPE.equals(catalogType)) {

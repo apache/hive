@@ -347,7 +347,7 @@ PREHOOK: Input: default@tbl_ice_puffin
 POSTHOOK: query: desc formatted tbl_ice_puffin C
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_ice_puffin
-col_name            	C                   
+col_name            	c                   
 data_type           	int                 
 min                 	52                  
 max                 	56                  
@@ -358,7 +358,7 @@ max_col_len
 num_trues           	                    
 num_falses          	                    
 bit_vector          	HL                  
-comment             	                    
+comment             	Transform: identity 
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}
 PREHOOK: query: EXPLAIN select count(*) from src_ice t1 join tbl_ice_puffin t2 on (t1.a = t2.a)
 PREHOOK: type: QUERY

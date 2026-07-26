@@ -34,6 +34,13 @@ public class NativeAcidMultiInsertSqlGenerator extends MultiInsertSqlGenerator {
   }
 
   @Override
+  public void appendInsertBranch(String hintStr, List<String> values) {
+    appendInsertBranchInsertClause();
+    appendPartitionCols(targetTable);
+    appendInsertBranchSelectClause(hintStr, values);
+  }
+
+  @Override
   public void appendAcidSelectColumns(Operation operation) {
     queryStr.append("ROW__ID,");
     for (FieldSchema fieldSchema : targetTable.getPartCols()) {

@@ -355,6 +355,8 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
             new UnionComplexTypeHelper(fields);
         return new Field(category, unionHelper, sourceTypeInfo, new VectorUnionDeserializer());
       }
+    case UNKNOWN:
+      return new Field(category, null, sourceTypeInfo, new VectorVoidDeserializer());
     default:
       throw new RuntimeException("Category " + category + " not supported");
     }
@@ -368,6 +370,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
     case MAP:
     case STRUCT:
     case UNION:
+    case UNKNOWN:
       return allocateComplexField(sourceTypeInfo);
     default:
       throw new RuntimeException("Category " + sourceTypeInfo.getCategory() + " not supported");

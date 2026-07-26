@@ -164,6 +164,12 @@ public class TypeConverter {
     case UNION:
       convertedType = convert((UnionTypeInfo) type, dtFactory);
       break;
+    case VARIANT:
+      convertedType = dtFactory.createSqlType(SqlTypeName.OTHER);
+      break;
+    case UNKNOWN:
+      convertedType = dtFactory.createSqlType(SqlTypeName.NULL);
+      break;
     }
     // hive does not have concept of not nullable types
     return dtFactory.createTypeWithNullability(convertedType, nullable);

@@ -200,7 +200,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
       if (table.isPartitioned() && StatsUtils.checkCanProvideColumnStats(table)) {
         Map<String, String> tableProps = table.getParameters() == null ?
             new HashMap<>() : table.getParameters();
-        if (partitionCol != null) {
+        if (partitionCol != null && !table.hasNonNativePartitionSupport()) {
           addStatsForPartitionKeyColumn(table, colStats, colNames, tableProps, partitionCol);
         } else {
           addStatsForRegularColumn(table, colStats, colName, tableProps);

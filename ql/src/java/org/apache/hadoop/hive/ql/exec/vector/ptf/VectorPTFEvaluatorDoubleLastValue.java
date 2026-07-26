@@ -47,7 +47,6 @@ public class VectorPTFEvaluatorDoubleLastValue extends VectorPTFEvaluatorBase {
   public void evaluateGroupBatch(VectorizedRowBatch batch)
     throws HiveException {
 
-    evaluateInputExpr(batch);
 
     // Last row of last batch determines isGroupResultNull and double lastValue.
 

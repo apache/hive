@@ -738,6 +738,9 @@ public final class VectorExpressionWriterFactory {
         return genVectorExpressionWritableUnion(
             (SettableUnionObjectInspector) fieldObjInspector);
 
+      case UNKNOWN:
+        return genVectorExpressionWritableUnknown(fieldObjInspector);
+
       default:
         throw new IllegalArgumentException("Unknown type " +
             fieldObjInspector.getCategory());
@@ -1715,6 +1718,28 @@ public final class VectorExpressionWriterFactory {
 
         unionOI.setFieldAndTag(union, value, (byte) tag);
         return union;
+      }
+    }.init(fieldObjInspector);
+  }
+
+  private static VectorExpressionWriter genVectorExpressionWritableUnknown(
+      ObjectInspector fieldObjInspector) throws HiveException {
+    return new VectorExpressionWriterBase() {
+
+      @Override
+      public Object writeValue(ColumnVector column, int row) throws HiveException {
+        return null;
+      }
+
+      @Override
+      public Object setValue(Object row, ColumnVector column, int columnRow)
+          throws HiveException {
+        return null;
+      }
+
+      @Override
+      public Object initValue(Object ost) throws HiveException {
+        return null;
       }
     }.init(fieldObjInspector);
   }

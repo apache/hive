@@ -37,6 +37,7 @@ import org.apache.iceberg.mr.hive.serde.objectinspector.WriteObjectInspector;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.schema.SchemaWithPartnerVisitor;
+import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Type.PrimitiveType;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.types.Types.ListType;
@@ -110,6 +111,15 @@ class Deserializer {
 
     @Override
     public FieldDeserializer primitive(PrimitiveType type, ObjectInspectorPair pair) {
+      if (type.typeId() == Type.TypeID.UNKNOWN) {
+        return o -> {
+          if (o != null) {
+            throw new IllegalArgumentException("UNKNOWN type columns only accept NULL values");
+          }
+          return null;
+        };
+      }
+
       return o -> {
         if (o == null) {
           return null;

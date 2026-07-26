@@ -81,11 +81,13 @@ WARNING: Comparing bigint and string may result in loss of information.
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select table1_n1.col1, table1_1.* from table1_n1 join table1_1 on table1_n1.col1=table1_1.col1 where table1_1.col1="1"
 PREHOOK: type: QUERY
+#### A masked pattern was here ####
 PREHOOK: Input: default@table1_1
 PREHOOK: Input: default@table1_n1
 #### A masked pattern was here ####
 POSTHOOK: query: select table1_n1.col1, table1_1.* from table1_n1 join table1_1 on table1_n1.col1=table1_1.col1 where table1_1.col1="1"
 POSTHOOK: type: QUERY
+#### A masked pattern was here ####
 POSTHOOK: Input: default@table1_1
 POSTHOOK: Input: default@table1_n1
 #### A masked pattern was here ####

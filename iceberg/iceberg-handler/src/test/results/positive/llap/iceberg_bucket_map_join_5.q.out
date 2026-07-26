@@ -174,27 +174,27 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 2 vectorized, llap
-      File Output Operator [FS_40]
-        Group By Operator [GBY_39] (rows=1 width=8)
+      File Output Operator [FS_35]
+        Group By Operator [GBY_34] (rows=1 width=8)
           Output:["_col0"],aggregations:["count(VALUE._col0)"]
         <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized, llap
-          PARTITION_ONLY_SHUFFLE [RS_38]
-            Group By Operator [GBY_37] (rows=1 width=8)
+          PARTITION_ONLY_SHUFFLE [RS_33]
+            Group By Operator [GBY_32] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
-              Map Join Operator [MAPJOIN_36] (rows=372 width=8)
-                BucketMapJoin:true,Conds:SEL_35._col0=RS_33._col0(Inner)
+              Map Join Operator [MAPJOIN_31] (rows=372 width=8)
+                BucketMapJoin:true,Conds:SEL_30._col0=RS_28._col0(Inner)
               <-Map 3 [CUSTOM_EDGE] vectorized, llap
-                MULTICAST [RS_33]
+                MULTICAST [RS_28]
                   PartitionCols:_col0
-                  Select Operator [SEL_32] (rows=238 width=4)
+                  Select Operator [SEL_27] (rows=238 width=4)
                     Output:["_col0"]
-                    Filter Operator [FIL_31] (rows=238 width=89)
+                    Filter Operator [FIL_26] (rows=238 width=89)
                       predicate:((part = '1') and key is not null)
                       TableScan [TS_3] (rows=238 width=89)
                         default@srcbucket_mapjoin_part_2_n0,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","part"]
-              <-Select Operator [SEL_35] (rows=238 width=4)
+              <-Select Operator [SEL_30] (rows=238 width=4)
                   Output:["_col0"]
-                  Filter Operator [FIL_34] (rows=238 width=89)
+                  Filter Operator [FIL_29] (rows=238 width=89)
                     predicate:((part = '1') and key is not null)
                     TableScan [TS_0] (rows=238 width=89)
                       default@srcbucket_mapjoin_part_1,a,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:2,Grouping Partition Columns:["key"],Output:["key","part"]
@@ -241,27 +241,27 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 2 vectorized, llap
-      File Output Operator [FS_40]
-        Group By Operator [GBY_39] (rows=1 width=8)
+      File Output Operator [FS_30]
+        Group By Operator [GBY_29] (rows=1 width=8)
           Output:["_col0"],aggregations:["count(VALUE._col0)"]
         <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized, llap
-          PARTITION_ONLY_SHUFFLE [RS_38]
-            Group By Operator [GBY_37] (rows=1 width=8)
+          PARTITION_ONLY_SHUFFLE [RS_28]
+            Group By Operator [GBY_27] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
-              Map Join Operator [MAPJOIN_36] (rows=372 width=8)
-                BucketMapJoin:true,Conds:SEL_35._col0=RS_33._col0(Inner)
+              Map Join Operator [MAPJOIN_26] (rows=372 width=8)
+                BucketMapJoin:true,Conds:SEL_25._col0=RS_23._col0(Inner)
               <-Map 3 [CUSTOM_EDGE] vectorized, llap
-                MULTICAST [RS_33]
+                MULTICAST [RS_23]
                   PartitionCols:_col0
-                  Select Operator [SEL_32] (rows=238 width=4)
+                  Select Operator [SEL_22] (rows=238 width=4)
                     Output:["_col0"]
-                    Filter Operator [FIL_31] (rows=238 width=89)
+                    Filter Operator [FIL_21] (rows=238 width=89)
                       predicate:((part = '1') and key is not null)
                       TableScan [TS_3] (rows=238 width=89)
                         default@srcbucket_mapjoin_part_3,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","part"]
-              <-Select Operator [SEL_35] (rows=238 width=4)
+              <-Select Operator [SEL_25] (rows=238 width=4)
                   Output:["_col0"]
-                  Filter Operator [FIL_34] (rows=238 width=89)
+                  Filter Operator [FIL_24] (rows=238 width=89)
                     predicate:((part = '1') and key is not null)
                     TableScan [TS_0] (rows=238 width=89)
                       default@srcbucket_mapjoin_part_1,a,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:2,Grouping Partition Columns:["key"],Output:["key","part"]

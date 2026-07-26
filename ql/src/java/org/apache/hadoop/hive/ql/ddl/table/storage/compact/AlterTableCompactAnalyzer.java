@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.storage.compact;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.antlr.runtime.tree.Tree;
@@ -95,15 +94,13 @@ public class AlterTableCompactAnalyzer extends AbstractAlterTableAnalyzer {
           break;
         case HiveParser.TOK_WHERE:
           RowResolver rwsch = new RowResolver();
-          Map<String, String> colTypes = new HashMap<>();
           Table table;
           try {
             table = getDb().getTable(tableName);
-            for (FieldSchema fs : table.getCols()) {
+            for (FieldSchema fs : table.getAllCols()) {
               TypeInfo columnType = TypeInfoUtils.getTypeInfoFromTypeString(fs.getType());
-              rwsch.put(tableName.getTable(), fs.getName(), 
+              rwsch.put(tableName.getTable(), fs.getName(),
                   new ColumnInfo(fs.getName(), columnType, null, true));
-              colTypes.put(fs.getName().toLowerCase(), fs.getType());
             }
           } catch (HiveException e) {
             throw new SemanticException(e);

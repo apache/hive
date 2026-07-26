@@ -58,4 +58,6 @@ export COMPOSE_FILE="$COMPOSE_FILES"
 
 echo "Starting Hive cluster (mode=$HIVE_EXECUTION_MODE)"
 
-docker compose $PROFILE up -d $SCALE
+docker compose $PROFILE up -d --wait $SCALE
+
+echo "Hive cluster is ready."

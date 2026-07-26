@@ -430,10 +430,10 @@ PREHOOK: Input: default@tbl_ice_parquet_parted
 POSTHOOK: query: describe tbl_ice_parquet_parted
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@tbl_ice_parquet_parted
-p1                  	string              	                    
 b                   	string              	                    
 a                   	int                 	                    
-p2                  	string              	                    
+p1                  	string              	Transform: identity 
+p2                  	string              	Transform: identity 
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             

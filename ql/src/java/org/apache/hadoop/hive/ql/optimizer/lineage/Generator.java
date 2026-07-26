@@ -28,6 +28,7 @@ import java.util.function.Predicate;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.QueryProperties.QueryFeature;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
@@ -68,11 +69,12 @@ public class Generator extends Transform {
 
   enum LineageInfoFilter {
     CREATE_TABLE(parseContext -> parseContext.getCreateTable() != null),
-    CREATE_TABLE_AS_SELECT(parseContext -> parseContext.getQueryProperties().isCTAS()),
-    CREATE_VIEW(parseContext -> parseContext.getQueryProperties().isView()),
-    CREATE_MATERIALIZED_VIEW(parseContext -> parseContext.getQueryProperties().isMaterializedView()),
+    CREATE_TABLE_AS_SELECT(parseContext -> parseContext.getQueryProperties().hasFeature(QueryFeature.CTAS)),
+    CREATE_VIEW(parseContext -> parseContext.getQueryProperties().hasFeature(QueryFeature.VIEW)),
+    CREATE_MATERIALIZED_VIEW(parseContext ->
+        parseContext.getQueryProperties().hasFeature(QueryFeature.MATERIALIZED_VIEW)),
     LOAD(parseContext -> !(parseContext.getLoadTableWork() == null || parseContext.getLoadTableWork().isEmpty())),
-    QUERY(parseContext -> parseContext.getQueryProperties().isQuery()),
+    QUERY(parseContext -> parseContext.getQueryProperties().hasFeature(QueryFeature.QUERY)),
     ALL(parseContext -> true),
     NONE(parseContext -> false);
 

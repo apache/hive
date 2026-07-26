@@ -49,7 +49,6 @@ public class VectorPTFEvaluatorLongFirstValue extends VectorPTFEvaluatorBase {
   public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
-    evaluateInputExpr(batch);
 
     // First row determines isGroupResultNull and long firstValue; stream fill result as repeated.
 

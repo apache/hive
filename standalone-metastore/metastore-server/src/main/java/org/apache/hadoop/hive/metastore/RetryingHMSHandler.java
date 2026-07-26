@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.UndeclaredThrowableException;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import javax.jdo.JDOException;
@@ -44,10 +45,12 @@ public class RetryingHMSHandler extends AbstractHMSHandlerProxy {
 
   private final long retryInterval;
   private final int retryLimit;
+  private final boolean local;
 
   public RetryingHMSHandler(Configuration conf, IHMSHandler baseHandler, boolean local)
       throws MetaException {
     super(conf, baseHandler, local);
+    this.local = local;
     retryInterval = MetastoreConf.getTimeVar(origConf,
         ConfVars.HMS_HANDLER_INTERVAL, TimeUnit.MILLISECONDS);
     retryLimit = MetastoreConf.getIntVar(origConf, ConfVars.HMS_HANDLER_ATTEMPTS);
@@ -87,9 +90,22 @@ public class RetryingHMSHandler extends AbstractHMSHandlerProxy {
         }
         Object object = null;
         boolean isStarted = Deadline.startTimer(method.getName());
+        boolean clearCtxCall = false;
         try {
+          if (!local) {
+            Optional<HMSHandlerContext.CallCtx> callCtx = HMSHandlerContext.getCallCtx();
+            if (callCtx.isEmpty()) {
+              HMSHandlerContext.setCallCtx(new HMSHandlerContext.CallCtx(method.getName()));
+              clearCtxCall = true;
+            }
+          }
           object = method.invoke(baseHandler, args);
         } finally {
+          if (clearCtxCall) {
+            HMSHandlerContext.getCallCtx()
+                .ifPresent(ctx -> ctx.logJdbcSummary(LOG, getActiveConf()));
+            HMSHandlerContext.setCallCtx(null);
+          }
           if (isStarted) {
             Deadline.stopTimer();
           }

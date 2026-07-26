@@ -257,14 +257,17 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
 
           CompactionService finalCompactionService = compactionService;
           CompactionInfo finalCi = ci;
-          ugi.doAs((PrivilegedExceptionAction<Void>) () -> {
-            finalCompactionService.cleanupResultDirs(finalCi);
-            return null;
-          });
           try {
-            FileSystem.closeAllForUGI(ugi);
-          } catch (IOException ex) {
-            LOG.error("Could not clean up file-system handles for UGI: " + ugi, e);
+            ugi.doAs((PrivilegedExceptionAction<Void>) () -> {
+              finalCompactionService.cleanupResultDirs(finalCi);
+              return null;
+            });
+          } finally {
+            try {
+              FileSystem.closeAllForUGI(ugi);
+            } catch (IOException ex) {
+              LOG.error("Could not clean up file-system handles for UGI: " + ugi, e);
+            }
           }
         }
       }

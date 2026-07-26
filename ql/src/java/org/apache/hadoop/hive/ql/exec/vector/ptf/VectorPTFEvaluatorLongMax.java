@@ -45,7 +45,6 @@ public class VectorPTFEvaluatorLongMax extends VectorPTFEvaluatorBase {
   public void evaluateGroupBatch(VectorizedRowBatch batch)
       throws HiveException {
 
-    evaluateInputExpr(batch);
 
     // Determine maximum of all non-null long column values; maintain isGroupResultNull.
 

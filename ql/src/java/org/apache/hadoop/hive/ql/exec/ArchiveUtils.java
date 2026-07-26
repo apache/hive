@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -254,7 +253,7 @@ public final class ArchiveUtils {
    * @throws HiveException
    */
   public static String conflictingArchiveNameOrNull(Hive db, Table tbl,
-        LinkedHashMap<String, String> partSpec)
+        Map<String, String> partSpec)
       throws HiveException {
 
     List<FieldSchema> partKeys = tbl.getPartitionKeys();

@@ -40,6 +40,8 @@ import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -244,6 +246,7 @@ public class HiveTableUtil {
       table = readTableObjectFromFile(location, config);
     }
     checkAndSetIoConfig(config, table);
+    IcebergVendedCredentialUtil.applyFromJobConf(table, config);
 
     // For intra-txn read-after-write: if a metadata file was written for uncommitted in-txn state,
     // reconstruct a BaseTable from it so the Tez side sees changes from prior statements.
@@ -360,8 +363,10 @@ public class HiveTableUtil {
     try {
       FileSystem fs = Util.getFs(toDelete, configuration);
       fs.delete(toDelete, true);
-    } catch (IOException ex) {
-      throw new UncheckedIOException(ex);
+    } catch (IOException e) {
+      // best effort: never fail the commit over the temp table-object file; with catalog-vended
+      // credentials the Hadoop filesystem has no keys and the query-scoped file is left behind
+      LOG.warn("Could not remove temp table object file: {}", filePath, e);
     }
   }
 
@@ -378,6 +383,25 @@ public class HiveTableUtil {
 
   public static boolean isCtas(Properties properties) {
     return Boolean.parseBoolean(properties.getProperty(hive_metastoreConstants.TABLE_IS_CTAS));
+  }
+
+  public static boolean isTableTypeSet(Map<String, String> params) {
+    return params != null &&
+        HiveMetaHook.ICEBERG.equalsIgnoreCase(params.get(HiveMetaHook.TABLE_TYPE));
+  }
+
+  public static boolean isIcebergView(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    if (hmsTable == null ||
+        hmsTable.getParameters() == null ||
+        !TableType.VIRTUAL_VIEW.toString().equals(hmsTable.getTableType())) {
+      return false;
+    }
+    String storageHandler = hmsTable.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE);
+    return HiveMetaHook.HIVE_ICEBERG_STORAGE_HANDLER.equals(storageHandler);
+  }
+
+  public static boolean isRegistered(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    return hmsTable.getTTable().isSetId() && isTableTypeSet(hmsTable.getParameters());
   }
 
 }

@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import org.apache.hadoop.hive.metastore.RawStore;
 
 public record TransactionHandler<T> (RawStore rs, T simpl, List<Query> openQueries)
@@ -44,6 +46,9 @@ public record TransactionHandler<T> (RawStore rs, T simpl, List<Query> openQueri
 
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+    if (method.getDeclaringClass() == Object.class) {
+      return handleObjectMethod(proxy, method, args);
+    }
     boolean openTxn = method.getAnnotation(MetaDescriptor.NoTransaction.class) == null;
     boolean success = false;
     if (openTxn) {
@@ -66,5 +71,19 @@ public record TransactionHandler<T> (RawStore rs, T simpl, List<Query> openQueri
       }
       openQueries.clear();
     }
+  }
+
+  @VisibleForTesting
+  public int getOpenQueryCount() {
+    return openQueries.size();
+  }
+
+  private static Object handleObjectMethod(Object proxy, Method method, Object[] args) {
+    return switch (method.getName()) {
+      case "toString" -> proxy.getClass().getInterfaces()[0].getName() + " proxy";
+      case "hashCode" -> System.identityHashCode(proxy);
+      case "equals" -> proxy == args[0];
+      default -> throw new UnsupportedOperationException(method.toString());
+    };
   }
 }

@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.ql.QueryProperties.QueryFeature;
 import org.apache.hadoop.hive.ql.hooks.PrivateHookContext;
 import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHook;
 import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHookContext;
@@ -70,7 +71,7 @@ public class HiveQueryLifeTimeHook implements QueryLifeTimeHook {
     HiveConf conf = ctx.getHiveConf();
     QueryPlan queryPlan = ctx.getHookContext().getQueryPlan();
     boolean isCTAS = Optional.ofNullable(queryPlan.getQueryProperties())
-        .map(queryProps -> queryProps.isCTAS()).orElse(false);
+        .map(queryProps -> queryProps.hasFeature(QueryFeature.CTAS)).orElse(false);
 
     PrivateHookContext pCtx = (PrivateHookContext) ctx.getHookContext();
     Path tblPath = pCtx.getContext().getLocation();

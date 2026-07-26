@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.iceberg.hive.client;
+package org.apache.iceberg.hive.rest.catalog.client;
 
 import java.util.Arrays;
 import java.util.Collections;
