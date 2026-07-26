@@ -59,17 +59,13 @@ public class TestEsriShapeConverter {
   }
 
   /**
-   * Asserts coordinate-level equality after canonicalizing both geometries with
-   * {@link Geometry#normalize()}. Unlike {@code equalsTopo}, this catches ring reordering,
-   * ring/hole misassignment and orientation bugs (normalize fixes orientation and vertex
-   * order, so anything left is a real coordinate difference).
+   * Asserts strict coordinate-level equality within {@link #EPSILON}: same coordinates, in the
+   * same order and ring orientation. Unlike {@code equalsTopo} (and unlike normalizing first),
+   * this catches coordinate reordering and orientation changes — a round trip must preserve
+   * them, e.g. reversing a route linestring changes its meaning.
    */
-  private static void assertEqualsNormalized(Geometry expected, Geometry actual) {
-    Geometry e = expected.copy();
-    Geometry a = actual.copy();
-    e.normalize();
-    a.normalize();
-    assertTrue("Expected " + e + " but was " + a, e.equalsExact(a, EPSILON));
+  private static void assertEqualsExact(Geometry expected, Geometry actual) {
+    assertTrue("Expected " + expected + " but was " + actual, expected.equalsExact(actual, EPSILON));
   }
 
   private static int shapeType(byte[] shape) {
@@ -96,7 +92,7 @@ public class TestEsriShapeConverter {
   public void testMultiPointRoundTrip() throws Exception {
     Geometry back = roundTrip("multipoint ((1 2), (3 4), (5 6))");
     assertTrue("Expected a MultiPoint!", back instanceof MultiPoint);
-    assertTrue(back.equalsTopo(wkt("multipoint ((1 2), (3 4), (5 6))")));
+    assertEqualsExact(wkt("multipoint ((1 2), (3 4), (5 6))"), back);
   }
 
   @Test
@@ -110,7 +106,7 @@ public class TestEsriShapeConverter {
   public void testLineStringRoundTrip() throws Exception {
     Geometry back = roundTrip("linestring (0 0, 1 1, 2 0)");
     assertTrue("Expected a LineString!", back instanceof LineString);
-    assertTrue(back.equalsTopo(wkt("linestring (0 0, 1 1, 2 0)")));
+    assertEqualsExact(wkt("linestring (0 0, 1 1, 2 0)"), back);
   }
 
   @Test
@@ -118,7 +114,7 @@ public class TestEsriShapeConverter {
     String text = "multilinestring ((0 0, 1 1), (2 2, 3 3))";
     Geometry back = roundTrip(text);
     assertTrue("Expected a MultiLineString!", back instanceof MultiLineString);
-    assertTrue(back.equalsTopo(wkt(text)));
+    assertEqualsExact(wkt(text), back);
   }
 
   @Test
@@ -133,7 +129,7 @@ public class TestEsriShapeConverter {
     String text = "polygon ((0 0, 4 0, 4 4, 0 4, 0 0))";
     Geometry back = roundTrip(text);
     assertTrue("Expected a Polygon!", back instanceof Polygon);
-    assertEqualsNormalized(wkt(text), back);
+    assertEqualsExact(wkt(text), back);
   }
 
   @Test
@@ -141,7 +137,7 @@ public class TestEsriShapeConverter {
     String text = "polygon ((0 0, 10 0, 10 10, 0 10, 0 0), (2 2, 2 4, 4 4, 4 2, 2 2))";
     Polygon back = (Polygon) roundTrip(text);
     assertEquals(1, back.getNumInteriorRing());
-    assertEqualsNormalized(wkt(text), back);
+    assertEqualsExact(wkt(text), back);
   }
 
   @Test
@@ -150,7 +146,7 @@ public class TestEsriShapeConverter {
     Geometry back = roundTrip(text);
     assertTrue("Expected a MultiPolygon!", back instanceof MultiPolygon);
     assertEquals(2, back.getNumGeometries());
-    assertEqualsNormalized(wkt(text), back);
+    assertEqualsExact(wkt(text), back);
   }
 
   /**
@@ -187,7 +183,7 @@ public class TestEsriShapeConverter {
     assertEquals(2, back.getNumGeometries());
     assertEquals(1, ((Polygon) back.getGeometryN(0)).getNumInteriorRing());
     assertEquals(1, ((Polygon) back.getGeometryN(1)).getNumInteriorRing());
-    assertEqualsNormalized(wkt(text), back);
+    assertEqualsExact(wkt(text), back);
   }
 
   @Test
@@ -232,9 +228,9 @@ public class TestEsriShapeConverter {
         + "0000000000004440" + "0000000000003E40"); // (40, 30)
     MultiPoint mp = (MultiPoint) EsriShapeConverter.fromEsriShapeBody(ByteBuffer.wrap(bytes));
     assertEquals(2, mp.getNumGeometries());
-    assertTrue(mp.equalsTopo(GeometryUtils.GEOMETRY_FACTORY.createMultiPoint(new Point[] {
+    assertEqualsExact(GeometryUtils.GEOMETRY_FACTORY.createMultiPoint(new Point[] {
         GeometryUtils.GEOMETRY_FACTORY.createPoint(new org.locationtech.jts.geom.Coordinate(10, 40)),
-        GeometryUtils.GEOMETRY_FACTORY.createPoint(new org.locationtech.jts.geom.Coordinate(40, 30))})));
+        GeometryUtils.GEOMETRY_FACTORY.createPoint(new org.locationtech.jts.geom.Coordinate(40, 30))}), mp);
   }
 
   /**

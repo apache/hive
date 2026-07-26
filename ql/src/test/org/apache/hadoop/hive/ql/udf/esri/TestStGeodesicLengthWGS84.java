@@ -26,6 +26,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class TestStGeodesicLengthWGS84 {
 
@@ -90,5 +91,30 @@ public class TestStGeodesicLengthWGS84 {
   @Test
   public void testNullInput() {
     assertNull(stLength.evaluate(null));
+  }
+
+  /**
+   * Opposite poles are perfectly antipodal: the distance is the full pole-to-pole meridian
+   * (2 * quarter-meridian). Exercises ESRI's dedicated antipodal branch, which the earlier
+   * plain-Vincenty reimplementation did not handle.
+   */
+  @Test
+  public void testOppositePolesAntipodal() throws Exception {
+    DoubleWritable result = stLength.evaluate(wgs84("linestring (0 -90, 0 90)"));
+    assertNotNull(result);
+    assertEquals(20003931.458625443, result.get(), 1e-6);
+  }
+
+  /**
+   * A near-antipodal line: the ellipsoidal inverse solution is notoriously slow/failing to
+   * converge here for naive Vincenty. The ESRI NGS algorithm switches to its antipodal loop
+   * and returns a finite distance near half the Earth's circumference.
+   */
+  @Test
+  public void testNearAntipodalConverges() throws Exception {
+    DoubleWritable result = stLength.evaluate(wgs84("linestring (0 0, 179.5 0.5)"));
+    assertNotNull(result);
+    assertTrue("expected a finite length, got " + result.get(), Double.isFinite(result.get()));
+    assertEquals(19936288.578978203, result.get(), 1e-3);
   }
 }

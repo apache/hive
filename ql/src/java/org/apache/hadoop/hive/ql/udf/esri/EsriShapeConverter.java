@@ -82,8 +82,8 @@ public final class EsriShapeConverter {
   private static final int TYPE_POLYGON_M    = 25;
   private static final int TYPE_MULTIPOINT_M = 28;
 
-  // ESRI marks an absent measure with any value less than this sentinel.
-  private static final double NO_DATA_M = -1e38;
+  private static final double NO_DATA_M_READ_THRESHOLD = -1.0e38;
+  private static final double NO_DATA_M_WRITE_VALUE = -Double.MAX_VALUE;
 
   private EsriShapeConverter() {
   }
@@ -579,7 +579,7 @@ public final class EsriShapeConverter {
     buf.putDouble(mMax);
     for (Coordinate c : coords) {
       double m = c.getM();
-      buf.putDouble(Double.isNaN(m) ? NO_DATA_M : m);
+      buf.putDouble(Double.isNaN(m) ? NO_DATA_M_WRITE_VALUE : m);
     }
   }
 
@@ -699,9 +699,12 @@ public final class EsriShapeConverter {
     return anyValid ? ms : null;
   }
 
-  /** Maps ESRI's no-data measure sentinel to {@link Double#NaN}. */
+  /**
+   * Maps ESRI's no-data measure sentinel to {@link Double#NaN}, matching
+   * {@code Interop.translateFromAVNaN}: any value strictly below the threshold is no-data.
+   */
   private static double validM(double m) {
-    return (Double.isNaN(m) || m <= NO_DATA_M) ? Double.NaN : m;
+    return (m < NO_DATA_M_READ_THRESHOLD) ? Double.NaN : m;
   }
 
   /** Build the narrowest JTS coordinate that carries the ordinates actually present. */

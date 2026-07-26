@@ -866,6 +866,14 @@
       <version>${jts.version}</version>
       <scope>compile</scope>
     </dependency>
+    <!-- Retained only for ST_GeodesicLengthWGS84's WGS84 geodesic distance (GeometryEngine
+         .geodesicDistanceOnWGS84); the rest of the geospatial plugin uses JTS. -->
+    <dependency>
+      <groupId>com.esri.geometry</groupId>
+      <artifactId>esri-geometry-api</artifactId>
+      <version>${esri.version}</version>
+      <scope>compile</scope>
+    </dependency>
     <dependency>
       <groupId>org.locationtech.jts.io</groupId>
       <artifactId>jts-io-common</artifactId>
@@ -1114,6 +1122,7 @@
                   <include>com.github.luben:zstd-jni</include>
                   <include>org.locationtech.jts:jts-core</include>
                   <include>org.locationtech.jts.io:jts-io-common</include>
+                  <include>com.esri.geometry:esri-geometry-api</include>
                   <include>org.apache.tez:tez-protobuf-history-plugin</include>
                 </includes>
               </artifactSet>
