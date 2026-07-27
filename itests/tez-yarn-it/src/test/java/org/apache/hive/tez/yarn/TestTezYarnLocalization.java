@@ -39,33 +39,27 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * End-to-end integration test for HIVE-29483: verifies that {@code hive-exec.jar}
- * is correctly localized by Tez on YARN.
+ * End-to-end integration test for HIVE-29483: verifies that hive-exec.jar is correctly
+ * localized by Tez on YARN.
  *
- * <p>The test starts a real Hadoop YARN+HDFS cluster in Docker containers
- * (fixed host ports so the same URIs work from both the host JVM and inside
- * YARN containers), stages Tez framework jars to HDFS, brings up an in-process
- * HiveServer2 pointed at that cluster, and then runs an actual Tez DAG via JDBC.
+ * The test starts a real Hadoop YARN+HDFS cluster in Docker containers (fixed host ports
+ * so the same URIs work from both the host JVM and inside YARN containers), stages Tez
+ * framework jars to HDFS, brings up an in-process HiveServer2 pointed at that cluster,
+ * and then runs an actual Tez DAG via JDBC.
  *
- * <p>If {@code hive-exec.jar} were missing from {@code commonLocalResources}
- * (i.e. if {@code TezSessionState.appJarLr} were removed), the Tez task
- * containers would fail with {@code ClassNotFoundException} for Hive executor
- * classes and this test would fail.
+ * If hive-exec.jar were missing from commonLocalResources (i.e. if
+ * TezSessionState.appJarLr were removed), the Tez task containers would fail with
+ * ClassNotFoundException for Hive executor classes and this test would fail.
  *
- * <h3>Prerequisites</h3>
- * <ul>
- *   <li>Docker must be running on the host.</li>
- *   <li>Host ports 8020, 9870, 8032, 8088 must be free.</li>
- *   <li>The test JVM must resolve {@code namenode} and {@code resourcemanager}
- *       to {@code 127.0.0.1}.  When run via Maven this is automatic because
- *       Surefire passes {@code -Djdk.net.hosts.file=custom_hosts_file}.</li>
- * </ul>
+ * Prerequisites:
+ *   - Docker must be running on the host.
+ *   - Host ports 8020, 9870, 8032, 8088 must be free.
+ *   - The test JVM must resolve "namenode" and "resourcemanager" to 127.0.0.1.
+ *     When run via Maven this is automatic (Surefire passes -Djdk.net.hosts.file).
  *
- * <h3>Running locally</h3>
- * <pre>
- * mvn test -Pitests,tez-yarn -pl itests/tez-yarn-it \
- *     -Dtest=TestTezYarnLocalization#testQuerySucceedsWithAppJar
- * </pre>
+ * Run with:
+ *   mvn test -Pitests,tez-yarn -pl itests/tez-yarn-it \
+ *       -Dtest=TestTezYarnLocalization#testQuerySucceedsWithAppJar
  */
 public class TestTezYarnLocalization {
 
@@ -86,7 +80,7 @@ public class TestTezYarnLocalization {
     cluster.start();
 
     GenericContainer<?> nn = cluster.namenodeContainer();
-    // 1. Explicitly create and open up the global /tmp directory first
+    // Explicitly create and open up the global /tmp directory first
     nn.execInContainer("hdfs", "dfs", "-mkdir", "-p", "/tmp");
     nn.execInContainer("hdfs", "dfs", "-chmod", "-R", "777", "/tmp");
 
@@ -100,7 +94,7 @@ public class TestTezYarnLocalization {
 
     // Force /tmp prefix so the path is valid inside both macOS host and Linux Docker containers
     Path localScratch = Files.createDirectories(
-            java.nio.file.Paths.get("/tmp", "hive-tez-loc-" + System.currentTimeMillis()));
+            Path.of("/tmp", "hive-tez-loc-" + System.currentTimeMillis()));
     HiveConf conf = buildHiveConf(tezLibUris, localScratch);
 
     hs2 = new HiveServer2();
@@ -128,18 +122,16 @@ public class TestTezYarnLocalization {
   /**
    * Positive test case for HIVE-29483.
    *
-   * <p>Runs a Tez DAG via JDBC and asserts that:
-   * <ol>
-   *   <li>The INSERT … SELECT completes and returns the expected row count (primary proof that
-   *       {@code hive-exec.jar} was localized and Hive executor classes were available inside
-   *       YARN task containers).</li>
-   *   <li>A Tez YARN application is visible in the ResourceManager (secondary confirmation that
-   *       the DAG actually ran on YARN).</li>
-   * </ol>
+   * Runs a Tez DAG via JDBC and asserts:
+   *   1. The INSERT ... SELECT completes and returns the expected row count — primary proof
+   *      that hive-exec.jar was localized and Hive executor classes were available inside
+   *      YARN task containers.
+   *   2. A Tez YARN application is visible in the ResourceManager — secondary confirmation
+   *      that the DAG actually ran on YARN.
    *
-   * <p>Uses {@code INSERT … SELECT} from an HDFS-backed table rather than {@code VALUES}, because
-   * {@code VALUES} inserts compile to a local {@code file:/…/dummy_path} input that exists only on
-   * the host JVM filesystem; Tez map tasks run inside Docker containers and cannot read it.
+   * Uses INSERT ... SELECT from an HDFS-backed table rather than VALUES, because VALUES
+   * inserts compile to a local file:/dummy_path input that exists only on the host JVM
+   * filesystem; Tez map tasks run inside Docker containers and cannot read it.
    */
   @Test
   public void testQuerySucceedsWithAppJar() throws Exception {
@@ -170,38 +162,28 @@ public class TestTezYarnLocalization {
   }
 
   /**
-   * Dumps NodeManager container launch scripts and log files when a Tez job fails.
+   * Dumps NodeManager container logs to System.out for CI visibility.
+   * Called unconditionally from stopAll() before containers are torn down.
    *
-   * <p>A failing Tez AM often shows an empty {@code stderr} in the YARN diagnostic, which is
-   * misleading: Tez logs through log4j to the container's {@code syslog} file, not {@code stderr}.
-   * This helper dumps four sources so CI can pinpoint the real cause without SSH into a container:
-   * <ul>
-   *   <li>{@code launch_container.sh} — the exact classpath / env-var setup</li>
-   *   <li>container {@code stderr} — JVM-level errors (empty when the failure is logged via log4j)</li>
-   *   <li>container {@code syslog} — the Tez AM's log4j output (where NoClassDefFoundError etc. lands)</li>
-   *   <li>the NodeManager daemon log — pre-exec launch-script failures that bypass container stderr</li>
-   * </ul>
+   * Four sources are dumped:
+   *   - launch_container.sh: exact java command, JAVA_HOME, classpath used to start the AM
+   *   - container syslog: Tez AM log4j output (where NoClassDefFoundError etc. land)
+   *   - container stdout/stderr/prelaunch.err: JVM-level errors
+   *   - NodeManager daemon log: catches launch-script failures that bypass container stderr
    */
   private static void dumpNodeManagerDiagnostics() {
     if (cluster == null) {
       return;
     }
-    // Print to System.out (not SLF4J): with -Dsurefire.useFile=false Surefire streams the
-    // forked JVM's stdout into the build log, whereas Hive routes LOG.* to target/tmp/log/hive.log
-    // which is invisible in CI. This runs from @AfterClass BEFORE the containers are stopped,
-    // so the NM container is still alive and its log dirs still exist (delete-debug-delay=600s).
+    // System.out rather than LOG: Surefire streams stdout into the build log with -Dsurefire.useFile=false.
     System.out.println("########## BEGIN NodeManager diagnostics ##########");
     try {
-      // launch_container.sh reveals the EXACT java command, JAVA_HOME and full classpath the
-      // AM was launched with -- decisive when the AM exits 1 with empty stderr/prelaunch.err.
+      // launch_container.sh: decisive when AM exits 1 with empty stderr.
       dumpNmCommand("launch_container.sh (AM launch command + classpath)",
           "find /tmp -name 'launch_container.sh' 2>/dev/null | head -3 "
           + "| xargs -I{} sh -c 'echo \"--- {} ---\"; cat {}' 2>/dev/null || true");
 
-      // Container logs live under LOG_DIRS=/var/log/hadoop/userlogs/<app>/<container>/ (per
-      // launch_container.sh), NOT /tmp. syslog is the Tez AM's log4j output -- the CLA appender
-      // routes DAGAppMaster startup errors (NoClassDefFoundError, NoSuchMethodError, etc.) there,
-      // which is why the YARN diagnostic shows an empty stderr while the AM still exits 1.
+      // syslog is the Tez AM's log4j output; YARN diagnostic shows empty stderr even when AM exits 1.
       dumpNmCommand("container syslog (Tez AM log4j output)",
           "find /var/log/hadoop/userlogs -name 'syslog*' 2>/dev/null | head -10 "
           + "| xargs -I{} sh -c 'echo \"--- {} ---\"; cat {}' 2>/dev/null || true");
@@ -259,7 +241,7 @@ public class TestTezYarnLocalization {
     conf.set("javax.jdo.option.ConnectionURL",
         "jdbc:derby:" + localScratch.resolve("metastore_db").toAbsolutePath() + ";create=true");
 
-// Disable Direct SQL in embedded Derby to prevent JDO transaction corruption
+    // Disable Direct SQL in embedded Derby to prevent JDO transaction corruption
     // when querying uninitialized schema tables during race conditions.
     conf.setBoolVar(HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL, false);
     conf.set("hive.stats.autogather", "false");
@@ -276,26 +258,14 @@ public class TestTezYarnLocalization {
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS, false);
     conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_TEZ_SESSIONS_PER_DEFAULT_QUEUE, 0);
 
-    // Pin the Tez AM's client-facing RPC port so the host JVM can reach the AM. The AM runs in the
-    // NodeManager container (hostname "nodemanager", resolvable to 127.0.0.1 via custom_hosts_file)
-    // and publishes AM_CLIENT_PORT; without a fixed port the AM would advertise a random port that
-    // is not published, so the client fails with "UnknownHostException/connection refused" and the
-    // Tez session times out.
+    // Pin the Tez AM client RPC port. The AM runs in the NodeManager container (hostname
+    // "nodemanager", resolvable to 127.0.0.1) and must advertise a port published to the host.
     conf.set("tez.am.client.am.port-range",
         TezYarnClusterContainer.AM_CLIENT_PORT + "-" + TezYarnClusterContainer.AM_CLIENT_PORT);
 
-    // The Hadoop image daemons use Java 8 but hive-exec requires Java 21; point Tez AM/task
-    // container environments at the Java 21 runtime added by the custom Dockerfile.
-    // HADOOP_HOME must be set explicitly: the apache/hadoop image does not export it into YARN
-    // container environments, so tez.use.cluster.hadoop-libs's "${HADOOP_HOME}/bin/hadoop classpath"
-    // call would silently produce an empty classpath without it.
-    //
-    // IMPORTANT: set the container env ONLY via the Tez properties. Hive's DagUtils also injects
-    // mapreduce.map.env / mapreduce.reduce.env into each task vertex (via MRHelpers), and Tez then
-    // appends tez.task.launch.env on top. Setting the same JAVA_HOME in both sources makes YARN
-    // concatenate them with the path separator, yielding JAVA_HOME=/opt/jdk21:/opt/jdk21 -- so the
-    // task container runs "/opt/jdk21:/opt/jdk21/bin/java" and dies with exit 127 (No such file).
-    // The AM is unaffected because it only reads tez.am.launch.env.
+    // Tez AM/task containers need Java 21 (hive-exec requires it) and HADOOP_HOME (the
+    // apache/hadoop image does not export it to YARN container envs; without it
+    // tez.use.cluster.hadoop-libs's "hadoop classpath" call produces an empty classpath).
     String containerEnv = "JAVA_HOME=" + TezYarnClusterContainer.CONTAINER_JAVA_21_HOME
         + ",HADOOP_HOME=/opt/hadoop"
         + ",HADOOP_MAPRED_HOME=/opt/hadoop";
