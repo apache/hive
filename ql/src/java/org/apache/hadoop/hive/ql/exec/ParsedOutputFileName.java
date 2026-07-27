@@ -32,20 +32,23 @@ import java.util.regex.Pattern;
  * 00001_02
  * 00001_02.gz
  * 00001_02.zlib.gz
- * 00001_02_copy_1
+ * 00001_02_copy_1                    (numeric copy suffix, HDFS-style)
  * 00001_02_copy_1.gz
+ * 00001_02_copy_abcd1234             (per-query uniqueness tag as copy suffix, HIVE-28822,
+ *                                     used on unstable-rename filesystems)
+ * 00001_02_copy_abcd1234.gz
  * <p>
  * All the components are here:
  * tmp_(taskPrefix)00001_02_copy_1.zlib.gz
  */
 public class ParsedOutputFileName {
   private static final Pattern COPY_FILE_NAME_TO_TASK_ID_REGEX = Pattern.compile(
-      "^(.*?)?" + // any prefix
-      "(\\(.*\\))?" + // taskId prefix
-      "([0-9]+)" + // taskId
-      "(?:_([0-9]{1,6}))?" + // _<attemptId> (limited to 6 digits)
-      "(?:_copy_([0-9]{1,6}))?" + // copy file index
-      "(\\..*)?$"); // any suffix/file extension
+      "^(.*?)?" + /* any prefix */
+      "(\\(.*\\))?" + /* taskId prefix */
+      "(\\d+)" + /* taskId */
+      "(?:_(\\d{1,6}))?" + /* _<attemptId> (limited to 6 digits) */
+      "(?:_copy_(\\d{1,6}|[\\da-fA-F]{8}))?" + /* copy suffix: numeric counter, or 8-hex tag (HIVE-28822) */
+      "(\\..*)?$"); /* any suffix/file extension */
 
   public static ParsedOutputFileName parse(String fileName) {
     return new ParsedOutputFileName(fileName);
@@ -109,6 +112,11 @@ public class ParsedOutputFileName {
     return copyIndex != null;
   }
 
+  /**
+   * @return the copy suffix: either a numeric counter (HDFS-style) or an 8-hex per-query
+   *         uniqueness tag (HIVE-28822, used on unstable-rename filesystems), or {@code null}
+   *         when the filename has no copy suffix.
+   */
   public String getCopyIndex() {
     return copyIndex;
   }
