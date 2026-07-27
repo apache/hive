@@ -17,10 +17,11 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.ogc.OGCGeometry;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.BytesWritable;
+import org.locationtech.jts.geom.CoordinateFilter;
+import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,17 +64,32 @@ public class ST_MaxM extends ST_GeometryAccessor {
       return null;
     }
 
-    OGCGeometry ogcGeometry = GeometryUtils.geometryFromEsriShape(geomref);
-    if (ogcGeometry == null) {
+    Geometry geom = GeometryUtils.geometryFromEsriShape(geomref);
+    if (geom == null) {
       LogUtils.Log_ArgumentsNull(LOG);
       return null;
     }
-    if (!ogcGeometry.isMeasured()) {
+
+    // Avoid walking every coordinate when the geometry has no M ordinate at all.
+    if (!GeometryUtils.isMeasured(geom)) {
       LogUtils.Log_NotMeasured(LOG);
       return null;
     }
 
-    resultDouble.set(ogcGeometry.MaxMeasure());
+    double[] max = {Double.NaN};
+    geom.apply((CoordinateFilter) coord -> {
+      double m = coord.getM();
+      if (!Double.isNaN(m)) {
+        max[0] = Double.isNaN(max[0]) ? m : Math.max(max[0], m);
+      }
+    });
+
+    if (Double.isNaN(max[0])) {
+      LogUtils.Log_NotMeasured(LOG);
+      return null;
+    }
+
+    resultDouble.set(max[0]);
     return resultDouble;
   }
 

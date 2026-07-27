@@ -17,11 +17,11 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.ogc.OGCGeometry;
-import com.esri.core.geometry.ogc.OGCLineString;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.LineString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,24 +61,22 @@ public class ST_IsRing extends ST_GeometryAccessor {
       return null;
     }
 
-    OGCGeometry ogcGeometry = GeometryUtils.geometryFromEsriShape(geomref);
-    if (ogcGeometry == null) {
+    Geometry geom = GeometryUtils.geometryFromEsriShape(geomref);
+    if (geom == null) {
       LogUtils.Log_ArgumentsNull(LOG);
       return null;
     }
 
     try {
-
       switch (GeometryUtils.getType(geomref)) {
       case ST_LINESTRING:
-        OGCLineString lns = (OGCLineString) ogcGeometry;
-        resultBoolean.set(lns.isClosed() && lns.isSimple());
+        LineString ls = (LineString) geom;
+        resultBoolean.set(ls.isClosed() && ls.isSimple());
         return resultBoolean;
       default:  // ST_IsRing gives ERROR on Point, Polygon, or MultiLineString - on Postgres
         LogUtils.Log_InvalidType(LOG, GeometryUtils.OGCType.ST_LINESTRING, GeometryUtils.getType(geomref));
         return null;
       }
-
     } catch (Exception e) {
       LogUtils.Log_InternalError(LOG, "ST_IsRing" + e);
       return null;

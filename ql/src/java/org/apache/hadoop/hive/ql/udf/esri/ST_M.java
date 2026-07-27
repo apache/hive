@@ -17,11 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.ogc.OGCGeometry;
-import com.esri.core.geometry.ogc.OGCPoint;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.BytesWritable;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Point;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,19 +60,20 @@ public class ST_M extends ST_GeometryAccessor {
       return null;
     }
 
-    OGCGeometry ogcGeometry = GeometryUtils.geometryFromEsriShape(geomref);
-    if (ogcGeometry == null) {
-      return null;
-    }
-    if (!ogcGeometry.isMeasured()) {
-      LogUtils.Log_NotMeasured(LOG);
+    Geometry geom = GeometryUtils.geometryFromEsriShape(geomref);
+    if (geom == null) {
       return null;
     }
 
     switch (GeometryUtils.getType(geomref)) {
     case ST_POINT:
-      OGCPoint pt = (OGCPoint) ogcGeometry;
-      resultDouble.set(pt.M());
+      Coordinate coord = ((Point) geom).getCoordinate();
+      double m = coord.getM();
+      if (Double.isNaN(m)) {
+        LogUtils.Log_NotMeasured(LOG);
+        return null;
+      }
+      resultDouble.set(m);
       return resultDouble;
     default:
       LogUtils.Log_InvalidType(LOG, GeometryUtils.OGCType.ST_POINT, GeometryUtils.getType(geomref));
