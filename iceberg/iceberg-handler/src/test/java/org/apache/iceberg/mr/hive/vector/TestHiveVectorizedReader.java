@@ -40,7 +40,7 @@ import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.mr.mapred.MapredIcebergInputFormat.CompatibilityTaskAttemptContextImpl;
 import org.apache.iceberg.mr.mapreduce.IcebergInputFormat;
 import org.apache.iceberg.types.Types;
-import org.apache.parquet.format.converter.ParquetMetadataConverter;
+import org.apache.parquet.ParquetReadOptions;
 import org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.parquet.io.InputFile;
 import org.junit.Assert;
@@ -103,8 +103,8 @@ public class TestHiveVectorizedReader {
           r.nextKeyValue();
         }
       }
-      mockedParquetFileReader.verify(() -> ParquetFileReader.readFooter(any(InputFile.class),
-              any(ParquetMetadataConverter.MetadataFilter.class)), times(1)
+      mockedParquetFileReader.verify(() -> ParquetFileReader.open(any(InputFile.class),
+              any(ParquetReadOptions.class)), times(1)
       );
     }
   }

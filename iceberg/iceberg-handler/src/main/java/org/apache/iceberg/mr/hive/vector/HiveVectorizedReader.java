@@ -51,15 +51,19 @@ import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.data.CachingDeleteLoader;
+import org.apache.iceberg.data.DeleteLoader;
+import org.apache.iceberg.encryption.EncryptingFileIO;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.CloseableIterator;
+import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.HiveIcebergInputFormat;
 import org.apache.iceberg.mr.mapred.MapredIcebergInputFormat;
 import org.apache.iceberg.orc.VectorizedReadUtils;
-import org.apache.iceberg.parquet.ParquetFooterInputFromCache;
+import org.apache.iceberg.parquet.HiveParquetUtil;
 import org.apache.iceberg.parquet.ParquetSchemaUtil;
 import org.apache.iceberg.parquet.TypeWithSchemaVisitor;
 import org.apache.iceberg.parquet.VariantParquetFilters;
@@ -67,8 +71,6 @@ import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Types;
 import org.apache.orc.impl.OrcTail;
-import org.apache.parquet.format.converter.ParquetMetadataConverter;
-import org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.parquet.hadoop.metadata.ParquetMetadata;
 import org.apache.parquet.schema.MessageType;
 
@@ -91,8 +93,16 @@ public class HiveVectorizedReader {
     Schema requiredSchema = readSchema;
 
     if (!task.deletes().isEmpty()) {
-      deleteFilter = new HiveDeleteFilter(table.io(), task, table.schema(), prepareSchemaForDeleteFilter(readSchema),
-          context.getConfiguration());
+      deleteFilter =
+          new HiveDeleteFilter(EncryptingFileIO.combine(table.io(), table.encryption()), task, table.schema(),
+              prepareSchemaForDeleteFilter(readSchema), context.getConfiguration()) {
+            @Override
+            protected DeleteLoader newDeleteLoader() {
+              return new CachingDeleteLoader(
+                  deleteFile -> EncryptingFileIO.combine(table.io(), table.encryption()).newInputFile(deleteFile),
+                  context.getConfiguration());
+            }
+          };
       requiredSchema = deleteFilter.requiredSchema();
       // TODO: take requiredSchema and adjust readColumnIds below accordingly for equality delete cases
       // and remove below limitation
@@ -166,7 +176,8 @@ public class HiveVectorizedReader {
         case PARQUET:
           recordReader = parquetRecordReader(job, reporter, task, path, start, length, fileId,
               getInitialColumnDefaults(table.schema().columns()),
-              HiveIcebergInputFormat.residualForReaderPruning(task, job));
+              HiveIcebergInputFormat.residualForReaderPruning(task, job),
+              table.io());
           break;
         default:
           throw new UnsupportedOperationException("Vectorized Hive reading unimplemented for format: " + format);
@@ -242,7 +253,7 @@ public class HiveVectorizedReader {
 
   private static RecordReader<NullWritable, VectorizedRowBatch> parquetRecordReader(JobConf job, Reporter reporter,
       FileScanTask task, Path path, long start, long length, SyntheticFileId fileId,
-      Map<String, Object> initialColumnDefaults, Expression residual) throws IOException {
+      Map<String, Object> initialColumnDefaults, Expression residual, FileIO io) throws IOException {
     InputSplit split = new FileSplit(path, start, length, job);
     VectorizedParquetInputFormat inputFormat = new VectorizedParquetInputFormat();
 
@@ -253,9 +264,7 @@ public class HiveVectorizedReader {
       footerData = LlapProxy.getIo().getParquetFooterBuffersFromCache(path, job, fileId);
     }
 
-    ParquetMetadata parquetMetadata = footerData != null ?
-        ParquetFileReader.readFooter(new ParquetFooterInputFromCache(footerData), ParquetMetadataConverter.NO_FILTER) :
-        ParquetFileReader.readFooter(job, path);
+    ParquetMetadata parquetMetadata = HiveParquetUtil.readFooter(task.file(), io, job, footerData);
     MessageType fileSchema = parquetMetadata.getFileMetaData().getSchema();
     ParquetMetadata prunedMetadata =
         VariantParquetFilters.pruneVariantRowGroups(parquetMetadata, fileSchema, residual);
