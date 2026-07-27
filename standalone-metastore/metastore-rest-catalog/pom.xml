@@ -41,6 +41,14 @@
       <artifactId>hive-iceberg-catalog</artifactId>
       <version>${hive.version}</version>
     </dependency>
+    <!-- We need hive-exec to bring Hive's authorization plugin -->
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-exec</artifactId>
+      <version>${hive.version}</version>
+      <classifier>core</classifier>
+      <scope>provided</scope>
+    </dependency>
     <!-- Spring Boot dependencies - use Jetty instead of Tomcat for Java 21 compatibility -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -70,13 +78,6 @@
       <version>1.9.17</version>
     </dependency>
     <!-- Test dependencies -->
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-exec</artifactId>
-      <version>${hive.version}</version>
-      <classifier>core</classifier>
-      <scope>test</scope>
-    </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-standalone-metastore-common</artifactId>
