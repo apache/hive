@@ -133,11 +133,13 @@ public class TestJdbcDriver2 {
    * Required prefix of {@link SQLTimeoutException#getMessage()} for a 1s limit. HS2 may append
    * {@code ; Query ID: ...} after the base text from {@code HiveSQLException}.
    */
-  private static final String QUERY_TIMED_OUT_AFTER_1_SECONDS =
-      "Query timed out after 1 seconds";
+  private static final String QUERY_TIMED_OUT_AFTER_1_SECONDS = "Query timed out after 1 seconds";
 
-  @Rule public ExpectedException thrown = ExpectedException.none();
-  @Rule public final TestName testName = new TestName();
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
+
+  @Rule
+  public final TestName testName = new TestName();
 
   /**
    * {@code SET hive.query.timeout.seconds} applies to the whole HS2 session. Tests such as
