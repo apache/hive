@@ -50,10 +50,11 @@ public class TestRebuildIndexesScriptConsistency {
       "CREATE\\s+(?:UNIQUE\\s+)?INDEX\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?\"?([A-Za-z0-9_]+)\"?",
       Pattern.CASE_INSENSITIVE);
 
-  // MySQL indexes show up both as standalone CREATE INDEX and as inline KEY clauses inside CREATE TABLE.
+  // MySQL indexes show up as CREATE INDEX, inline KEY clauses inside CREATE TABLE, or ADD INDEX
+  // inside ALTER TABLE (used in the rebuild script for atomicity with FK constraints).
   // The negative lookahead prevents matching "PRIMARY KEY AUTO_INCREMENT".
   private static final Pattern MYSQL_PATTERN = Pattern.compile(
-      "(?:CREATE\\s+(?:UNIQUE\\s+)?INDEX\\s+|(?:UNIQUE\\s+)?KEY\\s+(?!AUTO_INCREMENT\\b))`?([A-Za-z0-9_]+)`?",
+      "(?:CREATE\\s+(?:UNIQUE\\s+)?INDEX\\s+|ADD\\s+(?:UNIQUE\\s+)?INDEX\\s+|(?:UNIQUE\\s+)?KEY\\s+(?!AUTO_INCREMENT\\b))`?([A-Za-z0-9_]+)`?",
       Pattern.CASE_INSENSITIVE);
 
   private static final Pattern ORACLE_PATTERN = Pattern.compile(
@@ -123,6 +124,11 @@ public class TestRebuildIndexesScriptConsistency {
 
   @Test
   public void rebuildScriptHasDropAndCreateForEachIndex() throws Exception {
+    // MSSQL uses CREATE INDEX ... WITH (DROP_EXISTING = ON) which has no explicit DROP lines.
+    // The rebuildScriptMatchesInitScript test already covers completeness for MSSQL.
+    if (dbType.equals(HiveSchemaHelper.DB_MSSQL)) {
+      return;
+    }
     String metastoreHome = System.getProperty("test.tmp.dir", "target/tmp");
     IMetaStoreSchemaInfo schemaInfo =
         MetaStoreSchemaInfoFactory.get(new Configuration(), metastoreHome, dbType);

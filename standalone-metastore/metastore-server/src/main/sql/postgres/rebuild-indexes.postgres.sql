@@ -13,9 +13,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 
-    
-
--- Rebuilds all HMS standalone indexes on PostgreSQL.
+-- Rebuilds all HMS indexes on PostgreSQL.
 -- Update this file whenever a new upgrade script adds an index.
 
 DROP INDEX IF EXISTS "NOTIFICATION_LOG_EVENT_ID";
