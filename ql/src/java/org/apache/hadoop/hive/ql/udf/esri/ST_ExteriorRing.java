@@ -17,15 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.ogc.OGCGeometry;
-import com.esri.core.geometry.ogc.OGCLineString;
-import com.esri.core.geometry.ogc.OGCPolygon;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.BytesWritable;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.LinearRing;
+import org.locationtech.jts.geom.Polygon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.reflect.Method;
 
 @Description(name = "ST_ExteriorRing",
     value = "_FUNC_(polygon) - return linestring which is the exterior ring of the polygon",
@@ -58,29 +56,17 @@ public class ST_ExteriorRing extends ST_GeometryProcessing {
       return null;
     }
 
-    OGCGeometry ogcGeometry = GeometryUtils.geometryFromEsriShape(geomref);
-    if (ogcGeometry == null) {
+    Geometry geom = GeometryUtils.geometryFromEsriShape(geomref);
+    if (geom == null) {
       LogUtils.Log_ArgumentsNull(LOG);
       return null;
     }
     if (GeometryUtils.getType(geomref) == GeometryUtils.OGCType.ST_POLYGON) {
-      Method extMethod;
       try {
-        // expect to streamline with updated geometry-api
-        // OGCLineString extRing = ((OGCPolygon)(ogcGeometry)).exteriorRing();
-        extMethod = OGCPolygon.class.getMethod("exteriorRing");
-      } catch (Exception e) {
-        LogUtils.Log_InternalError(LOG, "ST_ExteriorRing: " + e);
-        try {
-          extMethod = OGCPolygon.class.getMethod("exterorRing");
-        } catch (Exception x) {
-          LogUtils.Log_InternalError(LOG, "ST_ExteriorRing: " + x);
-          return null;
-        }
-      }
-      try {
-        OGCLineString extRing = (OGCLineString) (extMethod.invoke(ogcGeometry));
-        return GeometryUtils.geometryToEsriShapeBytesWritable(extRing);
+        LinearRing ring = ((Polygon) geom).getExteriorRing();
+        // Return as LineString per OGC spec (not LinearRing which is JTS-specific)
+        Geometry lineString = geom.getFactory().createLineString(ring.getCoordinateSequence());
+        return GeometryUtils.geometryToEsriShapeBytesWritable(lineString);
       } catch (Exception e) {
         LogUtils.Log_InternalError(LOG, "ST_ExteriorRing: " + e);
         return null;

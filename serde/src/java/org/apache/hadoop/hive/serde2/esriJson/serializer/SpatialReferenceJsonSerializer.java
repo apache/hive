@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.serde2.esriJson.serializer;
 
-import com.esri.core.geometry.SpatialReference;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
@@ -25,17 +24,16 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 
 import java.io.IOException;
 
-public class SpatialReferenceJsonSerializer extends JsonSerializer<SpatialReference> {
+/**
+ * Serializes an integer SRID (WKID) as a JSON spatialReference object: {"wkid": <id>}.
+ */
+public class SpatialReferenceJsonSerializer extends JsonSerializer<Integer> {
 
   @Override
-  public void serialize(SpatialReference spatialReference, JsonGenerator jsonGenerator, SerializerProvider arg2)
+  public void serialize(Integer wkid, JsonGenerator jsonGenerator, SerializerProvider arg2)
       throws IOException, JsonProcessingException {
-
-    int wkid = spatialReference.getID();
-
     jsonGenerator.writeStartObject();
-    jsonGenerator.writeObjectField("wkid", wkid);
+    jsonGenerator.writeObjectField("wkid", wkid == null ? 0 : wkid);
     jsonGenerator.writeEndObject();
   }
-
 }

@@ -17,10 +17,11 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.ogc.OGCGeometry;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,12 +61,23 @@ public class ST_CoordDim extends ST_GeometryAccessor {
       return null;
     }
 
-    OGCGeometry ogcGeometry = GeometryUtils.geometryFromEsriShape(geomref);
-    if (ogcGeometry == null) {
+    Geometry geom = GeometryUtils.geometryFromEsriShape(geomref);
+    if (geom == null) {
       return null;
     }
 
-    resultInt.set(ogcGeometry.coordinateDimension());
+    // Infer coordinate dimension: 2 + (hasZ ? 1 : 0) + (hasM ? 1 : 0)
+    Coordinate coord = geom.getCoordinate();
+    int dim = 2;
+    if (coord != null) {
+      if (!Double.isNaN(coord.getZ())) {
+        dim++;
+      }
+      if (!Double.isNaN(coord.getM())) {
+        dim++;
+      }
+    }
+    resultInt.set(dim);
     return resultInt;
   }
 

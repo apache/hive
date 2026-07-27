@@ -17,11 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri.serde;
 
-import com.esri.core.geometry.Point;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.udf.esri.GeometryUtils;
 import org.apache.hadoop.hive.ql.udf.esri.shims.HiveShims;
+import org.locationtech.jts.geom.Coordinate;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -96,7 +97,7 @@ public class TestGeoJsonSerDe extends JsonSerDeTestingBase {
     StructObjectInspector rowOI = (StructObjectInspector) jserde.getObjectInspector();
 
     // {"properties":{},"geometry":{"type":"Point","coordinates":[15.0,5.0]}}
-    addWritable(stuff, new Point(15.0, 5.0));
+    addWritable(stuff, GeometryUtils.GEOMETRY_FACTORY.createPoint(new Coordinate(15.0, 5.0)));
     Writable jsw = jserde.serialize(stuff, rowOI);
     String rslt = jsw.toString();
     JsonNode jn = new ObjectMapper().readTree(rslt);
@@ -200,13 +201,13 @@ public class TestGeoJsonSerDe extends JsonSerDeTestingBase {
     Object row = jserde.deserialize(value);
     StructField f0 = rowOI.getStructFieldRef("shape");
     Object fieldData = rowOI.getStructFieldData(row, f0);
-    ckPoint(new Point(15.0, 5.0), (BytesWritable) fieldData);
+    ckPoint(GeometryUtils.GEOMETRY_FACTORY.createPoint(new Coordinate(15.0, 5.0)), (BytesWritable) fieldData);
 
     value.set("{\"properties\":{},\"geometry\":{\"type\":\"Point\",\"type\":\"Point\",\"coordinates\":[7.0,4.0]}}");
     row = jserde.deserialize(value);
     f0 = rowOI.getStructFieldRef("shape");
     fieldData = rowOI.getStructFieldData(row, f0);
-    ckPoint(new Point(7.0, 4.0), (BytesWritable) fieldData);
+    ckPoint(GeometryUtils.GEOMETRY_FACTORY.createPoint(new Coordinate(7.0, 4.0)), (BytesWritable) fieldData);
   }
 
   @Test
@@ -240,17 +241,17 @@ public class TestGeoJsonSerDe extends JsonSerDeTestingBase {
     StructObjectInspector rowOI = (StructObjectInspector) jserde.getObjectInspector();
 
     //value.set("{\"properties\":{},\"geometry\":{\"type\":\"Point\",\"coordinates\":[15.0,5.0]}}");
-    addWritable(stuff, new Point(15.0, 5.0));
+    addWritable(stuff, GeometryUtils.GEOMETRY_FACTORY.createPoint(new Coordinate(15.0, 5.0)));
     Object row = runSerDe(stuff, jserde, rowOI);
     Object fieldData = getField("shape", row, rowOI);
-    ckPoint(new Point(15.0, 5.0), (BytesWritable) fieldData);
+    ckPoint(GeometryUtils.GEOMETRY_FACTORY.createPoint(new Coordinate(15.0, 5.0)), (BytesWritable) fieldData);
 
     //value.set("{\"properties\":{},\"geometry\":{\"type\":\"Point\",\"type\":\"Point\",\"coordinates\":[7.0,4.0]}}");
     stuff.clear();
-    addWritable(stuff, new Point(7.0, 4.0));
+    addWritable(stuff, GeometryUtils.GEOMETRY_FACTORY.createPoint(new Coordinate(7.0, 4.0)));
     row = runSerDe(stuff, jserde, rowOI);
     fieldData = getField("shape", row, rowOI);
-    ckPoint(new Point(7.0, 4.0), (BytesWritable) fieldData);
+    ckPoint(GeometryUtils.GEOMETRY_FACTORY.createPoint(new Coordinate(7.0, 4.0)), (BytesWritable) fieldData);
   }
 
   @Test
@@ -264,7 +265,7 @@ public class TestGeoJsonSerDe extends JsonSerDeTestingBase {
 
     // value.set("{\"properties\":{\"num\":7},\"geometry\":{\"type\":\"Point\",\"coordinates\":[15.0,5.0]}}");
     addWritable(stuff, 7L);
-    addWritable(stuff, new Point(15.0, 5.0));
+    addWritable(stuff, GeometryUtils.GEOMETRY_FACTORY.createPoint(new Coordinate(15.0, 5.0)));
     Object row = runSerDe(stuff, jserde, rowOI);
     Object fieldData = getField("num", row, rowOI);
     Assert.assertEquals(7, ((LongWritable) fieldData).get());
@@ -272,12 +273,12 @@ public class TestGeoJsonSerDe extends JsonSerDeTestingBase {
     //value.set("{\"properties\":{\"num\":4},\"geometry\":{\"type\":\"Point\",\"coordinates\":[7.0,2.0]}}");
     stuff.clear();
     addWritable(stuff, 4L);
-    addWritable(stuff, new Point(7.0, 2.0));
+    addWritable(stuff, GeometryUtils.GEOMETRY_FACTORY.createPoint(new Coordinate(7.0, 2.0)));
     row = runSerDe(stuff, jserde, rowOI);
     fieldData = getField("num", row, rowOI);
     Assert.assertEquals(4, ((LongWritable) fieldData).get());
     fieldData = getField("shape", row, rowOI);
-    ckPoint(new Point(7.0, 2.0), (BytesWritable) fieldData);
+    ckPoint(GeometryUtils.GEOMETRY_FACTORY.createPoint(new Coordinate(7.0, 2.0)), (BytesWritable) fieldData);
   }
 
   @Test
@@ -311,10 +312,10 @@ public class TestGeoJsonSerDe extends JsonSerDeTestingBase {
     StructObjectInspector rowOI = (StructObjectInspector) jserde.getObjectInspector();
 
     //value.set("{\"properties\":{},\"geometry\":{\"type\":\"Point\",\"coordinates\":[15.0,5.0]}}");
-    addWritable(stuff, new Point(15.0, 5.0));
+    addWritable(stuff, GeometryUtils.GEOMETRY_FACTORY.createPoint(new Coordinate(15.0, 5.0)));
     Object row = runSerDe(stuff, jserde, rowOI);
     Object fieldData = getField("shape", row, rowOI);
-    ckPoint(new Point(15.0, 5.0), (BytesWritable) fieldData);
+    ckPoint(GeometryUtils.GEOMETRY_FACTORY.createPoint(new Coordinate(15.0, 5.0)), (BytesWritable) fieldData);
 
     //value.set("{\"properties\":{},\"coordinates\":null}");
     stuff.set(0, null);

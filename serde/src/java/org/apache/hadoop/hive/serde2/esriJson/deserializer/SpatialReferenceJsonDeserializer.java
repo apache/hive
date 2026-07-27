@@ -17,9 +17,9 @@
  */
 package org.apache.hadoop.hive.serde2.esriJson.deserializer;
 
-import com.esri.core.geometry.SpatialReference;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 
@@ -27,20 +27,39 @@ import java.io.IOException;
 
 /**
  *
- * Deserializes a JSON spatial reference definition into a SpatialReference instance
+ * Deserializes a JSON spatial reference definition into an integer SRID (WKID).
+ * Reads the "wkid" field from the spatialReference JSON object.
+ * Returns 0 if the spatial reference is absent or cannot be parsed.
  */
-public class SpatialReferenceJsonDeserializer extends JsonDeserializer<SpatialReference> {
+public class SpatialReferenceJsonDeserializer extends JsonDeserializer<Integer> {
 
   public SpatialReferenceJsonDeserializer() {
   }
 
   @Override
-  public SpatialReference deserialize(JsonParser parser, DeserializationContext arg1)
+  public Integer deserialize(JsonParser parser, DeserializationContext arg1)
       throws IOException, JsonProcessingException {
     try {
-      return SpatialReference.fromJson(parser);
+      // The parser is currently positioned at the START_OBJECT token for spatialReference.
+      // Walk through the object looking for the "wkid" field.
+      int wkid = 0;
+      JsonToken token = parser.getCurrentToken();
+      if (token == JsonToken.START_OBJECT) {
+        token = parser.nextToken();
+      }
+      while (token != null && token != JsonToken.END_OBJECT) {
+        if (token == JsonToken.FIELD_NAME) {
+          String fieldName = parser.getCurrentName();
+          parser.nextToken();
+          if ("wkid".equalsIgnoreCase(fieldName) || "latestWkid".equalsIgnoreCase(fieldName)) {
+            wkid = parser.getIntValue();
+          }
+        }
+        token = parser.nextToken();
+      }
+      return wkid;
     } catch (Exception e) {
-      return null;
+      return 0;
     }
   }
 }

@@ -17,13 +17,17 @@
  */
 package org.apache.hadoop.hive.ql.io.esriJson;
 
-import com.esri.core.geometry.Geometry;
-import com.esri.core.geometry.SpatialReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.apache.hadoop.hive.serde2.esriJson.deserializer.GeometryTypeJsonDeserializer;
+import org.apache.hadoop.hive.serde2.esriJson.deserializer.SpatialReferenceJsonDeserializer;
+import org.apache.hadoop.hive.serde2.esriJson.serializer.GeometryTypeJsonSerializer;
+import org.apache.hadoop.hive.serde2.esriJson.serializer.SpatialReferenceJsonSerializer;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,14 +43,19 @@ public class EsriFeatureClass {
   public Map<String, Object> fieldAliases;
 
   /**
-   * Esri geometry type (Polygon, Point, ...)
+   * Esri geometry type string (e.g. "esriGeometryPoint", "esriGeometryPolygon").
    */
-  public Geometry.Type geometryType;
+  @JsonDeserialize(using = GeometryTypeJsonDeserializer.class)
+  @JsonSerialize(using = GeometryTypeJsonSerializer.class)
+  public String geometryType;
 
   /**
-   * Spatial reference for the feature class (null, if undefined)
+   * Spatial reference WKID for the feature class (0 if undefined).
+   * The JSON form is {"wkid": N}; deserialized to a plain int.
    */
-  public SpatialReference spatialReference;
+  @JsonDeserialize(using = SpatialReferenceJsonDeserializer.class)
+  @JsonSerialize(using = SpatialReferenceJsonSerializer.class)
+  public int spatialReference;
 
   /**
    * Array of field definitions (name, type, alias, ...)

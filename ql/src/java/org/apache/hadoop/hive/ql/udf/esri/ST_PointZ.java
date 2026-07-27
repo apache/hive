@@ -17,11 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.Point;
-import com.esri.core.geometry.ogc.OGCGeometry;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.BytesWritable;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateXYZM;
+import org.locationtech.jts.geom.Geometry;
 
 @Description(name = "ST_PointZ",
     value = "_FUNC_(x, y, z) - constructor for 3D point",
@@ -37,9 +38,13 @@ import org.apache.hadoop.io.BytesWritable;
     if (x == null || y == null || z == null) {
       return null;
     }
-    Point stPt = new Point(x.get(), y.get(), z.get());
-    if (m != null)
-      stPt.setM(m.get());
-    return GeometryUtils.geometryToEsriShapeBytesWritable(OGCGeometry.createFromEsriGeometry(stPt, null));
+    Coordinate coord;
+    if (m != null) {
+      coord = new CoordinateXYZM(x.get(), y.get(), z.get(), m.get());
+    } else {
+      coord = new Coordinate(x.get(), y.get(), z.get());
+    }
+    Geometry stPt = GeometryUtils.GEOMETRY_FACTORY.createPoint(coord);
+    return GeometryUtils.geometryToEsriShapeBytesWritable(stPt);
   }
 }

@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.io.esriJson;
 
-import com.esri.core.geometry.Geometry;
-import com.esri.core.geometry.SpatialReference;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -29,11 +27,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.hadoop.hive.serde2.esriJson.deserializer.GeometryJsonDeserializer;
-import org.apache.hadoop.hive.serde2.esriJson.deserializer.GeometryTypeJsonDeserializer;
-import org.apache.hadoop.hive.serde2.esriJson.deserializer.SpatialReferenceJsonDeserializer;
 import org.apache.hadoop.hive.serde2.esriJson.serializer.GeometryJsonSerializer;
-import org.apache.hadoop.hive.serde2.esriJson.serializer.GeometryTypeJsonSerializer;
-import org.apache.hadoop.hive.serde2.esriJson.serializer.SpatialReferenceJsonSerializer;
+import org.locationtech.jts.geom.Geometry;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,14 +43,12 @@ public class EsriJsonFactory {
 
     SimpleModule module = new SimpleModule("EsriJsonModule", new Version(1, 0, 0, null));
 
-    // add deserializers and serializers for types that can't be mapped field for field from the JSON
+    // Geometry: JTS Geometry <-> Esri JSON, handled module-wide because Geometry
+    // is a well-defined type with no ambiguity.
+    // geometryType (String) and spatialReference (int) use field-level @JsonDeserialize
+    // annotations on EsriFeatureClass to avoid intercepting all Strings/ints.
     module.addDeserializer(Geometry.class, new GeometryJsonDeserializer());
-    module.addDeserializer(SpatialReference.class, new SpatialReferenceJsonDeserializer());
-    module.addDeserializer(Geometry.Type.class, new GeometryTypeJsonDeserializer());
-
     module.addSerializer(Geometry.class, new GeometryJsonSerializer());
-    module.addSerializer(Geometry.Type.class, new GeometryTypeJsonSerializer());
-    module.addSerializer(SpatialReference.class, new SpatialReferenceJsonSerializer());
 
     jsonObjectMapper.registerModule(module);
   }

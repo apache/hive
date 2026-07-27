@@ -42,7 +42,6 @@
     <module>hive-jmh</module>
     <module>hive-unit-hadoop2</module>
     <module>hive-minikdc</module>
-    <module>qtest-druid</module>
     <module>qtest-kudu</module>
     <module>qtest-iceberg</module>
     <module>test-docker</module>
@@ -224,22 +223,6 @@
       <dependency>
         <groupId>org.apache.hive</groupId>
         <artifactId>hive-it-util</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.hive</groupId>
-        <artifactId>hive-druid-handler</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.hive</groupId>
-        <artifactId>hive-druid-handler</artifactId>
-        <version>${project.version}</version>
-        <classifier>tests</classifier>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.hive</groupId>
-        <artifactId>hive-it-druid</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
