@@ -79,7 +79,7 @@ public abstract class PropertyManager {
         .sideEffect(false)
         .sideEffectGlobal(false);
     JexlPermissions permissions = JexlPermissions.RESTRICTED
-      .compose("org.apache.hadoop.hive.metastore.properties.*", "com.google.gson.internal.*");
+        .compose("org.apache.hadoop.hive.metastore.properties.*", "com.google.gson.internal.*");
     JEXL = new JexlBuilder()
         .features(features)
         .permissions(permissions)
