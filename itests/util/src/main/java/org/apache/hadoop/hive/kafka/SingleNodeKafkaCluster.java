@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hive.kafka;
+package org.apache.hadoop.hive.kafka;
 
 import kafka.server.KafkaConfig;
 import kafka.server.KafkaServer;
@@ -69,11 +69,11 @@ public class SingleNodeKafkaCluster extends AbstractService {
       // need to clean data directory to ensure that there is no interference from old runs
       // Cleaning is happening here to allow debugging in case of tests fail
       // we don;t have to clean logs since it is an append mode
-      log.info("Cleaning the druid directory [{}]", dir.getAbsolutePath());
+      log.info("Cleaning the Kafka directory [{}]", dir.getAbsolutePath());
       try {
         FileUtils.deleteDirectory(dir);
       } catch (IOException e) {
-        log.error("Failed to clean druid directory");
+        log.error("Failed to clean Kafka directory");
         throw new RuntimeException(e);
       }
     }

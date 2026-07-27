@@ -73,8 +73,6 @@ package org.apache.hadoop.hive.metastore.api;
 
   public static final java.lang.String TABLE_BUCKETING_VERSION = "bucketing_version";
 
-  public static final java.lang.String DRUID_CONFIG_PREFIX = "druid.";
-
   public static final java.lang.String JDBC_CONFIG_PREFIX = "hive.sql.";
 
   public static final java.lang.String TABLE_IS_CTAS = "created_with_ctas";

@@ -82,10 +82,6 @@
           <groupId>org.apache.calcite</groupId>
           <artifactId>calcite-core</artifactId>
         </exclusion>
-        <exclusion>
-          <groupId>org.apache.hive</groupId>
-          <artifactId>hive-it-druid</artifactId>
-        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
