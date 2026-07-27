@@ -31,12 +31,12 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 
-public class TestTezYarnLocalizationBase {
+public class TestHiveServer2Connectivity {
 
-  private static TezYarnClusterContainer cluster;
-  private static HiveServer2 hs2;
-  private static int hs2Port;
-  private static String hdfsUri;
+  protected static TezYarnClusterContainer cluster;
+  protected static HiveServer2 hs2;
+  protected static int hs2Port;
+  protected static String hdfsUri;
 
   @BeforeClass
   public static void startAll() throws Exception {
@@ -52,8 +52,8 @@ public class TestTezYarnLocalizationBase {
     Path localScratch = Files.createTempDirectory("hive-29483-local-");
 
     HiveConf conf = new HiveConf();
-    URL hiveSite = TestTezYarnLocalizationBase.class.getClassLoader().getResource("hive-site-yarn-it.xml");
-    URL yarnSite = TestTezYarnLocalizationBase.class.getClassLoader().getResource("yarn-site.xml");
+    URL hiveSite = TestHiveServer2Connectivity.class.getClassLoader().getResource("hive-site-yarn-it.xml");
+    URL yarnSite = TestHiveServer2Connectivity.class.getClassLoader().getResource("yarn-site.xml");
     if (hiveSite != null) conf.addResource(hiveSite);
     if (yarnSite != null) conf.addResource(yarnSite);
 
