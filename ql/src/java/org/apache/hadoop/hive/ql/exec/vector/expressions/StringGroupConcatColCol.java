@@ -319,7 +319,21 @@ public class StringGroupConcatColCol extends VectorExpression {
 
       /*
        * Do careful maintenance of the outputColVector.noNulls flag.
+       *
+       * when both inputs have noNulls=true the output vector(outV) must set true.
+       * The output BytesColumnVector is reused across batches, so if a prior batch
+       * left noNulls=false we have to reset it here — otherwise downstream
+       * consumers that utilizing noNulls will treat these rows as NULL
+       * even though every setConcat below succeeded. This matches what the
+       * sibling scalar variants (StringGroupColConcatStringScalar and
+       * StringScalarConcatStringGroupCol) already do on their no-nulls paths.
        */
+      if (!outV.noNulls) {
+        // Assume it is almost always a performance win to fill all of isNull so we can
+        // safely reset noNulls.
+        Arrays.fill(outV.isNull, false);
+        outV.noNulls = true;
+      }
 
       // perform data operation
       if (inV1.isRepeating && inV2.isRepeating) {
