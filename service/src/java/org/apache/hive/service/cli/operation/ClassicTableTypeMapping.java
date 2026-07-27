@@ -59,6 +59,8 @@ public class ClassicTableTypeMapping implements TableTypeMapping {
     hiveToClientMap.put(TableType.VIRTUAL_VIEW.name(), ClassicTableTypes.VIEW.name());
     hiveToClientMap.put(TableType.MATERIALIZED_VIEW.toString(),
             ClassicTableTypes.MATERIALIZED_VIEW.toString());
+    hiveToClientMap.put(TableType.EXTERNAL_MATERIALIZED_VIEW.toString(),
+        ClassicTableTypes.MATERIALIZED_VIEW.toString());
 
     clientToHiveMap.putAll(ClassicTableTypes.TABLE.name(), Arrays.asList(
         TableType.MANAGED_TABLE.name(), TableType.EXTERNAL_TABLE.name()));

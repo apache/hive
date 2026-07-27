@@ -18,11 +18,6 @@
 
 package org.apache.hadoop.hive.ql.ddl.view.create;
 
-import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -42,6 +37,11 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.apache.hadoop.hive.ql.ddl.DDLUtils.setColumnsAndStorePartitionTransformSpecOfTable;
 
@@ -231,6 +231,10 @@ public class CreateMaterializedViewDesc extends DDLDescWithTableProperties imple
     }
 
     HiveStorageHandler storageHandler = tbl.getStorageHandler();
+
+    if (storageHandler != null && storageHandler.getClass().getName().equals("org.apache.iceberg.mr.hive.HiveIcebergStorageHandler")){
+      tbl.setTableType(TableType.EXTERNAL_MATERIALIZED_VIEW);
+    }
 
     setColumnsAndStorePartitionTransformSpecOfTable(getCols(), getPartCols(), conf, tbl);
 

@@ -26,3 +26,4 @@ alter materialized view mv_insert_only rebuild;
 
 select * from mv_acid;
 select * from mv_insert_only;
+

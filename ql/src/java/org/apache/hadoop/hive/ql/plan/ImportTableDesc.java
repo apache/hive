@@ -49,7 +49,7 @@ public class ImportTableDesc {
   private CreateTableDesc createTblDesc = null;
 
   public ImportTableDesc(String dbName, Table table) throws Exception {
-    if (table.getTableType() == TableType.VIRTUAL_VIEW || table.getTableType() == TableType.MATERIALIZED_VIEW) {
+    if (TableType.ALL_VIEWS.contains(table.getTableType())) {
       throw new IllegalStateException("Trying to import view or materialized view: " + table.getTableName());
     }
 

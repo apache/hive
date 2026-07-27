@@ -695,6 +695,8 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
       return "EXTERNAL TABLE";
     } else if (hivetabletype.equals(TableType.MATERIALIZED_VIEW.toString())) {
       return "MATERIALIZED VIEW";
+    } else if (hivetabletype.equals(TableType.EXTERNAL_MATERIALIZED_VIEW.toString())) {
+      return "EXTERNAL MATERIALIZED VIEW";
     } else {
       return hivetabletype;
     }
