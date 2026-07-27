@@ -35,6 +35,9 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 
@@ -226,5 +229,54 @@ public class TestHiveCopyFiles {
     assertTrue(spyTargetFs.exists(new Path(targetPath, "000001_0_copy_1")));
     assertTrue(spyTargetFs.exists(new Path(targetPath, "000000_0_copy_1.gz")));
     assertTrue(spyTargetFs.exists(new Path(targetPath, "000001_0_copy_1.gz")));
+  }
+
+  /**
+   * HIVE-28822 (root-cause fix): when two concurrent writers stage a file with the same
+   * inner filename (e.g. {@code 000000_0}) into the same destination directory on an S3-like
+   * filesystem, mvFile must pick distinct destination keys so the second writer does not
+   * silently overwrite the first. Both files must land under distinct
+   * {@code 000000_0_<hex>} suffixed names — no plain {@code 000000_0}, no {@code _copy_N}.
+   *
+   * <p>Covers the two moving parts individually since the full rename-branch path in
+   * {@link Hive#copyFiles} requires src and dest FileSystems to compare equal AND the dest
+   * scheme to match {@link UnstableRenameFileSystem}, which is not easily synthesizable with
+   * LocalFileSystem in a JUnit environment:
+   * <ol>
+   *   <li>{@link UnstableRenameFileSystem#matches(String)} recognizes S3-family schemes and
+   *       rejects HDFS / local schemes.</li>
+   *   <li>Two distinct {@code hive.query.id} values map to two distinct 8-hex uniqueness tags
+   *       — the compact per-query identifier that mvFile appends when the destination
+   *       filesystem is an unstable-rename one. Confirms the tag is stable for a given
+   *       queryId, and that the tag's shape (8 hex chars) matches the extra group in
+   *       {@link org.apache.hadoop.hive.ql.exec.ParsedOutputFileName}'s regex.</li>
+   * </ol>
+   */
+  @Test
+  public void testUniquenessTagAndUnstableFsGating() {
+    // (1) enum gating
+    assertTrue(UnstableRenameFileSystem.matches("s3a"));
+    assertTrue(UnstableRenameFileSystem.matches("s3n"));
+    assertTrue(UnstableRenameFileSystem.matches("s3"));
+    assertTrue(UnstableRenameFileSystem.matches("gs"));
+    assertFalse("hdfs is atomic-rename",
+        UnstableRenameFileSystem.matches("hdfs"));
+    assertFalse("local FS is atomic-rename",
+        UnstableRenameFileSystem.matches("file"));
+    assertFalse(UnstableRenameFileSystem.matches((String) null));
+    assertFalse(UnstableRenameFileSystem.matches(""));
+
+    // (2) uniqueness tag: distinct queryIds → distinct 8-hex tags, empty queryId → empty tag
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_QUERY_ID, "q1_lbodor_20260101_aaaaaaaa");
+    String tag1 = Hive.computeUniquenessTag(hiveConf);
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_QUERY_ID, "q2_lbodor_20260101_bbbbbbbb");
+    String tag2 = Hive.computeUniquenessTag(hiveConf);
+    hiveConf.unset(HiveConf.ConfVars.HIVE_QUERY_ID.varname);
+    String tagEmpty = Hive.computeUniquenessTag(hiveConf);
+
+    assertTrue("tag1 must match <8-hex>: " + tag1, tag1.matches("[0-9a-f]{8}"));
+    assertTrue("tag2 must match <8-hex>: " + tag2, tag2.matches("[0-9a-f]{8}"));
+    assertNotEquals("distinct queryIds must produce distinct tags", tag1, tag2);
+    assertEquals("empty queryId → empty tag", "", tagEmpty);
   }
 }

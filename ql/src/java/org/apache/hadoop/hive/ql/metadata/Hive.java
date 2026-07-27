@@ -5171,6 +5171,96 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   /**
+   * Compute a compact per-query uniqueness tag (8 lowercase hex chars) used by the non-ACID
+   * rename branch of {@link #mvFile} to make each concurrent writer's destination key unique
+   * on filesystems whose {@code rename} is not atomic-if-absent. The tag becomes the copy
+   * suffix ({@code basename_copy_<tag>}) in place of the numeric {@code _copy_N} counter.
+   * Reads {@code hive.query.id} from the passed {@link HiveConf}; returns the empty string
+   * when the id is missing. The 8 hex chars come from {@code queryId.hashCode()}; that is
+   * short enough to keep S3 listings readable and collision-free for realistic per-partition
+   * concurrency (birthday-collides only at ~65k concurrent writers to the same partition).
+   * <p>
+   * The shape matches {@link ParsedOutputFileName}'s copy-index group so downstream filename
+   * parsing (taskId, attemptId, copyIndex) keeps working.
+   */
+  static String computeUniquenessTag(HiveConf conf) {
+    String qid = HiveConf.getVar(conf, ConfVars.HIVE_QUERY_ID);
+    if (qid == null || qid.isEmpty()) {
+      return "";
+    }
+    return String.format("%08x", qid.hashCode());
+  }
+
+  /**
+   * Picks the destination {@link Path} for {@link #mvFile}, choosing between a per-query
+   * uniqueness-tagged name (on filesystems without atomic rename-if-absent semantics) and the
+   * legacy {@code _copy_N} counter-based picker.
+   *
+   * <p>On file systems without atomic rename-if-absent semantics (e.g. S3), two concurrent inserts
+   * targeting the same new dynamic partition race in the counter-based picker below: their
+   * {@code exists()} probes both fire before either PUT commits, both rename to the same final
+   * key, and the second PUT silently overwrites the first (last writer wins, no error surfaces).
+   * To eliminate the collision, on such filesystems we skip the counter-based {@code _copy_N}
+   * picker entirely and use a per-query uniqueness tag (8-hex derived from {@code hive.query.id})
+   * as the copy suffix, so two concurrent writers rename to distinct keys.
+   *
+   * <p>The uniqueness-tag path is only taken in the non-ACID rename branch
+   * ({@code taskId == -1 && isRenameAllowed && !isOverwrite}): ACID writers already own unique
+   * taskIds, copy/copyFromLocal do not race on the destination filename, and overwrite explicitly
+   * clears the target first.
+   */
+  private static Path pickDestFilePath(HiveConf conf, Path sourcePath, FileSystem destFs, Path destDirPath, int taskId,
+                                       boolean isOverwrite, boolean isRenameAllowed) throws IOException {
+
+    final String type = FilenameUtils.getExtension(sourcePath.getName());
+
+    // Strip off the file type, if any so we don't make:
+    // 000000_0.gz -> 000000_0.gz_copy_1
+    final String fullName = sourcePath.getName();
+
+    final String name;
+    if (taskId == -1) { // non-acid
+      name = FilenameUtils.getBaseName(sourcePath.getName());
+    } else { // acid
+      name = getPathName(taskId);
+    }
+
+    // In case of ACID, the file is ORC so the extension is not relevant and should not be inherited.
+    Path destFilePath = new Path(destDirPath, taskId == -1 ? fullName : name);
+
+    final String uniqueCopySuffix =
+        (taskId == -1 && isRenameAllowed && !isOverwrite && UnstableRenameFileSystem.matches(destFs))
+            ? computeUniquenessTag(conf)
+            : null;
+
+    if (uniqueCopySuffix != null && !uniqueCopySuffix.isEmpty()) {
+      // Unstable-rename FS: use `name_copy_<tag>` unconditionally as the destination. No
+      // exists()-probe loop, no _copy_N counter — the per-query tag alone is enough to keep
+      // concurrent writers from colliding, and ParsedOutputFileName recognizes the shape.
+      return new Path(destDirPath, name + Utilities.COPY_KEYWORD + uniqueCopySuffix +
+          (!type.isEmpty() ? "." + type : ""));
+    }
+
+    /*
+     * The below loop may perform bad when the destination file already exists and it has too many _copy_
+     * files as well. A desired approach was to call listFiles() and get a complete list of files from
+     * the destination, and check whether the file exists or not on that list. However, millions of files
+     * could live on the destination directory, and on concurrent situations, this can cause OOM problems.
+     *
+     * I'll leave the below loop for now until a better approach is found.
+     */
+    for (int counter = 1; destFs.exists(destFilePath); counter++) {
+      if (isOverwrite) {
+        destFs.delete(destFilePath, false);
+        break;
+      }
+      destFilePath = new Path(destDirPath, name + (Utilities.COPY_KEYWORD + counter) +
+          ((taskId == -1 && !type.isEmpty()) ? "." + type : ""));
+    }
+    return destFilePath;
+  }
+
+  /**
    * <p>
    *   Moves a file from one {@link Path} to another. If {@code isRenameAllowed} is true then the
    *   {@link FileSystem#rename(Path, Path)} method is used to move the file. If its false then the data is copied, if
@@ -5199,37 +5289,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   private static Path mvFile(HiveConf conf, FileSystem sourceFs, Path sourcePath, FileSystem destFs, Path destDirPath,
                              boolean isSrcLocal, boolean isOverwrite, boolean isRenameAllowed,
                              int taskId) throws IOException {
-
-    // Strip off the file type, if any so we don't make:
-    // 000000_0.gz -> 000000_0.gz_copy_1
-    final String fullname = sourcePath.getName();
-    final String name;
-    if (taskId == -1) { // non-acid
-      name = FilenameUtils.getBaseName(sourcePath.getName());
-    } else { // acid
-      name = getPathName(taskId);
-    }
-    final String type = FilenameUtils.getExtension(sourcePath.getName());
-
-    // Incase of ACID, the file is ORC so the extension is not relevant and should not be inherited.
-    Path destFilePath = new Path(destDirPath, taskId == -1 ? fullname : name);
-
-    /*
-    * The below loop may perform bad when the destination file already exists and it has too many _copy_
-    * files as well. A desired approach was to call listFiles() and get a complete list of files from
-    * the destination, and check whether the file exists or not on that list. However, millions of files
-    * could live on the destination directory, and on concurrent situations, this can cause OOM problems.
-    *
-    * I'll leave the below loop for now until a better approach is found.
-    */
-    for (int counter = 1; destFs.exists(destFilePath); counter++) {
-      if (isOverwrite) {
-        destFs.delete(destFilePath, false);
-        break;
-      }
-      destFilePath =  new Path(destDirPath, name + (Utilities.COPY_KEYWORD + counter) +
-              ((taskId == -1 && !type.isEmpty()) ? "." + type : ""));
-    }
+    Path destFilePath = pickDestFilePath(conf, sourcePath, destFs, destDirPath, taskId, isOverwrite, isRenameAllowed);
 
     if (isRenameAllowed) {
       destFs.rename(sourcePath, destFilePath);
@@ -5241,7 +5301,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           false,  // overwrite destination
           conf,
           new DataCopyStatistics())) {
-        LOG.error("Copy failed for source: " + sourcePath + " to destination: " + destFilePath);
+        LOG.error("Copy failed for source: {} to destination: {}", sourcePath, destFilePath);
         throw new IOException("File copy failed.");
       }
 
@@ -5249,10 +5309,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
       // have permission to delete the files in the source path. Ignore this failure.
       try {
         if (!sourceFs.delete(sourcePath, true)) {
-          LOG.warn("Delete source failed for source: " + sourcePath + " during copy to destination: " + destFilePath);
+          LOG.warn("Delete source failed for source: {} during copy to destination: {}", sourcePath, destFilePath);
         }
       } catch (Exception e) {
-        LOG.warn("Delete source failed for source: " + sourcePath + " during copy to destination: " + destFilePath, e);
+        LOG.warn("Delete source failed for source: {} during copy to destination: {}", sourcePath, destFilePath, e);
       }
     }
     return destFilePath;
