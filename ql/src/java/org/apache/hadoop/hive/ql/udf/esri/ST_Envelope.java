@@ -17,11 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.Envelope;
-import com.esri.core.geometry.SpatialReference;
-import com.esri.core.geometry.ogc.OGCGeometry;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.BytesWritable;
+import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,21 +56,15 @@ public class ST_Envelope extends ST_GeometryProcessing {
       return null;
     }
 
-    OGCGeometry ogcGeometry = GeometryUtils.geometryFromEsriShape(geometryref);
-    if (ogcGeometry == null) {
+    Geometry geom = GeometryUtils.geometryFromEsriShape(geometryref);
+    if (geom == null) {
       LogUtils.Log_ArgumentsNull(LOG);
       return null;
     }
 
     int wkid = GeometryUtils.getWKID(geometryref);
-    SpatialReference spatialReference = null;
-    if (wkid != GeometryUtils.WKID_UNKNOWN) {
-      spatialReference = SpatialReference.create(wkid);
-    }
-    Envelope envBound = new Envelope();
-    ogcGeometry.getEsriGeometry().queryEnvelope(envBound);
-    return GeometryUtils
-        .geometryToEsriShapeBytesWritable(OGCGeometry.createFromEsriGeometry(envBound, spatialReference));
+    Geometry envelope = geom.getEnvelope();
+    return GeometryUtils.geometryToEsriShapeBytesWritable(envelope, wkid);
   }
 
 }

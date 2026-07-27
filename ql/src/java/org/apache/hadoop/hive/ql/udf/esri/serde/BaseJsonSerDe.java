@@ -17,9 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri.serde;
 
-import com.esri.core.geometry.ogc.OGCGeometry;
 import org.apache.hadoop.hive.ql.udf.esri.GeometryUtils;
 import org.apache.hadoop.hive.ql.udf.esri.shims.HiveShims;
+import org.locationtech.jts.geom.Geometry;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -74,7 +74,7 @@ abstract public class BaseJsonSerDe extends AbstractSerDe {
   protected ArrayList<ObjectInspector> columnOIs;
   protected boolean[] columnSet;
   protected StructObjectInspector rowOI; // contains the type information for the fields returned
-  protected String attrLabel = "attributes";  // "properties"
+  protected final String attrLabel;
 
   /* rowBase keeps a base copy of the Writable for each field so they can be reused for
    * all records. When deserialize is called, row is initially nulled out. Then for each attribute
@@ -83,6 +83,14 @@ abstract public class BaseJsonSerDe extends AbstractSerDe {
    * previous records.
    */ ArrayList<Writable> rowBase;
   ArrayList<Writable> row;
+
+  protected BaseJsonSerDe() {
+    this("attributes");
+  }
+
+  protected BaseJsonSerDe(String attrLabel) {
+    this.attrLabel = attrLabel;
+  }
 
   @Override
   public void initialize(Configuration cfg, Properties tbl, Properties partitionProperties) throws SerDeException {
@@ -171,8 +179,8 @@ abstract public class BaseJsonSerDe extends AbstractSerDe {
           if ("geometry".equals(parser.getCurrentName())) {
             if (geometryColumn > -1) {
               // create geometry and insert into geometry field
-              OGCGeometry ogcGeom = parseGeom(parser);
-              row.set(geometryColumn, ogcGeom == null ? null : GeometryUtils.geometryToEsriShapeBytesWritable(ogcGeom));
+              Geometry geom = parseGeom(parser);
+              row.set(geometryColumn, geom == null ? null : GeometryUtils.geometryToEsriShapeBytesWritable(geom));
             } else {
               // no geometry in select field set, don't even bother parsing
               parser.skipChildren();
@@ -275,8 +283,8 @@ abstract public class BaseJsonSerDe extends AbstractSerDe {
             bytesWritable = (BytesWritable) got;
           else  // SparkSQL, #97
             bytesWritable = new BytesWritable((byte[]) got);  // idea: avoid extra object
-          OGCGeometry ogcGeometry = GeometryUtils.geometryFromEsriShape(bytesWritable);
-          jsonGen.writeRaw(",\"geometry\":" + outGeom(ogcGeometry));
+          Geometry geometry = GeometryUtils.geometryFromEsriShape(bytesWritable);
+          jsonGen.writeRaw(",\"geometry\":" + outGeom(geometry));
         }
       }
 
@@ -335,11 +343,11 @@ abstract public class BaseJsonSerDe extends AbstractSerDe {
     }
   }
 
-  // Write OGCGeometry to JSON
-  abstract protected String outGeom(OGCGeometry geom);
+  // Write JTS Geometry to JSON string
+  abstract protected String outGeom(Geometry geom);
 
-  // Parse OGCGeometry from JSON
-  abstract protected OGCGeometry parseGeom(JsonParser parser);
+  // Parse JTS Geometry from JSON
+  abstract protected Geometry parseGeom(JsonParser parser);
 
   private java.sql.Date parseDate(JsonParser parser) throws IOException {
     java.sql.Date jsd = null;

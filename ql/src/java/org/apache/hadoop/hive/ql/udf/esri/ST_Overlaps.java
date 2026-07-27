@@ -17,9 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.OperatorOverlaps;
-import com.esri.core.geometry.OperatorSimpleRelation;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.prep.PreparedGeometry;
 
 @Description(name = "ST_Overlaps",
     value = "_FUNC_(geometry1, geometry2) - return true if geometry1 overlaps geometry2",
@@ -30,8 +30,13 @@ import org.apache.hadoop.hive.ql.exec.Description;
 public class ST_Overlaps extends ST_GeometryRelational {
 
   @Override
-  protected OperatorSimpleRelation getRelationOperator() {
-    return OperatorOverlaps.local();
+  protected boolean executeRelation(Geometry geom1, Geometry geom2) {
+    return geom1.overlaps(geom2);
+  }
+
+  @Override
+  protected boolean executeRelationPrepared(PreparedGeometry prepGeom1, Geometry geom2) {
+    return prepGeom1.overlaps(geom2);
   }
 
   @Override

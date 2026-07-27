@@ -17,13 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.ogc.OGCGeometry;
-import com.esri.core.geometry.ogc.OGCMultiLineString;
-import com.esri.core.geometry.ogc.OGCMultiPoint;
-import com.esri.core.geometry.ogc.OGCMultiPolygon;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
+import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,8 +39,8 @@ public class ST_GeometryN extends ST_GeometryAccessor {
       return null;
     }
 
-    OGCGeometry ogcGeometry = GeometryUtils.geometryFromEsriShape(geomref);
-    if (ogcGeometry == null) {
+    Geometry geom = GeometryUtils.geometryFromEsriShape(geomref);
+    if (geom == null) {
       LogUtils.Log_ArgumentsNull(LOG);
       return null;
     }
@@ -51,7 +48,6 @@ public class ST_GeometryN extends ST_GeometryAccessor {
     int idx = index.get() - 1;  // 1-based UI, 0-based engine
     try {
       GeometryUtils.OGCType ogcType = GeometryUtils.getType(geomref);
-      OGCGeometry ogcGeom = null;
       switch (ogcType) {
       case ST_POINT:
         LogUtils.Log_InvalidType(LOG, GeometryUtils.OGCType.ST_MULTIPOINT, ogcType);
@@ -62,17 +58,9 @@ public class ST_GeometryN extends ST_GeometryAccessor {
       case ST_POLYGON:
         LogUtils.Log_InvalidType(LOG, GeometryUtils.OGCType.ST_MULTIPOLYGON, ogcType);
         return null;
-      case ST_MULTIPOINT:
-        ogcGeom = ((OGCMultiPoint) ogcGeometry).geometryN(idx);
-        break;
-      case ST_MULTILINESTRING:
-        ogcGeom = ((OGCMultiLineString) ogcGeometry).geometryN(idx);
-        break;
-      case ST_MULTIPOLYGON:
-        ogcGeom = ((OGCMultiPolygon) ogcGeometry).geometryN(idx);
-        break;
+      default:
+        return GeometryUtils.geometryToEsriShapeBytesWritable(geom.getGeometryN(idx));
       }
-      return GeometryUtils.geometryToEsriShapeBytesWritable(ogcGeom);
     } catch (Exception e) {
       LogUtils.Log_InternalError(LOG, "ST_GeometryN: " + e);
       return null;

@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.cost;
 
 import com.google.common.collect.Multimap;
-import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.plan.Convention;
 import org.apache.calcite.plan.ConventionTraitDef;
 import org.apache.calcite.plan.RelOptCost;
@@ -35,7 +34,6 @@ import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveDruidRules;
 
 /**
  * Refinement of {@link org.apache.calcite.plan.volcano.VolcanoPlanner} for Hive.
@@ -67,27 +65,6 @@ public class HiveVolcanoPlanner extends VolcanoPlanner {
       planner.addRelTraitDef(RelDistributionTraitDef.INSTANCE);
     }
     return planner;
-  }
-
-  @Override
-  public void registerClass(RelNode node) {
-    if (node instanceof DruidQuery) {
-      // Special handling for Druid rules here as otherwise
-      // planner will add Druid rules with logical builder
-      addRule(HiveDruidRules.FILTER);
-      addRule(HiveDruidRules.PROJECT_FILTER_TRANSPOSE);
-      addRule(HiveDruidRules.AGGREGATE_FILTER_TRANSPOSE);
-      addRule(HiveDruidRules.AGGREGATE_PROJECT);
-      addRule(HiveDruidRules.PROJECT);
-      addRule(HiveDruidRules.AGGREGATE);
-      addRule(HiveDruidRules.POST_AGGREGATION_PROJECT);
-      addRule(HiveDruidRules.FILTER_AGGREGATE_TRANSPOSE);
-      addRule(HiveDruidRules.FILTER_PROJECT_TRANSPOSE);
-      addRule(HiveDruidRules.SORT_PROJECT_TRANSPOSE);
-      addRule(HiveDruidRules.SORT);
-      return;
-    }
-    super.registerClass(node);
   }
 
   /**

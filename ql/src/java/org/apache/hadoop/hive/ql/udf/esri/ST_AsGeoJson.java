@@ -17,10 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.ogc.OGCGeometry;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
+import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
         + "Note : \n" + " ST_AsGeoJSON outputs the _geometry_ contents but not _crs_.\n"
         + " ST_AsGeoJSON requires geometry-api-java version 1.1 or later.\n")
 //@HivePdkUnitTests(
-//	cases = { 
+//	cases = {
 //		@HivePdkUnitTest(
 //			query = "select ST_AsGeoJSON(ST_point(1, 2))) from onerow",
 //			result = "{\"type\":\"Point\", \"coordinates\":[1.0, 2.0]}"
@@ -57,14 +57,14 @@ public class ST_AsGeoJson extends ST_Geometry {
       return null;
     }
 
-    OGCGeometry ogcGeometry = GeometryUtils.geometryFromEsriShape(geomref);
-    if (ogcGeometry == null) {
+    Geometry geom = GeometryUtils.geometryFromEsriShape(geomref);
+    if (geom == null) {
       LogUtils.Log_ArgumentsNull(LOG);
       return null;
     }
 
     try {
-      String outJson = ogcGeometry.asGeoJson();
+      String outJson = GeometryUtils.geoJsonWriter().write(geom);
       resultText.set(outJson);
       return resultText;
     } catch (Exception e) {

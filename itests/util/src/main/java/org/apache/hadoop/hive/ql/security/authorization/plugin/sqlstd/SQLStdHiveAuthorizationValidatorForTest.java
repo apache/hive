@@ -208,10 +208,6 @@ public class SQLStdHiveAuthorizationValidatorForTest extends SQLStdHiveAuthoriza
       } else if (privObj.getObjectName().equals("masking_acid_no_masking") || privObj.getObjectName().startsWith("masking_acid_no_masking_n")) {
         // testing acid usage when no masking/filtering is present
         needRewritePrivObjs.add(privObj);
-      } else if (privObj.getObjectName().equals("masking_test_druid") || privObj.getObjectName().startsWith("masking_test_druid_n")) {
-        // testing druid queries row filtering is present
-        privObj.setRowFilterExpression("key > 10");
-        needRewritePrivObjs.add(privObj);
       }
     }
     return needRewritePrivObjs;

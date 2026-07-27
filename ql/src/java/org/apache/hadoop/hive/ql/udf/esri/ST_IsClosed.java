@@ -17,12 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.MultiPath;
-import com.esri.core.geometry.Point;
-import com.esri.core.geometry.ogc.OGCGeometry;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.MultiLineString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,32 +69,29 @@ public class ST_IsClosed extends ST_GeometryAccessor {
       return null;
     }
 
-    OGCGeometry ogcGeometry = GeometryUtils.geometryFromEsriShape(geomref);
-    if (ogcGeometry == null) {
+    Geometry geom = GeometryUtils.geometryFromEsriShape(geomref);
+    if (geom == null) {
       LogUtils.Log_ArgumentsNull(LOG);
       return null;
     }
 
     try {
-
       switch (GeometryUtils.getType(geomref)) {
       case ST_LINESTRING:
+        resultBoolean.set(((LineString) geom).isClosed());
+        return resultBoolean;
       case ST_MULTILINESTRING:
-        MultiPath lines = (MultiPath) (ogcGeometry.getEsriGeometry());
-        int nPaths = lines.getPathCount();
-        boolean rslt = true;
-        for (int ix = 0; rslt && ix < nPaths; ix++) {
-          Point p0 = lines.getPoint(lines.getPathStart(ix));
-          Point pf = lines.getPoint(lines.getPathEnd(ix) - 1);
-          rslt = rslt && pf.equals(p0);  // no tolerance - OGC
+        MultiLineString mls = (MultiLineString) geom;
+        boolean closed = true;
+        for (int i = 0; closed && i < mls.getNumGeometries(); i++) {
+          closed = ((LineString) mls.getGeometryN(i)).isClosed();
         }
-        resultBoolean.set(rslt);
+        resultBoolean.set(closed);
         return resultBoolean;
       default:  // ST_IsClosed gives ERROR on Point or Polygon, on Postgres/Oracle
         LogUtils.Log_InvalidType(LOG, GeometryUtils.OGCType.ST_LINESTRING, GeometryUtils.getType(geomref));
         return null;
       }
-
     } catch (Exception e) {
       LogUtils.Log_InternalError(LOG, "ST_IsClosed" + e);
       return null;

@@ -17,9 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.ogc.OGCGeometry;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.BytesWritable;
+import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,15 +63,15 @@ public class ST_SymmetricDiff extends ST_GeometryProcessing {
       return null;
     }
 
-    OGCGeometry ogcGeom1 = GeometryUtils.geometryFromEsriShape(geometryref1);
-    OGCGeometry ogcGeom2 = GeometryUtils.geometryFromEsriShape(geometryref2);
-    if (ogcGeom1 == null || ogcGeom2 == null) {
+    Geometry geom1 = GeometryUtils.geometryFromEsriShape(geometryref1);
+    Geometry geom2 = GeometryUtils.geometryFromEsriShape(geometryref2);
+    if (geom1 == null || geom2 == null) {
       LogUtils.Log_ArgumentsNull(LOG);
       return null;
     }
 
     try {
-      OGCGeometry diffGeometry = ogcGeom1.symDifference(ogcGeom2);
+      Geometry diffGeometry = geom1.symDifference(geom2);
       return GeometryUtils.geometryToEsriShapeBytesWritable(diffGeometry);
     } catch (Exception e) {
       LogUtils.Log_InternalError(LOG, "ST_SymmetricDiff: " + e);

@@ -32,8 +32,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import org.apache.calcite.adapter.druid.DruidQuery;
-import org.apache.calcite.interpreter.BindableConvention;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.plan.RelOptRule;
@@ -82,7 +80,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
-import org.apache.hadoop.hive.ql.parse.DruidSqlOperatorConverter;
 import org.apache.hadoop.hive.ql.parse.QueryTables;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
@@ -502,24 +499,9 @@ public class HiveMaterializedViewUtils {
   }
 
   private static RelNode copyNodeScanNewCluster(RelOptCluster optCluster, RelNode scan) {
-    final RelNode newScan;
-    if (scan instanceof DruidQuery) {
-      final DruidQuery dq = (DruidQuery) scan;
-      // Ideally we should use HiveRelNode convention. However, since Volcano planner
-      // throws in that case because DruidQuery does not implement the interface,
-      // we set it as Bindable. Currently, we do not use convention in Hive, hence that
-      // should be fine.
-      // TODO: If we want to make use of convention (e.g., while directly generating operator
-      // tree instead of AST), this should be changed.
-      newScan = DruidQuery.create(optCluster, optCluster.traitSetOf(BindableConvention.INSTANCE),
-          scan.getTable(), dq.getDruidTable(), ImmutableList.of(dq.getTableScan()),
-          DruidSqlOperatorConverter.getDefaultMap());
-    } else {
-      newScan = new HiveTableScan(optCluster, optCluster.traitSetOf(HiveRelNode.CONVENTION),
+    return new HiveTableScan(optCluster, optCluster.traitSetOf(HiveRelNode.CONVENTION),
           (RelOptHiveTable) scan.getTable(), ((RelOptHiveTable) scan.getTable()).getName(),
           null, false, false);
-    }
-    return newScan;
   }
 
   public static MaterializationSnapshot getSnapshotOf(DDLOperationContext context, Set<TableName> tables)

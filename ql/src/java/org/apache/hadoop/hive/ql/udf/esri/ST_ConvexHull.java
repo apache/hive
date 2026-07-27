@@ -17,12 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.Geometry;
-import com.esri.core.geometry.GeometryEngine;
-import com.esri.core.geometry.ogc.OGCGeometry;
-import org.apache.hadoop.hive.ql.udf.esri.GeometryUtils.OGCType;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.BytesWritable;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,38 +69,33 @@ public class ST_ConvexHull extends ST_GeometryProcessing {
       }
     }
 
-    // now build geometry array to pass to GeometryEngine.union
+    // build geometry array
     Geometry[] geomsToProcess = new Geometry[geomrefs.length];
 
     for (int i = 0; i < geomrefs.length; i++) {
-      //HiveGeometry hiveGeometry = GeometryUtils.geometryFromEsriShape(geomrefs[i]);
-      OGCGeometry ogcGeometry = GeometryUtils.geometryFromEsriShape(geomrefs[i]);
+      Geometry geom = GeometryUtils.geometryFromEsriShape(geomrefs[i]);
 
-      if (ogcGeometry == null) {
+      if (geom == null) {
         LogUtils.Log_ArgumentsNull(LOG);
         return null;
       }
 
-      geomsToProcess[i] = ogcGeometry.getEsriGeometry();
+      geomsToProcess[i] = geom;
     }
 
     try {
-
-      Geometry[] geomResult = GeometryEngine.convexHull(geomsToProcess, true);
-
-      if (geomResult.length != 1) {
-        return null;
+      Geometry result;
+      if (geomsToProcess.length == 1) {
+        result = geomsToProcess[0].convexHull();
+      } else {
+        GeometryCollection collection =
+            GeometryUtils.GEOMETRY_FACTORY.createGeometryCollection(geomsToProcess);
+        result = collection.convexHull();
       }
 
-      Geometry merged = geomResult[0];
-
-      // we have to infer the type of the differenced geometry because we don't know
-      // if it's going to end up as a single or multi-part geometry
-      OGCType inferredType = GeometryUtils.getInferredOGCType(merged);
-
-      return GeometryUtils.geometryToEsriShapeBytesWritable(merged, firstWKID, inferredType);
+      return GeometryUtils.geometryToEsriShapeBytesWritable(result, firstWKID);
     } catch (Exception e) {
-      LogUtils.Log_ExceptionThrown(LOG, "GeometryEngine.convexHull", e);
+      LogUtils.Log_ExceptionThrown(LOG, "ST_ConvexHull", e);
       return null;
     }
   }
