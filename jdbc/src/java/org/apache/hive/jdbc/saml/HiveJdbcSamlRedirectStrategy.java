@@ -20,16 +20,18 @@ package org.apache.hive.jdbc.saml;
 
 import com.google.common.base.Preconditions;
 import java.net.URI;
+
+import org.apache.hc.client5.http.impl.DefaultRedirectStrategy;
+import org.apache.hc.client5.http.protocol.RedirectStrategy;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpException;
+import org.apache.hc.core5.http.HttpRequest;
+import org.apache.hc.core5.http.HttpResponse;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.ProtocolException;
+import org.apache.hc.core5.http.protocol.HttpContext;
 import org.apache.hive.jdbc.saml.IJdbcBrowserClient.JdbcBrowserClientContext;
 import org.apache.hive.service.auth.saml.HiveSamlUtils;
-import org.apache.http.Header;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.ProtocolException;
-import org.apache.http.client.RedirectStrategy;
-import org.apache.http.impl.client.DefaultRedirectStrategy;
-import org.apache.http.protocol.HttpContext;
 
 /**
  * This is an implementation of {@link RedirectStrategy} to intercept the HTTP redirect
@@ -51,9 +53,14 @@ public class HiveJdbcSamlRedirectStrategy extends DefaultRedirectStrategy {
       final HttpRequest request,
       final HttpResponse response,
       final HttpContext context) throws ProtocolException {
-    int status = response.getStatusLine().getStatusCode();
+    int status = response.getCode();
     if (status == HttpStatus.SC_MOVED_TEMPORARILY || status == HttpStatus.SC_SEE_OTHER) {
-      URI locationUri = getLocationURI(request, response, context);
+      URI locationUri = null;
+      try {
+        locationUri = getLocationURI(request, response, context);
+      } catch (HttpException e) {
+        throw new ProtocolException(e.getMessage(), e);
+      }
       Header clientIdentifier = response
           .getFirstHeader(HiveSamlUtils.SSO_CLIENT_IDENTIFIER);
       IJdbcBrowserClient.JdbcBrowserClientContext browserClientContext = new JdbcBrowserClientContext(
@@ -64,7 +71,7 @@ public class HiveJdbcSamlRedirectStrategy extends DefaultRedirectStrategy {
   }
 
   @Override
-  public URI getLocationURI(HttpRequest request, HttpResponse response, HttpContext context) throws ProtocolException {
+  public URI getLocationURI(HttpRequest request, HttpResponse response, HttpContext context) throws HttpException {
     // add our own check to super-call
     return checkSsoUri(super.getLocationURI(request, response, context));
   }

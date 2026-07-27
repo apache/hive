@@ -18,12 +18,12 @@
 
 package org.apache.hive.jdbc.jwt;
 
+import org.apache.hc.client5.http.cookie.CookieStore;
+import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.hc.core5.http.HttpRequest;
+import org.apache.hc.core5.http.protocol.HttpContext;
 import org.apache.hive.jdbc.HttpRequestInterceptorBase;
 import org.apache.hive.service.auth.HttpAuthUtils;
-import org.apache.http.HttpHeaders;
-import org.apache.http.HttpRequest;
-import org.apache.http.client.CookieStore;
-import org.apache.http.protocol.HttpContext;
 
 import java.util.Map;
 
