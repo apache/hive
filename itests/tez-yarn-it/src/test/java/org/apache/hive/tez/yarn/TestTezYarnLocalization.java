@@ -216,10 +216,6 @@ public class TestTezYarnLocalization {
     }
   }
 
-  // -------------------------------------------------------------------------
-  // Helpers
-  // -------------------------------------------------------------------------
-
   private static HiveConf buildHiveConf(String tezLibUris, Path localScratch) throws Exception {
     HiveConf conf = new HiveConf();
 
