@@ -147,7 +147,7 @@
     <!--
     hive-exec, hive-llap-server, and hive-hplsql are declared test scope here so that
     are all needed to run BeelineCli test to manage the embedded HS2 session.
-  -->
+    -->
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-exec</artifactId>
