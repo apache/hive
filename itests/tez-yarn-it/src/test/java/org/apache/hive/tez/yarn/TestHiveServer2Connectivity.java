@@ -33,10 +33,10 @@ import java.sql.DriverManager;
 
 public class TestHiveServer2Connectivity {
 
-  protected static TezYarnClusterContainer cluster;
-  protected static HiveServer2 hs2;
-  protected static int hs2Port;
-  protected static String hdfsUri;
+  private static TezYarnClusterContainer cluster;
+  private static HiveServer2 hs2;
+  private static int hs2Port;
+  private static String hdfsUri;
 
   @BeforeClass
   public static void startAll() throws Exception {
