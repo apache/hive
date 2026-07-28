@@ -242,6 +242,93 @@
     </dependency>
   </dependencies>
   <profiles>
+  <!--
+  Build a native installer (dmg on macOS, exe/msi on Windows, deb/rpm on Linux).
+  The installer bundles a JRE — end-users need no Java pre-installed.
+
+  Usage:
+    mvn package -pl beeline -am -DskipTests -P native-installer
+
+  Output (arch sub-directory so x64 and arm64 artifacts coexist):
+    beeline/target/installer/x64/beeline-4.3.0.dmg    (Intel Mac)
+    beeline/target/installer/arm64/beeline-4.3.0.dmg  (Apple Silicon — macos-arm64 auto-activates)
+    beeline/target/installer/x64/beeline-4.3.0.exe    (Windows)
+    beeline/target/installer/x64/beeline_4.3.0_amd64.deb (Linux)
+
+  installer.arch defaults to x64 and is overridden to arm64 by the
+  macos-arm64 profile below when running on Apple Silicon.
+  -->
+    <profile>
+      <id>native-installer</id>
+      <properties>
+        <!-- jpackage requires version as 1-3 integers separated by dots -->
+        <installer.app.version>4.3.0</installer.app.version>
+        <!-- Default architecture label; overridden to arm64 by the macos-arm64 profile -->
+        <installer.arch>x64</installer.arch>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>jpackage</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <target>
+                    <mkdir dir="${project.build.directory}/installer/${installer.arch}"/>
+                    <exec executable="jpackage" failonerror="true">
+                      <!-- Application identity -->
+                      <arg value="--name"/>        <arg value="beeline"/>
+                      <arg value="--app-version"/> <arg value="${installer.app.version}"/>
+                      <arg value="--vendor"/>      <arg value="Apache Software Foundation"/>
+                      <arg value="--description"/> <arg value="Apache Hive Beeline SQL client"/>
+                      <!-- Input: the self-contained fat jar -->
+                      <arg value="--input"/>       <arg value="${project.build.directory}"/>
+                      <arg value="--main-jar"/>    <arg value="beeline-standalone.jar"/>
+                      <arg value="--main-class"/>  <arg value="org.apache.hive.beeline.BeeLine"/>
+                      <!-- Output: arch-specific subdirectory so x64 and arm64 coexist -->
+                      <arg value="--dest"/>        <arg value="${project.build.directory}/installer/${installer.arch}"/>
+                      <!--
+                        jpackage picks the native format automatically:
+                          macOS   → dmg  (x64 on Intel, arm64 on Apple Silicon)
+                          Windows → exe
+                          Linux   → deb
+                        To force a specific type, add:
+                          <arg value="- -type"/> <arg value="pkg"/>
+                      -->
+                    </exec>
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!--
+      Auto-detects Apple Silicon and sets installer.arch=arm64.
+      Declared AFTER native-installer so its property value wins over the x64
+      default when both profiles are active simultaneously on Apple Silicon.
+      No -P flag needed — activates automatically via os.name=Mac OS X + os.arch=aarch64.
+    -->
+    <profile>
+      <id>macos-arm64-installer</id>
+      <activation>
+        <os>
+          <name>Mac OS X</name>
+          <arch>aarch64</arch>
+        </os>
+      </activation>
+      <properties>
+        <installer.arch>arm64</installer.arch>
+      </properties>
+    </profile>
     <profile>
       <id>sources</id>
       <build>
