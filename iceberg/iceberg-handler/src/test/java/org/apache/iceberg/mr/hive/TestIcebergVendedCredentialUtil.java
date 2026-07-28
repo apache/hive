@@ -273,7 +273,7 @@ public class TestIcebergVendedCredentialUtil {
         new BaseTable(new StaticTableOperations("s3://my-bucket/t", fileIO), "db.t");
     Map<String, String> jobSecrets = Maps.newHashMap();
 
-    IcebergVendedCredentialUtil.propagateToJob(table, "ice01", null, jobSecrets, new Configuration());
+    IcebergVendedCredentialUtil.propagateToJob(table, "ice01", null, jobSecrets, new HiveConf());
 
     assertThat(jobSecrets)
         .containsEntry("fs.s3a.bucket.my-bucket.access.key", "access")
@@ -295,6 +295,348 @@ public class TestIcebergVendedCredentialUtil {
     assertThat(serialized.getFirst().config())
         .containsEntry(S3FileIOProperties.ACCESS_KEY_ID, "access")
         .containsEntry(S3FileIOProperties.SECRET_ACCESS_KEY, "secret");
+  }
+
+  @Test
+  public void propagateToJobMapsGcsProperties() {
+    Configuration conf = new HiveConf();
+    conf.set("iceberg.catalog.ice01.gcs.service.host", "http://host-gcs:4443");
+
+    CredentialFileIO fileIO = new CredentialFileIO();
+    fileIO.setCredentials(
+        List.of(
+            StorageCredential.create(
+                "gs://my-bucket/",
+                Map.of(
+                    "gcs.oauth2.token", "gcs-token",
+                    "gcs.project-id", "my-project",
+                    "gcs.service.host", "http://internal-gcs:4443"))));
+
+    Table table =
+        new BaseTable(new StaticTableOperations("gs://my-bucket/t", fileIO), "db.t");
+    Map<String, String> jobProps = Maps.newHashMap();
+    Map<String, String> jobSecrets = Maps.newHashMap();
+
+    IcebergVendedCredentialUtil.propagateToJob(table, "ice01", jobProps, jobSecrets, conf);
+
+    assertThat(jobProps)
+        .containsEntry("iceberg.catalog.ice01.gcs.project-id", "my-project")
+        .containsEntry("iceberg.catalog.ice01.gcs.service.host", "http://host-gcs:4443")
+        .containsEntry("fs.gs.project.id", "my-project")
+        .containsEntry("fs.gs.storage.root.url", "http://host-gcs:4443")
+        .doesNotContainKey("iceberg.catalog.ice01.gcs.oauth2.token")
+        .doesNotContainKey("fs.gs.auth.access.token");
+
+    // The GCS OAuth token has no plain Hadoop connector key; it must not be emitted to job conf
+    // and only rides the serialized Iceberg credentials blob.
+    assertThat(jobSecrets)
+        .doesNotContainKey("fs.gs.auth.access.token")
+        .doesNotContainKey("iceberg.catalog.ice01.gcs.oauth2.token")
+        .satisfies(map ->
+            assertThat(map.get(InputFormatConfig.vendedCredentialsKey("db.t")))
+                .isNotBlank());
+
+    List<StorageCredential> serialized =
+        SerializationUtil.deserializeFromBase64(
+            jobSecrets.get(InputFormatConfig.vendedCredentialsKey("db.t")));
+    assertThat(serialized.getFirst().config()).containsEntry("gcs.oauth2.token", "gcs-token");
+  }
+
+  @Test
+  public void propagateToJobMapsAdlsSasToken() {
+    String prefix = "abfss://mycontainer@mystorageaccount.dfs.core.windows.net/";
+    CredentialFileIO fileIO = new CredentialFileIO();
+    fileIO.setCredentials(
+        List.of(
+            StorageCredential.create(
+                prefix,
+                Map.of(
+                    "adls.sas-token.mystorageaccount", "sas-token-value",
+                    "adls.sas-token-expires-at-ms.mystorageaccount", "1730234407000"))));
+
+    Table table =
+        new BaseTable(new StaticTableOperations(prefix + "t", fileIO), "db.t");
+    Map<String, String> jobProps = Maps.newHashMap();
+    Map<String, String> jobSecrets = Maps.newHashMap();
+
+    IcebergVendedCredentialUtil.propagateToJob(
+        table, "ice01", jobProps, jobSecrets, new HiveConf());
+
+    assertThat(jobProps)
+        .containsEntry(
+            "iceberg.catalog.ice01.adls.sas-token-expires-at-ms.mystorageaccount",
+            "1730234407000")
+        // ABFS only uses a fixed SAS token when the account auth type is set to SAS.
+        .containsEntry(
+            "fs.azure.account.auth.type.mystorageaccount.dfs.core.windows.net",
+            "SAS")
+        .doesNotContainKey("adls.sas-token.mystorageaccount")
+        .doesNotContainKey("fs.azure.sas.fixed.token.mystorageaccount.dfs.core.windows.net");
+
+    assertThat(jobSecrets)
+        .containsEntry(
+            "fs.azure.sas.fixed.token.mystorageaccount.dfs.core.windows.net",
+            "sas-token-value");
+  }
+
+  @Test
+  public void propagateToJobMapsAdlsAccountKey() {
+    String prefix = "abfss://mycontainer@mystorageaccount.dfs.core.windows.net/";
+    CredentialFileIO fileIO = new CredentialFileIO();
+    fileIO.setCredentials(
+        List.of(
+            StorageCredential.create(
+                prefix,
+                Map.of(
+                    "adls.auth.shared-key.account.name", "mystorageaccount",
+                    "adls.auth.shared-key.account.key", "account-key"))));
+
+    Table table =
+        new BaseTable(new StaticTableOperations(prefix + "t", fileIO), "db.t");
+    Map<String, String> jobSecrets = Maps.newHashMap();
+
+    IcebergVendedCredentialUtil.propagateToJob(table, "ice01", null, jobSecrets, new HiveConf());
+
+    assertThat(jobSecrets)
+        .containsEntry(
+            "fs.azure.account.key.mystorageaccount.dfs.core.windows.net",
+            "account-key")
+        .doesNotContainKey("iceberg.catalog.ice01.adls.auth.shared-key.account.key");
+  }
+
+  @Test
+  public void propagateToJobMapsOssProperties() {
+    CredentialFileIO fileIO = new CredentialFileIO();
+    fileIO.setCredentials(
+        List.of(
+            StorageCredential.create(
+                "oss://my-bucket/",
+                Map.of(
+                    "client.access-key-id", "oss-access",
+                    "client.access-key-secret", "oss-secret",
+                    "client.security-token", "oss-token",
+                    "oss.endpoint", "oss-cn-hangzhou.aliyuncs.com"))));
+
+    Table table =
+        new BaseTable(new StaticTableOperations("oss://my-bucket/t", fileIO), "db.t");
+    Map<String, String> jobProps = Maps.newHashMap();
+    Map<String, String> jobSecrets = Maps.newHashMap();
+
+    IcebergVendedCredentialUtil.propagateToJob(
+        table, "ice01", jobProps, jobSecrets, new HiveConf());
+
+    assertThat(jobProps)
+        .containsEntry("iceberg.catalog.ice01.oss.endpoint", "oss-cn-hangzhou.aliyuncs.com")
+        .containsEntry("fs.oss.endpoint", "oss-cn-hangzhou.aliyuncs.com")
+        .doesNotContainKey("client.access-key-id");
+
+    assertThat(jobSecrets)
+        .containsEntry("fs.oss.accessKeyId", "oss-access")
+        .containsEntry("fs.oss.accessKeySecret", "oss-secret")
+        .containsEntry("fs.oss.securityToken", "oss-token");
+  }
+
+  @Test
+  public void propagateToJobMapsS3SessionToken() {
+    CredentialFileIO fileIO = new CredentialFileIO();
+    fileIO.setCredentials(
+        List.of(
+            StorageCredential.create(
+                "s3://my-bucket/",
+                Map.of(
+                    S3FileIOProperties.ACCESS_KEY_ID, "access",
+                    S3FileIOProperties.SECRET_ACCESS_KEY, "secret",
+                    S3FileIOProperties.SESSION_TOKEN, "session-token"))));
+
+    Table table =
+        new BaseTable(new StaticTableOperations("s3://my-bucket/t", fileIO), "db.t");
+    Map<String, String> jobSecrets = Maps.newHashMap();
+
+    IcebergVendedCredentialUtil.propagateToJob(table, "ice01", null, jobSecrets, new HiveConf());
+
+    assertThat(jobSecrets)
+        .containsEntry("fs.s3a.bucket.my-bucket.session.token", "session-token");
+  }
+
+  @Test
+  public void extractCredentialsFromGcsFileIoPropertiesWhenCredentialListEmpty() {
+    CredentialFileIO fileIO = new CredentialFileIO();
+    fileIO.initialize(
+        Map.of(
+            "gcs.oauth2.token", "gcs-token",
+            "gcs.project-id", "my-project"));
+    Schema schema = new Schema(Types.NestedField.required(1, "x", Types.IntegerType.get()));
+    TableMetadata metadata =
+        TableMetadata.newTableMetadata(
+            schema, PartitionSpec.unpartitioned(), "gs://my-bucket/warehouse/t", Map.of());
+    Table table = new BaseTable(new StaticTableOperations(metadata, fileIO), "db.t");
+
+    StorageCredential extracted = IcebergVendedCredentialUtil.extractCredentials(table).getFirst();
+    assertThat(extracted.prefix()).isEqualTo("gs://my-bucket/");
+    assertThat(extracted.config())
+        .containsEntry("gcs.oauth2.token", "gcs-token")
+        .containsEntry("gcs.project-id", "my-project");
+  }
+
+  @Test
+  public void propagateToJobSerializesBlobWithoutHadoopMappingForUnknownScheme() {
+    CredentialFileIO fileIO = new CredentialFileIO();
+    fileIO.setCredentials(
+        List.of(
+            StorageCredential.create(
+                "hdfs://namenode:8020/warehouse/",
+                Map.of("custom.key", "custom-value"))));
+
+    Table table =
+        new BaseTable(new StaticTableOperations("hdfs://namenode:8020/warehouse/t", fileIO), "db.t");
+    Map<String, String> jobProps = Maps.newHashMap();
+    Map<String, String> jobSecrets = Maps.newHashMap();
+
+    IcebergVendedCredentialUtil.propagateToJob(
+        table, "ice01", jobProps, jobSecrets, new HiveConf());
+
+    assertThat(jobProps)
+        .containsEntry("iceberg.catalog.ice01.custom.key", "custom-value");
+    assertThat(jobSecrets)
+        .satisfies(map ->
+            assertThat(map.get(InputFormatConfig.vendedCredentialsKey("db.t")))
+                .isNotBlank());
+  }
+
+  /**
+   * Tests the full HIVE-20651 Credentials-channel round trip for a non-S3 (GCS) provider, proving
+   * the executor restore path is provider-agnostic: only S3 was previously covered end-to-end.
+   */
+  @Test
+  public void applyFromJobConfRestoresGcsCredentialsViaCredentialsChannel() throws Exception {
+    CredentialFileIO hs2Io = new CredentialFileIO();
+    hs2Io.setCredentials(
+        List.of(
+            StorageCredential.create(
+                "gs://my-bucket/",
+                Map.of("gcs.oauth2.token", "gcs-token", "gcs.project-id", "my-project"))));
+    Table hs2Table =
+        new BaseTable(new StaticTableOperations("gs://my-bucket/t", hs2Io), "db.t");
+
+    TableDesc tableDesc = new TableDesc();
+    Properties tableProps = new Properties();
+    tableProps.setProperty(hive_metastoreConstants.META_TABLE_NAME, "db.t");
+    tableDesc.setProperties(tableProps);
+
+    Map<String, String> jobSecrets = Maps.newHashMap();
+    IcebergVendedCredentialUtil.propagateToJob(hs2Table, "ice01", null, jobSecrets, new HiveConf());
+    tableDesc.setJobSecrets(jobSecrets);
+
+    JobConf jobConf = new JobConf();
+    PlanUtils.configureJobConf(tableDesc, jobConf);
+    // The GCS OAuth token is a secret — it must travel via the Credentials channel, never JobConf.
+    assertThat(jobConf.get(InputFormatConfig.vendedCredentialsKey("db.t"))).isNull();
+    assertThat(tableDesc.getJobSecrets()).isEmpty();
+
+    UserGroupInformation taskUgi = UserGroupInformation.createRemoteUser("task-user");
+    taskUgi.addCredentials(jobConf.getCredentials());
+
+    JobConf taskConf = new JobConf();
+    taskConf.set(InputFormatConfig.CATALOG_NAME, "ice01");
+    taskConf.set(
+        "iceberg.catalog.ice01.header.X-Iceberg-Access-Delegation",
+        "vended-credentials");
+
+    CredentialFileIO executorIo = new CredentialFileIO();
+    Table executorTable =
+        new BaseTable(new StaticTableOperations("gs://my-bucket/t", executorIo), "db.t");
+
+    taskUgi.doAs((PrivilegedExceptionAction<Void>) () -> {
+      Utilities.copyJobSecretToTableProperties(tableDesc);
+      Utilities.copyTablePropertiesToConf(tableDesc, taskConf);
+      IcebergVendedCredentialUtil.applyFromJobConf(executorTable, taskConf);
+      return null;
+    });
+
+    assertThat(executorIo.credentials()).hasSize(1);
+    StorageCredential applied = executorIo.credentials().getFirst();
+    assertThat(applied.prefix()).isEqualTo("gs://my-bucket/");
+    assertThat(applied.config())
+        .containsEntry("gcs.oauth2.token", "gcs-token")
+        .containsEntry("gcs.project-id", "my-project");
+  }
+
+  /**
+   * Tests provider selection via the config-key fallback in {@code VendedCredentialHadoopMappers}:
+   * when the prefix scheme is not recognized, the mapper is chosen from the Iceberg config keys
+   * (here {@code gcs.*}), so GCS Hadoop keys are still emitted.
+   */
+  @Test
+  public void propagateToJobSelectsMapperByConfigKeyWhenSchemeUnknown() {
+    CredentialFileIO fileIO = new CredentialFileIO();
+    fileIO.setCredentials(
+        List.of(
+            StorageCredential.create(
+                "unknownscheme://my-bucket/",
+                Map.of("gcs.project-id", "my-project"))));
+
+    Table table =
+        new BaseTable(new StaticTableOperations("unknownscheme://my-bucket/t", fileIO), "db.t");
+    Map<String, String> jobProps = Maps.newHashMap();
+    Map<String, String> jobSecrets = Maps.newHashMap();
+
+    IcebergVendedCredentialUtil.propagateToJob(table, "ice01", jobProps, jobSecrets, new HiveConf());
+
+    assertThat(jobProps).containsEntry("fs.gs.project.id", "my-project");
+  }
+
+  /**
+   * Tests {@code accountFromScope} for an account-only ADLS prefix (no {@code container@}
+   * authority), which must still yield the correct account-scoped Hadoop account-key.
+   */
+  @Test
+  public void propagateToJobMapsAdlsAccountKeyForAccountOnlyPrefix() {
+    String prefix = "abfss://mystorageaccount.dfs.core.windows.net/";
+    CredentialFileIO fileIO = new CredentialFileIO();
+    fileIO.setCredentials(
+        List.of(
+            StorageCredential.create(
+                prefix,
+                Map.of(
+                    "adls.auth.shared-key.account.name", "mystorageaccount",
+                    "adls.auth.shared-key.account.key", "account-key"))));
+
+    Table table =
+        new BaseTable(new StaticTableOperations(prefix + "t", fileIO), "db.t");
+    Map<String, String> jobSecrets = Maps.newHashMap();
+
+    IcebergVendedCredentialUtil.propagateToJob(table, "ice01", null, jobSecrets, new HiveConf());
+
+    assertThat(jobSecrets)
+        .containsEntry("fs.azure.account.key.mystorageaccount.dfs.core.windows.net", "account-key");
+  }
+
+  /**
+   * Tests that a provider access-key id is treated as a secret: with only {@code jobProperties}
+   * passed, an OSS access-key id must not leak into job properties (neither the catalog-prefixed
+   * key nor the Hadoop key) — it belongs solely in the secrets channel.
+   */
+  @Test
+  public void propagateToJobKeepsOssAccessKeyIdOutOfJobProperties() {
+    CredentialFileIO fileIO = new CredentialFileIO();
+    fileIO.setCredentials(
+        List.of(
+            StorageCredential.create(
+                "oss://my-bucket/",
+                Map.of(
+                    "client.access-key-id", "oss-access",
+                    "client.access-key-secret", "oss-secret"))));
+
+    Table table =
+        new BaseTable(new StaticTableOperations("oss://my-bucket/t", fileIO), "db.t");
+    Map<String, String> jobProps = Maps.newHashMap();
+
+    IcebergVendedCredentialUtil.propagateToJob(table, "ice01", jobProps, null, new HiveConf());
+
+    assertThat(jobProps)
+        .doesNotContainKey("fs.oss.accessKeyId")
+        .doesNotContainKey("iceberg.catalog.ice01.client.access-key-id")
+        .doesNotContainKey("fs.oss.accessKeySecret");
   }
 
   /**
