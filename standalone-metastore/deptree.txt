@@ -1,0 +1,2084 @@
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for org.apache.hive:hive-standalone-metastore:pom:4.3.0-SNAPSHOT
+[WARNING] 'parent.relativePath' of POM org.apache.hive:hive-standalone-metastore:4.3.0-SNAPSHOT (/home/invisibleprogrammer/work/hive/standalone-metastore/pom.xml) points at org.apache.hive:hive instead of org.apache:apache, please verify your project structure @ line 17, column 11
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[WARNING] This build will only read from the build cache, since the clean lifecycle is not part of the build invocation.
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] Hive Standalone Metastore                                          [pom]
+[INFO] Hive Standalone Metastore Common Code                              [jar]
+[INFO] Hive Metastore Client                                              [jar]
+[INFO] Hive Metastore Server                                              [jar]
+[INFO] Hive Metastore Tools                                               [pom]
+[INFO] Hive Metastore Tools common libraries                              [jar]
+[INFO] Hive metastore benchmarks                                          [jar]
+[INFO] Hive Metastore REST Catalog                                        [jar]
+[INFO] Hive Metastore Packaging                                           [pom]
+[INFO] 
+[INFO] -------------< org.apache.hive:hive-standalone-metastore >--------------
+[INFO] Building Hive Standalone Metastore 4.3.0-SNAPSHOT                  [1/9]
+[INFO]   from pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --- dependency:3.8.1:tree (default-cli) @ hive-standalone-metastore ---
+[INFO] org.apache.hive:hive-standalone-metastore:pom:4.3.0-SNAPSHOT
+[INFO] \- com.fasterxml.jackson.core:jackson-databind:jar:2.18.6:compile
+[INFO]    +- com.fasterxml.jackson.core:jackson-annotations:jar:2.18.6:compile
+[INFO]    \- com.fasterxml.jackson.core:jackson-core:jar:2.18.6:compile
+[INFO] 
+[INFO] ----------< org.apache.hive:hive-standalone-metastore-common >----------
+[INFO] Building Hive Standalone Metastore Common Code 4.3.0-SNAPSHOT      [2/9]
+[INFO]   from metastore-common/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- dependency:3.8.1:tree (default-cli) @ hive-standalone-metastore-common ---
+[INFO] org.apache.hive:hive-standalone-metastore-common:jar:4.3.0-SNAPSHOT
+[INFO] +- org.apache.commons:commons-jexl3:jar:3.3:compile
+[INFO] |  \- commons-logging:commons-logging:jar:1.2:compile
+[INFO] +- io.grpc:grpc-netty-shaded:jar:1.72.0:compile
+[INFO] |  +- io.grpc:grpc-util:jar:1.72.0:runtime
+[INFO] |  +- io.grpc:grpc-core:jar:1.72.0:compile
+[INFO] |  |  +- com.google.android:annotations:jar:4.1.1.4:runtime
+[INFO] |  |  \- io.grpc:grpc-context:jar:1.72.0:runtime
+[INFO] |  +- com.google.errorprone:error_prone_annotations:jar:2.30.0:compile
+[INFO] |  +- io.perfmark:perfmark-api:jar:0.27.0:runtime
+[INFO] |  +- io.grpc:grpc-api:jar:1.72.0:compile
+[INFO] |  \- org.codehaus.mojo:animal-sniffer-annotations:jar:1.24:compile
+[INFO] +- io.grpc:grpc-protobuf:jar:1.72.0:compile
+[INFO] |  +- com.google.code.findbugs:jsr305:jar:3.0.2:compile
+[INFO] |  +- com.google.api.grpc:proto-google-common-protos:jar:2.51.0:compile
+[INFO] |  \- io.grpc:grpc-protobuf-lite:jar:1.72.0:runtime
+[INFO] +- io.grpc:grpc-stub:jar:1.72.0:compile
+[INFO] +- javax.annotation:javax.annotation-api:jar:1.3.2:compile
+[INFO] +- org.apache.orc:orc-core:jar:2.1.2:compile
+[INFO] |  +- org.apache.orc:orc-shims:jar:2.1.2:compile
+[INFO] |  +- org.apache.orc:orc-format:jar:1.1.0:compile
+[INFO] |  +- io.airlift:aircompressor:jar:2.0.2:compile
+[INFO] |  +- com.github.luben:zstd-jni:jar:1.5.6-10:compile
+[INFO] |  +- org.apache.hadoop:hadoop-client-api:jar:3.4.1:compile
+[INFO] |  +- org.apache.hadoop:hadoop-client-runtime:jar:3.4.1:runtime
+[INFO] |  +- org.jetbrains:annotations:jar:17.0.0:compile
+[INFO] |  +- org.threeten:threeten-extra:jar:1.8.0:compile
+[INFO] |  \- com.aayushatharva.brotli4j:brotli4j:jar:1.18.0:compile
+[INFO] |     +- com.aayushatharva.brotli4j:service:jar:1.18.0:compile
+[INFO] |     \- com.aayushatharva.brotli4j:native-linux-x86_64:jar:1.18.0:compile
+[INFO] +- com.fasterxml.jackson.core:jackson-databind:jar:2.18.6:compile
+[INFO] |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.18.6:compile
+[INFO] |  \- com.fasterxml.jackson.core:jackson-core:jar:2.18.6:compile
+[INFO] +- com.github.joshelser:dropwizard-metrics-hadoop-metrics2-reporter:jar:0.1.2:compile
+[INFO] +- com.google.guava:guava:jar:22.0:compile
+[INFO] |  \- com.google.j2objc:j2objc-annotations:jar:1.1:compile
+[INFO] +- com.google.protobuf:protobuf-java:jar:3.25.5:compile
+[INFO] +- com.zaxxer:HikariCP:jar:4.0.3:compile
+[INFO] +- io.dropwizard.metrics:metrics-core:jar:3.1.0:compile
+[INFO] +- io.dropwizard.metrics:metrics-jvm:jar:3.1.0:compile
+[INFO] +- io.dropwizard.metrics:metrics-json:jar:3.1.0:compile
+[INFO] +- javolution:javolution:jar:5.5.1:compile
+[INFO] +- org.antlr:ST4:jar:4.0.4:compile
+[INFO] |  \- org.antlr:antlr-runtime:jar:3.3:compile
+[INFO] |     \- org.antlr:stringtemplate:jar:3.2.1:compile
+[INFO] |        \- antlr:antlr:jar:2.7.7:compile
+[INFO] +- org.apache.commons:commons-lang3:jar:3.17.0:compile
+[INFO] +- org.apache.derby:derby:jar:10.17.1.0:runtime
+[INFO] |  \- org.apache.derby:derbyshared:jar:10.17.1.0:runtime
+[INFO] +- org.apache.hadoop:hadoop-common:jar:3.4.2:compile (optional)
+[INFO] |  +- org.apache.hadoop.thirdparty:hadoop-shaded-protobuf_3_25:jar:1.4.0:compile (optional)
+[INFO] |  +- org.apache.hadoop:hadoop-annotations:jar:3.4.2:compile (optional)
+[INFO] |  +- org.apache.hadoop.thirdparty:hadoop-shaded-guava:jar:1.4.0:compile (optional)
+[INFO] |  +- commons-cli:commons-cli:jar:1.9.0:compile (optional)
+[INFO] |  +- org.apache.commons:commons-math3:jar:3.6.1:compile (optional)
+[INFO] |  +- org.apache.httpcomponents:httpclient:jar:4.5.13:compile (optional)
+[INFO] |  +- commons-codec:commons-codec:jar:1.15:compile (optional)
+[INFO] |  +- commons-io:commons-io:jar:2.16.1:compile
+[INFO] |  +- commons-net:commons-net:jar:3.9.0:compile (optional)
+[INFO] |  +- org.apache.commons:commons-collections4:jar:4.4:compile (optional)
+[INFO] |  +- javax.servlet:javax.servlet-api:jar:3.1.0:compile (optional)
+[INFO] |  +- jakarta.activation:jakarta.activation-api:jar:1.2.1:compile (optional)
+[INFO] |  +- javax.servlet.jsp:jsp-api:jar:2.1:runtime (optional)
+[INFO] |  +- com.sun.jersey:jersey-core:jar:1.19.4:compile (optional)
+[INFO] |  |  \- javax.ws.rs:jsr311-api:jar:1.1.1:compile (optional)
+[INFO] |  +- com.sun.jersey:jersey-servlet:jar:1.19.4:compile (optional)
+[INFO] |  +- com.github.pjfanning:jersey-json:jar:1.22.0:compile (optional)
+[INFO] |  |  \- com.sun.xml.bind:jaxb-impl:jar:2.2.3-1:compile (optional)
+[INFO] |  +- org.codehaus.jettison:jettison:jar:1.5.4:compile (optional)
+[INFO] |  +- com.sun.jersey:jersey-server:jar:1.19.4:compile (optional)
+[INFO] |  +- org.apache.commons:commons-configuration2:jar:2.10.1:compile (optional)
+[INFO] |  +- org.apache.commons:commons-text:jar:1.10.0:compile (optional)
+[INFO] |  +- org.apache.avro:avro:jar:1.11.4:compile (optional)
+[INFO] |  +- com.google.re2j:re2j:jar:1.1:compile (optional)
+[INFO] |  +- com.google.code.gson:gson:jar:2.9.0:compile
+[INFO] |  +- org.apache.hadoop:hadoop-auth:jar:3.4.2:compile (optional)
+[INFO] |  |  \- org.apache.kerby:kerb-util:jar:2.0.3:compile (optional)
+[INFO] |  |     +- org.apache.kerby:kerby-config:jar:2.0.3:compile (optional)
+[INFO] |  |     \- org.apache.kerby:kerb-crypto:jar:2.0.3:compile (optional)
+[INFO] |  +- com.jcraft:jsch:jar:0.1.55:compile (optional)
+[INFO] |  +- io.netty:netty-handler:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-common:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-resolver:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-buffer:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-transport:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-transport-native-unix-common:jar:4.1.127.Final:compile
+[INFO] |  |  \- io.netty:netty-codec:jar:4.1.127.Final:compile
+[INFO] |  +- io.netty:netty-transport-native-epoll:jar:4.1.127.Final:compile
+[INFO] |  |  \- io.netty:netty-transport-classes-epoll:jar:4.1.127.Final:compile
+[INFO] |  +- org.apache.commons:commons-compress:jar:1.26.1:compile (optional)
+[INFO] |  +- org.bouncycastle:bcprov-jdk18on:jar:1.78.1:compile (optional)
+[INFO] |  +- org.apache.kerby:kerb-core:jar:2.0.3:compile (optional)
+[INFO] |  |  \- org.apache.kerby:kerby-pkix:jar:2.0.3:compile (optional)
+[INFO] |  |     +- org.apache.kerby:kerby-asn1:jar:2.0.3:compile (optional)
+[INFO] |  |     \- org.apache.kerby:kerby-util:jar:2.0.3:compile (optional)
+[INFO] |  +- org.codehaus.woodstox:stax2-api:jar:4.2.1:compile (optional)
+[INFO] |  +- com.fasterxml.woodstox:woodstox-core:jar:5.4.0:compile (optional)
+[INFO] |  +- dnsjava:dnsjava:jar:3.6.1:compile (optional)
+[INFO] |  \- org.xerial.snappy:snappy-java:jar:1.1.10.4:compile
+[INFO] +- org.apache.hadoop:hadoop-distcp:jar:3.4.2:provided
+[INFO] +- org.apache.hadoop:hadoop-hdfs:jar:3.4.2:compile (optional)
+[INFO] |  +- commons-daemon:commons-daemon:jar:1.0.13:compile (optional)
+[INFO] |  \- org.fusesource.leveldbjni:leveldbjni-all:jar:1.8:compile (optional)
+[INFO] +- org.apache.hadoop:hadoop-hdfs-client:jar:3.4.2:compile (optional)
+[INFO] |  \- org.apache.httpcomponents:httpcore:jar:4.4.13:compile (optional)
+[INFO] +- org.apache.hadoop:hadoop-mapreduce-client-core:jar:3.4.2:compile (optional)
+[INFO] |  +- org.apache.hadoop:hadoop-yarn-client:jar:3.4.2:compile (optional)
+[INFO] |  |  +- org.eclipse.jetty.websocket:websocket-client:jar:9.4.57.v20241219:compile (optional)
+[INFO] |  |  |  +- org.eclipse.jetty:jetty-client:jar:9.4.57.v20241219:compile (optional)
+[INFO] |  |  |  |  \- org.eclipse.jetty:jetty-http:jar:9.4.57.v20241219:compile (optional)
+[INFO] |  |  |  +- org.eclipse.jetty:jetty-io:jar:9.4.57.v20241219:compile (optional)
+[INFO] |  |  |  \- org.eclipse.jetty.websocket:websocket-common:jar:9.4.57.v20241219:compile (optional)
+[INFO] |  |  |     \- org.eclipse.jetty.websocket:websocket-api:jar:9.4.57.v20241219:compile (optional)
+[INFO] |  |  \- org.apache.hadoop:hadoop-yarn-api:jar:3.4.2:compile (optional)
+[INFO] |  +- org.apache.hadoop:hadoop-yarn-common:jar:3.4.2:compile (optional)
+[INFO] |  |  +- javax.xml.bind:jaxb-api:jar:2.2.11:compile (optional)
+[INFO] |  |  +- org.eclipse.jetty:jetty-util:jar:9.4.57.v20241219:compile (optional)
+[INFO] |  |  +- com.sun.jersey:jersey-client:jar:1.19.4:compile (optional)
+[INFO] |  |  +- com.google.inject:guice:jar:4.2.3:compile (optional)
+[INFO] |  |  |  +- javax.inject:javax.inject:jar:1:compile (optional)
+[INFO] |  |  |  \- aopalliance:aopalliance:jar:1.0:compile (optional)
+[INFO] |  |  +- com.sun.jersey.contribs:jersey-guice:jar:1.19.4:compile (optional)
+[INFO] |  |  +- com.fasterxml.jackson.module:jackson-module-jaxb-annotations:jar:2.18.6:compile (optional)
+[INFO] |  |  \- com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:jar:2.18.6:compile (optional)
+[INFO] |  |     \- com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:jar:2.18.6:compile (optional)
+[INFO] |  +- com.google.inject.extensions:guice-servlet:jar:4.2.3:compile (optional)
+[INFO] |  \- io.netty:netty-all:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-dns:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-haproxy:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-http:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-http2:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-memcache:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-mqtt:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-redis:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-smtp:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-socks:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-stomp:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-xml:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-handler-proxy:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-handler-ssl-ocsp:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-resolver-dns:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-transport-rxtx:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-transport-sctp:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-transport-udt:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-transport-classes-kqueue:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-resolver-dns-classes-macos:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-transport-native-epoll:jar:linux-x86_64:4.1.127.Final:runtime (optional)
+[INFO] |     +- io.netty:netty-transport-native-epoll:jar:linux-aarch_64:4.1.127.Final:runtime (optional)
+[INFO] |     +- io.netty:netty-transport-native-epoll:jar:linux-riscv64:4.1.127.Final:runtime (optional)
+[INFO] |     +- io.netty:netty-transport-native-kqueue:jar:osx-x86_64:4.1.127.Final:runtime (optional)
+[INFO] |     +- io.netty:netty-transport-native-kqueue:jar:osx-aarch_64:4.1.127.Final:runtime (optional)
+[INFO] |     +- io.netty:netty-resolver-dns-native-macos:jar:osx-x86_64:4.1.127.Final:runtime (optional)
+[INFO] |     \- io.netty:netty-resolver-dns-native-macos:jar:osx-aarch_64:4.1.127.Final:runtime (optional)
+[INFO] +- org.apache.hive:hive-storage-api:jar:4.3.0-SNAPSHOT:compile
+[INFO] +- org.apache.httpcomponents.client5:httpclient5:jar:5.6.2:compile
+[INFO] |  \- org.apache.httpcomponents.core5:httpcore5-h2:jar:5.4.3:compile
+[INFO] +- org.apache.httpcomponents.core5:httpcore5:jar:5.4.3:compile
+[INFO] +- org.apache.thrift:libfb303:jar:0.9.3:compile
+[INFO] +- org.apache.thrift:libthrift:jar:0.23.0:compile
+[INFO] |  +- jakarta.servlet:jakarta.servlet-api:jar:5.0.0:runtime
+[INFO] |  \- jakarta.annotation:jakarta.annotation-api:jar:2.1.1:runtime
+[INFO] +- org.skyscreamer:jsonassert:jar:1.4.0:test
+[INFO] |  \- com.vaadin.external.google:android-json:jar:0.0.20131108.vaadin1:test
+[INFO] +- org.apache.zookeeper:zookeeper:jar:3.8.4:compile
+[INFO] |  +- org.apache.zookeeper:zookeeper-jute:jar:3.8.4:compile
+[INFO] |  \- org.apache.yetus:audience-annotations:jar:0.12.0:compile
+[INFO] +- com.github.ben-manes.caffeine:caffeine:jar:2.8.4:compile
+[INFO] |  \- org.checkerframework:checker-qual:jar:3.4.0:compile
+[INFO] +- org.apache.curator:curator-recipes:jar:5.7.1:compile
+[INFO] +- org.apache.curator:curator-framework:jar:5.7.1:compile
+[INFO] |  \- org.apache.curator:curator-client:jar:5.7.1:compile
+[INFO] +- org.slf4j:slf4j-api:jar:1.7.30:compile
+[INFO] +- org.springframework.ldap:spring-ldap-core:jar:2.4.4:compile
+[INFO] |  +- org.springframework:spring-core:jar:5.3.39:compile
+[INFO] |  |  \- org.springframework:spring-jcl:jar:5.3.39:compile
+[INFO] |  +- org.springframework:spring-beans:jar:5.3.39:compile
+[INFO] |  \- org.springframework:spring-tx:jar:5.3.39:compile
+[INFO] +- junit:junit:jar:4.13.2:test
+[INFO] |  \- org.hamcrest:hamcrest-core:jar:1.3:test
+[INFO] +- org.mockito:mockito-core:jar:5.17.0:test
+[INFO] |  +- net.bytebuddy:byte-buddy:jar:1.15.11:test
+[INFO] |  +- net.bytebuddy:byte-buddy-agent:jar:1.15.11:test
+[INFO] |  \- org.objenesis:objenesis:jar:3.3:test
+[INFO] \- org.slf4j:slf4j-simple:jar:1.7.30:test
+[INFO] 
+[INFO] ----------< org.apache.hive:hive-standalone-metastore-client >----------
+[INFO] Building Hive Metastore Client 4.3.0-SNAPSHOT                      [3/9]
+[INFO]   from metastore-client/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- dependency:3.8.1:tree (default-cli) @ hive-standalone-metastore-client ---
+[INFO] org.apache.hive:hive-standalone-metastore-client:jar:4.3.0-SNAPSHOT
+[INFO] +- org.apache.hive:hive-standalone-metastore-common:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  +- org.apache.commons:commons-jexl3:jar:3.3:compile
+[INFO] |  |  \- commons-logging:commons-logging:jar:1.2:compile
+[INFO] |  +- io.grpc:grpc-netty-shaded:jar:1.72.0:compile
+[INFO] |  |  +- io.grpc:grpc-util:jar:1.72.0:runtime
+[INFO] |  |  +- io.grpc:grpc-core:jar:1.72.0:compile
+[INFO] |  |  |  +- com.google.code.gson:gson:jar:2.11.0:compile
+[INFO] |  |  |  +- com.google.android:annotations:jar:4.1.1.4:runtime
+[INFO] |  |  |  \- io.grpc:grpc-context:jar:1.72.0:runtime
+[INFO] |  |  +- com.google.errorprone:error_prone_annotations:jar:2.30.0:compile
+[INFO] |  |  +- io.perfmark:perfmark-api:jar:0.27.0:runtime
+[INFO] |  |  +- io.grpc:grpc-api:jar:1.72.0:compile
+[INFO] |  |  \- org.codehaus.mojo:animal-sniffer-annotations:jar:1.24:compile
+[INFO] |  +- io.grpc:grpc-protobuf:jar:1.72.0:compile
+[INFO] |  |  +- com.google.code.findbugs:jsr305:jar:3.0.2:compile
+[INFO] |  |  +- com.google.api.grpc:proto-google-common-protos:jar:2.51.0:compile
+[INFO] |  |  \- io.grpc:grpc-protobuf-lite:jar:1.72.0:runtime
+[INFO] |  +- io.grpc:grpc-stub:jar:1.72.0:compile
+[INFO] |  +- javax.annotation:javax.annotation-api:jar:1.3.2:compile
+[INFO] |  +- org.apache.orc:orc-core:jar:2.1.2:compile
+[INFO] |  |  +- org.apache.orc:orc-shims:jar:2.1.2:compile
+[INFO] |  |  +- org.apache.orc:orc-format:jar:1.1.0:compile
+[INFO] |  |  +- io.airlift:aircompressor:jar:2.0.2:compile
+[INFO] |  |  +- com.github.luben:zstd-jni:jar:1.5.6-10:compile
+[INFO] |  |  +- org.apache.hadoop:hadoop-client-api:jar:3.4.1:compile
+[INFO] |  |  |  \- org.xerial.snappy:snappy-java:jar:1.1.10.4:compile
+[INFO] |  |  +- org.apache.hadoop:hadoop-client-runtime:jar:3.4.1:runtime
+[INFO] |  |  +- org.jetbrains:annotations:jar:17.0.0:compile
+[INFO] |  |  +- org.threeten:threeten-extra:jar:1.8.0:compile
+[INFO] |  |  \- com.aayushatharva.brotli4j:brotli4j:jar:1.18.0:compile
+[INFO] |  |     +- com.aayushatharva.brotli4j:service:jar:1.18.0:compile
+[INFO] |  |     \- com.aayushatharva.brotli4j:native-linux-x86_64:jar:1.18.0:compile
+[INFO] |  +- com.github.joshelser:dropwizard-metrics-hadoop-metrics2-reporter:jar:0.1.2:compile
+[INFO] |  |  \- org.apache.hadoop:hadoop-common:jar:3.4.2:compile
+[INFO] |  |     +- org.apache.hadoop.thirdparty:hadoop-shaded-protobuf_3_25:jar:1.4.0:compile
+[INFO] |  |     +- org.apache.hadoop:hadoop-annotations:jar:3.4.2:compile
+[INFO] |  |     +- org.apache.hadoop.thirdparty:hadoop-shaded-guava:jar:1.4.0:compile
+[INFO] |  |     +- commons-cli:commons-cli:jar:1.9.0:compile
+[INFO] |  |     +- org.apache.commons:commons-math3:jar:3.6.1:compile
+[INFO] |  |     +- org.apache.httpcomponents:httpclient:jar:4.5.13:compile
+[INFO] |  |     |  \- org.apache.httpcomponents:httpcore:jar:4.4.13:compile
+[INFO] |  |     +- commons-codec:commons-codec:jar:1.15:compile
+[INFO] |  |     +- commons-net:commons-net:jar:3.9.0:compile
+[INFO] |  |     +- org.apache.commons:commons-collections4:jar:4.4:compile
+[INFO] |  |     +- javax.servlet:javax.servlet-api:jar:3.1.0:compile
+[INFO] |  |     +- jakarta.activation:jakarta.activation-api:jar:1.2.1:runtime
+[INFO] |  |     +- javax.servlet.jsp:jsp-api:jar:2.1:runtime
+[INFO] |  |     +- com.sun.jersey:jersey-core:jar:1.19.4:compile
+[INFO] |  |     |  \- javax.ws.rs:jsr311-api:jar:1.1.1:compile
+[INFO] |  |     +- com.sun.jersey:jersey-servlet:jar:1.19.4:compile
+[INFO] |  |     +- com.github.pjfanning:jersey-json:jar:1.22.0:compile
+[INFO] |  |     |  \- com.sun.xml.bind:jaxb-impl:jar:2.2.3-1:compile
+[INFO] |  |     |     \- javax.xml.bind:jaxb-api:jar:2.2.2:compile
+[INFO] |  |     |        +- javax.xml.stream:stax-api:jar:1.0-2:compile
+[INFO] |  |     |        \- javax.activation:activation:jar:1.1:compile
+[INFO] |  |     +- org.codehaus.jettison:jettison:jar:1.5.4:compile
+[INFO] |  |     +- com.sun.jersey:jersey-server:jar:1.19.4:compile
+[INFO] |  |     +- ch.qos.reload4j:reload4j:jar:1.2.22:compile
+[INFO] |  |     +- org.apache.commons:commons-configuration2:jar:2.10.1:compile
+[INFO] |  |     +- org.apache.commons:commons-text:jar:1.10.0:compile
+[INFO] |  |     +- org.slf4j:slf4j-reload4j:jar:1.7.36:compile
+[INFO] |  |     +- org.apache.avro:avro:jar:1.11.4:compile
+[INFO] |  |     +- com.google.re2j:re2j:jar:1.1:compile
+[INFO] |  |     +- org.apache.hadoop:hadoop-auth:jar:3.4.2:compile
+[INFO] |  |     |  \- org.apache.kerby:kerb-util:jar:2.0.3:compile
+[INFO] |  |     |     +- org.apache.kerby:kerby-config:jar:2.0.3:compile
+[INFO] |  |     |     \- org.apache.kerby:kerb-crypto:jar:2.0.3:compile
+[INFO] |  |     +- com.jcraft:jsch:jar:0.1.55:compile
+[INFO] |  |     +- org.apache.commons:commons-compress:jar:1.26.1:compile
+[INFO] |  |     +- org.bouncycastle:bcprov-jdk18on:jar:1.78.1:compile
+[INFO] |  |     +- org.apache.kerby:kerb-core:jar:2.0.3:compile
+[INFO] |  |     |  \- org.apache.kerby:kerby-pkix:jar:2.0.3:compile
+[INFO] |  |     |     +- org.apache.kerby:kerby-asn1:jar:2.0.3:compile
+[INFO] |  |     |     \- org.apache.kerby:kerby-util:jar:2.0.3:compile
+[INFO] |  |     +- org.codehaus.woodstox:stax2-api:jar:4.2.1:compile
+[INFO] |  |     +- com.fasterxml.woodstox:woodstox-core:jar:5.4.0:compile
+[INFO] |  |     \- dnsjava:dnsjava:jar:3.6.1:compile
+[INFO] |  +- com.google.guava:guava:jar:22.0:compile
+[INFO] |  |  \- com.google.j2objc:j2objc-annotations:jar:1.1:compile
+[INFO] |  +- com.google.protobuf:protobuf-java:jar:3.25.5:compile
+[INFO] |  +- com.zaxxer:HikariCP:jar:4.0.3:compile
+[INFO] |  +- io.dropwizard.metrics:metrics-core:jar:3.1.0:compile
+[INFO] |  +- io.dropwizard.metrics:metrics-jvm:jar:3.1.0:compile
+[INFO] |  +- io.dropwizard.metrics:metrics-json:jar:3.1.0:compile
+[INFO] |  +- javolution:javolution:jar:5.5.1:compile
+[INFO] |  +- org.antlr:ST4:jar:4.0.4:compile
+[INFO] |  |  \- org.antlr:antlr-runtime:jar:3.3:compile
+[INFO] |  |     \- org.antlr:stringtemplate:jar:3.2.1:compile
+[INFO] |  |        \- antlr:antlr:jar:2.7.7:compile
+[INFO] |  +- org.apache.commons:commons-lang3:jar:3.17.0:compile
+[INFO] |  +- org.apache.derby:derby:jar:10.17.1.0:runtime
+[INFO] |  |  \- org.apache.derby:derbyshared:jar:10.17.1.0:runtime
+[INFO] |  +- org.apache.hive:hive-storage-api:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  +- org.apache.httpcomponents.client5:httpclient5:jar:5.3.1:compile
+[INFO] |  |  \- org.apache.httpcomponents.core5:httpcore5-h2:jar:5.2.4:compile
+[INFO] |  +- org.apache.httpcomponents.core5:httpcore5:jar:5.4.3:compile
+[INFO] |  +- org.apache.thrift:libfb303:jar:0.9.3:compile
+[INFO] |  +- org.apache.thrift:libthrift:jar:0.23.0:compile
+[INFO] |  |  +- jakarta.servlet:jakarta.servlet-api:jar:5.0.0:runtime
+[INFO] |  |  \- jakarta.annotation:jakarta.annotation-api:jar:2.1.1:runtime
+[INFO] |  +- org.apache.zookeeper:zookeeper:jar:3.8.4:compile
+[INFO] |  |  +- org.apache.zookeeper:zookeeper-jute:jar:3.8.4:compile
+[INFO] |  |  +- org.apache.yetus:audience-annotations:jar:0.12.0:compile
+[INFO] |  |  +- io.netty:netty-handler:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-common:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-resolver:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-buffer:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-transport:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-transport-native-unix-common:jar:4.1.127.Final:compile
+[INFO] |  |  |  \- io.netty:netty-codec:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-transport-native-epoll:jar:4.1.127.Final:compile
+[INFO] |  |  |  \- io.netty:netty-transport-classes-epoll:jar:4.1.127.Final:compile
+[INFO] |  |  \- commons-io:commons-io:jar:2.11.0:compile
+[INFO] |  +- com.github.ben-manes.caffeine:caffeine:jar:2.8.4:compile
+[INFO] |  |  \- org.checkerframework:checker-qual:jar:3.4.0:compile
+[INFO] |  +- org.apache.curator:curator-recipes:jar:5.7.1:compile
+[INFO] |  +- org.apache.curator:curator-framework:jar:5.7.1:compile
+[INFO] |  |  \- org.apache.curator:curator-client:jar:5.7.1:compile
+[INFO] |  +- org.slf4j:slf4j-api:jar:1.7.30:compile
+[INFO] |  \- org.springframework.ldap:spring-ldap-core:jar:2.4.4:compile
+[INFO] |     +- org.springframework:spring-core:jar:5.3.39:compile
+[INFO] |     |  \- org.springframework:spring-jcl:jar:5.3.39:compile
+[INFO] |     +- org.springframework:spring-beans:jar:5.3.39:compile
+[INFO] |     \- org.springframework:spring-tx:jar:5.3.39:compile
+[INFO] +- junit:junit:jar:4.13.2:test
+[INFO] |  \- org.hamcrest:hamcrest-core:jar:1.3:test
+[INFO] +- org.mockito:mockito-core:jar:5.17.0:test
+[INFO] |  +- net.bytebuddy:byte-buddy:jar:1.15.11:test
+[INFO] |  +- net.bytebuddy:byte-buddy-agent:jar:1.15.11:test
+[INFO] |  \- org.objenesis:objenesis:jar:3.3:test
+[INFO] \- com.fasterxml.jackson.core:jackson-databind:jar:2.18.6:compile
+[INFO]    +- com.fasterxml.jackson.core:jackson-annotations:jar:2.18.6:compile
+[INFO]    \- com.fasterxml.jackson.core:jackson-core:jar:2.18.6:compile
+[INFO] 
+[INFO] ----------< org.apache.hive:hive-standalone-metastore-server >----------
+[INFO] Building Hive Metastore Server 4.3.0-SNAPSHOT                      [4/9]
+[INFO]   from metastore-server/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- dependency:3.8.1:tree (default-cli) @ hive-standalone-metastore-server ---
+[INFO] org.apache.hive:hive-standalone-metastore-server:jar:4.3.0-SNAPSHOT
+[INFO] +- org.apache.hive:hive-standalone-metastore-client:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  \- org.apache.hive:hive-standalone-metastore-common:jar:4.3.0-SNAPSHOT:compile
+[INFO] |     +- org.apache.commons:commons-jexl3:jar:3.3:compile
+[INFO] |     +- io.grpc:grpc-netty-shaded:jar:1.72.0:compile
+[INFO] |     |  +- io.grpc:grpc-util:jar:1.72.0:runtime
+[INFO] |     |  +- io.grpc:grpc-core:jar:1.72.0:compile
+[INFO] |     |  |  +- com.google.android:annotations:jar:4.1.1.4:runtime
+[INFO] |     |  |  \- io.grpc:grpc-context:jar:1.72.0:runtime
+[INFO] |     |  +- io.perfmark:perfmark-api:jar:0.27.0:runtime
+[INFO] |     |  \- io.grpc:grpc-api:jar:1.72.0:compile
+[INFO] |     +- io.grpc:grpc-protobuf:jar:1.72.0:compile
+[INFO] |     |  +- com.google.api.grpc:proto-google-common-protos:jar:2.51.0:compile
+[INFO] |     |  \- io.grpc:grpc-protobuf-lite:jar:1.72.0:runtime
+[INFO] |     +- io.grpc:grpc-stub:jar:1.72.0:compile
+[INFO] |     +- javax.annotation:javax.annotation-api:jar:1.3.2:compile
+[INFO] |     +- org.antlr:ST4:jar:4.0.4:compile
+[INFO] |     |  \- org.antlr:antlr-runtime:jar:3.3:compile
+[INFO] |     |     \- org.antlr:stringtemplate:jar:3.2.1:compile
+[INFO] |     |        \- antlr:antlr:jar:2.7.7:compile
+[INFO] |     +- com.github.ben-manes.caffeine:caffeine:jar:2.8.4:compile
+[INFO] |     +- org.apache.curator:curator-recipes:jar:5.7.1:compile
+[INFO] |     +- org.apache.curator:curator-framework:jar:5.7.1:compile
+[INFO] |     |  \- org.apache.curator:curator-client:jar:5.7.1:compile
+[INFO] |     \- org.springframework.ldap:spring-ldap-core:jar:2.4.4:compile
+[INFO] +- org.apache.httpcomponents.client5:httpclient5:jar:5.6.2:compile
+[INFO] |  +- org.apache.httpcomponents.core5:httpcore5:jar:5.4.3:compile
+[INFO] |  +- org.apache.httpcomponents.core5:httpcore5-h2:jar:5.4.3:compile
+[INFO] |  \- org.slf4j:slf4j-api:jar:1.7.30:compile
+[INFO] +- org.apache.orc:orc-core:jar:2.1.2:compile
+[INFO] |  +- org.apache.orc:orc-shims:jar:2.1.2:compile
+[INFO] |  +- org.apache.orc:orc-format:jar:1.1.0:compile
+[INFO] |  +- io.airlift:aircompressor:jar:2.0.2:compile
+[INFO] |  +- com.github.luben:zstd-jni:jar:1.5.6-10:compile
+[INFO] |  +- org.apache.hadoop:hadoop-client-runtime:jar:3.4.1:runtime
+[INFO] |  +- org.jetbrains:annotations:jar:17.0.0:compile
+[INFO] |  +- org.threeten:threeten-extra:jar:1.8.0:compile
+[INFO] |  \- com.aayushatharva.brotli4j:brotli4j:jar:1.18.0:compile
+[INFO] |     +- com.aayushatharva.brotli4j:service:jar:1.18.0:compile
+[INFO] |     \- com.aayushatharva.brotli4j:native-linux-x86_64:jar:1.18.0:compile
+[INFO] +- org.apache.datasketches:datasketches-hive:jar:2.0.0:compile
+[INFO] |  \- org.apache.datasketches:datasketches-java:jar:6.0.0:compile
+[INFO] |     \- org.apache.datasketches:datasketches-memory:jar:2.2.0:compile
+[INFO] +- org.reflections:reflections:jar:0.10.2:compile
+[INFO] |  +- org.javassist:javassist:jar:3.28.0-GA:compile
+[INFO] |  \- com.google.code.findbugs:jsr305:jar:3.0.2:compile
+[INFO] +- com.fasterxml.jackson.core:jackson-databind:jar:2.18.6:compile
+[INFO] |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.18.6:compile
+[INFO] |  \- com.fasterxml.jackson.core:jackson-core:jar:2.18.6:compile
+[INFO] +- com.github.joshelser:dropwizard-metrics-hadoop-metrics2-reporter:jar:0.1.2:compile
+[INFO] +- com.google.guava:guava:jar:22.0:compile
+[INFO] |  +- com.google.errorprone:error_prone_annotations:jar:2.0.18:compile
+[INFO] |  +- com.google.j2objc:j2objc-annotations:jar:1.1:compile
+[INFO] |  \- org.codehaus.mojo:animal-sniffer-annotations:jar:1.14:compile
+[INFO] +- com.google.protobuf:protobuf-java:jar:3.25.5:compile
+[INFO] +- com.zaxxer:HikariCP:jar:4.0.3:compile
+[INFO] +- org.apache.commons:commons-dbcp2:jar:2.14.0:compile
+[INFO] |  +- org.apache.commons:commons-pool2:jar:2.13.0:compile
+[INFO] |  +- commons-logging:commons-logging:jar:1.3.5:compile
+[INFO] |  \- jakarta.transaction:jakarta.transaction-api:jar:1.3.3:compile
+[INFO] +- io.dropwizard.metrics:metrics-core:jar:3.1.0:compile
+[INFO] +- io.dropwizard.metrics:metrics-jvm:jar:3.1.0:compile
+[INFO] +- io.dropwizard.metrics:metrics-json:jar:3.1.0:compile
+[INFO] +- javolution:javolution:jar:5.5.1:compile
+[INFO] +- org.antlr:antlr4-runtime:jar:4.9.3:compile
+[INFO] +- org.apache.commons:commons-lang3:jar:3.17.0:compile
+[INFO] +- org.apache.commons:commons-collections4:jar:4.4:compile
+[INFO] +- org.apache.hadoop:hadoop-common:jar:3.4.2:compile (optional)
+[INFO] |  +- org.apache.hadoop.thirdparty:hadoop-shaded-protobuf_3_25:jar:1.4.0:compile (optional)
+[INFO] |  +- org.apache.hadoop:hadoop-annotations:jar:3.4.2:compile (optional)
+[INFO] |  +- org.apache.hadoop.thirdparty:hadoop-shaded-guava:jar:1.4.0:compile (optional)
+[INFO] |  +- commons-cli:commons-cli:jar:1.9.0:compile (optional)
+[INFO] |  +- org.apache.commons:commons-math3:jar:3.6.1:compile (optional)
+[INFO] |  +- org.apache.httpcomponents:httpclient:jar:4.5.13:compile
+[INFO] |  +- commons-codec:commons-codec:jar:1.15:compile
+[INFO] |  +- commons-io:commons-io:jar:2.16.1:compile
+[INFO] |  +- commons-net:commons-net:jar:3.9.0:compile (optional)
+[INFO] |  +- javax.servlet:javax.servlet-api:jar:3.1.0:compile
+[INFO] |  +- jakarta.activation:jakarta.activation-api:jar:1.2.1:compile
+[INFO] |  +- javax.servlet.jsp:jsp-api:jar:2.1:runtime (optional)
+[INFO] |  +- com.sun.jersey:jersey-core:jar:1.19.4:compile (optional)
+[INFO] |  |  \- javax.ws.rs:jsr311-api:jar:1.1.1:compile (optional)
+[INFO] |  +- com.sun.jersey:jersey-servlet:jar:1.19.4:compile (optional)
+[INFO] |  +- com.github.pjfanning:jersey-json:jar:1.22.0:compile (optional)
+[INFO] |  |  \- com.sun.xml.bind:jaxb-impl:jar:2.2.3-1:compile (optional)
+[INFO] |  +- org.codehaus.jettison:jettison:jar:1.5.4:compile (optional)
+[INFO] |  +- com.sun.jersey:jersey-server:jar:1.19.4:compile (optional)
+[INFO] |  +- org.apache.commons:commons-configuration2:jar:2.10.1:compile (optional)
+[INFO] |  +- org.apache.commons:commons-text:jar:1.10.0:compile (optional)
+[INFO] |  +- org.apache.avro:avro:jar:1.11.4:compile (optional)
+[INFO] |  +- com.google.re2j:re2j:jar:1.1:compile (optional)
+[INFO] |  +- com.google.code.gson:gson:jar:2.9.0:compile
+[INFO] |  +- org.apache.hadoop:hadoop-auth:jar:3.4.2:compile (optional)
+[INFO] |  |  \- org.apache.kerby:kerb-util:jar:2.0.3:compile (optional)
+[INFO] |  |     +- org.apache.kerby:kerby-config:jar:2.0.3:compile (optional)
+[INFO] |  |     \- org.apache.kerby:kerb-crypto:jar:2.0.3:compile (optional)
+[INFO] |  +- com.jcraft:jsch:jar:0.1.55:compile (optional)
+[INFO] |  +- io.netty:netty-handler:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-common:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-resolver:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-buffer:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-transport:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-transport-native-unix-common:jar:4.1.127.Final:compile
+[INFO] |  |  \- io.netty:netty-codec:jar:4.1.127.Final:compile
+[INFO] |  +- io.netty:netty-transport-native-epoll:jar:4.1.127.Final:compile (optional)
+[INFO] |  |  \- io.netty:netty-transport-classes-epoll:jar:4.1.127.Final:compile
+[INFO] |  +- org.apache.commons:commons-compress:jar:1.26.1:compile
+[INFO] |  +- org.bouncycastle:bcprov-jdk18on:jar:1.78.1:compile (optional)
+[INFO] |  +- org.apache.kerby:kerb-core:jar:2.0.3:compile (optional)
+[INFO] |  |  \- org.apache.kerby:kerby-pkix:jar:2.0.3:compile (optional)
+[INFO] |  |     +- org.apache.kerby:kerby-asn1:jar:2.0.3:compile (optional)
+[INFO] |  |     \- org.apache.kerby:kerby-util:jar:2.0.3:compile (optional)
+[INFO] |  +- org.codehaus.woodstox:stax2-api:jar:4.2.1:compile (optional)
+[INFO] |  +- com.fasterxml.woodstox:woodstox-core:jar:5.4.0:compile (optional)
+[INFO] |  +- dnsjava:dnsjava:jar:3.6.1:compile (optional)
+[INFO] |  \- org.xerial.snappy:snappy-java:jar:1.1.10.4:compile
+[INFO] +- org.apache.hadoop:hadoop-distcp:jar:3.4.2:provided
+[INFO] +- org.apache.hadoop:hadoop-hdfs:jar:3.4.2:compile (optional)
+[INFO] |  +- commons-daemon:commons-daemon:jar:1.0.13:compile (optional)
+[INFO] |  \- org.fusesource.leveldbjni:leveldbjni-all:jar:1.8:compile (optional)
+[INFO] +- org.apache.hadoop:hadoop-hdfs-client:jar:3.4.2:compile (optional)
+[INFO] |  \- org.apache.httpcomponents:httpcore:jar:4.4.13:compile
+[INFO] +- org.apache.hadoop:hadoop-mapreduce-client-core:jar:3.4.2:compile (optional)
+[INFO] |  +- org.apache.hadoop:hadoop-yarn-client:jar:3.4.2:compile (optional)
+[INFO] |  |  +- org.eclipse.jetty.websocket:websocket-client:jar:9.4.57.v20241219:compile (optional)
+[INFO] |  |  |  +- org.eclipse.jetty:jetty-client:jar:9.4.57.v20241219:compile (optional)
+[INFO] |  |  |  \- org.eclipse.jetty.websocket:websocket-common:jar:9.4.57.v20241219:compile (optional)
+[INFO] |  |  |     \- org.eclipse.jetty.websocket:websocket-api:jar:9.4.57.v20241219:compile (optional)
+[INFO] |  |  \- org.apache.hadoop:hadoop-yarn-api:jar:3.4.2:compile (optional)
+[INFO] |  +- org.apache.hadoop:hadoop-yarn-common:jar:3.4.2:compile (optional)
+[INFO] |  |  +- javax.xml.bind:jaxb-api:jar:2.2.11:compile (optional)
+[INFO] |  |  +- com.sun.jersey:jersey-client:jar:1.19.4:compile (optional)
+[INFO] |  |  +- com.google.inject:guice:jar:4.2.3:compile (optional)
+[INFO] |  |  |  +- javax.inject:javax.inject:jar:1:compile
+[INFO] |  |  |  \- aopalliance:aopalliance:jar:1.0:compile
+[INFO] |  |  +- com.sun.jersey.contribs:jersey-guice:jar:1.19.4:compile (optional)
+[INFO] |  |  +- com.fasterxml.jackson.module:jackson-module-jaxb-annotations:jar:2.18.6:compile (optional)
+[INFO] |  |  \- com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:jar:2.18.6:compile (optional)
+[INFO] |  |     \- com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:jar:2.18.6:compile (optional)
+[INFO] |  +- com.google.inject.extensions:guice-servlet:jar:4.2.3:compile (optional)
+[INFO] |  \- io.netty:netty-all:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-dns:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-haproxy:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-http:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-http2:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-memcache:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-mqtt:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-redis:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-smtp:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-socks:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-stomp:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-xml:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-handler-proxy:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-handler-ssl-ocsp:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-resolver-dns:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-transport-rxtx:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-transport-sctp:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-transport-udt:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-transport-classes-kqueue:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-resolver-dns-classes-macos:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-transport-native-epoll:jar:linux-x86_64:4.1.127.Final:compile
+[INFO] |     +- io.netty:netty-transport-native-epoll:jar:linux-aarch_64:4.1.127.Final:runtime (optional)
+[INFO] |     +- io.netty:netty-transport-native-epoll:jar:linux-riscv64:4.1.127.Final:runtime (optional)
+[INFO] |     +- io.netty:netty-transport-native-kqueue:jar:osx-x86_64:4.1.127.Final:runtime (optional)
+[INFO] |     +- io.netty:netty-transport-native-kqueue:jar:osx-aarch_64:4.1.127.Final:runtime (optional)
+[INFO] |     +- io.netty:netty-resolver-dns-native-macos:jar:osx-x86_64:4.1.127.Final:runtime (optional)
+[INFO] |     \- io.netty:netty-resolver-dns-native-macos:jar:osx-aarch_64:4.1.127.Final:runtime (optional)
+[INFO] +- commons-beanutils:commons-beanutils:jar:1.9.4:compile
+[INFO] |  \- commons-collections:commons-collections:jar:3.2.2:compile
+[INFO] +- org.apache.hive:hive-storage-api:jar:4.3.0-SNAPSHOT:compile
+[INFO] +- org.apache.logging.log4j:log4j-slf4j-impl:jar:2.25.3:compile
+[INFO] |  \- org.apache.logging.log4j:log4j-api:jar:2.25.3:compile
+[INFO] +- org.apache.logging.log4j:log4j-1.2-api:jar:2.25.3:compile
+[INFO] +- org.apache.logging.log4j:log4j-core:jar:2.25.3:compile
+[INFO] +- org.apache.thrift:libfb303:jar:0.9.3:compile
+[INFO] +- org.apache.thrift:libthrift:jar:0.23.0:compile
+[INFO] |  +- jakarta.servlet:jakarta.servlet-api:jar:5.0.0:runtime
+[INFO] |  \- jakarta.annotation:jakarta.annotation-api:jar:2.1.1:runtime
+[INFO] +- org.datanucleus:datanucleus-api-jdo:jar:6.0.5:compile
+[INFO] +- org.datanucleus:datanucleus-core:jar:6.0.11:compile
+[INFO] +- org.datanucleus:datanucleus-rdbms:jar:6.0.11:compile
+[INFO] +- org.datanucleus:javax.jdo:jar:3.2.0-release:compile
+[INFO] |  +- javax.transaction:javax.transaction-api:jar:1.3:compile
+[INFO] |  \- org.glassfish.corba:glassfish-corba-omgapi:jar:4.2.2:compile
+[INFO] +- org.skyscreamer:jsonassert:jar:1.4.0:test
+[INFO] |  \- com.vaadin.external.google:android-json:jar:0.0.20131108.vaadin1:test
+[INFO] +- sqlline:sqlline:jar:1.9.0:compile
+[INFO] +- org.jline:jline:jar:3.25.0:compile
+[INFO] +- com.cronutils:cron-utils:jar:9.2.1:compile
+[INFO] +- com.microsoft.sqlserver:mssql-jdbc:jar:6.2.1.jre8:runtime (optional)
+[INFO] +- com.oracle.database.jdbc:ojdbc8:jar:21.3.0.0:runtime (optional)
+[INFO] +- com.mysql:mysql-connector-j:jar:8.2.0:runtime (optional)
+[INFO] +- org.apache.derby:derby:jar:10.17.1.0:runtime
+[INFO] |  \- org.apache.derby:derbyshared:jar:10.17.1.0:runtime
+[INFO] +- org.mariadb.jdbc:mariadb-java-client:jar:2.5.0:runtime (optional)
+[INFO] +- org.postgresql:postgresql:jar:42.7.3:runtime (optional)
+[INFO] |  \- org.checkerframework:checker-qual:jar:3.42.0:compile
+[INFO] +- org.eclipse.jetty:jetty-util:jar:9.4.57.v20241219:compile
+[INFO] +- org.eclipse.jetty:jetty-server:jar:9.4.57.v20241219:compile
+[INFO] |  +- org.eclipse.jetty:jetty-http:jar:9.4.57.v20241219:compile
+[INFO] |  \- org.eclipse.jetty:jetty-io:jar:9.4.57.v20241219:compile
+[INFO] +- org.eclipse.jetty:jetty-servlet:jar:9.4.57.v20241219:compile
+[INFO] |  +- org.eclipse.jetty:jetty-security:jar:9.4.57.v20241219:compile
+[INFO] |  \- org.eclipse.jetty:jetty-util-ajax:jar:9.4.57.v20241219:compile
+[INFO] +- org.springframework:spring-jdbc:jar:5.3.39:compile
+[INFO] |  +- org.springframework:spring-beans:jar:5.3.39:compile
+[INFO] |  \- org.springframework:spring-tx:jar:5.3.39:compile
+[INFO] +- org.springframework:spring-core:jar:5.3.39:compile
+[INFO] |  \- org.springframework:spring-jcl:jar:5.3.39:compile
+[INFO] +- junit:junit:jar:4.13.2:test
+[INFO] |  \- org.hamcrest:hamcrest-core:jar:1.3:test
+[INFO] +- org.apache.directory.server:apacheds-server-integ:jar:2.0.0-M24:test
+[INFO] |  +- org.apache.directory.server:apacheds-core:jar:2.0.0-M24:test
+[INFO] |  |  +- org.apache.directory.server:apacheds-interceptors-admin:jar:2.0.0-M24:test
+[INFO] |  |  +- org.apache.directory.server:apacheds-interceptors-authn:jar:2.0.0-M24:test
+[INFO] |  |  +- org.apache.directory.server:apacheds-interceptors-number:jar:2.0.0-M24:test
+[INFO] |  |  +- org.apache.directory.server:apacheds-interceptors-authz:jar:2.0.0-M24:test
+[INFO] |  |  +- org.apache.directory.server:apacheds-interceptors-changelog:jar:2.0.0-M24:test
+[INFO] |  |  +- org.apache.directory.server:apacheds-interceptors-collective:jar:2.0.0-M24:test
+[INFO] |  |  +- org.apache.directory.server:apacheds-interceptors-event:jar:2.0.0-M24:test
+[INFO] |  |  +- org.apache.directory.server:apacheds-interceptors-exception:jar:2.0.0-M24:test
+[INFO] |  |  +- org.apache.directory.server:apacheds-interceptors-journal:jar:2.0.0-M24:test
+[INFO] |  |  +- org.apache.directory.server:apacheds-interceptors-normalization:jar:2.0.0-M24:test
+[INFO] |  |  +- org.apache.directory.server:apacheds-interceptors-operational:jar:2.0.0-M24:test
+[INFO] |  |  +- org.apache.directory.server:apacheds-interceptors-referral:jar:2.0.0-M24:test
+[INFO] |  |  +- org.apache.directory.server:apacheds-interceptors-schema:jar:2.0.0-M24:test
+[INFO] |  |  +- org.apache.directory.server:apacheds-interceptors-subtree:jar:2.0.0-M24:test
+[INFO] |  |  +- org.apache.directory.server:apacheds-interceptors-trigger:jar:2.0.0-M24:test
+[INFO] |  |  |  \- org.apache.directory.api:api-ldap-extras-trigger:jar:1.0.0:test
+[INFO] |  |  +- commons-lang:commons-lang:jar:2.6:test
+[INFO] |  |  +- org.apache.directory.api:api-ldap-extras-util:jar:1.0.0:test
+[INFO] |  |  +- org.apache.directory.api:api-ldap-schema-data:jar:1.0.0:test
+[INFO] |  |  \- org.bouncycastle:bcprov-jdk15on:jar:1.56:test
+[INFO] |  +- org.apache.directory.server:apacheds-core-annotations:jar:2.0.0-M24:test
+[INFO] |  |  +- org.apache.directory.server:apacheds-ldif-partition:jar:2.0.0-M24:test
+[INFO] |  |  +- org.apache.directory.server:apacheds-jdbm-partition:jar:2.0.0-M24:test
+[INFO] |  |  |  \- org.apache.directory.server:apacheds-core-avl:jar:2.0.0-M24:test
+[INFO] |  |  +- org.apache.directory.server:apacheds-xdbm-partition:jar:2.0.0-M24:test
+[INFO] |  |  +- org.apache.directory.mavibot:mavibot:jar:1.0.0-M8:test
+[INFO] |  |  \- org.apache.directory.server:apacheds-mavibot-partition:jar:2.0.0-M24:test
+[INFO] |  +- org.apache.directory.server:apacheds-core-api:jar:2.0.0-M24:test
+[INFO] |  |  +- org.apache.directory.server:apacheds-core-constants:jar:2.0.0-M24:test
+[INFO] |  |  +- org.apache.directory.api:api-i18n:jar:1.0.0:test
+[INFO] |  |  +- org.apache.directory.api:api-ldap-extras-aci:jar:1.0.0:test
+[INFO] |  |  \- net.sf.ehcache:ehcache:jar:2.10.4:test
+[INFO] |  +- org.apache.directory.server:apacheds-core-shared:jar:2.0.0-M24:test
+[INFO] |  |  +- org.apache.directory.api:api-ldap-extras-codec-api:jar:1.0.0:test
+[INFO] |  |  \- org.apache.directory.jdbm:apacheds-jdbm1:jar:2.0.0-M3:test
+[INFO] |  +- org.apache.directory.server:apacheds-core-integ:jar:2.0.0-M24:test
+[INFO] |  |  \- org.apache.directory.server:apacheds-interceptors-hash:jar:2.0.0-M24:test
+[INFO] |  |     \- org.apache.directory.server:apacheds-server-config:jar:2.0.0-M24:test
+[INFO] |  +- org.apache.directory.server:apacheds-core-jndi:jar:2.0.0-M24:test
+[INFO] |  +- org.apache.directory.server:apacheds-kerberos-codec:jar:2.0.0-M24:test
+[INFO] |  |  \- org.apache.directory.api:api-asn1-ber:jar:1.0.0:test
+[INFO] |  +- org.apache.directory.server:apacheds-interceptor-kerberos:jar:2.0.0-M24:test
+[INFO] |  +- org.apache.directory.server:apacheds-protocol-ldap:jar:2.0.0-M24:test
+[INFO] |  +- org.apache.directory.server:apacheds-server-annotations:jar:2.0.0-M24:test
+[INFO] |  +- ldapsdk:ldapsdk:jar:4.1:test
+[INFO] |  +- org.apache.directory.api:api-asn1-api:jar:1.0.0:test
+[INFO] |  +- org.apache.directory.api:api-ldap-extras-sp:jar:1.0.0:test
+[INFO] |  +- org.apache.directory.api:api-ldap-codec-core:jar:1.0.0:test
+[INFO] |  +- org.apache.directory.api:api-ldap-extras-codec:jar:1.0.0:test
+[INFO] |  +- org.apache.directory.api:api-ldap-model:jar:1.0.0:test
+[INFO] |  |  \- org.apache.servicemix.bundles:org.apache.servicemix.bundles.antlr:jar:2.7.7_5:test
+[INFO] |  +- org.apache.directory.api:api-util:jar:1.0.0:test
+[INFO] |  +- org.apache.mina:mina-core:jar:2.0.16:test
+[INFO] |  +- org.apache.directory.api:api-ldap-client-api:jar:1.0.0:test
+[INFO] |  |  \- commons-pool:commons-pool:jar:1.6:test
+[INFO] |  \- org.apache.directory.api:api-dsml-engine:jar:1.0.0:test
+[INFO] |     +- org.apache.directory.api:api-dsml-parser:jar:1.0.0:test
+[INFO] |     +- org.apache.servicemix.bundles:org.apache.servicemix.bundles.xpp3:jar:1.1.4c_7:test
+[INFO] |     \- org.apache.servicemix.bundles:org.apache.servicemix.bundles.dom4j:jar:1.6.1_5:test
+[INFO] |        \- xml-apis:xml-apis:jar:1.0.b2:test
+[INFO] +- org.apache.directory.server:apacheds-test-framework:jar:2.0.0-M24:test
+[INFO] |  +- org.apache.directory.server:apacheds-i18n:jar:2.0.0-M24:test
+[INFO] |  +- org.apache.directory.server:apacheds-protocol-kerberos:jar:2.0.0-M24:test
+[INFO] |  +- org.apache.directory.server:apacheds-protocol-shared:jar:2.0.0-M24:test
+[INFO] |  \- org.apache.directory.api:api-ldap-codec-standalone:jar:1.0.0:test
+[INFO] |     \- org.apache.directory.api:api-ldap-net-mina:jar:1.0.0:test
+[INFO] +- org.mockito:mockito-core:jar:5.17.0:test
+[INFO] |  +- net.bytebuddy:byte-buddy:jar:1.15.11:test
+[INFO] |  +- net.bytebuddy:byte-buddy-agent:jar:1.15.11:test
+[INFO] |  \- org.objenesis:objenesis:jar:3.3:test
+[INFO] +- org.apache.curator:curator-test:jar:5.7.1:test
+[INFO] |  \- org.apache.zookeeper:zookeeper:jar:3.9.2:compile
+[INFO] |     +- org.apache.zookeeper:zookeeper-jute:jar:3.9.2:compile
+[INFO] |     +- org.apache.yetus:audience-annotations:jar:0.12.0:compile
+[INFO] |     +- io.netty:netty-tcnative-boringssl-static:jar:2.0.61.Final:compile
+[INFO] |     |  +- io.netty:netty-tcnative-classes:jar:2.0.61.Final:compile
+[INFO] |     |  +- io.netty:netty-tcnative-boringssl-static:jar:linux-x86_64:2.0.61.Final:compile
+[INFO] |     |  +- io.netty:netty-tcnative-boringssl-static:jar:linux-aarch_64:2.0.61.Final:compile
+[INFO] |     |  +- io.netty:netty-tcnative-boringssl-static:jar:osx-x86_64:2.0.61.Final:compile
+[INFO] |     |  +- io.netty:netty-tcnative-boringssl-static:jar:osx-aarch_64:2.0.61.Final:compile
+[INFO] |     |  \- io.netty:netty-tcnative-boringssl-static:jar:windows-x86_64:2.0.61.Final:compile
+[INFO] |     \- ch.qos.logback:logback-core:jar:1.2.13:compile
+[INFO] +- com.nimbusds:oauth2-oidc-sdk:jar:11.28:compile
+[INFO] |  +- com.github.stephenc.jcip:jcip-annotations:jar:1.0-1:compile
+[INFO] |  +- com.nimbusds:content-type:jar:2.3:compile
+[INFO] |  +- net.minidev:json-smart:jar:2.5.2:compile
+[INFO] |  |  \- net.minidev:accessors-smart:jar:2.5.2:compile
+[INFO] |  |     \- org.ow2.asm:asm:jar:9.7.1:compile
+[INFO] |  +- com.nimbusds:lang-tag:jar:1.7:compile
+[INFO] |  \- com.nimbusds:nimbus-jose-jwt:jar:10.4.2:compile
+[INFO] +- org.pac4j:pac4j-core:jar:4.5.8:compile
+[INFO] +- com.github.tomakehurst:wiremock-jre8-standalone:jar:2.32.0:test
+[INFO] +- org.apache.logging.log4j:log4j-core-test:jar:2.25.3:test
+[INFO] |  +- org.apache.logging.log4j:log4j-api-test:jar:2.25.3:test
+[INFO] |  |  +- org.junit-pioneer:junit-pioneer:jar:1.9.1:test
+[INFO] |  |  |  +- org.junit.jupiter:junit-jupiter-params:jar:5.9.0:test
+[INFO] |  |  |  \- org.junit.platform:junit-platform-launcher:jar:1.13.3:test
+[INFO] |  |  +- org.apache.maven:maven-core:jar:3.9.10:test
+[INFO] |  |  |  +- org.apache.maven:maven-settings:jar:3.9.10:test
+[INFO] |  |  |  +- org.apache.maven:maven-settings-builder:jar:3.9.10:test
+[INFO] |  |  |  |  \- org.codehaus.plexus:plexus-sec-dispatcher:jar:2.0:test
+[INFO] |  |  |  |     \- org.codehaus.plexus:plexus-cipher:jar:2.0:test
+[INFO] |  |  |  +- org.apache.maven:maven-builder-support:jar:3.9.10:test
+[INFO] |  |  |  +- org.apache.maven:maven-repository-metadata:jar:3.9.10:test
+[INFO] |  |  |  +- org.apache.maven:maven-artifact:jar:3.9.10:test
+[INFO] |  |  |  +- org.apache.maven:maven-plugin-api:jar:3.9.10:test
+[INFO] |  |  |  +- org.apache.maven:maven-model-builder:jar:3.9.10:test
+[INFO] |  |  |  +- org.apache.maven:maven-resolver-provider:jar:3.9.10:test
+[INFO] |  |  |  +- org.apache.maven.resolver:maven-resolver-impl:jar:1.9.23:test
+[INFO] |  |  |  |  \- org.apache.maven.resolver:maven-resolver-named-locks:jar:1.9.23:test
+[INFO] |  |  |  +- org.apache.maven.resolver:maven-resolver-api:jar:1.9.23:test
+[INFO] |  |  |  +- org.apache.maven.resolver:maven-resolver-spi:jar:1.9.23:test
+[INFO] |  |  |  +- org.apache.maven.resolver:maven-resolver-util:jar:1.9.23:test
+[INFO] |  |  |  +- org.apache.maven.shared:maven-shared-utils:jar:3.4.2:test
+[INFO] |  |  |  +- org.eclipse.sisu:org.eclipse.sisu.plexus:jar:0.9.0.M4:test
+[INFO] |  |  |  +- org.eclipse.sisu:org.eclipse.sisu.inject:jar:0.9.0.M4:test
+[INFO] |  |  |  +- com.google.inject:guice:jar:classes:5.1.0:test
+[INFO] |  |  |  +- com.google.guava:failureaccess:jar:1.0.3:test
+[INFO] |  |  |  +- org.codehaus.plexus:plexus-classworlds:jar:2.9.0:test
+[INFO] |  |  |  +- org.codehaus.plexus:plexus-interpolation:jar:1.28:test
+[INFO] |  |  |  \- org.codehaus.plexus:plexus-component-annotations:jar:2.2.0:test
+[INFO] |  |  +- org.apache.maven:maven-model:jar:3.9.10:test
+[INFO] |  |  \- org.codehaus.plexus:plexus-utils:jar:3.6.0:test
+[INFO] |  +- org.assertj:assertj-core:jar:3.27.3:test
+[INFO] |  +- org.awaitility:awaitility:jar:4.3.0:test
+[INFO] |  +- org.hamcrest:hamcrest:jar:3.0:test
+[INFO] |  +- com.google.code.java-allocation-instrumenter:java-allocation-instrumenter:jar:3.3.4:test
+[INFO] |  \- org.springframework:spring-test:jar:5.3.39:test
+[INFO] +- org.junit.vintage:junit-vintage-engine:jar:5.13.3:test
+[INFO] |  +- org.junit.platform:junit-platform-engine:jar:1.13.3:test
+[INFO] |  |  +- org.opentest4j:opentest4j:jar:1.3.0:test
+[INFO] |  |  \- org.junit.platform:junit-platform-commons:jar:1.13.3:test
+[INFO] |  \- org.apiguardian:apiguardian-api:jar:1.1.2:test
+[INFO] +- uk.org.webcompere:system-stubs-core:jar:2.1.8:test
+[INFO] +- org.testcontainers:mariadb:jar:1.21.4:test
+[INFO] |  \- org.testcontainers:jdbc:jar:1.21.4:test
+[INFO] |     \- org.testcontainers:database-commons:jar:1.21.4:test
+[INFO] +- org.testcontainers:mysql:jar:1.21.4:test
+[INFO] +- org.testcontainers:postgresql:jar:1.21.4:test
+[INFO] +- org.testcontainers:oracle-xe:jar:1.21.4:test
+[INFO] +- org.testcontainers:mssqlserver:jar:1.21.4:test
+[INFO] +- org.testcontainers:testcontainers:jar:1.21.4:test
+[INFO] |  +- org.rnorth.duct-tape:duct-tape:jar:1.0.8:test
+[INFO] |  +- com.github.docker-java:docker-java-api:jar:3.4.2:test
+[INFO] |  \- com.github.docker-java:docker-java-transport-zerodep:jar:3.4.2:test
+[INFO] |     +- com.github.docker-java:docker-java-transport:jar:3.4.2:test
+[INFO] |     \- net.java.dev.jna:jna:jar:5.13.0:test
+[INFO] \- org.keycloak:keycloak-admin-client:jar:26.0.6:test
+[INFO]    +- org.keycloak:keycloak-client-common-synced:jar:26.0.6:test
+[INFO]    |  +- org.jboss.logging:jboss-logging:jar:3.6.0.Final:test
+[INFO]    |  \- org.jboss.logging:commons-logging-jboss-logging:jar:1.0.0.Final:test
+[INFO]    +- com.fasterxml.jackson.datatype:jackson-datatype-jdk8:jar:2.18.6:test
+[INFO]    +- com.fasterxml.jackson.datatype:jackson-datatype-jsr310:jar:2.18.6:test
+[INFO]    +- org.eclipse.microprofile.openapi:microprofile-openapi-api:jar:3.1.1:test
+[INFO]    +- org.jboss.resteasy:resteasy-client:jar:6.2.9.Final:test
+[INFO]    |  +- org.jboss.resteasy:resteasy-client-api:jar:6.2.9.Final:test
+[INFO]    |  +- org.jboss.resteasy:resteasy-core-spi:jar:6.2.9.Final:test
+[INFO]    |  |  \- jakarta.validation:jakarta.validation-api:jar:3.0.2:test
+[INFO]    |  +- org.jboss.resteasy:resteasy-core:jar:6.2.9.Final:test
+[INFO]    |  |  +- org.jboss:jandex:jar:2.4.5.Final:test
+[INFO]    |  |  +- org.eclipse.angus:angus-activation:jar:1.0.0:test
+[INFO]    |  |  \- com.ibm.async:asyncutil:jar:0.1.0:test
+[INFO]    |  +- jakarta.ws.rs:jakarta.ws.rs-api:jar:3.1.0:test
+[INFO]    |  \- org.reactivestreams:reactive-streams:jar:1.0.4:test
+[INFO]    +- org.jboss.resteasy:resteasy-multipart-provider:jar:6.2.9.Final:test
+[INFO]    |  +- jakarta.mail:jakarta.mail-api:jar:2.1.2:test
+[INFO]    |  +- org.eclipse.angus:angus-mail:jar:1.0.0:test
+[INFO]    |  +- org.apache.james:apache-mime4j-dom:jar:0.8.11:test
+[INFO]    |  |  \- org.apache.james:apache-mime4j-core:jar:0.8.11:test
+[INFO]    |  \- org.apache.james:apache-mime4j-storage:jar:0.8.11:test
+[INFO]    +- org.jboss.resteasy:resteasy-jackson2-provider:jar:6.2.9.Final:test
+[INFO]    |  +- com.fasterxml.jackson.jakarta.rs:jackson-jakarta-rs-base:jar:2.18.6:test
+[INFO]    |  +- com.fasterxml.jackson.jakarta.rs:jackson-jakarta-rs-json-provider:jar:2.18.6:test
+[INFO]    |  +- com.fasterxml.jackson.module:jackson-module-jakarta-xmlbind-annotations:jar:2.18.6:test
+[INFO]    |  \- com.github.java-json-tools:json-patch:jar:1.13:test
+[INFO]    |     +- com.github.java-json-tools:msg-simple:jar:1.2:test
+[INFO]    |     |  \- com.github.java-json-tools:btf:jar:1.3:test
+[INFO]    |     \- com.github.java-json-tools:jackson-coreutils:jar:2.0:test
+[INFO]    \- org.jboss.resteasy:resteasy-jaxb-provider:jar:6.2.9.Final:test
+[INFO]       +- jakarta.xml.bind:jakarta.xml.bind-api:jar:3.0.1:test
+[INFO]       +- org.glassfish.jaxb:codemodel:jar:4.0.3:test
+[INFO]       +- org.glassfish.jaxb:jaxb-core:jar:4.0.3:test
+[INFO]       +- org.glassfish.jaxb:jaxb-jxc:jar:4.0.3:test
+[INFO]       +- org.glassfish.jaxb:jaxb-runtime:jar:4.0.3:test
+[INFO]       +- org.glassfish.jaxb:txw2:jar:4.0.3:test
+[INFO]       +- org.glassfish.jaxb:jaxb-xjc:jar:4.0.3:test
+[INFO]       +- org.glassfish.jaxb:xsom:jar:4.0.3:test
+[INFO]       +- com.sun.istack:istack-commons-runtime:jar:4.1.2:test
+[INFO]       +- com.sun.istack:istack-commons-tools:jar:4.1.2:test
+[INFO]       +- com.sun.xml.bind.external:relaxng-datatype:jar:4.0.3:test
+[INFO]       \- com.sun.xml.bind.external:rngom:jar:4.0.3:test
+[INFO] 
+[INFO] ----------------< org.apache.hive:hive-metastore-tools >----------------
+[INFO] Building Hive Metastore Tools 4.3.0-SNAPSHOT                       [5/9]
+[INFO]   from metastore-tools/pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --- dependency:3.8.1:tree (default-cli) @ hive-metastore-tools ---
+[INFO] org.apache.hive:hive-metastore-tools:pom:4.3.0-SNAPSHOT
+[INFO] \- com.fasterxml.jackson.core:jackson-databind:jar:2.18.6:compile
+[INFO]    +- com.fasterxml.jackson.core:jackson-annotations:jar:2.18.6:compile
+[INFO]    \- com.fasterxml.jackson.core:jackson-core:jar:2.18.6:compile
+[INFO] 
+[INFO] ---------------< org.apache.hive:metastore-tools-common >---------------
+[INFO] Building Hive Metastore Tools common libraries 4.3.0-SNAPSHOT      [6/9]
+[INFO]   from metastore-tools/tools-common/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- dependency:3.8.1:tree (default-cli) @ metastore-tools-common ---
+[INFO] org.apache.hive:metastore-tools-common:jar:4.3.0-SNAPSHOT
+[INFO] +- org.apache.hive:hive-standalone-metastore-common:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  +- org.apache.commons:commons-jexl3:jar:3.3:compile
+[INFO] |  |  \- commons-logging:commons-logging:jar:1.2:compile
+[INFO] |  +- io.grpc:grpc-netty-shaded:jar:1.72.0:compile
+[INFO] |  |  +- io.grpc:grpc-util:jar:1.72.0:runtime
+[INFO] |  |  +- io.grpc:grpc-core:jar:1.72.0:compile
+[INFO] |  |  |  +- com.google.code.gson:gson:jar:2.11.0:compile
+[INFO] |  |  |  +- com.google.android:annotations:jar:4.1.1.4:runtime
+[INFO] |  |  |  \- io.grpc:grpc-context:jar:1.72.0:runtime
+[INFO] |  |  +- io.perfmark:perfmark-api:jar:0.27.0:runtime
+[INFO] |  |  \- io.grpc:grpc-api:jar:1.72.0:compile
+[INFO] |  +- io.grpc:grpc-protobuf:jar:1.72.0:compile
+[INFO] |  |  +- com.google.api.grpc:proto-google-common-protos:jar:2.51.0:compile
+[INFO] |  |  \- io.grpc:grpc-protobuf-lite:jar:1.72.0:runtime
+[INFO] |  +- io.grpc:grpc-stub:jar:1.72.0:compile
+[INFO] |  +- javax.annotation:javax.annotation-api:jar:1.3.2:compile
+[INFO] |  +- org.apache.orc:orc-core:jar:2.1.2:compile
+[INFO] |  |  +- org.apache.orc:orc-shims:jar:2.1.2:compile
+[INFO] |  |  +- org.apache.orc:orc-format:jar:1.1.0:compile
+[INFO] |  |  +- io.airlift:aircompressor:jar:2.0.2:compile
+[INFO] |  |  +- com.github.luben:zstd-jni:jar:1.5.6-10:compile
+[INFO] |  |  +- org.apache.hadoop:hadoop-client-api:jar:3.4.1:compile
+[INFO] |  |  |  \- org.xerial.snappy:snappy-java:jar:1.1.10.4:compile
+[INFO] |  |  +- org.apache.hadoop:hadoop-client-runtime:jar:3.4.1:runtime
+[INFO] |  |  +- org.threeten:threeten-extra:jar:1.8.0:compile
+[INFO] |  |  \- com.aayushatharva.brotli4j:brotli4j:jar:1.18.0:compile
+[INFO] |  |     +- com.aayushatharva.brotli4j:service:jar:1.18.0:compile
+[INFO] |  |     \- com.aayushatharva.brotli4j:native-linux-x86_64:jar:1.18.0:compile
+[INFO] |  +- com.github.joshelser:dropwizard-metrics-hadoop-metrics2-reporter:jar:0.1.2:compile
+[INFO] |  |  \- org.apache.hadoop:hadoop-common:jar:3.4.2:compile
+[INFO] |  |     +- org.apache.hadoop.thirdparty:hadoop-shaded-protobuf_3_25:jar:1.4.0:compile
+[INFO] |  |     +- org.apache.hadoop:hadoop-annotations:jar:3.4.2:compile
+[INFO] |  |     +- org.apache.hadoop.thirdparty:hadoop-shaded-guava:jar:1.4.0:compile
+[INFO] |  |     +- commons-cli:commons-cli:jar:1.9.0:compile
+[INFO] |  |     +- org.apache.commons:commons-math3:jar:3.6.1:compile
+[INFO] |  |     +- org.apache.httpcomponents:httpclient:jar:4.5.13:compile
+[INFO] |  |     |  \- org.apache.httpcomponents:httpcore:jar:4.4.13:compile
+[INFO] |  |     +- commons-codec:commons-codec:jar:1.15:compile
+[INFO] |  |     +- commons-net:commons-net:jar:3.9.0:compile
+[INFO] |  |     +- org.apache.commons:commons-collections4:jar:4.4:compile
+[INFO] |  |     +- javax.servlet:javax.servlet-api:jar:3.1.0:compile
+[INFO] |  |     +- jakarta.activation:jakarta.activation-api:jar:1.2.1:runtime
+[INFO] |  |     +- javax.servlet.jsp:jsp-api:jar:2.1:runtime
+[INFO] |  |     +- com.sun.jersey:jersey-core:jar:1.19.4:compile
+[INFO] |  |     |  \- javax.ws.rs:jsr311-api:jar:1.1.1:compile
+[INFO] |  |     +- com.sun.jersey:jersey-servlet:jar:1.19.4:compile
+[INFO] |  |     +- com.github.pjfanning:jersey-json:jar:1.22.0:compile
+[INFO] |  |     |  \- com.sun.xml.bind:jaxb-impl:jar:2.2.3-1:compile
+[INFO] |  |     |     \- javax.xml.bind:jaxb-api:jar:2.2.2:compile
+[INFO] |  |     |        +- javax.xml.stream:stax-api:jar:1.0-2:compile
+[INFO] |  |     |        \- javax.activation:activation:jar:1.1:compile
+[INFO] |  |     +- org.codehaus.jettison:jettison:jar:1.5.4:compile
+[INFO] |  |     +- com.sun.jersey:jersey-server:jar:1.19.4:compile
+[INFO] |  |     +- ch.qos.reload4j:reload4j:jar:1.2.22:compile
+[INFO] |  |     +- org.apache.commons:commons-configuration2:jar:2.10.1:compile
+[INFO] |  |     +- org.apache.commons:commons-text:jar:1.10.0:compile
+[INFO] |  |     +- org.slf4j:slf4j-reload4j:jar:1.7.36:compile
+[INFO] |  |     +- org.apache.avro:avro:jar:1.11.4:compile
+[INFO] |  |     +- com.google.re2j:re2j:jar:1.1:compile
+[INFO] |  |     +- org.apache.hadoop:hadoop-auth:jar:3.4.2:compile
+[INFO] |  |     |  \- org.apache.kerby:kerb-util:jar:2.0.3:compile
+[INFO] |  |     |     +- org.apache.kerby:kerby-config:jar:2.0.3:compile
+[INFO] |  |     |     \- org.apache.kerby:kerb-crypto:jar:2.0.3:compile
+[INFO] |  |     +- com.jcraft:jsch:jar:0.1.55:compile
+[INFO] |  |     +- org.apache.commons:commons-compress:jar:1.26.1:compile
+[INFO] |  |     +- org.bouncycastle:bcprov-jdk18on:jar:1.78.1:compile
+[INFO] |  |     +- org.apache.kerby:kerb-core:jar:2.0.3:compile
+[INFO] |  |     |  \- org.apache.kerby:kerby-pkix:jar:2.0.3:compile
+[INFO] |  |     |     +- org.apache.kerby:kerby-asn1:jar:2.0.3:compile
+[INFO] |  |     |     \- org.apache.kerby:kerby-util:jar:2.0.3:compile
+[INFO] |  |     +- org.codehaus.woodstox:stax2-api:jar:4.2.1:compile
+[INFO] |  |     +- com.fasterxml.woodstox:woodstox-core:jar:5.4.0:compile
+[INFO] |  |     \- dnsjava:dnsjava:jar:3.6.1:compile
+[INFO] |  +- com.google.protobuf:protobuf-java:jar:3.25.5:compile
+[INFO] |  +- com.zaxxer:HikariCP:jar:4.0.3:compile
+[INFO] |  +- io.dropwizard.metrics:metrics-core:jar:3.1.0:compile
+[INFO] |  +- io.dropwizard.metrics:metrics-jvm:jar:3.1.0:compile
+[INFO] |  +- io.dropwizard.metrics:metrics-json:jar:3.1.0:compile
+[INFO] |  +- javolution:javolution:jar:5.5.1:compile
+[INFO] |  +- org.antlr:ST4:jar:4.0.4:compile
+[INFO] |  |  \- org.antlr:antlr-runtime:jar:3.3:compile
+[INFO] |  |     \- org.antlr:stringtemplate:jar:3.2.1:compile
+[INFO] |  |        \- antlr:antlr:jar:2.7.7:compile
+[INFO] |  +- org.apache.commons:commons-lang3:jar:3.17.0:compile
+[INFO] |  +- org.apache.derby:derby:jar:10.17.1.0:runtime
+[INFO] |  |  \- org.apache.derby:derbyshared:jar:10.17.1.0:runtime
+[INFO] |  +- org.apache.hive:hive-storage-api:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  +- org.apache.httpcomponents.client5:httpclient5:jar:5.3.1:compile
+[INFO] |  |  \- org.apache.httpcomponents.core5:httpcore5-h2:jar:5.2.4:compile
+[INFO] |  +- org.apache.httpcomponents.core5:httpcore5:jar:5.4.3:compile
+[INFO] |  +- org.apache.thrift:libfb303:jar:0.9.3:compile
+[INFO] |  +- org.apache.thrift:libthrift:jar:0.23.0:compile
+[INFO] |  |  +- jakarta.servlet:jakarta.servlet-api:jar:5.0.0:runtime
+[INFO] |  |  \- jakarta.annotation:jakarta.annotation-api:jar:2.1.1:runtime
+[INFO] |  +- org.apache.zookeeper:zookeeper:jar:3.8.4:compile
+[INFO] |  |  +- org.apache.zookeeper:zookeeper-jute:jar:3.8.4:compile
+[INFO] |  |  +- org.apache.yetus:audience-annotations:jar:0.12.0:compile
+[INFO] |  |  +- io.netty:netty-handler:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-common:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-resolver:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-buffer:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-transport:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-transport-native-unix-common:jar:4.1.127.Final:compile
+[INFO] |  |  |  \- io.netty:netty-codec:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-transport-native-epoll:jar:4.1.127.Final:compile
+[INFO] |  |  |  \- io.netty:netty-transport-classes-epoll:jar:4.1.127.Final:compile
+[INFO] |  |  \- commons-io:commons-io:jar:2.11.0:compile
+[INFO] |  +- com.github.ben-manes.caffeine:caffeine:jar:2.8.4:compile
+[INFO] |  |  \- org.checkerframework:checker-qual:jar:3.4.0:compile
+[INFO] |  +- org.apache.curator:curator-recipes:jar:5.7.1:compile
+[INFO] |  +- org.apache.curator:curator-framework:jar:5.7.1:compile
+[INFO] |  |  \- org.apache.curator:curator-client:jar:5.7.1:compile
+[INFO] |  +- org.slf4j:slf4j-api:jar:1.7.30:compile
+[INFO] |  \- org.springframework.ldap:spring-ldap-core:jar:2.4.4:compile
+[INFO] |     +- org.springframework:spring-core:jar:5.3.39:compile
+[INFO] |     |  \- org.springframework:spring-jcl:jar:5.3.39:compile
+[INFO] |     +- org.springframework:spring-beans:jar:5.3.39:compile
+[INFO] |     \- org.springframework:spring-tx:jar:5.3.39:compile
+[INFO] +- org.jetbrains:annotations:jar:16.0.2:compile
+[INFO] +- com.google.guava:guava:jar:22.0:compile
+[INFO] |  +- com.google.code.findbugs:jsr305:jar:1.3.9:compile
+[INFO] |  +- com.google.errorprone:error_prone_annotations:jar:2.0.18:compile
+[INFO] |  +- com.google.j2objc:j2objc-annotations:jar:1.1:compile
+[INFO] |  \- org.codehaus.mojo:animal-sniffer-annotations:jar:1.14:compile
+[INFO] +- org.junit.jupiter:junit-jupiter-engine:jar:5.13.3:test
+[INFO] |  +- org.junit.platform:junit-platform-engine:jar:1.13.3:test
+[INFO] |  |  +- org.opentest4j:opentest4j:jar:1.3.0:test
+[INFO] |  |  \- org.junit.platform:junit-platform-commons:jar:1.13.3:test
+[INFO] |  +- org.junit.jupiter:junit-jupiter-api:jar:5.13.3:test
+[INFO] |  \- org.apiguardian:apiguardian-api:jar:1.1.2:test
+[INFO] +- org.hamcrest:hamcrest-all:jar:1.3:test
+[INFO] +- junit:junit:jar:4.13.2:test
+[INFO] |  \- org.hamcrest:hamcrest-core:jar:1.3:test
+[INFO] \- com.fasterxml.jackson.core:jackson-databind:jar:2.18.6:compile
+[INFO]    +- com.fasterxml.jackson.core:jackson-annotations:jar:2.18.6:compile
+[INFO]    \- com.fasterxml.jackson.core:jackson-core:jar:2.18.6:compile
+[INFO] 
+[INFO] -------------< org.apache.hive:hive-metastore-benchmarks >--------------
+[INFO] Building Hive metastore benchmarks 4.3.0-SNAPSHOT                  [7/9]
+[INFO]   from metastore-tools/metastore-benchmarks/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- dependency:3.8.1:tree (default-cli) @ hive-metastore-benchmarks ---
+[INFO] org.apache.hive:hive-metastore-benchmarks:jar:4.3.0-SNAPSHOT
+[INFO] +- org.apache.hive:metastore-tools-common:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  +- org.apache.hive:hive-standalone-metastore-common:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  +- org.apache.commons:commons-jexl3:jar:3.3:compile
+[INFO] |  |  |  \- commons-logging:commons-logging:jar:1.2:compile
+[INFO] |  |  +- io.grpc:grpc-netty-shaded:jar:1.72.0:compile
+[INFO] |  |  |  +- io.grpc:grpc-util:jar:1.72.0:runtime
+[INFO] |  |  |  +- io.grpc:grpc-core:jar:1.72.0:compile
+[INFO] |  |  |  |  +- com.google.android:annotations:jar:4.1.1.4:runtime
+[INFO] |  |  |  |  \- io.grpc:grpc-context:jar:1.72.0:runtime
+[INFO] |  |  |  +- io.perfmark:perfmark-api:jar:0.27.0:runtime
+[INFO] |  |  |  \- io.grpc:grpc-api:jar:1.72.0:compile
+[INFO] |  |  +- io.grpc:grpc-protobuf:jar:1.72.0:compile
+[INFO] |  |  |  +- com.google.api.grpc:proto-google-common-protos:jar:2.51.0:compile
+[INFO] |  |  |  \- io.grpc:grpc-protobuf-lite:jar:1.72.0:runtime
+[INFO] |  |  +- io.grpc:grpc-stub:jar:1.72.0:compile
+[INFO] |  |  +- javax.annotation:javax.annotation-api:jar:1.3.2:compile
+[INFO] |  |  +- org.apache.orc:orc-core:jar:2.1.2:compile
+[INFO] |  |  |  +- org.apache.orc:orc-shims:jar:2.1.2:compile
+[INFO] |  |  |  +- org.apache.orc:orc-format:jar:1.1.0:compile
+[INFO] |  |  |  +- io.airlift:aircompressor:jar:2.0.2:compile
+[INFO] |  |  |  +- com.github.luben:zstd-jni:jar:1.5.6-10:compile
+[INFO] |  |  |  +- org.apache.hadoop:hadoop-client-api:jar:3.4.1:compile
+[INFO] |  |  |  +- org.apache.hadoop:hadoop-client-runtime:jar:3.4.1:runtime
+[INFO] |  |  |  +- org.threeten:threeten-extra:jar:1.8.0:compile
+[INFO] |  |  |  \- com.aayushatharva.brotli4j:brotli4j:jar:1.18.0:compile
+[INFO] |  |  |     +- com.aayushatharva.brotli4j:service:jar:1.18.0:compile
+[INFO] |  |  |     \- com.aayushatharva.brotli4j:native-linux-x86_64:jar:1.18.0:compile
+[INFO] |  |  +- com.github.joshelser:dropwizard-metrics-hadoop-metrics2-reporter:jar:0.1.2:compile
+[INFO] |  |  +- com.google.protobuf:protobuf-java:jar:3.25.5:compile
+[INFO] |  |  +- com.zaxxer:HikariCP:jar:4.0.3:compile
+[INFO] |  |  +- io.dropwizard.metrics:metrics-core:jar:3.1.0:compile
+[INFO] |  |  +- io.dropwizard.metrics:metrics-jvm:jar:3.1.0:compile
+[INFO] |  |  +- io.dropwizard.metrics:metrics-json:jar:3.1.0:compile
+[INFO] |  |  +- javolution:javolution:jar:5.5.1:compile
+[INFO] |  |  +- org.antlr:ST4:jar:4.0.4:compile
+[INFO] |  |  |  \- org.antlr:antlr-runtime:jar:3.3:compile
+[INFO] |  |  |     \- org.antlr:stringtemplate:jar:3.2.1:compile
+[INFO] |  |  |        \- antlr:antlr:jar:2.7.7:compile
+[INFO] |  |  +- org.apache.commons:commons-lang3:jar:3.17.0:compile
+[INFO] |  |  +- org.apache.derby:derby:jar:10.17.1.0:runtime
+[INFO] |  |  |  \- org.apache.derby:derbyshared:jar:10.17.1.0:runtime
+[INFO] |  |  +- org.apache.hive:hive-storage-api:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  +- org.apache.httpcomponents.client5:httpclient5:jar:5.3.1:compile
+[INFO] |  |  |  \- org.apache.httpcomponents.core5:httpcore5-h2:jar:5.2.4:compile
+[INFO] |  |  +- org.apache.httpcomponents.core5:httpcore5:jar:5.4.3:compile
+[INFO] |  |  +- org.apache.thrift:libfb303:jar:0.9.3:compile
+[INFO] |  |  +- org.apache.thrift:libthrift:jar:0.23.0:compile
+[INFO] |  |  |  +- jakarta.servlet:jakarta.servlet-api:jar:5.0.0:runtime
+[INFO] |  |  |  \- jakarta.annotation:jakarta.annotation-api:jar:2.1.1:runtime
+[INFO] |  |  +- com.github.ben-manes.caffeine:caffeine:jar:2.8.4:compile
+[INFO] |  |  |  \- org.checkerframework:checker-qual:jar:3.4.0:compile
+[INFO] |  |  +- org.apache.curator:curator-recipes:jar:5.7.1:compile
+[INFO] |  |  +- org.apache.curator:curator-framework:jar:5.7.1:compile
+[INFO] |  |  \- org.springframework.ldap:spring-ldap-core:jar:2.4.4:compile
+[INFO] |  |     +- org.springframework:spring-core:jar:5.3.39:compile
+[INFO] |  |     |  \- org.springframework:spring-jcl:jar:5.3.39:compile
+[INFO] |  |     +- org.springframework:spring-beans:jar:5.3.39:compile
+[INFO] |  |     \- org.springframework:spring-tx:jar:5.3.39:compile
+[INFO] |  \- com.google.guava:guava:jar:22.0:compile
+[INFO] |     +- com.google.code.findbugs:jsr305:jar:1.3.9:compile
+[INFO] |     +- com.google.errorprone:error_prone_annotations:jar:2.0.18:compile
+[INFO] |     +- com.google.j2objc:j2objc-annotations:jar:1.1:compile
+[INFO] |     \- org.codehaus.mojo:animal-sniffer-annotations:jar:1.14:compile
+[INFO] +- org.apache.hive.hcatalog:hive-hcatalog-server-extensions:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  +- org.apache.hive.hcatalog:hive-hcatalog-core:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  +- org.apache.hive:hive-cli:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  |  +- org.apache.hive:hive-serde:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  |  |  +- org.apache.hive:hive-service-rpc:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  |  |  +- com.carrotsearch:hppc:jar:0.7.2:compile
+[INFO] |  |  |  |  +- com.google.flatbuffers:flatbuffers-java:jar:1.12.0:compile
+[INFO] |  |  |  |  +- com.opencsv:opencsv:jar:5.9:compile
+[INFO] |  |  |  |  |  \- commons-beanutils:commons-beanutils:jar:1.9.4:compile
+[INFO] |  |  |  |  +- org.apache.parquet:parquet-hadoop-bundle:jar:1.16.0:compile
+[INFO] |  |  |  |  \- com.esri.geometry:esri-geometry-api:jar:2.2.4:compile
+[INFO] |  |  |  +- org.apache.hive:hive-service:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  |  |  +- org.apache.hive:hive-llap-server:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  |  |  |  +- com.lmax:disruptor:jar:3.3.7:compile
+[INFO] |  |  |  |  |  \- io.opentelemetry:opentelemetry-sdk-extension-autoconfigure:jar:1.60.1:compile
+[INFO] |  |  |  |  +- org.apache.hive:hive-hplsql:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  |  |  |  \- org.antlr:antlr4-runtime:jar:4.9.3:compile
+[INFO] |  |  |  |  +- com.nimbusds:nimbus-jose-jwt:jar:10.4.2:compile
+[INFO] |  |  |  |  +- org.eclipse.jetty:apache-jsp:jar:9.4.57.v20241219:compile
+[INFO] |  |  |  |  |  +- org.eclipse.jetty.toolchain:jetty-schemas:jar:3.1.2:compile
+[INFO] |  |  |  |  |  +- org.mortbay.jasper:apache-jsp:jar:8.5.100:compile
+[INFO] |  |  |  |  |  |  +- org.eclipse.jdt:ecj:jar:3.26.0:compile
+[INFO] |  |  |  |  |  |  \- org.mortbay.jasper:apache-el:jar:8.5.100:compile
+[INFO] |  |  |  |  |  \- org.eclipse.jetty:jetty-annotations:jar:9.4.57.v20241219:compile
+[INFO] |  |  |  |  |     +- org.eclipse.jetty:jetty-plus:jar:9.4.57.v20241219:compile
+[INFO] |  |  |  |  |     |  \- org.eclipse.jetty:jetty-jndi:jar:9.4.57.v20241219:compile
+[INFO] |  |  |  |  |     +- org.ow2.asm:asm:jar:9.7.1:compile
+[INFO] |  |  |  |  |     \- org.ow2.asm:asm-commons:jar:9.7.1:compile
+[INFO] |  |  |  |  |        \- org.ow2.asm:asm-tree:jar:9.7.1:compile
+[INFO] |  |  |  |  +- org.apache.santuario:xmlsec:jar:2.3.4:compile
+[INFO] |  |  |  |  |  \- jakarta.xml.bind:jakarta.xml.bind-api:jar:2.3.3:compile
+[INFO] |  |  |  |  +- org.jamon:jamon-runtime:jar:2.4.1:compile
+[INFO] |  |  |  |  \- io.opentelemetry:opentelemetry-exporter-logging:jar:1.60.1:compile
+[INFO] |  |  |  +- org.apache.hive:hive-shims:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  |  |  +- org.apache.hive.shims:hive-shims-common:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  |  |  \- org.apache.hive.shims:hive-shims-0.23:jar:4.3.0-SNAPSHOT:runtime
+[INFO] |  |  |  |     \- org.apache.hadoop:hadoop-yarn-server-resourcemanager:jar:3.4.2:runtime
+[INFO] |  |  |  |        +- org.apache.hadoop:hadoop-yarn-server-common:jar:3.4.2:runtime
+[INFO] |  |  |  |        |  +- javax.cache:cache-api:jar:1.1.1:runtime
+[INFO] |  |  |  |        |  +- org.ehcache:ehcache:jar:3.8.2:runtime
+[INFO] |  |  |  |        |  |  \- org.glassfish.jaxb:jaxb-runtime:jar:2.3.1:runtime
+[INFO] |  |  |  |        |  |     +- org.glassfish.jaxb:txw2:jar:2.3.1:runtime
+[INFO] |  |  |  |        |  |     +- com.sun.istack:istack-commons-runtime:jar:3.0.7:runtime
+[INFO] |  |  |  |        |  |     +- org.jvnet.staxex:stax-ex:jar:1.8:runtime
+[INFO] |  |  |  |        |  |     \- com.sun.xml.fastinfoset:FastInfoset:jar:1.2.15:runtime
+[INFO] |  |  |  |        |  \- com.microsoft.sqlserver:mssql-jdbc:jar:6.2.1.jre8:runtime
+[INFO] |  |  |  |        +- org.apache.hadoop:hadoop-yarn-server-applicationhistoryservice:jar:3.4.2:runtime
+[INFO] |  |  |  |        |  \- de.ruedigermoeller:fst:jar:2.50:runtime
+[INFO] |  |  |  |        +- org.apache.hadoop:hadoop-yarn-server-web-proxy:jar:3.4.2:runtime
+[INFO] |  |  |  |        |  \- org.bouncycastle:bcpkix-jdk18on:jar:1.78.1:runtime
+[INFO] |  |  |  |        |     \- org.bouncycastle:bcutil-jdk18on:jar:1.78.1:runtime
+[INFO] |  |  |  |        \- org.jsonschema2pojo:jsonschema2pojo-core:jar:1.0.2:runtime
+[INFO] |  |  |  |           \- com.sun.codemodel:codemodel:jar:2.6:runtime
+[INFO] |  |  |  \- org.jline:jline:jar:3.25.0:compile
+[INFO] |  |  +- org.apache.hive:hive-common:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  |  +- org.apache.hive:hive-classification:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  |  +- org.eclipse.jetty:jetty-http:jar:9.4.57.v20241219:compile
+[INFO] |  |  |  |  +- org.eclipse.jetty:jetty-util:jar:9.4.57.v20241219:compile
+[INFO] |  |  |  |  \- org.eclipse.jetty:jetty-io:jar:9.4.57.v20241219:compile
+[INFO] |  |  |  +- org.eclipse.jetty:jetty-rewrite:jar:9.4.57.v20241219:compile
+[INFO] |  |  |  +- org.eclipse.jetty:jetty-server:jar:9.4.57.v20241219:compile
+[INFO] |  |  |  +- org.eclipse.jetty:jetty-servlet:jar:9.4.57.v20241219:compile
+[INFO] |  |  |  |  +- org.eclipse.jetty:jetty-security:jar:9.4.57.v20241219:compile
+[INFO] |  |  |  |  \- org.eclipse.jetty:jetty-util-ajax:jar:9.4.57.v20241219:compile
+[INFO] |  |  |  +- org.eclipse.jetty:jetty-webapp:jar:9.4.57.v20241219:compile
+[INFO] |  |  |  |  \- org.eclipse.jetty:jetty-xml:jar:9.4.57.v20241219:compile
+[INFO] |  |  |  +- joda-time:joda-time:jar:2.13.0:compile
+[INFO] |  |  |  +- org.apache.logging.log4j:log4j-1.2-api:jar:2.25.3:compile
+[INFO] |  |  |  +- org.apache.logging.log4j:log4j-web:jar:2.25.3:compile
+[INFO] |  |  |  +- org.apache.ant:ant:jar:1.10.15:compile
+[INFO] |  |  |  |  \- org.apache.ant:ant-launcher:jar:1.10.15:compile
+[INFO] |  |  |  +- net.sf.jpam:jpam:jar:1.1:compile
+[INFO] |  |  |  +- org.apache.tez:tez-api:jar:0.10.5:compile
+[INFO] |  |  |  +- org.fusesource.jansi:jansi:jar:2.4.0:compile
+[INFO] |  |  |  +- com.tdunning:json:jar:1.8:compile
+[INFO] |  |  |  +- io.opentelemetry:opentelemetry-api:jar:1.60.1:compile
+[INFO] |  |  |  |  \- io.opentelemetry:opentelemetry-context:jar:1.60.1:compile
+[INFO] |  |  |  |     \- io.opentelemetry:opentelemetry-common:jar:1.60.1:compile
+[INFO] |  |  |  +- io.opentelemetry:opentelemetry-exporter-otlp:jar:1.60.1:compile
+[INFO] |  |  |  |  +- io.opentelemetry:opentelemetry-sdk-trace:jar:1.60.1:compile
+[INFO] |  |  |  |  +- io.opentelemetry:opentelemetry-sdk-metrics:jar:1.60.1:compile
+[INFO] |  |  |  |  +- io.opentelemetry:opentelemetry-sdk-logs:jar:1.60.1:compile
+[INFO] |  |  |  |  +- io.opentelemetry:opentelemetry-exporter-otlp-common:jar:1.60.1:runtime
+[INFO] |  |  |  |  |  \- io.opentelemetry:opentelemetry-exporter-common:jar:1.60.1:runtime
+[INFO] |  |  |  |  +- io.opentelemetry:opentelemetry-exporter-sender-okhttp:jar:1.60.1:runtime
+[INFO] |  |  |  |  |  \- com.squareup.okhttp3:okhttp-jvm:jar:5.3.2:runtime
+[INFO] |  |  |  |  |     +- com.squareup.okio:okio-jvm:jar:3.16.4:runtime
+[INFO] |  |  |  |  |     \- org.jetbrains.kotlin:kotlin-stdlib:jar:2.2.21:runtime
+[INFO] |  |  |  |  \- io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi:jar:1.60.1:compile
+[INFO] |  |  |  +- io.opentelemetry:opentelemetry-sdk:jar:1.60.1:compile
+[INFO] |  |  |  |  \- io.opentelemetry:opentelemetry-sdk-common:jar:1.60.1:compile
+[INFO] |  |  |  \- org.mockito:mockito-core:jar:5.17.0:test
+[INFO] |  |  |     +- net.bytebuddy:byte-buddy:jar:1.15.11:test
+[INFO] |  |  |     +- net.bytebuddy:byte-buddy-agent:jar:1.15.11:test
+[INFO] |  |  |     \- org.objenesis:objenesis:jar:3.3:runtime
+[INFO] |  |  +- org.apache.hive:hive-metastore:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  |  \- org.apache.hive:hive-standalone-metastore-client:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  +- org.apache.hive:hive-exec:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  |  +- org.graalvm.js:js-scriptengine:jar:23.0.8:compile
+[INFO] |  |  |  |  \- org.graalvm.sdk:graal-sdk:jar:23.0.8:compile
+[INFO] |  |  |  +- org.graalvm.js:js:jar:23.0.8:compile
+[INFO] |  |  |  |  +- org.graalvm.regex:regex:jar:23.0.8:compile
+[INFO] |  |  |  |  +- org.graalvm.truffle:truffle-api:jar:23.0.8:compile
+[INFO] |  |  |  |  \- com.ibm.icu:icu4j:jar:72.1:compile
+[INFO] |  |  |  +- org.apache.atlas:atlas-client-v2:jar:2.4.0:compile
+[INFO] |  |  |  |  \- cglib:cglib:jar:2.2.2:compile
+[INFO] |  |  |  |     \- asm:asm:jar:3.3.1:compile
+[INFO] |  |  |  +- org.apache.atlas:atlas-client-common:jar:2.4.0:compile
+[INFO] |  |  |  |  \- javax.xml.bind:jaxb-api:jar:2.3.1:compile
+[INFO] |  |  |  |     \- javax.activation:javax.activation-api:jar:1.2.0:compile
+[INFO] |  |  |  +- org.apache.atlas:atlas-intg:jar:2.4.0:compile
+[INFO] |  |  |  |  +- com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:jar:2.18.6:compile
+[INFO] |  |  |  |  +- com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:jar:2.18.6:compile
+[INFO] |  |  |  |  +- commons-validator:commons-validator:jar:1.6:compile
+[INFO] |  |  |  |  |  \- commons-digester:commons-digester:jar:1.8.1:compile
+[INFO] |  |  |  |  \- javax.inject:javax.inject:jar:1:compile
+[INFO] |  |  |  +- commons-configuration:commons-configuration:jar:1.10:compile
+[INFO] |  |  |  +- org.apache.commons:commons-dbcp2:jar:2.14.0:compile
+[INFO] |  |  |  |  +- org.apache.commons:commons-pool2:jar:2.13.0:compile
+[INFO] |  |  |  |  \- jakarta.transaction:jakarta.transaction-api:jar:1.3.3:compile
+[INFO] |  |  |  +- org.apache.hive:hive-vector-code-gen:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  |  +- org.apache.hive:hive-llap-tez:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  |  |  +- org.apache.hive:hive-llap-client:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  |  |  \- org.apache.hive:hive-llap-common:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  |  |     +- io.jsonwebtoken:jjwt-api:jar:0.10.5:compile
+[INFO] |  |  |  |     +- io.jsonwebtoken:jjwt-impl:jar:0.10.5:compile
+[INFO] |  |  |  |     \- io.jsonwebtoken:jjwt-jackson:jar:0.10.5:compile
+[INFO] |  |  |  +- com.amazonaws.secretsmanager:aws-secretsmanager-caching-java:jar:2.2.0:compile
+[INFO] |  |  |  |  \- com.github.spotbugs:spotbugs-annotations:jar:4.9.8:compile
+[INFO] |  |  |  +- org.apache.hadoop:hadoop-yarn-registry:jar:3.4.2:compile
+[INFO] |  |  |  |  \- org.apache.hadoop:hadoop-registry:jar:3.4.2:compile
+[INFO] |  |  |  +- org.apache.hadoop:hadoop-yarn-api:jar:3.4.2:compile
+[INFO] |  |  |  +- org.apache.ivy:ivy:jar:2.5.2:compile
+[INFO] |  |  |  +- org.apache.curator:apache-curator:pom:5.7.1:compile
+[INFO] |  |  |  +- org.codehaus.groovy:groovy-all:jar:2.4.21:compile
+[INFO] |  |  |  +- org.datanucleus:datanucleus-core:jar:6.0.11:compile
+[INFO] |  |  |  +- stax:stax-api:jar:1.0.1:compile
+[INFO] |  |  |  +- org.reflections:reflections:jar:0.10.2:compile
+[INFO] |  |  |  |  \- org.javassist:javassist:jar:3.28.0-GA:compile
+[INFO] |  |  |  +- com.jayway.jsonpath:json-path:jar:2.9.0:runtime
+[INFO] |  |  |  |  \- net.minidev:json-smart:jar:2.5.0:runtime
+[INFO] |  |  |  |     \- net.minidev:accessors-smart:jar:2.5.0:runtime
+[INFO] |  |  |  +- org.codehaus.janino:commons-compiler:jar:3.1.12:runtime
+[INFO] |  |  |  +- org.codehaus.janino:janino:jar:3.1.12:runtime
+[INFO] |  |  |  \- com.sun.jersey.contribs:jersey-multipart:jar:1.19.4:compile
+[INFO] |  |  |     \- org.jvnet.mimepull:mimepull:jar:1.9.3:compile
+[INFO] |  |  +- org.apache.hadoop:hadoop-annotations:jar:3.4.2:compile
+[INFO] |  |  +- org.apache.hadoop:hadoop-archives:jar:3.4.2:compile
+[INFO] |  |  +- org.apache.hadoop:hadoop-mapreduce-client-core:jar:3.4.2:compile
+[INFO] |  |  |  +- org.apache.hadoop:hadoop-yarn-client:jar:3.4.2:compile
+[INFO] |  |  |  |  \- org.eclipse.jetty.websocket:websocket-client:jar:9.4.57.v20241219:compile
+[INFO] |  |  |  |     +- org.eclipse.jetty:jetty-client:jar:9.4.57.v20241219:compile
+[INFO] |  |  |  |     \- org.eclipse.jetty.websocket:websocket-common:jar:9.4.57.v20241219:compile
+[INFO] |  |  |  |        \- org.eclipse.jetty.websocket:websocket-api:jar:9.4.57.v20241219:compile
+[INFO] |  |  |  +- org.apache.hadoop:hadoop-yarn-common:jar:3.4.2:compile
+[INFO] |  |  |  |  +- com.sun.jersey:jersey-client:jar:1.19.4:compile
+[INFO] |  |  |  |  +- com.google.inject:guice:jar:4.2.3:compile
+[INFO] |  |  |  |  |  \- aopalliance:aopalliance:jar:1.0:compile
+[INFO] |  |  |  |  +- com.sun.jersey.contribs:jersey-guice:jar:1.19.4:compile
+[INFO] |  |  |  |  \- com.fasterxml.jackson.module:jackson-module-jaxb-annotations:jar:2.18.6:compile
+[INFO] |  |  |  +- org.apache.hadoop:hadoop-hdfs-client:jar:3.4.2:compile
+[INFO] |  |  |  \- com.google.inject.extensions:guice-servlet:jar:4.2.3:compile
+[INFO] |  |  \- org.apache.hadoop:hadoop-hdfs:jar:3.4.2:compile
+[INFO] |  |     +- commons-daemon:commons-daemon:jar:1.0.13:compile
+[INFO] |  |     +- ch.qos.reload4j:reload4j:jar:1.2.22:compile
+[INFO] |  |     \- org.fusesource.leveldbjni:leveldbjni-all:jar:1.8:compile
+[INFO] |  +- jakarta.jms:jakarta.jms-api:jar:2.0.2:compile
+[INFO] |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.18.6:compile
+[INFO] |  +- com.fasterxml.jackson.core:jackson-core:jar:2.18.6:compile
+[INFO] |  +- org.apache.hadoop:hadoop-common:jar:3.4.2:compile
+[INFO] |  |  +- org.apache.hadoop.thirdparty:hadoop-shaded-protobuf_3_25:jar:1.4.0:compile
+[INFO] |  |  +- org.apache.hadoop.thirdparty:hadoop-shaded-guava:jar:1.4.0:compile
+[INFO] |  |  +- commons-cli:commons-cli:jar:1.9.0:compile
+[INFO] |  |  +- org.apache.httpcomponents:httpclient:jar:4.5.13:compile
+[INFO] |  |  |  \- org.apache.httpcomponents:httpcore:jar:4.4.13:compile
+[INFO] |  |  +- commons-codec:commons-codec:jar:1.15:compile
+[INFO] |  |  +- commons-io:commons-io:jar:2.16.1:compile
+[INFO] |  |  +- commons-net:commons-net:jar:3.9.0:compile
+[INFO] |  |  +- org.apache.commons:commons-collections4:jar:4.4:compile
+[INFO] |  |  +- javax.servlet:javax.servlet-api:jar:3.1.0:compile
+[INFO] |  |  +- jakarta.activation:jakarta.activation-api:jar:1.2.1:compile
+[INFO] |  |  +- javax.servlet.jsp:jsp-api:jar:2.1:runtime
+[INFO] |  |  +- com.sun.jersey:jersey-core:jar:1.19.4:compile
+[INFO] |  |  |  \- javax.ws.rs:jsr311-api:jar:1.1.1:compile
+[INFO] |  |  +- com.sun.jersey:jersey-servlet:jar:1.19.4:compile
+[INFO] |  |  +- com.github.pjfanning:jersey-json:jar:1.22.0:compile
+[INFO] |  |  |  \- com.sun.xml.bind:jaxb-impl:jar:2.2.3-1:compile
+[INFO] |  |  +- org.codehaus.jettison:jettison:jar:1.5.4:compile
+[INFO] |  |  +- com.sun.jersey:jersey-server:jar:1.19.4:compile
+[INFO] |  |  +- org.apache.commons:commons-configuration2:jar:2.10.1:compile
+[INFO] |  |  +- org.apache.commons:commons-text:jar:1.10.0:compile
+[INFO] |  |  +- org.apache.avro:avro:jar:1.11.4:compile
+[INFO] |  |  +- com.google.re2j:re2j:jar:1.1:compile
+[INFO] |  |  +- com.google.code.gson:gson:jar:2.9.0:compile
+[INFO] |  |  +- org.apache.hadoop:hadoop-auth:jar:3.4.2:compile
+[INFO] |  |  |  \- org.apache.kerby:kerb-util:jar:2.0.3:compile
+[INFO] |  |  |     +- org.apache.kerby:kerby-config:jar:2.0.3:compile
+[INFO] |  |  |     \- org.apache.kerby:kerb-crypto:jar:2.0.3:compile
+[INFO] |  |  +- com.jcraft:jsch:jar:0.1.55:compile
+[INFO] |  |  +- org.apache.commons:commons-compress:jar:1.26.1:compile
+[INFO] |  |  +- org.bouncycastle:bcprov-jdk18on:jar:1.78.1:compile
+[INFO] |  |  +- org.apache.kerby:kerb-core:jar:2.0.3:compile
+[INFO] |  |  |  \- org.apache.kerby:kerby-pkix:jar:2.0.3:compile
+[INFO] |  |  |     +- org.apache.kerby:kerby-asn1:jar:2.0.3:compile
+[INFO] |  |  |     \- org.apache.kerby:kerby-util:jar:2.0.3:compile
+[INFO] |  |  +- org.codehaus.woodstox:stax2-api:jar:4.2.1:compile
+[INFO] |  |  +- com.fasterxml.woodstox:woodstox-core:jar:5.4.0:compile
+[INFO] |  |  +- dnsjava:dnsjava:jar:3.6.1:compile
+[INFO] |  |  \- org.xerial.snappy:snappy-java:jar:1.1.10.4:compile
+[INFO] |  \- org.slf4j:slf4j-api:jar:1.7.30:compile
+[INFO] +- org.openjdk.jmh:jmh-core:jar:1.23:compile
+[INFO] |  +- net.sf.jopt-simple:jopt-simple:jar:4.6:compile
+[INFO] |  \- org.apache.commons:commons-math3:jar:3.6.1:compile
+[INFO] +- org.apache.logging.log4j:log4j-slf4j-impl:jar:2.25.3:compile
+[INFO] |  +- org.apache.logging.log4j:log4j-api:jar:2.25.3:compile
+[INFO] |  \- org.apache.logging.log4j:log4j-core:jar:2.25.3:compile
+[INFO] +- org.jetbrains:annotations:jar:16.0.2:compile
+[INFO] +- info.picocli:picocli:jar:3.1.0:compile
+[INFO] +- org.apache.maven.plugins:maven-jxr-plugin:jar:2.5:compile
+[INFO] |  +- org.apache.velocity:velocity:jar:1.5:compile
+[INFO] |  |  +- commons-collections:commons-collections:jar:3.1:compile
+[INFO] |  |  +- commons-lang:commons-lang:jar:2.1:compile
+[INFO] |  |  \- oro:oro:jar:2.0.8:compile
+[INFO] |  +- org.apache.maven:maven-jxr:jar:2.5:compile
+[INFO] |  +- org.apache.maven:maven-plugin-api:jar:2.2.1:compile
+[INFO] |  +- org.apache.maven:maven-project:jar:2.2.1:compile
+[INFO] |  |  +- org.apache.maven:maven-settings:jar:2.2.1:compile
+[INFO] |  |  +- org.apache.maven:maven-profile:jar:2.2.1:compile
+[INFO] |  |  +- org.apache.maven:maven-artifact-manager:jar:2.2.1:compile
+[INFO] |  |  |  +- org.apache.maven:maven-repository-metadata:jar:2.2.1:compile
+[INFO] |  |  |  \- backport-util-concurrent:backport-util-concurrent:jar:3.1:compile
+[INFO] |  |  +- org.apache.maven:maven-plugin-registry:jar:2.2.1:compile
+[INFO] |  |  +- org.codehaus.plexus:plexus-interpolation:jar:1.11:compile
+[INFO] |  |  +- org.apache.maven:maven-artifact:jar:2.2.1:compile
+[INFO] |  |  \- org.codehaus.plexus:plexus-container-default:jar:1.0-alpha-9-stable-1:compile
+[INFO] |  |     +- junit:junit:jar:4.13.2:test
+[INFO] |  |     |  \- org.hamcrest:hamcrest-core:jar:1.3:test
+[INFO] |  |     \- classworlds:classworlds:jar:1.1-alpha-2:compile
+[INFO] |  +- org.apache.maven:maven-model:jar:2.2.1:compile
+[INFO] |  +- org.apache.maven.reporting:maven-reporting-api:jar:3.0:compile
+[INFO] |  +- org.apache.maven.reporting:maven-reporting-impl:jar:2.3:compile
+[INFO] |  |  +- org.apache.maven.shared:maven-shared-utils:jar:0.6:compile
+[INFO] |  |  \- org.apache.maven.doxia:doxia-core:jar:1.2:compile
+[INFO] |  |     \- xerces:xercesImpl:jar:2.9.1:compile
+[INFO] |  +- org.apache.maven.wagon:wagon-provider-api:jar:1.0:compile
+[INFO] |  +- org.apache.maven.doxia:doxia-site-renderer:jar:1.4:compile
+[INFO] |  |  +- org.apache.maven.doxia:doxia-logging-api:jar:1.4:compile
+[INFO] |  |  +- org.apache.maven.doxia:doxia-decoration-model:jar:1.4:compile
+[INFO] |  |  +- org.apache.maven.doxia:doxia-module-xhtml:jar:1.4:compile
+[INFO] |  |  +- org.apache.maven.doxia:doxia-module-fml:jar:1.4:compile
+[INFO] |  |  +- org.codehaus.plexus:plexus-i18n:jar:1.0-beta-7:compile
+[INFO] |  |  +- org.codehaus.plexus:plexus-velocity:jar:1.1.7:compile
+[INFO] |  |  \- org.codehaus.plexus:plexus-component-annotations:jar:1.5.5:compile
+[INFO] |  +- org.apache.maven.doxia:doxia-sink-api:jar:1.4:compile
+[INFO] |  +- xml-apis:xml-apis:jar:1.0.b2:compile
+[INFO] |  \- xalan:xalan:jar:2.7.0:compile
+[INFO] +- org.junit.jupiter:junit-jupiter-engine:jar:5.13.3:test
+[INFO] |  +- org.junit.platform:junit-platform-engine:jar:1.13.3:test
+[INFO] |  |  +- org.opentest4j:opentest4j:jar:1.3.0:test
+[INFO] |  |  \- org.junit.platform:junit-platform-commons:jar:1.13.3:test
+[INFO] |  +- org.junit.jupiter:junit-jupiter-api:jar:5.13.3:test
+[INFO] |  \- org.apiguardian:apiguardian-api:jar:1.1.2:test
+[INFO] +- org.hamcrest:hamcrest-all:jar:1.3:test
+[INFO] \- com.fasterxml.jackson.core:jackson-databind:jar:2.18.6:compile
+[INFO] 
+[INFO] -------< org.apache.hive:hive-standalone-metastore-rest-catalog >-------
+[INFO] Building Hive Metastore REST Catalog 4.3.0-SNAPSHOT                [8/9]
+[INFO]   from metastore-rest-catalog/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- dependency:3.8.1:tree (default-cli) @ hive-standalone-metastore-rest-catalog ---
+[INFO] org.apache.hive:hive-standalone-metastore-rest-catalog:jar:4.3.0-SNAPSHOT
+[INFO] +- org.apache.hive:hive-standalone-metastore-server:jar:4.3.0-SNAPSHOT:provided
+[INFO] |  +- org.apache.hive:hive-standalone-metastore-client:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  +- org.apache.httpcomponents.client5:httpclient5:jar:5.3.1:compile
+[INFO] |  +- org.apache.orc:orc-core:jar:2.1.2:compile
+[INFO] |  |  +- org.apache.orc:orc-shims:jar:2.1.2:compile
+[INFO] |  |  +- org.apache.orc:orc-format:jar:1.1.0:compile
+[INFO] |  |  +- com.github.luben:zstd-jni:jar:1.5.6-10:compile
+[INFO] |  |  +- org.apache.hadoop:hadoop-client-runtime:jar:3.4.1:runtime
+[INFO] |  |  +- org.jetbrains:annotations:jar:17.0.0:compile
+[INFO] |  |  +- org.threeten:threeten-extra:jar:1.8.0:compile
+[INFO] |  |  \- com.aayushatharva.brotli4j:brotli4j:jar:1.18.0:compile
+[INFO] |  |     +- com.aayushatharva.brotli4j:service:jar:1.18.0:compile
+[INFO] |  |     \- com.aayushatharva.brotli4j:native-linux-x86_64:jar:1.18.0:compile
+[INFO] |  +- org.apache.datasketches:datasketches-hive:jar:2.0.0:provided
+[INFO] |  |  \- org.apache.datasketches:datasketches-java:jar:6.0.0:provided
+[INFO] |  |     \- org.apache.datasketches:datasketches-memory:jar:2.2.0:provided
+[INFO] |  +- org.reflections:reflections:jar:0.10.2:provided
+[INFO] |  |  \- org.javassist:javassist:jar:3.28.0-GA:provided
+[INFO] |  +- com.github.joshelser:dropwizard-metrics-hadoop-metrics2-reporter:jar:0.1.2:compile
+[INFO] |  +- com.google.guava:guava:jar:22.0:compile
+[INFO] |  |  +- com.google.errorprone:error_prone_annotations:jar:2.0.18:compile
+[INFO] |  |  +- com.google.j2objc:j2objc-annotations:jar:1.1:compile
+[INFO] |  |  \- org.codehaus.mojo:animal-sniffer-annotations:jar:1.14:compile
+[INFO] |  +- com.google.protobuf:protobuf-java:jar:3.25.5:compile
+[INFO] |  +- com.zaxxer:HikariCP:jar:4.0.3:compile
+[INFO] |  +- org.apache.commons:commons-dbcp2:jar:2.14.0:provided
+[INFO] |  |  +- org.apache.commons:commons-pool2:jar:2.13.0:provided
+[INFO] |  |  +- commons-logging:commons-logging:jar:1.3.5:compile
+[INFO] |  |  \- jakarta.transaction:jakarta.transaction-api:jar:1.3.3:provided
+[INFO] |  +- io.dropwizard.metrics:metrics-core:jar:3.1.0:compile
+[INFO] |  +- io.dropwizard.metrics:metrics-jvm:jar:3.1.0:compile
+[INFO] |  +- io.dropwizard.metrics:metrics-json:jar:3.1.0:compile
+[INFO] |  +- javolution:javolution:jar:5.5.1:compile
+[INFO] |  +- org.antlr:antlr4-runtime:jar:4.9.3:provided
+[INFO] |  +- org.apache.commons:commons-lang3:jar:3.17.0:compile
+[INFO] |  +- org.apache.commons:commons-collections4:jar:4.4:compile
+[INFO] |  +- commons-beanutils:commons-beanutils:jar:1.9.4:compile
+[INFO] |  +- org.apache.hive:hive-storage-api:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  +- org.apache.logging.log4j:log4j-slf4j-impl:jar:2.25.3:compile
+[INFO] |  |  \- org.apache.logging.log4j:log4j-api:jar:2.25.3:compile
+[INFO] |  +- org.apache.logging.log4j:log4j-1.2-api:jar:2.25.3:compile
+[INFO] |  +- org.apache.logging.log4j:log4j-core:jar:2.25.3:compile
+[INFO] |  +- org.apache.thrift:libfb303:jar:0.9.3:compile
+[INFO] |  +- org.apache.thrift:libthrift:jar:0.23.0:compile
+[INFO] |  +- org.datanucleus:datanucleus-api-jdo:jar:6.0.5:provided
+[INFO] |  +- org.datanucleus:datanucleus-core:jar:6.0.11:provided
+[INFO] |  +- org.datanucleus:datanucleus-rdbms:jar:6.0.11:provided
+[INFO] |  +- org.datanucleus:javax.jdo:jar:3.2.0-release:provided
+[INFO] |  |  +- javax.transaction:javax.transaction-api:jar:1.3:provided
+[INFO] |  |  \- org.glassfish.corba:glassfish-corba-omgapi:jar:4.2.2:provided
+[INFO] |  +- sqlline:sqlline:jar:1.9.0:provided
+[INFO] |  +- org.jline:jline:jar:3.25.0:compile
+[INFO] |  +- com.cronutils:cron-utils:jar:9.2.1:provided
+[INFO] |  +- org.apache.derby:derby:jar:10.17.1.0:runtime
+[INFO] |  |  \- org.apache.derby:derbyshared:jar:10.17.1.0:runtime
+[INFO] |  +- org.eclipse.jetty:jetty-util:jar:9.4.57.v20241219:compile
+[INFO] |  +- org.eclipse.jetty:jetty-server:jar:9.4.57.v20241219:compile
+[INFO] |  |  +- org.eclipse.jetty:jetty-http:jar:9.4.57.v20241219:compile
+[INFO] |  |  \- org.eclipse.jetty:jetty-io:jar:9.4.57.v20241219:compile
+[INFO] |  +- org.eclipse.jetty:jetty-servlet:jar:9.4.57.v20241219:compile
+[INFO] |  |  +- org.eclipse.jetty:jetty-security:jar:9.4.57.v20241219:compile
+[INFO] |  |  \- org.eclipse.jetty:jetty-util-ajax:jar:9.4.57.v20241219:compile
+[INFO] |  +- org.springframework:spring-jdbc:jar:5.3.39:provided
+[INFO] |  |  +- org.springframework:spring-beans:jar:5.3.39:compile
+[INFO] |  |  \- org.springframework:spring-tx:jar:5.3.39:compile
+[INFO] |  +- org.springframework:spring-core:jar:5.3.39:compile
+[INFO] |  |  \- org.springframework:spring-jcl:jar:5.3.39:compile
+[INFO] |  +- com.nimbusds:oauth2-oidc-sdk:jar:11.28:provided
+[INFO] |  |  +- com.github.stephenc.jcip:jcip-annotations:jar:1.0-1:compile
+[INFO] |  |  +- com.nimbusds:content-type:jar:2.3:provided
+[INFO] |  |  +- net.minidev:json-smart:jar:2.5.2:provided
+[INFO] |  |  |  \- net.minidev:accessors-smart:jar:2.5.2:provided
+[INFO] |  |  \- com.nimbusds:lang-tag:jar:1.7:provided
+[INFO] |  \- org.pac4j:pac4j-core:jar:4.5.8:provided
+[INFO] +- org.apache.hive:hive-standalone-metastore-common:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  +- org.apache.commons:commons-jexl3:jar:3.3:compile
+[INFO] |  +- io.grpc:grpc-netty-shaded:jar:1.72.0:compile
+[INFO] |  |  +- io.grpc:grpc-util:jar:1.72.0:runtime
+[INFO] |  |  +- io.grpc:grpc-core:jar:1.72.0:compile
+[INFO] |  |  |  +- com.google.android:annotations:jar:4.1.1.4:runtime
+[INFO] |  |  |  \- io.grpc:grpc-context:jar:1.72.0:runtime
+[INFO] |  |  +- io.perfmark:perfmark-api:jar:0.27.0:runtime
+[INFO] |  |  \- io.grpc:grpc-api:jar:1.72.0:compile
+[INFO] |  +- io.grpc:grpc-protobuf:jar:1.72.0:compile
+[INFO] |  |  +- com.google.api.grpc:proto-google-common-protos:jar:2.51.0:compile
+[INFO] |  |  \- io.grpc:grpc-protobuf-lite:jar:1.72.0:runtime
+[INFO] |  +- io.grpc:grpc-stub:jar:1.72.0:compile
+[INFO] |  +- javax.annotation:javax.annotation-api:jar:1.3.2:compile
+[INFO] |  +- org.antlr:ST4:jar:4.0.4:compile
+[INFO] |  |  \- org.antlr:antlr-runtime:jar:3.3:compile
+[INFO] |  |     \- org.antlr:stringtemplate:jar:3.2.1:compile
+[INFO] |  |        \- antlr:antlr:jar:2.7.7:compile
+[INFO] |  +- org.apache.httpcomponents.core5:httpcore5:jar:5.4.3:compile
+[INFO] |  +- org.apache.zookeeper:zookeeper:jar:3.8.4:compile
+[INFO] |  |  +- org.apache.zookeeper:zookeeper-jute:jar:3.8.4:compile
+[INFO] |  |  \- org.apache.yetus:audience-annotations:jar:0.12.0:compile
+[INFO] |  +- com.github.ben-manes.caffeine:caffeine:jar:2.8.4:compile
+[INFO] |  |  \- org.checkerframework:checker-qual:jar:3.4.0:compile
+[INFO] |  +- org.apache.curator:curator-recipes:jar:5.7.1:compile
+[INFO] |  +- org.apache.curator:curator-framework:jar:5.7.1:compile
+[INFO] |  |  \- org.apache.curator:curator-client:jar:5.7.1:compile
+[INFO] |  +- org.slf4j:slf4j-api:jar:1.7.30:compile
+[INFO] |  \- org.springframework.ldap:spring-ldap-core:jar:2.4.4:compile
+[INFO] +- org.apache.hive:hive-iceberg-catalog:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  +- org.apache.hive:hive-iceberg-shading:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  +- org.apache.hive:hive-serde:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  +- org.apache.hive:hive-common:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  |  +- org.apache.hive:hive-classification:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  |  +- org.eclipse.jetty:jetty-rewrite:jar:9.4.57.v20241219:compile
+[INFO] |  |  |  +- joda-time:joda-time:jar:2.13.0:compile
+[INFO] |  |  |  +- org.apache.logging.log4j:log4j-web:jar:2.25.3:compile
+[INFO] |  |  |  +- net.sf.jpam:jpam:jar:1.1:compile
+[INFO] |  |  |  +- org.apache.tez:tez-api:jar:0.10.5:compile
+[INFO] |  |  |  +- org.fusesource.jansi:jansi:jar:2.4.0:compile
+[INFO] |  |  |  +- com.tdunning:json:jar:1.8:compile
+[INFO] |  |  |  +- io.opentelemetry:opentelemetry-api:jar:1.60.1:compile
+[INFO] |  |  |  |  \- io.opentelemetry:opentelemetry-context:jar:1.60.1:compile
+[INFO] |  |  |  |     \- io.opentelemetry:opentelemetry-common:jar:1.60.1:compile
+[INFO] |  |  |  +- io.opentelemetry:opentelemetry-exporter-otlp:jar:1.60.1:compile
+[INFO] |  |  |  |  +- io.opentelemetry:opentelemetry-sdk-trace:jar:1.60.1:compile
+[INFO] |  |  |  |  +- io.opentelemetry:opentelemetry-sdk-metrics:jar:1.60.1:compile
+[INFO] |  |  |  |  +- io.opentelemetry:opentelemetry-sdk-logs:jar:1.60.1:compile
+[INFO] |  |  |  |  +- io.opentelemetry:opentelemetry-exporter-otlp-common:jar:1.60.1:runtime
+[INFO] |  |  |  |  |  \- io.opentelemetry:opentelemetry-exporter-common:jar:1.60.1:runtime
+[INFO] |  |  |  |  +- io.opentelemetry:opentelemetry-exporter-sender-okhttp:jar:1.60.1:runtime
+[INFO] |  |  |  |  |  \- com.squareup.okhttp3:okhttp-jvm:jar:5.3.2:runtime
+[INFO] |  |  |  |  |     +- com.squareup.okio:okio-jvm:jar:3.16.4:runtime
+[INFO] |  |  |  |  |     \- org.jetbrains.kotlin:kotlin-stdlib:jar:2.2.21:runtime
+[INFO] |  |  |  |  \- io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi:jar:1.60.1:runtime
+[INFO] |  |  |  \- io.opentelemetry:opentelemetry-sdk:jar:1.60.1:compile
+[INFO] |  |  |     \- io.opentelemetry:opentelemetry-sdk-common:jar:1.60.1:compile
+[INFO] |  |  +- org.apache.hive:hive-service-rpc:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  +- com.carrotsearch:hppc:jar:0.7.2:compile
+[INFO] |  |  +- com.google.flatbuffers:flatbuffers-java:jar:1.12.0:compile
+[INFO] |  |  +- com.opencsv:opencsv:jar:5.9:compile
+[INFO] |  |  +- org.apache.parquet:parquet-hadoop-bundle:jar:1.16.0:compile
+[INFO] |  |  \- com.esri.geometry:esri-geometry-api:jar:2.2.4:compile
+[INFO] |  +- org.apache.hadoop:hadoop-client:jar:3.4.2:compile
+[INFO] |  |  \- org.apache.hadoop:hadoop-mapreduce-client-jobclient:jar:3.4.2:compile
+[INFO] |  |     +- org.apache.hadoop:hadoop-mapreduce-client-common:jar:3.4.2:compile
+[INFO] |  |     \- org.slf4j:slf4j-reload4j:jar:1.7.36:compile
+[INFO] |  |        \- ch.qos.reload4j:reload4j:jar:1.2.19:compile
+[INFO] |  +- org.apache.httpcomponents.core5:httpcore5-h2:jar:5.4.3:compile
+[INFO] |  \- org.mockito:mockito-inline:jar:5.2.0:compile
+[INFO] |     \- org.mockito:mockito-core:jar:5.17.0:test
+[INFO] |        +- net.bytebuddy:byte-buddy-agent:jar:1.15.11:test
+[INFO] |        \- org.objenesis:objenesis:jar:3.3:runtime
+[INFO] +- org.springframework.boot:spring-boot-starter-web:jar:2.7.18:compile
+[INFO] |  +- org.springframework.boot:spring-boot-starter:jar:2.7.18:compile
+[INFO] |  |  +- org.springframework.boot:spring-boot:jar:2.7.18:compile
+[INFO] |  |  +- org.springframework.boot:spring-boot-autoconfigure:jar:2.7.18:compile
+[INFO] |  |  \- org.yaml:snakeyaml:jar:1.30:compile
+[INFO] |  +- org.springframework.boot:spring-boot-starter-json:jar:2.7.18:compile
+[INFO] |  |  \- com.fasterxml.jackson.module:jackson-module-parameter-names:jar:2.18.6:compile
+[INFO] |  +- org.springframework:spring-web:jar:5.3.31:compile
+[INFO] |  \- org.springframework:spring-webmvc:jar:5.3.31:compile
+[INFO] |     +- org.springframework:spring-aop:jar:5.3.31:compile
+[INFO] |     +- org.springframework:spring-context:jar:5.3.31:compile
+[INFO] |     \- org.springframework:spring-expression:jar:5.3.31:compile
+[INFO] +- org.springframework.boot:spring-boot-starter-jetty:jar:2.7.18:compile
+[INFO] |  +- jakarta.servlet:jakarta.servlet-api:jar:4.0.4:compile
+[INFO] |  +- jakarta.websocket:jakarta.websocket-api:jar:1.1.2:compile
+[INFO] |  +- org.apache.tomcat.embed:tomcat-embed-el:jar:9.0.83:compile
+[INFO] |  +- org.eclipse.jetty:jetty-servlets:jar:9.4.57.v20241219:compile
+[INFO] |  |  \- org.eclipse.jetty:jetty-continuation:jar:9.4.57.v20241219:compile
+[INFO] |  +- org.eclipse.jetty:jetty-webapp:jar:9.4.57.v20241219:compile
+[INFO] |  |  \- org.eclipse.jetty:jetty-xml:jar:9.4.57.v20241219:compile
+[INFO] |  +- org.eclipse.jetty.websocket:websocket-server:jar:9.4.57.v20241219:compile
+[INFO] |  |  +- org.eclipse.jetty.websocket:websocket-common:jar:9.4.57.v20241219:compile
+[INFO] |  |  |  \- org.eclipse.jetty.websocket:websocket-api:jar:9.4.57.v20241219:compile
+[INFO] |  |  +- org.eclipse.jetty.websocket:websocket-client:jar:9.4.57.v20241219:compile
+[INFO] |  |  |  \- org.eclipse.jetty:jetty-client:jar:9.4.57.v20241219:compile
+[INFO] |  |  \- org.eclipse.jetty.websocket:websocket-servlet:jar:9.4.57.v20241219:compile
+[INFO] |  \- org.eclipse.jetty.websocket:javax-websocket-server-impl:jar:9.4.57.v20241219:compile
+[INFO] |     +- org.eclipse.jetty:jetty-annotations:jar:9.4.57.v20241219:compile
+[INFO] |     |  +- org.eclipse.jetty:jetty-plus:jar:9.4.57.v20241219:compile
+[INFO] |     |  +- org.ow2.asm:asm:jar:9.7.1:compile
+[INFO] |     |  \- org.ow2.asm:asm-commons:jar:9.7.1:compile
+[INFO] |     |     \- org.ow2.asm:asm-tree:jar:9.7.1:compile
+[INFO] |     \- org.eclipse.jetty.websocket:javax-websocket-client-impl:jar:9.4.57.v20241219:compile
+[INFO] +- org.springframework.boot:spring-boot-starter-actuator:jar:2.7.18:compile
+[INFO] |  +- org.springframework.boot:spring-boot-actuator-autoconfigure:jar:2.7.18:compile
+[INFO] |  |  \- org.springframework.boot:spring-boot-actuator:jar:2.7.18:compile
+[INFO] |  \- io.micrometer:micrometer-core:jar:1.9.17:compile
+[INFO] |     +- org.hdrhistogram:HdrHistogram:jar:2.1.12:compile
+[INFO] |     \- org.latencyutils:LatencyUtils:jar:2.0.3:runtime
+[INFO] +- io.micrometer:micrometer-registry-prometheus:jar:1.9.17:compile
+[INFO] |  \- io.prometheus:simpleclient_common:jar:0.15.0:compile
+[INFO] |     \- io.prometheus:simpleclient:jar:0.15.0:compile
+[INFO] |        +- io.prometheus:simpleclient_tracer_otel:jar:0.15.0:compile
+[INFO] |        |  \- io.prometheus:simpleclient_tracer_common:jar:0.15.0:compile
+[INFO] |        \- io.prometheus:simpleclient_tracer_otel_agent:jar:0.15.0:compile
+[INFO] +- org.apache.hive:hive-exec:jar:core:4.3.0-SNAPSHOT:test
+[INFO] |  +- org.graalvm.js:js-scriptengine:jar:23.0.8:test
+[INFO] |  |  \- org.graalvm.sdk:graal-sdk:jar:23.0.8:test
+[INFO] |  +- org.graalvm.js:js:jar:23.0.8:test
+[INFO] |  |  +- org.graalvm.regex:regex:jar:23.0.8:test
+[INFO] |  |  +- org.graalvm.truffle:truffle-api:jar:23.0.8:test
+[INFO] |  |  \- com.ibm.icu:icu4j:jar:72.1:test
+[INFO] |  +- org.apache.atlas:atlas-client-v2:jar:2.4.0:test
+[INFO] |  |  \- cglib:cglib:jar:2.2.2:test
+[INFO] |  |     \- asm:asm:jar:3.3.1:test
+[INFO] |  +- org.apache.atlas:atlas-client-common:jar:2.4.0:test
+[INFO] |  |  \- javax.xml.bind:jaxb-api:jar:2.3.1:compile
+[INFO] |  |     \- javax.activation:javax.activation-api:jar:1.2.0:compile
+[INFO] |  +- org.apache.atlas:atlas-intg:jar:2.4.0:test
+[INFO] |  |  +- com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:jar:2.18.6:compile
+[INFO] |  |  +- com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:jar:2.18.6:compile
+[INFO] |  |  +- commons-validator:commons-validator:jar:1.6:test
+[INFO] |  |  |  \- commons-digester:commons-digester:jar:1.8.1:test
+[INFO] |  |  \- javax.inject:javax.inject:jar:1:compile
+[INFO] |  +- commons-configuration:commons-configuration:jar:1.10:test
+[INFO] |  |  \- commons-lang:commons-lang:jar:2.6:compile
+[INFO] |  +- org.apache.commons:commons-math3:jar:3.6.1:compile
+[INFO] |  +- org.apache.hive:hive-vector-code-gen:jar:4.3.0-SNAPSHOT:test
+[INFO] |  +- org.apache.hive:hive-llap-tez:jar:4.3.0-SNAPSHOT:test
+[INFO] |  |  +- org.apache.hive:hive-llap-client:jar:4.3.0-SNAPSHOT:test
+[INFO] |  |  \- org.apache.hive:hive-llap-common:jar:4.3.0-SNAPSHOT:test
+[INFO] |  |     +- io.jsonwebtoken:jjwt-api:jar:0.10.5:test
+[INFO] |  |     +- io.jsonwebtoken:jjwt-impl:jar:0.10.5:test
+[INFO] |  |     \- io.jsonwebtoken:jjwt-jackson:jar:0.10.5:test
+[INFO] |  +- org.apache.hive:hive-shims:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  +- org.apache.hive.shims:hive-shims-common:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  \- org.apache.hive.shims:hive-shims-0.23:jar:4.3.0-SNAPSHOT:runtime
+[INFO] |  |     \- org.apache.hadoop:hadoop-yarn-server-resourcemanager:jar:3.4.2:runtime
+[INFO] |  |        +- org.apache.hadoop:hadoop-yarn-server-common:jar:3.4.2:runtime
+[INFO] |  |        |  +- javax.cache:cache-api:jar:1.1.1:runtime
+[INFO] |  |        |  +- org.ehcache:ehcache:jar:3.8.2:runtime
+[INFO] |  |        |  \- com.microsoft.sqlserver:mssql-jdbc:jar:6.2.1.jre8:runtime
+[INFO] |  |        +- org.apache.hadoop:hadoop-yarn-server-applicationhistoryservice:jar:3.4.2:runtime
+[INFO] |  |        |  \- de.ruedigermoeller:fst:jar:2.50:runtime
+[INFO] |  |        +- org.apache.hadoop:hadoop-yarn-server-web-proxy:jar:3.4.2:runtime
+[INFO] |  |        |  \- org.bouncycastle:bcpkix-jdk18on:jar:1.78.1:runtime
+[INFO] |  |        |     \- org.bouncycastle:bcutil-jdk18on:jar:1.78.1:runtime
+[INFO] |  |        \- org.jsonschema2pojo:jsonschema2pojo-core:jar:1.0.2:runtime
+[INFO] |  |           \- com.sun.codemodel:codemodel:jar:2.6:runtime
+[INFO] |  +- com.amazonaws.secretsmanager:aws-secretsmanager-caching-java:jar:2.2.0:test
+[INFO] |  |  \- com.github.spotbugs:spotbugs-annotations:jar:4.9.8:test
+[INFO] |  +- commons-codec:commons-codec:jar:1.15:compile
+[INFO] |  +- commons-io:commons-io:jar:2.16.1:compile
+[INFO] |  +- commons-collections:commons-collections:jar:3.2.2:compile
+[INFO] |  +- org.apache.commons:commons-text:jar:1.10.0:compile
+[INFO] |  +- org.apache.ant:ant:jar:1.10.15:compile
+[INFO] |  |  \- org.apache.ant:ant-launcher:jar:1.10.15:compile
+[INFO] |  +- org.apache.commons:commons-compress:jar:1.26.0:compile
+[INFO] |  +- org.apache.hadoop:hadoop-yarn-registry:jar:3.4.2:test
+[INFO] |  |  \- org.apache.hadoop:hadoop-registry:jar:3.4.2:runtime
+[INFO] |  +- org.apache.hadoop:hadoop-yarn-api:jar:3.4.2:compile
+[INFO] |  +- org.apache.ivy:ivy:jar:2.5.2:test
+[INFO] |  +- org.apache.curator:apache-curator:pom:5.7.1:test
+[INFO] |  +- org.codehaus.groovy:groovy-all:jar:2.4.21:test
+[INFO] |  +- com.google.code.gson:gson:jar:2.9.0:compile
+[INFO] |  +- stax:stax-api:jar:1.0.1:test
+[INFO] |  +- com.jayway.jsonpath:json-path:jar:2.9.0:test
+[INFO] |  +- org.codehaus.janino:commons-compiler:jar:3.1.12:test
+[INFO] |  +- org.codehaus.janino:janino:jar:3.1.12:test
+[INFO] |  \- com.sun.jersey.contribs:jersey-multipart:jar:1.19.4:test
+[INFO] |     \- org.jvnet.mimepull:mimepull:jar:1.9.3:test
+[INFO] +- org.apache.hive:hive-standalone-metastore-common:jar:tests:4.3.0-SNAPSHOT:test
+[INFO] +- org.apache.hive:hive-standalone-metastore-server:jar:tests:4.3.0-SNAPSHOT:test
+[INFO] +- org.apache.iceberg:iceberg-api:jar:tests:1.11.0:test
+[INFO] |  \- org.apache.iceberg:iceberg-bundled-guava:jar:1.11.0:test
+[INFO] +- org.apache.iceberg:iceberg-core:jar:tests:1.11.0:test
+[INFO] |  +- org.apache.iceberg:iceberg-api:jar:1.11.0:test
+[INFO] |  +- org.apache.avro:avro:jar:1.12.1:compile
+[INFO] |  +- org.apache.iceberg:iceberg-common:jar:1.11.0:test
+[INFO] |  +- io.airlift:aircompressor:jar:2.0.3:compile
+[INFO] |  +- com.fasterxml.jackson.core:jackson-core:jar:2.18.6:compile
+[INFO] |  \- org.roaringbitmap:RoaringBitmap:jar:1.6.14:test
+[INFO] +- org.apache.iceberg:iceberg-open-api:jar:test-fixtures:1.11.0:test
+[INFO] +- org.assertj:assertj-core:jar:3.27.3:test
+[INFO] |  \- net.bytebuddy:byte-buddy:jar:1.15.11:test
+[INFO] +- junit:junit:jar:4.13.2:test
+[INFO] |  \- org.hamcrest:hamcrest-core:jar:1.3:test
+[INFO] +- com.github.tomakehurst:wiremock-jre8-standalone:jar:2.32.0:test
+[INFO] +- org.junit.jupiter:junit-jupiter:jar:5.13.3:test
+[INFO] |  +- org.junit.jupiter:junit-jupiter-api:jar:5.13.3:test
+[INFO] |  |  +- org.opentest4j:opentest4j:jar:1.3.0:test
+[INFO] |  |  \- org.junit.platform:junit-platform-commons:jar:1.13.3:test
+[INFO] |  +- org.junit.jupiter:junit-jupiter-params:jar:5.13.3:test
+[INFO] |  \- org.junit.jupiter:junit-jupiter-engine:jar:5.13.3:test
+[INFO] +- org.junit.platform:junit-platform-launcher:jar:1.13.3:test
+[INFO] |  +- org.junit.platform:junit-platform-engine:jar:1.13.3:test
+[INFO] |  \- org.apiguardian:apiguardian-api:jar:1.1.2:test
+[INFO] +- org.apache.hadoop:hadoop-auth:jar:3.4.2:compile
+[INFO] |  +- org.apache.httpcomponents:httpclient:jar:4.5.13:compile
+[INFO] |  +- com.nimbusds:nimbus-jose-jwt:jar:9.37.2:compile
+[INFO] |  +- org.apache.kerby:kerb-core:jar:2.0.3:compile
+[INFO] |  |  \- org.apache.kerby:kerby-pkix:jar:2.0.3:compile
+[INFO] |  |     +- org.apache.kerby:kerby-asn1:jar:2.0.3:compile
+[INFO] |  |     \- org.apache.kerby:kerby-util:jar:2.0.3:compile
+[INFO] |  +- org.apache.kerby:kerb-util:jar:2.0.3:compile
+[INFO] |  |  +- org.apache.kerby:kerby-config:jar:2.0.3:compile
+[INFO] |  |  \- org.apache.kerby:kerb-crypto:jar:2.0.3:compile
+[INFO] |  \- org.apache.hadoop.thirdparty:hadoop-shaded-guava:jar:1.4.0:compile
+[INFO] +- org.apache.hadoop:hadoop-common:jar:3.4.2:compile
+[INFO] |  +- org.apache.hadoop.thirdparty:hadoop-shaded-protobuf_3_25:jar:1.4.0:compile
+[INFO] |  +- org.apache.hadoop:hadoop-annotations:jar:3.4.2:compile
+[INFO] |  +- commons-cli:commons-cli:jar:1.9.0:compile
+[INFO] |  +- commons-net:commons-net:jar:3.9.0:compile
+[INFO] |  +- javax.servlet:javax.servlet-api:jar:3.1.0:compile
+[INFO] |  +- jakarta.activation:jakarta.activation-api:jar:1.2.1:compile
+[INFO] |  +- javax.servlet.jsp:jsp-api:jar:2.1:runtime
+[INFO] |  +- com.sun.jersey:jersey-core:jar:1.19.4:compile
+[INFO] |  |  \- javax.ws.rs:jsr311-api:jar:1.1.1:compile
+[INFO] |  +- com.sun.jersey:jersey-servlet:jar:1.19.4:compile
+[INFO] |  +- com.github.pjfanning:jersey-json:jar:1.22.0:compile
+[INFO] |  |  \- com.sun.xml.bind:jaxb-impl:jar:2.2.3-1:compile
+[INFO] |  +- org.codehaus.jettison:jettison:jar:1.5.4:compile
+[INFO] |  +- com.sun.jersey:jersey-server:jar:1.19.4:compile
+[INFO] |  +- org.apache.commons:commons-configuration2:jar:2.10.1:compile
+[INFO] |  +- com.google.re2j:re2j:jar:1.1:compile
+[INFO] |  +- com.jcraft:jsch:jar:0.1.55:compile
+[INFO] |  +- com.google.code.findbugs:jsr305:jar:3.0.2:compile
+[INFO] |  +- io.netty:netty-handler:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-common:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-resolver:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-buffer:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-transport:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-transport-native-unix-common:jar:4.1.127.Final:compile
+[INFO] |  |  \- io.netty:netty-codec:jar:4.1.127.Final:compile
+[INFO] |  +- io.netty:netty-transport-native-epoll:jar:4.1.127.Final:compile
+[INFO] |  |  \- io.netty:netty-transport-classes-epoll:jar:4.1.127.Final:compile
+[INFO] |  +- org.bouncycastle:bcprov-jdk18on:jar:1.78.1:compile
+[INFO] |  +- org.codehaus.woodstox:stax2-api:jar:4.2.1:compile
+[INFO] |  +- com.fasterxml.woodstox:woodstox-core:jar:5.4.0:compile
+[INFO] |  +- dnsjava:dnsjava:jar:3.6.1:compile
+[INFO] |  \- org.xerial.snappy:snappy-java:jar:1.1.10.4:compile
+[INFO] +- org.apache.hadoop:hadoop-hdfs-client:jar:3.4.2:compile
+[INFO] |  +- org.apache.httpcomponents:httpcore:jar:4.4.13:compile
+[INFO] |  \- com.fasterxml.jackson.core:jackson-annotations:jar:2.18.6:compile
+[INFO] +- org.apache.hadoop:hadoop-hdfs:jar:3.4.2:compile
+[INFO] |  +- commons-daemon:commons-daemon:jar:1.0.13:compile
+[INFO] |  +- io.netty:netty-all:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-codec-dns:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-codec-haproxy:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-codec-http:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-codec-http2:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-codec-memcache:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-codec-mqtt:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-codec-redis:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-codec-smtp:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-codec-socks:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-codec-stomp:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-codec-xml:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-handler-proxy:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-handler-ssl-ocsp:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-resolver-dns:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-transport-rxtx:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-transport-sctp:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-transport-udt:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-transport-classes-kqueue:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-resolver-dns-classes-macos:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-transport-native-epoll:jar:linux-x86_64:4.1.127.Final:runtime
+[INFO] |  |  +- io.netty:netty-transport-native-epoll:jar:linux-aarch_64:4.1.127.Final:runtime
+[INFO] |  |  +- io.netty:netty-transport-native-epoll:jar:linux-riscv64:4.1.127.Final:runtime
+[INFO] |  |  +- io.netty:netty-transport-native-kqueue:jar:osx-x86_64:4.1.127.Final:runtime
+[INFO] |  |  +- io.netty:netty-transport-native-kqueue:jar:osx-aarch_64:4.1.127.Final:runtime
+[INFO] |  |  +- io.netty:netty-resolver-dns-native-macos:jar:osx-x86_64:4.1.127.Final:runtime
+[INFO] |  |  \- io.netty:netty-resolver-dns-native-macos:jar:osx-aarch_64:4.1.127.Final:runtime
+[INFO] |  \- org.fusesource.leveldbjni:leveldbjni-all:jar:1.8:compile
+[INFO] +- org.apache.hadoop:hadoop-mapreduce-client-core:jar:3.4.2:compile
+[INFO] |  +- org.apache.hadoop:hadoop-yarn-client:jar:3.4.2:compile
+[INFO] |  +- org.apache.hadoop:hadoop-yarn-common:jar:3.4.2:compile
+[INFO] |  |  +- com.sun.jersey:jersey-client:jar:1.19.4:compile
+[INFO] |  |  +- com.google.inject:guice:jar:4.2.3:compile
+[INFO] |  |  |  \- aopalliance:aopalliance:jar:1.0:compile
+[INFO] |  |  +- com.sun.jersey.contribs:jersey-guice:jar:1.19.4:compile
+[INFO] |  |  \- com.fasterxml.jackson.module:jackson-module-jaxb-annotations:jar:2.18.6:compile
+[INFO] |  \- com.google.inject.extensions:guice-servlet:jar:4.2.3:compile
+[INFO] +- org.keycloak:keycloak-admin-client:jar:26.0.6:test
+[INFO] |  +- org.keycloak:keycloak-client-common-synced:jar:26.0.6:test
+[INFO] |  |  +- org.jboss.logging:jboss-logging:jar:3.6.0.Final:test
+[INFO] |  |  \- org.jboss.logging:commons-logging-jboss-logging:jar:1.0.0.Final:test
+[INFO] |  +- com.fasterxml.jackson.datatype:jackson-datatype-jdk8:jar:2.18.6:compile
+[INFO] |  +- com.fasterxml.jackson.datatype:jackson-datatype-jsr310:jar:2.18.6:compile
+[INFO] |  +- org.eclipse.microprofile.openapi:microprofile-openapi-api:jar:3.1.1:test
+[INFO] |  +- org.jboss.resteasy:resteasy-client:jar:6.2.9.Final:test
+[INFO] |  |  +- org.jboss.resteasy:resteasy-client-api:jar:6.2.9.Final:test
+[INFO] |  |  +- org.jboss.resteasy:resteasy-core-spi:jar:6.2.9.Final:test
+[INFO] |  |  |  \- jakarta.validation:jakarta.validation-api:jar:3.0.2:test
+[INFO] |  |  +- org.jboss.resteasy:resteasy-core:jar:6.2.9.Final:test
+[INFO] |  |  |  +- org.jboss:jandex:jar:2.4.5.Final:test
+[INFO] |  |  |  +- org.eclipse.angus:angus-activation:jar:1.0.0:test
+[INFO] |  |  |  \- com.ibm.async:asyncutil:jar:0.1.0:test
+[INFO] |  |  +- jakarta.ws.rs:jakarta.ws.rs-api:jar:3.1.0:test
+[INFO] |  |  \- org.reactivestreams:reactive-streams:jar:1.0.4:test
+[INFO] |  +- org.jboss.resteasy:resteasy-multipart-provider:jar:6.2.9.Final:test
+[INFO] |  |  +- jakarta.mail:jakarta.mail-api:jar:2.1.2:test
+[INFO] |  |  +- org.eclipse.angus:angus-mail:jar:1.0.0:test
+[INFO] |  |  +- org.apache.james:apache-mime4j-dom:jar:0.8.11:test
+[INFO] |  |  |  \- org.apache.james:apache-mime4j-core:jar:0.8.11:test
+[INFO] |  |  \- org.apache.james:apache-mime4j-storage:jar:0.8.11:test
+[INFO] |  +- org.jboss.resteasy:resteasy-jackson2-provider:jar:6.2.9.Final:test
+[INFO] |  |  +- com.fasterxml.jackson.jakarta.rs:jackson-jakarta-rs-base:jar:2.18.6:test
+[INFO] |  |  +- com.fasterxml.jackson.jakarta.rs:jackson-jakarta-rs-json-provider:jar:2.18.6:test
+[INFO] |  |  +- com.fasterxml.jackson.module:jackson-module-jakarta-xmlbind-annotations:jar:2.18.6:test
+[INFO] |  |  \- com.github.java-json-tools:json-patch:jar:1.13:test
+[INFO] |  |     +- com.github.java-json-tools:msg-simple:jar:1.2:test
+[INFO] |  |     |  \- com.github.java-json-tools:btf:jar:1.3:test
+[INFO] |  |     \- com.github.java-json-tools:jackson-coreutils:jar:2.0:test
+[INFO] |  \- org.jboss.resteasy:resteasy-jaxb-provider:jar:6.2.9.Final:test
+[INFO] |     +- jakarta.xml.bind:jakarta.xml.bind-api:jar:3.0.1:test
+[INFO] |     +- org.glassfish.jaxb:codemodel:jar:4.0.3:test
+[INFO] |     +- org.glassfish.jaxb:jaxb-core:jar:4.0.3:test
+[INFO] |     +- org.glassfish.jaxb:jaxb-jxc:jar:4.0.3:test
+[INFO] |     +- org.glassfish.jaxb:jaxb-runtime:jar:4.0.3:runtime
+[INFO] |     +- org.glassfish.jaxb:txw2:jar:4.0.3:test
+[INFO] |     +- org.glassfish.jaxb:jaxb-xjc:jar:4.0.3:test
+[INFO] |     +- org.glassfish.jaxb:xsom:jar:4.0.3:test
+[INFO] |     +- com.sun.istack:istack-commons-runtime:jar:4.1.2:test
+[INFO] |     +- com.sun.istack:istack-commons-tools:jar:4.1.2:test
+[INFO] |     +- com.sun.xml.bind.external:relaxng-datatype:jar:4.0.3:test
+[INFO] |     \- com.sun.xml.bind.external:rngom:jar:4.0.3:test
+[INFO] +- jakarta.annotation:jakarta.annotation-api:jar:2.1.1:test
+[INFO] +- org.testcontainers:testcontainers:jar:1.21.4:test
+[INFO] |  +- org.rnorth.duct-tape:duct-tape:jar:1.0.8:test
+[INFO] |  +- com.github.docker-java:docker-java-api:jar:3.4.2:test
+[INFO] |  \- com.github.docker-java:docker-java-transport-zerodep:jar:3.4.2:test
+[INFO] |     +- com.github.docker-java:docker-java-transport:jar:3.4.2:test
+[INFO] |     \- net.java.dev.jna:jna:jar:5.13.0:test
+[INFO] \- com.fasterxml.jackson.core:jackson-databind:jar:2.18.6:compile
+[INFO] 
+[INFO] --------------< org.apache.hive:hive-metastore-packaging >--------------
+[INFO] Building Hive Metastore Packaging 4.3.0-SNAPSHOT                   [9/9]
+[INFO]   from packaging/pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --- dependency:3.8.1:tree (default-cli) @ hive-metastore-packaging ---
+[INFO] org.apache.hive:hive-metastore-packaging:pom:4.3.0-SNAPSHOT
+[INFO] +- org.apache.hive:hive-metastore:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  +- org.apache.hive:hive-common:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  +- org.apache.hive:hive-classification:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  +- org.apache.avro:avro:jar:1.12.0:compile
+[INFO] |  |  +- javax.servlet:javax.servlet-api:jar:3.1.0:compile
+[INFO] |  |  +- org.eclipse.jetty:jetty-http:jar:9.4.57.v20241219:compile
+[INFO] |  |  +- org.eclipse.jetty:jetty-rewrite:jar:9.4.57.v20241219:compile
+[INFO] |  |  +- org.eclipse.jetty:jetty-webapp:jar:9.4.57.v20241219:compile
+[INFO] |  |  |  \- org.eclipse.jetty:jetty-xml:jar:9.4.57.v20241219:compile
+[INFO] |  |  +- joda-time:joda-time:jar:2.13.0:compile
+[INFO] |  |  +- org.apache.logging.log4j:log4j-web:jar:2.25.3:compile
+[INFO] |  |  +- net.sf.jpam:jpam:jar:1.1:compile
+[INFO] |  |  +- org.apache.tez:tez-api:jar:0.10.5:compile
+[INFO] |  |  +- org.fusesource.jansi:jansi:jar:2.4.0:compile
+[INFO] |  |  +- com.tdunning:json:jar:1.8:compile
+[INFO] |  |  +- io.opentelemetry:opentelemetry-api:jar:1.60.1:compile
+[INFO] |  |  |  \- io.opentelemetry:opentelemetry-context:jar:1.60.1:compile
+[INFO] |  |  |     \- io.opentelemetry:opentelemetry-common:jar:1.60.1:compile
+[INFO] |  |  +- io.opentelemetry:opentelemetry-exporter-otlp:jar:1.60.1:compile
+[INFO] |  |  |  +- io.opentelemetry:opentelemetry-sdk-trace:jar:1.60.1:compile
+[INFO] |  |  |  +- io.opentelemetry:opentelemetry-sdk-metrics:jar:1.60.1:compile
+[INFO] |  |  |  +- io.opentelemetry:opentelemetry-sdk-logs:jar:1.60.1:compile
+[INFO] |  |  |  +- io.opentelemetry:opentelemetry-exporter-otlp-common:jar:1.60.1:runtime
+[INFO] |  |  |  |  \- io.opentelemetry:opentelemetry-exporter-common:jar:1.60.1:runtime
+[INFO] |  |  |  +- io.opentelemetry:opentelemetry-exporter-sender-okhttp:jar:1.60.1:runtime
+[INFO] |  |  |  |  \- com.squareup.okhttp3:okhttp-jvm:jar:5.3.2:runtime
+[INFO] |  |  |  |     +- com.squareup.okio:okio-jvm:jar:3.16.4:runtime
+[INFO] |  |  |  |     \- org.jetbrains.kotlin:kotlin-stdlib:jar:2.2.21:runtime
+[INFO] |  |  |  \- io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi:jar:1.60.1:runtime
+[INFO] |  |  +- io.opentelemetry:opentelemetry-sdk:jar:1.60.1:compile
+[INFO] |  |  |  \- io.opentelemetry:opentelemetry-sdk-common:jar:1.60.1:compile
+[INFO] |  |  \- org.mockito:mockito-core:jar:5.17.0:test
+[INFO] |  |     +- net.bytebuddy:byte-buddy:jar:1.15.11:test
+[INFO] |  |     +- net.bytebuddy:byte-buddy-agent:jar:1.15.11:test
+[INFO] |  |     \- org.objenesis:objenesis:jar:3.3:runtime
+[INFO] |  +- org.apache.hive:hive-serde:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  +- org.apache.hive:hive-service-rpc:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  +- com.google.code.findbugs:jsr305:jar:3.0.0:compile
+[INFO] |  |  +- com.carrotsearch:hppc:jar:0.7.2:compile
+[INFO] |  |  +- com.google.flatbuffers:flatbuffers-java:jar:1.12.0:compile
+[INFO] |  |  +- com.opencsv:opencsv:jar:5.9:compile
+[INFO] |  |  +- org.apache.parquet:parquet-hadoop-bundle:jar:1.16.0:compile
+[INFO] |  |  \- com.esri.geometry:esri-geometry-api:jar:2.2.4:compile
+[INFO] |  +- org.apache.hive:hive-shims:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  +- org.apache.hive.shims:hive-shims-common:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  \- org.apache.hive.shims:hive-shims-0.23:jar:4.3.0-SNAPSHOT:runtime
+[INFO] |  |     \- org.apache.hadoop:hadoop-yarn-server-resourcemanager:jar:3.4.2:runtime
+[INFO] |  |        +- org.apache.hadoop:hadoop-yarn-server-common:jar:3.4.2:runtime
+[INFO] |  |        |  +- javax.cache:cache-api:jar:1.1.1:runtime
+[INFO] |  |        |  +- org.ehcache:ehcache:jar:3.8.2:runtime
+[INFO] |  |        |  |  \- org.glassfish.jaxb:jaxb-runtime:jar:2.3.1:runtime
+[INFO] |  |        |  |     +- org.glassfish.jaxb:txw2:jar:2.3.1:runtime
+[INFO] |  |        |  |     +- com.sun.istack:istack-commons-runtime:jar:3.0.7:runtime
+[INFO] |  |        |  |     +- org.jvnet.staxex:stax-ex:jar:1.8:runtime
+[INFO] |  |        |  |     \- com.sun.xml.fastinfoset:FastInfoset:jar:1.2.15:runtime
+[INFO] |  |        |  \- com.microsoft.sqlserver:mssql-jdbc:jar:6.2.1.jre8:runtime
+[INFO] |  |        +- org.apache.hadoop:hadoop-yarn-server-applicationhistoryservice:jar:3.4.2:runtime
+[INFO] |  |        |  \- de.ruedigermoeller:fst:jar:2.50:runtime
+[INFO] |  |        +- org.apache.hadoop:hadoop-yarn-server-web-proxy:jar:3.4.2:runtime
+[INFO] |  |        |  \- org.bouncycastle:bcpkix-jdk18on:jar:1.78.1:runtime
+[INFO] |  |        |     \- org.bouncycastle:bcutil-jdk18on:jar:1.78.1:runtime
+[INFO] |  |        \- org.jsonschema2pojo:jsonschema2pojo-core:jar:1.0.2:runtime
+[INFO] |  |           \- com.sun.codemodel:codemodel:jar:2.6:runtime
+[INFO] |  +- org.apache.hive:hive-standalone-metastore-client:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  +- javolution:javolution:jar:5.5.1:compile
+[INFO] |  +- com.google.guava:guava:jar:22.0:compile
+[INFO] |  |  +- com.google.errorprone:error_prone_annotations:jar:2.0.18:compile
+[INFO] |  |  +- com.google.j2objc:j2objc-annotations:jar:1.1:compile
+[INFO] |  |  \- org.codehaus.mojo:animal-sniffer-annotations:jar:1.14:compile
+[INFO] |  +- commons-cli:commons-cli:jar:1.5.0:compile
+[INFO] |  +- org.apache.derby:derby:jar:10.17.1.0:runtime
+[INFO] |  |  \- org.apache.derby:derbyshared:jar:10.17.1.0:runtime
+[INFO] |  +- org.apache.thrift:libfb303:jar:0.9.3:compile
+[INFO] |  +- org.apache.thrift:libthrift:jar:0.23.0:compile
+[INFO] |  |  +- jakarta.servlet:jakarta.servlet-api:jar:5.0.0:compile
+[INFO] |  |  \- jakarta.annotation:jakarta.annotation-api:jar:2.1.1:compile
+[INFO] |  \- org.slf4j:slf4j-api:jar:1.7.30:compile
+[INFO] +- org.apache.hive:hive-standalone-metastore-rest-catalog:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  +- org.springframework.boot:spring-boot-starter-web:jar:2.7.18:compile
+[INFO] |  |  +- org.springframework.boot:spring-boot-starter:jar:2.7.18:compile
+[INFO] |  |  |  +- org.springframework.boot:spring-boot:jar:2.7.18:compile
+[INFO] |  |  |  +- org.springframework.boot:spring-boot-autoconfigure:jar:2.7.18:compile
+[INFO] |  |  |  \- org.yaml:snakeyaml:jar:1.30:compile
+[INFO] |  |  +- org.springframework.boot:spring-boot-starter-json:jar:2.7.18:compile
+[INFO] |  |  |  +- com.fasterxml.jackson.datatype:jackson-datatype-jdk8:jar:2.18.6:compile
+[INFO] |  |  |  +- com.fasterxml.jackson.datatype:jackson-datatype-jsr310:jar:2.18.6:compile
+[INFO] |  |  |  \- com.fasterxml.jackson.module:jackson-module-parameter-names:jar:2.18.6:compile
+[INFO] |  |  +- org.springframework:spring-web:jar:5.3.31:compile
+[INFO] |  |  \- org.springframework:spring-webmvc:jar:5.3.31:compile
+[INFO] |  |     +- org.springframework:spring-aop:jar:5.3.31:compile
+[INFO] |  |     +- org.springframework:spring-context:jar:5.3.31:compile
+[INFO] |  |     \- org.springframework:spring-expression:jar:5.3.31:compile
+[INFO] |  +- org.springframework.boot:spring-boot-starter-jetty:jar:2.7.18:compile
+[INFO] |  |  +- jakarta.websocket:jakarta.websocket-api:jar:1.1.2:compile
+[INFO] |  |  +- org.apache.tomcat.embed:tomcat-embed-el:jar:9.0.83:compile
+[INFO] |  |  +- org.eclipse.jetty:jetty-servlets:jar:9.4.57.v20241219:compile
+[INFO] |  |  |  \- org.eclipse.jetty:jetty-continuation:jar:9.4.57.v20241219:compile
+[INFO] |  |  +- org.eclipse.jetty.websocket:websocket-server:jar:9.4.57.v20241219:compile
+[INFO] |  |  |  +- org.eclipse.jetty.websocket:websocket-common:jar:9.4.57.v20241219:compile
+[INFO] |  |  |  |  \- org.eclipse.jetty.websocket:websocket-api:jar:9.4.57.v20241219:compile
+[INFO] |  |  |  +- org.eclipse.jetty.websocket:websocket-client:jar:9.4.57.v20241219:compile
+[INFO] |  |  |  |  \- org.eclipse.jetty:jetty-client:jar:9.4.57.v20241219:compile
+[INFO] |  |  |  \- org.eclipse.jetty.websocket:websocket-servlet:jar:9.4.57.v20241219:compile
+[INFO] |  |  \- org.eclipse.jetty.websocket:javax-websocket-server-impl:jar:9.4.57.v20241219:compile
+[INFO] |  |     +- org.eclipse.jetty:jetty-annotations:jar:9.4.57.v20241219:compile
+[INFO] |  |     |  +- org.eclipse.jetty:jetty-plus:jar:9.4.57.v20241219:compile
+[INFO] |  |     |  +- org.ow2.asm:asm:jar:9.7.1:compile
+[INFO] |  |     |  \- org.ow2.asm:asm-commons:jar:9.7.1:compile
+[INFO] |  |     |     \- org.ow2.asm:asm-tree:jar:9.7.1:compile
+[INFO] |  |     \- org.eclipse.jetty.websocket:javax-websocket-client-impl:jar:9.4.57.v20241219:compile
+[INFO] |  +- org.springframework.boot:spring-boot-starter-actuator:jar:2.7.18:compile
+[INFO] |  |  +- org.springframework.boot:spring-boot-actuator-autoconfigure:jar:2.7.18:compile
+[INFO] |  |  |  \- org.springframework.boot:spring-boot-actuator:jar:2.7.18:compile
+[INFO] |  |  \- io.micrometer:micrometer-core:jar:1.9.17:compile
+[INFO] |  |     +- org.hdrhistogram:HdrHistogram:jar:2.1.12:compile
+[INFO] |  |     \- org.latencyutils:LatencyUtils:jar:2.0.3:runtime
+[INFO] |  +- io.micrometer:micrometer-registry-prometheus:jar:1.9.17:compile
+[INFO] |  |  \- io.prometheus:simpleclient_common:jar:0.15.0:compile
+[INFO] |  |     \- io.prometheus:simpleclient:jar:0.15.0:compile
+[INFO] |  |        +- io.prometheus:simpleclient_tracer_otel:jar:0.15.0:compile
+[INFO] |  |        |  \- io.prometheus:simpleclient_tracer_common:jar:0.15.0:compile
+[INFO] |  |        \- io.prometheus:simpleclient_tracer_otel_agent:jar:0.15.0:compile
+[INFO] |  +- org.apache.hadoop:hadoop-auth:jar:3.4.2:compile
+[INFO] |  |  +- org.apache.httpcomponents:httpclient:jar:4.5.13:compile
+[INFO] |  |  +- com.nimbusds:nimbus-jose-jwt:jar:9.37.2:compile
+[INFO] |  |  +- org.apache.kerby:kerb-core:jar:2.0.3:compile
+[INFO] |  |  |  \- org.apache.kerby:kerby-pkix:jar:2.0.3:compile
+[INFO] |  |  |     +- org.apache.kerby:kerby-asn1:jar:2.0.3:compile
+[INFO] |  |  |     \- org.apache.kerby:kerby-util:jar:2.0.3:compile
+[INFO] |  |  +- org.apache.kerby:kerb-util:jar:2.0.3:compile
+[INFO] |  |  |  +- org.apache.kerby:kerby-config:jar:2.0.3:compile
+[INFO] |  |  |  \- org.apache.kerby:kerb-crypto:jar:2.0.3:compile
+[INFO] |  |  \- org.apache.hadoop.thirdparty:hadoop-shaded-guava:jar:1.4.0:compile
+[INFO] |  +- org.apache.hadoop:hadoop-common:jar:3.4.2:compile
+[INFO] |  |  +- org.apache.hadoop.thirdparty:hadoop-shaded-protobuf_3_25:jar:1.4.0:compile
+[INFO] |  |  +- org.apache.hadoop:hadoop-annotations:jar:3.4.2:compile
+[INFO] |  |  +- commons-net:commons-net:jar:3.9.0:compile
+[INFO] |  |  +- jakarta.activation:jakarta.activation-api:jar:1.2.1:compile
+[INFO] |  |  +- javax.servlet.jsp:jsp-api:jar:2.1:runtime
+[INFO] |  |  +- com.sun.jersey:jersey-core:jar:1.19.4:compile
+[INFO] |  |  |  \- javax.ws.rs:jsr311-api:jar:1.1.1:compile
+[INFO] |  |  +- com.sun.jersey:jersey-servlet:jar:1.19.4:compile
+[INFO] |  |  +- com.github.pjfanning:jersey-json:jar:1.22.0:compile
+[INFO] |  |  |  \- com.sun.xml.bind:jaxb-impl:jar:2.2.3-1:compile
+[INFO] |  |  +- org.codehaus.jettison:jettison:jar:1.5.4:compile
+[INFO] |  |  +- com.sun.jersey:jersey-server:jar:1.19.4:compile
+[INFO] |  |  +- org.apache.commons:commons-configuration2:jar:2.10.1:compile
+[INFO] |  |  +- com.google.re2j:re2j:jar:1.1:compile
+[INFO] |  |  +- com.jcraft:jsch:jar:0.1.55:compile
+[INFO] |  |  +- io.netty:netty-handler:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-common:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-resolver:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-buffer:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-transport:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-transport-native-unix-common:jar:4.1.127.Final:compile
+[INFO] |  |  |  \- io.netty:netty-codec:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-transport-native-epoll:jar:4.1.127.Final:compile
+[INFO] |  |  |  \- io.netty:netty-transport-classes-epoll:jar:4.1.127.Final:compile
+[INFO] |  |  +- org.bouncycastle:bcprov-jdk18on:jar:1.78.1:compile
+[INFO] |  |  +- org.codehaus.woodstox:stax2-api:jar:4.2.1:compile
+[INFO] |  |  +- com.fasterxml.woodstox:woodstox-core:jar:5.4.0:compile
+[INFO] |  |  +- dnsjava:dnsjava:jar:3.6.1:compile
+[INFO] |  |  \- org.xerial.snappy:snappy-java:jar:1.1.10.4:compile
+[INFO] |  +- org.apache.hadoop:hadoop-hdfs-client:jar:3.4.2:compile
+[INFO] |  |  \- org.apache.httpcomponents:httpcore:jar:4.4.13:compile
+[INFO] |  +- org.apache.hadoop:hadoop-hdfs:jar:3.4.2:compile
+[INFO] |  |  +- commons-daemon:commons-daemon:jar:1.0.13:compile
+[INFO] |  |  +- io.netty:netty-all:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-codec-dns:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-codec-haproxy:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-codec-http:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-codec-http2:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-codec-memcache:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-codec-mqtt:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-codec-redis:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-codec-smtp:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-codec-socks:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-codec-stomp:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-codec-xml:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-handler-proxy:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-handler-ssl-ocsp:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-resolver-dns:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-transport-rxtx:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-transport-sctp:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-transport-udt:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-transport-classes-kqueue:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-resolver-dns-classes-macos:jar:4.1.127.Final:compile
+[INFO] |  |  |  +- io.netty:netty-transport-native-epoll:jar:linux-x86_64:4.1.127.Final:runtime
+[INFO] |  |  |  +- io.netty:netty-transport-native-epoll:jar:linux-aarch_64:4.1.127.Final:runtime
+[INFO] |  |  |  +- io.netty:netty-transport-native-epoll:jar:linux-riscv64:4.1.127.Final:runtime
+[INFO] |  |  |  +- io.netty:netty-transport-native-kqueue:jar:osx-x86_64:4.1.127.Final:runtime
+[INFO] |  |  |  +- io.netty:netty-transport-native-kqueue:jar:osx-aarch_64:4.1.127.Final:runtime
+[INFO] |  |  |  +- io.netty:netty-resolver-dns-native-macos:jar:osx-x86_64:4.1.127.Final:runtime
+[INFO] |  |  |  \- io.netty:netty-resolver-dns-native-macos:jar:osx-aarch_64:4.1.127.Final:runtime
+[INFO] |  |  \- org.fusesource.leveldbjni:leveldbjni-all:jar:1.8:compile
+[INFO] |  \- org.apache.hadoop:hadoop-mapreduce-client-core:jar:3.4.2:compile
+[INFO] |     +- org.apache.hadoop:hadoop-yarn-client:jar:3.4.2:compile
+[INFO] |     +- org.apache.hadoop:hadoop-yarn-common:jar:3.4.2:compile
+[INFO] |     |  +- com.sun.jersey:jersey-client:jar:1.19.4:compile
+[INFO] |     |  +- com.google.inject:guice:jar:4.2.3:compile
+[INFO] |     |  |  \- aopalliance:aopalliance:jar:1.0:compile
+[INFO] |     |  +- com.sun.jersey.contribs:jersey-guice:jar:1.19.4:compile
+[INFO] |     |  \- com.fasterxml.jackson.module:jackson-module-jaxb-annotations:jar:2.18.6:compile
+[INFO] |     \- com.google.inject.extensions:guice-servlet:jar:4.2.3:compile
+[INFO] +- org.apache.hive:hive-exec:jar:core:4.3.0-SNAPSHOT:compile
+[INFO] |  +- org.graalvm.js:js-scriptengine:jar:23.0.8:compile
+[INFO] |  |  \- org.graalvm.sdk:graal-sdk:jar:23.0.8:compile
+[INFO] |  +- org.graalvm.js:js:jar:23.0.8:compile
+[INFO] |  |  +- org.graalvm.regex:regex:jar:23.0.8:compile
+[INFO] |  |  +- org.graalvm.truffle:truffle-api:jar:23.0.8:compile
+[INFO] |  |  \- com.ibm.icu:icu4j:jar:72.1:compile
+[INFO] |  +- org.apache.atlas:atlas-client-v2:jar:2.4.0:compile
+[INFO] |  |  \- cglib:cglib:jar:2.2.2:compile
+[INFO] |  |     \- asm:asm:jar:3.3.1:compile
+[INFO] |  +- org.apache.atlas:atlas-client-common:jar:2.4.0:compile
+[INFO] |  |  \- javax.xml.bind:jaxb-api:jar:2.3.1:compile
+[INFO] |  |     \- javax.activation:javax.activation-api:jar:1.2.0:compile
+[INFO] |  +- org.apache.atlas:atlas-intg:jar:2.4.0:compile
+[INFO] |  |  +- com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:jar:2.18.6:compile
+[INFO] |  |  +- com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:jar:2.18.6:compile
+[INFO] |  |  +- commons-validator:commons-validator:jar:1.6:compile
+[INFO] |  |  |  \- commons-digester:commons-digester:jar:1.8.1:compile
+[INFO] |  |  \- javax.inject:javax.inject:jar:1:compile
+[INFO] |  +- commons-configuration:commons-configuration:jar:1.10:compile
+[INFO] |  |  +- commons-lang:commons-lang:jar:2.6:compile
+[INFO] |  |  \- commons-logging:commons-logging:jar:1.1.1:compile
+[INFO] |  +- org.apache.commons:commons-dbcp2:jar:2.14.0:compile
+[INFO] |  |  +- org.apache.commons:commons-pool2:jar:2.13.0:compile
+[INFO] |  |  \- jakarta.transaction:jakarta.transaction-api:jar:1.3.3:compile
+[INFO] |  +- org.apache.commons:commons-math3:jar:3.6.1:compile
+[INFO] |  +- org.apache.hive:hive-vector-code-gen:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  +- org.apache.hive:hive-llap-tez:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  +- org.apache.hive:hive-llap-client:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |  \- org.apache.hive:hive-llap-common:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  |     +- io.jsonwebtoken:jjwt-api:jar:0.10.5:compile
+[INFO] |  |     +- io.jsonwebtoken:jjwt-impl:jar:0.10.5:compile
+[INFO] |  |     \- io.jsonwebtoken:jjwt-jackson:jar:0.10.5:compile
+[INFO] |  +- com.amazonaws.secretsmanager:aws-secretsmanager-caching-java:jar:2.2.0:compile
+[INFO] |  |  \- com.github.spotbugs:spotbugs-annotations:jar:4.9.8:compile
+[INFO] |  +- commons-codec:commons-codec:jar:1.15:compile
+[INFO] |  +- commons-io:commons-io:jar:2.16.1:compile
+[INFO] |  +- org.apache.commons:commons-collections4:jar:4.4:compile
+[INFO] |  +- commons-collections:commons-collections:jar:3.2.2:compile
+[INFO] |  +- org.apache.commons:commons-text:jar:1.10.0:compile
+[INFO] |  +- org.apache.logging.log4j:log4j-1.2-api:jar:2.25.3:compile
+[INFO] |  |  \- org.apache.logging.log4j:log4j-api:jar:2.25.3:compile
+[INFO] |  +- org.apache.logging.log4j:log4j-core:jar:2.25.3:compile
+[INFO] |  +- org.apache.logging.log4j:log4j-slf4j-impl:jar:2.25.3:compile
+[INFO] |  +- org.antlr:ST4:jar:4.0.4:compile
+[INFO] |  |  \- org.antlr:antlr-runtime:jar:3.3:compile
+[INFO] |  |     \- org.antlr:stringtemplate:jar:3.2.1:compile
+[INFO] |  |        \- antlr:antlr:jar:2.7.7:compile
+[INFO] |  +- org.apache.ant:ant:jar:1.10.15:compile
+[INFO] |  |  \- org.apache.ant:ant-launcher:jar:1.10.15:compile
+[INFO] |  +- org.apache.commons:commons-compress:jar:1.26.0:compile
+[INFO] |  +- org.apache.hadoop:hadoop-yarn-registry:jar:3.4.2:compile
+[INFO] |  |  \- org.apache.hadoop:hadoop-registry:jar:3.4.2:compile
+[INFO] |  +- org.apache.hadoop:hadoop-yarn-api:jar:3.4.2:compile
+[INFO] |  +- org.apache.ivy:ivy:jar:2.5.2:compile
+[INFO] |  +- org.apache.zookeeper:zookeeper:jar:3.8.4:compile
+[INFO] |  |  +- org.apache.zookeeper:zookeeper-jute:jar:3.8.4:compile
+[INFO] |  |  \- org.apache.yetus:audience-annotations:jar:0.12.0:compile
+[INFO] |  +- org.apache.curator:curator-framework:jar:5.7.1:compile
+[INFO] |  |  \- org.apache.curator:curator-client:jar:5.7.1:compile
+[INFO] |  +- org.apache.curator:apache-curator:pom:5.7.1:compile
+[INFO] |  +- org.codehaus.groovy:groovy-all:jar:2.4.21:compile
+[INFO] |  +- org.datanucleus:datanucleus-core:jar:6.0.11:compile
+[INFO] |  +- com.google.code.gson:gson:jar:2.9.0:compile
+[INFO] |  +- stax:stax-api:jar:1.0.1:compile
+[INFO] |  +- org.reflections:reflections:jar:0.10.2:compile
+[INFO] |  |  \- org.javassist:javassist:jar:3.28.0-GA:compile
+[INFO] |  +- com.jayway.jsonpath:json-path:jar:2.9.0:runtime
+[INFO] |  |  \- net.minidev:json-smart:jar:2.5.0:compile
+[INFO] |  |     \- net.minidev:accessors-smart:jar:2.5.0:compile
+[INFO] |  +- org.codehaus.janino:commons-compiler:jar:3.1.12:runtime
+[INFO] |  +- org.codehaus.janino:janino:jar:3.1.12:runtime
+[INFO] |  \- com.sun.jersey.contribs:jersey-multipart:jar:1.19.4:compile
+[INFO] |     \- org.jvnet.mimepull:mimepull:jar:1.9.3:compile
+[INFO] +- org.apache.hive:hive-iceberg-handler:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  \- org.apache.hadoop:hadoop-client:jar:3.4.2:compile
+[INFO] |     \- org.apache.hadoop:hadoop-mapreduce-client-jobclient:jar:3.4.2:compile
+[INFO] |        +- org.apache.hadoop:hadoop-mapreduce-client-common:jar:3.4.2:compile
+[INFO] |        \- org.slf4j:slf4j-reload4j:jar:1.7.36:compile
+[INFO] |           \- ch.qos.reload4j:reload4j:jar:1.2.19:compile
+[INFO] +- org.apache.hive:hive-standalone-metastore-common:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  +- org.apache.commons:commons-jexl3:jar:3.3:compile
+[INFO] |  +- io.grpc:grpc-netty-shaded:jar:1.72.0:compile
+[INFO] |  |  +- io.grpc:grpc-util:jar:1.72.0:runtime
+[INFO] |  |  +- io.grpc:grpc-core:jar:1.72.0:compile
+[INFO] |  |  |  +- com.google.android:annotations:jar:4.1.1.4:runtime
+[INFO] |  |  |  \- io.grpc:grpc-context:jar:1.72.0:runtime
+[INFO] |  |  +- io.perfmark:perfmark-api:jar:0.27.0:runtime
+[INFO] |  |  \- io.grpc:grpc-api:jar:1.72.0:compile
+[INFO] |  +- io.grpc:grpc-protobuf:jar:1.72.0:compile
+[INFO] |  |  +- com.google.api.grpc:proto-google-common-protos:jar:2.51.0:compile
+[INFO] |  |  \- io.grpc:grpc-protobuf-lite:jar:1.72.0:runtime
+[INFO] |  +- io.grpc:grpc-stub:jar:1.72.0:compile
+[INFO] |  +- javax.annotation:javax.annotation-api:jar:1.3.2:compile
+[INFO] |  +- org.apache.orc:orc-core:jar:2.1.2:compile
+[INFO] |  |  +- org.apache.orc:orc-shims:jar:2.1.2:compile
+[INFO] |  |  +- org.apache.orc:orc-format:jar:1.1.0:compile
+[INFO] |  |  +- io.airlift:aircompressor:jar:2.0.2:compile
+[INFO] |  |  +- com.github.luben:zstd-jni:jar:1.5.6-10:compile
+[INFO] |  |  +- org.apache.hadoop:hadoop-client-api:jar:3.4.1:compile
+[INFO] |  |  +- org.apache.hadoop:hadoop-client-runtime:jar:3.4.1:runtime
+[INFO] |  |  +- org.jetbrains:annotations:jar:17.0.0:compile
+[INFO] |  |  +- org.threeten:threeten-extra:jar:1.8.0:compile
+[INFO] |  |  \- com.aayushatharva.brotli4j:brotli4j:jar:1.18.0:compile
+[INFO] |  |     +- com.aayushatharva.brotli4j:service:jar:1.18.0:compile
+[INFO] |  |     \- com.aayushatharva.brotli4j:native-linux-x86_64:jar:1.18.0:compile
+[INFO] |  +- com.github.joshelser:dropwizard-metrics-hadoop-metrics2-reporter:jar:0.1.2:compile
+[INFO] |  +- com.google.protobuf:protobuf-java:jar:3.25.5:compile
+[INFO] |  +- com.zaxxer:HikariCP:jar:4.0.3:compile
+[INFO] |  +- io.dropwizard.metrics:metrics-core:jar:3.1.0:compile
+[INFO] |  +- io.dropwizard.metrics:metrics-jvm:jar:3.1.0:compile
+[INFO] |  +- io.dropwizard.metrics:metrics-json:jar:3.1.0:compile
+[INFO] |  +- org.apache.commons:commons-lang3:jar:3.17.0:compile
+[INFO] |  +- org.apache.hive:hive-storage-api:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  +- org.apache.httpcomponents.client5:httpclient5:jar:5.3.1:compile
+[INFO] |  |  \- org.apache.httpcomponents.core5:httpcore5-h2:jar:5.2.4:compile
+[INFO] |  +- org.apache.httpcomponents.core5:httpcore5:jar:5.4.3:compile
+[INFO] |  +- com.github.ben-manes.caffeine:caffeine:jar:2.8.4:compile
+[INFO] |  |  \- org.checkerframework:checker-qual:jar:3.4.0:compile
+[INFO] |  +- org.apache.curator:curator-recipes:jar:5.7.1:compile
+[INFO] |  \- org.springframework.ldap:spring-ldap-core:jar:2.4.4:compile
+[INFO] |     +- org.springframework:spring-beans:jar:5.3.39:compile
+[INFO] |     \- org.springframework:spring-tx:jar:5.3.39:compile
+[INFO] +- org.apache.hive:hive-standalone-metastore-server:jar:4.3.0-SNAPSHOT:compile
+[INFO] |  +- org.apache.datasketches:datasketches-hive:jar:2.0.0:compile
+[INFO] |  |  \- org.apache.datasketches:datasketches-java:jar:6.0.0:compile
+[INFO] |  |     \- org.apache.datasketches:datasketches-memory:jar:2.2.0:compile
+[INFO] |  +- org.antlr:antlr4-runtime:jar:4.9.3:compile
+[INFO] |  +- commons-beanutils:commons-beanutils:jar:1.9.4:compile
+[INFO] |  +- org.datanucleus:datanucleus-api-jdo:jar:6.0.5:compile
+[INFO] |  +- org.datanucleus:datanucleus-rdbms:jar:6.0.11:compile
+[INFO] |  +- org.datanucleus:javax.jdo:jar:3.2.0-release:compile
+[INFO] |  |  +- javax.transaction:javax.transaction-api:jar:1.3:compile
+[INFO] |  |  \- org.glassfish.corba:glassfish-corba-omgapi:jar:4.2.2:compile
+[INFO] |  +- sqlline:sqlline:jar:1.9.0:compile
+[INFO] |  +- org.jline:jline:jar:3.25.0:compile
+[INFO] |  +- com.cronutils:cron-utils:jar:9.2.1:compile
+[INFO] |  +- org.eclipse.jetty:jetty-util:jar:9.4.57.v20241219:compile
+[INFO] |  +- org.eclipse.jetty:jetty-server:jar:9.4.57.v20241219:compile
+[INFO] |  |  \- org.eclipse.jetty:jetty-io:jar:9.4.57.v20241219:compile
+[INFO] |  +- org.eclipse.jetty:jetty-servlet:jar:9.4.57.v20241219:compile
+[INFO] |  |  +- org.eclipse.jetty:jetty-security:jar:9.4.57.v20241219:compile
+[INFO] |  |  \- org.eclipse.jetty:jetty-util-ajax:jar:9.4.57.v20241219:compile
+[INFO] |  +- org.springframework:spring-jdbc:jar:5.3.39:compile
+[INFO] |  +- org.springframework:spring-core:jar:5.3.39:compile
+[INFO] |  |  \- org.springframework:spring-jcl:jar:5.3.39:compile
+[INFO] |  +- com.nimbusds:oauth2-oidc-sdk:jar:11.28:compile
+[INFO] |  |  +- com.github.stephenc.jcip:jcip-annotations:jar:1.0-1:compile
+[INFO] |  |  +- com.nimbusds:content-type:jar:2.3:compile
+[INFO] |  |  \- com.nimbusds:lang-tag:jar:1.7:compile
+[INFO] |  \- org.pac4j:pac4j-core:jar:4.5.8:compile
+[INFO] \- com.fasterxml.jackson.core:jackson-databind:jar:2.18.6:compile
+[INFO]    +- com.fasterxml.jackson.core:jackson-annotations:jar:2.18.6:compile
+[INFO]    \- com.fasterxml.jackson.core:jackson-core:jar:2.18.6:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for Hive Standalone Metastore 4.3.0-SNAPSHOT:
+[INFO] 
+[INFO] Hive Standalone Metastore .......................... SUCCESS [  0.485 s]
+[INFO] Hive Standalone Metastore Common Code .............. SUCCESS [  0.316 s]
+[INFO] Hive Metastore Client .............................. SUCCESS [  0.032 s]
+[INFO] Hive Metastore Server .............................. SUCCESS [  0.351 s]
+[INFO] Hive Metastore Tools ............................... SUCCESS [  0.006 s]
+[INFO] Hive Metastore Tools common libraries .............. SUCCESS [  0.020 s]
+[INFO] Hive metastore benchmarks .......................... SUCCESS [  0.414 s]
+[INFO] Hive Metastore REST Catalog ........................ SUCCESS [  0.193 s]
+[INFO] Hive Metastore Packaging ........................... SUCCESS [  0.091 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  2.217 s
+[INFO] Finished at: 2026-07-27T17:35:57+02:00
+[INFO] ------------------------------------------------------------------------
+[INFO] 9 goals, 9 executed
+[WARNING] 
+[WARNING] 1 build scan custom value was not captured:
+[WARNING]  - Maximum custom value value length (100,000) exceeded: Git status

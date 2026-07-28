@@ -24,8 +24,10 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.security.PrivilegedExceptionAction;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -35,7 +37,10 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletException;
+import javax.servlet.ServletInputStream;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -50,7 +55,6 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.shims.HadoopShims.KerberosNameShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hive.service.ServiceException;
 import org.apache.hive.service.auth.AuthType;
 import org.apache.hive.service.auth.AuthenticationProviderFactory;
 import org.apache.hive.service.auth.AuthenticationProviderFactory.AuthMethods;
@@ -73,9 +77,12 @@ import org.apache.hive.service.auth.saml.HttpSamlAuthenticationException;
 import org.apache.hive.service.auth.saml.HiveSamlAuthTokenGenerator;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.session.SessionManager;
+import org.apache.thrift.TException;
 import org.apache.thrift.TProcessor;
+import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.protocol.TProtocolFactory;
-import org.apache.thrift.server.TServlet;
+import org.apache.thrift.transport.TIOStreamTransport;
+import org.apache.thrift.transport.TTransport;
 import org.ietf.jgss.GSSContext;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
@@ -93,7 +100,7 @@ import org.slf4j.LoggerFactory;
  * ThriftHttpServlet
  *
  */
-public class ThriftHttpServlet extends TServlet {
+public class ThriftHttpServlet extends HttpServlet {
 
   private static final long serialVersionUID = 1L;
   public static final Logger LOG = LoggerFactory.getLogger(ThriftHttpServlet.class.getName());
@@ -117,10 +124,18 @@ public class ThriftHttpServlet extends TServlet {
   private JWTValidator jwtValidator;
   private HttpAuthService httpAuthService;
 
+  private TProcessor processor;
+  private TProtocolFactory inProtocolFactory;
+  private TProtocolFactory outProtocolFactory;
+  private Collection<Map.Entry<String, String>> customHeaders;
+
   public ThriftHttpServlet(TProcessor processor, TProtocolFactory protocolFactory,
       UserGroupInformation serviceUGI, UserGroupInformation httpUGI,
       HiveAuthFactory hiveAuthFactory, HiveConf hiveConf) throws Exception {
-    super(processor, protocolFactory);
+    this.processor = processor;
+    this.inProtocolFactory = protocolFactory;
+    this.outProtocolFactory = protocolFactory;
+    this.customHeaders = new ArrayList<>();
     this.hiveConf = hiveConf;
     this.authType = AuthType.authTypeFromConf(hiveConf, true);
     this.serviceUGI = serviceUGI;
@@ -269,7 +284,7 @@ public class ThriftHttpServlet extends TServlet {
         }
         LOG.info("Cookie added for clientUserName " + clientUserName);
       }
-      super.doPost(request, response);
+      processThriftRequest(request, response);
     } catch (HttpAuthenticationException e) {
       // Ignore HttpEmptyAuthenticationException, it is normal for knox
       // to send a request with empty header
@@ -667,4 +682,26 @@ public class ThriftHttpServlet extends TServlet {
     return null;
   }
 
+  private void processThriftRequest(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
+    try {
+      response.setContentType("application/x-thrift");
+      if (customHeaders != null) {
+        for (Map.Entry<String, String> header : customHeaders) {
+          response.addHeader(header.getKey(), header.getValue());
+        }
+      }
+      ServletInputStream in = request.getInputStream();
+      ServletOutputStream out = response.getOutputStream();
+      TTransport transport = new TIOStreamTransport(in, out);
+
+      TProtocol inProtocol = inProtocolFactory.getProtocol(transport);
+      TProtocol outProtocol = outProtocolFactory.getProtocol(transport);
+
+      processor.process(inProtocol, outProtocol);
+      out.flush();
+    } catch (TException te) {
+      throw new ServletException(te);
+    }
+  }
 }
