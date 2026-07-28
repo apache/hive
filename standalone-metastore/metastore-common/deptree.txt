@@ -1,0 +1,211 @@
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for org.apache.hive:hive-standalone-metastore-common:jar:4.3.0-SNAPSHOT
+[WARNING] 'parent.relativePath' of POM org.apache.hive:hive-standalone-metastore:4.3.0-SNAPSHOT (/home/invisibleprogrammer/work/hive/standalone-metastore/pom.xml) points at org.apache.hive:hive instead of org.apache:apache, please verify your project structure @ org.apache.hive:hive-standalone-metastore:4.3.0-SNAPSHOT, /home/invisibleprogrammer/work/hive/standalone-metastore/pom.xml, line 17, column 11
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[WARNING] This build will only read from the build cache, since the clean lifecycle is not part of the build invocation.
+[INFO] 
+[INFO] ----------< org.apache.hive:hive-standalone-metastore-common >----------
+[INFO] Building Hive Standalone Metastore Common Code 4.3.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- dependency:3.8.1:tree (default-cli) @ hive-standalone-metastore-common ---
+[INFO] org.apache.hive:hive-standalone-metastore-common:jar:4.3.0-SNAPSHOT
+[INFO] +- org.apache.commons:commons-jexl3:jar:3.3:compile
+[INFO] |  \- commons-logging:commons-logging:jar:1.2:compile
+[INFO] +- io.grpc:grpc-netty-shaded:jar:1.72.0:compile
+[INFO] |  +- io.grpc:grpc-util:jar:1.72.0:runtime
+[INFO] |  +- io.grpc:grpc-core:jar:1.72.0:compile
+[INFO] |  |  +- com.google.android:annotations:jar:4.1.1.4:runtime
+[INFO] |  |  \- io.grpc:grpc-context:jar:1.72.0:runtime
+[INFO] |  +- com.google.errorprone:error_prone_annotations:jar:2.30.0:compile
+[INFO] |  +- io.perfmark:perfmark-api:jar:0.27.0:runtime
+[INFO] |  +- io.grpc:grpc-api:jar:1.72.0:compile
+[INFO] |  \- org.codehaus.mojo:animal-sniffer-annotations:jar:1.24:compile
+[INFO] +- io.grpc:grpc-protobuf:jar:1.72.0:compile
+[INFO] |  +- com.google.code.findbugs:jsr305:jar:3.0.2:compile
+[INFO] |  +- com.google.api.grpc:proto-google-common-protos:jar:2.51.0:compile
+[INFO] |  \- io.grpc:grpc-protobuf-lite:jar:1.72.0:runtime
+[INFO] +- io.grpc:grpc-stub:jar:1.72.0:compile
+[INFO] +- javax.annotation:javax.annotation-api:jar:1.3.2:compile
+[INFO] +- org.apache.orc:orc-core:jar:2.1.2:compile
+[INFO] |  +- org.apache.orc:orc-shims:jar:2.1.2:compile
+[INFO] |  +- org.apache.orc:orc-format:jar:1.1.0:compile
+[INFO] |  +- io.airlift:aircompressor:jar:2.0.2:compile
+[INFO] |  +- com.github.luben:zstd-jni:jar:1.5.6-10:compile
+[INFO] |  +- org.apache.hadoop:hadoop-client-api:jar:3.4.1:compile
+[INFO] |  +- org.apache.hadoop:hadoop-client-runtime:jar:3.4.1:runtime
+[INFO] |  +- org.jetbrains:annotations:jar:17.0.0:compile
+[INFO] |  +- org.threeten:threeten-extra:jar:1.8.0:compile
+[INFO] |  \- com.aayushatharva.brotli4j:brotli4j:jar:1.18.0:compile
+[INFO] |     +- com.aayushatharva.brotli4j:service:jar:1.18.0:compile
+[INFO] |     \- com.aayushatharva.brotli4j:native-linux-x86_64:jar:1.18.0:compile
+[INFO] +- com.fasterxml.jackson.core:jackson-databind:jar:2.18.6:compile
+[INFO] |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.18.6:compile
+[INFO] |  \- com.fasterxml.jackson.core:jackson-core:jar:2.18.6:compile
+[INFO] +- com.github.joshelser:dropwizard-metrics-hadoop-metrics2-reporter:jar:0.1.2:compile
+[INFO] +- com.google.guava:guava:jar:22.0:compile
+[INFO] |  \- com.google.j2objc:j2objc-annotations:jar:1.1:compile
+[INFO] +- com.google.protobuf:protobuf-java:jar:3.25.5:compile
+[INFO] +- com.zaxxer:HikariCP:jar:4.0.3:compile
+[INFO] +- io.dropwizard.metrics:metrics-core:jar:3.1.0:compile
+[INFO] +- io.dropwizard.metrics:metrics-jvm:jar:3.1.0:compile
+[INFO] +- io.dropwizard.metrics:metrics-json:jar:3.1.0:compile
+[INFO] +- javolution:javolution:jar:5.5.1:compile
+[INFO] +- org.antlr:ST4:jar:4.0.4:compile
+[INFO] |  \- org.antlr:antlr-runtime:jar:3.3:compile
+[INFO] |     \- org.antlr:stringtemplate:jar:3.2.1:compile
+[INFO] |        \- antlr:antlr:jar:2.7.7:compile
+[INFO] +- org.apache.commons:commons-lang3:jar:3.17.0:compile
+[INFO] +- org.apache.derby:derby:jar:10.17.1.0:runtime
+[INFO] |  \- org.apache.derby:derbyshared:jar:10.17.1.0:runtime
+[INFO] +- org.apache.hadoop:hadoop-common:jar:3.4.2:compile (optional)
+[INFO] |  +- org.apache.hadoop.thirdparty:hadoop-shaded-protobuf_3_25:jar:1.4.0:compile (optional)
+[INFO] |  +- org.apache.hadoop:hadoop-annotations:jar:3.4.2:compile (optional)
+[INFO] |  +- org.apache.hadoop.thirdparty:hadoop-shaded-guava:jar:1.4.0:compile (optional)
+[INFO] |  +- commons-cli:commons-cli:jar:1.9.0:compile (optional)
+[INFO] |  +- org.apache.commons:commons-math3:jar:3.6.1:compile (optional)
+[INFO] |  +- org.apache.httpcomponents:httpclient:jar:4.5.13:compile (optional)
+[INFO] |  +- commons-codec:commons-codec:jar:1.15:compile (optional)
+[INFO] |  +- commons-io:commons-io:jar:2.16.1:compile
+[INFO] |  +- commons-net:commons-net:jar:3.9.0:compile (optional)
+[INFO] |  +- org.apache.commons:commons-collections4:jar:4.4:compile (optional)
+[INFO] |  +- javax.servlet:javax.servlet-api:jar:3.1.0:compile (optional)
+[INFO] |  +- jakarta.activation:jakarta.activation-api:jar:1.2.1:compile (optional)
+[INFO] |  +- javax.servlet.jsp:jsp-api:jar:2.1:runtime (optional)
+[INFO] |  +- com.sun.jersey:jersey-core:jar:1.19.4:compile (optional)
+[INFO] |  |  \- javax.ws.rs:jsr311-api:jar:1.1.1:compile (optional)
+[INFO] |  +- com.sun.jersey:jersey-servlet:jar:1.19.4:compile (optional)
+[INFO] |  +- com.github.pjfanning:jersey-json:jar:1.22.0:compile (optional)
+[INFO] |  |  \- com.sun.xml.bind:jaxb-impl:jar:2.2.3-1:compile (optional)
+[INFO] |  +- org.codehaus.jettison:jettison:jar:1.5.4:compile (optional)
+[INFO] |  +- com.sun.jersey:jersey-server:jar:1.19.4:compile (optional)
+[INFO] |  +- org.apache.commons:commons-configuration2:jar:2.10.1:compile (optional)
+[INFO] |  +- org.apache.commons:commons-text:jar:1.10.0:compile (optional)
+[INFO] |  +- org.apache.avro:avro:jar:1.11.4:compile (optional)
+[INFO] |  +- com.google.re2j:re2j:jar:1.1:compile (optional)
+[INFO] |  +- com.google.code.gson:gson:jar:2.9.0:compile
+[INFO] |  +- org.apache.hadoop:hadoop-auth:jar:3.4.2:compile (optional)
+[INFO] |  |  \- org.apache.kerby:kerb-util:jar:2.0.3:compile (optional)
+[INFO] |  |     +- org.apache.kerby:kerby-config:jar:2.0.3:compile (optional)
+[INFO] |  |     \- org.apache.kerby:kerb-crypto:jar:2.0.3:compile (optional)
+[INFO] |  +- com.jcraft:jsch:jar:0.1.55:compile (optional)
+[INFO] |  +- io.netty:netty-handler:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-common:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-resolver:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-buffer:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-transport:jar:4.1.127.Final:compile
+[INFO] |  |  +- io.netty:netty-transport-native-unix-common:jar:4.1.127.Final:compile
+[INFO] |  |  \- io.netty:netty-codec:jar:4.1.127.Final:compile
+[INFO] |  +- io.netty:netty-transport-native-epoll:jar:4.1.127.Final:compile
+[INFO] |  |  \- io.netty:netty-transport-classes-epoll:jar:4.1.127.Final:compile
+[INFO] |  +- org.apache.commons:commons-compress:jar:1.26.1:compile (optional)
+[INFO] |  +- org.bouncycastle:bcprov-jdk18on:jar:1.78.1:compile (optional)
+[INFO] |  +- org.apache.kerby:kerb-core:jar:2.0.3:compile (optional)
+[INFO] |  |  \- org.apache.kerby:kerby-pkix:jar:2.0.3:compile (optional)
+[INFO] |  |     +- org.apache.kerby:kerby-asn1:jar:2.0.3:compile (optional)
+[INFO] |  |     \- org.apache.kerby:kerby-util:jar:2.0.3:compile (optional)
+[INFO] |  +- org.codehaus.woodstox:stax2-api:jar:4.2.1:compile (optional)
+[INFO] |  +- com.fasterxml.woodstox:woodstox-core:jar:5.4.0:compile (optional)
+[INFO] |  +- dnsjava:dnsjava:jar:3.6.1:compile (optional)
+[INFO] |  \- org.xerial.snappy:snappy-java:jar:1.1.10.4:compile
+[INFO] +- org.apache.hadoop:hadoop-distcp:jar:3.4.2:provided
+[INFO] +- org.apache.hadoop:hadoop-hdfs:jar:3.4.2:compile (optional)
+[INFO] |  +- commons-daemon:commons-daemon:jar:1.0.13:compile (optional)
+[INFO] |  \- org.fusesource.leveldbjni:leveldbjni-all:jar:1.8:compile (optional)
+[INFO] +- org.apache.hadoop:hadoop-hdfs-client:jar:3.4.2:compile (optional)
+[INFO] |  \- org.apache.httpcomponents:httpcore:jar:4.4.13:compile (optional)
+[INFO] +- org.apache.hadoop:hadoop-mapreduce-client-core:jar:3.4.2:compile (optional)
+[INFO] |  +- org.apache.hadoop:hadoop-yarn-client:jar:3.4.2:compile (optional)
+[INFO] |  |  +- org.eclipse.jetty.websocket:websocket-client:jar:9.4.57.v20241219:compile (optional)
+[INFO] |  |  |  +- org.eclipse.jetty:jetty-client:jar:9.4.57.v20241219:compile (optional)
+[INFO] |  |  |  |  \- org.eclipse.jetty:jetty-http:jar:9.4.57.v20241219:compile (optional)
+[INFO] |  |  |  +- org.eclipse.jetty:jetty-io:jar:9.4.57.v20241219:compile (optional)
+[INFO] |  |  |  \- org.eclipse.jetty.websocket:websocket-common:jar:9.4.57.v20241219:compile (optional)
+[INFO] |  |  |     \- org.eclipse.jetty.websocket:websocket-api:jar:9.4.57.v20241219:compile (optional)
+[INFO] |  |  \- org.apache.hadoop:hadoop-yarn-api:jar:3.4.2:compile (optional)
+[INFO] |  +- org.apache.hadoop:hadoop-yarn-common:jar:3.4.2:compile (optional)
+[INFO] |  |  +- javax.xml.bind:jaxb-api:jar:2.2.11:compile (optional)
+[INFO] |  |  +- org.eclipse.jetty:jetty-util:jar:9.4.57.v20241219:compile (optional)
+[INFO] |  |  +- com.sun.jersey:jersey-client:jar:1.19.4:compile (optional)
+[INFO] |  |  +- com.google.inject:guice:jar:4.2.3:compile (optional)
+[INFO] |  |  |  +- javax.inject:javax.inject:jar:1:compile (optional)
+[INFO] |  |  |  \- aopalliance:aopalliance:jar:1.0:compile (optional)
+[INFO] |  |  +- com.sun.jersey.contribs:jersey-guice:jar:1.19.4:compile (optional)
+[INFO] |  |  +- com.fasterxml.jackson.module:jackson-module-jaxb-annotations:jar:2.18.6:compile (optional)
+[INFO] |  |  \- com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:jar:2.18.6:compile (optional)
+[INFO] |  |     \- com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:jar:2.18.6:compile (optional)
+[INFO] |  +- com.google.inject.extensions:guice-servlet:jar:4.2.3:compile (optional)
+[INFO] |  \- io.netty:netty-all:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-dns:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-haproxy:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-http:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-http2:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-memcache:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-mqtt:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-redis:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-smtp:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-socks:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-stomp:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-codec-xml:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-handler-proxy:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-handler-ssl-ocsp:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-resolver-dns:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-transport-rxtx:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-transport-sctp:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-transport-udt:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-transport-classes-kqueue:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-resolver-dns-classes-macos:jar:4.1.127.Final:compile (optional)
+[INFO] |     +- io.netty:netty-transport-native-epoll:jar:linux-x86_64:4.1.127.Final:runtime (optional)
+[INFO] |     +- io.netty:netty-transport-native-epoll:jar:linux-aarch_64:4.1.127.Final:runtime (optional)
+[INFO] |     +- io.netty:netty-transport-native-epoll:jar:linux-riscv64:4.1.127.Final:runtime (optional)
+[INFO] |     +- io.netty:netty-transport-native-kqueue:jar:osx-x86_64:4.1.127.Final:runtime (optional)
+[INFO] |     +- io.netty:netty-transport-native-kqueue:jar:osx-aarch_64:4.1.127.Final:runtime (optional)
+[INFO] |     +- io.netty:netty-resolver-dns-native-macos:jar:osx-x86_64:4.1.127.Final:runtime (optional)
+[INFO] |     \- io.netty:netty-resolver-dns-native-macos:jar:osx-aarch_64:4.1.127.Final:runtime (optional)
+[INFO] +- org.apache.hive:hive-storage-api:jar:4.3.0-SNAPSHOT:compile
+[INFO] +- org.apache.httpcomponents.client5:httpclient5:jar:5.6.2:compile
+[INFO] |  \- org.apache.httpcomponents.core5:httpcore5-h2:jar:5.4.3:compile
+[INFO] +- org.apache.httpcomponents.core5:httpcore5:jar:5.4.3:compile
+[INFO] +- org.apache.thrift:libfb303:jar:0.9.3:compile
+[INFO] +- org.apache.thrift:libthrift:jar:0.23.0:compile
+[INFO] |  +- jakarta.servlet:jakarta.servlet-api:jar:5.0.0:runtime
+[INFO] |  \- jakarta.annotation:jakarta.annotation-api:jar:2.1.1:runtime
+[INFO] +- org.skyscreamer:jsonassert:jar:1.4.0:test
+[INFO] |  \- com.vaadin.external.google:android-json:jar:0.0.20131108.vaadin1:test
+[INFO] +- org.apache.zookeeper:zookeeper:jar:3.8.4:compile
+[INFO] |  +- org.apache.zookeeper:zookeeper-jute:jar:3.8.4:compile
+[INFO] |  \- org.apache.yetus:audience-annotations:jar:0.12.0:compile
+[INFO] +- com.github.ben-manes.caffeine:caffeine:jar:2.8.4:compile
+[INFO] |  \- org.checkerframework:checker-qual:jar:3.4.0:compile
+[INFO] +- org.apache.curator:curator-recipes:jar:5.7.1:compile
+[INFO] +- org.apache.curator:curator-framework:jar:5.7.1:compile
+[INFO] |  \- org.apache.curator:curator-client:jar:5.7.1:compile
+[INFO] +- org.slf4j:slf4j-api:jar:1.7.30:compile
+[INFO] +- org.springframework.ldap:spring-ldap-core:jar:2.4.4:compile
+[INFO] |  +- org.springframework:spring-core:jar:5.3.39:compile
+[INFO] |  |  \- org.springframework:spring-jcl:jar:5.3.39:compile
+[INFO] |  +- org.springframework:spring-beans:jar:5.3.39:compile
+[INFO] |  \- org.springframework:spring-tx:jar:5.3.39:compile
+[INFO] +- junit:junit:jar:4.13.2:test
+[INFO] |  \- org.hamcrest:hamcrest-core:jar:1.3:test
+[INFO] +- org.mockito:mockito-core:jar:5.17.0:test
+[INFO] |  +- net.bytebuddy:byte-buddy:jar:1.15.11:test
+[INFO] |  +- net.bytebuddy:byte-buddy-agent:jar:1.15.11:test
+[INFO] |  \- org.objenesis:objenesis:jar:3.3:test
+[INFO] \- org.slf4j:slf4j-simple:jar:1.7.30:test
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.535 s
+[INFO] Finished at: 2026-07-27T17:36:47+02:00
+[INFO] ------------------------------------------------------------------------
+[INFO] 1 goals, 1 executed
+[WARNING] 
+[WARNING] 1 build scan custom value was not captured:
+[WARNING]  - Maximum custom value value length (100,000) exceeded: Git status
