@@ -271,7 +271,10 @@ public abstract class BaseHandler extends FacebookBase implements IHMSHandler {
       if (tablelocks == null) {
         int numTableLocks = MetastoreConf.getIntVar(conf,
             MetastoreConf.ConfVars.METASTORE_NUM_STRIPED_TABLE_LOCKS);
-        tablelocks = Striped.lock(numTableLocks);
+        // lazyWeakLock: lock objects are allocated on first use and held via weak references,
+        // so unused stripes are GC'd. A large stripe count keeps hash collisions between
+        // unrelated (db, tbl) keys without paying permanent memory cost.
+        tablelocks = Striped.lazyWeakLock(numTableLocks);
       }
     }
   }

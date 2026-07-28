@@ -2007,8 +2007,12 @@ public class MetastoreConf {
             + "e.g. javax.net.ssl.trustStore=/tmp/truststore,javax.net.ssl.trustStorePassword=pwd.\n " +
             "If both this and the metastore.dbaccess.ssl.* properties are set, then the latter properties \n" +
             "will overwrite what was set in the deprecated property."),
-    METASTORE_NUM_STRIPED_TABLE_LOCKS("metastore.num.striped.table.locks", "hive.metastore.num.striped.table.locks", 32,
-        "Number of striped locks available to provide exclusive operation support for critical table operations like add_partitions."),
+    METASTORE_NUM_STRIPED_TABLE_LOCKS(
+        "metastore.num.striped.table.locks", "hive.metastore.num.striped.table.locks", 65536,
+        "Number of striped locks available to provide exclusive operation support for critical table "
+            + "operations like add_partitions.\n The locks are lazily allocated and weakly referenced "
+            + "so unused stripes will not impose memory cost.\n A larger value reduces the probability of "
+            + "hash-collision-induced false contention between unrelated tables."),
     COLSTATS_RETAIN_ON_COLUMN_REMOVAL("metastore.colstats.retain.on.column.removal",
         "hive.metastore.colstats.retain.on.column.removal", true,
         "Whether to retain column statistics during column removals in partitioned tables - disabling this "
