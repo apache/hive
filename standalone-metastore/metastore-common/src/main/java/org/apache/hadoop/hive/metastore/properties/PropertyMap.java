@@ -135,7 +135,7 @@ public class PropertyMap implements Serializable {
 
   /**
    * Deserialization ctor.
-   * <p>Used through deserializtion through reflection by the serialization proxy.</p>
+   * <p>Used through deserialization through reflection by the serialization proxy.</p>
    * @param input the input stream
    * @throws IOException if IO fail
    */
