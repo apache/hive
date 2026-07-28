@@ -17,16 +17,17 @@
 
 package org.apache.hive.search.index;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hive.search.mapping.IndexMapping;
 import org.apache.hive.search.exception.IndexNotHealthyException;
 import org.apache.hive.search.index.store.IndexManifest;
-import org.apache.hive.search.exception.IndexIOException;
 import org.apache.hive.search.index.store.LocalStateClient;
 import org.apache.hive.search.index.store.IndexBackupUtils;
 import org.apache.hive.search.index.store.IndexStateClient;
@@ -38,7 +39,7 @@ import org.apache.lucene.store.MMapDirectory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class IndexManager implements AutoCloseable, MetastoreEventListener {
+public class IndexManager implements Closeable, MetastoreEventListener {
   private static final Logger LOG = LoggerFactory.getLogger(IndexManager.class);
 
   private final IndexMapping mapping;
@@ -195,17 +196,10 @@ public class IndexManager implements AutoCloseable, MetastoreEventListener {
   }
 
   @Override
-  public void close() throws IOException {
-    directory.close();
-    if (remoteIndex instanceof AutoCloseable closeable) {
-      try {
-        closeable.close();
-      } catch (Exception e) {
-        if (e instanceof IOException ioe) {
-          throw ioe;
-        }
-        throw new IndexIOException("Failed to close remote index client", e);
-      }
+  public void close() {
+    if (remoteIndex instanceof Closeable closeable) {
+      IOUtils.closeQuietly(closeable);
     }
+    IOUtils.closeQuietly(directory);
   }
 }

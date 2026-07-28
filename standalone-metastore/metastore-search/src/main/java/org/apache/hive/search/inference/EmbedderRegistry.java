@@ -17,6 +17,7 @@
 
 package org.apache.hive.search.inference;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.Map;
 
@@ -27,7 +28,7 @@ import org.apache.hive.search.exception.InitializeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public record EmbedderRegistry(Map<String, Embedder> embedders) implements AutoCloseable {
+public record EmbedderRegistry(Map<String, Embedder> embedders) implements Closeable {
   private static final Logger LOG = LoggerFactory.getLogger(EmbedderRegistry.class);
 
   public EmbedderRegistry(Map<String, Embedder> embedders) {
@@ -103,7 +104,7 @@ public record EmbedderRegistry(Map<String, Embedder> embedders) implements AutoC
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() throws IOException {
     for (Embedder embedder : embedders.values()) {
       embedder.close();
     }
