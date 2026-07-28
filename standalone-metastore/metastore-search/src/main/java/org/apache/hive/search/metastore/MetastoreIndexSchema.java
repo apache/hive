@@ -69,5 +69,4 @@ public final class MetastoreIndexSchema {
   private static TextFieldSchema semanticText(String name, String model) {
     return new TextFieldSchema(name, false).semanticField(model).filterField(false).storeField(false);
   }
-
 }

@@ -26,6 +26,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hive.search.config.SearchOptions;
 import org.apache.hive.search.exception.IndexNotReadyException;
@@ -68,9 +69,11 @@ public final class LuceneSearchBackend implements SearchBackend {
       future.get(300, TimeUnit.MILLISECONDS);
       return true;
     } catch (ExecutionException e) {
+      close();
       Throwable cause = e.getCause() != null ? e.getCause() : e;
       throw new IndexNotReadyException("Search backend initialization failed", cause);
     } catch (InterruptedException e) {
+      close();
       Thread.currentThread().interrupt();
       throw new IndexNotReadyException("Search backend initialization interrupted", e);
     } catch (TimeoutException e) {
@@ -98,9 +101,7 @@ public final class LuceneSearchBackend implements SearchBackend {
   }
 
   @Override
-  public void close() throws Exception {
-    if (session != null) {
-      session.close();
-    }
+  public void close() {
+    IOUtils.closeQuietly(session);
   }
 }

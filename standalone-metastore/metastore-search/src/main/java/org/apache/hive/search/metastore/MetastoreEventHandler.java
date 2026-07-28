@@ -17,6 +17,7 @@
 
 package org.apache.hive.search.metastore;
 
+import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -52,7 +53,7 @@ import org.slf4j.LoggerFactory;
  * does not block the entire batch forever. If a poison event still cannot be applied, the index
  * is marked unhealthy and search is blocked until the root cause is fixed.
  */
-public class MetastoreEventHandler implements AutoCloseable {
+public class MetastoreEventHandler implements Closeable {
   private static final Logger LOG = LoggerFactory.getLogger(MetastoreEventHandler.class);
   private final AtomicBoolean stopped = new AtomicBoolean(false);
   private final List<MetastoreEventListener> listeners = Collections.synchronizedList(new ArrayList<>());
@@ -66,7 +67,7 @@ public class MetastoreEventHandler implements AutoCloseable {
   private int consecutiveBatchFailures;
   private long failedBatchStartId = -1;
 
-  private MetastoreEventHandler(Configuration configuration) throws TException {
+  MetastoreEventHandler(Configuration configuration) throws TException {
     this(configuration, RetryingMetaStoreClient.getProxy(configuration, true));
   }
 
@@ -126,11 +127,15 @@ public class MetastoreEventHandler implements AutoCloseable {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() {
     stopped.set(true);
-    if (eventPoller != null) {
-      eventPoller.interrupt();
-      eventPoller.join();
+    try {
+      if (eventPoller != null) {
+        eventPoller.interrupt();
+        eventPoller.join();
+      }
+    } catch (InterruptedException ignored) {
+      // ignore
     }
     if (client != null) {
       client.close();

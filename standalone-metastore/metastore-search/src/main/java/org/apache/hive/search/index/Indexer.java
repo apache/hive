@@ -20,6 +20,7 @@ package org.apache.hive.search.index;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.hive.common.DatabaseName;
 import org.apache.hadoop.hive.metastore.Batchable;
 import org.apache.hive.search.config.IndexOptions;
@@ -52,7 +54,7 @@ import org.apache.lucene.search.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class Indexer implements AutoCloseable {
+public final class Indexer implements Closeable {
   private static final Logger LOG = LoggerFactory.getLogger(Indexer.class);
   private static final int EMBED_BATCH_SIZE = 100;
 
@@ -249,7 +251,7 @@ public final class Indexer implements AutoCloseable {
         .toArray(Term[]::new);
     writer.deleteDocuments(terms);
     int after = writer.getDocStats().numDocs;
-    LOG.info("Deleted {} docs", before - after);
+    LOG.info("Deleted {} docs in response to tables drop", before - after);
     return before - after;
   }
 
@@ -267,11 +269,11 @@ public final class Indexer implements AutoCloseable {
     }
     writer.deleteDocuments(builder.build());
     int after = writer.getDocStats().numDocs;
-    LOG.info("Deleted {} docs", before - after);
+    LOG.info("Deleted {} docs in response to databases drop", before - after);
   }
 
   @Override
-  public void close() throws IOException {
-    writer.close();
+  public void close() {
+    IOUtils.closeQuietly(writer);
   }
 }

@@ -17,6 +17,7 @@
 
 package org.apache.hive.search.search;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -29,7 +30,7 @@ import org.apache.hive.search.exception.SearchException;
  * Pluggable search storage and query engine. Phase 1 uses embedded Lucene; Phase 3 may add
  * OpenSearch or Elasticsearch without changing the mapping contract or ingest path.
  */
-public interface SearchBackend extends AutoCloseable {
+public interface SearchBackend extends Closeable {
 
   void initialize(Configuration configuration) throws InitializeException, IOException;
 
@@ -39,6 +40,4 @@ public interface SearchBackend extends AutoCloseable {
   TableSearchResult search(SearchQuery query)
       throws SearchException, InitializeException, IOException;
 
-  @Override
-  void close() throws Exception;
 }

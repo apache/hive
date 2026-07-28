@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.TableName;
@@ -65,10 +66,8 @@ public class MetastoreCluster implements AutoCloseable {
   }
 
   @Override
-  public void close() throws Exception {
-    if (election != null) {
-      election.close();
-    }
+  public void close() {
+    IOUtils.closeQuietly(election);
   }
 
   public static <T> void injectElection(Configuration configuration,

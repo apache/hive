@@ -17,11 +17,13 @@
 
 package org.apache.hive.search.index;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hive.search.exception.IndexNotReadyException;
 import org.apache.hive.search.exception.InitializeException;
@@ -38,7 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Colocated indexer and searcher */
-public final class IndexSession implements AutoCloseable {
+public final class IndexSession implements Closeable {
   private static final Logger LOG = LoggerFactory.getLogger(IndexSession.class);
   private final Configuration configuration;
   private final IndexManager indexManager;
@@ -100,18 +102,9 @@ public final class IndexSession implements AutoCloseable {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() {
     service.shutdown();
-    if (searcherManager != null) {
-      searcherManager.close();
-    }
-    if (metastoreIndexer != null) {
-      metastoreIndexer.close();
-    }
-    if (indexer != null) {
-      indexer.close();
-    }
-    indexManager.close();
-    modelRegistry.close();
+    IOUtils.closeQuietly(searcherManager, metastoreIndexer,
+        indexer, indexManager, modelRegistry);
   }
 }
