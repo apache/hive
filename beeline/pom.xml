@@ -68,10 +68,10 @@
     </dependency>
     <dependency>
       <!--
-      Since the compile-time hive-jdbc dependency contains Utils.java,
-      which directly imports HiveSQLException from hive-service,
-      hive-service is also required at runtime and should therefore be declared as a compile-time dependency.
-      -->
+        Since the compile-time hive-jdbc dependency contains Utils.java,
+        which directly imports HiveSQLException from hive-service,
+        hive-service is also required at runtime and should therefore be declared as a compile-time dependency.
+        -->
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-service</artifactId>
       <version>${project.version}</version>
@@ -147,7 +147,7 @@
     <!--
     hive-exec, hive-llap-server, and hive-hplsql are declared test scope here so that
     are all needed to run BeelineCli test to manage the embedded HS2 session.
-    -->
+  -->
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-exec</artifactId>
@@ -242,22 +242,22 @@
     </dependency>
   </dependencies>
   <profiles>
-  <!--
-  Build a native installer (dmg on macOS, exe/msi on Windows, deb/rpm on Linux).
-  The installer bundles a JRE — end-users need no Java pre-installed.
+    <!--
+    Build a native installer (dmg on macOS, exe/msi on Windows, deb/rpm on Linux).
+    The installer bundles a JRE — end-users need no Java pre-installed.
 
-  Usage:
-    mvn package -pl beeline -am -DskipTests -P native-installer
+    Usage:
+      mvn package -pl beeline -am -DskipTests -P native-installer
 
-  Output (arch sub-directory so x64 and arm64 artifacts coexist):
-    beeline/target/installer/x64/beeline-4.3.0.dmg    (Intel Mac)
-    beeline/target/installer/arm64/beeline-4.3.0.dmg  (Apple Silicon — macos-arm64 auto-activates)
-    beeline/target/installer/x64/beeline-4.3.0.exe    (Windows)
-    beeline/target/installer/x64/beeline_4.3.0_amd64.deb (Linux)
+    Output (arch sub-directory so x64 and arm64 artifacts coexist):
+      beeline/target/installer/x64/beeline-4.3.0.dmg    (Intel Mac)
+      beeline/target/installer/arm64/beeline-4.3.0.dmg  (Apple Silicon — macos-arm64 auto-activates)
+      beeline/target/installer/x64/beeline-4.3.0.exe    (Windows)
+      beeline/target/installer/x64/beeline_4.3.0_amd64.deb (Linux)
 
-  installer.arch defaults to x64 and is overridden to arm64 by the
-  macos-arm64 profile below when running on Apple Silicon.
-  -->
+    installer.arch defaults to x64 and is overridden to arm64 by the
+    macos-arm64 profile below when running on Apple Silicon.
+    -->
     <profile>
       <id>native-installer</id>
       <properties>
@@ -283,16 +283,24 @@
                     <mkdir dir="${project.build.directory}/installer/${installer.arch}"/>
                     <exec executable="jpackage" failonerror="true">
                       <!-- Application identity -->
-                      <arg value="--name"/>        <arg value="beeline"/>
-                      <arg value="--app-version"/> <arg value="${installer.app.version}"/>
-                      <arg value="--vendor"/>      <arg value="Apache Software Foundation"/>
-                      <arg value="--description"/> <arg value="Apache Hive Beeline SQL client"/>
+                      <arg value="--name"/>
+                      <arg value="beeline"/>
+                      <arg value="--app-version"/>
+                      <arg value="${installer.app.version}"/>
+                      <arg value="--vendor"/>
+                      <arg value="Apache Software Foundation"/>
+                      <arg value="--description"/>
+                      <arg value="Apache Hive Beeline SQL client"/>
                       <!-- Input: the self-contained fat jar -->
-                      <arg value="--input"/>       <arg value="${project.build.directory}"/>
-                      <arg value="--main-jar"/>    <arg value="beeline-standalone.jar"/>
-                      <arg value="--main-class"/>  <arg value="org.apache.hive.beeline.BeeLine"/>
+                      <arg value="--input"/>
+                      <arg value="${project.build.directory}"/>
+                      <arg value="--main-jar"/>
+                      <arg value="beeline-standalone.jar"/>
+                      <arg value="--main-class"/>
+                      <arg value="org.apache.hive.beeline.BeeLine"/>
                       <!-- Output: arch-specific subdirectory so x64 and arm64 coexist -->
-                      <arg value="--dest"/>        <arg value="${project.build.directory}/installer/${installer.arch}"/>
+                      <arg value="--dest"/>
+                      <arg value="${project.build.directory}/installer/${installer.arch}"/>
                       <!--
                         jpackage picks the native format automatically:
                           macOS   → dmg  (x64 on Intel, arm64 on Apple Silicon)
@@ -310,7 +318,6 @@
         </plugins>
       </build>
     </profile>
-
     <!--
       Auto-detects Apple Silicon and sets installer.arch=arm64.
       Declared AFTER native-installer so its property value wins over the x64
