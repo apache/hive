@@ -241,10 +241,10 @@ public class TestQOutProcessor {
     OutputFile inner = new OutputFile(out.getAbsolutePath());
     QOutProcessor.MaskingFoldState state = new QOutProcessor.MaskingFoldState();
 
-    ConvertedOutputFile record =
+    ConvertedOutputFile convertedOutput =
         new ConvertedOutputFile(inner, Converter.NONE, qOutProcessor, state);
-    record.println("hdfs://localhost:51594/tmp/other text");
-    record.close();
+    convertedOutput.println("hdfs://localhost:51594/tmp/other text");
+    convertedOutput.close();
 
     String content = Files.readString(out.toPath(), StandardCharsets.UTF_8);
     Assert.assertTrue(content.contains(QOutProcessor.HDFS_MASK));
@@ -260,12 +260,12 @@ public class TestQOutProcessor {
     File out = tmpFolder.newFile("test.out");
     OutputFile inner = new OutputFile(out.getAbsolutePath());
     QOutProcessor.MaskingFoldState state = new QOutProcessor.MaskingFoldState();
-    ConvertedOutputFile record =
+    ConvertedOutputFile convertedOutput =
         new ConvertedOutputFile(inner, Converter.NONE, qOutProcessor, state);
 
-    record.println("Reading log file: /tmp/cyanzheng/operation_logs/query.test");
-    record.println("PREHOOK: query: SELECT 1");
-    record.close();
+    convertedOutput.println("Reading log file: /tmp/cyanzheng/operation_logs/query.test");
+    convertedOutput.println("PREHOOK: query: SELECT 1");
+    convertedOutput.close();
 
     Assert.assertEquals("PREHOOK: query: SELECT 1\n",
         Files.readString(out.toPath(), StandardCharsets.UTF_8));
@@ -276,16 +276,16 @@ public class TestQOutProcessor {
     File out = tmpFolder.newFile("test.out");
     OutputFile inner = new OutputFile(out.getAbsolutePath());
 
-    ConvertedOutputFile record = new ConvertedOutputFile(inner, Converter.NONE);
-    record.println("hdfs://localhost:51594/tmp/other text");
-    record.close();
+    ConvertedOutputFile convertedOutput = new ConvertedOutputFile(inner, Converter.NONE);
+    convertedOutput.println("hdfs://localhost:51594/tmp/other text");
+    convertedOutput.close();
 
     Assert.assertEquals("hdfs://localhost:51594/tmp/other text\n",
         Files.readString(out.toPath(), StandardCharsets.UTF_8));
   }
 
   /**
-   * BeeLine PREHOOK/POSTHOOK emit multiline query text in one println; !record output must match
+   * BeeLine PREHOOK/POSTHOOK emit multiline query text in one println; converted output must match
    * {@link QOutProcessor#maskContent(String)} via {@link ConvertedOutputFile}.
    */
   @Test
@@ -301,11 +301,11 @@ public class TestQOutProcessor {
     File out = tmpFolder.newFile("test.out");
     OutputFile inner = new OutputFile(out.getAbsolutePath());
     QOutProcessor.MaskingFoldState state = new QOutProcessor.MaskingFoldState();
-    ConvertedOutputFile record =
+    ConvertedOutputFile convertedOutput =
         new ConvertedOutputFile(inner, Converter.NONE, qOutProcessor, state);
 
-    record.println(multiline);
-    record.close();
+    convertedOutput.println(multiline);
+    convertedOutput.close();
 
     Assert.assertEquals(expected, Files.readString(out.toPath(), StandardCharsets.UTF_8));
   }
