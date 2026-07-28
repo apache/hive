@@ -48,12 +48,13 @@ import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.http.HttpException;
-import org.apache.http.HttpHeaders;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpRequestInterceptor;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.protocol.HttpContext;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.core5.http.EntityDetails;
+import org.apache.hc.core5.http.HttpException;
+import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.hc.core5.http.HttpRequest;
+import org.apache.hc.core5.http.HttpRequestInterceptor;
+import org.apache.hc.core5.http.protocol.HttpContext;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TConfiguration;
 import org.apache.thrift.TException;
@@ -602,19 +603,14 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
   @VisibleForTesting
   protected HttpClientBuilder createHttpClientBuilder() throws MetaException {
     HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
-    String authType = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_AUTH_MODE);
-    Map<String, String> additionalHeaders = getAdditionalHeaders();
-    if (authType.equalsIgnoreCase("jwt")) {
-      // fetch JWT token from environment and set it in Auth Header in HTTP request
-      String jwtToken = System.getenv("HMS_JWT");
-      if (jwtToken == null || jwtToken.isEmpty()) {
-        LOG.debug("No jwt token set in environment variable: HMS_JWT");
-        throw new MetaException("For auth mode JWT, valid signed jwt token must be provided in the "
-            + "environment variable HMS_JWT");
-      }
-      httpClientBuilder.addInterceptorFirst(new HttpRequestInterceptor() {
+    String authType = MetastoreConf.getAsString(conf, ConfVars.METASTORE_CLIENT_AUTH_MODE).toLowerCase(
+        Locale.ROOT);
+    String user = null;
+    if (authType.equals("jwt")) {
+      final boolean isKrbToJWTEnabled = KrbToJWTExchanger.isKrbToJWTEnabled(conf);
+      httpClientBuilder.addRequestInterceptorFirst(new HttpRequestInterceptor() {
         @Override
-        public void process(HttpRequest httpRequest, HttpContext httpContext)
+        public void process(HttpRequest httpRequest, EntityDetails entityDetails, HttpContext httpContext)
             throws HttpException, IOException {
           httpRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken);
           for (Map.Entry<String, String> entry : additionalHeaders.entrySet()) {
@@ -632,9 +628,9 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
         }
       }
       final String httpUser = user;
-      httpClientBuilder.addInterceptorFirst(new HttpRequestInterceptor() {
+      httpClientBuilder.addRequestInterceptorFirst(new HttpRequestInterceptor() {
         @Override
-        public void process(HttpRequest httpRequest, HttpContext httpContext)
+        public void process(HttpRequest httpRequest, EntityDetails entityDetails, HttpContext httpContext)
             throws HttpException, IOException {
           httpRequest.addHeader(MetaStoreUtils.USER_NAME_HTTP_HEADER, httpUser);
           for (Map.Entry<String, String> entry : additionalHeaders.entrySet()) {

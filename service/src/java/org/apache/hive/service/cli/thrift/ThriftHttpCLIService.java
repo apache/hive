@@ -30,6 +30,7 @@ import java.util.Set;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.servlet.DispatcherType;
+import javax.servlet.http.HttpServlet;
 import javax.ws.rs.HttpMethod;
 
 import com.google.common.base.Splitter;
@@ -215,7 +216,7 @@ public class ThriftHttpCLIService extends ThriftCLIService {
       UserGroupInformation serviceUGI = cliService.getServiceUGI();
       // UGI for the http/_HOST (SPNego) principal
       UserGroupInformation httpUGI = cliService.getHttpUGI();
-      TServlet thriftHttpServlet = new ThriftHttpServlet(processor, protocolFactory, serviceUGI, httpUGI,
+      HttpServlet thriftHttpServlet = new ThriftHttpServlet(processor, protocolFactory, serviceUGI, httpUGI,
           hiveAuthFactory, hiveConf);
 
       // Context handler

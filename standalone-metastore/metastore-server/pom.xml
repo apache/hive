@@ -42,7 +42,7 @@
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
-      <version>${httpcomponents.client.version}</version>
+      <version>${httpcomponents5.client.version}</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
