@@ -582,7 +582,7 @@ public class TezSessionState implements TezSession {
     }
 
     String mrAmJavaOpts = conf.get(TezConfiguration.TEZ_AM_LAUNCH_CMD_OPTS, MRHelpers.getJavaOptsForMRAM(conf));
-    conf.set(TezConfiguration.TEZ_AM_LAUNCH_CMD_OPTS, mrAmJavaOpts + JavaVersionUtils.getAddOpensFlagsIfNeeded());
+    conf.set(TezConfiguration.TEZ_AM_LAUNCH_CMD_OPTS, mrAmJavaOpts + JavaVersionUtils.getAddOpensFlags());
 
     String queueName = conf.get(JobContext.QUEUE_NAME, YarnConfiguration.DEFAULT_QUEUE_NAME);
     conf.setIfUnset(TezConfiguration.TEZ_QUEUE_NAME, queueName);
