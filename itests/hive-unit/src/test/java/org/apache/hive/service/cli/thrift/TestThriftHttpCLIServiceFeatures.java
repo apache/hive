@@ -229,7 +229,7 @@ public class TestThriftHttpCLIServiceFeatures extends AbstractThriftCLITest {
 
     HttpClient httpClient = HttpClientBuilder.create()
         .addRequestInterceptorLast(
-            new HttpBasicAuthInterceptor(USERNAME, PASSWORD,
+            new HttpBasicAuthInterceptor(ThriftCLIServiceTest.USERNAME, ThriftCLIServiceTest.PASSWORD,
                 null, null, false, null, null)
         )
         .build();
@@ -290,7 +290,7 @@ public class TestThriftHttpCLIServiceFeatures extends AbstractThriftCLITest {
     TTransport transport;
     String httpUrl = getHttpUrl();
     HttpBasicAuthInterceptorWithLogging authInt =
-        new HttpBasicAuthInterceptorWithLogging(USERNAME, PASSWORD, null, null,
+        new HttpBasicAuthInterceptorWithLogging(ThriftCLIServiceTest.USERNAME, ThriftCLIServiceTest.PASSWORD, null, null,
             false, additionalHeaders, cookieHeaders);
     HttpClient hClient = HttpClientBuilder.create()
         .addRequestInterceptorLast(authInt)
