@@ -22,10 +22,10 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import org.apache.hadoop.hive.conf.Constants;
-import org.apache.http.HttpException;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.message.BasicHttpRequest;
-import org.apache.http.protocol.BasicHttpContext;
+import org.apache.hc.client5.http.cookie.BasicCookieStore;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
+import org.apache.hc.core5.http.HttpException;
+import org.apache.hc.core5.http.message.BasicHttpRequest;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -36,7 +36,7 @@ public class TestHttpRequestInterceptor {
     HttpRequestInterceptorBase requestInterceptor = getInterceptor();
     requestInterceptor.setRequestTrackingEnabled(true);
     requestInterceptor.sessionId(() -> "sessionId");
-    requestInterceptor.process(new BasicHttpRequest("POST", "uri"), new BasicHttpContext());
+    requestInterceptor.process(new BasicHttpRequest("POST", "uri"), null, HttpClientContext.create());
 
     Assert.assertTrue(requestInterceptor.additionalHeaders.containsKey(Constants.HTTP_HEADER_REQUEST_TRACK));
     Assert.assertEquals("HIVE_sessionId_00000000000000000001",

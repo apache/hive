@@ -38,6 +38,17 @@ import org.apache.hadoop.security.authentication.util.KerberosUtil;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hadoop.security.token.TokenSelector;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.io.BasicHttpClientConnectionManager;
+import org.apache.hc.client5.http.ssl.ClientTlsStrategyBuilder;
+import org.apache.hc.client5.http.ssl.DefaultClientTlsStrategy;
+import org.apache.hc.client5.http.ssl.DefaultHostnameVerifier;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactoryBuilder;
+import org.apache.hc.client5.http.ssl.TlsSocketStrategy;
+import org.apache.hc.core5.http.config.Registry;
+import org.apache.hc.core5.http.config.RegistryBuilder;
+import org.apache.hc.core5.ssl.SSLContexts;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.thrift.transport.THttpClient;
 import org.apache.thrift.transport.TSSLTransportFactory;
 import org.apache.thrift.transport.TServerSocket;
@@ -45,14 +56,6 @@ import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.zookeeper.client.ZooKeeperSaslClient;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.ssl.DefaultHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
-import org.apache.http.ssl.SSLContexts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -393,7 +396,7 @@ public class SecurityUtils {
   public static THttpClient getThriftHttpsClient(String httpsUrl, String trustStorePath,
       String trustStorePasswd, String trustStoreAlgorithm, String trustStoreType,
       String includeProtocols, String includeCipherSuites,
-      HttpClientBuilder underlyingHttpClientBuilder) throws TTransportException, IOException,
+       HttpClientBuilder underlyingHttpClientBuilder) throws TTransportException, IOException,
       KeyStoreException, NoSuchAlgorithmException, CertificateException,
       KeyManagementException {
     Preconditions.checkNotNull(underlyingHttpClientBuilder, "httpClientBuilder should not be null");
@@ -421,12 +424,19 @@ public class SecurityUtils {
     if (parsedCipherSuites.length > 0) {
       ciphers = parsedCipherSuites;
     }
-    SSLConnectionSocketFactory socketFactory =
-        new SSLConnectionSocketFactory(sslContext, protocols, ciphers, new DefaultHostnameVerifier(null));
-    final Registry<ConnectionSocketFactory> registry =
-        RegistryBuilder.<ConnectionSocketFactory> create().register("https", socketFactory)
-            .build();
-    underlyingHttpClientBuilder.setConnectionManager(new BasicHttpClientConnectionManager(registry));
+
+    TlsSocketStrategy tlsStrategy = ClientTlsStrategyBuilder.create()
+        .setSslContext(sslContext)
+        .setTlsVersions(protocols)
+        .setCiphers(ciphers)
+        .setHostnameVerifier(new DefaultHostnameVerifier())
+        .buildClassic(); // Use buildClassic() for synchronous/classic HttpClient
+
+    final Registry<TlsSocketStrategy> registry = RegistryBuilder.<TlsSocketStrategy>create()
+        .register("https", tlsStrategy)
+        .build();
+
+    underlyingHttpClientBuilder.setConnectionManager(BasicHttpClientConnectionManager.create(registry));
     return new THttpClient(httpsUrl, underlyingHttpClientBuilder.build());
   }
 

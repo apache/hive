@@ -415,7 +415,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     boolean jwt = MetastoreConf.getVar(conf, ConfVars.THRIFT_METASTORE_AUTHENTICATION).equalsIgnoreCase("jwt");
     AuthType authType = jwt ? AuthType.JWT : AuthType.SIMPLE;
     ServletSecurity security = new ServletSecurity(authType, conf);
-    Servlet thriftHttpServlet = security.proxy(new TServlet(processor, protocolFactory));
+    Servlet thriftHttpServlet = security.proxy(new HiveThriftServlet(processor, protocolFactory));
 
     boolean directSqlEnabled = MetastoreConf.getBoolVar(conf, ConfVars.TRY_DIRECT_SQL);
     HMSHandler.LOG.info("Direct SQL optimization = {}",  directSqlEnabled);
