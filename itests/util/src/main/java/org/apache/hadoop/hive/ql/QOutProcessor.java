@@ -20,6 +20,9 @@ package org.apache.hadoop.hive.ql;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -244,6 +247,13 @@ public class QOutProcessor {
       out.append(line).append('\n');
     }
     return out.toString();
+  }
+
+  /** Applies {@link #maskContent(String)} to a q test output file in place. */
+  public void maskOutputFile(String fname) throws IOException {
+    Path path = Path.of(fname);
+    String masked = maskContent(Files.readString(path, StandardCharsets.UTF_8));
+    Files.writeString(path, masked, StandardCharsets.UTF_8);
   }
 
   LineProcessingResult processLine(String line) {
