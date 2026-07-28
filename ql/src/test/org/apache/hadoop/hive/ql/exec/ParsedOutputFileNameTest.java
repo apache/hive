@@ -121,9 +121,9 @@ public class ParsedOutputFileNameTest {
   }
 
   /**
-   * HIVE-28822: on filesystems without atomic rename-if-absent semantics (S3 etc.), the copy
-   * suffix carries an 8-hex per-query uniqueness tag instead of the numeric counter, so
-   * concurrent writers rename to distinct destination keys.
+   * On filesystems without atomic rename-if-absent semantics (S3 etc.), the copy suffix
+   * carries an 8-hex per-query uniqueness tag instead of the numeric counter, so concurrent
+   * writers rename to distinct destination keys.
    */
   @Test
   public void testUniquenessTagAsCopySuffix() throws Exception {

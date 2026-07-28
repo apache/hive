@@ -39,6 +39,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 
 @RunWith(Parameterized.class)
@@ -232,51 +233,70 @@ public class TestHiveCopyFiles {
   }
 
   /**
-   * HIVE-28822 (root-cause fix): when two concurrent writers stage a file with the same
-   * inner filename (e.g. {@code 000000_0}) into the same destination directory on an S3-like
-   * filesystem, mvFile must pick distinct destination keys so the second writer does not
-   * silently overwrite the first. Both files must land under distinct
-   * {@code 000000_0_<hex>} suffixed names — no plain {@code 000000_0}, no {@code _copy_N}.
+   * When two concurrent writers stage a file with the same inner filename (e.g. {@code 000000_0})
+   * into the same destination directory on an S3-like filesystem, mvFile must pick distinct
+   * destination keys so the second writer does not silently overwrite the first. Both files
+   * must land under distinct {@code 000000_0_copy_<hex>} names — no plain {@code 000000_0}, no
+   * numeric {@code _copy_N}.
    *
    * <p>Covers the two moving parts individually since the full rename-branch path in
    * {@link Hive#copyFiles} requires src and dest FileSystems to compare equal AND the dest
-   * scheme to match {@link UnstableRenameFileSystem}, which is not easily synthesizable with
+   * scheme to be flagged non-atomic-rename, which is not easily synthesizable with
    * LocalFileSystem in a JUnit environment:
    * <ol>
-   *   <li>{@link UnstableRenameFileSystem#matches(String)} recognizes S3-family schemes and
-   *       rejects HDFS / local schemes.</li>
+   *   <li>{@link Hive#isNonAtomicRenameFs(FileSystem)} recognizes S3-family schemes on the URI
+   *       and rejects HDFS / local schemes.</li>
    *   <li>Two distinct {@code hive.query.id} values map to two distinct 8-hex uniqueness tags
    *       — the compact per-query identifier that mvFile appends when the destination
-   *       filesystem is an unstable-rename one. Confirms the tag is stable for a given
-   *       queryId, and that the tag's shape (8 hex chars) matches the extra group in
+   *       filesystem is a non-atomic-rename one. Confirms the tag is stable for a given
+   *       queryId, and that the tag's shape (8 hex chars) matches the copy-suffix group in
    *       {@link org.apache.hadoop.hive.ql.exec.ParsedOutputFileName}'s regex.</li>
    * </ol>
    */
   @Test
-  public void testUniquenessTagAndUnstableFsGating() {
-    // (1) enum gating
-    assertTrue(UnstableRenameFileSystem.matches("s3a"));
-    assertTrue(UnstableRenameFileSystem.matches("s3n"));
-    assertTrue(UnstableRenameFileSystem.matches("s3"));
-    assertTrue(UnstableRenameFileSystem.matches("gs"));
-    assertFalse("hdfs is atomic-rename",
-        UnstableRenameFileSystem.matches("hdfs"));
-    assertFalse("local FS is atomic-rename",
-        UnstableRenameFileSystem.matches("file"));
-    assertFalse(UnstableRenameFileSystem.matches((String) null));
-    assertFalse(UnstableRenameFileSystem.matches(""));
+  public void testUniquenessTagAndUnstableFsGating() throws IOException {
+    // (1) non-atomic-rename filesystem detection via URI scheme
+    FileSystem localFs = new Path(targetFolder.getRoot().getAbsolutePath()).getFileSystem(hiveConf);
+    assertFalse("local FS is atomic-rename", Hive.isNonAtomicRenameFs(localFs));
+    assertFalse("null fs is not flagged", Hive.isNonAtomicRenameFs((FileSystem) null));
 
-    // (2) uniqueness tag: distinct queryIds → distinct 8-hex tags, empty queryId → empty tag
-    hiveConf.setVar(HiveConf.ConfVars.HIVE_QUERY_ID, "q1_lbodor_20260101_aaaaaaaa");
+    for (String scheme : new String[] {"s3a", "s3n", "s3", "gs", "abfs", "abfss", "wasb", "wasbs"}) {
+      FileSystem spy = Mockito.spy(localFs);
+      Mockito.when(spy.getUri()).thenReturn(URI.create(scheme + ":///bucket/path"));
+      assertTrue(scheme + " must be flagged non-atomic-rename",
+          Hive.isNonAtomicRenameFs(spy));
+    }
+    for (String scheme : new String[] {"hdfs", "file", "ofs", "adl"}) {
+      FileSystem spy = Mockito.spy(localFs);
+      Mockito.when(spy.getUri()).thenReturn(URI.create(scheme + ":///whatever"));
+      assertFalse(scheme + " must not be flagged non-atomic-rename",
+          Hive.isNonAtomicRenameFs(spy));
+    }
+
+    // (2) uniqueness tag: take the first 8 hex chars of the UUID at the tail of queryId
+    // (QueryPlan.makeQueryId → "<user>_<timestamp>_<uuid>"). Distinct UUIDs → distinct tags.
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_QUERY_ID,
+        "lbodor_20260101120000_f47ac10b-58cc-4372-a567-0e02b2c3d479");
     String tag1 = Hive.computeUniquenessTag(hiveConf);
-    hiveConf.setVar(HiveConf.ConfVars.HIVE_QUERY_ID, "q2_lbodor_20260101_bbbbbbbb");
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_QUERY_ID,
+        "lbodor_20260101120001_9c8a44f1-e2b3-4a1c-9d3e-000000000000");
     String tag2 = Hive.computeUniquenessTag(hiveConf);
-    hiveConf.unset(HiveConf.ConfVars.HIVE_QUERY_ID.varname);
-    String tagEmpty = Hive.computeUniquenessTag(hiveConf);
 
+    assertEquals("first 8 chars of the UUID at the tail", "f47ac10b", tag1);
+    assertEquals("first 8 chars of the UUID at the tail", "9c8a44f1", tag2);
     assertTrue("tag1 must match <8-hex>: " + tag1, tag1.matches("[0-9a-f]{8}"));
     assertTrue("tag2 must match <8-hex>: " + tag2, tag2.matches("[0-9a-f]{8}"));
     assertNotEquals("distinct queryIds must produce distinct tags", tag1, tag2);
-    assertEquals("empty queryId → empty tag", "", tagEmpty);
+
+    // Missing queryId → hard failure (mvFile's non-atomic-rename branch must not silently
+    // fall back to a shared filename when the query state is absent).
+    hiveConf.unset(HiveConf.ConfVars.HIVE_QUERY_ID.varname);
+    try {
+      Hive.computeUniquenessTag(hiveConf);
+      fail("computeUniquenessTag must throw when hive.query.id is unset");
+    } catch (IllegalStateException expected) {
+      assertTrue("exception message must mention hive.query.id: " + expected.getMessage(),
+          expected.getMessage() != null && expected.getMessage().contains("hive.query.id"));
+    }
   }
 }
