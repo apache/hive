@@ -17,9 +17,11 @@
 
 package org.apache.hive.search.inference;
 
+import java.io.Closeable;
+
 import org.apache.hive.search.exception.InferenceException;
 
-public interface Embedder extends AutoCloseable {
+public interface Embedder extends Closeable {
   enum TaskType {
     DOCUMENT,
     QUERY

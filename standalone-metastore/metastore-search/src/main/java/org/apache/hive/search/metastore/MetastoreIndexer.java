@@ -17,6 +17,7 @@
 
 package org.apache.hive.search.metastore;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -36,7 +37,7 @@ import org.apache.hive.search.index.store.IndexManifest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class MetastoreIndexer implements AutoCloseable {
+public final class MetastoreIndexer implements Closeable {
   private static final Logger LOG = LoggerFactory.getLogger(MetastoreIndexer.class);
 
   private final IMetaStoreClient client;
@@ -66,7 +67,7 @@ public final class MetastoreIndexer implements AutoCloseable {
     this.indexer = indexer;
     this.indexManager = indexManager;
     this.flushIndexListener = new FlushIndexListener(configuration);
-    this.handler = new MetastoreEventHandler(configuration, client);
+    this.handler = new MetastoreEventHandler(configuration);
     this.handler.addListeners(flushIndexListener, indexManager);
     this.cluster = new MetastoreCluster(configuration, flushIndexListener);
     this.lastEventId = initialize();
@@ -206,7 +207,7 @@ public final class MetastoreIndexer implements AutoCloseable {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() throws IOException {
     try {
       cluster.close();
       handler.close();
@@ -338,7 +339,7 @@ public final class MetastoreIndexer implements AutoCloseable {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() throws IOException {
       isLeader = false;
       try {
         if (replicateThread != null) {
@@ -346,6 +347,9 @@ public final class MetastoreIndexer implements AutoCloseable {
           replicateThread = null;
         }
         commitThread.interrupt();
+        commitThread.join();
+      } catch (InterruptedException ignored) {
+        // ignore
       } finally {
         if (eventId > lastCommittedEventId) {
           if (indexer.flush(eventId, true)) {

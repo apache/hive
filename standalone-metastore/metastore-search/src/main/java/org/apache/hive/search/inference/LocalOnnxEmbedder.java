@@ -53,7 +53,6 @@ public final class LocalOnnxEmbedder implements Embedder {
   private final HuggingFaceTokenizer tokenizer;
   private final Set<String> sessionInputNames;
   private final String modelOutputName;
-  private final Object inferenceLock = new Object();
   private final AtomicBoolean closed = new AtomicBoolean(false);
 
   public LocalOnnxEmbedder(InferenceOptions config) throws InitializeException, IOException {
@@ -101,16 +100,14 @@ public final class LocalOnnxEmbedder implements Embedder {
         throw new InferenceException("Cannot embed null or blank text");
       }
     }
-    synchronized (inferenceLock) {
-      try {
-        return embedBatchLocked(task, texts);
-      } catch (OrtException e) {
-        throw InferenceException.wrap("Failed to encode text batch", e);
-      }
+    try {
+      return embedBatchInternal(task, texts);
+    } catch (OrtException e) {
+      throw InferenceException.wrap("Failed to encode text batch", e);
     }
   }
 
-  private float[][] embedBatchLocked(TaskType task, String[] texts) throws OrtException {
+  private float[][] embedBatchInternal(TaskType task, String[] texts) throws OrtException {
     String prefix = modelSpec.prefixFor(task);
     String[] inputs = new String[texts.length];
     for (int i = 0; i < texts.length; i++) {
