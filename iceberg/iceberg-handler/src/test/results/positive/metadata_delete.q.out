@@ -74,11 +74,11 @@ POSTHOOK: Output: default@ice_date_year
 PREHOOK: query: delete from ice_date_year where year(b) = 2022
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_date_year
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: default@ice_date_year
 POSTHOOK: query: delete from ice_date_year where year(b) = 2022
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_date_year
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: Output: default@ice_date_year
 PREHOOK: query: select * from ice_date_year
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_date_year
