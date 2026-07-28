@@ -730,9 +730,7 @@ public class HiveConnection implements java.sql.Connection {
                 public boolean retryRequest(final HttpResponse response, final int executionCount,
                     final HttpContext context) {
                   int statusCode = response.getCode();
-                  boolean sentCredentials = context.getAttribute(Utils.HIVE_SERVER2_SENT_CREDENTIALS) != null &&
-                      context.getAttribute(Utils.HIVE_SERVER2_SENT_CREDENTIALS).equals(Utils.HIVE_SERVER2_CONST_TRUE);
-                  boolean ret = statusCode == 401 && executionCount <= 1 && !sentCredentials;
+                  boolean ret = statusCode == 401 && executionCount <= 1;
 
                   // Set the context attribute to true which will be interpreted by the request
                   // interceptor
@@ -852,12 +850,6 @@ public class HiveConnection implements java.sql.Connection {
 
     // Add an interceptor to add in an XSRF header
     httpClientBuilder.addRequestInterceptorLast(new XsrfHttpRequestInterceptor());
-
-    // Add an interceptor to add in a CSRF header
-    httpClientBuilder.addRequestInterceptorLast((new CsrfHttpRequestInterceptor()));
-
-    // Add an interceptor to add in a CSRF header
-    httpClientBuilder.addInterceptorLast(new CsrfHttpRequestInterceptor());
 
     // set the specified timeout (socketTimeout jdbc param) for http connection as well
     RequestConfig config = RequestConfig.custom()
