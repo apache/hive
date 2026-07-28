@@ -216,6 +216,7 @@ public class ColumnValue {
     case STRUCT_TYPE:
     case UNION_TYPE:
     case USER_DEFINED_TYPE:
+    case VARIANT_TYPE:
       return stringValue((String)value);
     case NULL_TYPE:
       return stringValue((String)value);
