@@ -788,6 +788,7 @@ public final class FunctionRegistry {
     system.registerFunction("ST_Z", ST_Z.class);
 
     // Iceberg UDFs
+    system.registerGenericUDF(serdeConstants.VARIANT_TYPE_NAME, GenericUDFToVariant.class);
     system.registerGenericUDF("parse_json", GenericUDFParseJson.class);
     system.registerGenericUDF("to_json", GenericUDFToJson.class);
     system.registerGenericUDF("variant_get", GenericUDFVariantGet.class);
@@ -1637,7 +1638,7 @@ public final class FunctionRegistry {
         udfClass == GenericUDFToVarchar.class || udfClass == GenericUDFToChar.class ||
         udfClass == GenericUDFTimestamp.class || udfClass == GenericUDFToBinary.class ||
         udfClass == GenericUDFToDate.class || udfClass == GenericUDFToDecimal.class ||
-        udfClass == GenericUDFToTimestampLocalTZ.class;
+        udfClass == GenericUDFToTimestampLocalTZ.class || udfClass == GenericUDFToVariant.class;
   }
 
   /**
