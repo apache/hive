@@ -58,6 +58,12 @@ jobs:
           distribution: temurin
           cache: maven
 
+      - name: Put Git Bash ahead of WSL bash (Windows only)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          "C:\Program Files\Git\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
       - name: Build Beeline installer
         run: mvn package -pl beeline -am -DskipTests -P native-installer
 
