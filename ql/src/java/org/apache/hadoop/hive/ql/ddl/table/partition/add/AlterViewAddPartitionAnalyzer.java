@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.ddl.table.partition.add;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -31,6 +32,13 @@ import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 /**
  * Analyzer for add partition commands for views.
@@ -79,10 +87,10 @@ public class AlterViewAddPartitionAnalyzer extends AbstractAddPartitionAnalyzer 
         } else {
           where.append(" AND ");
         }
+        FieldSchema partCol = table.getColumnByName(entry.getKey());
         where.append(HiveUtils.unparseIdentifier(entry.getKey(), conf));
-        where.append(" = '");
-        where.append(HiveUtils.escapeString(entry.getValue()));
-        where.append("'");
+        where.append(" = ");
+        where.append(formatPartitionLiteral(partCol, entry.getValue()));
       }
       where.append(")");
     }
@@ -96,5 +104,13 @@ public class AlterViewAddPartitionAnalyzer extends AbstractAddPartitionAnalyzer 
       }
       inputs.addAll(driver.getPlan().getInputs());
     }
+  }
+
+  private static String formatPartitionLiteral(FieldSchema partCol, String partSpecValue) {
+    TypeInfo typeInfo = TypeInfoFactory.getPrimitiveTypeInfo(partCol.getType());
+    ObjectInspector partColOI = TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(typeInfo);
+    Object converted = ObjectInspectorConverters.getConverter(
+        PrimitiveObjectInspectorFactory.javaStringObjectInspector, partColOI).convert(partSpecValue);
+    return new ExprNodeConstantDesc(typeInfo, converted).getExprString();
   }
 }
