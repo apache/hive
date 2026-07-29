@@ -274,8 +274,9 @@ public class TestHiveCopyFiles {
           Hive.isNonAtomicRenameFs(spy));
     }
 
-    // (2) uniqueness tag: take the first 8 hex chars of the UUID at the tail of queryId
-    // (QueryPlan.makeQueryId → "<user>_<timestamp>_<uuid>"). Distinct UUIDs → distinct tags.
+    // (2) uniqueness tag: the 16-hex most-significant-bits half of the UUID at the tail of
+    // queryId (QueryPlan.makeQueryId → "<user>_<timestamp>_<uuid>"; see
+    // QueryPlan.extractUniquenessTag). Distinct UUIDs → distinct tags.
     hiveConf.setVar(HiveConf.ConfVars.HIVE_QUERY_ID,
         "lbodor_20260101120000_f47ac10b-58cc-4372-a567-0e02b2c3d479");
     String tag1 = Hive.computeUniquenessTag(hiveConf);
@@ -283,10 +284,10 @@ public class TestHiveCopyFiles {
         "lbodor_20260101120001_9c8a44f1-e2b3-4a1c-9d3e-000000000000");
     String tag2 = Hive.computeUniquenessTag(hiveConf);
 
-    assertEquals("first 8 chars of the UUID at the tail", "f47ac10b", tag1);
-    assertEquals("first 8 chars of the UUID at the tail", "9c8a44f1", tag2);
-    assertTrue("tag1 must match <8-hex>: " + tag1, tag1.matches("[0-9a-f]{8}"));
-    assertTrue("tag2 must match <8-hex>: " + tag2, tag2.matches("[0-9a-f]{8}"));
+    assertEquals("MSB half of the UUID at the tail", "f47ac10b58cc4372", tag1);
+    assertEquals("MSB half of the UUID at the tail", "9c8a44f1e2b34a1c", tag2);
+    assertTrue("tag1 must match <16-hex>: " + tag1, tag1.matches("[0-9a-f]{16}"));
+    assertTrue("tag2 must match <16-hex>: " + tag2, tag2.matches("[0-9a-f]{16}"));
     assertNotEquals("distinct queryIds must produce distinct tags", tag1, tag2);
 
     // Missing queryId → hard failure (mvFile's non-atomic-rename branch must not silently
