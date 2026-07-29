@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
+import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
@@ -43,6 +44,7 @@ import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.TezDummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -111,6 +113,15 @@ public class GenTezUtils {
     assert context.parentOfRoot instanceof ReduceSinkOperator;
     ReduceSinkOperator reduceSink = (ReduceSinkOperator) context.parentOfRoot;
 
+    // If this RS feeds into a CommonMergeJoinOp together with a TezDummyStoreOperator sibling
+    // (possibly via intermediate ops like GroupBy), normalize all RS inputs to the same
+    // numReducers so that every mapper writes to the same number of partitions and join keys
+    // land in the same task. Also disable Tez's dynamic auto-parallelism for these RS:
+    // ShuffleVertexManager can still shrink the actual task count at runtime independently of
+    // our numReducers value, which would silently break the same-key-same-partition guarantee
+    // this normalization relies on.
+    boolean isMergeJoinInput = normalizeMergeJoinReducers(reduceSink);
+
     reduceWork.setNumReduceTasks(reduceSink.getConf().getNumReducers());
     reduceWork.setSlowStart(reduceSink.getConf().isSlowStart());
     float minSrcFraction = context.conf.getFloat(
@@ -128,7 +139,8 @@ public class GenTezUtils {
       reduceSink.getConf().getReducerTraits().remove(AUTOPARALLEL);
     }
 
-    if (isAutoReduceParallelism && reduceSink.getConf().getReducerTraits().contains(AUTOPARALLEL)) {
+    if (isAutoReduceParallelism && !isMergeJoinInput
+        && reduceSink.getConf().getReducerTraits().contains(AUTOPARALLEL)) {
 
       // configured limit for reducers
       final int maxReducers = context.conf.getIntVar(HiveConf.ConfVars.MAX_REDUCERS);
@@ -186,6 +198,137 @@ public class GenTezUtils {
     context.connectedReduceSinks.add(reduceSink);
 
     return reduceWork;
+  }
+
+  /**
+   * If the given RS leads (through child ops) to a CommonMergeJoinOperator that also has a
+   * {@link TezDummyStoreOperator} sibling parent, normalizes all RS ancestors of that
+   * MergeJoinOp's parents to use the same maximum numReducers. This is a last-resort fix: even
+   * if earlier optimizer passes failed to align numReducers, we correct it at edge-creation time
+   * so each mapper writes the same partition count.
+   *
+   * <p>Two guards keep this from touching cases it shouldn't:
+   * <ul>
+   *   <li>The DummyStore check: it marks the merge join's sibling as living in its own,
+   *   separately auto-parallelized Tez vertex (see ReduceRecordProcessor's mergeWorkList). A
+   *   merge join whose parents are just multiple tags of this same ReduceWork (no DummyStore
+   *   involved) already shares this vertex's single parallelism setting, so there is no
+   *   independent-vertex mismatch to guard against.</li>
+   *   <li>The AUTOPARALLEL/UNIFORM check: genuine bucketed SMB joins (e.g. a 2-bucket table
+   *   joined with a 3-bucket table) legitimately have different, FIXED numReducers per side,
+   *   each anchored to that side's own bucket layout on disk. Only AUTOPARALLEL/UNIFORM traits
+   *   mean a side's numReducers is a mutable suggestion that ShuffleVertexManager can
+   *   independently shrink at runtime; normalizing FIXED siblings would break the
+   *   bucket-to-reducer correspondence those joins rely on.</li>
+   * </ul>
+   */
+  private static boolean normalizeMergeJoinReducers(ReduceSinkOperator reduceSink) {
+    CommonMergeJoinOperator mergeJoin = findDownstreamMergeJoin(reduceSink, 8);
+    if (mergeJoin == null) {
+      return false;
+    }
+    boolean hasDummyStoreSibling = false;
+    for (Operator<?> parent : mergeJoin.getParentOperators()) {
+      if (parent instanceof TezDummyStoreOperator) {
+        hasDummyStoreSibling = true;
+        break;
+      }
+    }
+    if (!hasDummyStoreSibling) {
+      return false;
+    }
+    List<ReduceSinkOperator> allRS = new ArrayList<>();
+    for (Operator<?> parent : mergeJoin.getParentOperators()) {
+      ReduceSinkOperator rsAnc = findUpstreamRS(parent, 8);
+      if (rsAnc != null) {
+        allRS.add(rsAnc);
+      }
+    }
+    if (allRS.isEmpty()) {
+      return true;
+    }
+    boolean anySiblingCanDrift = false;
+    for (ReduceSinkOperator rs : allRS) {
+      if (rs.getConf().getReducerTraits().contains(AUTOPARALLEL)
+          || rs.getConf().getReducerTraits().contains(UNIFORM)) {
+        anySiblingCanDrift = true;
+        break;
+      }
+    }
+    if (!anySiblingCanDrift) {
+      return true;
+    }
+    int maxNR = 0;
+    for (ReduceSinkOperator rs : allRS) {
+      if (rs.getConf().getNumReducers() > maxNR) {
+        maxNR = rs.getConf().getNumReducers();
+      }
+    }
+    if (maxNR <= 0) {
+      return true;
+    }
+    for (ReduceSinkOperator rs : allRS) {
+      int orig = rs.getConf().getNumReducers();
+      boolean hasAutoParallel = rs.getConf().getReducerTraits().contains(AUTOPARALLEL);
+      boolean hasUniform = rs.getConf().getReducerTraits().contains(UNIFORM);
+      if (orig != maxNR || hasAutoParallel || hasUniform) {
+        rs.getConf().setNumReducers(maxNR);
+        // ReduceSinkDesc.setReducerTraits() is ADDITIVE (this.reduceTraits.addAll(traits)) in
+        // every branch except when the passed set contains FIXED, in which case it explicitly
+        // removes AUTOPARALLEL/UNIFORM first. Passing a traits set with those already removed
+        // is therefore a no-op against the existing (unremoved) traits - FIXED must be passed
+        // to actually clear them.
+        rs.getConf().setReducerTraits(EnumSet.of(ReduceSinkDesc.ReducerTraits.FIXED));
+      }
+    }
+    return true;
+  }
+
+  private static CommonMergeJoinOperator findDownstreamMergeJoin(
+      ReduceSinkOperator rs, int maxDepth) {
+    Operator<?> curr = rs;
+    for (int d = 0; d < maxDepth; d++) {
+      List<Operator<?>> children = curr.getChildOperators();
+      if (children == null || children.isEmpty()) {
+        break;
+      }
+      // A branch (e.g. shared work reused across multiple consumers, as in sharedwork.q) means
+      // we can no longer be sure which downstream path is the one relevant to this RS - bail
+      // rather than guess, since guessing wrong can misidentify an unrelated merge join and
+      // normalize reducers that have nothing to do with it.
+      if (children.size() > 1) {
+        return null;
+      }
+      curr = children.get(0);
+      if (curr instanceof CommonMergeJoinOperator) {
+        return (CommonMergeJoinOperator) curr;
+      }
+    }
+    return null;
+  }
+
+  private static ReduceSinkOperator findUpstreamRS(Operator<?> op, int maxDepth) {
+    if (op instanceof ReduceSinkOperator) {
+      return (ReduceSinkOperator) op;
+    }
+    Operator<?> curr = op;
+    for (int d = 0; d < maxDepth; d++) {
+      List<Operator<?>> parents = curr.getParentOperators();
+      if (parents == null || parents.isEmpty()) {
+        break;
+      }
+      // Same reasoning as findDownstreamMergeJoin: a branch point (e.g. a join or union
+      // upstream) means we cannot reliably pick the one lineage that actually feeds this
+      // merge join, so bail instead of guessing.
+      if (parents.size() > 1) {
+        return null;
+      }
+      curr = parents.get(0);
+      if (curr instanceof ReduceSinkOperator) {
+        return (ReduceSinkOperator) curr;
+      }
+    }
+    return null;
   }
 
   /**
