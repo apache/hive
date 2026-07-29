@@ -165,6 +165,7 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.RetryUtilities;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.ddl.database.drop.DropDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
@@ -5191,18 +5192,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   /**
-   * Compute a compact per-query uniqueness tag (8 lowercase hex chars) used by the non-ACID
-   * rename branch of {@link #mvFile} to make each concurrent writer's destination key unique
-   * on filesystems whose {@code rename} is not atomic-if-absent. The tag becomes the copy
-   * suffix ({@code basename_copy_<tag>}) in place of the numeric {@code _copy_N} counter.
+   * Compute a compact per-query uniqueness tag used by the non-ACID rename branch of
+   * {@link #mvFile} to make each concurrent writer's destination key unique on filesystems
+   * whose {@code rename} is not atomic-if-absent. The tag becomes the copy suffix
+   * ({@code basename_copy_<tag>}) in place of the numeric {@code _copy_N} counter.
    * <p>
-   * Reads {@code hive.query.id} from the passed {@link HiveConf}, extracts the UUID at the tail
-   * (see {@code QueryPlan.makeQueryId}, which assembles the id as
-   * {@code <user>_<timestamp>_<uuid>}), and returns its leftmost 8 hex chars. 32 bits of UUID
-   * randomness keeps S3 listings readable and is collision-resistant for realistic
-   * per-partition concurrency (collides only at ~65k concurrent writers to the same
-   * partition).
-   * <p>
+   * Reads {@code hive.query.id} from the passed {@link HiveConf} and delegates to
+   * {@link QueryPlan#extractUniquenessTag(String)} for the actual UUID → hex derivation.
    * The shape matches {@link ParsedOutputFileName}'s copy-index group so downstream filename
    * parsing (taskId, attemptId, copyIndex) keeps working.
    */
@@ -5211,9 +5207,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     if (Strings.isNullOrEmpty(qid)) {
       throw new IllegalStateException("hive.query.id is required to derive a unique destination name");
     }
-    int uuidStart = qid.lastIndexOf('_') + 1;
-    // hive_20240429111756_d39b59fb-31e2-4e89-853e-fac2844530e9 -> d39b59fb
-    return qid.substring(uuidStart, uuidStart + 8);
+    return QueryPlan.extractUniquenessTag(qid);
   }
 
   /**

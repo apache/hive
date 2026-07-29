@@ -122,16 +122,16 @@ public class ParsedOutputFileNameTest {
 
   /**
    * On filesystems without atomic rename-if-absent semantics (S3 etc.), the copy suffix
-   * carries an 8-hex per-query uniqueness tag instead of the numeric counter, so concurrent
+   * carries a 16-hex per-query uniqueness tag instead of the numeric counter, so concurrent
    * writers rename to distinct destination keys.
    */
   @Test
   public void testUniquenessTagAsCopySuffix() throws Exception {
-    ParsedOutputFileName p = ParsedOutputFileName.parse("000001_0_copy_abcd1234");
+    ParsedOutputFileName p = ParsedOutputFileName.parse("000001_0_copy_abcd1234deadbeef");
     Assert.assertTrue(p.matches());
     Assert.assertEquals("000001", p.getTaskId());
     Assert.assertEquals("0", p.getAttemptId());
-    Assert.assertEquals("abcd1234", p.getCopyIndex());
+    Assert.assertEquals("abcd1234deadbeef", p.getCopyIndex());
     Assert.assertTrue(p.isCopyFile());
     Assert.assertNull(p.getSuffix());
     // Numeric-index renaming (used by legacy code paths) still works and replaces the tag.
@@ -140,11 +140,11 @@ public class ParsedOutputFileNameTest {
 
   @Test
   public void testUniquenessTagAsCopySuffixWithExtension() throws Exception {
-    ParsedOutputFileName p = ParsedOutputFileName.parse("000001_0_copy_abcd1234.snappy.orc");
+    ParsedOutputFileName p = ParsedOutputFileName.parse("000001_0_copy_abcd1234deadbeef.snappy.orc");
     Assert.assertTrue(p.matches());
     Assert.assertEquals("000001", p.getTaskId());
     Assert.assertEquals("0", p.getAttemptId());
-    Assert.assertEquals("abcd1234", p.getCopyIndex());
+    Assert.assertEquals("abcd1234deadbeef", p.getCopyIndex());
     Assert.assertTrue(p.isCopyFile());
     Assert.assertEquals(".snappy.orc", p.getSuffix());
     Assert.assertEquals("000001_0_copy_3", p.makeFilenameWithCopyIndex(3));
@@ -152,14 +152,14 @@ public class ParsedOutputFileNameTest {
 
   /**
    * The copy-index group must reject shapes that are neither a 1..6 digit counter nor an
-   * exactly-8-hex tag (e.g. non-hex characters, or a numeric tag longer than 6 digits).
+   * exactly-16-hex tag (e.g. non-hex characters, or a numeric tag longer than 6 digits).
    */
   @Test
   public void testUniquenessTagShapeIsStrict() {
-    // 7 chars — matches neither branch.
-    Assert.assertNull(ParsedOutputFileName.parse("000001_0_copy_abc1234").getCopyIndex());
-    // Non-hex character in an 8-char position.
-    Assert.assertNull(ParsedOutputFileName.parse("000001_0_copy_abcd123z").getCopyIndex());
+    // 15 chars — matches neither branch.
+    Assert.assertNull(ParsedOutputFileName.parse("000001_0_copy_abcd1234deadbee").getCopyIndex());
+    // Non-hex character in a 16-char position.
+    Assert.assertNull(ParsedOutputFileName.parse("000001_0_copy_abcd1234deadbeez").getCopyIndex());
   }
 
   @Test

@@ -31,11 +31,11 @@ import java.util.regex.Pattern;
  * 00001_02
  * 00001_02.gz
  * 00001_02.zlib.gz
- * 00001_02_copy_1                    (numeric copy suffix, HDFS-style)
+ * 00001_02_copy_1                            (numeric copy suffix, HDFS-style)
  * 00001_02_copy_1.gz
- * 00001_02_copy_abcd1234             (per-query uniqueness tag as copy suffix,
- *                                     used on unstable-rename filesystems)
- * 00001_02_copy_abcd1234.gz
+ * 00001_02_copy_abcd1234deadbeef             (per-query uniqueness tag as copy suffix,
+ *                                             used on unstable-rename filesystems)
+ * 00001_02_copy_abcd1234deadbeef.gz
  * <p>
  * All the components are here:
  * tmp_(taskPrefix)00001_02_copy_1.zlib.gz
@@ -46,7 +46,7 @@ public class ParsedOutputFileName {
       "(\\(.*\\))?" + // taskId prefix
       "(\\d+)" + // taskId
       "(?:_(\\d{1,6}))?" + // _<attemptId> (limited to 6 digits)
-      "(?:_copy_(\\d{1,6}|[\\da-fA-F]{8}))?" + // copy suffix: numeric counter, or 8-hex uniqueness tag
+      "(?:_copy_(\\d{1,6}|[\\da-fA-F]{16}))?" + // copy suffix: numeric counter, or 16-hex uniqueness tag
       "(\\..*)?$"); // any suffix/file extension
 
   public static ParsedOutputFileName parse(String fileName) {
