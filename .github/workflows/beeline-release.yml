@@ -64,6 +64,9 @@ jobs:
         run: |
           $stub = "C:\Windows\System32\bash.exe"
           if (Test-Path $stub) {
+            Write-Host "Taking ownership of $stub"
+            takeown.exe /F $stub /A | Out-Null
+            icacls.exe $stub /grant "*S-1-5-32-544:F" | Out-Null   # Administrators group SID
             Rename-Item -Path $stub -NewName "bash.exe.disabled" -Force
           }
           "C:\Program Files\Git\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
