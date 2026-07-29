@@ -324,16 +324,29 @@ public class ReduceRecordProcessor extends RecordProcessor {
    */
   private List<LogicalInput> getShuffleInputs(Map<String, LogicalInput> inputs) throws Exception {
     // the reduce plan inputs have tags, add all inputs that have tags
-    Map<Integer, String> tagToinput = reduceWork.getTagToInput();
     ArrayList<LogicalInput> shuffleInputs = new ArrayList<LogicalInput>();
-    for (String inpStr : tagToinput.values()) {
+    startTaggedInputs(reduceWork, inputs, shuffleInputs);
+    // Merge-join siblings (e.g. the DummyStore side of a reduce-side merge join) are separate
+    // ReduceWorks with their own tagged inputs. init() later reads from all of them via
+    // tagToReducerMap, so they must be started here as well or getReader() throws
+    // "Must start input before invoking this method".
+    if (mergeWorkList != null) {
+      for (BaseWork mergeWork : mergeWorkList) {
+        startTaggedInputs((ReduceWork) mergeWork, inputs, shuffleInputs);
+      }
+    }
+    return shuffleInputs;
+  }
+
+  private void startTaggedInputs(ReduceWork redWork, Map<String, LogicalInput> inputs,
+      List<LogicalInput> shuffleInputs) throws Exception {
+    for (String inpStr : redWork.getTagToInput().values()) {
       if (inputs.get(inpStr) == null) {
         throw new AssertionError("Cound not find input: " + inpStr);
       }
       inputs.get(inpStr).start();
       shuffleInputs.add(inputs.get(inpStr));
     }
-    return shuffleInputs;
   }
 
   @Override
@@ -391,12 +404,15 @@ public class ReduceRecordProcessor extends RecordProcessor {
 
   private DummyStoreOperator getJoinParentOp(Operator<?> mergeReduceOp) {
     for (Operator<?> childOp : mergeReduceOp.getChildOperators()) {
-      if ((childOp.getChildOperators() == null) || (childOp.getChildOperators().isEmpty())) {
-        if (childOp instanceof DummyStoreOperator) {
-          return (DummyStoreOperator) childOp;
-        } else {
-          throw new IllegalStateException("Was expecting dummy store operator but found: " + childOp);
-        }
+      // Check the type first: on a reused (cached) operator tree, a prior attempt's
+      // CommonMergeJoinOperator.initializeLocalWork() may have already appended itself to this
+      // DummyStoreOperator's children, so childOp.getChildOperators() is no longer empty. That
+      // must not be mistaken for "not a leaf, keep recursing" - it is still the DummyStore we
+      // want, just with wiring left over from the previous attempt.
+      if (childOp instanceof DummyStoreOperator) {
+        return (DummyStoreOperator) childOp;
+      } else if ((childOp.getChildOperators() == null) || (childOp.getChildOperators().isEmpty())) {
+        throw new IllegalStateException("Was expecting dummy store operator but found: " + childOp);
       } else {
         return getJoinParentOp(childOp);
       }
