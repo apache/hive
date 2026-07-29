@@ -2552,73 +2552,19 @@ public class HMSHandler extends PrivilegeHandler {
     startFunction("delete_column_statistics_req", ": table=" +
         TableName.getQualified(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName) +
         " partitions=" + req.getPart_names() + " column=" + colNames + " engine=" + engine);
-    boolean ret = false, committed = false;
-    List<ListenerEvent> events = new ArrayList<>();
-    EventType eventType = null;
-    final RawStore rawStore = getMS();
-    rawStore.openTransaction();
+    Exception ex = null;
+    boolean ret = false;
     try {
-      Table table = rawStore.getTable(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
-      boolean isPartitioned = table.getPartitionKeysSize() > 0;
-      if (TxnUtils.isTransactionalTable(table)) {
-        throw new MetaException("Cannot delete stats via this API for a transactional table");
-      }
-      if (!isPartitioned || req.isTableLevel()) {
-        ret = rawStore.deleteTableColumnStatistics(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, colNames, engine);
-        if (ret) {
-          eventType = EventType.DELETE_TABLE_COLUMN_STAT;
-          for (String colName : colNames == null || colNames.isEmpty() ?
-              table.getSd().getCols().stream().map(FieldSchema::getName).toList() : colNames) {
-            if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
-              MetaStoreListenerNotifier.notifyEvent(transactionalListeners, eventType,
-                  new DeleteTableColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, colName, engine, this));
-            }
-            events.add(new DeleteTableColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, colName, engine, this));
-          }
-        }
-      } else {
-        List<String> partNames = new ArrayList<>();
-        if (req.getPart_namesSize() > 0) {
-          partNames.addAll(req.getPart_names());
-        } else {
-          partNames.addAll(rawStore.listPartitionNames(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, (short) -1));
-        }
-        if (partNames.isEmpty()) {
-          // no partition found, bail out early
-          return true;
-        }
-        ret = rawStore.deletePartitionColumnStatistics(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
-                partNames, colNames, engine);
-        if (ret) {
-          eventType = EventType.DELETE_PARTITION_COLUMN_STAT;
-          for (String colName : colNames == null || colNames.isEmpty() ?
-              table.getSd().getCols().stream().map(FieldSchema::getName).toList() : colNames) {
-            for (String partName : partNames) {
-              List<String> partVals = getPartValsFromName(table, partName);
-              if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
-                MetaStoreListenerNotifier.notifyEvent(transactionalListeners, eventType,
-                    new DeletePartitionColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
-                        partName, partVals, colName, engine, this));
-              }
-              events.add(new DeletePartitionColumnStatEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
-                  partName, partVals, colName, engine, this));
-            }
-          }
-        }
-      }
-      committed = rawStore.commitTransaction();
+      ret = AbstractRequestHandler.offer(this, req).success();
+      return ret;
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e).throwIfInstance(MetaException.class, NoSuchObjectException.class)
+          .convertIfInstance(InvalidObjectException.class, InvalidInputException.class)
+          .defaultMetaException();
     } finally {
-      if (!committed) {
-        rawStore.rollbackTransaction();
-      }
-      if (!listeners.isEmpty()) {
-        for (ListenerEvent event : events) {
-          MetaStoreListenerNotifier.notifyEvent(transactionalListeners, eventType, event);
-        }
-      }
-      endFunction("delete_column_statistics_req", ret, null, tableName);
+      endFunction("delete_column_statistics_req", ret, ex, tableName);
     }
-    return ret;
   }
 
   @Override
