@@ -23,6 +23,7 @@ import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hive.search.config.InferenceOptions;
 import org.apache.hive.search.config.SearchOptions;
+import org.apache.hive.search.mapping.BinaryFieldSchema;
 import org.apache.hive.search.mapping.FieldSchema;
 import org.apache.hive.search.mapping.IndexMapping;
 import org.apache.hive.search.mapping.TextFieldSchema;
@@ -51,6 +52,8 @@ public final class MetastoreIndexSchema {
       String name = SearchTextSegment.segmentField(i);
       fields.put(name, semanticText(name, model));
     }
+    fields.put(MetastoreTableMapper.FIELD_TABLE_BLOB,
+        new BinaryFieldSchema(MetastoreTableMapper.FIELD_TABLE_BLOB));
     return new IndexMapping(conf, fields);
   }
 

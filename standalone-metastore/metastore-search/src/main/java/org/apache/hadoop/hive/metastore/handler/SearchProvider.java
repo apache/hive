@@ -18,13 +18,16 @@
 package org.apache.hadoop.hive.metastore.handler;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hive.search.exception.IndexNotReadyException;
 import org.apache.hive.search.exception.InitializeException;
 import org.apache.hive.search.exception.SearchException;
+import org.apache.hive.search.metastore.MetastoreTableMapper;
 import org.apache.hive.search.search.LuceneSearchBackend;
 import org.apache.hive.search.search.SearchBackend;
 import org.apache.hive.search.search.SearchQuery;
@@ -133,6 +136,15 @@ public final class SearchProvider implements AutoCloseable {
   public TableSearchResult search(SearchQuery query)
       throws SearchException, InitializeException, IOException {
     return backend.search(query);
+  }
+
+  public TableSearchResult loadTables(List<TableName> tables)
+      throws SearchException, IOException {
+    if (tables == null || tables.isEmpty()) {
+      return new TableSearchResult(List.of(), 0, 0);
+    }
+    List<String> ids = tables.stream().map(MetastoreTableMapper::tableId).toList();
+    return backend.loadTables(ids);
   }
 
   @Override

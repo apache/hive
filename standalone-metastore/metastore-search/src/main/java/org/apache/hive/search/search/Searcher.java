@@ -19,14 +19,13 @@ package org.apache.hive.search.search;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hive.search.config.SearchOptions;
 import org.apache.hive.search.exception.InferenceException;
 import org.apache.hive.search.exception.SearchException;
@@ -35,6 +34,7 @@ import org.apache.hive.search.mapping.IndexMapping;
 import org.apache.hive.search.mapping.TableDocument;
 import org.apache.hive.search.mapping.TextFieldSchema;
 import org.apache.hive.search.metastore.MetastoreTableMapper;
+import org.apache.hive.search.metastore.TableBlobCodec;
 import org.apache.hive.search.index.IndexManager;
 import org.apache.hive.search.inference.Embedder;
 import org.apache.hive.search.inference.EmbedderRegistry;
@@ -66,7 +66,6 @@ public final class Searcher implements AutoCloseable {
   private final IndexMapping mapping;
   private final SearchOptions searchConfig;
   private final BayesianScoreEstimator.Parameters parameters;
-  private final long committedEventId;
   private final long processedEventId;
 
   public Searcher(SearcherManager manager,
@@ -75,7 +74,6 @@ public final class Searcher implements AutoCloseable {
       SearchOptions searchConfig,
       BayesianScoreEstimator.Parameters parameters) throws IOException {
     this.searcherManager = manager;
-    this.committedEventId = indexManager.getCommittedEventId();
     this.processedEventId = indexManager.getProcessedEventId();
     this.indexSearcher = manager.acquire();
     this.mapping = indexManager.mapping();
@@ -101,9 +99,34 @@ public final class Searcher implements AutoCloseable {
     TopDocs topDocs = indexSearcher.search(query, size);
     List<TableSearchHit> hits = new ArrayList<>();
     for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
-      hits.add(readHit(scoreDoc, request.returnFields()));
+      hits.add(readHit(scoreDoc));
     }
-    return new TableSearchResult(hits, topDocs.totalHits.value(), committedEventId, processedEventId);
+    return new TableSearchResult(hits, topDocs.totalHits.value(), processedEventId);
+  }
+
+  public TableSearchResult loadTables(List<String> tableIds) throws SearchException, IOException {
+    if (tableIds == null || tableIds.isEmpty()) {
+      return new TableSearchResult(List.of(), 0, processedEventId);
+    }
+    List<String> ids = new ArrayList<>(tableIds.size());
+    for (String tableId : tableIds) {
+      if (StringUtils.isBlank(tableId)) {
+        continue;
+      }
+      ids.add(tableId);
+    }
+    BooleanQuery.Builder builder = new BooleanQuery.Builder();
+    for (String id : ids) {
+      builder.add(
+          new TermQuery(new Term("_id" + TableDocument.FILTER_SUFFIX, id)),
+          BooleanClause.Occur.SHOULD);
+    }
+    TopDocs hits = indexSearcher.search(builder.build(), ids.size());
+    List<TableSearchHit> searchHits = new ArrayList<>(hits.scoreDocs.length);
+    for (ScoreDoc scoreDoc : hits.scoreDocs) {
+      searchHits.add(readHit(scoreDoc));
+    }
+    return new TableSearchResult(searchHits, hits.totalHits.value(), processedEventId);
   }
 
   private Query compileFusionQuery(HybridQuery query, int semanticK)
@@ -253,24 +276,20 @@ public final class Searcher implements AutoCloseable {
     return new DisjunctionMaxQuery(disjuncts, 0.0f);
   }
 
-  private TableSearchHit readHit(ScoreDoc scoreDoc, List<String> fields)
-      throws IOException {
+  private TableSearchHit readHit(ScoreDoc scoreDoc)
+      throws SearchException, IOException {
     Document stored = indexSearcher.storedFields().document(scoreDoc.doc);
-    Map<String, String> fieldHits = new LinkedHashMap<>();
-    List<String> requested = fields.isEmpty() ?
-        mapping.fields().keySet().stream().toList() : fields;
-    for (String field : requested) {
-      IndexableField[] values = stored.getFields(field);
-      if (values != null && values.length > 0) {
-        fieldHits.put(field, values[0].stringValue());
-      }
+    IndexableField idField = stored.getField("_id");
+    if (idField == null || StringUtils.isBlank(idField.stringValue())) {
+      throw new SearchException("indexed table is missing _id");
     }
-    TableName tableName = null;
-    IndexableField[] idValues = stored.getFields("_id");
-    if (idValues != null && idValues.length > 0) {
-      tableName = TableName.fromString(idValues[0].stringValue(), "", "default");
+    TableName tableName = TableName.fromString(idField.stringValue(), "", "default");
+    Table table = null;
+    IndexableField blobField = stored.getField(MetastoreTableMapper.FIELD_TABLE_BLOB);
+    if (blobField != null && blobField.binaryValue() != null) {
+      table = TableBlobCodec.decode(blobField.binaryValue().bytes);
     }
-    return new TableSearchHit(tableName, scoreDoc.score, fieldHits);
+    return new TableSearchHit(tableName, table, scoreDoc.score);
   }
 
   @Override

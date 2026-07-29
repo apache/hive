@@ -22,7 +22,6 @@ import java.util.List;
 public record TableSearchResult(
     List<TableSearchHit> hits,
     long total,
-    long committedEventId,
     long processedEventId) {
   public TableSearchResult {
     hits = hits == null ? List.of() : List.copyOf(hits);

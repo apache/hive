@@ -28,6 +28,7 @@ import org.apache.hive.search.index.Indexer;
 import org.apache.hive.search.index.IndexManager;
 import org.apache.hive.search.inference.EmbedderRegistry;
 import org.apache.hive.search.mapping.IndexMapping;
+import org.apache.hive.search.metastore.MetastoreEventListener;
 import org.apache.hive.search.metastore.MetastoreIndexSchema;
 import org.apache.hive.search.metastore.MetastoreTableMapper;
 import org.apache.hive.search.metastore.SearchTextSegment;
@@ -90,6 +91,9 @@ public final class InMemorySearchFixture implements AutoCloseable {
 
   public void commit(long eventId) throws IOException {
     indexer.flush(eventId, true);
+    MetastoreEventListener.IndexTask task = new MetastoreEventListener.IndexTask();
+    task.lastEventId = eventId;
+    indexManager.notifyIndexTask(task);
     refreshSearcher();
   }
 
@@ -124,11 +128,22 @@ public final class InMemorySearchFixture implements AutoCloseable {
     }
     try (Searcher searchIO = new Searcher(
         searcherManager, indexManager, modelRegistry, searchConfig, bayesianParameters)) {
-      TableSearchResult result = searchIO.search(new SearchQuery(
-          body,
-          null, null, limit,
-          List.of(MetastoreTableMapper.FIELD_TABLE, MetastoreTableMapper.FIELD_COMMENT)));
+      TableSearchResult result = searchIO.search(new SearchQuery(body, null, null, limit));
       return result.hits();
+    }
+  }
+
+  public TableSearchResult loadTable(String catalog, String db, String table) throws Exception {
+    return loadTables(MetastoreTableMapper.tableId(catalog, db, table));
+  }
+
+  public TableSearchResult loadTables(String... tableIds) throws Exception {
+    if (searcherManager == null || bayesianParameters == null) {
+      throw new IllegalStateException("call commit() before loading");
+    }
+    try (Searcher searchIO = new Searcher(
+        searcherManager, indexManager, modelRegistry, searchConfig, bayesianParameters)) {
+      return searchIO.loadTables(List.of(tableIds));
     }
   }
 
