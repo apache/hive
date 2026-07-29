@@ -19,6 +19,7 @@ package org.apache.hive.search.search;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 
@@ -39,5 +40,9 @@ public interface SearchBackend extends Closeable {
 
   TableSearchResult search(SearchQuery query)
       throws SearchException, InitializeException, IOException;
+
+  /** Loads stored tables by canonical ids ({@code catalog.db.table}). */
+  TableSearchResult loadTables(List<String> tableIds)
+      throws SearchException, IOException;
 
 }

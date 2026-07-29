@@ -48,7 +48,6 @@ public class IndexManager implements Closeable, MetastoreEventListener {
   private final IndexStateClient remoteIndex;
   private volatile IndexNotHealthyException exception;
   private volatile long processedEventId;
-  private volatile long committedEventId;
 
   public IndexManager(IndexMapping mapping,
       Directory directory,
@@ -164,20 +163,11 @@ public class IndexManager implements Closeable, MetastoreEventListener {
     processedEventId = task.lastEventId;
   }
 
-  public void setCommittedEventId(long eventId) {
-    this.committedEventId = eventId;
-  }
-
   public long getProcessedEventId() {
     return processedEventId;
   }
 
-  public long getCommittedEventId() {
-    return committedEventId;
-  }
-
   public void setNid(long nid) {
-    this.committedEventId = nid;
     this.processedEventId = nid;
   }
 

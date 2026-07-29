@@ -159,8 +159,7 @@ public class TestSearchMethod {
         query.mode(),
         query.catalogName(),
         query.databaseName(),
-        query.limit(),
-        query.returnFields());
+        query.limit());
     assertEquals(query.body(), roundTripped.body());
     assertEquals(query.mode(), roundTripped.mode());
   }

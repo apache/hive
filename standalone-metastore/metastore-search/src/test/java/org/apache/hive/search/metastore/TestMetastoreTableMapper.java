@@ -105,6 +105,12 @@ public class TestMetastoreTableMapper {
     assertFalse(combined.contains("alice"));
     assertEquals("id amount", luceneDoc.get(MetastoreTableMapper.FIELD_COLUMNS));
     assertEquals("order id", luceneDoc.get(MetastoreTableMapper.FIELD_COLUMN_COMMENTS));
+    assertNotNull(luceneDoc.getBinaryValue(MetastoreTableMapper.FIELD_TABLE_BLOB));
+    assertFalse(hasIndexedField(luceneDoc, MetastoreTableMapper.FIELD_TABLE_BLOB));
+    assertFalse(hasIndexedField(luceneDoc, MetastoreTableMapper.FIELD_TABLE_BLOB + ".filter"));
+    Table decoded = TableBlobCodec.decode(
+        luceneDoc.getBinaryValue(MetastoreTableMapper.FIELD_TABLE_BLOB).bytes);
+    assertEquals("orders", decoded.getTableName());
   }
 
   @Test
@@ -280,62 +286,6 @@ public class TestMetastoreTableMapper {
     }
   }
 
-  @Test
-  public void hasIndexedFieldsChangedDetectsIndexedAlterations() {
-    Table before = sampleIndexedTable();
-    Table after = copyTable(before);
-    assertFalse(MetastoreTableMapper.hasIndexedFieldsChanged(before, after));
-
-    after.getParameters().put("transient_lastDdlTime", "123");
-    assertFalse(MetastoreTableMapper.hasIndexedFieldsChanged(before, after));
-
-    after = copyTable(before);
-    after.getParameters().put("comment", "updated comment");
-    assertTrue(MetastoreTableMapper.hasIndexedFieldsChanged(before, after));
-
-    after = copyTable(before);
-    after.setOwner("bob");
-    assertTrue(MetastoreTableMapper.hasIndexedFieldsChanged(before, after));
-
-    after = copyTable(before);
-    after.setTableName("invoices");
-    assertTrue(MetastoreTableMapper.hasIndexedFieldsChanged(before, after));
-
-    after = copyTable(before);
-    after.getSd().getCols().get(0).setComment("new column comment");
-    assertTrue(MetastoreTableMapper.hasIndexedFieldsChanged(before, after));
-  }
-
-  private static Table sampleIndexedTable() {
-    Table table = new Table();
-    table.setCatName("hive");
-    table.setDbName("sales");
-    table.setTableName("orders");
-    table.setOwner("alice");
-    table.setTableType("MANAGED_TABLE");
-    table.setSd(new StorageDescriptor());
-    table.getSd().setLocation("hdfs://warehouse/orders");
-    table.getSd().setCols(List.of(
-        new FieldSchema("id", "bigint", "order id"),
-        new FieldSchema("amount", "double", null)));
-    Map<String, String> params = new HashMap<>();
-    params.put("comment", "daily orders");
-    table.setParameters(params);
-    return table;
-  }
-
-  private static Table copyTable(Table source) {
-    Table copy = new Table(source);
-    copy.setSd(new StorageDescriptor(source.getSd()));
-    List<FieldSchema> cols = new ArrayList<>();
-    for (FieldSchema column : source.getSd().getCols()) {
-      cols.add(new FieldSchema(column));
-    }
-    copy.getSd().setCols(cols);
-    copy.setParameters(new HashMap<>(source.getParameters()));
-    return copy;
-  }
-
   private static Table sampleTable() {
     Table table = new Table();
     table.setCatName("hive");
@@ -384,7 +334,8 @@ public class TestMetastoreTableMapper {
 
   private static boolean hasIndexedField(Document document, String fieldName) {
     for (IndexableField field : document.getFields()) {
-      if (fieldName.equals(field.name())) {
+      if (fieldName.equals(field.name())
+          && field.fieldType().indexOptions() != org.apache.lucene.index.IndexOptions.NONE) {
         return true;
       }
     }

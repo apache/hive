@@ -45,7 +45,7 @@ public class TestIndexerSearchIntegration {
 
       List<TableSearchHit> hits = fixture.searchMatch("sales", 5);
       assertFalse(hits.isEmpty());
-      assertTrue(hits.stream().anyMatch(hit -> hit.table().toString().contains("sales.orders")));
+      assertTrue(hits.stream().anyMatch(hit -> hit.name().toString().contains("sales.orders")));
     }
   }
 
@@ -72,9 +72,9 @@ public class TestIndexerSearchIntegration {
 
       List<TableSearchHit> hits = fixture.searchMatch("revenue", 5);
       assertEquals(3, hits.size());
-      assertTrue(hits.get(0).table().toString().contains("sales.revenue"));
-      assertTrue(hits.get(1).table().toString().contains("sales.line_items"));
-      assertTrue(hits.get(2).table().toString().contains("sales.orders"));
+      assertTrue(hits.get(0).name().toString().contains("sales.revenue"));
+      assertTrue(hits.get(1).name().toString().contains("sales.line_items"));
+      assertTrue(hits.get(2).name().toString().contains("sales.orders"));
     }
   }
 
@@ -115,7 +115,7 @@ public class TestIndexerSearchIntegration {
 
       List<TableSearchHit> hits = fixture.searchMatch("revenue", 5);
       assertEquals(1, hits.size());
-      assertTrue(hits.get(0).table().toString().contains("sales.orders"));
+      assertTrue(hits.get(0).name().toString().contains("sales.orders"));
     }
   }
 }

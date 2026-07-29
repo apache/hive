@@ -368,9 +368,6 @@ public class MetastoreEventHandler implements Closeable {
         AlterTableMessage alterTableMessage = deserializer.getAlterTableMessage(message);
         Table tableAfter = alterTableMessage.getTableObjAfter();
         Table tableBefore = alterTableMessage.getTableObjBefore();
-        if (!MetastoreTableMapper.hasIndexedFieldsChanged(tableBefore, tableAfter)) {
-          break;
-        }
         TableName tblNameBefore = new TableName(tableBefore.getCatName(),
             tableBefore.getDbName(), tableBefore.getTableName());
         TableName tblNameAfter = new TableName(tableAfter.getCatName(),

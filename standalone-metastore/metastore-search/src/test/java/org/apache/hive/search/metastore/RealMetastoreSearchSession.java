@@ -213,10 +213,7 @@ public final class RealMetastoreSearchSession implements AutoCloseable {
     refreshSearcher();
     try (Searcher searchIO = new Searcher(
         searcherManager, indexManager, modelRegistry, searchConfig, bayesianParameters)) {
-      return searchIO.search(new SearchQuery(
-          new MatchQuery(text),
-          null, null, limit,
-          List.of(MetastoreTableMapper.FIELD_TABLE, MetastoreTableMapper.FIELD_COMMENT)));
+      return searchIO.search(new SearchQuery(new MatchQuery(text), null, null, limit));
     }
   }
 
@@ -227,8 +224,7 @@ public final class RealMetastoreSearchSession implements AutoCloseable {
       return searchIO.search(SearchQuery.fromQueryBody(
           Map.of("query", queryText),
           SearchQuery.Mode.HYBRID,
-          null, null, limit,
-          List.of(MetastoreTableMapper.FIELD_TABLE, MetastoreTableMapper.FIELD_COMMENT)));
+          null, null, limit));
     }
   }
 

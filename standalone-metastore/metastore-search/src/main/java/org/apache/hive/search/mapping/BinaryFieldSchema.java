@@ -15,17 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.hive.search.search;
+package org.apache.hive.search.mapping;
 
-import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.metastore.api.Table;
-
-/** One ranked discovery hit. Schema detail requires a canonical Metastore read. */
-public record TableSearchHit(
-    TableName name, Table table, float score) {
+/** Stored-only payload (not indexed for search). */
+public record BinaryFieldSchema(String name) implements FieldSchema {
 
   @Override
-  public String toString() {
-    return "TableSearchHit{" + "table=" + name + ", score=" + score + '}';
+  public boolean store() {
+    return true;
+  }
+
+  @Override
+  public boolean filter() {
+    return false;
+  }
+
+  @Override
+  public boolean lexical() {
+    return false;
   }
 }
