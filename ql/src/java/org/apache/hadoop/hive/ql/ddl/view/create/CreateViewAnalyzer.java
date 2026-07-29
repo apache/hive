@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.StorageFormat;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 /**
  * Analyzer for create view commands.
@@ -189,6 +190,12 @@ public class CreateViewAnalyzer extends AbstractCreateViewAnalyzer {
     while (columnNameIterator.hasNext()) {
       String columnName = columnNameIterator.next();
       FieldSchema fieldSchema = schemaIterator.next();
+      try {
+        TypeInfoFactory.getPrimitiveTypeInfo(fieldSchema.getType());
+      } catch (Exception e) {
+        throw new SemanticException(ErrorMsg.PARTITION_COLUMN_NON_PRIMITIVE.getMsg() + " Found "
+            + columnName + " of type: " + fieldSchema.getType());
+      }
       if (!fieldSchema.getName().equals(columnName)) {
         throw new SemanticException(ErrorMsg.VIEW_PARTITION_MISMATCH.getMsg());
       }
