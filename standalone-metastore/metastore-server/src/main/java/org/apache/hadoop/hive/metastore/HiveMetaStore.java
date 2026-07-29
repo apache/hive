@@ -603,7 +603,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       @Override
       public ServerContext createContext(TProtocol tProtocol, TProtocol tProtocol1) {
         Metrics.getOpenConnectionsCounter().inc();
-        return null;
+        return new ServerContext() {
+          // Implement required ServerContext interface methods as no-ops
+          @Override
+          public <T> T unwrap(Class<T> iface) { return null; }
+          @Override
+          public boolean isWrapperFor(Class<?> iface) { return false; }
+        };
       }
 
       @Override
