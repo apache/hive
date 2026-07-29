@@ -103,7 +103,7 @@ public class TestMetastoreEventHandlerIntegration {
   }
 
   @Test
-  public void skipsAlterWhenIndexedFieldsUnchanged() throws Exception {
+  public void refreshesTableOnAlterWhenIndexedFieldsUnchanged() throws Exception {
     Configuration conf = new Configuration(false);
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY,
         JSONMessageEncoder.class.getName());
@@ -157,9 +157,12 @@ public class TestMetastoreEventHandlerIntegration {
       assertFalse(fixture.searchMatch("sales", 5).isEmpty());
 
       assertEquals(1, handler.getNextMetastoreEvents(10));
-      assertTrue(lastTask.get().tablesToAdd.isEmpty());
-      assertTrue(lastTask.get().tablesToDrop.isEmpty());
+      assertEquals(1, lastTask.get().tablesToAdd.size());
+      assertEquals(1, lastTask.get().tablesToDrop.size());
       assertFalse(fixture.searchMatch("sales", 5).isEmpty());
+
+      Table loaded = fixture.loadTable("hive", "sales", "orders").hits().get(0).table();
+      assertEquals("999", loaded.getParameters().get("transient_lastDdlTime"));
     }
   }
 

@@ -56,9 +56,9 @@ public class TestRealMetastoreSearchHybrid {
       session.waitUntilSearchable("sales", 5);
       TableSearchResult result = session.searchMatch("sales", 5);
       assertFalse(result.hits().isEmpty());
-      assertTrue(result.hits().stream().anyMatch(hit -> hit.table().getTable().contains("orders")));
+      assertTrue(result.hits().stream().anyMatch(hit -> hit.name().getTable().contains("orders")));
       assertTrue(session.searchMatch("parts", 5).hits().stream()
-          .anyMatch(hit -> hit.table().getTable().contains("inventory")));
+          .anyMatch(hit -> hit.name().getTable().contains("inventory")));
     }
   }
 
@@ -73,7 +73,7 @@ public class TestRealMetastoreSearchHybrid {
       session.waitUntilSearchable("revenue", 5);
       TableSearchResult searchResult = session.searchHybrid("revenue analytics", 5);
       assertFalse(searchResult.hits().isEmpty());
-      assertTrue(searchResult.hits().stream().anyMatch(hit -> hit.table().getTable().contains("orders")));
+      assertTrue(searchResult.hits().stream().anyMatch(hit -> hit.name().getTable().contains("orders")));
     }
   }
 
@@ -88,11 +88,11 @@ public class TestRealMetastoreSearchHybrid {
       session.waitUntilSearchable("sales", 5);
       TableSearchResult result = session.searchMatch("sales", 5);
       assertFalse(result.hits().isEmpty());
-      assertTrue(result.hits().get(0).table().getTable().contains("orders"));
+      assertTrue(result.hits().get(0).name().getTable().contains("orders"));
 
       result = session.searchHybrid("revenue analytics", 5);
       assertFalse(result.hits().isEmpty());
-      assertTrue(result.hits().stream().anyMatch(hit -> hit.table().getTable().contains("metrics")));
+      assertTrue(result.hits().stream().anyMatch(hit -> hit.name().getTable().contains("metrics")));
     }
   }
 }

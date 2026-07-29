@@ -17,7 +17,6 @@
 
 package org.apache.hive.search.search;
 
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -27,8 +26,7 @@ public record SearchQuery(
     QueryBody body,
     String catalogName,
     String databaseName,
-    int limit,
-    List<String> returnFields) {
+    int limit) {
 
   /** Union of mode-specific query payloads. */
   public sealed interface QueryBody permits MatchQuery, SemanticQuery, HybridQuery {
@@ -41,10 +39,6 @@ public record SearchQuery(
     MATCH,
     SEMANTIC,
     HYBRID
-  }
-
-  public SearchQuery {
-    returnFields = returnFields == null ? List.of() : List.copyOf(returnFields);
   }
 
   public Mode mode() {
@@ -73,15 +67,14 @@ public record SearchQuery(
       Mode mode,
       String catalogName,
       String databaseName,
-      int limit,
-      List<String> returnFields)
+      int limit)
       throws SearchException {
     if (queryBody == null || queryBody.isEmpty()) {
       throw new SearchException("missing query body for mode " + mode);
     }
     QueryBody body = parseBody(queryBody, mode);
     validate(body, limit);
-    return new SearchQuery(body, catalogName, databaseName, limit, returnFields);
+    return new SearchQuery(body, catalogName, databaseName, limit);
   }
 
   private static QueryBody parseBody(Object queryBody, Mode mode) throws SearchException {
@@ -94,7 +87,7 @@ public record SearchQuery(
 
   public static SearchQuery of(String queryText) throws SearchException {
     validate(queryText, 0);
-    return new SearchQuery(new HybridQuery(queryText, null, null), null, null, 0, List.of());
+    return new SearchQuery(new HybridQuery(queryText, null, null), null, null, 0);
   }
 
   public static SearchQuery of(String queryText, Mode mode, int limit) throws SearchException {
@@ -104,18 +97,18 @@ public record SearchQuery(
       case SEMANTIC -> new SemanticQuery(queryText);
       case HYBRID -> new HybridQuery(queryText, null, null);
     };
-    return new SearchQuery(body, null, null, limit, List.of());
+    return new SearchQuery(body, null, null, limit);
   }
 
   public static SearchQuery of(String keyWord, String catalogName, String databaseName)
       throws SearchException {
     validate(keyWord, 0);
-    return new SearchQuery(new MatchQuery(keyWord), catalogName, databaseName, 0, List.of());
+    return new SearchQuery(new MatchQuery(keyWord), catalogName, databaseName, 0);
   }
 
-  public static SearchQuery of(SearchQuery query, List<String> returnFields, int limit) {
+  public static SearchQuery of(SearchQuery query, int limit) {
     return new SearchQuery(
-        query.body(), query.catalogName(), query.databaseName(), limit, returnFields);
+        query.body(), query.catalogName(), query.databaseName(), limit);
   }
 
   /** Serializes this query to a flat Thrift-ready query body map. */

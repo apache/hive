@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hive.search.search.SearchBackend;
 import org.apache.hive.search.search.SearchQuery;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hive.search.search.TableSearchHit;
 import org.apache.hive.search.search.TableSearchResult;
 import org.junit.After;
@@ -89,7 +90,7 @@ public class TestSearchProvider {
     TableSearchResult result = provider.search(query);
 
     assertEquals(1, result.total());
-    assertEquals("t", result.hits().getFirst().table().getTable());
+    assertEquals("t", result.hits().getFirst().name().getTable());
     provider.close();
   }
 
@@ -112,10 +113,15 @@ public class TestSearchProvider {
       return new TableSearchResult(
           List.of(new TableSearchHit(
               TableName.fromString("default.t", "hive", "default"),
-              1.0f,
-              Map.of("table_name", "t"))),
-          1, 10, 12);
-  }
+              new Table(),
+              1.0f)),
+          1, 12);
+    }
+
+    @Override
+    public TableSearchResult loadTables(List<String> tableIds) {
+      return new TableSearchResult(List.of(), 0, 12);
+    }
 
     @Override
     public void close() {

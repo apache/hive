@@ -20,7 +20,6 @@ package org.apache.hive.search.metastore;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.List;
-import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.TableName;
@@ -28,6 +27,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hive.search.mapping.IndexMapping;
 import org.apache.hive.search.mapping.TableDocument;
+import org.apache.hive.search.mapping.field.BinaryField;
 import org.apache.hive.search.mapping.field.Field;
 import org.apache.hive.search.mapping.field.IdField;
 import org.apache.hive.search.mapping.field.TextField;
@@ -41,6 +41,8 @@ public final class MetastoreTableMapper {
   public static final String FIELD_COMMENT = "comment";
   public static final String FIELD_COLUMNS = "columns";
   public static final String FIELD_COLUMN_COMMENTS = "column_comments";
+  /** Gzip-compressed Thrift {@link Table} snapshot; stored only, not searchable. */
+  public static final String FIELD_TABLE_BLOB = "table_blob";
   public static final String FIELD_SEARCH_TEXT = "search_text";
   /** Logical API name for semantic/hybrid search over {@link SearchTextSegment segment fields}. */
   public static final float KEYWORD_BOOST_TABLE_NAME = 4.0f;
@@ -93,24 +95,8 @@ public final class MetastoreTableMapper {
     for (int i = 0; i < searchSegments.size(); i++) {
       fields.add(new TextField(SearchTextSegment.segmentField(i), searchSegments.get(i)));
     }
+    fields.add(new BinaryField(FIELD_TABLE_BLOB, TableBlobCodec.encode(table)));
     return new TableDocument(new IdField("_id", id), fields, indexMapping);
-  }
-
-  /** Returns true when an alter would change any value written to the search index. */
-  public static boolean hasIndexedFieldsChanged(Table before, Table after) {
-    Objects.requireNonNull(before);
-    Objects.requireNonNull(after);
-    if (!Objects.equals(before.getCatName(), after.getCatName())
-        || !Objects.equals(before.getDbName(), after.getDbName())
-        || !Objects.equals(before.getTableName(), after.getTableName())) {
-      return true;
-    }
-    return !nullToEmpty(before.getOwner()).equals(nullToEmpty(after.getOwner()))
-        || !nullToEmpty(before.getTableType()).equals(nullToEmpty(after.getTableType()))
-        || !tableLocation(before).equals(tableLocation(after))
-        || !tableComment(before).equals(tableComment(after))
-        || !formatColumnNamesForSearch(before).equals(formatColumnNamesForSearch(after))
-        || !formatColumnCommentsForSearch(before).equals(formatColumnCommentsForSearch(after));
   }
 
   private static String tableLocation(Table table) {

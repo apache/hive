@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hive.search.exception.IndexIOException;
+import org.apache.hive.search.mapping.field.BinaryField;
 import org.apache.hive.search.mapping.field.Field;
 import org.apache.hive.search.mapping.field.IdField;
 import org.apache.hive.search.mapping.field.TextField;
@@ -48,7 +49,7 @@ public class TableDocument {
     document = new Document();
   }
 
-  public void fill(TextField field, TextFieldSchema schema)
+  public void toDocumentField(TextField field, TextFieldSchema schema)
       throws IndexIOException {
     if (schema.filter()) {
       document.add(
@@ -87,7 +88,11 @@ public class TableDocument {
       }
       if (schema instanceof TextFieldSchema text
           && field instanceof TextField tf) {
-        fill(tf, text);
+        toDocumentField(tf, text);
+      } else if (schema instanceof BinaryFieldSchema
+          && field instanceof BinaryField binaryField
+          && binaryField.value() != null) {
+        document.add(new StoredField(binaryField.name(), new BytesRef(binaryField.value())));
       }
     }
     return List.of(document);

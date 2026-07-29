@@ -67,7 +67,7 @@ public final class MetastoreIndexer implements Closeable {
     this.indexer = indexer;
     this.indexManager = indexManager;
     this.flushIndexListener = new FlushIndexListener(configuration);
-    this.handler = new MetastoreEventHandler(configuration);
+    this.handler = new MetastoreEventHandler(configuration, client);
     this.handler.addListeners(flushIndexListener, indexManager);
     this.cluster = new MetastoreCluster(configuration, flushIndexListener);
     this.lastEventId = initialize();
@@ -257,12 +257,10 @@ public final class MetastoreIndexer implements Closeable {
           try {
             if (indexer.flush(eventId, false)) {
               lastCommittedEventId = eventId;
-              indexManager.setCommittedEventId(eventId);
             } else if (eventId - lastCommittedEventId > indexConfig.getForceFlushEventGap()
                 && indexer.flush(eventId, true)) {
               // Many events processed with no Lucene changes; advance checkpoint metadata.
               lastCommittedEventId = eventId;
-              indexManager.setCommittedEventId(eventId);
             }
           } catch (IOException e) {
             LOG.warn("Error flushing the index", e);
@@ -354,7 +352,6 @@ public final class MetastoreIndexer implements Closeable {
         if (eventId > lastCommittedEventId) {
           if (indexer.flush(eventId, true)) {
             lastCommittedEventId = eventId;
-            indexManager.setCommittedEventId(eventId);
           }
         }
       }

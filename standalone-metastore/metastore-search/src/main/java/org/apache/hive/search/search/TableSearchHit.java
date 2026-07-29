@@ -17,20 +17,15 @@
 
 package org.apache.hive.search.search;
 
-import java.util.Map;
-
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.api.Table;
 
 /** One ranked discovery hit. Schema detail requires a canonical Metastore read. */
 public record TableSearchHit(
-    TableName table, float score, Map<String, String> fields) {
-
-  public TableSearchHit {
-    fields = fields == null ? Map.of() : Map.copyOf(fields);
-  }
+    TableName name, Table table, float score) {
 
   @Override
   public String toString() {
-    return "TableSearchHit{" + "table=" + table + ", score=" + score + '}';
+    return "TableSearchHit{" + "table=" + name + ", score=" + score + '}';
   }
 }

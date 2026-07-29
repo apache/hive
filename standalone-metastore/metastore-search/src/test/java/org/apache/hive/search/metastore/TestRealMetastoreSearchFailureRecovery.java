@@ -66,7 +66,7 @@ public class TestRealMetastoreSearchFailureRecovery {
       restored.refreshSearcher();
       TableSearchResult result = restored.searchMatch("sales", 5);
       assertFalse(result.hits().isEmpty());
-      assertTrue(result.hits().stream().anyMatch(hit -> hit.table().getTable().contains("orders")));
+      assertTrue(result.hits().stream().anyMatch(hit -> hit.name().getTable().contains("orders")));
     }
   }
 

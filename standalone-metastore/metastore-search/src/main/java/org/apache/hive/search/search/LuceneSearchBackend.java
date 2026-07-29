@@ -33,7 +33,6 @@ import org.apache.hive.search.exception.IndexNotReadyException;
 import org.apache.hive.search.exception.InitializeException;
 import org.apache.hive.search.exception.SearchException;
 import org.apache.hive.search.index.IndexSession;
-import org.apache.hive.search.metastore.MetastoreTableMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,16 +86,21 @@ public final class LuceneSearchBackend implements SearchBackend {
     if (!isReady()) {
       throw new IndexNotReadyException("Search index is not ready");
     }
-    List<String> fields = query.returnFields();
-    if (query.returnFields().isEmpty()) {
-      fields = List.of(
-          MetastoreTableMapper.FIELD_OWNER,
-          MetastoreTableMapper.FIELD_COMMENT);
-    }
     int limit = query.limit() > 0 ? query.limit() : searchConfig.getDefaultLimit();
-    query = SearchQuery.of(query, fields, limit);
+    query = SearchQuery.of(query, limit);
     try (Searcher searcher = session.getSearcher()) {
       return searcher.search(query);
+    }
+  }
+
+  @Override
+  public TableSearchResult loadTables(List<String> tableIds)
+      throws SearchException, IOException {
+    if (!isReady()) {
+      throw new IndexNotReadyException("Search index is not ready");
+    }
+    try (Searcher searcher = session.getSearcher()) {
+      return searcher.loadTables(tableIds);
     }
   }
 
