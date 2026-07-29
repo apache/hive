@@ -233,13 +233,14 @@ public final class HiveMaterializedViewsRegistry {
     } catch (Exception e) {
       LOG.warn("Materialized view " + materializedViewTable.getCompleteName() +
           " ignored; error parsing original query; " + e);
+      return null;
+    } finally {
       try {
         context.clear();
       } catch (IOException ioe) {
         LOG.warn("Error while cleaning up staging directories for materialized view " +
             materializedViewTable.getCompleteName(), ioe);
       }
-      return null;
     }
 
     return new HiveRelOptMaterialization(viewScan, plan.getPlan(),

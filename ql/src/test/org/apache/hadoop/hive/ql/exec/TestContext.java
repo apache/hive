@@ -75,23 +75,23 @@ public class TestContext {
         conf.setBoolean(HiveConf.ConfVars.HIVE_BLOBSTORE_OPTIMIZATIONS_ENABLED.varname, true);
     }
 
-    @Test
-    public void testClearRemovesScratchDirEagerlyWhenHDFSCleanupEnabled() throws IOException {
-        // HIVE-27636: when isHDFSCleanup is true, scratch/staging directories
-        // created via getMRScratchDir are only registered for deleteOnExit,
-        // which means they are not removed until the JVM exits. For
-        // long-running processes (e.g. HiveServer2), calling clear() should
-        // eagerly remove them instead of waiting for JVM exit.
-        context.setHDFSCleanup(true);
+  @Test
+  public void testClearRemovesScratchDirEagerlyWhenHDFSCleanupEnabled() throws IOException {
+    // HIVE-27636: when isHDFSCleanup is true, scratch/staging directories
+    // created via getMRScratchDir are only registered for deleteOnExit,
+    // which means they are not removed until the JVM exits. For
+    // long-running processes (e.g. HiveServer2), calling clear() should
+    // eagerly remove them instead of waiting for JVM exit.
+    context.setHDFSCleanup(true);
 
-        Path scratchDir = context.getMRScratchDir(true);
-        FileSystem fs = scratchDir.getFileSystem(conf);
+    Path scratchDir = context.getMRScratchDir(true);
+    FileSystem fs = scratchDir.getFileSystem(conf);
 
-        assertTrue("Scratch dir should have been created", fs.exists(scratchDir));
+    assertTrue("Scratch dir should have been created", fs.exists(scratchDir));
 
-        context.clear();
+    context.clear();
 
-        assertFalse("Scratch dir should be removed eagerly by clear(), " +
-            "without waiting for JVM exit", fs.exists(scratchDir));
-    }
+    assertFalse("Scratch dir should be removed eagerly by clear(), " +
+        "without waiting for JVM exit", fs.exists(scratchDir));
+  }
 }
