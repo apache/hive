@@ -27,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
 import java.util.List;
@@ -229,9 +230,10 @@ class TestIcebergAuthorizer {
     var hiveAuthorizer = mock(HiveAuthorizer.class);
     var icebergAuthorizer = new IcebergAuthorizer(() -> hiveAuthorizer);
 
+    var nestedNamespace = Namespace.of("db", "nested");
+    var request = stageCreateRequest(LOCATION, null);
     var exception = Assertions.assertThrows(IllegalArgumentException.class, () ->
-        icebergAuthorizer.validateStageCreateTable(CATALOG_NAME, Namespace.of("db", "nested"), Map.of(),
-            stageCreateRequest(LOCATION, null)));
+        icebergAuthorizer.validateStageCreateTable(CATALOG_NAME, nestedNamespace, Map.of(), request));
     Assertions.assertEquals("Hive does not support multi-level namespaces", exception.getMessage());
     Mockito.verifyNoInteractions(hiveAuthorizer);
   }
@@ -240,11 +242,12 @@ class TestIcebergAuthorizer {
   void testValidateStageCreateTableRejected() throws Exception {
     var hiveAuthorizer = mock(HiveAuthorizer.class);
     var failure = new HiveAccessControlException("access denied");
-    Mockito.doThrow(failure).when(hiveAuthorizer).checkPrivileges(any(), anyList(), anyList(), any());
+    doThrow(failure).when(hiveAuthorizer).checkPrivileges(any(), anyList(), anyList(), any());
     var icebergAuthorizer = new IcebergAuthorizer(() -> hiveAuthorizer);
 
+    var request = stageCreateRequest(LOCATION, null);
     var exception = Assertions.assertThrows(ForbiddenException.class, () -> icebergAuthorizer
-        .validateStageCreateTable(CATALOG_NAME, NAMESPACE, Map.of(), stageCreateRequest(LOCATION, null)));
+        .validateStageCreateTable(CATALOG_NAME, NAMESPACE, Map.of(), request));
     Assertions.assertEquals("access denied", exception.getMessage());
     Assertions.assertSame(failure, exception.getCause());
   }
@@ -253,12 +256,12 @@ class TestIcebergAuthorizer {
   void testTranslateAuthorizationPluginException() throws Exception {
     HiveAuthorizer hiveAuthorizer = mock(HiveAuthorizer.class);
     HiveAuthzPluginException failure = new HiveAuthzPluginException("plugin failure");
-    Mockito.doThrow(failure).when(hiveAuthorizer).checkPrivileges(any(), anyList(), anyList(), any());
+    doThrow(failure).when(hiveAuthorizer).checkPrivileges(any(), anyList(), anyList(), any());
     IcebergAuthorizer icebergAuthorizer = new IcebergAuthorizer(() -> hiveAuthorizer);
 
+    var request = stageCreateRequest(LOCATION, null);
     var exception = Assertions.assertThrows(IllegalStateException.class, () ->
-        icebergAuthorizer.validateStageCreateTable(CATALOG_NAME, NAMESPACE, Map.of(),
-            stageCreateRequest(LOCATION, null)));
+        icebergAuthorizer.validateStageCreateTable(CATALOG_NAME, NAMESPACE, Map.of(), request));
     Assertions.assertEquals("Failed to check privileges stage-create", exception.getMessage());
     Assertions.assertSame(failure, exception.getCause());
   }

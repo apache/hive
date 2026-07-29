@@ -263,7 +263,8 @@ abstract class BaseRESTCatalogTests extends CatalogTests<RESTCatalog> {
   void testStageCreateTableWithAllowedLocation() {
     var tableIdentifier = TableIdentifier.of("default", "stage-create-table-allowed");
     var location = MockHiveAuthorizer.ALLOWED_PREFIX + "/stage-create-table-allowed";
-    Transaction transaction = catalog.buildTable(tableIdentifier, new Schema()).withLocation(location).createTransaction();
+    Transaction transaction = catalog.buildTable(tableIdentifier, new Schema()).withLocation(location)
+        .createTransaction();
     Assertions.assertEquals(location, transaction.table().location());
     Assertions.assertThrows(NoSuchTableException.class, () -> catalog.loadTable(tableIdentifier));
   }

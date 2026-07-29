@@ -116,7 +116,8 @@ class IcebergAuthorizer {
    * @throws ForbiddenException if the user does not have the required privileges
    * @throws IllegalStateException if the authorization plugin fails
    */
-  void validateStageCreateTable(String catalogName, Namespace namespace, Map<String, String> namespaceMetadata, CreateTableRequest request) {
+  void validateStageCreateTable(String catalogName, Namespace namespace, Map<String, String> namespaceMetadata,
+      CreateTableRequest request) {
     Preconditions.checkArgument(request.stageCreate(), "Only stage create requests are supported");
     Preconditions.checkArgument(namespace.levels().length == 1, "Hive does not support multi-level namespaces");
     var databaseName = namespace.level(0);

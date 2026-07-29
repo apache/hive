@@ -119,8 +119,8 @@ public class MockHiveAuthorizer extends AbstractHiveAuthorizer {
 
   private boolean isWriteOperation(HiveOperationType type) {
     return switch (type) {
-      case CREATEDATABASE, DROPDATABASE, ALTERDATABASE, CREATETABLE, DROPTABLE, ALTERTABLE_ADDCOLS -> true;
-      default -> false;
+    case CREATEDATABASE, DROPDATABASE, ALTERDATABASE, CREATETABLE, DROPTABLE, ALTERTABLE_ADDCOLS -> true;
+    default -> false;
     };
   }
 
