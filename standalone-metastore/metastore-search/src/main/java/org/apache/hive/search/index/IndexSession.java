@@ -107,4 +107,8 @@ public final class IndexSession implements Closeable {
     IOUtils.closeQuietly(searcherManager, metastoreIndexer,
         indexer, indexManager, modelRegistry);
   }
+
+  public String getIndexBuildProgress() {
+    return indexManager.getIndexBuildProgress();
+  }
 }

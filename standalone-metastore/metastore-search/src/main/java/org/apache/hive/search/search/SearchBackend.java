@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 
-import org.apache.hive.search.exception.IndexNotReadyException;
+import org.apache.hive.search.exception.IndexNotHealthyException;
 import org.apache.hive.search.exception.InitializeException;
 import org.apache.hive.search.exception.SearchException;
 
@@ -36,10 +36,10 @@ public interface SearchBackend extends Closeable {
   void initialize(Configuration configuration) throws InitializeException, IOException;
 
   /** Whether this instance can serve search (index opened and bootstrap completed). */
-  boolean isReady() throws IndexNotReadyException;
+  boolean isReady() throws IndexNotHealthyException;
 
   TableSearchResult search(SearchQuery query)
-      throws SearchException, InitializeException, IOException;
+      throws SearchException, IOException;
 
   /** Loads stored tables by canonical ids ({@code catalog.db.table}). */
   TableSearchResult loadTables(List<String> tableIds)

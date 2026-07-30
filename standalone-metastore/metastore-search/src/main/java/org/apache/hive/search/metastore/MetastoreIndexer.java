@@ -141,8 +141,7 @@ public final class MetastoreIndexer implements Closeable {
     indexManager.clearRemoteIndex();
     long notificationId = client.getCurrentNotificationEventId().getEventId();
     new BootstrapIndexer(
-        indexManager.mapping().configuration(),
-        indexManager.mapping(),
+        indexManager,
         indexer,
         client,
         shareBootstrapFetchClient).run(notificationId);

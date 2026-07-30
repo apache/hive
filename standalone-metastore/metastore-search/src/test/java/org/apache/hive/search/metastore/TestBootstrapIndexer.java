@@ -74,7 +74,7 @@ public class TestBootstrapIndexer {
     try (BootstrapFixture fixture = BootstrapFixture.create(conf)) {
       MetastoreBootstrapMocks.stubBootstrapCatalog(fixture.client(), orders, customers, parts);
 
-      new BootstrapIndexer(conf, fixture.mapping(), fixture.indexer(), fixture.client(), true)
+      new BootstrapIndexer(fixture.indexManager(), fixture.indexer(), fixture.client(), true)
           .run(500L);
 
       assertEquals(500L, fixture.indexManager().readLocalManifest().orElseThrow().lastEventId());
@@ -93,7 +93,7 @@ public class TestBootstrapIndexer {
     try (BootstrapFixture fixture = BootstrapFixture.create(conf)) {
       MetastoreBootstrapMocks.stubBootstrapCatalog(fixture.client(), orders, customers);
 
-      new BootstrapIndexer(conf, fixture.mapping(), fixture.indexer(), fixture.client(), true)
+      new BootstrapIndexer(fixture.indexManager(), fixture.indexer(), fixture.client(), true)
           .run(10L);
 
       assertEquals(2, fixture.indexer().writer().getDocStats().numDocs);
@@ -111,7 +111,7 @@ public class TestBootstrapIndexer {
           .thenThrow(new RuntimeException("metastore unavailable"));
 
       IndexIOException error = assertThrows(IndexIOException.class,
-          () -> new BootstrapIndexer(conf, fixture.mapping(), fixture.indexer(), client, true)
+          () -> new BootstrapIndexer(fixture.indexManager(), fixture.indexer(), client, true)
               .run(1L));
       assertTrue(error.getMessage().contains("Bootstrap indexing failed")
           || error.getMessage().contains("metastore unavailable"));
