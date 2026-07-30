@@ -2472,6 +2472,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (qb.getParseInfo().isAnalyzeCommand()) {
         // allow partial partition specification for nonscan since noscan is fast.
         TableSpec ts = new TableSpec(db, conf, (ASTNode) ast.getChild(0), true, this.noscan);
+        // basic statistics of non-native partitioned tables are maintained incrementally for all
+        // partitions as a whole, so a partition-scoped ANALYZE cannot be honored
+        validateUnsupportedPartitionClause(tab, ts.specType != SpecType.TABLE_ONLY);
+
         if (ts.specType == SpecType.DYNAMIC_PARTITION) { // dynamic partitions
           try {
             ts.partitions = db.getPartitionsByNames(ts.tableHandle, ts.partSpec);

@@ -174,17 +174,22 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
     public void run() {
       try {
         Table table = partish.getTable();
-        Map<String, String> parameters;
-        Map<String, String> basicStatistics = table.getStorageHandler().getBasicStatistics(partish);
         if (partish.getPartition() != null) {
-          parameters = partish.getPartParameters();
-          result = new Partition(table, partish.getPartition().getTPartition());
-        } else {
-          parameters = table.getParameters();
-          result = new Table(table.getTTable());
+          // cannot happen: a partition-scoped ANALYZE is rejected at compile time for tables whose
+          // storage handler maintains the statistics for all partitions as a whole
+          throw new IllegalStateException("Partition-scoped statistics collection is not supported for "
+              + table.getFullyQualifiedName());
         }
-        parameters.putAll(basicStatistics);
-        StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.TRUE);
+        Map<String, String> parameters = table.getParameters();
+        // computes and publishes the statistics the storage handler maintains (e.g. the Iceberg
+        // partition stats file) before reading them back: ANALYZE catches up on writes that
+        // skipped the auto-gathering (the computation is incremental, so it's a no-op when current)
+        Map<String, String> basicStatistics = table.getStorageHandler().computeBasicStatistics(table);
+        result = new Table(table.getTTable());
+        if (basicStatistics != null) {
+          parameters.putAll(basicStatistics);
+          StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.TRUE);
+        }
 
         String who = (partish.getPartition() == null) ? ("table " + partish.getTable().getFullyQualifiedName())
                 : ("partition " + partish.getPartition().getName());

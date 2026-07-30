@@ -54,7 +54,6 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.TableConstraintsInfo;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.stats.Partish;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -152,8 +151,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
         if (table.isNonNative()) {
           HiveStorageHandler sh = table.getStorageHandler();
           
-          sh.getBasicStatistics(Partish.buildFor(table)).forEach((k, v) -> 
-              valueMap.put(k, Longs.tryParse(v)));
+          sh.getBasicStatistics(table).forEach((k, v) -> valueMap.put(k, Longs.tryParse(v)));
           numParts = sh.getPartitionNames(table).size();
           
         } else {

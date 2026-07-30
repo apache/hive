@@ -138,8 +138,12 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       this.followedColStats1 = followedColStats2;
       
       Table table = partish.getTable();
-      if (table.isNonNative() && table.getStorageHandler().canProvideBasicStatistics()) {
-        this.providedBasicStats = table.getStorageHandler().computeBasicStatistics(partish);
+      // table scope only: a partition-scoped ANALYZE is rejected at compile time for tables whose storage
+      // handler maintains the statistics for all partitions as a whole; should a partition partish ever
+      // get here, it is served by the regular stats aggregation below instead of the handler statistics
+      if (table.isNonNative() && table.getStorageHandler().canProvideBasicStatistics()
+          && partish.getPartition() == null) {
+        this.providedBasicStats = table.getStorageHandler().computeBasicStatistics(table);
         this.skipStatsUpdate = StatsSetupConst.STATS_REQUIRE_COMPUTE.stream()
             .anyMatch(providedBasicStats::containsKey);
       }
@@ -515,7 +519,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
       // ANALYZE command
       TableSpec tblSpec = work.getTableSpecs();
       table = tblSpec.tableHandle;
-      if (!table.isPartitioned()) {
+      if (!table.isPartitioned() || table.hasNonNativePartitionSupport()) {
         return null;
       }
       // get all partitions that match with the partition spec
