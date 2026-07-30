@@ -57,6 +57,16 @@ class HiveIcebergRESTViewCatalogTests extends ViewCatalogTests<RESTCatalog> {
   }
 
   @Override
+  protected String viewLocation(String... paths) {
+    StringBuilder location = new StringBuilder("s3a://test/test-warehouse");
+    for (String path : paths) {
+      location.append("/").append(path);
+    }
+
+    return location.toString();
+  }
+
+  @Override
   protected boolean requiresNamespaceCreate() {
     return true;
   }
@@ -64,25 +74,5 @@ class HiveIcebergRESTViewCatalogTests extends ViewCatalogTests<RESTCatalog> {
   @Override
   protected boolean supportsServerSideRetry() {
     return true;
-  }
-
-  @Override
-  public void completeCreateView() {
-    // This test case requires https://github.com/apache/iceberg/pull/14653
-  }
-
-  @Override
-  public void createAndReplaceViewWithLocation() {
-    // This test case requires https://github.com/apache/iceberg/pull/14653
-  }
-
-  @Override
-  public void createViewWithCustomMetadataLocation() {
-    // This test case requires https://github.com/apache/iceberg/pull/14653
-  }
-
-  @Override
-  public void updateViewLocation() {
-    // This test case requires https://github.com/apache/iceberg/pull/14653
   }
 }
