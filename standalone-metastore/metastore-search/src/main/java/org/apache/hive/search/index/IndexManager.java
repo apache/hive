@@ -32,6 +32,7 @@ import org.apache.hive.search.index.store.LocalStateClient;
 import org.apache.hive.search.index.store.IndexBackupUtils;
 import org.apache.hive.search.index.store.IndexStateClient;
 import org.apache.hive.search.config.IndexStoreOptions;
+import org.apache.hive.search.metastore.BootstrapIndexer;
 import org.apache.hive.search.metastore.MetastoreEventListener;
 import org.apache.lucene.store.ByteBuffersDirectory;
 import org.apache.lucene.store.Directory;
@@ -48,6 +49,7 @@ public class IndexManager implements Closeable, MetastoreEventListener {
   private final IndexStateClient remoteIndex;
   private volatile IndexNotHealthyException exception;
   private volatile long processedEventId;
+  private BootstrapIndexer massIndexer;
 
   public IndexManager(IndexMapping mapping,
       Directory directory,
@@ -175,6 +177,17 @@ public class IndexManager implements Closeable, MetastoreEventListener {
     if (exception != null) {
       throw exception;
     }
+  }
+
+  public String getIndexBuildProgress() {
+    if (massIndexer == null) {
+      return "Progress: unknown";
+    }
+    return massIndexer.showProgress();
+  }
+
+  public void setBootstrapIndexer(BootstrapIndexer indexer) {
+    this.massIndexer = indexer;
   }
 
   public IndexMapping mapping() {

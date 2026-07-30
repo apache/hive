@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hive.search.exception.IndexNotReadyException;
+import org.apache.hive.search.exception.IndexNotHealthyException;
 import org.apache.hive.search.exception.InitializeException;
 import org.apache.hive.search.exception.SearchException;
 import org.apache.hive.search.metastore.MetastoreTableMapper;
@@ -129,12 +129,12 @@ public final class SearchProvider implements AutoCloseable {
     return backend;
   }
 
-  public boolean isReady() throws IndexNotReadyException {
+  public boolean isReady() throws IndexNotHealthyException {
     return backend.isReady();
   }
 
   public TableSearchResult search(SearchQuery query)
-      throws SearchException, InitializeException, IOException {
+      throws SearchException, IOException {
     return backend.search(query);
   }
 

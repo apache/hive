@@ -29,6 +29,7 @@ import java.util.concurrent.TimeoutException;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hive.search.config.SearchOptions;
+import org.apache.hive.search.exception.IndexNotHealthyException;
 import org.apache.hive.search.exception.IndexNotReadyException;
 import org.apache.hive.search.exception.InitializeException;
 import org.apache.hive.search.exception.SearchException;
@@ -60,21 +61,18 @@ public final class LuceneSearchBackend implements SearchBackend {
   }
 
   @Override
-  public boolean isReady() throws IndexNotReadyException {
-    if (future == null) {
-      throw new IndexNotReadyException("The in-process Lucene search backend hasn't been initialized yet");
-    }
+  public boolean isReady() throws IndexNotHealthyException {
     try {
       future.get(300, TimeUnit.MILLISECONDS);
       return true;
     } catch (ExecutionException e) {
       close();
       Throwable cause = e.getCause() != null ? e.getCause() : e;
-      throw new IndexNotReadyException("Search backend initialization failed", cause);
+      throw new IndexNotHealthyException("Search backend initialization failed", cause);
     } catch (InterruptedException e) {
       close();
       Thread.currentThread().interrupt();
-      throw new IndexNotReadyException("Search backend initialization interrupted", e);
+      throw new IndexNotHealthyException("Search backend initialization interrupted", e);
     } catch (TimeoutException e) {
       return false;
     }
@@ -84,7 +82,7 @@ public final class LuceneSearchBackend implements SearchBackend {
   public TableSearchResult search(SearchQuery query)
       throws SearchException, IOException {
     if (!isReady()) {
-      throw new IndexNotReadyException("Search index is not ready");
+      throw new IndexNotReadyException("Search index is not ready. " + session.getIndexBuildProgress());
     }
     int limit = query.limit() > 0 ? query.limit() : searchConfig.getDefaultLimit();
     query = SearchQuery.of(query, limit);
@@ -97,7 +95,7 @@ public final class LuceneSearchBackend implements SearchBackend {
   public TableSearchResult loadTables(List<String> tableIds)
       throws SearchException, IOException {
     if (!isReady()) {
-      throw new IndexNotReadyException("Search index is not ready");
+      throw new IndexNotReadyException("Search index is not ready. " + session.getIndexBuildProgress());
     }
     try (Searcher searcher = session.getSearcher()) {
       return searcher.loadTables(tableIds);

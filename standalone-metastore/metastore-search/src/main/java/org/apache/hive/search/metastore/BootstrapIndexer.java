@@ -34,31 +34,33 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hive.search.exception.IndexIOException;
-import org.apache.hive.search.mapping.IndexMapping;
+import org.apache.hive.search.index.IndexManager;
 import org.apache.hive.search.mapping.TableDocument;
 import org.apache.hive.search.config.IndexOptions;
 import org.apache.hive.search.index.Indexer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-final class BootstrapIndexer {
+public final class BootstrapIndexer {
   private static final Logger LOG = LoggerFactory.getLogger(BootstrapIndexer.class);
   private static final List<TableDocument> END_OF_STREAM = List.of();
 
   private final Configuration configuration;
+  private final IndexManager indexManager;
   private final IndexOptions indexConfig;
-  private final IndexMapping mapping;
   private final Indexer indexer;
   private final IMetaStoreClient client;
   private final boolean shareFetchClient;
+  private Progress progress;
 
   /** Package-private for unit tests: fetch workers reuse the injected client. */
-  BootstrapIndexer(Configuration configuration,
-      IndexMapping mapping, Indexer indexer,
-      IMetaStoreClient client, boolean shareFetchClient) {
-    this.configuration = configuration;
+  BootstrapIndexer(IndexManager indexManager,
+      Indexer indexer,
+      IMetaStoreClient client,
+      boolean shareFetchClient) {
+    this.indexManager = indexManager;
+    this.configuration = indexManager.mapping().configuration();
     this.indexConfig = new IndexOptions(configuration);
-    this.mapping = mapping;
     this.indexer = indexer;
     this.client = client;
     this.shareFetchClient = shareFetchClient;
@@ -76,9 +78,10 @@ final class BootstrapIndexer {
     AtomicReference<Exception> failure = new AtomicReference<>();
     AtomicLong indexedTables = new AtomicLong();
     CountDownLatch fetchDone = new CountDownLatch(plan.batches().size());
+    progress = new Progress(indexedTables, plan.plannedTableCount, System.currentTimeMillis());
+    indexManager.setBootstrapIndexer(this);
 
-    Thread indexThread = startIndexConsumer(
-        indexQueue, failure, indexedTables, plan.plannedTableCount());
+    Thread indexThread = startIndexConsumer(indexQueue, failure, indexedTables);
     try (ExecutorService tableFetcher = Executors.newFixedThreadPool(indexConfig.getBootstrapFetchThreads(),
         r -> {
           Thread thread = new Thread(r, "Index-Bootstrap-Fetch");
@@ -154,17 +157,15 @@ final class BootstrapIndexer {
         client.getTableObjectsByName(batch.database(), batch.tableNames());
     List<TableDocument> documents = new ArrayList<>(tables.size());
     for (Table table : tables) {
-      documents.add(MetastoreTableMapper.fromTable(table, mapping));
+      documents.add(MetastoreTableMapper.fromTable(table, indexManager.mapping()));
     }
     indexQueue.put(documents);
   }
 
   private Thread startIndexConsumer(BlockingQueue<List<TableDocument>> indexQueue,
-      AtomicReference<Exception> failure, AtomicLong indexedTables,
-      int plannedTableCount) {
+      AtomicReference<Exception> failure, AtomicLong indexedTables) {
     Thread indexThread = new Thread(() -> {
       long lastProgressLog = System.currentTimeMillis();
-      long bootstrapWriterStart = System.currentTimeMillis();
       try {
         while (true) {
           List<TableDocument> documents = indexQueue.take();
@@ -175,20 +176,10 @@ final class BootstrapIndexer {
             break;
           }
           indexer.addDocuments(documents);
-          long indexed = indexedTables.addAndGet(documents.size());
+          indexedTables.addAndGet(documents.size());
           long now = System.currentTimeMillis();
           if (now - lastProgressLog >= indexConfig.getBootstrapProgressIntervalMs()) {
-            long elapsedMs = Math.max(1, now - bootstrapWriterStart);
-            double tablesPerSec = indexed * 1000.0 / elapsedMs;
-            long remainingMs = estimateRemainingMs(indexed, plannedTableCount, elapsedMs);
-            double percent = plannedTableCount == 0 ? 100.0 : indexed * 100.0 / plannedTableCount;
-            LOG.info(
-                "Bootstrap progress: indexed {}/{} table(s) ({}%), ~{}/s, ~{} remaining",
-                indexed,
-                plannedTableCount,
-                String.format("%.1f", percent),
-                String.format("%.1f", tablesPerSec),
-                formatRemaining(remainingMs));
+            LOG.info(progress.showProgress());
             lastProgressLog = now;
           }
         }
@@ -268,7 +259,33 @@ final class BootstrapIndexer {
     return minutes == 0 ? hours + "h" : hours + "h " + minutes + "m";
   }
 
+  public String showProgress() {
+    return progress.showProgress();
+  }
+
   private record BatchPlan(List<TableBatch> batches, int plannedTableCount) {}
 
   private record TableBatch(String database, List<String> tableNames) {}
+
+  private record Progress(AtomicLong indexedTables,
+                          int plannedTableCount,
+                          long bootstrapWriterStart) {
+
+    String showProgress() {
+      long now = System.currentTimeMillis();
+      long indexed = indexedTables.get();
+      long elapsedMs = Math.max(1, now - bootstrapWriterStart);
+      double tablesPerSec = indexed * 1000.0 / elapsedMs;
+      long remainingMs = estimateRemainingMs(indexed, plannedTableCount, elapsedMs);
+      double percent = plannedTableCount == 0 ? 100.0 : indexed * 100.0 / plannedTableCount;
+      return String.format(
+          "Bootstrap progress: indexed %d/%d table(s) (%.1f%%), ~%.1f/s, ~%s remaining",
+          indexed,
+          plannedTableCount,
+          percent,
+          tablesPerSec,
+          formatRemaining(remainingMs));
+    }
+
+  }
 }
