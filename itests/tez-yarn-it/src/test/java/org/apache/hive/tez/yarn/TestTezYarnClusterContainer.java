@@ -27,14 +27,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-/**
- * Smoke test for TezYarnClusterContainer. Verifies that a real HDFS+YARN
- * cluster comes up cleanly via Testcontainers and that the wrapper's helper
- * methods return usable addresses and can perform HDFS I/O.
- *
- * Run with: mvn -Pitests,tez-yarn -pl itests/tez-yarn-it -Dtest=TezYarnClusterContainerTest test
- */
-public class TezYarnClusterContainerTest {
+public class TestTezYarnClusterContainer {
 
   private static TezYarnClusterContainer cluster;
 
