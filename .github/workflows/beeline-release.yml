@@ -48,6 +48,9 @@ jobs:
             artifact_glob: beeline/target/installer/x64/*.exe
 
     runs-on: ${{ matrix.os }}
+    # Bounds total job time (queue + execution). Notably guards against macos-13
+    # runner-pool starvation as GitHub drains its capacity ahead of deprecation.
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v3
 
