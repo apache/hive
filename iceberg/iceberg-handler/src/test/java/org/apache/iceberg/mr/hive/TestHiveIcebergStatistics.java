@@ -25,13 +25,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.iceberg.AssertHelpers;
@@ -504,6 +504,26 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
   }
 
   @Test
+  public void testCountStarWithoutPartitionStatsFile() {
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+    createPartitionedCustomers(identifier, false);
+
+    Table icebergTable = testTables.loadTable(identifier);
+    Assert.assertNull(IcebergTableUtil.getPartitionStatsFile(
+        icebergTable, icebergTable.currentSnapshot().snapshotId()));
+
+    // the per-partition path needs that file, so a pruned count is answered by a scan, while the
+    // unpruned one still comes from the table-level statistics
+    Assert.assertEquals(1L, shell.executeStatement(
+        "SELECT count(*) FROM " + identifier + " WHERE last_name = 'Brown'").get(0)[0]);
+    Assert.assertEquals(3L, shell.executeStatement("SELECT count(*) FROM " + identifier).get(0)[0]);
+    String plan = shell.executeAndStringify("EXPLAIN SELECT count(*) FROM " + identifier);
+    Assert.assertFalse(plan, plan.contains("TableScan"));
+  }
+
+  @Test
   public void testRowCountWithDeletes() {
     assumeParquetHiveCatalogIceberg();
 
@@ -548,7 +568,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     // the partition stats file accounts for the legacy rows too, under the empty partition tuple
     Map<String, PartitionStatistics> fileStats =
         IcebergTableUtil.readPartitionStats(icebergTable, icebergTable.currentSnapshot());
-    Assert.assertEquals(3L, fileStats.get(StringUtils.EMPTY).dataRecordCount().longValue());
+    Assert.assertEquals(3L, fileStats.get(DummyPartition.UNPARTITIONED).dataRecordCount().longValue());
 
     // column stats blobs are written for the physical partitions only: values existing solely among the
     // legacy unpartitioned rows (Green, Pink) get no blob
@@ -574,20 +594,27 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     Assert.assertEquals(4, partNames.size());
 
     // planner basic stats answer the requested partitions and carry the legacy rows as an extra entry
-    Map<String, Map<String, String>> aggr = handler.getAggrBasicStatsFor(hmsTable, partNames);
-    Assert.assertEquals(partNames.size() + 1, aggr.size());
+    List<String> statNames = Lists.newArrayList(partNames);
+    statNames.add(DummyPartition.UNPARTITIONED);
+    Map<String, Map<String, String>> aggr = handler.getAggrBasicStatsFor(hmsTable, statNames);
+    Assert.assertEquals(statNames.size(), aggr.size());
     partNames.forEach(name -> Assert.assertEquals("1", aggr.get(name).get(StatsSetupConst.ROW_COUNT)));
     Assert.assertEquals("3",
-        aggr.get(StringUtils.EMPTY).get(StatsSetupConst.ROW_COUNT));
+        aggr.get(DummyPartition.UNPARTITIONED).get(StatsSetupConst.ROW_COUNT));
 
     // an unpruned scan plans with the table-level statistics; a pruned scan sums the matched partitions
-    // plus the legacy rows, whose files pruning cannot exclude
+    // and the synthetic partition, which the pruner keeps whenever a legacy file survives file-level pruning
     String plan = shell.executeAndStringify("EXPLAIN SELECT * FROM " + identifier);
     Assert.assertTrue(plan, plan.contains("rows=7"));
+    // the legacy values span Brown..Pink, so the legacy file is pruned away for Barna
     plan = shell.executeAndStringify("EXPLAIN SELECT * FROM " + identifier + " WHERE last_name = 'Barna'");
-    Assert.assertTrue(plan, plan.contains("rows=4"));
+    Assert.assertTrue(plan, plan.contains("rows=1"));
+    // Brown matches both the partition and the legacy file: 1 partition row + 3 legacy rows are read
     plan = shell.executeAndStringify("EXPLAIN SELECT * FROM " + identifier + " WHERE last_name = 'Brown'");
     Assert.assertTrue(plan, plan.contains("rows=4"));
+    // Green has no partition of its own, only legacy rows: the synthetic partition alone answers
+    plan = shell.executeAndStringify("EXPLAIN SELECT * FROM " + identifier + " WHERE last_name = 'Green'");
+    Assert.assertTrue(plan, plan.contains("rows=3"));
   }
 
   @Test
@@ -601,8 +628,12 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     HiveIcebergStorageHandler handler = storageHandler();
     List<String> partNames = partitionNames(handler, hmsTable);
 
-    // exact row counts cannot be provided while live rows belong to a former unpartitioned spec
-    Assert.assertNull(handler.getRowCount(hmsTable, partNames));
+    // the synthetic partition cannot answer a predicate exactly, so a pruned list holding it is refused
+    List<String> withPseudo = Lists.newArrayList(partNames);
+    withPseudo.add(DummyPartition.UNPARTITIONED);
+    Assert.assertNull(handler.getRowCount(hmsTable, withPseudo));
+    // without it the partition counts are exact
+    Assert.assertEquals(partNames.size(), handler.getRowCount(hmsTable, partNames).size());
 
     // counts stay correct via a real scan, pruned and unpruned alike; Green exists only in the legacy
     // rows so its pruned list is empty (partition statistics alone would have answered 0)
@@ -611,9 +642,15 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
         shell.executeStatement("SELECT count(*) FROM " + identifier + " WHERE last_name = 'Green'").get(0)[0]);
     Assert.assertEquals(1L,
         shell.executeStatement("SELECT count(*) FROM " + identifier + " WHERE last_name = 'Barna'").get(0)[0]);
-    // TODO: 'last_name = Brown' (a partition value that also occurs among the legacy rows) returns 4
-    // instead of 2: PartitionConditionRemover drops the filter as satisfied by the pruned partitions
-    // while the scan still reads the legacy unpartitioned files - pre-existing bug, own JIRA
+    // Brown is both a partition of its own and a value among the legacy rows: the synthetic partition
+    // keeps the filter in the plan, so only the two genuine Brown rows are returned
+    Assert.assertEquals(2L,
+        shell.executeStatement("SELECT count(*) FROM " + identifier + " WHERE last_name = 'Brown'").get(0)[0]);
+    List<Object[]> brown = shell.executeStatement(
+        "SELECT customer_id FROM " + identifier + " WHERE last_name = 'Brown' ORDER BY customer_id");
+    Assert.assertEquals(2, brown.size());
+    Assert.assertEquals(0L, brown.get(0)[0]);
+    Assert.assertEquals(3L, brown.get(1)[0]);
   }
 
   private void createEvolvedCustomers(TableIdentifier identifier) {
@@ -640,10 +677,14 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
   }
 
   private void createPartitionedCustomers(TableIdentifier identifier) {
+    createPartitionedCustomers(identifier, true);
+  }
+
+  /** Auto-gathering on write triggers computeBasicStatistics, which publishes the partition stats file. */
+  private void createPartitionedCustomers(TableIdentifier identifier, boolean autoGather) {
     PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
         .identity("last_name").build();
-    // stats auto-gathering on write triggers computeBasicStatistics, which publishes the partition stats file
-    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, autoGather);
     testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, spec,
         fileFormat, ImmutableList.of(), formatVersion);
     shell.executeStatement(testTables.getInsertQuery(

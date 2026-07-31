@@ -37,7 +37,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -235,7 +234,7 @@ public class StatsUtils {
   private static List<BasicStats> buildBasicStats(HiveConf conf, Table table, PrunedPartitionList partList,
       List<Partish> inputs, BasicStats.Factory factory) {
     HiveStorageHandler storageHandler = table.isNonNative() ? table.getStorageHandler() : null;
-    if (storageHandler != null && storageHandler.canProvideBasicStatistics() && !inputs.isEmpty()) {
+    if (storageHandler != null && storageHandler.canProvideBasicStatistics()) {
       if (partList != null && partList.getReferredPartCols().isEmpty()) {
         // no partition predicate: the list covers every partition, so the table-level statistics are
         // exactly their aggregate - skip the per-partition read
@@ -248,15 +247,10 @@ public class StatsUtils {
       Map<String, Map<String, String>> aggrBasicStats = partNames.isEmpty() ? null :
           storageHandler.getAggrBasicStatsFor(table, partNames);
       if (aggrBasicStats != null) {
-        List<BasicStats> results = new ArrayList<>(inputs.size() + 1);
-        inputs.forEach(pi -> results.add(factory.build(pi,
-            aggrBasicStats.getOrDefault(pi.getPartition().getName(), Map.of()))));
-        Map<String, String> unpartitioned = aggrBasicStats.get(StringUtils.EMPTY);
-        if (unpartitioned != null) {
-          // include the stats of rows outside any partition: every scan reads them
-          results.add(factory.build(Partish.buildFor(table), unpartitioned));
-        }
-        return results;
+        return inputs.stream()
+            .map(pi -> factory.build(pi,
+                aggrBasicStats.getOrDefault(pi.getPartition().getName(), Map.of())))
+            .toList();
       }
     }
     return factory.buildAll(conf, inputs);

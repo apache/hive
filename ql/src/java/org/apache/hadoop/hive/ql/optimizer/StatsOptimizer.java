@@ -973,12 +973,15 @@ public class StatsOptimizer extends Transform {
           List<String> partNames = prunedList.getPartitions().stream()
               .map(Partition::getName)
               .toList();
+          if (partNames.isEmpty()) {
+            // the predicate matched nothing the scan would read
+            return 0L;
+          }
           Map<String, Long> rowCounts = storageHandler.getRowCount(tbl, partNames);
           if (rowCounts == null || rowCounts.size() != partNames.size()) {
             // the rewrite substitutes a constant, so it needs an exact count for every partition
             return null;
           }
-          // an empty pruned list sums to 0: the partition predicate matched no partitions
           return rowCounts.values().stream().mapToLong(Long::longValue).sum();
         }
       }

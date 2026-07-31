@@ -483,6 +483,15 @@ public class IcebergTableUtil {
   }
 
   /**
+   * Returns the partition name of the given tuple, or {@link DummyPartition#UNPARTITIONED} for the empty
+   * name an unpartitioned spec renders. Statistics and partition pruning join on this name, so both must
+   * render it the same way.
+   */
+  static String toPartitionName(PartitionSpec spec, PartitionData data) {
+    return StringUtils.defaultIfEmpty(spec.partitionToPath(data), DummyPartition.UNPARTITIONED);
+  }
+
+  /**
    * Builds a filter expression for data table operations (deleteFromRowFilter, FindFiles).
    * Only supports identity transforms. Keys are partition field names.
    */
@@ -709,7 +718,7 @@ public class IcebergTableUtil {
             }
             PartitionData data = toPartitionData(
                 row.get(PART_IDX, StructProjection.class), partitionType, spec.partitionType());
-            return Maps.immutableEntry(spec.partitionToPath(data), spec.specId());
+            return Maps.immutableEntry(toPartitionName(spec, data), spec.specId());
           })
           .filter(Objects::nonNull)
           .toSortedList(specIdComparator).stream()
@@ -743,7 +752,7 @@ public class IcebergTableUtil {
             spec.partitionType());
         // the scan copies the counters into a fresh object per row, so retaining it is safe;
         // only the partition tuple may alias the reader's reused struct - do not use it after this loop
-        result.put(spec.partitionToPath(data), partitionStats);
+        result.put(toPartitionName(spec, data), partitionStats);
       }
     } catch (IOException e) {
       throw new UncheckedIOException(e);

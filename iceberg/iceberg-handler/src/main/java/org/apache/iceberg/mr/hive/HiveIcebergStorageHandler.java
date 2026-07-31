@@ -656,12 +656,6 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     }
     getPartitionStatsFor(table, snapshot, partNames)
         .forEach((partName, stats) -> result.put(partName, toStatsMap(stats)));
-
-    // include the stats of a former unpartitioned spec with live rows
-    PartitionStatistics unpartitioned = getPartitionStats(table, snapshot).get(StringUtils.EMPTY);
-    if (unpartitioned != null && unpartitioned.dataRecordCount() > 0) {
-      result.put(StringUtils.EMPTY, toStatsMap(unpartitioned));
-    }
     return result;
   }
 
@@ -952,9 +946,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     if (snapshot == null) {
       return Map.of();
     }
-    PartitionStatistics unpartitioned = getPartitionStats(table, snapshot).get(StringUtils.EMPTY);
-    if (unpartitioned != null && unpartitioned.dataRecordCount() > 0) {
-      // exact row counts cannot be provided while live rows belong to a former unpartitioned spec
+    if (partNames.stream().anyMatch(DummyPartition::isUnpartitioned)) {
+      // rows that belong to no partition carry every value, not only those matching the predicate
       return null;
     }
     Map<String, Long> rowCounts = Maps.newHashMapWithExpectedSize(partNames.size());
@@ -2493,12 +2486,11 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
     try (CloseableIterable<FileScanTask> tasks = scan.planFiles()) {
       FluentIterable.from(tasks)
-          .filter(task -> task.spec().isPartitioned())
           .filter(task -> specFilter.test(task.file().specId()))
           .forEach(task -> {
             PartitionSpec spec = task.spec();
             PartitionData partitionData = IcebergTableUtil.toPartitionData(task.partition(), spec.partitionType());
-            String partName = spec.partitionToPath(partitionData);
+            String partName = IcebergTableUtil.toPartitionName(spec, partitionData);
 
             Map<String, String> partSpecMap =
                 IcebergTableUtil.makeSpecFromName(partName, spec, partitionData, defaultPartitionName);

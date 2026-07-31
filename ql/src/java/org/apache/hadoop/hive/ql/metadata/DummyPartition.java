@@ -36,6 +36,16 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
  */
 public class DummyPartition extends Partition {
 
+  /**
+   * Name of the synthetic partition holding the rows that belong to no partition, e.g. data written
+   * before the table was partitioned. Its partition spec is empty, so no predicate can exclude it.
+   */
+  public static final String UNPARTITIONED = "__UNPARTITIONED__";
+
+  public static boolean isUnpartitioned(String partName) {
+    return UNPARTITIONED.equals(partName);
+  }
+
   private String name;
   private LinkedHashMap<String, String> partSpec;
   private List<String> values;
