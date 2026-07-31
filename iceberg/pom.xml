@@ -273,7 +273,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>${maven.checkstyle.plugin.version}</version>
         <configuration>
           <skip>${validate.skip}</skip>
           <propertyExpansion>config_loc=${basedir}/${path.to.iceberg.root}/checkstyle/</propertyExpansion>
