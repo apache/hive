@@ -95,7 +95,6 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hadoop.hive.common.IPStackUtils;
-import org.apache.hc.client5.http.HttpRequestRetryStrategy;
 import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
 import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.config.RequestConfig;
@@ -680,42 +679,11 @@ public class HiveConnection implements java.sql.Connection {
     }
     // Configure http client for cookie based authentication
     if (isCookieEnabled) {
-      // Create a http client with a retry mechanism when the server returns a status code of 401.
-      httpClientBuilder =
-          HttpClients.custom().setDefaultCookieStore(cookieStore).setRetryStrategy(
-              new HttpRequestRetryStrategy() {
-                @Override
-                public boolean retryRequest(HttpRequest request, IOException exception, int execCount,
-                    HttpContext context) {
-                  // Do not retry on raw I/O exceptions
-                  return false;
-                }
-
-                @Override
-                public boolean retryRequest(final HttpResponse response, final int executionCount,
-                    final HttpContext context) {
-                  int statusCode = response.getCode();
-                  boolean sentCredentials = context.getAttribute(Utils.HIVE_SERVER2_SENT_CREDENTIALS) != null &&
-                      context.getAttribute(Utils.HIVE_SERVER2_SENT_CREDENTIALS).equals(Utils.HIVE_SERVER2_CONST_TRUE);
-                  boolean ret = statusCode == 401 && executionCount <= 1 && !sentCredentials;
-
-                  // Set the context attribute to true which will be interpreted by the request
-                  // interceptor
-                  if (ret) {
-                    context.setAttribute(Utils.HIVE_SERVER2_RETRY_KEY,
-                        Utils.HIVE_SERVER2_CONST_TRUE);
-                  }
-                  return ret;
-                }
-
-                @Override
-                public TimeValue getRetryInterval(HttpResponse response, int execCount, HttpContext context) {
-                  return TimeValue.ZERO_MILLISECONDS;
-                }
-              });
+      httpClientBuilder = HttpClients.custom().setDefaultCookieStore(cookieStore);
     } else {
       httpClientBuilder = HttpClientBuilder.create();
     }
+    final boolean cookieAuthEnabled = isCookieEnabled;
 
     httpClientBuilder.addRequestInterceptorLast((request, entity, context) -> {
       context.setAttribute("hive.request_sent", Boolean.TRUE);
@@ -802,6 +770,35 @@ public class HiveConnection implements java.sql.Connection {
         return (request instanceof HttpUriRequest && ((HttpUriRequest) request).isAborted());
       }
 
+      // Retry on HTTP 401 when cookie auth is enabled: the server rejected the
+      // session cookie, so re-issue the request and let the request interceptor
+      // add the Authorization header this time (driven by HIVE_SERVER2_RETRY_KEY).
+      // In httpclient4 this lived on the separate ServiceUnavailableRetryStrategy
+      // slot; in httpclient5 both I/O retry and response retry share this single
+      // strategy, so we handle 401 here rather than as a second setRetryStrategy(...)
+      // call (which would just overwrite this one).
+      @Override
+      public boolean retryRequest(final HttpResponse response, final int executionCount,
+          final HttpContext context) {
+        if (cookieAuthEnabled && response.getCode() == 401) {
+          boolean sentCredentials = Utils.HIVE_SERVER2_CONST_TRUE
+              .equals(context.getAttribute(Utils.HIVE_SERVER2_SENT_CREDENTIALS));
+          boolean ret = executionCount <= 1 && !sentCredentials;
+          if (ret) {
+            context.setAttribute(Utils.HIVE_SERVER2_RETRY_KEY, Utils.HIVE_SERVER2_CONST_TRUE);
+          }
+          return ret;
+        }
+        return super.retryRequest(response, executionCount, context);
+      }
+
+      @Override
+      public TimeValue getRetryInterval(HttpResponse response, int execCount, HttpContext context) {
+        if (cookieAuthEnabled && response.getCode() == 401) {
+          return TimeValue.ZERO_MILLISECONDS;
+        }
+        return super.getRetryInterval(response, execCount, context);
+      }
     });
 
     if (isBrowserAuthMode()) {
@@ -1346,20 +1343,48 @@ public class HiveConnection implements java.sql.Connection {
    * THttpClient doesn't expose that information.
    */
   private boolean isSamlRedirect(TException e) {
-    //Unfortunately, thrift over http doesn't return the response code
-    if (e.getMessage().startsWith("HTTP Response code: ")) {
-      String code = e.getMessage().substring("HTTP Response code: ".length());
-      try {
-        int statusCode = Integer.parseInt(code.trim());
-        if (statusCode == HttpStatus.SC_SEE_OTHER
-            || statusCode == HttpStatus.SC_MOVED_TEMPORARILY) {
-          return true;
+    // Unfortunately, thrift over http doesn't return the response code directly.
+    // In older libthrift (<= 0.16) the HTTP status was surfaced as
+    //   new TTransportException("HTTP Response code: <code>")
+    // so the marker string appeared as the exception's direct message. In libthrift
+    // 0.23 the HTTP status is thrown from THttpClientResponseHandler as an
+    // IOException that is wrapped by TTransportException(Throwable), so the marker
+    // string ends up in the cause's message (and the outer message is prefixed with
+    // "java.io.IOException: "). Look for the marker in the exception message or any
+    // cause message to work with both.
+    final String marker = "HTTP Response code: ";
+    String msg = e.getMessage();
+    String codeSource = null;
+    if (msg != null && msg.contains(marker)) {
+      codeSource = msg;
+    } else {
+      for (Throwable c = e.getCause(); c != null; c = c.getCause()) {
+        String cm = c.getMessage();
+        if (cm != null && cm.contains(marker)) {
+          codeSource = cm;
+          break;
         }
-      } catch (NumberFormatException ex) {
-        // ignore, return false
       }
     }
-    return false;
+    if (codeSource == null) {
+      return false;
+    }
+    String tail = codeSource.substring(codeSource.indexOf(marker) + marker.length()).trim();
+    // Trim off anything after the numeric status code (e.g. a trailing description).
+    int end = 0;
+    while (end < tail.length() && Character.isDigit(tail.charAt(end))) {
+      end++;
+    }
+    if (end == 0) {
+      return false;
+    }
+    try {
+      int statusCode = Integer.parseInt(tail.substring(0, end));
+      return statusCode == HttpStatus.SC_SEE_OTHER
+          || statusCode == HttpStatus.SC_MOVED_TEMPORARILY;
+    } catch (NumberFormatException ex) {
+      return false;
+    }
   }
 
   public boolean isHplSqlMode() {
