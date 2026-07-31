@@ -5240,8 +5240,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * taskIds, copy/copyFromLocal do not race on the destination filename, and overwrite explicitly
    * clears the target first.
    */
-  private static Path pickDestFilePath(HiveConf conf, Path sourcePath, FileSystem destFs, Path destDirPath, int taskId,
-                                       boolean isOverwrite, boolean isRenameAllowed) throws IOException {
+  private static Path pickDestFilePath(HiveConf conf, FileSystem sourceFs, Path sourcePath, FileSystem destFs,
+                                       Path destDirPath, int taskId, boolean isOverwrite, boolean isRenameAllowed)
+      throws IOException {
 
     final String type = FilenameUtils.getExtension(sourcePath.getName());
 
@@ -5260,7 +5261,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
     Path destFilePath = new Path(destDirPath, taskId == -1 ? fullName : name);
 
     final String uniqueCopySuffix =
-        (taskId == -1 && isRenameAllowed && !isOverwrite && isNonAtomicRenameFs(destFs))
+        // only apply the unique suffix in case of files, as it's supposed to handle file name collisions
+        // when mvFile is called with a directory, we can fallback to the original logic
+        (taskId == -1 && isRenameAllowed && !isOverwrite && sourceFs.getFileStatus(sourcePath).isFile()
+            && isNonAtomicRenameFs(destFs))
             ? computeUniquenessTag(conf)
             : null;
 
@@ -5320,7 +5324,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
   private static Path mvFile(HiveConf conf, FileSystem sourceFs, Path sourcePath, FileSystem destFs, Path destDirPath,
                              boolean isSrcLocal, boolean isOverwrite, boolean isRenameAllowed,
                              int taskId) throws IOException {
-    Path destFilePath = pickDestFilePath(conf, sourcePath, destFs, destDirPath, taskId, isOverwrite, isRenameAllowed);
+    Path destFilePath = pickDestFilePath(conf, sourceFs, sourcePath, destFs, destDirPath, taskId, isOverwrite,
+        isRenameAllowed);
 
     if (isRenameAllowed) {
       destFs.rename(sourcePath, destFilePath);
