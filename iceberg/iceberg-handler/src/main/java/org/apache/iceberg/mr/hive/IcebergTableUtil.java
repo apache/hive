@@ -31,6 +31,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -67,11 +68,14 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.util.Sets;
 import org.apache.iceberg.ContentFile;
+import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DeleteFiles;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.ManageSnapshots;
 import org.apache.iceberg.ManifestFile;
+import org.apache.iceberg.ManifestFiles;
+import org.apache.iceberg.ManifestReader;
 import org.apache.iceberg.MetadataTableType;
 import org.apache.iceberg.MetadataTableUtils;
 import org.apache.iceberg.PartitionData;
@@ -110,11 +114,13 @@ import org.apache.iceberg.relocated.com.google.common.collect.Iterables;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.transforms.Transform;
+import org.apache.iceberg.types.Comparators;
 import org.apache.iceberg.types.Conversions;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.ByteBuffers;
 import org.apache.iceberg.util.Pair;
+import org.apache.iceberg.util.PartitionUtil;
 import org.apache.iceberg.util.SnapshotUtil;
 import org.apache.iceberg.util.StructProjection;
 import org.slf4j.Logger;
@@ -878,6 +884,96 @@ public class IcebergTableUtil {
       thread.setName("remove-snapshot-" + completeName + "-" + deleteThreadsIndex.getAndIncrement());
       return thread;
     });
+  }
+
+  public static void rewriteManifests(Table table) {
+    if (!table.spec().isPartitioned()) {
+      table.rewriteManifests().clusterBy(file -> "").commit();
+    } else {
+      // Determine the target size for each new manifest file (defaults to 8MB)
+      long manifestTargetSizeBytes = TableProperties.MANIFEST_TARGET_SIZE_BYTES_DEFAULT;
+      if (table.properties().containsKey(TableProperties.MANIFEST_TARGET_SIZE_BYTES)) {
+        manifestTargetSizeBytes =
+            Long.parseLong(table.properties().get(TableProperties.MANIFEST_TARGET_SIZE_BYTES));
+      }
+
+      List<ManifestFile> dataManifests = table.currentSnapshot().dataManifests(table.io());
+      if (dataManifests.isEmpty()) {
+        return;
+      }
+
+      // Calculate ideal number of manifest files based on current total metadata size.
+      // We hard-cap the maximum number of clusters at 200 to prevent the JVM from
+      // opening too many concurrent file writers and causing OOM or OS ulimit (Too Many Open Files).
+      long totalManifestsSize = dataManifests.stream().mapToLong(ManifestFile::length).sum();
+      int targetClusters =
+          (int)
+              Math.min(
+                  (totalManifestsSize + manifestTargetSizeBytes - 1) / manifestTargetSizeBytes,
+                  200);
+
+      if (targetClusters <= 1) {
+        table.rewriteManifests().clusterBy(file -> 0).commit();
+        return;
+      }
+
+      // To cluster files efficiently, we want to group them naturally.
+      // We extract the native Type of the first partition column (e.g. Timestamp, String)
+      // and use Iceberg's native Comparators to maintain a sorted TreeSet of all unique partition values.
+      Type.PrimitiveType firstPartitionFieldType =
+          table.spec().partitionType().fields().getFirst().type().asPrimitiveType();
+      Set<Object> uniqueValues = new TreeSet<>(Comparators.forType(firstPartitionFieldType));
+
+      for (ManifestFile manifestFile : dataManifests) {
+        try (ManifestReader<DataFile> reader =
+            ManifestFiles.read(manifestFile, table.io(), table.specs())
+                .select(List.of(DataFile.PARTITION_NAME))) {
+          for (DataFile dataFile : reader) {
+            // Coerce partition struct in case of partition evolution
+            StructLike partition =
+                PartitionUtil.coercePartition(
+                    table.spec().partitionType(),
+                    table.specs().get(dataFile.specId()),
+                    dataFile.partition());
+            // Only extract and sort by the FIRST partition column for read optimization
+            Object value = partition.get(0, Object.class);
+            if (value != null) {
+              uniqueValues.add(value);
+            }
+          }
+        } catch (IOException e) {
+          throw new RuntimeException("Failed to read manifest file", e);
+        }
+      }
+
+      if (uniqueValues.isEmpty()) {
+        table.rewriteManifests().clusterBy(file -> 0).commit();
+        return;
+      }
+
+      // Divide the naturally sorted unique values evenly into our calculated `targetClusters`
+      Object[] sortedValues = uniqueValues.toArray();
+      Map<Object, Integer> valueToBucket = Maps.newHashMap();
+      for (int i = 0; i < sortedValues.length; i++) {
+        // e.g. If we have 1000 sorted partition values and 200 clusters, this groups 5 values per bucket ID
+        valueToBucket.put(sortedValues[i], i * targetClusters / sortedValues.length);
+      }
+
+      // Rewrite manifests, telling Iceberg to group data files based on our pre-calculated bucket mapping
+      table
+          .rewriteManifests()
+          .clusterBy(
+              file -> {
+                StructLike partition =
+                    PartitionUtil.coercePartition(
+                        table.spec().partitionType(),
+                        table.specs().get(file.specId()),
+                        file.partition());
+                Object value = partition.get(0, Object.class);
+                return value != null ? valueToBucket.getOrDefault(value, 0) : 0;
+              })
+          .commit();
+    }
   }
 
   public static boolean hasUndergonePartitionEvolution(Table table) {

@@ -119,4 +119,76 @@ public class TestHiveIcebergSnapshotOperations {
     result = shell.executeStatement("SELECT COUNT(*) FROM default.testReplaceBranchWithSnapshot.branch_branch1");
     assertEquals(6L, result.get(0)[0]);
   }
+
+  @Test
+  public void testRewriteManifests() {
+    TableIdentifier identifier = TableIdentifier.of("default", "testRewriteManifests");
+    shell.executeStatement(
+        String.format(
+            "CREATE EXTERNAL TABLE %s (id INT, data STRING) STORED BY iceberg %s %s",
+            identifier.name(),
+            testTables.locationForCreateTableSQL(identifier),
+            testTables.propertiesForCreateTableSQL(ImmutableMap.of("commit.manifest.min-count-to-compact", "2"))));
+
+    // Create 5 manifests by executing 5 separate INSERT operations
+    for (int i = 1; i <= 5; i++) {
+      shell.executeStatement(
+          String.format("INSERT INTO TABLE %s VALUES(%d, 'val')", identifier.name(), i));
+    }
+
+    org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
+    icebergTable.refresh();
+
+    // After 5 inserts, Iceberg will have generated 5 separate manifest files
+    int manifestCountBefore = icebergTable.currentSnapshot().allManifests(icebergTable.io()).size();
+    assertEquals("Manifests keep accumulating for each insert", 5, manifestCountBefore);
+
+    // Execute REWRITE_MANIFESTS procedure
+    shell.executeStatement(
+        String.format("ALTER TABLE %s EXECUTE REWRITE_MANIFESTS", identifier.name()));
+
+    icebergTable.refresh();
+    int manifestCountAfterRewrite =
+        icebergTable.currentSnapshot().allManifests(icebergTable.io()).size();
+
+    // Rewrite manifests should confidently compact all of them into exactly 1 manifest
+    assertEquals(
+        "Should have exactly 1 manifest after REWRITE_MANIFESTS", 1, manifestCountAfterRewrite);
+  }
+
+  @Test
+  public void testRewriteManifestsPartitioned() {
+    TableIdentifier identifier = TableIdentifier.of("default", "testRewriteManifestsPartitioned");
+    shell.executeStatement(
+        String.format(
+            "CREATE EXTERNAL TABLE %s (id INT, data STRING) PARTITIONED BY (part STRING) STORED BY iceberg %s %s",
+            identifier.name(),
+            testTables.locationForCreateTableSQL(identifier),
+            testTables.propertiesForCreateTableSQL(
+                ImmutableMap.of("commit.manifest.min-count-to-compact", "2"))));
+
+    // Create 5 manifests by executing 5 separate INSERT operations across 2 partitions
+    for (int i = 1; i <= 5; i++) {
+      String partitionVal = (i % 2 == 0) ? "p2" : "p1";
+      shell.executeStatement(
+          String.format(
+              "INSERT INTO TABLE %s VALUES(%d, 'val', '%s')", identifier.name(), i, partitionVal));
+    }
+
+    org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
+    icebergTable.refresh();
+
+    int manifestCountBefore = icebergTable.currentSnapshot().allManifests(icebergTable.io()).size();
+    assertEquals("Manifests keep accumulating for each insert", 5, manifestCountBefore);
+
+    shell.executeStatement(
+        String.format("ALTER TABLE %s EXECUTE REWRITE_MANIFESTS", identifier.name()));
+
+    icebergTable.refresh();
+    int manifestCountAfterRewrite =
+        icebergTable.currentSnapshot().allManifests(icebergTable.io()).size();
+
+    assertEquals(
+        "Should have exactly 1 manifest after REWRITE_MANIFESTS", 1, manifestCountAfterRewrite);
+  }
 }
