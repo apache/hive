@@ -2559,9 +2559,7 @@ public class HMSHandler extends PrivilegeHandler {
       return ret;
     } catch (Exception e) {
       ex = e;
-      throw handleException(e).throwIfInstance(MetaException.class, NoSuchObjectException.class)
-          .convertIfInstance(InvalidObjectException.class, InvalidInputException.class)
-          .defaultMetaException();
+      throw handleException(e).defaultTException();
     } finally {
       endFunction("delete_column_statistics_req", ret, ex, tableName);
     }

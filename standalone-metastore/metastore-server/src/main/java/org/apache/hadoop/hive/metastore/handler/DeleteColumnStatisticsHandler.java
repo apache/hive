@@ -149,7 +149,7 @@ public class DeleteColumnStatisticsHandler
   protected void afterExecute(DeleteColumnStatisticsResult result) throws TException, IOException {
     if (result != null && !handler.getListeners().isEmpty()) {
       for (ListenerEvent event : result.events()) {
-        MetaStoreListenerNotifier.notifyEvent(handler.getTransactionalListeners(), result.eventType(), event);
+        MetaStoreListenerNotifier.notifyEvent(handler.getListeners(), result.eventType(), event);
       }
     }
     super.afterExecute(result);
