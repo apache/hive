@@ -243,7 +243,7 @@ public class AcidUtils {
    * @see org.apache.hadoop.hive.ql.exec.Utilities#COPY_KEYWORD
    *
    * The copy suffix is either a numeric counter (HDFS/local: _copy_N) or a
-   * 16-hex per-query uniqueness tag (unstable-rename FS such as S3A:
+   * 16-hex per-query uniqueness tag (non-atomic-rename FS such as S3A:
    * _copy_&lt;queryTag&gt;). See ParsedOutputFileName#REGEX.
    */
   public static final Pattern ORIGINAL_PATTERN_COPY =
@@ -458,7 +458,7 @@ public class AcidUtils {
         String copySuffix = bucketFileName.substring(bucketFileName.lastIndexOf('_') + 1);
         // Copy suffix is either a numeric counter or a 16-hex per-query uniqueness tag.
         // Hex-tagged files are unordered peers from concurrent writers on an
-        // unstable-rename FS, so there is no meaningful copy number to assign — use 0.
+        // non-atomic-rename FS, so there is no meaningful copy number to assign — use 0.
         int copyNumber = (copySuffix.length() == 16) ? 0 : Integer.parseInt(copySuffix);
         int bucketId = Integer
             .parseInt(bucketFileName.substring(0, bucketFileName.indexOf('_')));
