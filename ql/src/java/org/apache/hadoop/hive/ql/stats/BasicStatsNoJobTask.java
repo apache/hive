@@ -175,15 +175,15 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
       try {
         Table table = partish.getTable();
         if (partish.getPartition() != null) {
-          // cannot happen: a partition-scoped ANALYZE is rejected at compile time for tables whose
-          // storage handler maintains the statistics for all partitions as a whole
+          // the storage handler maintains the statistics of all partitions as a whole; a partition-scoped
+          // ANALYZE is rejected at compile time (ErrorMsg.ANALYZE_PARTITION_NON_NATIVE)
           throw new IllegalStateException("Partition-scoped statistics collection is not supported for "
               + table.getFullyQualifiedName());
         }
         Map<String, String> parameters = table.getParameters();
         // computes and publishes the statistics the storage handler maintains (e.g. the Iceberg
         // partition stats file) before reading them back: ANALYZE catches up on writes that
-        // skipped the auto-gathering (the computation is incremental, so it's a no-op when current)
+        // skipped the auto-gathering (a no-op when the statistics are already current)
         Map<String, String> basicStatistics = table.getStorageHandler().computeBasicStatistics(table);
         result = new Table(table.getTTable());
         if (basicStatistics != null) {

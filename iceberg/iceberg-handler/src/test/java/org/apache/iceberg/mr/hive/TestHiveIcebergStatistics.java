@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -403,19 +404,20 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
 
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
     createPartitionedCustomers(identifier);
+    String expected = ErrorMsg.ANALYZE_PARTITION_NON_NATIVE.getMsg();
 
     // basic statistics are maintained incrementally for all partitions as a whole:
     // a partition-scoped basic-stats ANALYZE cannot be honored and must be rejected
     AssertHelpers.assertThrows(
         "Should reject partition-scoped basic-stats ANALYZE for non-native partitioned tables",
-        IllegalArgumentException.class, "Using partition spec in query is unsupported",
+        IllegalArgumentException.class, expected,
         () -> shell.executeStatement(
             "ANALYZE TABLE " + identifier + " PARTITION (last_name='Brown') COMPUTE STATISTICS")
     );
     // same for column statistics: the rewrite would drop every other partition's column stats
     AssertHelpers.assertThrows(
         "Should reject partition-scoped column-stats ANALYZE for non-native partitioned tables",
-        IllegalArgumentException.class, "Using partition spec in query is unsupported",
+        IllegalArgumentException.class, expected,
         () -> shell.executeStatement(
             "ANALYZE TABLE " + identifier + " PARTITION (last_name='Brown') COMPUTE STATISTICS FOR COLUMNS")
     );
@@ -631,7 +633,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     // the synthetic partition cannot answer a predicate exactly, so a pruned list holding it is refused
     List<String> withPseudo = Lists.newArrayList(partNames);
     withPseudo.add(DummyPartition.UNPARTITIONED);
-    Assert.assertNull(handler.getRowCount(hmsTable, withPseudo));
+    Assert.assertTrue(handler.getRowCount(hmsTable, withPseudo).isEmpty());
     // without it the partition counts are exact
     Assert.assertEquals(partNames.size(), handler.getRowCount(hmsTable, partNames).size());
 

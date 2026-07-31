@@ -38,6 +38,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -523,7 +524,6 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       stats = hmsTable.getParameters();
 
     } else {
-      // the summary is optional in the snapshot spec
       Map<String, String> summary = snapshot.summary();
       stats = summary != null ? toStatsMap(summary, quickStats) : Map.of();
     }
@@ -644,7 +644,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   public Map<String, Map<String, String>> getAggrBasicStatsFor(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
       List<String> partNames) {
     if (!HiveMetaHook.ICEBERG.equals(getStatsSource())) {
-      return null;
+      return Map.of();
     }
     Table table = getTable(hmsTable);
     Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, hmsTable);
@@ -654,45 +654,35 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       partNames.forEach(partName -> result.put(partName, emptyStatsMap()));
       return result;
     }
-    getPartitionStatsFor(table, snapshot, partNames)
-        .forEach((partName, stats) -> result.put(partName, toStatsMap(stats)));
+    collectPartitionStatsFor(table, snapshot, partNames,
+        (partName, stats) -> result.put(partName, toStatsMap(stats)));
     return result;
   }
 
   private PartitionStatistics getPartitionStatsFor(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
       String partName) {
-    return getPartitionStatsFor(hmsTable, List.of(partName)).get(partName);
-  }
-
-  /**
-   * Serves the statistics only when Iceberg is the configured stats source; empty otherwise, so the callers
-   * leave the HMS-sourced statistics untouched.
-   */
-  private Map<String, PartitionStatistics> getPartitionStatsFor(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
-      List<String> partNames) {
     if (!HiveMetaHook.ICEBERG.equals(getStatsSource())) {
-      return Map.of();
+      return null;
     }
     Table table = getTable(hmsTable);
     Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, hmsTable);
-    return snapshot == null ? Map.of() : getPartitionStatsFor(table, snapshot, partNames);
+    return snapshot != null ?
+        getOrCachePartitionStats(table, snapshot).get(partName) : null;
   }
 
   /**
-   * Returns the counters of the given partitions keyed by partition name, served from the snapshot's
-   * partition statistics file in a single pass. The file is trusted as the complete description of its
-   * snapshot: partitions it does not cover are left out - the callers estimate or refuse instead.
+   * Passes each named partition's statistics to {@code statsConsumer}, served from the snapshot's partition
+   * statistics file. Partitions missing from the file are skipped and logged.
    */
-  private Map<String, PartitionStatistics> getPartitionStatsFor(Table table, Snapshot snapshot,
-      List<String> partNames) {
-    Map<String, PartitionStatistics> partitionStats = getPartitionStats(table, snapshot);
-    Map<String, PartitionStatistics> result = Maps.newHashMapWithExpectedSize(partNames.size());
+  private void collectPartitionStatsFor(Table table, Snapshot snapshot, List<String> partNames,
+      BiConsumer<String, PartitionStatistics> statsConsumer) {
+    Map<String, PartitionStatistics> partitionStats = getOrCachePartitionStats(table, snapshot);
     int missing = 0;
 
     for (String partName : partNames) {
       PartitionStatistics stats = partitionStats.get(partName);
       if (stats != null) {
-        result.put(partName, stats);
+        statsConsumer.accept(partName, stats);
       } else {
         missing++;
       }
@@ -701,16 +691,16 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       LOG.warn("{} of {} partitions not found in the partition stats file of snapshot {}",
           missing, partNames.size(), snapshot.snapshotId());
     }
-    return result;
   }
 
   /**
-   * Returns the given snapshot's partition statistics keyed by partition name, read from its partition statistics
-   * file in a single pass. The result is cached for the rest of the query, so the planner, the count(1) rewrite
-   * and DESCRIBE share a single read; a write advances the snapshot id and thereby the cache key.
+   * Returns the snapshot's partition statistics keyed by partition name, empty if the snapshot has no
+   * partition statistics file. The result is cached for the rest of the query under a key that includes
+   * the snapshot id, so repeated lookups share a single read and a new snapshot never sees an older
+   * snapshot's entry.
    */
   @SuppressWarnings("unchecked")
-  private Map<String, PartitionStatistics> getPartitionStats(Table table, Snapshot snapshot) {
+  private Map<String, PartitionStatistics> getOrCachePartitionStats(Table table, Snapshot snapshot) {
     String cacheKey = PARTITION_STATS_PREFIX + table.name() + '.' + snapshot.snapshotId();
     Optional<Object> cached = SessionStateUtil.getResource(conf, cacheKey);
     if (cached.isPresent()) {
@@ -916,14 +906,14 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
         snapshotRowCount(hmsTable) : metastoreRowCount(hmsTable);
   }
 
-  /** The table parameters answer the query only while they are marked up-to-date. */
+  /** Row count from the HMS table parameters */
   private static Long metastoreRowCount(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     Map<String, String> parameters = hmsTable.getParameters();
     return StatsSetupConst.areBasicStatsUptoDate(parameters) ?
         NumberUtils.createLong(parameters.get(StatsSetupConst.ROW_COUNT)) : null;
   }
 
-  /** The snapshot summary answers the query only while no delete file makes its record count inexact. */
+  /** Row count from the snapshot summary */
   private Long snapshotRowCount(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     Table table = getTable(hmsTable);
     Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, hmsTable);
@@ -934,12 +924,11 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     return hasNoDeletes(summary) ? NumberUtils.createLong(summary.get(TOTAL_RECORDS_PROP)) : null;
   }
 
-
   @Override
   public Map<String, Long> getRowCount(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
       List<String> partNames) {
     if (!HiveMetaHook.ICEBERG.equals(getStatsSource())) {
-      return null;
+      return Map.of();
     }
     Table table = getTable(hmsTable);
     Snapshot snapshot = IcebergTableUtil.getTableSnapshot(table, hmsTable);
@@ -947,11 +936,12 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       return Map.of();
     }
     if (partNames.stream().anyMatch(DummyPartition::isUnpartitioned)) {
-      // rows that belong to no partition carry every value, not only those matching the predicate
-      return null;
+      // rows that belong to no partition are never pruned, so their count may include rows the predicate
+      // does not select
+      return Map.of();
     }
     Map<String, Long> rowCounts = Maps.newHashMapWithExpectedSize(partNames.size());
-    getPartitionStatsFor(table, snapshot, partNames).forEach((partName, stats) -> {
+    collectPartitionStatsFor(table, snapshot, partNames, (partName, stats) -> {
       if (stats.equalityDeleteRecordCount() == 0 && stats.positionDeleteRecordCount() == 0) {
         rowCounts.put(partName, stats.dataRecordCount());
       }
@@ -2333,7 +2323,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
     Partition partition = IcebergTableUtil.getPartition(conf, table, partitionSpec);
 
-    // Populate basic statistics; when HMS is the stats source, the partition parameters stay as-is
+    // Populate basic statistics
     if (partition != null) {
       PartitionStatistics stats = getPartitionStatsFor(table, partition.getName());
       if (stats != null) {

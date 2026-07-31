@@ -203,19 +203,16 @@ public class StatsUtils {
       basicStatsFactory.addEnhancer(new BasicStats.DataSizeEstimator(conf));
       basicStatsFactory.addEnhancer(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema)));
     }
-    
+
+    // when partition-level statistics are unavailable (e.g. non-native table with an external stats
+    // source) fall back to the table-level statistics rather than per-partition minimums
     List<BasicStats> results;
     if (table.isPartitioned() && checkCanProvidePartitionStats(table)) {
-      List<Partish> inputs = partitionList.getNotDeniedPartns().stream()
-          .map(part -> Partish.buildFor(table, part))
-          .toList();
-      results = buildBasicStats(conf, table, partitionList, inputs, basicStatsFactory);
+      results = buildPartitionStats(conf, table, partitionList, basicStatsFactory);
     } else {
-      // partition-level statistics are unavailable (e.g. non-native table with an external stats source):
-      // fall back to the table-level statistics rather than per-partition minimums
-      results = List.of(buildBasicStats(table, basicStatsFactory));
+      results = List.of(buildTableStats(table, basicStatsFactory));
     }
-    // count the partishes with missing row counts (estimated rows do not count as provided)
+    // count the entries with missing row counts (estimated rows do not count as provided)
     noColsMissingStats.addAndGet((int) results.stream()
         .filter(bStats -> bStats.getRawNumRows() <= 0)
         .count());
@@ -226,27 +223,28 @@ public class StatsUtils {
   }
 
   /**
-   * Builds the per-partish basic stats. For non-native tables the stats are sourced from the storage handler in a
-   * single batched read, mirroring the aggregate column statistics retrieval (see
-   * {@link HiveStorageHandler#getAggrBasicStatsFor}): one read serves the whole partition list. Otherwise falls
-   * back to per-partish collection (see {@link BasicStats.Factory#buildAll}).
+   * Builds the per-partition basic stats. When the storage handler provides them, one batched read
+   * (see {@link HiveStorageHandler#getAggrBasicStatsFor}) serves the whole partition list; otherwise each
+   * partition is read individually (see {@link BasicStats.Factory#buildAll}).
    */
-  private static List<BasicStats> buildBasicStats(HiveConf conf, Table table, PrunedPartitionList partList,
-      List<Partish> inputs, BasicStats.Factory factory) {
+  private static List<BasicStats> buildPartitionStats(HiveConf conf, Table table, PrunedPartitionList partList,
+      BasicStats.Factory factory) {
+    List<Partish> inputs = partList.getNotDeniedPartns().stream()
+        .map(part -> Partish.buildFor(table, part))
+        .toList();
     HiveStorageHandler storageHandler = table.isNonNative() ? table.getStorageHandler() : null;
     if (storageHandler != null && storageHandler.canProvideBasicStatistics()) {
-      if (partList != null && partList.getReferredPartCols().isEmpty()) {
-        // no partition predicate: the list covers every partition, so the table-level statistics are
-        // exactly their aggregate - skip the per-partition read
-        return List.of(buildBasicStats(table, factory));
+      if (partList.getReferredPartCols().isEmpty() && !inputs.isEmpty()) {
+        // no partition predicate: a non-empty list covers every partition, so the table-level statistics
+        // are exactly their aggregate - skip the per-partition read
+        return List.of(buildTableStats(table, factory));
       }
       List<String> partNames = inputs.stream()
-          .filter(partish -> partish.getPartition() != null)
           .map(partish -> partish.getPartition().getName())
           .toList();
-      Map<String, Map<String, String>> aggrBasicStats = partNames.isEmpty() ? null :
+      Map<String, Map<String, String>> aggrBasicStats = partNames.isEmpty() ? Map.of() :
           storageHandler.getAggrBasicStatsFor(table, partNames);
-      if (aggrBasicStats != null) {
+      if (!aggrBasicStats.isEmpty()) {
         return inputs.stream()
             .map(pi -> factory.build(pi,
                 aggrBasicStats.getOrDefault(pi.getPartition().getName(), Map.of())))
@@ -257,9 +255,9 @@ public class StatsUtils {
   }
 
   /**
-   * Builds the table-level basic stats, sourced from the storage handler for non-native tables.
+   * Builds the table-level basic stats, sourced from the storage handler when it provides them.
    */
-  private static BasicStats buildBasicStats(Table table, BasicStats.Factory factory) {
+  private static BasicStats buildTableStats(Table table, BasicStats.Factory factory) {
     HiveStorageHandler storageHandler = table.isNonNative() ? table.getStorageHandler() : null;
     Map<String, String> providedStats = storageHandler != null && storageHandler.canProvideBasicStatistics() ?
         storageHandler.getBasicStatistics(table) : null;
@@ -327,7 +325,7 @@ public class StatsUtils {
       basicStatsFactory.addEnhancer(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema)));
       basicStatsFactory.addEnhancer(new BasicStats.SetMinRowNumber());
 
-      BasicStats basicStats = buildBasicStats(table, basicStatsFactory);
+      BasicStats basicStats = buildTableStats(table, basicStatsFactory);
       
       //      long nr = getNumRows(conf, schema, neededColumns, table, ds);
       long ds = basicStats.getDataSize();
@@ -368,11 +366,7 @@ public class StatsUtils {
 
       basicStatsFactory.addEnhancer(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema)));
 
-      List<Partish> inputs = partList.getNotDeniedPartns().stream()
-          .map(p -> Partish.buildFor(table, p))
-          .toList();
-
-      List<BasicStats> partStats = buildBasicStats(conf, table, partList, inputs, basicStatsFactory);
+      List<BasicStats> partStats = buildPartitionStats(conf, table, partList, basicStatsFactory);
 
       BasicStats bbs = BasicStats.buildFrom(partStats);
 

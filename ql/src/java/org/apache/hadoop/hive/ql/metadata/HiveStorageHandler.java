@@ -318,11 +318,12 @@ public interface HiveStorageHandler extends Configurable {
    * Fetches basic statistics (numRows, numFiles, totalSize) for the supplied partitions in a single batch.
    * @param hmsTable table object
    * @param partNames list of partition names
-   * @return map of partition name to basic statistics, or null if the handler does not provide them
+   * @return map of partition name to basic statistics, omitting partitions that have none;
+   *         empty if the handler does not provide them
    */
   default Map<String, Map<String, String>> getAggrBasicStatsFor(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
       List<String> partNames) {
-    return null;
+    return Map.of();
   }
 
   /**
@@ -367,12 +368,12 @@ public interface HiveStorageHandler extends Configurable {
    * exactly, e.g. because they are covered by delete files.
    * @param hmsTable table object
    * @param partNames list of partition names
-   * @return map of partition name to row count, or null if the handler cannot determine partition
-   *         row counts at all, e.g. when they cannot account for every row of the table
+   * @return map of partition name to row count, empty if the handler cannot determine partition
+   *         row counts at all, e.g. when some rows do not belong to any partition
    */
   default Map<String, Long> getRowCount(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
       List<String> partNames) {
-    return null;
+    return Map.of();
   }
 
   /**

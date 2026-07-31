@@ -978,7 +978,7 @@ public class StatsOptimizer extends Transform {
             return 0L;
           }
           Map<String, Long> rowCounts = storageHandler.getRowCount(tbl, partNames);
-          if (rowCounts == null || rowCounts.size() != partNames.size()) {
+          if (rowCounts.size() != partNames.size()) {
             // the rewrite substitutes a constant, so it needs an exact count for every partition
             return null;
           }
