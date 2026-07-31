@@ -55,17 +55,27 @@ public class HiveJdbcSamlRedirectStrategy extends DefaultRedirectStrategy {
       final HttpContext context) throws ProtocolException {
     int status = response.getCode();
     if (status == HttpStatus.SC_MOVED_TEMPORARILY || status == HttpStatus.SC_SEE_OTHER) {
-      URI locationUri = null;
-      try {
-        locationUri = getLocationURI(request, response, context);
-      } catch (HttpException e) {
-        throw new ProtocolException(e.getMessage(), e);
-      }
+      // Only the HS2-originated SAML redirect carries the SSO_CLIENT_IDENTIFIER header.
+      // When we see it, capture the redirect location + identifier for the browser
+      // client, then return false so httpclient5 does NOT transparently follow the
+      // redirect. Letting the 302 propagate back to THttpClient is what allows
+      // HiveConnection.isSamlRedirect() to detect it and drive the browser SSO flow.
+      // For any other 302/303 (intermediate IDP redirects, unrelated traffic) fall
+      // through to the superclass's default handling.
       Header clientIdentifier = response
           .getFirstHeader(HiveSamlUtils.SSO_CLIENT_IDENTIFIER);
-      IJdbcBrowserClient.JdbcBrowserClientContext browserClientContext = new JdbcBrowserClientContext(
-          locationUri, clientIdentifier.getValue());
-      browserClient.init(browserClientContext);
+      if (clientIdentifier != null) {
+        URI locationUri;
+        try {
+          locationUri = getLocationURI(request, response, context);
+        } catch (HttpException e) {
+          throw new ProtocolException(e.getMessage(), e);
+        }
+        IJdbcBrowserClient.JdbcBrowserClientContext browserClientContext = new JdbcBrowserClientContext(
+            locationUri, clientIdentifier.getValue());
+        browserClient.init(browserClientContext);
+        return false;
+      }
     }
     return super.isRedirected(request, response, context);
   }
