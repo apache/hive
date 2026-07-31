@@ -21,6 +21,9 @@ package org.apache.hadoop.hive.metastore;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
+import java.sql.SQLNonTransientConnectionException;
+import java.sql.SQLRecoverableException;
+import java.sql.SQLTransientConnectionException;
 import java.sql.SQLTransactionRollbackException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -215,6 +218,27 @@ public class DatabaseProduct implements Configurable {
   public static boolean isRecoverableException(Throwable t) {
     return Stream.of(unrecoverableExceptions)
                  .allMatch(ex -> ExceptionUtils.indexOfType(t, ex) < 0);
+  }
+
+  public static boolean isConnectionException(Throwable t) {
+    while (t != null) {
+      if (t instanceof SQLNonTransientConnectionException
+          || t instanceof SQLRecoverableException
+          || t instanceof SQLTransientConnectionException) {
+        return true;
+      }
+      if (t instanceof SQLException sqlException) {
+        for (SQLException current = sqlException; current != null;
+            current = current.getNextException()) {
+          String sqlState = current.getSQLState();
+          if (sqlState != null && sqlState.startsWith("08")) {
+            return true;
+          }
+        }
+      }
+      t = t.getCause();
+    }
+    return false;
   }
 
   public final boolean isDERBY() {
