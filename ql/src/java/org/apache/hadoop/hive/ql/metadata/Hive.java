@@ -24,7 +24,6 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -225,7 +224,6 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Map;
 import java.util.Optional;
@@ -290,8 +288,8 @@ public class Hive implements AutoCloseable {
    * Azure schemes are included unconditionally — a false positive costs only a slightly longer
    * filename, whereas a false negative would be silent data loss.
    */
-  private static final Set<String> NON_ATOMIC_RENAME_SCHEMES =
-      ImmutableSet.of("s3a", "s3n", "s3", "gs", "abfs", "abfss", "wasb", "wasbs");
+  public static final Set<String> NON_ATOMIC_RENAME_SCHEMES = new HashSet<>(
+      Arrays.asList("s3a", "s3n", "s3", "gs", "abfs", "abfss", "wasb", "wasbs"));
 
   private HiveConf conf = null;
   private IMetaStoreClient metaStoreClient;
@@ -5261,8 +5259,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
     Path destFilePath = new Path(destDirPath, taskId == -1 ? fullName : name);
 
     final String uniqueCopySuffix =
-        // only apply the unique suffix in case of files, as it's supposed to handle file name collisions
-        // when mvFile is called with a directory, we can fallback to the original logic
+        // Only apply the unique suffix in case of files, as it's supposed to handle file name collisions.
+        // When mvFile is called with a directory, we can fall back to the original logic.
         (taskId == -1 && isRenameAllowed && !isOverwrite && sourceFs.getFileStatus(sourcePath).isFile()
             && isNonAtomicRenameFs(destFs))
             ? computeUniquenessTag(conf)

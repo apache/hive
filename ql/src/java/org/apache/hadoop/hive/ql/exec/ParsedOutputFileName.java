@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
  * 00001_02_copy_1                            (numeric copy suffix, HDFS-style)
  * 00001_02_copy_1.gz
  * 00001_02_copy_abcd1234deadbeef             (per-query uniqueness tag as copy suffix,
- *                                             used on unstable-rename filesystems)
+ *                                             used on non-atomic-rename filesystems)
  * 00001_02_copy_abcd1234deadbeef.gz
  * <p>
  * All the components are here:
@@ -113,7 +113,7 @@ public class ParsedOutputFileName {
 
   /**
    * @return the copy suffix: either a numeric counter (HDFS-style) or an 8-hex per-query
-   *         uniqueness tag (used on unstable-rename filesystems), or {@code null} when the
+   *         uniqueness tag (used on non-atomic-rename filesystems), or {@code null} when the
    *         filename has no copy suffix.
    */
   public String getCopyIndex() {
