@@ -728,7 +728,7 @@ public class DagUtils {
       }
       finalOpts = logLevel + " " + MRHelpers.getJavaOptsForMRMapper(conf);
     }
-    finalOpts += JavaVersionUtils.getAddOpensFlagsIfNeeded();
+    finalOpts += JavaVersionUtils.getAddOpensFlags();
     LOG.debug("Tez container final opts: {}", finalOpts);
     return finalOpts;
   }
