@@ -255,10 +255,6 @@
     </dependency>
     <dependency>
       <groupId>org.apache.thrift</groupId>
-      <artifactId>libfb303</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.thrift</groupId>
       <artifactId>libthrift</artifactId>
       <version>${libthrift.version}</version>
     </dependency>
