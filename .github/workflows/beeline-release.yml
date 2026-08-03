@@ -45,7 +45,7 @@ jobs:
             artifact_glob: beeline/target/installer/x64/*.deb
           - os: windows-latest
             label: windows-x64
-            artifact_glob: beeline/target/installer/x64/*.exe
+            artifact_glob: beeline/target/installer/x64/*.msi
 
     runs-on: ${{ matrix.os }}
     # Bounds total job time (queue + execution). Notably guards against macos-13
