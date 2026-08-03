@@ -48,11 +48,6 @@ public record SearchOptions(Configuration configuration) {
   public static final String SEMANTIC_SEGMENT_MAX = "metastore.search.semantic.segments.max";
   public static final int SEMANTIC_SEGMENT_MAX_DEFAULT = 4;
 
-  /** Soft char limit per segment; keep below embedder {@code maxSeqLen} in token count. */
-  public static final String SEMANTIC_SEGMENT_MAX_CHARS = "metastore.search.semantic.segments.maxChars";
-  /** Default assumes ~4 chars/token and 512 maxSeqLen (incl. special tokens). */
-  public static final int SEMANTIC_SEGMENT_MAX_CHARS_DEFAULT = 1800;
-
   public static final String BAYESIAN_SEED = "metastore.search.bayesian.seed";
   public static final long BAYESIAN_SEED_DEFAULT = 42L;
 
@@ -106,6 +101,8 @@ public record SearchOptions(Configuration configuration) {
   }
 
   public int getSemanticSegmentMaxChars() {
-    return Math.max(256, configuration.getInt(SEMANTIC_SEGMENT_MAX_CHARS, SEMANTIC_SEGMENT_MAX_CHARS_DEFAULT));
+    InferenceOptions options = new InferenceOptions(configuration);
+    // Default assumes ~4 chars/token
+    return Math.max(256,  options.maxSequenceLength() * 4);
   }
 }

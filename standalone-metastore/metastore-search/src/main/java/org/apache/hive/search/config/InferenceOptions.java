@@ -46,6 +46,10 @@ public record InferenceOptions(Configuration configuration) {
   /** ONNX graph output tensor for token embeddings */
   public static final String EMBEDDER_MODEL_OUTPUT_NAME = "metastore.inference.embedder.onnx.model-output-name";
 
+  public static final String EMBEDDER_MAX_SEQUENCE = "metastore.inference.embedder.maxSequence";
+
+  public static final int EMBEDDER_MAX_SEQUENCE_DEFAULT = 510;
+
   public EmbedderSpec spec() throws InitializeException, IOException {
     String name = embedderName();
     if (StringUtils.isEmpty(name)) {
@@ -99,4 +103,7 @@ public record InferenceOptions(Configuration configuration) {
     return configuration.get(EMBEDDER_NAME);
   }
 
+  public int maxSequenceLength() {
+    return configuration.getInt(EMBEDDER_MAX_SEQUENCE, EMBEDDER_MAX_SEQUENCE_DEFAULT);
+  }
 }
