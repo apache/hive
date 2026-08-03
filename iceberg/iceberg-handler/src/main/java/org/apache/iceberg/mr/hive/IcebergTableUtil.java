@@ -483,12 +483,12 @@ public class IcebergTableUtil {
   }
 
   /**
-   * Returns the partition name of the given tuple, or {@link DummyPartition#UNPARTITIONED} for the empty
+   * Returns the partition name of the given tuple, or {@link DummyPartition#VOID} for the empty
    * name an unpartitioned spec renders. Statistics and partition pruning join on this name, so both must
    * render it the same way.
    */
   static String toPartitionName(PartitionSpec spec, PartitionData data) {
-    return StringUtils.defaultIfEmpty(spec.partitionToPath(data), DummyPartition.UNPARTITIONED);
+    return StringUtils.defaultIfEmpty(spec.partitionToPath(data), DummyPartition.VOID);
   }
 
   /**

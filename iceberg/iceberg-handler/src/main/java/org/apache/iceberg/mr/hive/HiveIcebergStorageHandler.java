@@ -935,7 +935,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     if (snapshot == null) {
       return Map.of();
     }
-    if (partNames.stream().anyMatch(DummyPartition::isUnpartitioned)) {
+    if (partNames.stream().anyMatch(DummyPartition::isVoid)) {
       // rows that belong to no partition are never pruned, so their count may include rows the predicate
       // does not select
       return Map.of();

@@ -570,7 +570,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     // the partition stats file accounts for the legacy rows too, under the empty partition tuple
     Map<String, PartitionStatistics> fileStats =
         IcebergTableUtil.readPartitionStats(icebergTable, icebergTable.currentSnapshot());
-    Assert.assertEquals(3L, fileStats.get(DummyPartition.UNPARTITIONED).dataRecordCount().longValue());
+    Assert.assertEquals(3L, fileStats.get(DummyPartition.VOID).dataRecordCount().longValue());
 
     // column stats blobs are written for the physical partitions only: values existing solely among the
     // legacy unpartitioned rows (Green, Pink) get no blob
@@ -597,12 +597,12 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
 
     // planner basic stats answer the requested partitions and carry the legacy rows as an extra entry
     List<String> statNames = Lists.newArrayList(partNames);
-    statNames.add(DummyPartition.UNPARTITIONED);
+    statNames.add(DummyPartition.VOID);
     Map<String, Map<String, String>> aggr = handler.getAggrBasicStatsFor(hmsTable, statNames);
     Assert.assertEquals(statNames.size(), aggr.size());
     partNames.forEach(name -> Assert.assertEquals("1", aggr.get(name).get(StatsSetupConst.ROW_COUNT)));
     Assert.assertEquals("3",
-        aggr.get(DummyPartition.UNPARTITIONED).get(StatsSetupConst.ROW_COUNT));
+        aggr.get(DummyPartition.VOID).get(StatsSetupConst.ROW_COUNT));
 
     // an unpruned scan plans with the table-level statistics; a pruned scan sums the matched partitions
     // and the synthetic partition, which the pruner keeps whenever a legacy file survives file-level pruning
@@ -632,7 +632,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
 
     // the synthetic partition cannot answer a predicate exactly, so a pruned list holding it is refused
     List<String> withPseudo = Lists.newArrayList(partNames);
-    withPseudo.add(DummyPartition.UNPARTITIONED);
+    withPseudo.add(DummyPartition.VOID);
     Assert.assertTrue(handler.getRowCount(hmsTable, withPseudo).isEmpty());
     // without it the partition counts are exact
     Assert.assertEquals(partNames.size(), handler.getRowCount(hmsTable, partNames).size());

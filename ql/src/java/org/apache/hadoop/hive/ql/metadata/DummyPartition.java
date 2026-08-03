@@ -40,10 +40,10 @@ public class DummyPartition extends Partition {
    * Name of the synthetic partition holding the rows that belong to no partition, e.g. data written
    * before the table was partitioned. Its partition spec is empty, so no predicate can exclude it.
    */
-  public static final String UNPARTITIONED = "__UNPARTITIONED__";
+  public static final String VOID = "__NO_PARTITION__";
 
-  public static boolean isUnpartitioned(String partName) {
-    return UNPARTITIONED.equals(partName);
+  public static boolean isVoid(String partName) {
+    return VOID.equals(partName);
   }
 
   private String name;
