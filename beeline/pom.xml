@@ -347,7 +347,7 @@
                      bundle). MSI is the format enterprise deployment tooling
                      (Group Policy, Intune, SCCM, Ansible win_package) expects,
                      and its WiX customization surface is easier to extend
-                     later (e.g. a PATH environment fragment via --resource-dir).
+                     later (e.g. a PATH environment fragment via resource-dir).
     -->
     <profile>
       <id>windows-installer</id>
