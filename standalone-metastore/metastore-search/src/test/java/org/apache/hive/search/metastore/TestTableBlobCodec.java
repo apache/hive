@@ -82,4 +82,50 @@ public class TestTableBlobCodec {
     byte[] encoded = TableBlobCodec.encode(table);
     assertFalse(encoded.length == 0);
   }
+
+  @Test
+  public void excludePatternsDropMatchingTableParameters() throws Exception {
+    Table table = new Table();
+    table.setCatName("hive");
+    table.setDbName("sales");
+    table.setTableName("orders");
+    Map<String, String> params = new HashMap<>();
+    params.put("comment", "keep me");
+    params.put("spark.sql.sources.schema", "huge-schema-payload");
+    table.setParameters(params);
+
+    Table decoded = TableBlobCodec.decode(
+        TableBlobCodec.encode(table, List.of("spark\\.sql\\.sources\\..*")));
+
+    assertEquals("keep me", decoded.getParameters().get("comment"));
+    assertFalse(decoded.getParameters().containsKey("spark.sql.sources.schema"));
+  }
+
+  @Test
+  public void excludePatternsDropMatchingStorageDescriptorParameters() throws Exception {
+    Table table = new Table();
+    table.setCatName("hive");
+    table.setDbName("default");
+    table.setTableName("t");
+    table.setSd(new StorageDescriptor());
+    table.getSd().setParameters(Map.of("keep", "yes", "spark.statistics", "big"));
+
+    Table decoded = TableBlobCodec.decode(
+        TableBlobCodec.encode(table, List.of("^spark\\..*")));
+
+    assertEquals("yes", decoded.getSd().getParameters().get("keep"));
+    assertFalse(decoded.getSd().getParameters().containsKey("spark.statistics"));
+  }
+
+  @Test
+  public void excludePatternsDoNotMutateSourceTable() throws Exception {
+    Table table = new Table();
+    table.setCatName("hive");
+    table.setDbName("default");
+    table.setTableName("t");
+    table.setParameters(new HashMap<>(Map.of("drop.me", "value")));
+
+    TableBlobCodec.encode(table, List.of("drop\\.me"));
+    assertEquals("value", table.getParameters().get("drop.me"));
+  }
 }

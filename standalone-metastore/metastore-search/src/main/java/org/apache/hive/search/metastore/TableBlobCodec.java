@@ -20,10 +20,14 @@ package org.apache.hive.search.metastore;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.regex.PatternSyntaxException;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.transport.TIOStreamTransport;
@@ -33,16 +37,48 @@ import org.slf4j.LoggerFactory;
 /** Gzip-compressed Thrift compact encoding of {@link Table}. */
 public final class TableBlobCodec {
   private static final Logger LOG = LoggerFactory.getLogger(TableBlobCodec.class);
+
   private TableBlobCodec() {}
 
   public static byte[] encode(Table table) {
+    return encode(table, List.of());
+  }
+
+  public static byte[] encode(Table table, List<String> excludePatterns) {
     try {
+      Table toEncode = prepareTableForEncode(table, excludePatterns);
       ByteArrayOutputStream raw = new ByteArrayOutputStream();
-      table.write(new TCompactProtocol(new TIOStreamTransport(raw)));
+      toEncode.write(new TCompactProtocol(new TIOStreamTransport(raw)));
       return gzip(raw.toByteArray());
     } catch (IOException | TException e) {
       LOG.warn("Error serializing the table, message: {}, this shouldn't happen", e.getMessage(), e);
       return null;
+    }
+  }
+
+  static Table prepareTableForEncode(Table table, List<String> excludePatterns) {
+    if (excludePatterns == null || excludePatterns.isEmpty()) {
+      return table;
+    }
+    try {
+      List<Predicate<String>> predicates = MetaStoreUtils.compilePatternsToPredicates(excludePatterns);
+      Table copy = table.deepCopy();
+      stripMatchingParameters(copy, predicates);
+      return copy;
+    } catch (PatternSyntaxException e) {
+      LOG.warn("Invalid parameter exclude pattern; encoding table without filtering", e);
+      return table;
+    }
+  }
+
+  private static void stripMatchingParameters(Table table, List<Predicate<String>> predicates) {
+    MetaStoreUtils.filterMapkeys(table.getParameters(), predicates);
+    if (table.getSd() == null) {
+      return;
+    }
+    MetaStoreUtils.filterMapkeys(table.getSd().getParameters(), predicates);
+    if (table.getSd().getSerdeInfo() != null) {
+      MetaStoreUtils.filterMapkeys(table.getSd().getSerdeInfo().getParameters(), predicates);
     }
   }
 

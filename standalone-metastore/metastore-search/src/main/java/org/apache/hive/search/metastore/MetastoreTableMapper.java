@@ -95,7 +95,8 @@ public final class MetastoreTableMapper {
     for (int i = 0; i < searchSegments.size(); i++) {
       fields.add(new TextField(SearchTextSegment.segmentField(i), searchSegments.get(i)));
     }
-    fields.add(new BinaryField(FIELD_TABLE_BLOB, TableBlobCodec.encode(table)));
+    fields.add(new BinaryField(FIELD_TABLE_BLOB,
+        TableBlobCodec.encode(table, indexMapping.config().parameterExcludePatterns())));
     return new TableDocument(new IdField("_id", id), fields, indexMapping);
   }
 

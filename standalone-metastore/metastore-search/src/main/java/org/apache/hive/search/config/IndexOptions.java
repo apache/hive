@@ -18,6 +18,8 @@
 package org.apache.hive.search.config;
 
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -83,6 +85,12 @@ public record IndexOptions(Configuration configuration) {
   /** Poller sleep after index is marked unhealthy (ms). */
   public static final String EVENT_UNHEALTHY_BACKOFF_MS = "metastore.index.event.unhealthy.backoff.ms";
   public static final long EVENT_UNHEALTHY_BACKOFF_MS_DEFAULT = 10 * 60 * 1000L;
+
+  /**
+   * Comma-separated regex patterns; matching parameter keys are dropped from indexed
+   * {@link org.apache.hadoop.hive.metastore.api.Table} blobs.
+   */
+  public static final String PARAMETERS_EXCLUDE_PATTERNS = "metastore.index.parameters.exclude.patterns";
 
   public int getWriteBufferSize() {
     return configuration.getInt(INDEX_RAM_SIZE, INDEX_RAM_SIZE_DEFAULT);
@@ -152,5 +160,16 @@ public record IndexOptions(Configuration configuration) {
   public String indexName() {
     String name = configuration.get(INDEX_NAME);
     return StringUtils.isEmpty(name) ? INDEX_NAME_DEFAULT : name;
+  }
+
+  public List<String> parameterExcludePatterns() {
+    String raw = configuration.get(PARAMETERS_EXCLUDE_PATTERNS, "");
+    if (StringUtils.isBlank(raw)) {
+      return List.of();
+    }
+    return Arrays.stream(StringUtils.split(raw, ','))
+        .map(String::trim)
+        .filter(pattern -> !pattern.isEmpty())
+        .toList();
   }
 }
