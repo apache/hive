@@ -23,8 +23,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.time.Duration;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @Category(MetastoreUnitTest.class)
 public class TestIndexOptions {
@@ -45,5 +47,18 @@ public class TestIndexOptions {
     IndexOptions config = new IndexOptions(conf);
     assertEquals("custom_index", config.indexName());
     assertEquals(500, config.getBootstrapBatchSize());
+  }
+
+  @Test
+  public void parameterExcludePatternsParsesCommaSeparatedRegexes() {
+    Configuration conf = new Configuration(false);
+    conf.set(IndexOptions.PARAMETERS_EXCLUDE_PATTERNS, " ^spark\\..* , transient_.* ");
+    IndexOptions config = new IndexOptions(conf);
+    assertEquals(List.of("^spark\\..*", "transient_.*"), config.parameterExcludePatterns());
+  }
+
+  @Test
+  public void parameterExcludePatternsEmptyWhenUnset() {
+    assertTrue(new IndexOptions(new Configuration(false)).parameterExcludePatterns().isEmpty());
   }
 }
