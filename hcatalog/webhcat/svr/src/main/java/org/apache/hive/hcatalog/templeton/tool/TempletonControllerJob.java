@@ -124,7 +124,7 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
       conf.set(AppConfig.HADOOP_MR_AM_MEMORY_MB, amMemoryMB);
     }
     String amJavaOpts = StringUtils.defaultString(appConf.controllerAMChildOpts());
-    amJavaOpts += JavaVersionUtils.getAddOpensFlagsIfNeeded();
+    amJavaOpts += JavaVersionUtils.getAddOpensFlags();
     if (!amJavaOpts.isEmpty()) {
       conf.set(AppConfig.HADOOP_MR_AM_JAVA_OPTS, amJavaOpts);
     }
