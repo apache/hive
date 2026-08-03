@@ -62,7 +62,7 @@ public class TestHiveMetastoreHttpHeaders {
       HttpClientBuilder builder = super.createHttpClientBuilder();
       builder.addRequestInterceptorLast(new HttpRequestInterceptor() {
         @Override
-        public void process(HttpRequest httpRequest, EntityDetails entity, HttpContext httpContext) throws HttpException, IOException {
+        public void process(HttpRequest httpRequest, EntityDetails entity, HttpContext httpContext) {
           Header header1 = httpRequest.getFirstHeader(testHeaderKey1);
           Assert.assertEquals(testHeaderVal1, header1.getValue());
           Header header2 = httpRequest.getFirstHeader(testHeaderKey2);

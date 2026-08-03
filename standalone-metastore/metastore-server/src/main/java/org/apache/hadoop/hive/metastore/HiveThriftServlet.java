@@ -36,7 +36,11 @@ public class HiveThriftServlet extends HttpServlet {
   private final TProtocolFactory inProtocolFactory;
   private final TProtocolFactory outProtocolFactory;
 
-  public HiveThriftServlet(TProcessor processor, TProtocolFactory inProtocolFactory, TProtocolFactory outProtocolFactory) {
+  public HiveThriftServlet(
+      TProcessor processor,
+      TProtocolFactory inProtocolFactory,
+      TProtocolFactory outProtocolFactory
+  ) {
     this.processor = processor;
     this.inProtocolFactory = inProtocolFactory;
     this.outProtocolFactory = outProtocolFactory;
