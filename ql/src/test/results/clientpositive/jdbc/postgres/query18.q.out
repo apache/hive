@@ -96,28 +96,28 @@ STAGE PLANS:
                 TableScan
                   alias: catalog_sales
                   properties:
-                    hive.sql.query SELECT "t1"."cs_sold_date_sk", "t1"."cs_bill_customer_sk", "t1"."cs_bill_cdemo_sk", "t1"."cs_item_sk", "t1"."CAST", "t1"."CAST5", "t1"."CAST6", "t1"."CAST7", "t1"."CAST8", "t4"."d_date_sk", "t7"."cd_demo_sk", "t7"."CAST" AS "CAST0", "t10"."i_item_sk", "t10"."i_item_id", "t20"."c_customer_sk", "t20"."c_current_cdemo_sk", "t20"."c_current_addr_sk", "t20"."CAST" AS "CAST1", "t20"."cd_demo_sk" AS "cd_demo_sk0", "t20"."ca_address_sk", "t20"."ca_county", "t20"."ca_state", "t20"."ca_country"
-FROM (SELECT "cs_sold_date_sk", "cs_bill_customer_sk", "cs_bill_cdemo_sk", "cs_item_sk", CAST("cs_quantity" AS DECIMAL(12, 2)) AS "CAST", CAST("cs_list_price" AS DECIMAL(12, 2)) AS "CAST5", CAST("cs_coupon_amt" AS DECIMAL(12, 2)) AS "CAST6", CAST("cs_sales_price" AS DECIMAL(12, 2)) AS "CAST7", CAST("cs_net_profit" AS DECIMAL(12, 2)) AS "CAST8"
+                    hive.sql.query SELECT "t1"."cs_sold_date_sk", "t1"."cs_bill_customer_sk", "t1"."cs_bill_cdemo_sk", "t1"."cs_item_sk", "t1"."$f4", "t1"."$f5", "t1"."$f6", "t1"."$f7", "t1"."$f8", "t4"."d_date_sk", "t7"."cd_demo_sk", "t7"."$f10", "t10"."i_item_sk", "t10"."i_item_id", "t20"."c_customer_sk", "t20"."c_current_cdemo_sk", "t20"."c_current_addr_sk", "t20"."$f9", "t20"."cd_demo_sk" AS "cd_demo_sk0", "t20"."ca_address_sk", "t20"."ca_county", "t20"."ca_state", "t20"."ca_country"
+FROM (SELECT "cs_sold_date_sk", "cs_bill_customer_sk", "cs_bill_cdemo_sk", "cs_item_sk", CAST("cs_quantity" AS DECIMAL(12, 2)) AS "$f4", CAST("cs_list_price" AS DECIMAL(12, 2)) AS "$f5", CAST("cs_coupon_amt" AS DECIMAL(12, 2)) AS "$f6", CAST("cs_sales_price" AS DECIMAL(12, 2)) AS "$f7", CAST("cs_net_profit" AS DECIMAL(12, 2)) AS "$f8"
 FROM (SELECT "cs_sold_date_sk", "cs_bill_customer_sk", "cs_bill_cdemo_sk", "cs_item_sk", "cs_quantity", "cs_list_price", "cs_sales_price", "cs_coupon_amt", "cs_net_profit"
 FROM "catalog_sales") AS "t"
-WHERE "cs_bill_cdemo_sk" IS NOT NULL AND "cs_bill_customer_sk" IS NOT NULL AND ("cs_sold_date_sk" IS NOT NULL AND "cs_item_sk" IS NOT NULL)) AS "t1"
+WHERE "cs_bill_cdemo_sk" IS NOT NULL AND "cs_bill_customer_sk" IS NOT NULL AND "cs_sold_date_sk" IS NOT NULL AND "cs_item_sk" IS NOT NULL) AS "t1"
 INNER JOIN (SELECT "d_date_sk"
 FROM (SELECT "d_date_sk", "d_year"
 FROM "date_dim") AS "t2"
 WHERE "d_year" = 2001 AND "d_date_sk" IS NOT NULL) AS "t4" ON "t1"."cs_sold_date_sk" = "t4"."d_date_sk"
-INNER JOIN (SELECT "cd_demo_sk", CAST("cd_dep_count" AS DECIMAL(12, 2)) AS "CAST"
+INNER JOIN (SELECT "cd_demo_sk", CAST("cd_dep_count" AS DECIMAL(12, 2)) AS "$f10"
 FROM (SELECT "cd_demo_sk", "cd_gender", "cd_education_status", "cd_dep_count"
 FROM "customer_demographics") AS "t5"
-WHERE "cd_gender" = 'M' AND ("cd_education_status" = 'College' AND "cd_demo_sk" IS NOT NULL)) AS "t7" ON "t1"."cs_bill_cdemo_sk" = "t7"."cd_demo_sk"
+WHERE "cd_gender" = 'M' AND "cd_education_status" = 'College' AND "cd_demo_sk" IS NOT NULL) AS "t7" ON "t1"."cs_bill_cdemo_sk" = "t7"."cd_demo_sk"
 INNER JOIN (SELECT "i_item_sk", "i_item_id"
 FROM (SELECT "i_item_sk", "i_item_id"
 FROM "item") AS "t8"
 WHERE "i_item_sk" IS NOT NULL) AS "t10" ON "t1"."cs_item_sk" = "t10"."i_item_sk"
-INNER JOIN (SELECT "t13"."c_customer_sk", "t13"."c_current_cdemo_sk", "t13"."c_current_addr_sk", "t13"."CAST", "t16"."cd_demo_sk", "t19"."ca_address_sk", "t19"."ca_county", "t19"."ca_state", "t19"."ca_country"
-FROM (SELECT "c_customer_sk", "c_current_cdemo_sk", "c_current_addr_sk", CAST("c_birth_year" AS DECIMAL(12, 2)) AS "CAST"
+INNER JOIN (SELECT "t13"."c_customer_sk", "t13"."c_current_cdemo_sk", "t13"."c_current_addr_sk", "t13"."$f9", "t16"."cd_demo_sk", "t19"."ca_address_sk", "t19"."ca_county", "t19"."ca_state", "t19"."ca_country"
+FROM (SELECT "c_customer_sk", "c_current_cdemo_sk", "c_current_addr_sk", CAST("c_birth_year" AS DECIMAL(12, 2)) AS "$f9"
 FROM (SELECT "c_customer_sk", "c_current_cdemo_sk", "c_current_addr_sk", "c_birth_month", "c_birth_year"
 FROM "customer") AS "t11"
-WHERE "c_birth_month" IN (9, 5, 12, 4, 1, 10) AND "c_customer_sk" IS NOT NULL AND ("c_current_cdemo_sk" IS NOT NULL AND "c_current_addr_sk" IS NOT NULL)) AS "t13"
+WHERE "c_birth_month" IN (1, 4, 5, 9, 10, 12) AND "c_customer_sk" IS NOT NULL AND "c_current_cdemo_sk" IS NOT NULL AND "c_current_addr_sk" IS NOT NULL) AS "t13"
 INNER JOIN (SELECT "cd_demo_sk"
 FROM (SELECT "cd_demo_sk"
 FROM "customer_demographics") AS "t14"
@@ -125,13 +125,13 @@ WHERE "cd_demo_sk" IS NOT NULL) AS "t16" ON "t13"."c_current_cdemo_sk" = "t16"."
 INNER JOIN (SELECT "ca_address_sk", "ca_county", "ca_state", "ca_country"
 FROM (SELECT "ca_address_sk", "ca_county", "ca_state", "ca_country"
 FROM "customer_address") AS "t17"
-WHERE "ca_state" IN ('ND', 'WI', 'AL', 'NC', 'OK', 'MS', 'TN') AND "ca_address_sk" IS NOT NULL) AS "t19" ON "t13"."c_current_addr_sk" = "t19"."ca_address_sk") AS "t20" ON "t1"."cs_bill_customer_sk" = "t20"."c_customer_sk"
-                    hive.sql.query.fieldNames cs_sold_date_sk,cs_bill_customer_sk,cs_bill_cdemo_sk,cs_item_sk,CAST,CAST5,CAST6,CAST7,CAST8,d_date_sk,cd_demo_sk,CAST0,i_item_sk,i_item_id,c_customer_sk,c_current_cdemo_sk,c_current_addr_sk,CAST1,cd_demo_sk0,ca_address_sk,ca_county,ca_state,ca_country
+WHERE "ca_state" IN ('AL', 'MS', 'NC', 'ND', 'OK', 'TN', 'WI') AND "ca_address_sk" IS NOT NULL) AS "t19" ON "t13"."c_current_addr_sk" = "t19"."ca_address_sk") AS "t20" ON "t1"."cs_bill_customer_sk" = "t20"."c_customer_sk"
+                    hive.sql.query.fieldNames cs_sold_date_sk,cs_bill_customer_sk,cs_bill_cdemo_sk,cs_item_sk,$f4,$f5,$f6,$f7,$f8,d_date_sk,cd_demo_sk,$f10,i_item_sk,i_item_id,c_customer_sk,c_current_cdemo_sk,c_current_addr_sk,$f9,cd_demo_sk0,ca_address_sk,ca_county,ca_state,ca_country
                     hive.sql.query.fieldTypes int,int,int,bigint,decimal(12,2),decimal(12,2),decimal(12,2),decimal(12,2),decimal(12,2),int,int,decimal(12,2),bigint,string,int,int,int,decimal(12,2),int,int,string,string,string
                     hive.sql.query.split false
                   Statistics: Num rows: 1 Data size: 1520 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: cast (type: decimal(12,2)), cast5 (type: decimal(12,2)), cast6 (type: decimal(12,2)), cast7 (type: decimal(12,2)), cast8 (type: decimal(12,2)), cast0 (type: decimal(12,2)), i_item_id (type: string), cast1 (type: decimal(12,2)), ca_county (type: string), ca_state (type: string), ca_country (type: string)
+                    expressions: $f4 (type: decimal(12,2)), $f5 (type: decimal(12,2)), $f6 (type: decimal(12,2)), $f7 (type: decimal(12,2)), $f8 (type: decimal(12,2)), $f10 (type: decimal(12,2)), i_item_id (type: string), $f9 (type: decimal(12,2)), ca_county (type: string), ca_state (type: string), ca_country (type: string)
                     outputColumnNames: _col4, _col5, _col6, _col7, _col8, _col11, _col13, _col17, _col20, _col21, _col22
                     Statistics: Num rows: 1 Data size: 1520 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator

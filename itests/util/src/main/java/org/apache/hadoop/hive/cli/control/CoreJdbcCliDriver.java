@@ -21,8 +21,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.hive.cli.control.CoreCliDriver;
 import org.apache.hadoop.hive.cli.control.AbstractCliConfig;
 import org.apache.hadoop.hive.ql.externalDB.AbstractExternalDB;
-import org.apache.hadoop.hive.ql.qoption.QTestDatabaseHandler;
-import org.apache.hadoop.hive.ql.QTestArguments;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -32,14 +30,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class CoreJdbcCliDriver extends CoreCliDriver {
   private AbstractExternalDB externalDB;
   private static final Logger LOG = LoggerFactory.getLogger(CoreJdbcCliDriver.class);
   private boolean externalTablesCreated = false;
-  
+
   public CoreJdbcCliDriver(AbstractCliConfig testCliConfig) {
     super(testCliConfig);
   }
@@ -48,19 +48,17 @@ public class CoreJdbcCliDriver extends CoreCliDriver {
   @BeforeClass
   public void beforeClass() throws Exception {
     super.beforeClass();
-    
-    if (cliConfig.getJdbcInitScript() != null) {
+
+    if (cliConfig instanceof JdbcCliConfig jc) {
       LOG.info("Launching docker container, running jdbc init script...");
-      java.nio.file.Path scriptFile = Paths.get(
-          QTestUtil.getScriptsDir(getQt().getConf()) + File.separator + cliConfig.getJdbcInitScript()
+      Path scriptFile = Paths.get(
+          QTestUtil.getScriptsDir(getQt().getConf()) + File.separator + jc.getJdbcInitScript()
       );
       if (Files.notExists(scriptFile)) {
         LOG.info("No jdbc init script detected. Skipping");
         return;
       }
-      externalDB = QTestDatabaseHandler.DatabaseType.valueOf("POSTGRES").create();
-      externalDB.launchDockerContainer();
-      externalDB.execute(scriptFile.toString());
+      externalDB = getQt().getDatabaseHandler().initDb(jc.getDatabaseType(), scriptFile);
     }
   }
 
@@ -68,17 +66,17 @@ public class CoreJdbcCliDriver extends CoreCliDriver {
   @Before
   public void setUp() throws Exception {
     super.setUp();
-    if (!externalTablesCreated && cliConfig.getExternalTablesForJdbcInitScript() != null) {
+    if (!externalTablesCreated && cliConfig instanceof JdbcCliConfig jc) {
       LOG.info("Running init script for external tables...");
       File scriptFile = new File(
-          QTestUtil.getScriptsDir(getQt().getConf()) + File.separator + 
-              cliConfig.getExternalTablesForJdbcInitScript()
+          QTestUtil.getScriptsDir(getQt().getConf()) + File.separator +
+              jc.getExternalTablesInitScript()
       );
       if (!scriptFile.isFile()) {
         LOG.info("No init script for external tables detected. Skipping");
         return;
       }
-      String initCommands = FileUtils.readFileToString(scriptFile);
+      String initCommands = FileUtils.readFileToString(scriptFile, StandardCharsets.UTF_8);
       getQt().getCliDriver().processLine(initCommands);
       externalTablesCreated = true;
     }
@@ -87,6 +85,7 @@ public class CoreJdbcCliDriver extends CoreCliDriver {
   @Override
   @After
   public void tearDown() throws Exception {
+    // Skip clearTestSideEffects() — external tables must persist across tests in the suite.
     getQt().clearPostTestEffects();
   }
 
@@ -94,11 +93,10 @@ public class CoreJdbcCliDriver extends CoreCliDriver {
   @AfterClass
   public void shutdown() throws Exception {
     LOG.info("Cleaning up...");
-    super.tearDown();
-    super.shutdown();
     if (externalDB != null) {
       LOG.info("Cleaning up docker...");
-      externalDB.cleanupDockerContainer();
+      externalDB.stop();
     }
+    super.shutdown();
   }
 }

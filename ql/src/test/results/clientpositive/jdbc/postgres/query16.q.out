@@ -94,7 +94,7 @@ STAGE PLANS:
 FROM (SELECT "cs_ship_date_sk", "cs_ship_addr_sk", "cs_call_center_sk", "cs_warehouse_sk", "cs_order_number", "cs_ext_ship_cost", "cs_net_profit"
 FROM (SELECT "cs_ship_date_sk", "cs_ship_addr_sk", "cs_call_center_sk", "cs_warehouse_sk", "cs_order_number", "cs_ext_ship_cost", "cs_net_profit"
 FROM "catalog_sales") AS "t"
-WHERE "cs_ship_date_sk" IS NOT NULL AND "cs_ship_addr_sk" IS NOT NULL AND ("cs_call_center_sk" IS NOT NULL AND "cs_order_number" IS NOT NULL)) AS "t1"
+WHERE "cs_ship_date_sk" IS NOT NULL AND "cs_ship_addr_sk" IS NOT NULL AND "cs_call_center_sk" IS NOT NULL AND "cs_order_number" IS NOT NULL) AS "t1"
 INNER JOIN (SELECT "d_date_sk", "d_date"
 FROM (SELECT "d_date_sk", "d_date"
 FROM "date_dim") AS "t2"
@@ -106,7 +106,7 @@ WHERE "ca_state" = 'NY' AND "ca_address_sk" IS NOT NULL) AS "t7" ON "t1"."cs_shi
 INNER JOIN (SELECT "cc_call_center_sk", "cc_county"
 FROM (SELECT "cc_call_center_sk", "cc_county"
 FROM "call_center") AS "t8"
-WHERE "cc_county" IN ('Ziebach County', 'Levy County', 'Huron County', 'Franklin Parish', 'Daviess County') AND "cc_call_center_sk" IS NOT NULL) AS "t10" ON "t1"."cs_call_center_sk" = "t10"."cc_call_center_sk"
+WHERE "cc_county" IN ('Daviess County', 'Franklin Parish', 'Huron County', 'Levy County', 'Ziebach County') AND "cc_call_center_sk" IS NOT NULL) AS "t10" ON "t1"."cs_call_center_sk" = "t10"."cc_call_center_sk"
                     hive.sql.query.fieldNames cs_ship_date_sk,cs_ship_addr_sk,cs_call_center_sk,cs_warehouse_sk,cs_order_number,cs_ext_ship_cost,cs_net_profit,d_date_sk,d_date,ca_address_sk,ca_state,cc_call_center_sk,cc_county
                     hive.sql.query.fieldTypes int,int,int,int,bigint,decimal(7,2),decimal(7,2),int,string,int,string,int,string
                     hive.sql.query.split false

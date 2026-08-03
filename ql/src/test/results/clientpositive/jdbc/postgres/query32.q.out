@@ -75,7 +75,7 @@ STAGE PLANS:
 FROM (SELECT "cs_sold_date_sk", "cs_item_sk", "cs_ext_discount_amt"
 FROM (SELECT "cs_sold_date_sk", "cs_item_sk", "cs_ext_discount_amt"
 FROM "catalog_sales") AS "t"
-WHERE "cs_item_sk" IS NOT NULL AND ("cs_sold_date_sk" IS NOT NULL AND "cs_ext_discount_amt" IS NOT NULL)) AS "t1"
+WHERE "cs_item_sk" IS NOT NULL AND "cs_sold_date_sk" IS NOT NULL AND "cs_ext_discount_amt" IS NOT NULL) AS "t1"
 INNER JOIN (SELECT "i_item_sk"
 FROM (SELECT "i_item_sk", "i_manufact_id"
 FROM "item") AS "t2"

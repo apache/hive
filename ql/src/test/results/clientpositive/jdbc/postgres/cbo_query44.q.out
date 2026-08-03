@@ -74,7 +74,7 @@ POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
 CBO PLAN:
 HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
-  HiveProject(rnk=[$3], best_performing=[$1], worst_performing=[$7])
+  HiveProject(asceding.rnk=[$3], best_performing=[$1], worst_performing=[$7])
     HiveJoin(condition=[=($3, $5)], joinType=[inner], algorithm=[none], cost=[not available])
       HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
         HiveProject(i_item_sk=[$0], i_product_name=[$1])

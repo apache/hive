@@ -141,11 +141,11 @@ STAGE PLANS:
 FROM (SELECT "cs_sold_date_sk", "cs_bill_customer_sk", "cs_item_sk", "cs_quantity", "cs_list_price"
 FROM (SELECT "cs_sold_date_sk", "cs_bill_customer_sk", "cs_item_sk", "cs_quantity", "cs_list_price"
 FROM "catalog_sales") AS "t"
-WHERE "cs_item_sk" IS NOT NULL AND ("cs_bill_customer_sk" IS NOT NULL AND "cs_sold_date_sk" IS NOT NULL)) AS "t1"
+WHERE "cs_item_sk" IS NOT NULL AND "cs_bill_customer_sk" IS NOT NULL AND "cs_sold_date_sk" IS NOT NULL) AS "t1"
 INNER JOIN (SELECT "d_date_sk", "d_year", "d_moy"
 FROM (SELECT "d_date_sk", "d_year", "d_moy"
 FROM "date_dim") AS "t2"
-WHERE "d_year" = 1999 AND ("d_moy" = 1 AND "d_date_sk" IS NOT NULL)) AS "t4" ON "t1"."cs_sold_date_sk" = "t4"."d_date_sk"
+WHERE "d_year" = 1999 AND "d_moy" = 1 AND "d_date_sk" IS NOT NULL) AS "t4" ON "t1"."cs_sold_date_sk" = "t4"."d_date_sk"
                     hive.sql.query.fieldNames cs_sold_date_sk,cs_bill_customer_sk,cs_item_sk,cs_quantity,cs_list_price,d_date_sk,d_year,d_moy
                     hive.sql.query.fieldTypes int,int,bigint,int,decimal(7,2),int,int,int
                     hive.sql.query.split false
@@ -195,8 +195,8 @@ WHERE "i_item_sk" IS NOT NULL
                   alias: store_sales
                   properties:
                     hive.sql.query SELECT "t7"."c_customer_sk"
-FROM (SELECT "t4"."c_customer_sk", SUM("t1"."""*""") AS "$f1"
-FROM (SELECT "ss_customer_sk", CAST("ss_quantity" AS DECIMAL(10, 0)) * "ss_sales_price" AS "*"
+FROM (SELECT "t4"."c_customer_sk", SUM("t1"."$f1") AS "$f1"
+FROM (SELECT "ss_customer_sk", CAST("ss_quantity" AS DECIMAL(10, 0)) * "ss_sales_price" AS "$f1"
 FROM (SELECT "ss_customer_sk", "ss_quantity", "ss_sales_price"
 FROM "store_sales") AS "t"
 WHERE "ss_customer_sk" IS NOT NULL) AS "t1"
@@ -205,10 +205,10 @@ FROM (SELECT "c_customer_sk"
 FROM "customer") AS "t2"
 WHERE "c_customer_sk" IS NOT NULL) AS "t4" ON "t1"."ss_customer_sk" = "t4"."c_customer_sk"
 GROUP BY "t4"."c_customer_sk"
-HAVING SUM("t1"."""*""") IS NOT NULL) AS "t7"
-INNER JOIN (SELECT 0.95 * MAX("t17"."$f1") AS "*"
-FROM (SELECT "t13"."c_customer_sk", SUM("t10"."""*""") AS "$f1"
-FROM (SELECT "ss_sold_date_sk", "ss_customer_sk", CAST("ss_quantity" AS DECIMAL(10, 0)) * "ss_sales_price" AS "*"
+HAVING SUM("t1"."$f1") IS NOT NULL) AS "t7"
+INNER JOIN (SELECT 0.95 * MAX("t17"."$f1") AS "EXPR$0"
+FROM (SELECT "t13"."c_customer_sk", SUM("t10"."$f1") AS "$f1"
+FROM (SELECT "ss_sold_date_sk", "ss_customer_sk", CAST("ss_quantity" AS DECIMAL(10, 0)) * "ss_sales_price" AS "$f1"
 FROM (SELECT "ss_sold_date_sk", "ss_customer_sk", "ss_quantity", "ss_sales_price"
 FROM "store_sales") AS "t8"
 WHERE "ss_customer_sk" IS NOT NULL AND "ss_sold_date_sk" IS NOT NULL) AS "t10"
@@ -221,7 +221,7 @@ FROM (SELECT "d_date_sk", "d_year"
 FROM "date_dim") AS "t14"
 WHERE "d_year" IN (1999, 2000, 2001, 2002) AND "d_date_sk" IS NOT NULL) AS "t16" ON "t10"."ss_sold_date_sk" = "t16"."d_date_sk"
 GROUP BY "t13"."c_customer_sk") AS "t17"
-HAVING MAX("t17"."$f1") IS NOT NULL) AS "t20" ON "t7"."$f1" > "t20"."""*"""
+HAVING MAX("t17"."$f1") IS NOT NULL) AS "t20" ON "t7"."$f1" > "t20"."EXPR$0"
                     hive.sql.query.fieldNames c_customer_sk
                     hive.sql.query.fieldTypes int
                     hive.sql.query.split false
@@ -259,11 +259,11 @@ HAVING MAX("t17"."$f1") IS NOT NULL) AS "t20" ON "t7"."$f1" > "t20"."""*"""
 FROM (SELECT "ws_sold_date_sk", "ws_item_sk", "ws_bill_customer_sk", "ws_quantity", "ws_list_price"
 FROM (SELECT "ws_sold_date_sk", "ws_item_sk", "ws_bill_customer_sk", "ws_quantity", "ws_list_price"
 FROM "web_sales") AS "t"
-WHERE "ws_item_sk" IS NOT NULL AND ("ws_bill_customer_sk" IS NOT NULL AND "ws_sold_date_sk" IS NOT NULL)) AS "t1"
+WHERE "ws_item_sk" IS NOT NULL AND "ws_bill_customer_sk" IS NOT NULL AND "ws_sold_date_sk" IS NOT NULL) AS "t1"
 INNER JOIN (SELECT "d_date_sk", "d_year", "d_moy"
 FROM (SELECT "d_date_sk", "d_year", "d_moy"
 FROM "date_dim") AS "t2"
-WHERE "d_year" = 1999 AND ("d_moy" = 1 AND "d_date_sk" IS NOT NULL)) AS "t4" ON "t1"."ws_sold_date_sk" = "t4"."d_date_sk"
+WHERE "d_year" = 1999 AND "d_moy" = 1 AND "d_date_sk" IS NOT NULL) AS "t4" ON "t1"."ws_sold_date_sk" = "t4"."d_date_sk"
                     hive.sql.query.fieldNames ws_sold_date_sk,ws_item_sk,ws_bill_customer_sk,ws_quantity,ws_list_price,d_date_sk,d_year,d_moy
                     hive.sql.query.fieldTypes int,bigint,int,int,decimal(7,2),int,int,int
                     hive.sql.query.split false

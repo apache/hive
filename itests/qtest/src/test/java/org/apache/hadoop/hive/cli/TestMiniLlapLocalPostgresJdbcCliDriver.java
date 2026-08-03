@@ -31,8 +31,8 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
-public class TestMiniLlapLocalJdbcCliDriver {
-  static CliAdapter adapter = new CliConfigs.MiniLlapLocalJdbcCliConfig().getCliAdapter();
+public class TestMiniLlapLocalPostgresJdbcCliDriver {
+  static CliAdapter adapter = new CliConfigs.MiniLlapLocalPostgresJdbcCliConfig().getCliAdapter();
 
   @Parameters(name = "{0}")
   public static List<Object[]> getParameters() throws Exception {
@@ -48,7 +48,7 @@ public class TestMiniLlapLocalJdbcCliDriver {
   private String name;
   private File qfile;
 
-  public TestMiniLlapLocalJdbcCliDriver(String name, File qfile) {
+  public TestMiniLlapLocalPostgresJdbcCliDriver(String name, File qfile) {
     this.name = name;
     this.qfile = qfile;
   }

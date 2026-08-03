@@ -1,8 +1,8 @@
-Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-Warning: Shuffle Join MERGEJOIN[31][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
-Warning: Shuffle Join MERGEJOIN[33][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4]] in Stage 'Reducer 5' is a cross product
-Warning: Shuffle Join MERGEJOIN[34][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5]] in Stage 'Reducer 6' is a cross product
+Warning: Shuffle Join MERGEJOIN[29][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[31][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4]] in Stage 'Reducer 5' is a cross product
+Warning: Shuffle Join MERGEJOIN[33][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5]] in Stage 'Reducer 6' is a cross product
 PREHOOK: query: explain cbo
 select  *
 from (select avg(ss_list_price) B1_LP
@@ -112,20 +112,19 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(b1_lp=[$0], b1_cnt=[$1], b1_cntd=[$2], b2_lp=[$15], b2_cnt=[$16], b2_cntd=[$17], b3_lp=[$12], b3_cnt=[$13], b3_cntd=[$14], b4_lp=[$9], b4_cnt=[$10], b4_cntd=[$11], b5_lp=[$6], b5_cnt=[$7], b5_cntd=[$8], b6_lp=[$3], b6_cnt=[$4], b6_cntd=[$5])
+HiveProject(b1.b1_lp=[$0], b1.b1_cnt=[$1], b1.b1_cntd=[$2], b2.b2_lp=[$15], b2.b2_cnt=[$16], b2.b2_cntd=[$17], b3.b3_lp=[$12], b3.b3_cnt=[$13], b3.b3_cntd=[$14], b4.b4_lp=[$9], b4.b4_cnt=[$10], b4.b4_cntd=[$11], b5.b5_lp=[$6], b5.b5_cnt=[$7], b5.b5_cntd=[$8], b6.b6_lp=[$3], b6.b6_cnt=[$4], b6.b6_cntd=[$5])
   HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
     HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
       HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
         HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
           HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
             HiveProject(b1_lp=[$0], b1_cnt=[$1], b1_cntd=[$2])
-              HiveProject(b1_lp=[$0], b1_cnt=[$1], b1_cntd=[$2])
-                HiveJdbcConverter(convention=[JDBC.POSTGRES])
-                  JdbcProject(b1_lp=[CAST(/($0, $1)):DECIMAL(11, 6)], b1_cnt=[$1], b1_cntd=[$2])
-                    JdbcAggregate(group=[{}], agg#0=[sum($2)], agg#1=[count($2)], agg#2=[count(DISTINCT $2)])
-                      JdbcFilter(condition=[AND(OR(BETWEEN(false, $2, 11:DECIMAL(12, 2), 21:DECIMAL(12, 2)), BETWEEN(false, $3, 460:DECIMAL(12, 2), 1460:DECIMAL(12, 2)), BETWEEN(false, $1, 14:DECIMAL(12, 2), 34:DECIMAL(12, 2))), BETWEEN(false, $0, 0, 5))])
-                        JdbcProject(ss_quantity=[$10], ss_wholesale_cost=[$11], ss_list_price=[$12], ss_coupon_amt=[$19])
-                          JdbcHiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+              HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                JdbcProject(b1_lp=[CAST(/($0, $1)):DECIMAL(11, 6)], b1_cnt=[$1], b1_cntd=[$2])
+                  JdbcAggregate(group=[{}], agg#0=[sum($2)], agg#1=[count($2)], agg#2=[count(DISTINCT $2)])
+                    JdbcFilter(condition=[AND(OR(BETWEEN(false, $2, 11:DECIMAL(12, 2), 21:DECIMAL(12, 2)), BETWEEN(false, $3, 460:DECIMAL(12, 2), 1460:DECIMAL(12, 2)), BETWEEN(false, $1, 14:DECIMAL(12, 2), 34:DECIMAL(12, 2))), BETWEEN(false, $0, 0, 5))])
+                      JdbcProject(ss_quantity=[$10], ss_wholesale_cost=[$11], ss_list_price=[$12], ss_coupon_amt=[$19])
+                        JdbcHiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
             HiveProject(b6_lp=[$0], b6_cnt=[$1], b6_cntd=[$2])
               HiveJdbcConverter(convention=[JDBC.POSTGRES])
                 JdbcProject(b6_lp=[CAST(/($0, $1)):DECIMAL(11, 6)], b6_cnt=[$1], b6_cntd=[$2])

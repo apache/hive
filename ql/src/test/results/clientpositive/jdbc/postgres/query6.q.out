@@ -88,7 +88,7 @@ WHERE "d_date_sk" IS NOT NULL AND "d_month_seq" IS NOT NULL) AS "t1"
 INNER JOIN (SELECT "d_month_seq"
 FROM (SELECT "d_month_seq", "d_year", "d_moy"
 FROM "date_dim") AS "t2"
-WHERE "d_year" = 2000 AND ("d_moy" = 2 AND "d_month_seq" IS NOT NULL)
+WHERE "d_year" = 2000 AND "d_moy" = 2 AND "d_month_seq" IS NOT NULL
 GROUP BY "d_month_seq") AS "t4" ON "t1"."d_month_seq" = "t4"."d_month_seq"
                     hive.sql.query.fieldNames d_date_sk,d_month_seq,d_month_seq0
                     hive.sql.query.fieldTypes int,int,int
@@ -193,7 +193,7 @@ GROUP BY "d_month_seq") AS "t1"
                     hive.sql.query SELECT "ss_sold_date_sk", "ss_item_sk", "ss_customer_sk"
 FROM (SELECT "ss_sold_date_sk", "ss_item_sk", "ss_customer_sk"
 FROM "store_sales") AS "t"
-WHERE "ss_customer_sk" IS NOT NULL AND ("ss_sold_date_sk" IS NOT NULL AND "ss_item_sk" IS NOT NULL)
+WHERE "ss_customer_sk" IS NOT NULL AND "ss_sold_date_sk" IS NOT NULL AND "ss_item_sk" IS NOT NULL
                     hive.sql.query.fieldNames ss_sold_date_sk,ss_item_sk,ss_customer_sk
                     hive.sql.query.fieldTypes int,bigint,int
                     hive.sql.query.split true
@@ -216,18 +216,18 @@ WHERE "ss_customer_sk" IS NOT NULL AND ("ss_sold_date_sk" IS NOT NULL AND "ss_it
                 TableScan
                   alias: i
                   properties:
-                    hive.sql.query SELECT "t1"."i_item_sk", "t1"."i_current_price", "t1"."i_category", "t6"."i_category" AS "i_category0", "t6"."""*""" AS "*"
+                    hive.sql.query SELECT "t1"."i_item_sk", "t1"."i_current_price", "t1"."i_category", "t6"."i_category" AS "i_category0", "t6"."EXPR$0"
 FROM (SELECT "i_item_sk", "i_current_price", "i_category"
 FROM (SELECT "i_item_sk", "i_current_price", "i_category"
 FROM "item") AS "t"
-WHERE "i_item_sk" IS NOT NULL AND ("i_category" IS NOT NULL AND "i_current_price" IS NOT NULL)) AS "t1"
-INNER JOIN (SELECT "i_category", 1.2 * CAST(CAST(SUM("i_current_price") / COUNT("i_current_price") AS DECIMAL(11, 6)) AS DECIMAL(16, 6)) AS "*"
+WHERE "i_item_sk" IS NOT NULL AND "i_category" IS NOT NULL AND "i_current_price" IS NOT NULL) AS "t1"
+INNER JOIN (SELECT "i_category", 1.2 * CAST(CAST(SUM("i_current_price") / COUNT("i_current_price") AS DECIMAL(11, 6)) AS DECIMAL(16, 6)) AS "EXPR$0"
 FROM (SELECT "i_current_price", "i_category"
 FROM "item") AS "t2"
 WHERE "i_category" IS NOT NULL
 GROUP BY "i_category"
-HAVING CAST(CAST(SUM("i_current_price") / COUNT("i_current_price") AS DECIMAL(11, 6)) AS DECIMAL(16, 6)) IS NOT NULL) AS "t6" ON "t1"."i_category" = "t6"."i_category" AND "t1"."i_current_price" > "t6"."""*"""
-                    hive.sql.query.fieldNames i_item_sk,i_current_price,i_category,i_category0,*
+HAVING CAST(CAST(SUM("i_current_price") / COUNT("i_current_price") AS DECIMAL(11, 6)) AS DECIMAL(16, 6)) IS NOT NULL) AS "t6" ON "t1"."i_category" = "t6"."i_category" AND "t1"."i_current_price" > "t6"."EXPR$0"
+                    hive.sql.query.fieldNames i_item_sk,i_current_price,i_category,i_category0,EXPR$0
                     hive.sql.query.fieldTypes bigint,decimal(7,2),string,string,decimal(14,7)
                     hive.sql.query.split false
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE

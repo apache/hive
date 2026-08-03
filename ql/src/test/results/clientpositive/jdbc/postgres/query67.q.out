@@ -113,11 +113,11 @@ STAGE PLANS:
                 TableScan
                   alias: store_sales
                   properties:
-                    hive.sql.query SELECT "t1"."ss_sold_date_sk", "t1"."ss_item_sk", "t1"."ss_store_sk", "t1"."CASE", "t4"."s_store_sk", "t4"."s_store_id", "t7"."d_date_sk", "t7"."d_year", "t7"."d_moy", "t7"."d_qoy", "t10"."i_item_sk", "t10"."i_brand", "t10"."i_class", "t10"."i_category", "t10"."i_product_name"
-FROM (SELECT "ss_sold_date_sk", "ss_item_sk", "ss_store_sk", CASE WHEN "ss_sales_price" IS NOT NULL AND CAST("ss_quantity" AS DECIMAL(10, 0)) IS NOT NULL THEN "ss_sales_price" * CAST("ss_quantity" AS DECIMAL(10, 0)) ELSE 0 END AS "CASE"
+                    hive.sql.query SELECT "t1"."ss_sold_date_sk", "t1"."ss_item_sk", "t1"."ss_store_sk", "t1"."$f8", "t4"."s_store_sk", "t4"."s_store_id", "t7"."d_date_sk", "t7"."d_year", "t7"."d_moy", "t7"."d_qoy", "t10"."i_item_sk", "t10"."i_brand", "t10"."i_class", "t10"."i_category", "t10"."i_product_name"
+FROM (SELECT "ss_sold_date_sk", "ss_item_sk", "ss_store_sk", CASE WHEN "ss_sales_price" IS NOT NULL AND CAST("ss_quantity" AS DECIMAL(10, 0)) IS NOT NULL THEN "ss_sales_price" * CAST("ss_quantity" AS DECIMAL(10, 0)) ELSE 0 END AS "$f8"
 FROM (SELECT "ss_sold_date_sk", "ss_item_sk", "ss_store_sk", "ss_quantity", "ss_sales_price"
 FROM "store_sales") AS "t"
-WHERE "ss_sold_date_sk" IS NOT NULL AND ("ss_store_sk" IS NOT NULL AND "ss_item_sk" IS NOT NULL)) AS "t1"
+WHERE "ss_sold_date_sk" IS NOT NULL AND "ss_store_sk" IS NOT NULL AND "ss_item_sk" IS NOT NULL) AS "t1"
 INNER JOIN (SELECT "s_store_sk", "s_store_id"
 FROM (SELECT "s_store_sk", "s_store_id"
 FROM "store") AS "t2"
@@ -130,12 +130,12 @@ INNER JOIN (SELECT "i_item_sk", "i_brand", "i_class", "i_category", "i_product_n
 FROM (SELECT "i_item_sk", "i_brand", "i_class", "i_category", "i_product_name"
 FROM "item") AS "t8"
 WHERE "i_item_sk" IS NOT NULL) AS "t10" ON "t1"."ss_item_sk" = "t10"."i_item_sk"
-                    hive.sql.query.fieldNames ss_sold_date_sk,ss_item_sk,ss_store_sk,CASE,s_store_sk,s_store_id,d_date_sk,d_year,d_moy,d_qoy,i_item_sk,i_brand,i_class,i_category,i_product_name
+                    hive.sql.query.fieldNames ss_sold_date_sk,ss_item_sk,ss_store_sk,$f8,s_store_sk,s_store_id,d_date_sk,d_year,d_moy,d_qoy,i_item_sk,i_brand,i_class,i_category,i_product_name
                     hive.sql.query.fieldTypes int,bigint,int,decimal(18,2),int,string,int,int,int,int,bigint,string,string,string,string
                     hive.sql.query.split false
                   Statistics: Num rows: 1 Data size: 1044 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: case (type: decimal(18,2)), s_store_id (type: string), d_year (type: int), d_moy (type: int), d_qoy (type: int), i_brand (type: string), i_class (type: string), i_category (type: string), i_product_name (type: string)
+                    expressions: $f8 (type: decimal(18,2)), s_store_id (type: string), d_year (type: int), d_moy (type: int), d_qoy (type: int), i_brand (type: string), i_class (type: string), i_category (type: string), i_product_name (type: string)
                     outputColumnNames: _col3, _col5, _col7, _col8, _col9, _col11, _col12, _col13, _col14
                     Statistics: Num rows: 1 Data size: 1044 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator

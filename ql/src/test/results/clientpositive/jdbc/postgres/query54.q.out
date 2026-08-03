@@ -1,6 +1,6 @@
-Warning: Shuffle Join MERGEJOIN[69][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-Warning: Shuffle Join MERGEJOIN[71][tables = [$hdt$_3, $hdt$_4]] in Stage 'Reducer 12' is a cross product
-Warning: Shuffle Join MERGEJOIN[72][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[68][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[70][tables = [$hdt$_3, $hdt$_4]] in Stage 'Reducer 12' is a cross product
+Warning: Shuffle Join MERGEJOIN[71][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: explain
 with my_customers as (
  select distinct c_customer_sk
@@ -161,7 +161,7 @@ WHERE "d_date_sk" IS NOT NULL AND "d_month_seq" IS NOT NULL) AS "t1"
 INNER JOIN (SELECT "d_month_seq" + 1 AS "$f0"
 FROM (SELECT "d_month_seq", "d_year", "d_moy"
 FROM "date_dim") AS "t2"
-WHERE "d_year" = 1999 AND ("d_moy" = 3 AND "d_month_seq" IS NOT NULL)
+WHERE "d_year" = 1999 AND "d_moy" = 3 AND "d_month_seq" IS NOT NULL
 GROUP BY "d_month_seq" + 1) AS "t5" ON "t1"."d_month_seq" >= "t5"."$f0"
                     hive.sql.query.fieldNames d_date_sk,d_month_seq,$f0
                     hive.sql.query.fieldTypes int,int,int
@@ -242,7 +242,7 @@ GROUP BY "d_month_seq" + 1) AS "t2"
                     hive.sql.query SELECT "d_month_seq" + 3 AS "$f0"
 FROM (SELECT "d_month_seq", "d_year", "d_moy"
 FROM "date_dim") AS "t"
-WHERE "d_year" = 1999 AND ("d_moy" = 3 AND "d_month_seq" IS NOT NULL)
+WHERE "d_year" = 1999 AND "d_moy" = 3 AND "d_month_seq" IS NOT NULL
 GROUP BY "d_month_seq" + 3
                     hive.sql.query.fieldNames $f0
                     hive.sql.query.fieldTypes int
@@ -268,7 +268,7 @@ GROUP BY "d_month_seq" + 3
 FROM (SELECT "ca_address_sk", "ca_county", "ca_state"
 FROM (SELECT "ca_address_sk", "ca_county", "ca_state"
 FROM "customer_address") AS "t"
-WHERE "ca_address_sk" IS NOT NULL AND ("ca_county" IS NOT NULL AND "ca_state" IS NOT NULL)) AS "t1"
+WHERE "ca_address_sk" IS NOT NULL AND "ca_county" IS NOT NULL AND "ca_state" IS NOT NULL) AS "t1"
 INNER JOIN (SELECT "s_county", "s_state"
 FROM (SELECT "s_county", "s_state"
 FROM "store") AS "t2"
@@ -278,20 +278,20 @@ FROM (SELECT "cs_sold_date_sk", "cs_bill_customer_sk", "cs_item_sk"
 FROM (SELECT "cs_sold_date_sk", "cs_bill_customer_sk", "cs_item_sk"
 FROM (SELECT "cs_sold_date_sk", "cs_bill_customer_sk", "cs_item_sk"
 FROM "catalog_sales") AS "t5"
-WHERE "cs_item_sk" IS NOT NULL AND ("cs_sold_date_sk" IS NOT NULL AND "cs_bill_customer_sk" IS NOT NULL)
+WHERE "cs_item_sk" IS NOT NULL AND "cs_sold_date_sk" IS NOT NULL AND "cs_bill_customer_sk" IS NOT NULL
 UNION ALL
 SELECT "ws_sold_date_sk" AS "sold_date_sk", "ws_bill_customer_sk" AS "customer_sk", "ws_item_sk" AS "item_sk"
 FROM (SELECT "ws_sold_date_sk", "ws_item_sk", "ws_bill_customer_sk"
 FROM "web_sales") AS "t8"
-WHERE "ws_item_sk" IS NOT NULL AND ("ws_sold_date_sk" IS NOT NULL AND "ws_bill_customer_sk" IS NOT NULL)) AS "t11") AS "t12"
+WHERE "ws_item_sk" IS NOT NULL AND "ws_sold_date_sk" IS NOT NULL AND "ws_bill_customer_sk" IS NOT NULL) AS "t11") AS "t12"
 INNER JOIN (SELECT "i_item_sk"
 FROM (SELECT "i_item_sk", "i_class", "i_category"
 FROM "item") AS "t13"
-WHERE "i_category" = 'Jewelry' AND ("i_class" = 'consignment' AND "i_item_sk" IS NOT NULL)) AS "t15" ON "t12"."cs_item_sk" = "t15"."i_item_sk"
+WHERE "i_category" = 'Jewelry' AND "i_class" = 'consignment' AND "i_item_sk" IS NOT NULL) AS "t15" ON "t12"."cs_item_sk" = "t15"."i_item_sk"
 INNER JOIN (SELECT "d_date_sk"
 FROM (SELECT "d_date_sk", "d_year", "d_moy"
 FROM "date_dim") AS "t16"
-WHERE "d_moy" = 3 AND ("d_year" = 1999 AND "d_date_sk" IS NOT NULL)) AS "t18" ON "t12"."cs_sold_date_sk" = "t18"."d_date_sk"
+WHERE "d_moy" = 3 AND "d_year" = 1999 AND "d_date_sk" IS NOT NULL) AS "t18" ON "t12"."cs_sold_date_sk" = "t18"."d_date_sk"
 INNER JOIN (SELECT "c_customer_sk", "c_current_addr_sk"
 FROM (SELECT "c_customer_sk", "c_current_addr_sk"
 FROM "customer") AS "t19"

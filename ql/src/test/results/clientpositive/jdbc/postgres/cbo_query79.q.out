@@ -55,11 +55,11 @@ POSTHOOK: Input: default@store
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(c_last_name=[$0], c_first_name=[$1], _o__c2=[$2], ss_ticket_number=[$3], amt=[$4], profit=[$5])
+HiveProject(c_last_name=[$0], c_first_name=[$1], _c2=[$2], ss_ticket_number=[$3], amt=[$4], profit=[$5])
   HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$6], sort3=[$5], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], fetch=[100])
     HiveProject(c_last_name=[$7], c_first_name=[$6], _o__c2=[$4], ss_ticket_number=[$0], amt=[$2], profit=[$3], (tok_function substr (tok_table_or_col s_city) 1 30)=[$4])
       HiveJoin(condition=[=($1, $5)], joinType=[inner], algorithm=[none], cost=[not available])
-        HiveProject(ss_ticket_number=[$2], ss_customer_sk=[$0], amt=[$4], profit=[$5], substr=[substr($3, 1, 30)])
+        HiveProject(ss_ticket_number=[$2], ss_customer_sk=[$0], amt=[$4], profit=[$5], _o__c2=[substr($3, 1, 30)])
           HiveProject(ss_customer_sk=[$0], ss_addr_sk=[$1], ss_ticket_number=[$2], s_city=[$3], $f4=[$4], $f5=[$5])
             HiveJdbcConverter(convention=[JDBC.POSTGRES])
               JdbcAggregate(group=[{1, 3, 5, 11}], agg#0=[sum($6)], agg#1=[sum($7)])

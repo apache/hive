@@ -90,7 +90,7 @@ STAGE PLANS:
 FROM (SELECT "ws_ship_date_sk", "ws_ship_addr_sk", "ws_web_site_sk", "ws_warehouse_sk", "ws_order_number", "ws_ext_ship_cost", "ws_net_profit"
 FROM (SELECT "ws_ship_date_sk", "ws_ship_addr_sk", "ws_web_site_sk", "ws_warehouse_sk", "ws_order_number", "ws_ext_ship_cost", "ws_net_profit"
 FROM "web_sales") AS "t"
-WHERE "ws_ship_date_sk" IS NOT NULL AND "ws_ship_addr_sk" IS NOT NULL AND ("ws_web_site_sk" IS NOT NULL AND "ws_order_number" IS NOT NULL)) AS "t1"
+WHERE "ws_ship_date_sk" IS NOT NULL AND "ws_ship_addr_sk" IS NOT NULL AND "ws_web_site_sk" IS NOT NULL AND "ws_order_number" IS NOT NULL) AS "t1"
 INNER JOIN (SELECT "d_date_sk", "d_date"
 FROM (SELECT "d_date_sk", "d_date"
 FROM "date_dim") AS "t2"

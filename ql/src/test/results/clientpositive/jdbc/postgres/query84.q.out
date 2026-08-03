@@ -75,7 +75,7 @@ STAGE PLANS:
                     hive.sql.query SELECT "c_customer_id", "c_current_cdemo_sk", "c_current_hdemo_sk", "c_current_addr_sk", "c_first_name", "c_last_name"
 FROM (SELECT "c_customer_id", "c_current_cdemo_sk", "c_current_hdemo_sk", "c_current_addr_sk", "c_first_name", "c_last_name"
 FROM "customer") AS "t"
-WHERE "c_current_addr_sk" IS NOT NULL AND ("c_current_cdemo_sk" IS NOT NULL AND "c_current_hdemo_sk" IS NOT NULL)
+WHERE "c_current_addr_sk" IS NOT NULL AND "c_current_cdemo_sk" IS NOT NULL AND "c_current_hdemo_sk" IS NOT NULL
                     hive.sql.query.fieldNames c_customer_id,c_current_cdemo_sk,c_current_hdemo_sk,c_current_addr_sk,c_first_name,c_last_name
                     hive.sql.query.fieldTypes string,int,int,int,string,string
                     hive.sql.query.split true
@@ -160,7 +160,7 @@ FROM "household_demographics") AS "t"
 WHERE "hd_demo_sk" IS NOT NULL AND "hd_income_band_sk" IS NOT NULL) AS "t1"
 INNER JOIN (SELECT "ib_income_band_sk"
 FROM "income_band"
-WHERE "ib_lower_bound" >= 32287 AND ("ib_upper_bound" <= 82287 AND "ib_income_band_sk" IS NOT NULL)) AS "t3" ON "t1"."hd_income_band_sk" = "t3"."ib_income_band_sk"
+WHERE "ib_lower_bound" >= 32287 AND "ib_upper_bound" <= 82287 AND "ib_income_band_sk" IS NOT NULL) AS "t3" ON "t1"."hd_income_band_sk" = "t3"."ib_income_band_sk"
                     hive.sql.query.fieldNames hd_demo_sk,hd_income_band_sk,ib_income_band_sk
                     hive.sql.query.fieldTypes int,int,int
                     hive.sql.query.split false
