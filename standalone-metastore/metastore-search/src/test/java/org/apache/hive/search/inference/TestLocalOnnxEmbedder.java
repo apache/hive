@@ -20,6 +20,7 @@ package org.apache.hive.search.inference;
 import java.util.Arrays;
 
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
+import org.apache.hive.search.exception.InferenceException;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -40,7 +41,7 @@ public class TestLocalOnnxEmbedder {
   }
 
   @Test
-  public void lastPoolUsesLastNonPaddingToken() {
+  public void lastPoolUsesLastNonPaddingToken() throws Exception {
     float[][] tokenEmbeddings = {
         {1f, 0f},
         {3f, 0f},
@@ -48,20 +49,26 @@ public class TestLocalOnnxEmbedder {
     };
     long[] mask = {1L, 1L, 0L};
 
-    assertArrayEquals(new float[] {3f, 0f}, LocalOnnxEmbedder.lastPool(tokenEmbeddings, mask), 0.001f);
+    assertArrayEquals(
+        new float[] {3f, 0f},
+        LocalOnnxEmbedder.poolTokenMatrix(EmbedderSpec.Pooling.LAST, tokenEmbeddings, mask),
+        0.001f);
   }
 
   @Test
-  public void clsPoolUsesFirstTokenVector() {
+  public void clsPoolUsesFirstTokenVector() throws Exception {
     float[][] tokenEmbeddings = {
         {1f, 2f},
         {9f, 9f}
     };
-    assertArrayEquals(new float[] {1f, 2f}, LocalOnnxEmbedder.clsPool(tokenEmbeddings), 0.001f);
+    assertArrayEquals(
+        new float[] {1f, 2f},
+        LocalOnnxEmbedder.poolTokenMatrix(EmbedderSpec.Pooling.CLS, tokenEmbeddings, null),
+        0.001f);
   }
 
   @Test
-  public void meanPoolAveragesAllTokenVectors() {
+  public void meanPoolAveragesAllTokenVectors() throws Exception {
     float[][] tokenEmbeddings = {
         {1f, 0f},
         {3f, 0f},
@@ -70,12 +77,13 @@ public class TestLocalOnnxEmbedder {
 
     assertArrayEquals(
         new float[] {13f / 3f, 9f / 3f},
-        LocalOnnxEmbedder.meanPool(tokenEmbeddings, allOnes(tokenEmbeddings.length)),
+        LocalOnnxEmbedder.poolTokenMatrix(
+            EmbedderSpec.Pooling.MEAN, tokenEmbeddings, allOnes(tokenEmbeddings.length)),
         0.001f);
   }
 
   @Test
-  public void meanPoolExcludesPaddingTokens() {
+  public void meanPoolExcludesPaddingTokens() throws Exception {
     float[][] tokenEmbeddings = {
         {2f, 0f},
         {4f, 0f},
@@ -83,13 +91,16 @@ public class TestLocalOnnxEmbedder {
     };
     long[] mask = {1L, 1L, 0L};
 
-    assertArrayEquals(new float[] {3f, 0f}, LocalOnnxEmbedder.meanPool(tokenEmbeddings, mask), 0.001f);
+    assertArrayEquals(
+        new float[] {3f, 0f},
+        LocalOnnxEmbedder.poolTokenMatrix(EmbedderSpec.Pooling.MEAN, tokenEmbeddings, mask),
+        0.001f);
   }
 
   @Test
   public void normalizeProducesUnitVector() {
     float[] vector = {3f, 4f};
-    LocalOnnxEmbedder.normalize(vector);
+    LocalOnnxEmbedder.normalizeInPlace(vector);
     float norm = 0f;
     for (float v : vector) {
       norm += v * v;
@@ -100,32 +111,37 @@ public class TestLocalOnnxEmbedder {
   }
 
   @Test
-  public void meanPoolVectorsAveragesChunkEmbeddings() {
+  public void meanPoolVectorsAveragesChunkEmbeddings() throws Exception {
     float[][] chunks = {
         {1f, 0f},
         {3f, 0f}
     };
 
     assertArrayEquals(
-        new float[] {2f, 0f}, LocalOnnxEmbedder.meanPool(chunks, allOnes(chunks.length)), 0.001f);
+        new float[] {2f, 0f},
+        LocalOnnxEmbedder.poolTokenMatrix(EmbedderSpec.Pooling.MEAN, chunks, allOnes(chunks.length)),
+        0.001f);
   }
 
   @Test
-  public void meanPoolVectorsReturnsSingleRowMean() {
+  public void meanPoolVectorsReturnsSingleRowMean() throws Exception {
     float[][] chunks = {{0.6f, 0.8f}};
 
     assertArrayEquals(
-        new float[] {0.6f, 0.8f}, LocalOnnxEmbedder.meanPool(chunks, allOnes(chunks.length)), 0.001f);
+        new float[] {0.6f, 0.8f},
+        LocalOnnxEmbedder.poolTokenMatrix(EmbedderSpec.Pooling.MEAN, chunks, allOnes(chunks.length)),
+        0.001f);
   }
 
   @Test
-  public void chunkedMeanPoolThenNormalizeProducesUnitVector() {
+  public void chunkedMeanPoolThenNormalizeProducesUnitVector() throws Exception {
     float[][] chunks = {
         {1f, 0f},
         {0f, 1f}
     };
-    float[] pooled = LocalOnnxEmbedder.meanPool(chunks, allOnes(chunks.length));
-    LocalOnnxEmbedder.normalize(pooled);
+    float[] pooled = LocalOnnxEmbedder.poolTokenMatrix(
+        EmbedderSpec.Pooling.MEAN, chunks, allOnes(chunks.length));
+    LocalOnnxEmbedder.normalizeInPlace(pooled);
 
     float norm = 0f;
     for (float v : pooled) {
@@ -134,6 +150,18 @@ public class TestLocalOnnxEmbedder {
     assertEquals(1f, norm, 0.001f);
     assertEquals(0.7071f, pooled[0], 0.001f);
     assertEquals(0.7071f, pooled[1], 0.001f);
+  }
+
+  @Test
+  public void meanPoolRejectsEmptyMask() throws Exception {
+    float[][] tokenEmbeddings = {{1f, 0f}, {2f, 0f}};
+    long[] mask = {0L, 0L};
+    try {
+      LocalOnnxEmbedder.poolTokenMatrix(EmbedderSpec.Pooling.MEAN, tokenEmbeddings, mask);
+      org.junit.Assert.fail("expected empty mask to fail");
+    } catch (InferenceException expected) {
+      assertEquals("attention mask has no active tokens", expected.getMessage());
+    }
   }
 
   private static long[] allOnes(int length) {
