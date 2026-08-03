@@ -20,26 +20,24 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 
-public class StringRTrimColScalar extends StringTrimColScalarBase {
+/**
+ * Vectorized TRIM with a scalar string and a trim-characters column.
+ */
+public class StringTrimScalarCol extends StringTrimScalarColBase {
   private static final long serialVersionUID = 1L;
 
-  public StringRTrimColScalar(int inputColumn, byte[] trimChars, int outputColumnNum) {
-    super(inputColumn, trimChars, outputColumnNum);
+  public StringTrimScalarCol(byte[] stringToTrim, int trimCharsCol, int outputColumnNum) {
+    super(stringToTrim, trimCharsCol, outputColumnNum);
   }
 
-  public StringRTrimColScalar() {
+  public StringTrimScalarCol() {
     super();
   }
 
-  /**
-   * RTRIM element i of the vector, and place the result in outV.
-   * Operate on the data in place, and set the output by reference
-   * to improve performance. Ignore null handling. That will be handled separately.
-   */
-  protected void func(BytesColumnVector outV, byte[][] vector, int[] start, int[] length,
-      int batchIndex) {
-    byte[] trimChars = getTrimChars();
-    trimRight(outV, vector[batchIndex], start[batchIndex], length[batchIndex],
-        trimChars, 0, trimChars.length, batchIndex);
+  @Override
+  protected void func(BytesColumnVector outV, BytesColumnVector trimV, int trimIndex,
+      int outIndex) {
+    StringTrimColScalarBase.trimBoth(outV, stringToTrim, 0, stringToTrim.length,
+        trimV.vector[trimIndex], trimV.start[trimIndex], trimV.length[trimIndex], outIndex);
   }
 }
