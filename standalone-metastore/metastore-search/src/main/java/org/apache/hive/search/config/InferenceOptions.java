@@ -98,4 +98,5 @@ public record InferenceOptions(Configuration configuration) {
   public String embedderName() {
     return configuration.get(EMBEDDER_NAME);
   }
+
 }

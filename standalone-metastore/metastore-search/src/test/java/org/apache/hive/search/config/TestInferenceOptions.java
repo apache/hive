@@ -17,8 +17,10 @@
 
 package org.apache.hive.search.config;
 
-import org.apache.hive.search.inference.EmbedderSpec;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
+import org.apache.hive.search.inference.EmbedderSpec;
+import org.apache.hive.search.inference.OnnxExecutionProvider;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -35,5 +37,22 @@ public class TestInferenceOptions {
   @Test
   public void embeddingPoolingHonorsCls() {
     assertEquals(EmbedderSpec.Pooling.CLS, EmbedderSpec.Pooling.fromConfig("cls"));
+  }
+
+  @Test
+  public void onnxExecutionProviderDefaultsToCpu() {
+    assertEquals(OnnxExecutionProvider.CPU, new InferenceOptions(new Configuration()).onnxExecutionProvider());
+  }
+
+  @Test
+  public void onnxExecutionProviderHonorsCoreMlAlias() {
+    Configuration conf = new Configuration(false);
+    conf.set(InferenceOptions.ONNX_EXECUTION_PROVIDER, "core_ml");
+    assertEquals(OnnxExecutionProvider.COREML, new InferenceOptions(conf).onnxExecutionProvider());
+  }
+
+  @Test
+  public void onnxCudaDeviceIdDefaultsToZero() {
+    assertEquals(0, new InferenceOptions(new Configuration()).onnxCudaDeviceId());
   }
 }

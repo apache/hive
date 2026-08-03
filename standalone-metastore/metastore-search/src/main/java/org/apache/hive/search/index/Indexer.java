@@ -56,7 +56,7 @@ import org.slf4j.LoggerFactory;
 
 public final class Indexer implements Closeable {
   private static final Logger LOG = LoggerFactory.getLogger(Indexer.class);
-  private static final int EMBED_BATCH_SIZE = 100;
+  private static final int EMBED_BATCH_SIZE = 256;
 
   private final IndexManager indexManager;
   private final EmbedderRegistry modelRegistry;
