@@ -54,7 +54,7 @@ STAGE PLANS:
           alias: store_sales
           properties:
             hive.sql.query SELECT "t10"."$f0", "t10"."$f1", "t10"."$f2", "t10"."$f3", "t10"."$f4", "t10"."$f5", "t10"."$f6", "t10"."$f7", "t10"."$f8"
-FROM (SELECT "t4"."s_store_name" AS "$f0", "t4"."s_store_id" AS "$f1", SUM(CASE WHEN "t7"."=" THEN "t1"."ss_sales_price" ELSE NULL END) AS "$f2", SUM(CASE WHEN "t7"."=2" THEN "t1"."ss_sales_price" ELSE NULL END) AS "$f3", SUM(CASE WHEN "t7"."=3" THEN "t1"."ss_sales_price" ELSE NULL END) AS "$f4", SUM(CASE WHEN "t7"."=4" THEN "t1"."ss_sales_price" ELSE NULL END) AS "$f5", SUM(CASE WHEN "t7"."=5" THEN "t1"."ss_sales_price" ELSE NULL END) AS "$f6", SUM(CASE WHEN "t7"."=6" THEN "t1"."ss_sales_price" ELSE NULL END) AS "$f7", SUM(CASE WHEN "t7"."=7" THEN "t1"."ss_sales_price" ELSE NULL END) AS "$f8"
+FROM (SELECT "t4"."s_store_name" AS "$f0", "t4"."s_store_id" AS "$f1", SUM(CASE WHEN "t7"."EXPR$0" THEN "t1"."ss_sales_price" ELSE NULL END) AS "$f2", SUM(CASE WHEN "t7"."EXPR$1" THEN "t1"."ss_sales_price" ELSE NULL END) AS "$f3", SUM(CASE WHEN "t7"."EXPR$2" THEN "t1"."ss_sales_price" ELSE NULL END) AS "$f4", SUM(CASE WHEN "t7"."EXPR$3" THEN "t1"."ss_sales_price" ELSE NULL END) AS "$f5", SUM(CASE WHEN "t7"."EXPR$4" THEN "t1"."ss_sales_price" ELSE NULL END) AS "$f6", SUM(CASE WHEN "t7"."EXPR$5" THEN "t1"."ss_sales_price" ELSE NULL END) AS "$f7", SUM(CASE WHEN "t7"."EXPR$6" THEN "t1"."ss_sales_price" ELSE NULL END) AS "$f8"
 FROM (SELECT "ss_sold_date_sk", "ss_store_sk", "ss_sales_price"
 FROM (SELECT "ss_sold_date_sk", "ss_store_sk", "ss_sales_price"
 FROM "store_sales") AS "t"
@@ -63,12 +63,12 @@ INNER JOIN (SELECT "s_store_sk", "s_store_id", "s_store_name"
 FROM (SELECT "s_store_sk", "s_store_id", "s_store_name", "s_gmt_offset"
 FROM "store") AS "t2"
 WHERE "s_gmt_offset" = -6 AND "s_store_sk" IS NOT NULL) AS "t4" ON "t1"."ss_store_sk" = "t4"."s_store_sk"
-INNER JOIN (SELECT "d_date_sk", "d_day_name" = 'Sunday' AS "=", "d_day_name" = 'Monday' AS "=2", "d_day_name" = 'Tuesday' AS "=3", "d_day_name" = 'Wednesday' AS "=4", "d_day_name" = 'Thursday' AS "=5", "d_day_name" = 'Friday' AS "=6", "d_day_name" = 'Saturday' AS "=7"
+INNER JOIN (SELECT "d_date_sk", "d_day_name" = 'Sunday' AS "EXPR$0", "d_day_name" = 'Monday' AS "EXPR$1", "d_day_name" = 'Tuesday' AS "EXPR$2", "d_day_name" = 'Wednesday' AS "EXPR$3", "d_day_name" = 'Thursday' AS "EXPR$4", "d_day_name" = 'Friday' AS "EXPR$5", "d_day_name" = 'Saturday' AS "EXPR$6"
 FROM (SELECT "d_date_sk", "d_year", "d_day_name"
 FROM "date_dim") AS "t5"
 WHERE "d_year" = 1998 AND "d_date_sk" IS NOT NULL) AS "t7" ON "t1"."ss_sold_date_sk" = "t7"."d_date_sk"
 GROUP BY "t4"."s_store_name", "t4"."s_store_id"
-ORDER BY "t4"."s_store_name", "t4"."s_store_id", SUM(CASE WHEN "t7"."=" THEN "t1"."ss_sales_price" ELSE NULL END), SUM(CASE WHEN "t7"."=2" THEN "t1"."ss_sales_price" ELSE NULL END), SUM(CASE WHEN "t7"."=3" THEN "t1"."ss_sales_price" ELSE NULL END), SUM(CASE WHEN "t7"."=4" THEN "t1"."ss_sales_price" ELSE NULL END), SUM(CASE WHEN "t7"."=5" THEN "t1"."ss_sales_price" ELSE NULL END), SUM(CASE WHEN "t7"."=6" THEN "t1"."ss_sales_price" ELSE NULL END), SUM(CASE WHEN "t7"."=7" THEN "t1"."ss_sales_price" ELSE NULL END)
+ORDER BY "t4"."s_store_name", "t4"."s_store_id", SUM(CASE WHEN "t7"."EXPR$0" THEN "t1"."ss_sales_price" ELSE NULL END), SUM(CASE WHEN "t7"."EXPR$1" THEN "t1"."ss_sales_price" ELSE NULL END), SUM(CASE WHEN "t7"."EXPR$2" THEN "t1"."ss_sales_price" ELSE NULL END), SUM(CASE WHEN "t7"."EXPR$3" THEN "t1"."ss_sales_price" ELSE NULL END), SUM(CASE WHEN "t7"."EXPR$4" THEN "t1"."ss_sales_price" ELSE NULL END), SUM(CASE WHEN "t7"."EXPR$5" THEN "t1"."ss_sales_price" ELSE NULL END), SUM(CASE WHEN "t7"."EXPR$6" THEN "t1"."ss_sales_price" ELSE NULL END)
 FETCH NEXT 100 ROWS ONLY) AS "t10"
             hive.sql.query.fieldNames $f0,$f1,$f2,$f3,$f4,$f5,$f6,$f7,$f8
             hive.sql.query.fieldTypes string,string,decimal(17,2),decimal(17,2),decimal(17,2),decimal(17,2),decimal(17,2),decimal(17,2),decimal(17,2)

@@ -190,11 +190,11 @@ WHERE "ca_address_sk" IS NOT NULL
 FROM (SELECT "ss_sold_date_sk", "ss_item_sk", "ss_customer_sk", "ss_store_sk", "ss_ext_sales_price"
 FROM (SELECT "ss_sold_date_sk", "ss_item_sk", "ss_customer_sk", "ss_store_sk", "ss_ext_sales_price"
 FROM "store_sales") AS "t"
-WHERE "ss_sold_date_sk" IS NOT NULL AND "ss_item_sk" IS NOT NULL AND ("ss_customer_sk" IS NOT NULL AND "ss_store_sk" IS NOT NULL)) AS "t1"
+WHERE "ss_sold_date_sk" IS NOT NULL AND "ss_item_sk" IS NOT NULL AND "ss_customer_sk" IS NOT NULL AND "ss_store_sk" IS NOT NULL) AS "t1"
 INNER JOIN (SELECT "d_date_sk"
 FROM (SELECT "d_date_sk", "d_year", "d_moy"
 FROM "date_dim") AS "t2"
-WHERE "d_moy" = 11 AND ("d_year" = 1999 AND "d_date_sk" IS NOT NULL)) AS "t4" ON "t1"."ss_sold_date_sk" = "t4"."d_date_sk"
+WHERE "d_moy" = 11 AND "d_year" = 1999 AND "d_date_sk" IS NOT NULL) AS "t4" ON "t1"."ss_sold_date_sk" = "t4"."d_date_sk"
                     hive.sql.query.fieldNames ss_sold_date_sk,ss_item_sk,ss_customer_sk,ss_store_sk,ss_ext_sales_price,d_date_sk
                     hive.sql.query.fieldTypes int,bigint,int,int,decimal(7,2),int
                     hive.sql.query.split false

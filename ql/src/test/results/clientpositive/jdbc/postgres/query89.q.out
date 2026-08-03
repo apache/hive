@@ -84,7 +84,7 @@ STAGE PLANS:
 FROM (SELECT "ss_sold_date_sk", "ss_item_sk", "ss_store_sk", "ss_sales_price"
 FROM (SELECT "ss_sold_date_sk", "ss_item_sk", "ss_store_sk", "ss_sales_price"
 FROM "store_sales") AS "t"
-WHERE "ss_item_sk" IS NOT NULL AND ("ss_sold_date_sk" IS NOT NULL AND "ss_store_sk" IS NOT NULL)) AS "t1"
+WHERE "ss_item_sk" IS NOT NULL AND "ss_sold_date_sk" IS NOT NULL AND "ss_store_sk" IS NOT NULL) AS "t1"
 INNER JOIN (SELECT "d_date_sk", "d_moy"
 FROM (SELECT "d_date_sk", "d_year", "d_moy"
 FROM "date_dim") AS "t2"
@@ -96,7 +96,7 @@ WHERE "s_store_sk" IS NOT NULL) AS "t7" ON "t1"."ss_store_sk" = "t7"."s_store_sk
 INNER JOIN (SELECT "i_item_sk", "i_brand", "i_class", "i_category"
 FROM (SELECT "i_item_sk", "i_brand", "i_class", "i_category"
 FROM "item") AS "t8"
-WHERE ("i_category" IN ('Home', 'Books', 'Electronics') AND "i_class" IN ('wallpaper', 'parenting', 'musical') OR "i_category" IN ('Shoes', 'Jewelry', 'Men') AND "i_class" IN ('womens', 'birdal', 'pants')) AND "i_class" IN ('wallpaper', 'parenting', 'musical', 'womens', 'birdal', 'pants') AND ("i_category" IN ('Home', 'Books', 'Electronics', 'Shoes', 'Jewelry', 'Men') AND "i_item_sk" IS NOT NULL)) AS "t10" ON "t1"."ss_item_sk" = "t10"."i_item_sk"
+WHERE ("i_category" IN ('Books', 'Electronics', 'Home') AND "i_class" IN ('musical', 'parenting', 'wallpaper') OR "i_category" IN ('Jewelry', 'Men', 'Shoes') AND "i_class" IN ('birdal', 'pants', 'womens')) AND "i_class" IN ('birdal', 'musical', 'pants', 'parenting', 'wallpaper', 'womens') AND "i_category" IN ('Books', 'Electronics', 'Home', 'Jewelry', 'Men', 'Shoes') AND "i_item_sk" IS NOT NULL) AS "t10" ON "t1"."ss_item_sk" = "t10"."i_item_sk"
 GROUP BY "t4"."d_moy", "t7"."s_store_name", "t7"."s_company_name", "t10"."i_brand", "t10"."i_class", "t10"."i_category"
                     hive.sql.query.fieldNames d_moy,s_store_name,s_company_name,i_brand,i_class,i_category,$f6
                     hive.sql.query.fieldTypes int,string,string,string,string,string,decimal(17,2)

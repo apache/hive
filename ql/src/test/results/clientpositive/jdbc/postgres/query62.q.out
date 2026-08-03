@@ -89,21 +89,21 @@ STAGE PLANS:
                 TableScan
                   alias: web_sales
                   properties:
-                    hive.sql.query SELECT "t1"."ws_ship_date_sk", "t1"."ws_web_site_sk", "t1"."ws_ship_mode_sk", "t1"."ws_warehouse_sk", "t1"."CASE", "t1"."CASE5", "t1"."CASE6", "t1"."CASE7", "t1"."CASE8", "t4"."d_date_sk"
-FROM (SELECT "ws_ship_date_sk", "ws_web_site_sk", "ws_ship_mode_sk", "ws_warehouse_sk", CASE WHEN "ws_ship_date_sk" - "ws_sold_date_sk" <= 30 THEN 1 ELSE 0 END AS "CASE", CASE WHEN "ws_ship_date_sk" - "ws_sold_date_sk" > 30 AND "ws_ship_date_sk" - "ws_sold_date_sk" <= 60 THEN 1 ELSE 0 END AS "CASE5", CASE WHEN "ws_ship_date_sk" - "ws_sold_date_sk" > 60 AND "ws_ship_date_sk" - "ws_sold_date_sk" <= 90 THEN 1 ELSE 0 END AS "CASE6", CASE WHEN "ws_ship_date_sk" - "ws_sold_date_sk" > 90 AND "ws_ship_date_sk" - "ws_sold_date_sk" <= 120 THEN 1 ELSE 0 END AS "CASE7", CASE WHEN "ws_ship_date_sk" - "ws_sold_date_sk" > 120 THEN 1 ELSE 0 END AS "CASE8"
+                    hive.sql.query SELECT "t1"."ws_ship_date_sk", "t1"."ws_web_site_sk", "t1"."ws_ship_mode_sk", "t1"."ws_warehouse_sk", "t1"."$f3", "t1"."$f4", "t1"."$f5", "t1"."$f6", "t1"."$f7", "t4"."d_date_sk"
+FROM (SELECT "ws_ship_date_sk", "ws_web_site_sk", "ws_ship_mode_sk", "ws_warehouse_sk", CASE WHEN "ws_ship_date_sk" - "ws_sold_date_sk" <= 30 THEN 1 ELSE 0 END AS "$f3", CASE WHEN "ws_ship_date_sk" - "ws_sold_date_sk" > 30 AND "ws_ship_date_sk" - "ws_sold_date_sk" <= 60 THEN 1 ELSE 0 END AS "$f4", CASE WHEN "ws_ship_date_sk" - "ws_sold_date_sk" > 60 AND "ws_ship_date_sk" - "ws_sold_date_sk" <= 90 THEN 1 ELSE 0 END AS "$f5", CASE WHEN "ws_ship_date_sk" - "ws_sold_date_sk" > 90 AND "ws_ship_date_sk" - "ws_sold_date_sk" <= 120 THEN 1 ELSE 0 END AS "$f6", CASE WHEN "ws_ship_date_sk" - "ws_sold_date_sk" > 120 THEN 1 ELSE 0 END AS "$f7"
 FROM (SELECT "ws_sold_date_sk", "ws_ship_date_sk", "ws_web_site_sk", "ws_ship_mode_sk", "ws_warehouse_sk"
 FROM "web_sales") AS "t"
-WHERE "ws_warehouse_sk" IS NOT NULL AND "ws_ship_mode_sk" IS NOT NULL AND ("ws_web_site_sk" IS NOT NULL AND "ws_ship_date_sk" IS NOT NULL)) AS "t1"
+WHERE "ws_warehouse_sk" IS NOT NULL AND "ws_ship_mode_sk" IS NOT NULL AND "ws_web_site_sk" IS NOT NULL AND "ws_ship_date_sk" IS NOT NULL) AS "t1"
 INNER JOIN (SELECT "d_date_sk"
 FROM (SELECT "d_date_sk", "d_month_seq"
 FROM "date_dim") AS "t2"
 WHERE "d_month_seq" BETWEEN 1215 AND 1226 AND "d_date_sk" IS NOT NULL) AS "t4" ON "t1"."ws_ship_date_sk" = "t4"."d_date_sk"
-                    hive.sql.query.fieldNames ws_ship_date_sk,ws_web_site_sk,ws_ship_mode_sk,ws_warehouse_sk,CASE,CASE5,CASE6,CASE7,CASE8,d_date_sk
+                    hive.sql.query.fieldNames ws_ship_date_sk,ws_web_site_sk,ws_ship_mode_sk,ws_warehouse_sk,$f3,$f4,$f5,$f6,$f7,d_date_sk
                     hive.sql.query.fieldTypes int,int,int,int,int,int,int,int,int,int
                     hive.sql.query.split false
                   Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: ws_web_site_sk (type: int), ws_ship_mode_sk (type: int), ws_warehouse_sk (type: int), case (type: int), case5 (type: int), case6 (type: int), case7 (type: int), case8 (type: int)
+                    expressions: ws_web_site_sk (type: int), ws_ship_mode_sk (type: int), ws_warehouse_sk (type: int), $f3 (type: int), $f4 (type: int), $f5 (type: int), $f6 (type: int), $f7 (type: int)
                     outputColumnNames: _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                     Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator

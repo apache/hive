@@ -1,19 +1,3 @@
-CTE Suggestion:
-JdbcAggregate(group=[{0}], agg#0=[sum($1)], agg#1=[sum($2)], agg#2=[sum($3)], agg#3=[sum($4)], agg#4=[sum($5)], agg#5=[sum($6)], agg#6=[sum($7)])
-  JdbcProject($f0=[$3], $f1=[CASE($4, $1, null:DECIMAL(7, 2))], $f2=[CASE($5, $1, null:DECIMAL(7, 2))], $f3=[CASE($6, $1, null:DECIMAL(7, 2))], $f4=[CASE($7, $1, null:DECIMAL(7, 2))], $f5=[CASE($8, $1, null:DECIMAL(7, 2))], $f6=[CASE($9, $1, null:DECIMAL(7, 2))], $f7=[CASE($10, $1, null:DECIMAL(7, 2))])
-    JdbcJoin(condition=[=($2, $0)], joinType=[inner])
-      JdbcUnion(all=[true])
-        JdbcFilter(condition=[IS NOT NULL($0)])
-          JdbcProject(ws_sold_date_sk=[$0], ws_ext_sales_price=[$23])
-            JdbcHiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
-        JdbcFilter(condition=[IS NOT NULL($0)])
-          JdbcProject(cs_sold_date_sk=[$0], cs_ext_sales_price=[$23])
-            JdbcHiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
-      JdbcProject(d_date_sk=[$0], d_week_seq=[$1], ==[=($2, _UTF-16LE'Sunday')], =3=[=($2, _UTF-16LE'Monday')], =4=[=($2, _UTF-16LE'Tuesday')], =5=[=($2, _UTF-16LE'Wednesday')], =6=[=($2, _UTF-16LE'Thursday')], =7=[=($2, _UTF-16LE'Friday')], =8=[=($2, _UTF-16LE'Saturday')])
-        JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
-          JdbcProject(d_date_sk=[$0], d_week_seq=[$4], d_day_name=[$14])
-            JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-
 PREHOOK: query: explain cbo
 with wscs as
  (select sold_date_sk
@@ -142,7 +126,7 @@ POSTHOOK: Input: default@web_sales
 #### A masked pattern was here ####
 CBO PLAN:
 HiveSortLimit(sort0=[$0], dir0=[ASC])
-  HiveProject(d_week_seq1=[$0], _o__c1=[round(/($1, $10), 2)], _o__c2=[round(/($2, $11), 2)], _o__c3=[round(/($3, $12), 2)], _o__c4=[round(/($4, $13), 2)], _o__c5=[round(/($5, $14), 2)], _o__c6=[round(/($6, $15), 2)], _o__c7=[round(/($7, $16), 2)])
+  HiveProject(d_week_seq1=[$0], _c1=[round(/($1, $10), 2)], _c2=[round(/($2, $11), 2)], _c3=[round(/($3, $12), 2)], _c4=[round(/($4, $13), 2)], _c5=[round(/($5, $14), 2)], _c6=[round(/($6, $15), 2)], _c7=[round(/($7, $16), 2)])
     HiveProject($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3], $f4=[$4], $f5=[$5], $f6=[$6], $f7=[$7], d_week_seq=[$8], $f00=[$9], $f10=[$10], $f20=[$11], $f30=[$12], $f40=[$13], $f50=[$14], $f60=[$15], $f70=[$16], d_week_seq0=[$17])
       HiveJdbcConverter(convention=[JDBC.POSTGRES])
         JdbcJoin(condition=[=($0, -($9, 53))], joinType=[inner])
@@ -160,7 +144,7 @@ HiveSortLimit(sort0=[$0], dir0=[ASC])
                         JdbcFilter(condition=[IS NOT NULL($0)])
                           JdbcProject(cs_sold_date_sk=[$0], cs_ext_sales_price=[$23])
                             JdbcHiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
-                  JdbcProject(d_date_sk=[$0], d_week_seq=[$1], ==[=($2, _UTF-16LE'Sunday')], =3=[=($2, _UTF-16LE'Monday')], =4=[=($2, _UTF-16LE'Tuesday')], =5=[=($2, _UTF-16LE'Wednesday')], =6=[=($2, _UTF-16LE'Thursday')], =7=[=($2, _UTF-16LE'Friday')], =8=[=($2, _UTF-16LE'Saturday')])
+                  JdbcProject(d_date_sk=[$0], d_week_seq=[$1], EXPR$0=[=($2, _UTF-16LE'Sunday')], EXPR$1=[=($2, _UTF-16LE'Monday')], EXPR$2=[=($2, _UTF-16LE'Tuesday')], EXPR$3=[=($2, _UTF-16LE'Wednesday')], EXPR$4=[=($2, _UTF-16LE'Thursday')], EXPR$5=[=($2, _UTF-16LE'Friday')], EXPR$6=[=($2, _UTF-16LE'Saturday')])
                     JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
                       JdbcProject(d_date_sk=[$0], d_week_seq=[$4], d_day_name=[$14])
                         JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
@@ -183,7 +167,7 @@ HiveSortLimit(sort0=[$0], dir0=[ASC])
                           JdbcFilter(condition=[IS NOT NULL($0)])
                             JdbcProject(cs_sold_date_sk=[$0], cs_ext_sales_price=[$23])
                               JdbcHiveTableScan(table=[[default, catalog_sales]], table:alias=[catalog_sales])
-                    JdbcProject(d_date_sk=[$0], d_week_seq=[$1], ==[=($2, _UTF-16LE'Sunday')], =3=[=($2, _UTF-16LE'Monday')], =4=[=($2, _UTF-16LE'Tuesday')], =5=[=($2, _UTF-16LE'Wednesday')], =6=[=($2, _UTF-16LE'Thursday')], =7=[=($2, _UTF-16LE'Friday')], =8=[=($2, _UTF-16LE'Saturday')])
+                    JdbcProject(d_date_sk=[$0], d_week_seq=[$1], EXPR$0=[=($2, _UTF-16LE'Sunday')], EXPR$1=[=($2, _UTF-16LE'Monday')], EXPR$2=[=($2, _UTF-16LE'Tuesday')], EXPR$3=[=($2, _UTF-16LE'Wednesday')], EXPR$4=[=($2, _UTF-16LE'Thursday')], EXPR$5=[=($2, _UTF-16LE'Friday')], EXPR$6=[=($2, _UTF-16LE'Saturday')])
                       JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
                         JdbcProject(d_date_sk=[$0], d_week_seq=[$4], d_day_name=[$14])
                           JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])

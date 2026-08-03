@@ -142,7 +142,7 @@ STAGE PLANS:
 FROM (SELECT "ss_item_sk", "ss_customer_sk", "ss_store_sk", "ss_ticket_number", "ss_sales_price"
 FROM (SELECT "ss_item_sk", "ss_customer_sk", "ss_store_sk", "ss_ticket_number", "ss_sales_price"
 FROM "store_sales") AS "t"
-WHERE "ss_ticket_number" IS NOT NULL AND "ss_item_sk" IS NOT NULL AND ("ss_store_sk" IS NOT NULL AND "ss_customer_sk" IS NOT NULL)) AS "t1"
+WHERE "ss_ticket_number" IS NOT NULL AND "ss_item_sk" IS NOT NULL AND "ss_store_sk" IS NOT NULL AND "ss_customer_sk" IS NOT NULL) AS "t1"
 INNER JOIN (SELECT "sr_item_sk", "sr_ticket_number"
 FROM (SELECT "sr_item_sk", "sr_ticket_number"
 FROM "store_returns") AS "t2"
@@ -176,7 +176,7 @@ WHERE "i_color" = 'orchid' AND "i_item_sk" IS NOT NULL) AS "t7" ON "t1"."ss_item
                     hive.sql.query SELECT "s_store_sk", "s_store_name", "s_state", "s_zip"
 FROM (SELECT "s_store_sk", "s_store_name", "s_market_id", "s_state", "s_zip"
 FROM "store") AS "t"
-WHERE "s_market_id" = 7 AND ("s_store_sk" IS NOT NULL AND "s_zip" IS NOT NULL)
+WHERE "s_market_id" = 7 AND "s_store_sk" IS NOT NULL AND "s_zip" IS NOT NULL
                     hive.sql.query.fieldNames s_store_sk,s_store_name,s_state,s_zip
                     hive.sql.query.fieldTypes int,string,string,string
                     hive.sql.query.split true
@@ -203,7 +203,7 @@ WHERE "s_market_id" = 7 AND ("s_store_sk" IS NOT NULL AND "s_zip" IS NOT NULL)
 FROM (SELECT "ss_item_sk", "ss_customer_sk", "ss_store_sk", "ss_ticket_number", "ss_sales_price"
 FROM (SELECT "ss_item_sk", "ss_customer_sk", "ss_store_sk", "ss_ticket_number", "ss_sales_price"
 FROM "store_sales") AS "t"
-WHERE "ss_ticket_number" IS NOT NULL AND "ss_item_sk" IS NOT NULL AND ("ss_store_sk" IS NOT NULL AND "ss_customer_sk" IS NOT NULL)) AS "t1"
+WHERE "ss_ticket_number" IS NOT NULL AND "ss_item_sk" IS NOT NULL AND "ss_store_sk" IS NOT NULL AND "ss_customer_sk" IS NOT NULL) AS "t1"
 INNER JOIN (SELECT "sr_item_sk", "sr_ticket_number"
 FROM (SELECT "sr_item_sk", "sr_ticket_number"
 FROM "store_returns") AS "t2"

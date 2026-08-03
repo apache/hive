@@ -98,7 +98,7 @@ WHERE CAST("d_date" AS TIMESTAMP(9)) BETWEEN TIMESTAMP '2001-01-12 00:00:00.0000
 INNER JOIN (SELECT "i_item_sk", "i_item_id", "i_item_desc", "i_current_price", "i_class", "i_category"
 FROM (SELECT "i_item_sk", "i_item_id", "i_item_desc", "i_current_price", "i_class", "i_category"
 FROM "item") AS "t5"
-WHERE "i_category" IN ('Jewelry', 'Sports', 'Books') AND "i_item_sk" IS NOT NULL) AS "t7" ON "t1"."ss_item_sk" = "t7"."i_item_sk"
+WHERE "i_category" IN ('Books', 'Jewelry', 'Sports') AND "i_item_sk" IS NOT NULL) AS "t7" ON "t1"."ss_item_sk" = "t7"."i_item_sk"
 GROUP BY "t7"."i_item_id", "t7"."i_item_desc", "t7"."i_current_price", "t7"."i_class", "t7"."i_category"
                     hive.sql.query.fieldNames i_item_id,i_item_desc,i_current_price,i_class,i_category,$f5
                     hive.sql.query.fieldTypes string,string,decimal(7,2),string,string,decimal(17,2)

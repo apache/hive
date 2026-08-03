@@ -71,7 +71,7 @@ STAGE PLANS:
                     hive.sql.query SELECT "t0"."inv_date_sk", "t0"."inv_item_sk", "t0"."inv_warehouse_sk", "t0"."inv_quantity_on_hand", "t3"."d_date_sk", "t6"."w_warehouse_sk", "t9"."i_item_sk", "t9"."i_brand", "t9"."i_class", "t9"."i_category", "t9"."i_product_name"
 FROM (SELECT "inv_date_sk", "inv_item_sk", "inv_warehouse_sk", "inv_quantity_on_hand"
 FROM "inventory"
-WHERE "inv_date_sk" IS NOT NULL AND ("inv_item_sk" IS NOT NULL AND "inv_warehouse_sk" IS NOT NULL)) AS "t0"
+WHERE "inv_date_sk" IS NOT NULL AND "inv_item_sk" IS NOT NULL AND "inv_warehouse_sk" IS NOT NULL) AS "t0"
 INNER JOIN (SELECT "d_date_sk"
 FROM (SELECT "d_date_sk", "d_month_seq"
 FROM "date_dim") AS "t1"

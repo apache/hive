@@ -344,7 +344,7 @@ WHERE "ss_sold_date_sk" IS NOT NULL AND "ss_store_sk" IS NOT NULL) AS "t1"
 INNER JOIN (SELECT "d_date_sk"
 FROM (SELECT "d_date_sk", "d_year", "d_qoy"
 FROM "date_dim") AS "t2"
-WHERE "d_qoy" = 1 AND ("d_year" = 2002 AND "d_date_sk" IS NOT NULL)) AS "t4" ON "t1"."ss_sold_date_sk" = "t4"."d_date_sk"
+WHERE "d_qoy" = 1 AND "d_year" = 2002 AND "d_date_sk" IS NOT NULL) AS "t4" ON "t1"."ss_sold_date_sk" = "t4"."d_date_sk"
                     hive.sql.query.fieldNames ss_sold_date_sk,ss_store_sk,ss_net_profit,d_date_sk
                     hive.sql.query.fieldTypes int,int,decimal(7,2),int
                     hive.sql.query.split false

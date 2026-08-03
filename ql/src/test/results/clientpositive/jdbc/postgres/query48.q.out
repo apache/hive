@@ -152,10 +152,10 @@ STAGE PLANS:
           alias: store_sales
           properties:
             hive.sql.query SELECT SUM("t1"."ss_quantity") AS "$f0"
-FROM (SELECT "ss_sold_date_sk", "ss_cdemo_sk", "ss_addr_sk", "ss_store_sk", "ss_quantity", "ss_net_profit" BETWEEN 0 AND 2000 AS "BETWEEN", "ss_net_profit" BETWEEN 150 AND 3000 AS "BETWEEN6", "ss_net_profit" BETWEEN 50 AND 25000 AS "BETWEEN7"
+FROM (SELECT "ss_sold_date_sk", "ss_cdemo_sk", "ss_addr_sk", "ss_store_sk", "ss_quantity", "ss_net_profit" BETWEEN 0 AND 2000 AS "EXPR$0", "ss_net_profit" BETWEEN 150 AND 3000 AS "EXPR$1", "ss_net_profit" BETWEEN 50 AND 25000 AS "EXPR$2"
 FROM (SELECT "ss_sold_date_sk", "ss_cdemo_sk", "ss_addr_sk", "ss_store_sk", "ss_quantity", "ss_sales_price", "ss_net_profit"
 FROM "store_sales") AS "t"
-WHERE ("ss_sales_price" BETWEEN 100 AND 150 OR ("ss_sales_price" BETWEEN 50 AND 100 OR "ss_sales_price" BETWEEN 150 AND 200)) AND ((100 <= "ss_sales_price" OR ("ss_sales_price" <= 150 OR 50 <= "ss_sales_price") OR ("ss_sales_price" <= 100 OR (150 <= "ss_sales_price" OR "ss_sales_price" <= 200))) AND (0 <= "ss_net_profit" OR ("ss_net_profit" <= 2000 OR 150 <= "ss_net_profit") OR ("ss_net_profit" <= 3000 OR (50 <= "ss_net_profit" OR "ss_net_profit" <= 25000)))) AND ("ss_store_sk" IS NOT NULL AND "ss_cdemo_sk" IS NOT NULL AND ("ss_addr_sk" IS NOT NULL AND "ss_sold_date_sk" IS NOT NULL))) AS "t1"
+WHERE "ss_sales_price" BETWEEN 50 AND 200 AND ("ss_net_profit" IS NOT NULL AND "ss_store_sk" IS NOT NULL) AND ("ss_cdemo_sk" IS NOT NULL AND ("ss_addr_sk" IS NOT NULL AND "ss_sold_date_sk" IS NOT NULL))) AS "t1"
 INNER JOIN (SELECT "s_store_sk"
 FROM (SELECT "s_store_sk"
 FROM "store") AS "t2"
@@ -163,15 +163,15 @@ WHERE "s_store_sk" IS NOT NULL) AS "t4" ON "t1"."ss_store_sk" = "t4"."s_store_sk
 INNER JOIN (SELECT "cd_demo_sk"
 FROM (SELECT "cd_demo_sk", "cd_marital_status", "cd_education_status"
 FROM "customer_demographics") AS "t5"
-WHERE "cd_education_status" = '4 yr Degree' AND ("cd_marital_status" = 'M' AND "cd_demo_sk" IS NOT NULL)) AS "t7" ON "t1"."ss_cdemo_sk" = "t7"."cd_demo_sk"
+WHERE "cd_marital_status" = 'M' AND "cd_education_status" = '4 yr Degree' AND "cd_demo_sk" IS NOT NULL) AS "t7" ON "t1"."ss_cdemo_sk" = "t7"."cd_demo_sk"
 INNER JOIN (SELECT "d_date_sk"
 FROM (SELECT "d_date_sk", "d_year"
 FROM "date_dim") AS "t8"
 WHERE "d_year" = 1998 AND "d_date_sk" IS NOT NULL) AS "t10" ON "t1"."ss_sold_date_sk" = "t10"."d_date_sk"
-INNER JOIN (SELECT "ca_address_sk", "ca_state" IN ('KY', 'GA', 'NM') AS "IN", "ca_state" IN ('MT', 'OR', 'IN') AS "IN2", "ca_state" IN ('WI', 'MO', 'WV') AS "IN3"
+INNER JOIN (SELECT "ca_address_sk", "ca_state" IN ('GA', 'KY', 'NM') AS "EXPR$0", "ca_state" IN ('IN', 'MT', 'OR') AS "EXPR$1", "ca_state" IN ('MO', 'WI', 'WV') AS "EXPR$2"
 FROM (SELECT "ca_address_sk", "ca_state", "ca_country"
 FROM "customer_address") AS "t11"
-WHERE "ca_state" IN ('KY', 'GA', 'NM', 'MT', 'OR', 'IN', 'WI', 'MO', 'WV') AND ("ca_country" = 'United States' AND "ca_address_sk" IS NOT NULL)) AS "t13" ON "t1"."ss_addr_sk" = "t13"."ca_address_sk" AND ("t13"."IN" AND "t1"."BETWEEN" OR "t13"."IN2" AND "t1"."BETWEEN6" OR "t13"."IN3" AND "t1"."BETWEEN7")
+WHERE "ca_state" IN ('GA', 'IN', 'KY', 'MO', 'MT', 'NM', 'OR', 'WI', 'WV') AND "ca_country" = 'United States' AND "ca_address_sk" IS NOT NULL) AS "t13" ON "t1"."ss_addr_sk" = "t13"."ca_address_sk" AND ("t13"."EXPR$0" AND "t1"."EXPR$0" OR "t13"."EXPR$1" AND "t1"."EXPR$1" OR "t13"."EXPR$2" AND "t1"."EXPR$2")
             hive.sql.query.fieldNames $f0
             hive.sql.query.fieldTypes bigint
             hive.sql.query.split false

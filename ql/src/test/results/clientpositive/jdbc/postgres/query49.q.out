@@ -291,19 +291,19 @@ STAGE PLANS:
                 TableScan
                   alias: ws
                   properties:
-                    hive.sql.query SELECT "t1"."ws_item_sk", SUM("t7"."CASE") AS "$f1", SUM("t1"."CASE") AS "$f2", SUM("t7"."CASE3") AS "$f3", SUM("t1"."CASE4") AS "$f4"
-FROM (SELECT "ws_sold_date_sk", "ws_item_sk", "ws_order_number", CASE WHEN "ws_quantity" IS NOT NULL THEN "ws_quantity" ELSE 0 END AS "CASE", CASE WHEN "ws_net_paid" IS NOT NULL THEN "ws_net_paid" ELSE 0 END AS "CASE4"
+                    hive.sql.query SELECT "t1"."ws_item_sk", SUM("t7"."$f1") AS "$f1", SUM("t1"."$f2") AS "$f2", SUM("t7"."$f3") AS "$f3", SUM("t1"."$f4") AS "$f4"
+FROM (SELECT "ws_sold_date_sk", "ws_item_sk", "ws_order_number", CASE WHEN "ws_quantity" IS NOT NULL THEN "ws_quantity" ELSE 0 END AS "$f2", CASE WHEN "ws_net_paid" IS NOT NULL THEN "ws_net_paid" ELSE 0 END AS "$f4"
 FROM (SELECT "ws_sold_date_sk", "ws_item_sk", "ws_order_number", "ws_quantity", "ws_net_paid", "ws_net_profit"
 FROM "web_sales") AS "t"
 WHERE "ws_quantity" > 0 AND ("ws_net_profit" > 1 AND "ws_net_paid" > 0) AND ("ws_order_number" IS NOT NULL AND ("ws_item_sk" IS NOT NULL AND "ws_sold_date_sk" IS NOT NULL))) AS "t1"
 INNER JOIN (SELECT "d_date_sk"
 FROM (SELECT "d_date_sk", "d_year", "d_moy"
 FROM "date_dim") AS "t2"
-WHERE "d_year" = 2000 AND ("d_moy" = 12 AND "d_date_sk" IS NOT NULL)) AS "t4" ON "t1"."ws_sold_date_sk" = "t4"."d_date_sk"
-INNER JOIN (SELECT "wr_item_sk", "wr_order_number", CASE WHEN "wr_return_quantity" IS NOT NULL THEN "wr_return_quantity" ELSE 0 END AS "CASE", CASE WHEN "wr_return_amt" IS NOT NULL THEN "wr_return_amt" ELSE 0 END AS "CASE3"
+WHERE "d_year" = 2000 AND "d_moy" = 12 AND "d_date_sk" IS NOT NULL) AS "t4" ON "t1"."ws_sold_date_sk" = "t4"."d_date_sk"
+INNER JOIN (SELECT "wr_item_sk", "wr_order_number", CASE WHEN "wr_return_quantity" IS NOT NULL THEN "wr_return_quantity" ELSE 0 END AS "$f1", CASE WHEN "wr_return_amt" IS NOT NULL THEN "wr_return_amt" ELSE 0 END AS "$f3"
 FROM (SELECT "wr_item_sk", "wr_order_number", "wr_return_quantity", "wr_return_amt"
 FROM "web_returns") AS "t5"
-WHERE "wr_return_amt" > 10000 AND ("wr_order_number" IS NOT NULL AND "wr_item_sk" IS NOT NULL)) AS "t7" ON "t1"."ws_order_number" = "t7"."wr_order_number" AND "t1"."ws_item_sk" = "t7"."wr_item_sk"
+WHERE "wr_return_amt" > 10000 AND "wr_order_number" IS NOT NULL AND "wr_item_sk" IS NOT NULL) AS "t7" ON "t1"."ws_order_number" = "t7"."wr_order_number" AND "t1"."ws_item_sk" = "t7"."wr_item_sk"
 GROUP BY "t1"."ws_item_sk"
                     hive.sql.query.fieldNames ws_item_sk,$f1,$f2,$f3,$f4
                     hive.sql.query.fieldTypes bigint,bigint,bigint,decimal(22,2),decimal(22,2)
@@ -327,19 +327,19 @@ GROUP BY "t1"."ws_item_sk"
                 TableScan
                   alias: sts
                   properties:
-                    hive.sql.query SELECT "t1"."ss_item_sk", SUM("t7"."CASE") AS "$f1", SUM("t1"."CASE") AS "$f2", SUM("t7"."CASE3") AS "$f3", SUM("t1"."CASE4") AS "$f4"
-FROM (SELECT "ss_sold_date_sk", "ss_item_sk", "ss_ticket_number", CASE WHEN "ss_quantity" IS NOT NULL THEN "ss_quantity" ELSE 0 END AS "CASE", CASE WHEN "ss_net_paid" IS NOT NULL THEN "ss_net_paid" ELSE 0 END AS "CASE4"
+                    hive.sql.query SELECT "t1"."ss_item_sk", SUM("t7"."$f1") AS "$f1", SUM("t1"."$f2") AS "$f2", SUM("t7"."$f3") AS "$f3", SUM("t1"."$f4") AS "$f4"
+FROM (SELECT "ss_sold_date_sk", "ss_item_sk", "ss_ticket_number", CASE WHEN "ss_quantity" IS NOT NULL THEN "ss_quantity" ELSE 0 END AS "$f2", CASE WHEN "ss_net_paid" IS NOT NULL THEN "ss_net_paid" ELSE 0 END AS "$f4"
 FROM (SELECT "ss_sold_date_sk", "ss_item_sk", "ss_ticket_number", "ss_quantity", "ss_net_paid", "ss_net_profit"
 FROM "store_sales") AS "t"
 WHERE "ss_quantity" > 0 AND ("ss_net_profit" > 1 AND "ss_net_paid" > 0) AND ("ss_ticket_number" IS NOT NULL AND ("ss_item_sk" IS NOT NULL AND "ss_sold_date_sk" IS NOT NULL))) AS "t1"
 INNER JOIN (SELECT "d_date_sk"
 FROM (SELECT "d_date_sk", "d_year", "d_moy"
 FROM "date_dim") AS "t2"
-WHERE "d_year" = 2000 AND ("d_moy" = 12 AND "d_date_sk" IS NOT NULL)) AS "t4" ON "t1"."ss_sold_date_sk" = "t4"."d_date_sk"
-INNER JOIN (SELECT "sr_item_sk", "sr_ticket_number", CASE WHEN "sr_return_quantity" IS NOT NULL THEN "sr_return_quantity" ELSE 0 END AS "CASE", CASE WHEN "sr_return_amt" IS NOT NULL THEN "sr_return_amt" ELSE 0 END AS "CASE3"
+WHERE "d_year" = 2000 AND "d_moy" = 12 AND "d_date_sk" IS NOT NULL) AS "t4" ON "t1"."ss_sold_date_sk" = "t4"."d_date_sk"
+INNER JOIN (SELECT "sr_item_sk", "sr_ticket_number", CASE WHEN "sr_return_quantity" IS NOT NULL THEN "sr_return_quantity" ELSE 0 END AS "$f1", CASE WHEN "sr_return_amt" IS NOT NULL THEN "sr_return_amt" ELSE 0 END AS "$f3"
 FROM (SELECT "sr_item_sk", "sr_ticket_number", "sr_return_quantity", "sr_return_amt"
 FROM "store_returns") AS "t5"
-WHERE "sr_return_amt" > 10000 AND ("sr_ticket_number" IS NOT NULL AND "sr_item_sk" IS NOT NULL)) AS "t7" ON "t1"."ss_ticket_number" = "t7"."sr_ticket_number" AND "t1"."ss_item_sk" = "t7"."sr_item_sk"
+WHERE "sr_return_amt" > 10000 AND "sr_ticket_number" IS NOT NULL AND "sr_item_sk" IS NOT NULL) AS "t7" ON "t1"."ss_ticket_number" = "t7"."sr_ticket_number" AND "t1"."ss_item_sk" = "t7"."sr_item_sk"
 GROUP BY "t1"."ss_item_sk"
                     hive.sql.query.fieldNames ss_item_sk,$f1,$f2,$f3,$f4
                     hive.sql.query.fieldTypes bigint,bigint,bigint,decimal(22,2),decimal(22,2)
@@ -363,19 +363,19 @@ GROUP BY "t1"."ss_item_sk"
                 TableScan
                   alias: cs
                   properties:
-                    hive.sql.query SELECT "t1"."cs_item_sk", SUM("t7"."CASE") AS "$f1", SUM("t1"."CASE") AS "$f2", SUM("t7"."CASE3") AS "$f3", SUM("t1"."CASE4") AS "$f4"
-FROM (SELECT "cs_sold_date_sk", "cs_item_sk", "cs_order_number", CASE WHEN "cs_quantity" IS NOT NULL THEN "cs_quantity" ELSE 0 END AS "CASE", CASE WHEN "cs_net_paid" IS NOT NULL THEN "cs_net_paid" ELSE 0 END AS "CASE4"
+                    hive.sql.query SELECT "t1"."cs_item_sk", SUM("t7"."$f1") AS "$f1", SUM("t1"."$f2") AS "$f2", SUM("t7"."$f3") AS "$f3", SUM("t1"."$f4") AS "$f4"
+FROM (SELECT "cs_sold_date_sk", "cs_item_sk", "cs_order_number", CASE WHEN "cs_quantity" IS NOT NULL THEN "cs_quantity" ELSE 0 END AS "$f2", CASE WHEN "cs_net_paid" IS NOT NULL THEN "cs_net_paid" ELSE 0 END AS "$f4"
 FROM (SELECT "cs_sold_date_sk", "cs_item_sk", "cs_order_number", "cs_quantity", "cs_net_paid", "cs_net_profit"
 FROM "catalog_sales") AS "t"
 WHERE "cs_quantity" > 0 AND ("cs_net_profit" > 1 AND "cs_net_paid" > 0) AND ("cs_order_number" IS NOT NULL AND ("cs_item_sk" IS NOT NULL AND "cs_sold_date_sk" IS NOT NULL))) AS "t1"
 INNER JOIN (SELECT "d_date_sk"
 FROM (SELECT "d_date_sk", "d_year", "d_moy"
 FROM "date_dim") AS "t2"
-WHERE "d_year" = 2000 AND ("d_moy" = 12 AND "d_date_sk" IS NOT NULL)) AS "t4" ON "t1"."cs_sold_date_sk" = "t4"."d_date_sk"
-INNER JOIN (SELECT "cr_item_sk", "cr_order_number", CASE WHEN "cr_return_quantity" IS NOT NULL THEN "cr_return_quantity" ELSE 0 END AS "CASE", CASE WHEN "cr_return_amount" IS NOT NULL THEN "cr_return_amount" ELSE 0 END AS "CASE3"
+WHERE "d_year" = 2000 AND "d_moy" = 12 AND "d_date_sk" IS NOT NULL) AS "t4" ON "t1"."cs_sold_date_sk" = "t4"."d_date_sk"
+INNER JOIN (SELECT "cr_item_sk", "cr_order_number", CASE WHEN "cr_return_quantity" IS NOT NULL THEN "cr_return_quantity" ELSE 0 END AS "$f1", CASE WHEN "cr_return_amount" IS NOT NULL THEN "cr_return_amount" ELSE 0 END AS "$f3"
 FROM (SELECT "cr_item_sk", "cr_order_number", "cr_return_quantity", "cr_return_amount"
 FROM "catalog_returns") AS "t5"
-WHERE "cr_return_amount" > 10000 AND ("cr_order_number" IS NOT NULL AND "cr_item_sk" IS NOT NULL)) AS "t7" ON "t1"."cs_order_number" = "t7"."cr_order_number" AND "t1"."cs_item_sk" = "t7"."cr_item_sk"
+WHERE "cr_return_amount" > 10000 AND "cr_order_number" IS NOT NULL AND "cr_item_sk" IS NOT NULL) AS "t7" ON "t1"."cs_order_number" = "t7"."cr_order_number" AND "t1"."cs_item_sk" = "t7"."cr_item_sk"
 GROUP BY "t1"."cs_item_sk"
                     hive.sql.query.fieldNames cs_item_sk,$f1,$f2,$f3,$f4
                     hive.sql.query.fieldTypes bigint,bigint,bigint,decimal(22,2),decimal(22,2)

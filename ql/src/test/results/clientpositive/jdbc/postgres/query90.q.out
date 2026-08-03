@@ -1,4 +1,4 @@
-Warning: Shuffle Join MERGEJOIN[10][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain
 select  cast(amc as decimal(15,4))/cast(pmc as decimal(15,4)) am_pm_ratio
  from ( select count(*) amc
@@ -72,7 +72,7 @@ STAGE PLANS:
 FROM (SELECT "ws_sold_time_sk", "ws_ship_hdemo_sk", "ws_web_page_sk"
 FROM (SELECT "ws_sold_time_sk", "ws_ship_hdemo_sk", "ws_web_page_sk"
 FROM "web_sales") AS "t"
-WHERE "ws_ship_hdemo_sk" IS NOT NULL AND ("ws_sold_time_sk" IS NOT NULL AND "ws_web_page_sk" IS NOT NULL)) AS "t1"
+WHERE "ws_ship_hdemo_sk" IS NOT NULL AND "ws_sold_time_sk" IS NOT NULL AND "ws_web_page_sk" IS NOT NULL) AS "t1"
 INNER JOIN (SELECT "hd_demo_sk"
 FROM (SELECT "hd_demo_sk", "hd_dep_count"
 FROM "household_demographics") AS "t2"
@@ -109,7 +109,7 @@ WHERE "wp_char_count" BETWEEN 5000 AND 5200 AND "wp_web_page_sk" IS NOT NULL) AS
 FROM (SELECT "ws_sold_time_sk", "ws_ship_hdemo_sk", "ws_web_page_sk"
 FROM (SELECT "ws_sold_time_sk", "ws_ship_hdemo_sk", "ws_web_page_sk"
 FROM "web_sales") AS "t"
-WHERE "ws_ship_hdemo_sk" IS NOT NULL AND ("ws_sold_time_sk" IS NOT NULL AND "ws_web_page_sk" IS NOT NULL)) AS "t1"
+WHERE "ws_ship_hdemo_sk" IS NOT NULL AND "ws_sold_time_sk" IS NOT NULL AND "ws_web_page_sk" IS NOT NULL) AS "t1"
 INNER JOIN (SELECT "hd_demo_sk"
 FROM (SELECT "hd_demo_sk", "hd_dep_count"
 FROM "household_demographics") AS "t2"

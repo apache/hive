@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.QTestMiniClusters;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
 import org.apache.hadoop.hive.ql.hooks.ExplainFormattedCBOHook;
 import org.apache.hadoop.hive.ql.parse.CoreParseNegative;
+import org.apache.hadoop.hive.ql.qoption.QTestDatabaseHandler;
 
 public class CliConfigs {
 
@@ -202,7 +203,46 @@ public class CliConfigs {
       }
     }
   }
-  
+
+  public static class MiniLlapLocalPostgresJdbcCliConfig extends AbstractCliConfig implements JdbcCliConfig {
+    private final QTestDatabaseHandler.DatabaseType databaseType;
+    private final String jdbcInitScript;
+    private final String externalTablesInitScript;
+
+    public MiniLlapLocalPostgresJdbcCliConfig() {
+      super(CoreJdbcCliDriver.class);
+      try {
+        databaseType = QTestDatabaseHandler.DatabaseType.POSTGRES;
+        jdbcInitScript = "q_test_tpcds_schema.postgres.sql";
+        externalTablesInitScript = "q_test_tpcds_extDB_schema-postgres.sql";
+
+        setQueryDir("ql/src/test/queries/clientpositive/perf");
+        setLogDir("itests/qtest/target/qfile-results/clientpositive/jdbc/postgres");
+        setResultsDir("ql/src/test/results/clientpositive/jdbc/postgres");
+        setHiveConfDir("data/conf/llap");
+        setClusterType(MiniClusterType.LLAP_LOCAL);
+        excludesFrom(testConfigProps, "jdbc.disabled.query.files");
+      } catch (Exception e) {
+        throw new RuntimeException("can't construct cliconfig", e);
+      }
+    }
+
+    @Override
+    public QTestDatabaseHandler.DatabaseType getDatabaseType() {
+      return databaseType;
+    }
+
+    @Override
+    public String getJdbcInitScript() {
+      return jdbcInitScript;
+    }
+
+    @Override
+    public String getExternalTablesInitScript() {
+      return externalTablesInitScript;
+    }
+  }
+
   public static class MiniLlapLocalCompactorCliConfig extends AbstractCliConfig {
 
     public MiniLlapLocalCompactorCliConfig() {
@@ -343,23 +383,6 @@ public class CliConfigs {
     }
   }
 
-  public static class MiniLlapLocalJdbcCliConfig extends AbstractCliConfig {
-    public MiniLlapLocalJdbcCliConfig() {
-      super(CoreJdbcCliDriver.class);
-      try {
-        setQueryDir("ql/src/test/queries/clientpositive/perf");
-        setLogDir("itests/qtest/target/qfile-results/clientpositive/jdbc/postgres");
-        setResultsDir("ql/src/test/results/clientpositive/jdbc/postgres");
-        setHiveConfDir("data/conf/llap");
-        setClusterType(MiniClusterType.LLAP_LOCAL);
-        setJdbcInitScript("q_test_tpcds_schema.postgres.sql");
-        setExternalTablesForJdbcInitScript("q_test_tpcds_extDB_schema-postgres.sql");
-        excludesFrom(testConfigProps, "jdbc.disabled.query.files");
-      } catch (Exception e) {
-        throw new RuntimeException("can't construct cliconfig", e);
-      }
-    }
-  }
 
   public static class NegativeLlapLocalCliConfig extends AbstractCliConfig {
     public NegativeLlapLocalCliConfig() {

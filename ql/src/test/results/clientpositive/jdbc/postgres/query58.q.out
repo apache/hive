@@ -1,4 +1,4 @@
-Warning: Shuffle Join MERGEJOIN[123][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 8' is a cross product
+Warning: Shuffle Join MERGEJOIN[120][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 8' is a cross product
 PREHOOK: query: explain
 with ss_items as
  (select i_item_id item_id

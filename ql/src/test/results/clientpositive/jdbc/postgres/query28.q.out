@@ -1,8 +1,8 @@
-Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-Warning: Shuffle Join MERGEJOIN[31][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
-Warning: Shuffle Join MERGEJOIN[33][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4]] in Stage 'Reducer 5' is a cross product
-Warning: Shuffle Join MERGEJOIN[34][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5]] in Stage 'Reducer 6' is a cross product
+Warning: Shuffle Join MERGEJOIN[29][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[31][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4]] in Stage 'Reducer 5' is a cross product
+Warning: Shuffle Join MERGEJOIN[33][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4, $hdt$_5]] in Stage 'Reducer 6' is a cross product
 PREHOOK: query: explain
 select  *
 from (select avg(ss_list_price) B1_LP
@@ -135,7 +135,7 @@ STAGE PLANS:
                     hive.sql.query SELECT CAST(SUM("ss_list_price") / COUNT("ss_list_price") AS DECIMAL(11, 6)) AS "b1_lp", COUNT("ss_list_price") AS "b1_cnt", COUNT(DISTINCT "ss_list_price") AS "b1_cntd"
 FROM (SELECT "ss_quantity", "ss_wholesale_cost", "ss_list_price", "ss_coupon_amt"
 FROM "store_sales") AS "t"
-WHERE ("ss_list_price" BETWEEN 11 AND 21 OR ("ss_coupon_amt" BETWEEN 460 AND 1460 OR "ss_wholesale_cost" BETWEEN 14 AND 34)) AND "ss_quantity" BETWEEN 0 AND 5
+WHERE ("ss_list_price" BETWEEN 11 AND 21 OR "ss_coupon_amt" BETWEEN 460 AND 1460 OR "ss_wholesale_cost" BETWEEN 14 AND 34) AND "ss_quantity" BETWEEN 0 AND 5
                     hive.sql.query.fieldNames b1_lp,b1_cnt,b1_cntd
                     hive.sql.query.fieldTypes decimal(11,6),bigint,bigint
                     hive.sql.query.split false
@@ -159,7 +159,7 @@ WHERE ("ss_list_price" BETWEEN 11 AND 21 OR ("ss_coupon_amt" BETWEEN 460 AND 146
                     hive.sql.query SELECT CAST(SUM("ss_list_price") / COUNT("ss_list_price") AS DECIMAL(11, 6)) AS "b3_lp", COUNT("ss_list_price") AS "b3_cnt", COUNT(DISTINCT "ss_list_price") AS "b3_cntd"
 FROM (SELECT "ss_quantity", "ss_wholesale_cost", "ss_list_price", "ss_coupon_amt"
 FROM "store_sales") AS "t"
-WHERE ("ss_list_price" BETWEEN 66 AND 76 OR ("ss_coupon_amt" BETWEEN 920 AND 1920 OR "ss_wholesale_cost" BETWEEN 4 AND 24)) AND "ss_quantity" BETWEEN 11 AND 15
+WHERE ("ss_list_price" BETWEEN 66 AND 76 OR "ss_coupon_amt" BETWEEN 920 AND 1920 OR "ss_wholesale_cost" BETWEEN 4 AND 24) AND "ss_quantity" BETWEEN 11 AND 15
                     hive.sql.query.fieldNames b3_lp,b3_cnt,b3_cntd
                     hive.sql.query.fieldTypes decimal(11,6),bigint,bigint
                     hive.sql.query.split false
@@ -183,7 +183,7 @@ WHERE ("ss_list_price" BETWEEN 66 AND 76 OR ("ss_coupon_amt" BETWEEN 920 AND 192
                     hive.sql.query SELECT CAST(SUM("ss_list_price") / COUNT("ss_list_price") AS DECIMAL(11, 6)) AS "b2_lp", COUNT("ss_list_price") AS "b2_cnt", COUNT(DISTINCT "ss_list_price") AS "b2_cntd"
 FROM (SELECT "ss_quantity", "ss_wholesale_cost", "ss_list_price", "ss_coupon_amt"
 FROM "store_sales") AS "t"
-WHERE ("ss_list_price" BETWEEN 91 AND 101 OR ("ss_coupon_amt" BETWEEN 1430 AND 2430 OR "ss_wholesale_cost" BETWEEN 32 AND 52)) AND "ss_quantity" BETWEEN 6 AND 10
+WHERE ("ss_list_price" BETWEEN 91 AND 101 OR "ss_coupon_amt" BETWEEN 1430 AND 2430 OR "ss_wholesale_cost" BETWEEN 32 AND 52) AND "ss_quantity" BETWEEN 6 AND 10
                     hive.sql.query.fieldNames b2_lp,b2_cnt,b2_cntd
                     hive.sql.query.fieldTypes decimal(11,6),bigint,bigint
                     hive.sql.query.split false
@@ -207,7 +207,7 @@ WHERE ("ss_list_price" BETWEEN 91 AND 101 OR ("ss_coupon_amt" BETWEEN 1430 AND 2
                     hive.sql.query SELECT CAST(SUM("ss_list_price") / COUNT("ss_list_price") AS DECIMAL(11, 6)) AS "b6_lp", COUNT("ss_list_price") AS "b6_cnt", COUNT(DISTINCT "ss_list_price") AS "b6_cntd"
 FROM (SELECT "ss_quantity", "ss_wholesale_cost", "ss_list_price", "ss_coupon_amt"
 FROM "store_sales") AS "t"
-WHERE ("ss_list_price" BETWEEN 28 AND 38 OR ("ss_coupon_amt" BETWEEN 2513 AND 3513 OR "ss_wholesale_cost" BETWEEN 42 AND 62)) AND "ss_quantity" BETWEEN 26 AND 30
+WHERE ("ss_list_price" BETWEEN 28 AND 38 OR "ss_coupon_amt" BETWEEN 2513 AND 3513 OR "ss_wholesale_cost" BETWEEN 42 AND 62) AND "ss_quantity" BETWEEN 26 AND 30
                     hive.sql.query.fieldNames b6_lp,b6_cnt,b6_cntd
                     hive.sql.query.fieldTypes decimal(11,6),bigint,bigint
                     hive.sql.query.split false
@@ -231,7 +231,7 @@ WHERE ("ss_list_price" BETWEEN 28 AND 38 OR ("ss_coupon_amt" BETWEEN 2513 AND 35
                     hive.sql.query SELECT CAST(SUM("ss_list_price") / COUNT("ss_list_price") AS DECIMAL(11, 6)) AS "b5_lp", COUNT("ss_list_price") AS "b5_cnt", COUNT(DISTINCT "ss_list_price") AS "b5_cntd"
 FROM (SELECT "ss_quantity", "ss_wholesale_cost", "ss_list_price", "ss_coupon_amt"
 FROM "store_sales") AS "t"
-WHERE ("ss_list_price" BETWEEN 135 AND 145 OR ("ss_coupon_amt" BETWEEN 14180 AND 15180 OR "ss_wholesale_cost" BETWEEN 38 AND 58)) AND "ss_quantity" BETWEEN 21 AND 25
+WHERE ("ss_list_price" BETWEEN 135 AND 145 OR "ss_coupon_amt" BETWEEN 14180 AND 15180 OR "ss_wholesale_cost" BETWEEN 38 AND 58) AND "ss_quantity" BETWEEN 21 AND 25
                     hive.sql.query.fieldNames b5_lp,b5_cnt,b5_cntd
                     hive.sql.query.fieldTypes decimal(11,6),bigint,bigint
                     hive.sql.query.split false
@@ -255,7 +255,7 @@ WHERE ("ss_list_price" BETWEEN 135 AND 145 OR ("ss_coupon_amt" BETWEEN 14180 AND
                     hive.sql.query SELECT CAST(SUM("ss_list_price") / COUNT("ss_list_price") AS DECIMAL(11, 6)) AS "b4_lp", COUNT("ss_list_price") AS "b4_cnt", COUNT(DISTINCT "ss_list_price") AS "b4_cntd"
 FROM (SELECT "ss_quantity", "ss_wholesale_cost", "ss_list_price", "ss_coupon_amt"
 FROM "store_sales") AS "t"
-WHERE ("ss_list_price" BETWEEN 142 AND 152 OR ("ss_coupon_amt" BETWEEN 3054 AND 4054 OR "ss_wholesale_cost" BETWEEN 80 AND 100)) AND "ss_quantity" BETWEEN 16 AND 20
+WHERE ("ss_list_price" BETWEEN 142 AND 152 OR "ss_coupon_amt" BETWEEN 3054 AND 4054 OR "ss_wholesale_cost" BETWEEN 80 AND 100) AND "ss_quantity" BETWEEN 16 AND 20
                     hive.sql.query.fieldNames b4_lp,b4_cnt,b4_cntd
                     hive.sql.query.fieldTypes decimal(11,6),bigint,bigint
                     hive.sql.query.split false

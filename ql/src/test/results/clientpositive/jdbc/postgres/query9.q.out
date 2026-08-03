@@ -169,16 +169,16 @@ WHERE "r_reason_sk" = 1
                 TableScan
                   alias: store_sales
                   properties:
-                    hive.sql.query SELECT COUNT(*) > 409437 AS ">"
+                    hive.sql.query SELECT COUNT(*) > 409437
 FROM (SELECT "ss_quantity"
 FROM "store_sales") AS "t"
 WHERE "ss_quantity" BETWEEN 1 AND 20
-                    hive.sql.query.fieldNames >
+                    hive.sql.query.fieldNames EXPR$0
                     hive.sql.query.fieldTypes boolean
                     hive.sql.query.split false
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: > (type: boolean)
+                    expressions: expr$0 (type: boolean)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
@@ -241,16 +241,16 @@ WHERE "ss_quantity" BETWEEN 1 AND 20
                 TableScan
                   alias: store_sales
                   properties:
-                    hive.sql.query SELECT COUNT(*) > 4595804 AS ">"
+                    hive.sql.query SELECT COUNT(*) > 4595804
 FROM (SELECT "ss_quantity"
 FROM "store_sales") AS "t"
 WHERE "ss_quantity" BETWEEN 21 AND 40
-                    hive.sql.query.fieldNames >
+                    hive.sql.query.fieldNames EXPR$1
                     hive.sql.query.fieldTypes boolean
                     hive.sql.query.split false
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: > (type: boolean)
+                    expressions: expr$1 (type: boolean)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
@@ -313,16 +313,16 @@ WHERE "ss_quantity" BETWEEN 21 AND 40
                 TableScan
                   alias: store_sales
                   properties:
-                    hive.sql.query SELECT COUNT(*) > 7887297 AS ">"
+                    hive.sql.query SELECT COUNT(*) > 7887297
 FROM (SELECT "ss_quantity"
 FROM "store_sales") AS "t"
 WHERE "ss_quantity" BETWEEN 41 AND 60
-                    hive.sql.query.fieldNames >
+                    hive.sql.query.fieldNames EXPR$2
                     hive.sql.query.fieldTypes boolean
                     hive.sql.query.split false
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: > (type: boolean)
+                    expressions: expr$2 (type: boolean)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
@@ -385,16 +385,16 @@ WHERE "ss_quantity" BETWEEN 41 AND 60
                 TableScan
                   alias: store_sales
                   properties:
-                    hive.sql.query SELECT COUNT(*) > 10872978 AS ">"
+                    hive.sql.query SELECT COUNT(*) > 10872978
 FROM (SELECT "ss_quantity"
 FROM "store_sales") AS "t"
 WHERE "ss_quantity" BETWEEN 61 AND 80
-                    hive.sql.query.fieldNames >
+                    hive.sql.query.fieldNames EXPR$3
                     hive.sql.query.fieldTypes boolean
                     hive.sql.query.split false
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: > (type: boolean)
+                    expressions: expr$3 (type: boolean)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
@@ -457,16 +457,16 @@ WHERE "ss_quantity" BETWEEN 61 AND 80
                 TableScan
                   alias: store_sales
                   properties:
-                    hive.sql.query SELECT COUNT(*) > 43571537 AS ">"
+                    hive.sql.query SELECT COUNT(*) > 43571537
 FROM (SELECT "ss_quantity"
 FROM "store_sales") AS "t"
 WHERE "ss_quantity" BETWEEN 81 AND 100
-                    hive.sql.query.fieldNames >
+                    hive.sql.query.fieldNames EXPR$4
                     hive.sql.query.fieldTypes boolean
                     hive.sql.query.split false
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: > (type: boolean)
+                    expressions: expr$4 (type: boolean)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator

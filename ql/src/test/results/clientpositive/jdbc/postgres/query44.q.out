@@ -127,19 +127,21 @@ WHERE "i_item_sk" IS NOT NULL
                 TableScan
                   alias: ss1
                   properties:
-                    hive.sql.query SELECT "t3"."$f0", "t3"."$f1", "t9"."rank_col"
+                    hive.sql.query SELECT "t3"."$f0", "t3"."$f1", "t10"."rank_col"
 FROM (SELECT "ss_item_sk" AS "$f0", CAST(SUM("ss_net_profit") / COUNT("ss_net_profit") AS DECIMAL(11, 6)) AS "$f1"
 FROM (SELECT "ss_item_sk", "ss_store_sk", "ss_net_profit"
 FROM "store_sales") AS "t"
 WHERE "ss_store_sk" = 410
 GROUP BY "ss_item_sk"
 HAVING CAST(SUM("ss_net_profit") / COUNT("ss_net_profit") AS DECIMAL(11, 6)) IS NOT NULL) AS "t3"
-INNER JOIN (SELECT CAST(SUM("ss_net_profit") / COUNT("ss_net_profit") AS DECIMAL(11, 6)) AS "rank_col"
+INNER JOIN (SELECT CAST(SUM("t5"."ss_net_profit") / COUNT("t5"."ss_net_profit") AS DECIMAL(11, 6)) AS "rank_col"
+FROM (SELECT *
 FROM (SELECT "ss_hdemo_sk", "ss_store_sk", "ss_net_profit"
 FROM "store_sales") AS "t4"
-WHERE "ss_store_sk" = 410 AND "ss_hdemo_sk" IS NULL
-GROUP BY TRUE
-HAVING CAST(SUM("ss_net_profit") / COUNT("ss_net_profit") AS DECIMAL(11, 6)) IS NOT NULL) AS "t9" ON "t3"."$f1" > 0.9 * "t9"."rank_col"
+WHERE "ss_store_sk" = 410 AND "ss_hdemo_sk" IS NULL) AS "t5",
+(VALUES (TRUE)) AS "t6" ("$f0")
+GROUP BY "t6"."$f0"
+HAVING CAST(SUM("t5"."ss_net_profit") / COUNT("t5"."ss_net_profit") AS DECIMAL(11, 6)) IS NOT NULL) AS "t10" ON "t3"."$f1" > 0.9 * "t10"."rank_col"
                     hive.sql.query.fieldNames $f0,$f1,rank_col
                     hive.sql.query.fieldTypes bigint,decimal(11,6),decimal(11,6)
                     hive.sql.query.split false

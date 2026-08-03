@@ -1,16 +1,6 @@
-CTE Suggestion:
-JdbcFilter(condition=[AND(=($1, 1999), =($2, 3))])
-  JdbcProject(d_month_seq=[$3], d_year=[$6], d_moy=[$8])
-    JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-
-CTE Suggestion:
-JdbcFilter(condition=[AND(=($1, 1999), =($2, 3), IS NOT NULL($0))])
-  JdbcProject(d_month_seq=[$3], d_year=[$6], d_moy=[$8])
-    JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-
-Warning: Shuffle Join MERGEJOIN[69][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-Warning: Shuffle Join MERGEJOIN[71][tables = [$hdt$_3, $hdt$_4]] in Stage 'Reducer 12' is a cross product
-Warning: Shuffle Join MERGEJOIN[72][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[68][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[70][tables = [$hdt$_3, $hdt$_4]] in Stage 'Reducer 12' is a cross product
+Warning: Shuffle Join MERGEJOIN[71][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: explain cbo
 with my_customers as (
  select distinct c_customer_sk
@@ -150,18 +140,17 @@ HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
               HiveJoin(condition=[=($4, $0)], joinType=[inner], algorithm=[none], cost=[not available])
                 HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
                   HiveProject(d_date_sk=[$0], d_month_seq=[$1], $f0=[$2])
-                    HiveProject(d_date_sk=[$0], d_month_seq=[$1], $f0=[$2])
-                      HiveJdbcConverter(convention=[JDBC.POSTGRES])
-                        JdbcJoin(condition=[<=($2, $1)], joinType=[inner])
-                          JdbcProject(d_date_sk=[$0], d_month_seq=[$1])
-                            JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
-                              JdbcProject(d_date_sk=[$0], d_month_seq=[$3])
+                    HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                      JdbcJoin(condition=[<=($2, $1)], joinType=[inner])
+                        JdbcProject(d_date_sk=[$0], d_month_seq=[$1])
+                          JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+                            JdbcProject(d_date_sk=[$0], d_month_seq=[$3])
+                              JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                        JdbcAggregate(group=[{0}])
+                          JdbcProject($f0=[+($0, 1)])
+                            JdbcFilter(condition=[AND(=($1, 1999), =($2, 3), IS NOT NULL($0))])
+                              JdbcProject(d_month_seq=[$3], d_year=[$6], d_moy=[$8])
                                 JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-                          JdbcAggregate(group=[{0}])
-                            JdbcProject($f0=[+($0, 1)])
-                              JdbcFilter(condition=[AND(=($1, 1999), =($2, 3), IS NOT NULL($0))])
-                                JdbcProject(d_month_seq=[$3], d_year=[$6], d_moy=[$8])
-                                  JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
                   HiveProject(cnt=[$0])
                     HiveFilter(condition=[sq_count_check($0)])
                       HiveProject(cnt=[$0])

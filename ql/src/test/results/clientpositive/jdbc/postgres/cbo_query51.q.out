@@ -1,9 +1,3 @@
-CTE Suggestion:
-JdbcProject(d_date_sk=[$0], d_date=[$1])
-  JdbcFilter(condition=[AND(BETWEEN(false, $2, 1212, 1223), IS NOT NULL($0))])
-    JdbcProject(d_date_sk=[$0], d_date=[$2], d_month_seq=[$3])
-      JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-
 PREHOOK: query: explain cbo
 WITH web_v1 as (
 select
@@ -102,7 +96,7 @@ POSTHOOK: Input: default@web_sales
 #### A masked pattern was here ####
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
-  HiveProject(item_sk=[$0], d_date=[$1], web_sales=[$2], store_sales=[$3], max_window_0=[$4], max_window_1=[$5])
+  HiveProject(y.item_sk=[$0], y.d_date=[$1], y.web_sales=[$2], y.store_sales=[$3], y.web_cumulative=[$4], y.store_cumulative=[$5])
     HiveFilter(condition=[>($4, $5)])
       HiveProject(item_sk=[CASE(IS NOT NULL($0), $0, $3)], d_date=[CASE(IS NOT NULL($1), $1, $4)], web_sales=[$2], store_sales=[$5], max_window_0=[max($2) OVER (PARTITION BY CASE(IS NOT NULL($0), $0, $3) ORDER BY CASE(IS NOT NULL($1), $1, $4) NULLS LAST ROWS UNBOUNDED PRECEDING)], max_window_1=[max($5) OVER (PARTITION BY CASE(IS NOT NULL($0), $0, $3) ORDER BY CASE(IS NOT NULL($1), $1, $4) NULLS LAST ROWS UNBOUNDED PRECEDING)])
         HiveJoin(condition=[AND(=($0, $3), =($1, $4))], joinType=[full], algorithm=[none], cost=[not available])

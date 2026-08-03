@@ -141,7 +141,7 @@ STAGE PLANS:
           properties:
             hive.sql.query SELECT "t45"."customer_id", "t45"."customer_first_name", "t45"."customer_last_name"
 FROM (SELECT "t43"."c_customer_id" AS "customer_id", "t43"."c_first_name" AS "customer_first_name", "t43"."c_last_name" AS "customer_last_name"
-FROM (SELECT "t7"."c_customer_id" AS "customer_id", SUM("t1"."ss_net_paid") AS "year_total", SUM("t1"."ss_net_paid") > 0 AS ">"
+FROM (SELECT "t7"."c_customer_id" AS "customer_id", SUM("t1"."ss_net_paid") AS "year_total", SUM("t1"."ss_net_paid") > 0 AS "EXPR$0"
 FROM (SELECT "ss_sold_date_sk", "ss_customer_sk", "ss_net_paid"
 FROM (SELECT "ss_sold_date_sk", "ss_customer_sk", "ss_net_paid"
 FROM "store_sales") AS "t"
@@ -170,7 +170,7 @@ FROM (SELECT "c_customer_sk", "c_customer_id", "c_first_name", "c_last_name"
 FROM "customer") AS "t17"
 WHERE "c_customer_sk" IS NOT NULL AND "c_customer_id" IS NOT NULL) AS "t19" ON "t13"."ws_bill_customer_sk" = "t19"."c_customer_sk"
 GROUP BY "t19"."c_customer_id", "t19"."c_first_name", "t19"."c_last_name") AS "t21" ON "t10"."customer_id" = "t21"."customer_id"
-INNER JOIN (SELECT "t30"."c_customer_id" AS "customer_id", SUM("t24"."ws_net_paid") AS "year_total", SUM("t24"."ws_net_paid") > 0 AS ">"
+INNER JOIN (SELECT "t30"."c_customer_id" AS "customer_id", SUM("t24"."ws_net_paid") AS "year_total", SUM("t24"."ws_net_paid") > 0 AS "EXPR$1"
 FROM (SELECT "ws_sold_date_sk", "ws_bill_customer_sk", "ws_net_paid"
 FROM (SELECT "ws_sold_date_sk", "ws_bill_customer_sk", "ws_net_paid"
 FROM "web_sales") AS "t22"
@@ -198,7 +198,7 @@ INNER JOIN (SELECT "c_customer_sk", "c_customer_id", "c_first_name", "c_last_nam
 FROM (SELECT "c_customer_sk", "c_customer_id", "c_first_name", "c_last_name"
 FROM "customer") AS "t40"
 WHERE "c_customer_sk" IS NOT NULL AND "c_customer_id" IS NOT NULL) AS "t42" ON "t36"."ss_customer_sk" = "t42"."c_customer_sk"
-GROUP BY "t42"."c_customer_id", "t42"."c_first_name", "t42"."c_last_name") AS "t43" ON "t10"."customer_id" = "t43"."c_customer_id" AND CASE WHEN "t10".">" THEN CASE WHEN "t33".">" THEN "t21"."year_total" / "t33"."year_total" > "t43"."$f3" / "t10"."year_total" ELSE FALSE END ELSE FALSE END
+GROUP BY "t42"."c_customer_id", "t42"."c_first_name", "t42"."c_last_name") AS "t43" ON "t10"."customer_id" = "t43"."c_customer_id" AND CASE WHEN "t10"."EXPR$0" THEN CASE WHEN "t33"."EXPR$1" THEN "t21"."year_total" / "t33"."year_total" > "t43"."$f3" / "t10"."year_total" ELSE FALSE END ELSE FALSE END
 ORDER BY "t43"."c_last_name", "t43"."c_customer_id", "t43"."c_first_name"
 FETCH NEXT 100 ROWS ONLY) AS "t45"
             hive.sql.query.fieldNames customer_id,customer_first_name,customer_last_name

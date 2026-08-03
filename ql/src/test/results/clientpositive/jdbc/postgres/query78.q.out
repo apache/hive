@@ -159,7 +159,7 @@ STAGE PLANS:
                     hive.sql.query SELECT "ss_sold_date_sk", "ss_item_sk", "ss_customer_sk", "ss_ticket_number", "ss_quantity", "ss_wholesale_cost", "ss_sales_price"
 FROM (SELECT "ss_sold_date_sk", "ss_item_sk", "ss_customer_sk", "ss_ticket_number", "ss_quantity", "ss_wholesale_cost", "ss_sales_price"
 FROM "store_sales") AS "t"
-WHERE "ss_sold_date_sk" IS NOT NULL AND ("ss_item_sk" IS NOT NULL AND "ss_customer_sk" IS NOT NULL)
+WHERE "ss_sold_date_sk" IS NOT NULL AND "ss_item_sk" IS NOT NULL AND "ss_customer_sk" IS NOT NULL
                     hive.sql.query.fieldNames ss_sold_date_sk,ss_item_sk,ss_customer_sk,ss_ticket_number,ss_quantity,ss_wholesale_cost,ss_sales_price
                     hive.sql.query.fieldTypes int,bigint,int,bigint,int,decimal(7,2),decimal(7,2)
                     hive.sql.query.split true
@@ -253,7 +253,7 @@ WHERE "d_year" = 2000 AND "d_date_sk" IS NOT NULL
                     hive.sql.query SELECT "cs_sold_date_sk", "cs_bill_customer_sk", "cs_item_sk", "cs_order_number", "cs_quantity", "cs_wholesale_cost", "cs_sales_price"
 FROM (SELECT "cs_sold_date_sk", "cs_bill_customer_sk", "cs_item_sk", "cs_order_number", "cs_quantity", "cs_wholesale_cost", "cs_sales_price"
 FROM "catalog_sales") AS "t"
-WHERE "cs_sold_date_sk" IS NOT NULL AND ("cs_item_sk" IS NOT NULL AND "cs_bill_customer_sk" IS NOT NULL)
+WHERE "cs_sold_date_sk" IS NOT NULL AND "cs_item_sk" IS NOT NULL AND "cs_bill_customer_sk" IS NOT NULL
                     hive.sql.query.fieldNames cs_sold_date_sk,cs_bill_customer_sk,cs_item_sk,cs_order_number,cs_quantity,cs_wholesale_cost,cs_sales_price
                     hive.sql.query.fieldTypes int,int,bigint,bigint,int,decimal(7,2),decimal(7,2)
                     hive.sql.query.split true
@@ -341,7 +341,7 @@ WHERE "sr_ticket_number" IS NOT NULL AND "sr_item_sk" IS NOT NULL
                     hive.sql.query SELECT "ws_sold_date_sk", "ws_item_sk", "ws_bill_customer_sk", "ws_order_number", "ws_quantity", "ws_wholesale_cost", "ws_sales_price"
 FROM (SELECT "ws_sold_date_sk", "ws_item_sk", "ws_bill_customer_sk", "ws_order_number", "ws_quantity", "ws_wholesale_cost", "ws_sales_price"
 FROM "web_sales") AS "t"
-WHERE "ws_sold_date_sk" IS NOT NULL AND ("ws_item_sk" IS NOT NULL AND "ws_bill_customer_sk" IS NOT NULL)
+WHERE "ws_sold_date_sk" IS NOT NULL AND "ws_item_sk" IS NOT NULL AND "ws_bill_customer_sk" IS NOT NULL
                     hive.sql.query.fieldNames ws_sold_date_sk,ws_item_sk,ws_bill_customer_sk,ws_order_number,ws_quantity,ws_wholesale_cost,ws_sales_price
                     hive.sql.query.fieldTypes int,bigint,int,bigint,int,decimal(7,2),decimal(7,2)
                     hive.sql.query.split true
