@@ -25,6 +25,7 @@
   <name>Hive Beeline</name>
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
+    <jpackage.plugin.version>4.3.0</jpackage.plugin.version>
   </properties>
   <dependencies>
     <!-- dependencies are always listed in sorted order by groupId, artifactId -->
@@ -262,9 +263,10 @@
       <id>native-installer</id>
       <properties>
         <!-- jpackage requires version as 1-3 integers separated by dots -->
-        <installer.app.version>4.3.0</installer.app.version>
+        <installer.app.version>${jpackage.plugin.version}</installer.app.version>
         <!-- Default architecture label; overridden to arm64 by the macos-arm64 profile -->
         <installer.arch>x64</installer.arch>
+        <jpackage.platform.args></jpackage.platform.args>
       </properties>
       <build>
         <plugins>
@@ -301,6 +303,7 @@
                       <!-- Output: arch-specific subdirectory so x64 and arm64 coexist -->
                       <arg value="--dest"/>
                       <arg value="${project.build.directory}/installer/${installer.arch}"/>
+                      <arg line="${jpackage.platform.args}"/>
                       <!--
                         jpackage picks the native format automatically:
                           macOS   → dmg  (x64 on Intel, arm64 on Apple Silicon)
@@ -334,6 +337,20 @@
       </activation>
       <properties>
         <installer.arch>arm64</installer.arch>
+      </properties>
+    </profile>
+    <!--
+      Auto-activates on Windows
+    -->
+    <profile>
+      <id>windows-installer</id>
+      <activation>
+        <os>
+          <family>windows</family>
+        </os>
+      </activation>
+      <properties>
+        <jpackage.platform.args>--win-console</jpackage.platform.args>
       </properties>
     </profile>
     <profile>
