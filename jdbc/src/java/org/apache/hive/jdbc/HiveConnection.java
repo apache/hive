@@ -685,9 +685,9 @@ public class HiveConnection implements java.sql.Connection {
     }
     final boolean cookieAuthEnabled = isCookieEnabled;
 
-    httpClientBuilder.addRequestInterceptorLast((request, entity, context) -> {
-      context.setAttribute("hive.request_sent", Boolean.TRUE);
-    });
+    httpClientBuilder.addRequestInterceptorLast((request, entity, context) ->
+      context.setAttribute("hive.request_sent", Boolean.TRUE)
+    );
 
     // Beeline <------> LB <------> Reverse Proxy <-----> Hiveserver2
     // In case of deployments like above, the LoadBalancer (LB) can be configured with Idle Timeout after which the LB
@@ -739,7 +739,6 @@ public class HiveConnection implements java.sql.Connection {
             }
           }
         }
-        final HttpClientContext clientContext = HttpClientContext.adapt(context);
 
         if(requestIsAborted(request)){
           LOG.info("Not retrying as request is aborted.");
@@ -767,7 +766,7 @@ public class HiveConnection implements java.sql.Connection {
 
       // checks if the request got aborted
       protected boolean requestIsAborted(final HttpRequest request) {
-        return (request instanceof HttpUriRequest && ((HttpUriRequest) request).isAborted());
+        return (request instanceof HttpUriRequest httpUriRequest && httpUriRequest.isAborted());
       }
 
       // Retry on HTTP 401 when cookie auth is enabled: the server rejected the
