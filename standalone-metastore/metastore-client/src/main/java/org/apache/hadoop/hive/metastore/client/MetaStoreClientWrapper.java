@@ -61,6 +61,11 @@ public abstract class MetaStoreClientWrapper extends BaseMetaStoreClient {
   }
 
   @Override
+  public void syncEmbeddedHandlerConf(Configuration conf) {
+    delegate.syncEmbeddedHandlerConf(conf);
+  }
+
+  @Override
   public void reconnect() throws MetaException {
     delegate.reconnect();
   }

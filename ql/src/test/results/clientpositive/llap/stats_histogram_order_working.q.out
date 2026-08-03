@@ -1,0 +1,92 @@
+PREHOOK: query: CREATE TABLE tab1 AS (SELECT 1 as key)
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tab1
+POSTHOOK: query: CREATE TABLE tab1 AS (SELECT 1 as key)
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tab1
+POSTHOOK: Lineage: tab1.key SIMPLE []
+PREHOOK: query: DESCRIBE FORMATTED tab1 key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tab1
+POSTHOOK: query: DESCRIBE FORMATTED tab1 key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tab1
+col_name            	key                 
+data_type           	int                 
+min                 	1                   
+max                 	1                   
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+histogram           	Q1: 1, Q2: 1, Q3: 1 
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
+PREHOOK: query: CREATE TABLE tab2 AS (SELECT 1 as key)
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tab2
+POSTHOOK: query: CREATE TABLE tab2 AS (SELECT 1 as key)
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tab2
+POSTHOOK: Lineage: tab2.key SIMPLE []
+PREHOOK: query: ANALYZE TABLE tab2 COMPUTE STATISTICS FOR COLUMNS
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@tab2
+PREHOOK: Output: default@tab2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: ANALYZE TABLE tab2 COMPUTE STATISTICS FOR COLUMNS
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@tab2
+POSTHOOK: Output: default@tab2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: DESCRIBE FORMATTED tab2 key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tab2
+POSTHOOK: query: DESCRIBE FORMATTED tab2 key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tab2
+col_name            	key                 
+data_type           	int                 
+min                 	1                   
+max                 	1                   
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+histogram           	Q1: 1, Q2: 1, Q3: 1 
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
+PREHOOK: query: DROP TABLE tab1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tab1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tab1
+POSTHOOK: query: DROP TABLE tab1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tab1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tab1
+PREHOOK: query: DROP TABLE tab2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tab2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tab2
+POSTHOOK: query: DROP TABLE tab2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tab2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tab2
