@@ -123,10 +123,10 @@ public class ThriftHttpServlet extends HttpServlet {
   private JWTValidator jwtValidator;
   private HttpAuthService httpAuthService;
 
-  private TProcessor processor;
-  private TProtocolFactory inProtocolFactory;
-  private TProtocolFactory outProtocolFactory;
-  private Collection<Map.Entry<String, String>> customHeaders;
+  private final TProcessor processor;
+  private final TProtocolFactory inProtocolFactory;
+  private final TProtocolFactory outProtocolFactory;
+  private final Collection<Map.Entry<String, String>> customHeaders;
 
   public ThriftHttpServlet(TProcessor processor, TProtocolFactory protocolFactory,
       UserGroupInformation serviceUGI, UserGroupInformation httpUGI,

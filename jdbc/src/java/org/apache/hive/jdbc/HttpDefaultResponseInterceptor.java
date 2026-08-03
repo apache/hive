@@ -29,7 +29,9 @@ import org.apache.hc.core5.http.protocol.HttpContext;
 public class HttpDefaultResponseInterceptor extends HttpResponseInterceptorBase {
 
   @Override
-  public void process(HttpResponse response, EntityDetails entityDetails, HttpContext context) throws HttpException, IOException {
+  public void process(HttpResponse response, EntityDetails entityDetails, HttpContext context)
+      throws HttpException, IOException {
+
     String trackHeader = (String) context.getAttribute(Constants.HTTP_HEADER_REQUEST_TRACK);
     if (trackHeader == null) {
       return;

@@ -60,7 +60,6 @@ import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.server.ServerContext;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TServerEventHandler;
-import org.apache.thrift.server.TServlet;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TSocket;
@@ -605,9 +604,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         return new ServerContext() {
           // Implement required ServerContext interface methods as no-ops
           @Override
-          public <T> T unwrap(Class<T> iface) { return null; }
+          public <T> T unwrap(Class<T> iface) {
+            return null;
+          }
           @Override
-          public boolean isWrapperFor(Class<?> iface) { return false; }
+          public boolean isWrapperFor(Class<?> iface) {
+            return false;
+          }
         };
       }
 

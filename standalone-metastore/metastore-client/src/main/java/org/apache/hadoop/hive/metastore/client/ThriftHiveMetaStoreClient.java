@@ -48,12 +48,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
-import org.apache.hc.core5.http.EntityDetails;
-import org.apache.hc.core5.http.HttpException;
 import org.apache.hc.core5.http.HttpHeaders;
-import org.apache.hc.core5.http.HttpRequest;
-import org.apache.hc.core5.http.HttpRequestInterceptor;
-import org.apache.hc.core5.http.protocol.HttpContext;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TConfiguration;
 import org.apache.thrift.TException;
@@ -611,13 +606,13 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
         throw new MetaException("For auth mode JWT, valid signed jwt token must be provided in the "
             + "environment variable HMS_JWT");
       }
-      httpClientBuilder.addRequestInterceptorFirst((httpRequest, entity, httpContext) ->
-      {
-        httpRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken);
-        for (Map.Entry<String, String> entry : additionalHeaders.entrySet()) {
-          httpRequest.addHeader(entry.getKey(), entry.getValue());
-        }
-      });
+      httpClientBuilder.addRequestInterceptorFirst(
+        (httpRequest, entity, httpContext) -> {
+          httpRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken);
+          for (Map.Entry<String, String> entry : additionalHeaders.entrySet()) {
+            httpRequest.addHeader(entry.getKey(), entry.getValue());
+          }
+        });
     } else {
       String user = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_PLAIN_USERNAME);
       if (user == null || user.equals("")) {
