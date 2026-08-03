@@ -176,8 +176,6 @@
     <kryo.version>5.5.0</kryo.version>
     <reflectasm.version>1.11.9</reflectasm.version>
     <kudu.version>1.17.0</kudu.version>
-    <!-- Leaving libfb303 at 0.9.3 regardless of libthrift: As per THRIFT-4613 The Apache Thrift project does not publish items related to fb303 at this point -->
-    <libfb303.version>0.9.3</libfb303.version>
     <libthrift.version>0.23.0</libthrift.version>
     <log4j2.version>2.25.3</log4j2.version>
     <mariadb.version>2.5.0</mariadb.version>
@@ -685,11 +683,6 @@
         <groupId>org.apache.pig</groupId>
         <artifactId>pig</artifactId>
         <version>${pig.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.thrift</groupId>
-        <artifactId>libfb303</artifactId>
-        <version>${libfb303.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.thrift</groupId>

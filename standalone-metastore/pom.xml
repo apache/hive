@@ -95,7 +95,6 @@
     <junit.jupiter.version>5.13.3</junit.jupiter.version>
     <junit.vintage.version>5.13.3</junit.vintage.version>
     <junit.platform.version>1.13.3</junit.platform.version>
-    <libfb303.version>0.9.3</libfb303.version>
     <libthrift.version>0.23.0</libthrift.version>
     <log4j2.version>2.25.3</log4j2.version>
     <mockito-core.version>5.17.0</mockito-core.version>
@@ -332,11 +331,6 @@
         <groupId>org.apache.httpcomponents.client5</groupId>
         <artifactId>httpclient5</artifactId>
         <version>${httpcomponents5.client.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.thrift</groupId>
-        <artifactId>libfb303</artifactId>
-        <version>${libfb303.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.thrift</groupId>
