@@ -25,7 +25,7 @@ import java.util.function.Predicate;
 
 /**
  * The PropertyStore is the persistent container of property maps.
- * Maps are addressed in the store by their key -  their name prepended by their manager&quot;s namespace.
+ * Maps are addressed in the store by their key - their name prepended by their manager&quot;s namespace.
  */
 
 public abstract class PropertyStore {

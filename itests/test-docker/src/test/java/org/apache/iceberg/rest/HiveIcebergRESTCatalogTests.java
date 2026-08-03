@@ -18,12 +18,19 @@
 package org.apache.iceberg.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.IOException;
 import java.util.Map;
+import org.apache.iceberg.HasTableOperations;
+import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.CatalogTests;
+import org.apache.iceberg.exceptions.NotFoundException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class HiveIcebergRESTCatalogTests extends CatalogTests<RESTCatalog> {
   private static HiveIcebergRESTCatalogClient client;
@@ -74,5 +81,34 @@ class HiveIcebergRESTCatalogTests extends CatalogTests<RESTCatalog> {
   @Override
   protected boolean supportsServerSideRetry() {
     return true;
+  }
+
+  /**
+   * Checks that loading a table fails clearly when its metadata file is missing.
+   *
+   * <p>The base Iceberg test moves the metadata file with {@code Files.move()} which only works
+   * on a local disk. Docker tests store data on S3, so this override deletes the file.
+   */
+  @Test
+  @Override
+  public void testLoadTableWithMissingMetadataFile(@TempDir java.nio.file.Path tempDir)
+      throws IOException {
+    RESTCatalog catalog = catalog();
+
+    if (requiresNamespaceCreate()) {
+      catalog.createNamespace(TBL.namespace());
+    }
+
+    catalog.buildTable(TBL, SCHEMA).create();
+    assertThat(catalog.tableExists(TBL)).as("Table should exist").isTrue();
+
+    Table table = catalog.loadTable(TBL);
+    String metadataFileLocation =
+        ((HasTableOperations) table).operations().current().metadataFileLocation();
+    table.io().deleteFile(metadataFileLocation);
+
+    assertThatThrownBy(() -> catalog.loadTable(TBL))
+        .isInstanceOf(NotFoundException.class)
+        .hasMessageContaining("Failed to open input stream for file: " + metadataFileLocation);
   }
 }

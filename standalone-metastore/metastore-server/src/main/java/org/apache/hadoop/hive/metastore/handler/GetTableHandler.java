@@ -335,8 +335,14 @@ public class GetTableHandler<R, T> extends
     List<Table> tables = new ArrayList<>();
     int tableBatchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
     List<String> tableNames = req.getTblNames();
-    if(req.getTablesPattern() != null) {
-      tables = ms.getTableObjectsByName(catName, dbName, tableNames, projectionsSpec, req.getTablesPattern());
+    // case : tableNames is empty -> return empty list
+    if (tableNames != null && tableNames.isEmpty()) {
+      return tables;
+    }
+
+    if (req.getTablesPattern() != null && tableNames == null) {
+      // case : tableNames == null and pattern != null
+      tables = ms.getTableObjectsByName(catName, dbName, null, projectionsSpec, req.getTablesPattern());
     } else {
       if (tableNames == null) {
         throw new InvalidOperationException(dbName + " cannot find null tables");
@@ -354,13 +360,16 @@ public class GetTableHandler<R, T> extends
         distinctTableNames = new ArrayList<>(new HashSet<>(lowercaseTableNames));
       }
 
+      // case : tableNames != null and pattern == null -> batched flow
+      // case : tableNames != null and pattern != null -> batched flow with pattern filter
+      String tablesPattern = req.getTablesPattern();
       int startIndex = 0;
       // Retrieve the tables from the metastore in batches. Some databases like
       // Oracle cannot have over 1000 expressions in a in-list
       while (startIndex < distinctTableNames.size()) {
         int endIndex = Math.min(startIndex + tableBatchSize, distinctTableNames.size());
         tables.addAll(ms.getTableObjectsByName(catName, dbName, distinctTableNames.subList(
-            startIndex, endIndex), projectionsSpec, null));
+            startIndex, endIndex), projectionsSpec, tablesPattern));
         startIndex = endIndex;
       }
     }

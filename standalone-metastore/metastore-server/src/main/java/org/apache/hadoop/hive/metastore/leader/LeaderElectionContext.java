@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore.leader;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.TableName;
@@ -27,12 +28,14 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.leader.LeaderElection.LeadershipStateListener;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.util.ExitUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Objects.requireNonNull;
 
@@ -66,24 +69,27 @@ public class LeaderElectionContext {
 
   private final Configuration conf;
   private final String servHost;
-  // Whether the context should be started as a daemon
-  private final boolean startAsDaemon;
   // Audit the event of election
   private AuditLeaderListener auditLeaderListener;
   // State change listeners group by type
   private final Map<TTYPE, List<LeadershipStateListener>> listeners;
   // Collection of leader candidates
   private final List<LeaderElection<?>> leaderElections = new ArrayList<>();
-  // Property for testing, a single leader will be created
+  // Ensures the abort action runs at most once even if both electors fail concurrently.
+  private final AtomicBoolean isAborting = new AtomicBoolean(false);
+  // Action to run when a leader election exhausts retries. Defaults to ExitUtil.terminate,
+  // which fires the HMS shutdown-hook chain (election close, ZK deregistration, metrics,
+  // servlet server). ExitUtil is preferred over raw System.exit for JDK 21 compatibility
+  // and test-time exit interception. Overridable for tests.
+  private Runnable abortAction = () -> ExitUtil.terminate(1);
 
   private LeaderElectionContext(String servHost, Configuration conf,
       Map<TTYPE, List<LeadershipStateListener>> listeners,
-      boolean startAsDaemon, IHMSHandler handler) throws Exception {
+      IHMSHandler handler) throws Exception {
     requireNonNull(conf, "conf is null");
     requireNonNull(listeners, "listeners is null");
     this.servHost = servHost;
     this.conf = new Configuration(conf);
-    this.startAsDaemon = startAsDaemon;
     String tableName = MetastoreConf.getVar(conf,
         MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_AUDITTABLE);
     if (StringUtils.isNotEmpty(tableName)) {
@@ -97,6 +103,7 @@ public class LeaderElectionContext {
   public void start() throws Exception {
     List<TTYPE> ttypes = new ArrayList<>(listeners.keySet());
     Collections.shuffle(ttypes);
+    List<Thread> daemons = new ArrayList<>();
     for (TTYPE ttype : ttypes) {
       List<LeadershipStateListener> listenerList = listeners.get(ttype);
       if (listenerList.isEmpty()) {
@@ -117,19 +124,24 @@ public class LeaderElectionContext {
           throw new RuntimeException("Error claiming to be leader: " + leaderElection.getName(), e);
         }
       });
-
-      if (startAsDaemon) {
-        daemon.setName("Metastore Election " + leaderElection.getName());
-        daemon.setDaemon(true);
-        daemon.start();
-      } else {
-        daemon.run();
-      }
+      daemon.setName("Metastore Election " + leaderElection.getName());
+      daemon.setDaemon(true);
+      daemon.setUncaughtExceptionHandler(newAbortOnElectionFailureHandler(leaderElection));
+      daemon.start();
+      daemons.add(daemon);
+    }
+    // Wait for each initial tryBeLeader() to complete so listeners have fired before
+    // start() returns. Daemons are started before joining so elections still run in parallel.
+    for (Thread daemon : daemons) {
+      daemon.join();
     }
   }
 
   public void close() {
-    leaderElections.forEach(le -> {
+    // Iterate over a snapshot: closing an election may fire listener callbacks that
+    // touch the context, which could mutate leaderElections mid-iteration.
+    List<LeaderElection<?>> snapshot = new ArrayList<>(leaderElections);
+    snapshot.forEach(le -> {
       try {
         le.close();
       } catch (Exception e) {
@@ -138,9 +150,53 @@ public class LeaderElectionContext {
     });
   }
 
+  /**
+   * Builds the {@link Thread.UncaughtExceptionHandler} attached to each election daemon.
+   * When the daemon terminates because {@code tryBeLeader} exhausted its retries, this
+   * handler logs the failure and invokes {@link #abortAction}. The {@link AtomicBoolean}
+   * guard ensures the abort runs at most once even if both electors fail concurrently.
+   */
+  private Thread.UncaughtExceptionHandler newAbortOnElectionFailureHandler(
+      LeaderElection<?> leaderElection) {
+    return (t, ex) -> {
+      HiveMetaStore.LOG.error(
+          "Metastore leader election '{}' failed after {} retries in thread '{}'; "
+              + "aborting Metastore to avoid running with unelected tasks.",
+          leaderElection.getName(),
+          MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.LOCK_NUMRETRIES),
+          t.getName(),
+          ex);
+      if (isAborting.compareAndSet(false, true)) {
+        // Best-effort close the electors so the mutex/lease is released promptly,
+        // letting other HMS instances proceed with election rather than waiting for
+        // the JVM shutdown hook to release resources.
+        try {
+          close();
+        } catch (Exception e) {
+          HiveMetaStore.LOG.warn("Error closing elections during abort", e);
+        }
+        try {
+          abortAction.run();
+        } catch (Exception e) {
+          HiveMetaStore.LOG.error("Error while executing Metastore abort action", e);
+        }
+      }
+    };
+  }
+
+  /**
+   * Overrides the action taken when a leader election exhausts its retries.
+   * Production code should leave the default ({@code System.exit(1)}), which
+   * triggers the HMS orderly-shutdown hook chain. Tests can inject a fake to
+   * assert the abort path fires without killing the test JVM.
+   */
+  @VisibleForTesting
+  void setAbortAction(Runnable abortAction) {
+    this.abortAction = requireNonNull(abortAction, "abortAction is null");
+  }
+
   public static class ContextBuilder {
     private Configuration configuration;
-    private boolean startAsDaemon;
     private String servHost;
     private IHMSHandler handler;
     private TTYPE ttype = TTYPE.HOUSEKEEPING;
@@ -183,14 +239,9 @@ public class LeaderElectionContext {
       return this;
     }
 
-    public ContextBuilder startAsDaemon(boolean daemon) {
-      this.startAsDaemon = daemon;
-      return this;
-    }
-
     public LeaderElectionContext build() throws Exception {
       return new LeaderElectionContext(servHost, configuration,
-          listeners, startAsDaemon, handler);
+          listeners, handler);
     }
   }
 }

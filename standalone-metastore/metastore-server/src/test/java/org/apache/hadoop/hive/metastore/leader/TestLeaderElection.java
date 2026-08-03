@@ -20,16 +20,23 @@ package org.apache.hadoop.hive.metastore.leader;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+@Category(MetastoreUnitTest.class)
 public class TestLeaderElection {
 
   @Test
@@ -105,6 +112,149 @@ public class TestLeaderElection {
     assertTrue(instance2.isLeader() && flag2.get());
     assertFalse(flag1.get() || instance1.isLeader());
     assertTrue(flag2.get() && instance2.isLeader());
+  }
+
+  /**
+   * HIVE-29720: when a leader election exhausts its retries the daemon thread
+   * previously died silently, leaving HMS running without housekeeping tasks.
+   * LeaderElectionContext now installs an UncaughtExceptionHandler that invokes
+   * an abort action (System.exit(1) in production). This test injects a fake
+   * abort action to assert the handler fires when an election fails.
+   */
+  @Test
+  public void testAbortActionInvokedWhenElectionFails() throws Exception {
+    AtomicInteger invocations = new AtomicInteger(0);
+    LeaderElectionFactory.ElectionCreator originalHostCreator =
+        conf -> new StaticLeaderElection();
+    LeaderElectionFactory.addElectionCreator(
+        LeaderElectionFactory.Method.HOST, conf -> new FailingLeaderElection(invocations));
+    try {
+      Configuration conf = newAbortTestConf();
+      CountDownLatch abortLatch = new CountDownLatch(1);
+
+      LeaderElectionContext context = new LeaderElectionContext.ContextBuilder(conf)
+          .servHost("test-host")
+          .setTType(LeaderElectionContext.TTYPE.HOUSEKEEPING)
+          .addListener(new TestLeaderListener(new AtomicBoolean(false)))
+          .build();
+      context.setAbortAction(abortLatch::countDown);
+
+      context.start();
+
+      assertTrue("HMS should trigger abort action when leader election fails",
+          abortLatch.await(10, TimeUnit.SECONDS));
+      assertEquals("Failing election should have been invoked once",
+          1, invocations.get());
+    } finally {
+      LeaderElectionFactory.addElectionCreator(
+          LeaderElectionFactory.Method.HOST, originalHostCreator);
+    }
+  }
+
+  /**
+   * HIVE-29720: when both electors (HOUSEKEEPING and ALWAYS_TASKS) fail near
+   * simultaneously, the abort action must still run at most once. Guarded by
+   * an AtomicBoolean in LeaderElectionContext.
+   */
+  @Test
+  public void testAbortActionInvokedOnceWhenBothElectorsFail() throws Exception {
+    AtomicInteger invocations = new AtomicInteger(0);
+    LeaderElectionFactory.ElectionCreator originalHostCreator =
+        conf -> new StaticLeaderElection();
+    LeaderElectionFactory.addElectionCreator(
+        LeaderElectionFactory.Method.HOST, conf -> new FailingLeaderElection(invocations));
+    try {
+      Configuration conf = newAbortTestConf();
+      AtomicInteger abortCount = new AtomicInteger(0);
+      CountDownLatch firstAbortLatch = new CountDownLatch(1);
+
+      LeaderElectionContext context = new LeaderElectionContext.ContextBuilder(conf)
+          .servHost("test-host")
+          .setTType(LeaderElectionContext.TTYPE.HOUSEKEEPING)
+          .addListener(new TestLeaderListener(new AtomicBoolean(false)))
+          .setTType(LeaderElectionContext.TTYPE.ALWAYS_TASKS)
+          .addListener(new TestLeaderListener(new AtomicBoolean(false)))
+          .build();
+      context.setAbortAction(() -> {
+        abortCount.incrementAndGet();
+        firstAbortLatch.countDown();
+      });
+
+      context.start();
+
+      assertTrue("HMS should trigger abort action when either election fails",
+          firstAbortLatch.await(10, TimeUnit.SECONDS));
+
+      // Wait briefly so any race between the two failing daemons resolves,
+      // then verify the AtomicBoolean guard kept abortAction at a single invocation.
+      Thread.sleep(500);
+
+      assertEquals("Abort action must run exactly once even if both electors fail",
+          1, abortCount.get());
+      assertEquals("Both failing electors should have been invoked",
+          2, invocations.get());
+    } finally {
+      LeaderElectionFactory.addElectionCreator(
+          LeaderElectionFactory.Method.HOST, originalHostCreator);
+    }
+  }
+
+  private static Configuration newAbortTestConf() {
+    Configuration conf = MetastoreConf.newMetastoreConf();
+    // Use the HOST election method so we don't need a real database mutex.
+    MetastoreConf.setVar(conf,
+        MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_ELECTION, "HOST");
+    // Clear the audit table so LeaderElectionContext doesn't try to build an
+    // AuditLeaderListener against a live handler in this unit test.
+    MetastoreConf.setVar(conf,
+        MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_AUDITTABLE, "");
+    return conf;
+  }
+
+  /**
+   * A {@link LeaderElection} that unconditionally throws {@link LeaderException}
+   * from {@code tryBeLeader}, simulating retry exhaustion in the real
+   * {@code LeaseLeaderElection}. Registered via
+   * {@link LeaderElectionFactory#addElectionCreator} for the duration of a test.
+   */
+  static final class FailingLeaderElection implements LeaderElection<Object> {
+    private final AtomicInteger invocations;
+    private String name;
+
+    FailingLeaderElection(AtomicInteger invocations) {
+      this.invocations = invocations;
+    }
+
+    @Override
+    public void tryBeLeader(Configuration conf, Object mutex) throws LeaderException {
+      invocations.incrementAndGet();
+      throw new LeaderException("Simulated retry exhaustion for election: " + name);
+    }
+
+    @Override
+    public boolean isLeader() {
+      return false;
+    }
+
+    @Override
+    public void addStateListener(LeaderElection.LeadershipStateListener listener) {
+      // no-op
+    }
+
+    @Override
+    public void setName(String name) {
+      this.name = name;
+    }
+
+    @Override
+    public String getName() {
+      return name;
+    }
+
+    @Override
+    public void close() throws IOException {
+      // no-op
+    }
   }
 
 }
