@@ -3949,10 +3949,7 @@ public class HiveConf extends Configuration {
         "Set to 0 or negative to disable. Minimum effective value is 1 second."),
     HIVE_SERVER2_TEZ_QUEUE_METRICS_REFRESH_THREADS("hive.server2.tez.queue.metrics.refresh.threads", 4,
         "Number of threads in the scheduled thread pool for refreshing YARN queue metrics. " +
-        "This pool is used by HiveServer2 to periodically collect queue resource information from YARN RM. " +
-        "The pool is only created when execution engine is 'tez'. Whether to actually use it for metrics " +
-        "collection is controlled per-session via hive.tez.queue.metrics.refresh.interval. " +
-        "In non-Tez environments (e.g., MR, Spark, local), the pool is not initialized."),
+        "This pool is used by HiveServer2 to periodically collect queue resource information from YARN RM."),
     HIVE_SERVER2_TEZ_SESSION_LIFETIME("hive.server2.tez.session.lifetime", "162h",
         new TimeValidator(TimeUnit.HOURS),
         "The lifetime of the Tez sessions launched by HS2 when default sessions are enabled.\n" +

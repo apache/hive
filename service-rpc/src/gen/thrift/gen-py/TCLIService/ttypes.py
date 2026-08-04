@@ -7105,17 +7105,19 @@ class TProgressUpdateResp(object):
      - status
      - footerSummary
      - startTime
+     - queueMetrics
 
     """
 
 
-    def __init__(self, headerNames=None, rows=None, progressedPercentage=None, status=None, footerSummary=None, startTime=None,):
+    def __init__(self, headerNames=None, rows=None, progressedPercentage=None, status=None, footerSummary=None, startTime=None, queueMetrics=None,):
         self.headerNames = headerNames
         self.rows = rows
         self.progressedPercentage = progressedPercentage
         self.status = status
         self.footerSummary = footerSummary
         self.startTime = startTime
+        self.queueMetrics = queueMetrics
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -7171,6 +7173,11 @@ class TProgressUpdateResp(object):
                     self.startTime = iprot.readI64()
                 else:
                     iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.STRING:
+                    self.queueMetrics = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -7213,6 +7220,10 @@ class TProgressUpdateResp(object):
         if self.startTime is not None:
             oprot.writeFieldBegin('startTime', TType.I64, 6)
             oprot.writeI64(self.startTime)
+            oprot.writeFieldEnd()
+        if self.queueMetrics is not None:
+            oprot.writeFieldBegin('queueMetrics', TType.STRING, 7)
+            oprot.writeString(self.queueMetrics.encode('utf-8') if sys.version_info[0] == 2 else self.queueMetrics)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -7915,6 +7926,7 @@ TProgressUpdateResp.thrift_spec = (
     (4, TType.I32, 'status', None, None, ),  # 4
     (5, TType.STRING, 'footerSummary', 'UTF8', None, ),  # 5
     (6, TType.I64, 'startTime', None, None, ),  # 6
+    (7, TType.STRING, 'queueMetrics', 'UTF8', None, ),  # 7
 )
 all_structs.append(TGetQueryIdReq)
 TGetQueryIdReq.thrift_spec = (

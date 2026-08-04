@@ -23,9 +23,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.IntStream;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfForTest;
@@ -36,9 +42,12 @@ import org.apache.tez.client.TezClient;
 import org.apache.tez.dag.api.TezException;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.mockito.Mockito.mock;
 
 public class TestTezSessionState {
   private static final Logger LOG = LoggerFactory.getLogger(TestTezSessionState.class.getName());
@@ -151,17 +160,16 @@ public class TestTezSessionState {
     
     // Default config: queue metrics disabled (interval = 0)
     Assert.assertEquals("Default interval should be 0 (disabled)",
-        0, HiveConf.getTimeVar(hiveConf, HiveConf.ConfVars.HIVE_TEZ_QUEUE_METRICS_REFRESH_INTERVAL, TimeUnit.MILLISECONDS));
+        0, HiveConf.getTimeVar(hiveConf, HiveConf.ConfVars.HIVE_TEZ_QUEUE_METRICS_REFRESH_INTERVAL,
+            TimeUnit.MILLISECONDS));
 
     TezSessionState sessionState = new TezSessionState(ss.getSessionId(), hiveConf);
     
-    // Mock a TezClient and set it
-    TezClient mockTezClient = Mockito.mock(TezClient.class);
-    sessionState.setTezClient(mockTezClient);
-    
+    sessionState.setTezClient(mock(TezClient.class));
+
     // getYarnClient() should return null when metrics disabled
-    YarnClient yarnClient = sessionState.getYarnClient();
-    Assert.assertNull("YarnClient should not be initialized when queue metrics are disabled", yarnClient);
+    Assert.assertNull("YarnClient should not be initialized when queue metrics are disabled",
+        sessionState.getYarnClient());
   }
 
   /**
@@ -178,17 +186,14 @@ public class TestTezSessionState {
 
     TezSessionState sessionState = new TezSessionState(ss.getSessionId(), hiveConf);
     
-    // Mock a TezClient and set it
-    TezClient mockTezClient = Mockito.mock(TezClient.class);
-    sessionState.setTezClient(mockTezClient);
-    
+    sessionState.setTezClient(mock(TezClient.class));
+
     // First call to getYarnClient() should initialize it
     YarnClient yarnClient = sessionState.getYarnClient();
     Assert.assertNotNull("YarnClient should be initialized when queue metrics are enabled", yarnClient);
     
     // Second call should return the same instance
-    YarnClient yarnClient2 = sessionState.getYarnClient();
-    Assert.assertSame("Should return the same YarnClient instance", yarnClient, yarnClient2);
+    Assert.assertSame("Should return the same YarnClient instance", yarnClient, sessionState.getYarnClient());
   }
 
   /**
@@ -206,55 +211,48 @@ public class TestTezSessionState {
     TezSessionState sessionState = new TezSessionState(ss.getSessionId(), hiveConf);
     
     // Don't set TezClient (session is null)
-    
+
     // getYarnClient() should return null when TezClient is not set
-    YarnClient yarnClient = sessionState.getYarnClient();
-    Assert.assertNull("YarnClient should not be initialized when TezClient is null", yarnClient);
+    Assert.assertNull("YarnClient should not be initialized when TezClient is null",
+        sessionState.getYarnClient());
   }
 
   /**
    * Tests the thread-safety of lazy YarnClient initialization with concurrent calls.
    */
   @Test
-  public void testYarnClientLazyInitializationThreadSafety() throws InterruptedException {
+  public void testYarnClientLazyInitializationThreadSafety() throws Exception {
     SessionState ss = createSessionState();
     HiveConf hiveConf = ss.getConf();
-    
+
     // Enable queue metrics
     hiveConf.setTimeVar(HiveConf.ConfVars.HIVE_TEZ_QUEUE_METRICS_REFRESH_INTERVAL, 10, TimeUnit.SECONDS);
 
     TezSessionState sessionState = new TezSessionState(ss.getSessionId(), hiveConf);
-    TezClient mockTezClient = Mockito.mock(TezClient.class);
-    sessionState.setTezClient(mockTezClient);
-    
-    // Create multiple threads that call getYarnClient() concurrently
-    final int threadCount = 10;
-    Thread[] threads = new Thread[threadCount];
-    YarnClient[] clients = new YarnClient[threadCount];
-    
-    for (int i = 0; i < threadCount; i++) {
-      final int index = i;
-      threads[i] = new Thread(() -> {
-        clients[index] = sessionState.getYarnClient();
-      });
-    }
-    
-    // Start all threads
-    for (Thread thread : threads) {
-      thread.start();
-    }
-    
-    // Wait for all threads to complete
-    for (Thread thread : threads) {
-      thread.join();
-    }
-    
-    // All threads should get the same YarnClient instance
-    YarnClient firstClient = clients[0];
-    Assert.assertNotNull("YarnClient should be initialized", firstClient);
-    
-    for (int i = 1; i < threadCount; i++) {
-      Assert.assertSame("All threads should get the same YarnClient instance", firstClient, clients[i]);
+    sessionState.setTezClient(mock(TezClient.class));
+
+    int threadCount = 10;
+    ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+    CountDownLatch start = new CountDownLatch(1);
+
+    try {
+      List<Future<YarnClient>> futures = IntStream.range(0, threadCount)
+          .mapToObj(i -> executor.submit(() -> {
+            start.await();
+            return sessionState.getYarnClient();
+          }))
+          .toList();
+
+      start.countDown();
+
+      YarnClient firstClient = futures.getFirst().get();
+      assertNotNull("YarnClient should be initialized", firstClient);
+
+      for (Future<YarnClient> future : futures) {
+        assertSame("All threads should get the same YarnClient instance", firstClient, future.get());
+      }
+    } finally {
+      executor.shutdownNow();
     }
   }
 }

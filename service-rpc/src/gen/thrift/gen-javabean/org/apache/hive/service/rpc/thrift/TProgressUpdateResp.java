@@ -116,6 +116,7 @@ package org.apache.hive.service.rpc.thrift;
   private static final int __PROGRESSEDPERCENTAGE_ISSET_ID = 0;
   private static final int __STARTTIME_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.QUEUE_METRICS};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -134,7 +135,7 @@ package org.apache.hive.service.rpc.thrift;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.START_TIME, new org.apache.thrift.meta_data.FieldMetaData("startTime", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
-    tmpMap.put(_Fields.QUEUE_METRICS, new org.apache.thrift.meta_data.FieldMetaData("queueMetrics", org.apache.thrift.TFieldRequirementType.OPTIONAL,
+    tmpMap.put(_Fields.QUEUE_METRICS, new org.apache.thrift.meta_data.FieldMetaData("queueMetrics", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(TProgressUpdateResp.class, metaDataMap);
@@ -159,6 +160,7 @@ package org.apache.hive.service.rpc.thrift;
     this.status = status;
     this.footerSummary = footerSummary;
     this.startTime = startTime;
+    setStartTimeIsSet(true);
   }
 
   /**
@@ -704,6 +706,16 @@ package org.apache.hive.service.rpc.thrift;
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetQueueMetrics(), other.isSetQueueMetrics());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetQueueMetrics()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.queueMetrics, other.queueMetrics);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -764,6 +776,16 @@ package org.apache.hive.service.rpc.thrift;
     sb.append("startTime:");
     sb.append(this.startTime);
     first = false;
+    if (isSetQueueMetrics()) {
+      if (!first) sb.append(", ");
+      sb.append("queueMetrics:");
+      if (this.queueMetrics == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.queueMetrics);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -915,7 +937,7 @@ package org.apache.hive.service.rpc.thrift;
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.queueMetrics = iprot.readString();
               struct.setQueueMetricsIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
@@ -980,9 +1002,11 @@ package org.apache.hive.service.rpc.thrift;
       oprot.writeI64(struct.startTime);
       oprot.writeFieldEnd();
       if (struct.queueMetrics != null) {
-        oprot.writeFieldBegin(QUEUE_METRICS_FIELD_DESC);
-        oprot.writeString(struct.queueMetrics);
-        oprot.writeFieldEnd();
+        if (struct.isSetQueueMetrics()) {
+          oprot.writeFieldBegin(QUEUE_METRICS_FIELD_DESC);
+          oprot.writeString(struct.queueMetrics);
+          oprot.writeFieldEnd();
+        }
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -1025,6 +1049,14 @@ package org.apache.hive.service.rpc.thrift;
       oprot.writeI32(struct.status.getValue());
       oprot.writeString(struct.footerSummary);
       oprot.writeI64(struct.startTime);
+      java.util.BitSet optionals = new java.util.BitSet();
+      if (struct.isSetQueueMetrics()) {
+        optionals.set(0);
+      }
+      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetQueueMetrics()) {
+        oprot.writeString(struct.queueMetrics);
+      }
     }
 
     @Override
@@ -1069,6 +1101,11 @@ package org.apache.hive.service.rpc.thrift;
       struct.setFooterSummaryIsSet(true);
       struct.startTime = iprot.readI64();
       struct.setStartTimeIsSet(true);
+      java.util.BitSet incoming = iprot.readBitSet(1);
+      if (incoming.get(0)) {
+        struct.queueMetrics = iprot.readString();
+        struct.setQueueMetricsIsSet(true);
+      }
     }
   }
 

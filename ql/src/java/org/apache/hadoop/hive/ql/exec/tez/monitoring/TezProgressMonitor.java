@@ -61,12 +61,6 @@ public class TezProgressMonitor implements ProgressMonitor {
    * Try to get most the data required from dagClient in the constructor itself so that even after
    * the tez job has finished this object can be used for later use.s
    */
-  TezProgressMonitor(DAGClient dagClient, DAGStatus status, List<BaseWork> topSortedWork,
-      Map<String, Progress> progressMap, SessionState.LogHelper console, long executionStartTime)
-      throws IOException, TezException {
-    this(dagClient, status, topSortedWork, progressMap, console, executionStartTime,
-        NoOpQueueMetricsCollector.INSTANCE);
-  }
 
   TezProgressMonitor(DAGClient dagClient, DAGStatus status, List<BaseWork> topSortedWork,
       Map<String, Progress> progressMap, SessionState.LogHelper console, long executionStartTime,

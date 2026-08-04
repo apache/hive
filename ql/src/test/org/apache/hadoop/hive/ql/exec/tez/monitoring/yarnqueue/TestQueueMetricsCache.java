@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.exec.tez.monitoring.yarnqueue;
@@ -23,8 +24,11 @@ import org.apache.hadoop.yarn.api.records.QueueStatistics;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -43,100 +47,83 @@ import static org.mockito.Mockito.when;
 /**
  * Test cases for QueueMetricsCache.
  */
+@RunWith(MockitoJUnitRunner.class)
 public class TestQueueMetricsCache {
+
+  private static final Logger LOG = LoggerFactory.getLogger(TestQueueMetricsCache.class);
 
   @Mock
   private QueueInfo mockQueueInfo;
-
   @Mock
   private QueueStatistics mockQueueStats;
 
-  private AutoCloseable closeable;
   private QueueMetricsCache cache;
 
   @Before
   public void setUp() {
-    closeable = MockitoAnnotations.openMocks(this);
     cache = QueueMetricsCache.getInstance();
-    // Note: We can't fully clear the cache between tests since it's a singleton,
-    // but we use unique queue names per test to avoid interference
+    cache.shutdown(); // clear any state from previous tests
+    setupMockQueueInfo();
   }
 
   @After
-  public void tearDown() throws Exception {
-    if (closeable != null) {
-      closeable.close();
-    }
+  public void tearDown() {
+    cache.shutdown();
   }
 
   @Test
   public void testSingletonInstanceConsistency() {
-    QueueMetricsCache instance1 = QueueMetricsCache.getInstance();
-    QueueMetricsCache instance2 = QueueMetricsCache.getInstance();
-
-    assertNotNull("Instance should not be null", instance1);
-    assertSame("getInstance should return same instance", instance1, instance2);
+    assertNotNull("Instance should not be null", QueueMetricsCache.getInstance());
+    assertSame("getInstance should return same instance",
+        QueueMetricsCache.getInstance(), QueueMetricsCache.getInstance());
   }
 
   @Test
   public void testGetReturnsNullForNonExistentQueue() {
-    String nonExistentQueue = "test-nonexistent-" + System.nanoTime();
-    QueueMetricsState state = cache.get(nonExistentQueue);
-
-    assertNull("Should return null for non-existent queue", state);
+    assertNull("Should return null for non-existent queue", cache.get("test-nonexistent"));
   }
 
   @Test
   public void testGetReturnsNullForNullQueueName() {
-    QueueMetricsState state = cache.get(null);
-
-    assertNull("Should return null for null queue name", state);
+    assertNull("Should return null for null queue name", cache.get(null));
   }
 
   @Test
   public void testPutCreatesNewEntry() {
-    setupMockQueueInfo();
-    String queueName = "test-new-entry-" + System.nanoTime();
-    QueueMetricsSnapshot snapshot = new QueueMetricsSnapshot(mockQueueInfo);
+    String queueName = "test-new-entry";
 
     // Verify queue doesn't exist yet
     assertNull("Queue should not exist initially", cache.get(queueName));
 
     // Put creates new entry
-    cache.put(queueName, snapshot, 5000L);
+    cache.put(queueName, new QueueMetricsSnapshot(mockQueueInfo), 5000L);
 
     QueueMetricsState state = cache.get(queueName);
     assertNotNull("Queue state should exist after put", state);
     assertNotNull("Snapshot should be available", state.getSnapshot());
-    assertEquals("Memory used should match", 1.0f, state.getSnapshot().getMemoryUsedGB(), 0.01f);
+    assertEquals("Memory used should match", 1.0f, state.getSnapshot().getMemoryUsedGB(), 0.001f);
   }
 
   @Test
   public void testPutUpdatesExistingEntry() {
-    setupMockQueueInfo();
-    String queueName = "test-update-entry-" + System.nanoTime();
+    String queueName = "test-update-entry";
 
     // Create initial entry
-    QueueMetricsSnapshot snapshot1 = new QueueMetricsSnapshot(mockQueueInfo);
-    cache.put(queueName, snapshot1, 5000L);
+    cache.put(queueName, new QueueMetricsSnapshot(mockQueueInfo), 5000L);
 
     // Update with new snapshot
     when(mockQueueStats.getAllocatedMemoryMB()).thenReturn(4096L);
-    QueueMetricsSnapshot snapshot2 = new QueueMetricsSnapshot(mockQueueInfo);
-    cache.put(queueName, snapshot2, 3000L);
+    cache.put(queueName, new QueueMetricsSnapshot(mockQueueInfo), 3000L);
 
     QueueMetricsState state = cache.get(queueName);
     assertNotNull("State should exist", state);
-    assertEquals("Memory should be updated", 4.0f, state.getSnapshot().getMemoryUsedGB(), 0.01f);
+    assertEquals("Memory should be updated", 4.0f, state.getSnapshot().getMemoryUsedGB(), 0.001f);
   }
 
   @Test
   public void testPutWithNullQueueNameIsNoOp() {
-    setupMockQueueInfo();
-    QueueMetricsSnapshot snapshot = new QueueMetricsSnapshot(mockQueueInfo);
-
     // Should not throw exception
-    cache.put(null, snapshot, 5000L);
+    cache.put(null, new QueueMetricsSnapshot(mockQueueInfo), 5000L);
     // Confirms null queue name was silently ignored - no entry created
     assertNull("Null queue name should not create a cache entry", cache.get(null));
   }
@@ -153,10 +140,10 @@ public class TestQueueMetricsCache {
   }
 
   @Test
-  public void testPutPlaceholderCreatesEmptyEntry() {
+  public void testGetOrCreateCreatesEmptyEntry() {
     String queueName = "test-placeholder-" + System.nanoTime();
 
-    QueueMetricsState state = cache.putPlaceholder(queueName, 10000L);
+    QueueMetricsState state = cache.getOrCreate(queueName, 10000L);
 
     assertNotNull("Placeholder state should be created", state);
     assertNull("Snapshot should be null initially", state.getSnapshot());
@@ -164,8 +151,8 @@ public class TestQueueMetricsCache {
   }
 
   @Test
-  public void testPutPlaceholderWithNullQueueName() {
-    QueueMetricsState state = cache.putPlaceholder(null, 5000L);
+  public void testGetOrCreateWithNullQueueName() {
+    QueueMetricsState state = cache.getOrCreate(null, 5000L);
 
     assertNull("Should return null for null queue name", state);
   }
@@ -186,7 +173,7 @@ public class TestQueueMetricsCache {
       executor.submit(() -> {
         try {
           startLatch.await(); // Wait for signal to start
-          QueueMetricsState state = cache.putPlaceholder(queueName, 5000L + threadId * 100);
+          QueueMetricsState state = cache.getOrCreate(queueName, 5000L + threadId * 100);
           results.put(threadId, state);
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
@@ -218,15 +205,14 @@ public class TestQueueMetricsCache {
 
   @Test
   public void testGetActiveQueueCount() {
-    int initialCount = cache.getActiveQueueCount();
-    String queueName1 = "test-count-1-" + System.nanoTime();
-    String queueName2 = "test-count-2-" + System.nanoTime();
+    String queueName1 = "test-count-1";
+    String queueName2 = "test-count-2";
 
-    cache.putPlaceholder(queueName1, 5000L);
-    assertEquals("Count should increase by 1", initialCount + 1, cache.getActiveQueueCount());
+    cache.getOrCreate(queueName1, 5000L);
+    assertEquals("Count should be 1", 1, cache.getActiveQueueCount());
 
-    cache.putPlaceholder(queueName2, 5000L);
-    assertEquals("Count should increase by 2", initialCount + 2, cache.getActiveQueueCount());
+    cache.getOrCreate(queueName2, 5000L);
+    assertEquals("Count should be 2", 2, cache.getActiveQueueCount());
   }
 
 
@@ -240,28 +226,25 @@ public class TestQueueMetricsCache {
   }
 
   @Test
-  public void testPutPlaceholderThenPutUpdatesSnapshot() {
-    setupMockQueueInfo();
+  public void testGetOrCreateThenPutUpdatesSnapshot() {
     String queueName = "test-placeholder-update-" + System.nanoTime();
 
     // Create placeholder first
-    QueueMetricsState state1 = cache.putPlaceholder(queueName, 10000L);
+    QueueMetricsState state1 = cache.getOrCreate(queueName, 10000L);
     assertNull("Snapshot should be null initially", state1.getSnapshot());
 
     // Now put actual snapshot
-    QueueMetricsSnapshot snapshot = new QueueMetricsSnapshot(mockQueueInfo);
-    cache.put(queueName, snapshot, 5000L);
+    cache.put(queueName, new QueueMetricsSnapshot(mockQueueInfo), 5000L);
 
     // Get updated state
     QueueMetricsState state2 = cache.get(queueName);
     assertSame("Should be same state instance", state1, state2);
     assertNotNull("Snapshot should now be populated", state2.getSnapshot());
-    assertEquals("Memory should match", 1.0f, state2.getSnapshot().getMemoryUsedGB(), 0.01f);
+    assertEquals("Memory should match", 1.0f, state2.getSnapshot().getMemoryUsedGB(), 0.001f);
   }
 
   @Test
   public void testConcurrentPutAndGetNoDeadlock() throws Exception {
-    setupMockQueueInfo();
     String queueName = "test-concurrent-ops-" + System.nanoTime();
     int iterationsPerThread = 100;
     CountDownLatch startLatch = new CountDownLatch(1);
@@ -269,16 +252,16 @@ public class TestQueueMetricsCache {
     ExecutorService executor = Executors.newFixedThreadPool(3);
     AtomicInteger successCount = new AtomicInteger(0);
 
-    // Writer thread 1: putPlaceholder
+    // Writer thread 1: getOrCreate
     executor.submit(() -> {
       try {
         startLatch.await();
         for (int i = 0; i < iterationsPerThread; i++) {
-          cache.putPlaceholder(queueName, 5000L);
+          cache.getOrCreate(queueName, 5000L);
         }
         successCount.incrementAndGet();
       } catch (Exception e) {
-        e.printStackTrace();
+        LOG.error("Error in getOrCreate writer thread", e);
       } finally {
         doneLatch.countDown();
       }
@@ -294,7 +277,7 @@ public class TestQueueMetricsCache {
         }
         successCount.incrementAndGet();
       } catch (Exception e) {
-        e.printStackTrace();
+        LOG.error("Error in put writer thread", e);
       } finally {
         doneLatch.countDown();
       }
@@ -309,7 +292,7 @@ public class TestQueueMetricsCache {
         }
         successCount.incrementAndGet();
       } catch (Exception e) {
-        e.printStackTrace();
+        LOG.error("Error in get reader thread", e);
       } finally {
         doneLatch.countDown();
       }
@@ -337,4 +320,3 @@ public class TestQueueMetricsCache {
     when(mockQueueInfo.getCurrentCapacity()).thenReturn(0.25f);
   }
 }
-

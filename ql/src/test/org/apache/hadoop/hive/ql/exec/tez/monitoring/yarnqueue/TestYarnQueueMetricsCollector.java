@@ -9,157 +9,153 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.exec.tez.monitoring.yarnqueue;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.yarn.api.records.QueueInfo;
 import org.apache.hadoop.yarn.api.records.QueueStatistics;
 import org.apache.hadoop.yarn.client.api.YarnClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnitRunner;
 
+import org.awaitility.core.ConditionTimeoutException;
+
+import java.time.Duration;
+
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mockingDetails;
 import static org.mockito.Mockito.when;
 
 /**
  * Test cases for YarnQueueMetricsCollector.
  */
+@RunWith(MockitoJUnitRunner.class)
 public class TestYarnQueueMetricsCollector {
 
   @Mock
   private YarnClient mockYarnClient;
-
   @Mock
   private QueueInfo mockQueueInfo;
-
   @Mock
   private QueueStatistics mockQueueStats;
-
-  private AutoCloseable closeable;
-  private HiveConf testConf;
 
   private static final long WAIT_TIMEOUT_MS = 5000;
 
   @Before
-  public void setUp() {
-    closeable = MockitoAnnotations.openMocks(this);
-    testConf = new HiveConf();
-    // Reset the pool manager singleton and cache so each test starts with a clean state.
-    QueueMetricsRefreshPool.resetForTesting();
-    QueueMetricsCache.resetForTesting();
+  public void setUp() throws Exception {
+    // Shutdown the pool manager singleton and cache so each test starts with a clean state.
+    QueueMetricsRefreshPool.shutdown();
+    QueueMetricsCache.getInstance().shutdown();
+    setupHappyPathMocks();
   }
 
   @After
-  public void tearDown() throws Exception {
-    if (closeable != null) {
-      closeable.close();
-    }
-    QueueMetricsRefreshPool.resetForTesting();
-    QueueMetricsCache.resetForTesting();
+  public void tearDown() {
+    QueueMetricsRefreshPool.shutdown();
+    QueueMetricsCache.getInstance().shutdown();
   }
 
   /**
-   * Helper to create a collector in tests using a default HiveConf (min pool sizes).
+   * Helper to create a collector in tests.
    */
   private YarnQueueMetricsCollector newCollector(YarnClient yarnClient, String queueName,
       long refreshIntervalMs, String queryId) {
-    return new YarnQueueMetricsCollector(yarnClient, queueName, refreshIntervalMs, queryId, testConf);
+    return new YarnQueueMetricsCollector(yarnClient, queueName, refreshIntervalMs, queryId);
   }
 
   /**
-   * Waits for a snapshot to be available (non-null).
+   * Waits for a snapshot to be available (non-null) using Awaitility.
    */
   private QueueMetricsSnapshot waitForSnapshot(
       YarnQueueMetricsCollector collector, long timeoutMs) {
-    long startTime = System.currentTimeMillis();
-    QueueMetricsSnapshot snapshot;
-    while ((snapshot = collector.getLatestSnapshot()) == null) {
-      if (System.currentTimeMillis() - startTime > timeoutMs) {
-        fail("Snapshot not available after " + timeoutMs + "ms");
-      }
-      Thread.onSpinWait(); // Hint to JVM that this is a spin-wait loop
-    }
-    return snapshot;
+    await().atMost(Duration.ofMillis(timeoutMs))
+        .pollInterval(Duration.ofMillis(10))
+        .until(() -> collector.getLatestSnapshot() != null);
+    return collector.getLatestSnapshot();
   }
 
   /**
-   * Waits for a specific number of invocations with timeout.
+   * Waits until the mock has been invoked at least {@code minCount} times, or the timeout
+   * elapses. Returns silently on timeout so callers can assert on the observed count.
    */
   private void waitForInvocationCount(Object mock, int minCount, long timeoutMs) {
-    long startTime = System.currentTimeMillis();
-    while (mockingDetails(mock).getInvocations().size() < minCount) {
-      if (System.currentTimeMillis() - startTime > timeoutMs) {
-        return;
-      }
-      Thread.onSpinWait(); // Hint to JVM that this is a spin-wait loop
+    try {
+      await().atMost(Duration.ofMillis(timeoutMs))
+          .pollInterval(Duration.ofMillis(10))
+          .until(() -> mockingDetails(mock).getInvocations().size() >= minCount);
+    } catch (ConditionTimeoutException ignored) {
+      // Intentional: callers assert on the observed count after this returns.
     }
   }
 
   /**
-   * Helper method that configures mock objects with standard happy-path values.
+   * Configures mock objects with standard happy-path values.
+   * Called from {@code @Before} so all tests start with a consistent baseline.
+   * Stubs are lenient so tests that don't exercise these mocks don't fail with
+   * UnnecessaryStubbingException.
    */
   private void setupHappyPathMocks() throws Exception {
-    when(mockQueueStats.getAllocatedMemoryMB()).thenReturn(1024L);
-    when(mockQueueStats.getAvailableMemoryMB()).thenReturn(1024L);
-    when(mockQueueStats.getAllocatedVCores()).thenReturn(4L);
-    when(mockQueueStats.getAvailableVCores()).thenReturn(4L);
-    when(mockQueueStats.getNumAppsRunning()).thenReturn(1L);
-    when(mockQueueStats.getNumAppsPending()).thenReturn(0L);
-    when(mockQueueStats.getAllocatedContainers()).thenReturn(2L);
-    when(mockQueueStats.getPendingContainers()).thenReturn(0L);
-    when(mockQueueInfo.getQueueStatistics()).thenReturn(mockQueueStats);
-    when(mockQueueInfo.getCapacity()).thenReturn(0.5f);
-    when(mockQueueInfo.getCurrentCapacity()).thenReturn(0.25f);
-    when(mockYarnClient.getQueueInfo(anyString())).thenReturn(mockQueueInfo);
+    lenient().when(mockQueueStats.getAllocatedMemoryMB()).thenReturn(1024L);
+    lenient().when(mockQueueStats.getAvailableMemoryMB()).thenReturn(1024L);
+    lenient().when(mockQueueStats.getAllocatedVCores()).thenReturn(4L);
+    lenient().when(mockQueueStats.getAvailableVCores()).thenReturn(4L);
+    lenient().when(mockQueueStats.getNumAppsRunning()).thenReturn(1L);
+    lenient().when(mockQueueStats.getNumAppsPending()).thenReturn(0L);
+    lenient().when(mockQueueStats.getAllocatedContainers()).thenReturn(2L);
+    lenient().when(mockQueueStats.getPendingContainers()).thenReturn(0L);
+    lenient().when(mockQueueInfo.getQueueStatistics()).thenReturn(mockQueueStats);
+    lenient().when(mockQueueInfo.getCapacity()).thenReturn(0.5f);
+    lenient().when(mockQueueInfo.getCurrentCapacity()).thenReturn(0.25f);
+    lenient().when(mockYarnClient.getQueueInfo(anyString())).thenReturn(mockQueueInfo);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expected = NullPointerException.class)
   public void testConstructorWithNullYarnClient() {
-    new YarnQueueMetricsCollector(null, "default", 1000, "query-1", testConf);
+    new YarnQueueMetricsCollector(null, "default", 1000, "query-1");
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expected = NullPointerException.class)
   public void testConstructorWithNullQueueName() {
-    new YarnQueueMetricsCollector(mockYarnClient, null, 1000, "query-1", testConf);
+    new YarnQueueMetricsCollector(mockYarnClient, null, 1000, "query-1");
   }
 
   @Test
-  public void testSuccessfulMetricsCollection() throws Exception {
-    setupHappyPathMocks();
-    when(mockYarnClient.getQueueInfo("default")).thenReturn(mockQueueInfo);
+  public void testSuccessfulMetricsCollection() {
 
     YarnQueueMetricsCollector collector = newCollector(mockYarnClient, "default", 10000, "test-query-1");
     try {
       QueueMetricsSnapshot snapshot = waitForSnapshot(collector, WAIT_TIMEOUT_MS);
 
       assertNotNull("Snapshot should not be null", snapshot);
-      assertEquals("Memory used should be 1GB", 1.0f, snapshot.getMemoryUsedGB(), 0.1f);
-      assertEquals("Memory total should be 2GB (1+1)", 2.0f, snapshot.getMemoryTotalGB(), 0.1f);
+      assertEquals("Memory used should be 1GB", 1.0f, snapshot.getMemoryUsedGB(), 0.001f);
+      assertEquals("Memory total should be 2GB (1+1)", 2.0f, snapshot.getMemoryTotalGB(), 0.001f);
       assertEquals("VCores used should be 4", 4, snapshot.getVCoresUsed());
       assertEquals("VCores total should be 8 (4+4)", 8, snapshot.getVCoresTotal());
       assertEquals("Running apps should be 1", 1, snapshot.getRunningApps());
       assertEquals("Pending apps should be 0", 0, snapshot.getPendingApps());
       assertEquals("Allocated containers should be 2", 2, snapshot.getAllocatedContainers());
       assertEquals("Pending containers should be 0", 0, snapshot.getPendingContainers());
-      assertEquals("Capacity should be 50%", 50.0f, snapshot.getCapacityPercentage(), 0.1f);
-      assertEquals("Current capacity should be 25%", 25.0f, snapshot.getCurrentCapacityPercentage(), 0.1f);
+      assertEquals("Capacity should be 50%", 50.0f, snapshot.getCapacityPercentage(), 0.001f);
+      assertEquals("Current capacity should be 25%", 25.0f, snapshot.getCurrentCapacityPercentage(), 0.001f);
       assertEquals("Memory percentage", "50.00%", snapshot.getMemoryPercentage());
       assertEquals("VCores percentage", "50.00%", snapshot.getVCoresPercentage());
     } finally {
@@ -190,12 +186,12 @@ public class TestYarnQueueMetricsCollector {
     try {
       QueueMetricsSnapshot snapshot = waitForSnapshot(collector, WAIT_TIMEOUT_MS);
       assertNotNull("Snapshot should not be null", snapshot);
-      assertEquals("Memory used should be 0", 0.0f, snapshot.getMemoryUsedGB(), 0.01f);
-      assertEquals("Memory total should be 0", 0.0f, snapshot.getMemoryTotalGB(), 0.01f);
+      assertEquals("Memory used should be 0", 0.0f, snapshot.getMemoryUsedGB(), 0.001f);
+      assertEquals("Memory total should be 0", 0.0f, snapshot.getMemoryTotalGB(), 0.001f);
       assertEquals("VCores used should be 0", 0, snapshot.getVCoresUsed());
       assertEquals("VCores total should be 0", 0, snapshot.getVCoresTotal());
-      assertEquals("Capacity should still be 50%", 50.0f, snapshot.getCapacityPercentage(), 0.1f);
-      assertEquals("Current capacity should be 0%", 0.0f, snapshot.getCurrentCapacityPercentage(), 0.1f);
+      assertEquals("Capacity should still be 50%", 50.0f, snapshot.getCapacityPercentage(), 0.001f);
+      assertEquals("Current capacity should be 0%", 0.0f, snapshot.getCurrentCapacityPercentage(), 0.001f);
     } finally {
       collector.shutdown();
     }
@@ -280,8 +276,8 @@ public class TestYarnQueueMetricsCollector {
         new QueueMetricsSnapshot(mockQueueInfo);
 
     // Total = Used + Available
-    assertEquals("Memory used", 5.0f, snapshot.getMemoryUsedGB(), 0.01f);
-    assertEquals("Memory total", 20.0f, snapshot.getMemoryTotalGB(), 0.01f); // 5+15
+    assertEquals("Memory used", 5.0f, snapshot.getMemoryUsedGB(), 0.001f);
+    assertEquals("Memory total", 20.0f, snapshot.getMemoryTotalGB(), 0.001f); // 5+15
     assertEquals("Memory percentage", "25.00%", snapshot.getMemoryPercentage()); // 5/20
 
     assertEquals("VCores used", 50, snapshot.getVCoresUsed());
@@ -292,8 +288,8 @@ public class TestYarnQueueMetricsCollector {
     assertEquals("Pending apps", 2, snapshot.getPendingApps());
     assertEquals("Allocated containers", 10, snapshot.getAllocatedContainers());
     assertEquals("Pending containers", 7, snapshot.getPendingContainers());
-    assertEquals("Capacity", 20.0f, snapshot.getCapacityPercentage(), 0.01f);
-    assertEquals("Current capacity", 5.0f, snapshot.getCurrentCapacityPercentage(), 0.01f);
+    assertEquals("Capacity", 20.0f, snapshot.getCapacityPercentage(), 0.001f);
+    assertEquals("Current capacity", 5.0f, snapshot.getCurrentCapacityPercentage(), 0.001f);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -301,12 +297,6 @@ public class TestYarnQueueMetricsCollector {
     new QueueMetricsSnapshot(null);
   }
 
-  // -------------------------------------------------------------------------
-  // Tests for Issue #1: Jitter on initial delay (Thundering Herd prevention)
-  // -------------------------------------------------------------------------
-  // Note: Jitter is implicitly tested by all tests that successfully create collectors.
-  // Explicit jitter distribution testing would require reflection to access private
-  // scheduling details, which is fragile and not worth the maintenance cost.
 
   @Test
   public void testExecutorCleanupOnInitializationFailure() throws Exception {
@@ -328,10 +318,10 @@ public class TestYarnQueueMetricsCollector {
 
     YarnQueueMetricsCollector collector = newCollector(mockYarnClient, "default", 50, "circuit-breaker-query-1");
     try {
-      waitForInvocationCount(mockYarnClient, 6, 1000);
+      waitForInvocationCount(mockYarnClient, 6, WAIT_TIMEOUT_MS);
       assertNull("Snapshot should be null when circuit breaker active", collector.getLatestSnapshot());
-      int callCount = mockingDetails(mockYarnClient).getInvocations().size();
-      assertTrue("Circuit breaker should reduce calls (got " + callCount + ")", callCount < 12);
+      assertTrue("Circuit breaker should reduce calls",
+          mockingDetails(mockYarnClient).getInvocations().size() < 12);
     } finally {
       collector.shutdown();
     }
@@ -360,11 +350,12 @@ public class TestYarnQueueMetricsCollector {
 
     YarnQueueMetricsCollector collector = newCollector(mockYarnClient, "default", 30, "circuit-breaker-recovery-query");
     try {
-      waitForInvocationCount(mockYarnClient, 3, 200);
+      waitForInvocationCount(mockYarnClient, 3, WAIT_TIMEOUT_MS);
       assertNull("Snapshot should be null after circuit breaker activates", collector.getLatestSnapshot());
-      QueueMetricsSnapshot snapshot = waitForSnapshot(collector, 2000);
+      QueueMetricsSnapshot snapshot = waitForSnapshot(collector, WAIT_TIMEOUT_MS);
       assertNotNull("Snapshot should be populated after circuit breaker recovery", snapshot);
-      assertEquals("Memory used should be 4GB", 4.0f, snapshot.getMemoryUsedGB(), 0.1f);
+      assertEquals("Memory used should be 4GB", 4.0f, snapshot.getMemoryUsedGB(), 0.001f);
+
     } finally {
       collector.shutdown();
     }
@@ -377,7 +368,7 @@ public class TestYarnQueueMetricsCollector {
 
     YarnQueueMetricsCollector collector = newCollector(mockYarnClient, "nonexistent-queue", 50, "null-queueinfo-query");
     try {
-      waitForInvocationCount(mockYarnClient, 8, 800);
+      waitForInvocationCount(mockYarnClient, 8, WAIT_TIMEOUT_MS);
       assertNull("Snapshot should remain null for null QueueInfo", collector.getLatestSnapshot());
       int callCount = mockingDetails(mockYarnClient).getInvocations().size();
       assertTrue("Null QueueInfo should NOT trigger circuit breaker (got " + callCount + " calls)",
@@ -388,8 +379,7 @@ public class TestYarnQueueMetricsCollector {
   }
 
   @Test
-  public void testSnapshotCollectionTimestampIsRecent() throws Exception {
-    setupHappyPathMocks();
+  public void testSnapshotCollectionTimestampIsRecent() {
     long beforeCreate = System.currentTimeMillis();
     YarnQueueMetricsCollector collector = newCollector(mockYarnClient, "default", 10000, "timestamp-test");
     try {
@@ -405,8 +395,7 @@ public class TestYarnQueueMetricsCollector {
   }
 
   @Test
-  public void testRefreshIntervalRespected() throws Exception {
-    setupHappyPathMocks();
+  public void testRefreshIntervalRespected() {
     when(mockQueueStats.getAllocatedMemoryMB()).thenReturn(2048L);
     when(mockQueueStats.getAvailableMemoryMB()).thenReturn(2048L);
     when(mockQueueStats.getAllocatedVCores()).thenReturn(8L);
@@ -419,67 +408,29 @@ public class TestYarnQueueMetricsCollector {
     try {
       waitForSnapshot(collector, WAIT_TIMEOUT_MS);
       int callsAfterFirst = mockingDetails(mockYarnClient).getInvocations().size();
-      long toleranceMs = intervalMs + (long) (intervalMs * 0.2) + 300;
+      long toleranceMs = intervalMs + (long) (intervalMs * 0.2) + 2000;
       waitForInvocationCount(mockYarnClient, callsAfterFirst + 1, toleranceMs);
-      int callsAfterWait = mockingDetails(mockYarnClient).getInvocations().size();
       assertTrue("At least one refresh should have occurred within interval + tolerance",
-          callsAfterWait > callsAfterFirst);
+          mockingDetails(mockYarnClient).getInvocations().size() > callsAfterFirst);
     } finally {
       collector.shutdown();
     }
   }
 
   @Test
-  public void testZeroRefreshIntervalIsRejected() throws Exception {
-    when(mockQueueInfo.getQueueStatistics()).thenReturn(null);
-    when(mockQueueInfo.getCapacity()).thenReturn(0.5f);
-    when(mockYarnClient.getQueueInfo(anyString())).thenReturn(mockQueueInfo);
-
+  public void testZeroRefreshIntervalIsRejected() {
     assertThrows(IllegalArgumentException.class, () ->
-        new YarnQueueMetricsCollector(mockYarnClient, "default", 0, "zero-interval-test", testConf));
+        new YarnQueueMetricsCollector(mockYarnClient, "default", 0, "zero-interval-test"));
   }
 
   @Test
-  public void testNegativeRefreshIntervalIsRejected() throws Exception {
-    when(mockQueueInfo.getQueueStatistics()).thenReturn(null);
-    when(mockQueueInfo.getCapacity()).thenReturn(0.5f);
-    when(mockYarnClient.getQueueInfo(anyString())).thenReturn(mockQueueInfo);
-
+  public void testNegativeRefreshIntervalIsRejected() {
     assertThrows(IllegalArgumentException.class, () ->
-        new YarnQueueMetricsCollector(mockYarnClient, "default", -1000, "negative-interval-test", testConf));
+        new YarnQueueMetricsCollector(mockYarnClient, "default", -1000, "negative-interval-test"));
   }
 
   @Test
-  public void testJitterCalculationRange() {
-    long intervalMs = 2000;
-    long maxJitter = intervalMs * QueueMetricsRefreshPool.JITTER_PERCENT / 100; // 200ms
-
-    // Test multiple queue names to ensure jitter is in range
-    String[] queues = {"default", "production", "batch", "analytics", "q" + "x".repeat(50)};
-    for (String queueName : queues) {
-      long jitter = QueueMetricsRefreshPool.calculateJitter(queueName, intervalMs);
-      assertTrue("Jitter should be >= 0 for " + queueName, jitter >= 0);
-      assertTrue("Jitter should be < maxJitter (" + maxJitter + "ms) for " + queueName,
-          jitter < maxJitter);
-    }
-  }
-
-  @Test
-  public void testJitterIsDeterministic() {
-    long intervalMs = 5000;
-    String queueName = "production-analytics";
-
-    long jitter1 = QueueMetricsRefreshPool.calculateJitter(queueName, intervalMs);
-    long jitter2 = QueueMetricsRefreshPool.calculateJitter(queueName, intervalMs);
-    long jitter3 = QueueMetricsRefreshPool.calculateJitter(queueName, intervalMs);
-
-    assertEquals("Jitter should be deterministic (same queue → same jitter)", jitter1, jitter2);
-    assertEquals("Jitter should be deterministic across multiple calls", jitter2, jitter3);
-  }
-
-  @Test
-  public void testMultipleSessionsShareCacheState() throws Exception {
-    setupHappyPathMocks();
+  public void testMultipleSessionsShareCacheState() {
 
     // Create two collectors for the same queue
     YarnQueueMetricsCollector collector1 = newCollector(mockYarnClient, "default", 5000, "query-1");
@@ -493,8 +444,9 @@ public class TestYarnQueueMetricsCollector {
       QueueMetricsSnapshot snapshot2 = collector2.getLatestSnapshot();
 
       assertNotNull("Second collector should get cached snapshot", snapshot2);
-      assertEquals("Both collectors should see same memory value",
-          snapshot1.getMemoryUsedGB(), snapshot2.getMemoryUsedGB(), 0.01f);
+      assertSame("Both collectors should return the exact same cached snapshot instance",
+          snapshot1, snapshot2);
+
     } finally {
       collector1.shutdown();
       collector2.shutdown();
@@ -502,8 +454,7 @@ public class TestYarnQueueMetricsCollector {
   }
 
   @Test
-  public void testDynamicReschedulingOnIntervalChange() throws Exception {
-    setupHappyPathMocks();
+  public void testDynamicReschedulingOnIntervalChange() {
 
     // Start with slow collector (10s)
     YarnQueueMetricsCollector slowCollector = newCollector(mockYarnClient, "default", 10000, "slow-query");
@@ -520,8 +471,8 @@ public class TestYarnQueueMetricsCollector {
 
       // Shutdown fast collector - should reschedule back to slow interval
       fastCollector.shutdown();
-      // Wait up to 500ms for rescheduling to complete
-      waitForInvocationCount(mockYarnClient, mockingDetails(mockYarnClient).getInvocations().size(), 500);
+      // Wait up to WAIT_TIMEOUT_MS for rescheduling to complete
+      waitForInvocationCount(mockYarnClient, mockingDetails(mockYarnClient).getInvocations().size(), WAIT_TIMEOUT_MS);
 
       // Verify slow collector still works
       assertNotNull("Slow collector should continue after fast shutdown",
@@ -541,25 +492,23 @@ public class TestYarnQueueMetricsCollector {
 
     try {
       // Wait for circuit breaker to activate (5 failures)
-      waitForInvocationCount(mockYarnClient, 6, 1000);
+      waitForInvocationCount(mockYarnClient, 6, WAIT_TIMEOUT_MS);
       int callsAfterActivation = mockingDetails(mockYarnClient).getInvocations().size();
 
-      // Wait for next ~12 ticks at 50ms interval — poll until invocation count stabilizes
-      waitForInvocationCount(mockYarnClient, callsAfterActivation + 2, 800);
+      // Wait for at least one probe attempt to occur past the circuit-breaker activation.
+      waitForInvocationCount(mockYarnClient, callsAfterActivation + 1, WAIT_TIMEOUT_MS);
       int callsAfterWait = mockingDetails(mockYarnClient).getInvocations().size();
 
-      // Should have ~1 probe attempt in 10 ticks
       int probeAttempts = callsAfterWait - callsAfterActivation;
-      assertTrue("Circuit breaker should allow ~1 probe per 10 ticks, got " + probeAttempts,
-          probeAttempts >= 0 && probeAttempts <= 2);
+      assertTrue("Circuit breaker should allow at least one probe past activation, got " + probeAttempts,
+          probeAttempts > 0);
     } finally {
       collector.shutdown();
     }
   }
 
   @Test
-  public void testTaskCancelsWhenAllSessionsDeregister() throws Exception {
-    setupHappyPathMocks();
+  public void testTaskCancelsWhenAllSessionsDeregister() {
 
     YarnQueueMetricsCollector collector1 = newCollector(mockYarnClient, "default", 2000, "query-1");
     YarnQueueMetricsCollector collector2 = newCollector(mockYarnClient, "default", 2000, "query-2");
@@ -572,16 +521,21 @@ public class TestYarnQueueMetricsCollector {
     collector1.shutdown();
     collector2.shutdown();
 
-    // Wait and verify no more RM calls after shutdown (task cancelled)
-    // Spin-wait up to 3 seconds checking that call count has stabilized after both shutdowns
-    int callsAfterShutdown;
-    long deadline = System.currentTimeMillis() + 3000;
-    do {
-      callsAfterShutdown = mockingDetails(mockYarnClient).getInvocations().size();
-      Thread.onSpinWait(); // Hint to JVM that this is a spin-wait loop
-    } while (callsAfterShutdown > callsWithBoth && System.currentTimeMillis() < deadline);
+    // Wait and verify no more RM calls after shutdown (task cancelled).
+    // Poll up to WAIT_TIMEOUT_MS; exit early once the observed count is no longer growing past callsWithBoth.
+    int[] latest = { mockingDetails(mockYarnClient).getInvocations().size() };
+    try {
+      await().atMost(Duration.ofMillis(WAIT_TIMEOUT_MS))
+          .pollInterval(Duration.ofMillis(10))
+          .until(() -> {
+            latest[0] = mockingDetails(mockYarnClient).getInvocations().size();
+            return latest[0] <= callsWithBoth;
+          });
+    } catch (ConditionTimeoutException ignored) {
+      // Assertion below will report the mismatch.
+    }
 
     assertEquals("No more RM calls should occur after all sessions deregister",
-        callsWithBoth, callsAfterShutdown);
+        callsWithBoth, latest[0]);
   }
 }

@@ -938,8 +938,6 @@ public class HiveServer2 extends CompositeService {
       LOG.info("Initializing tez session pool manager. Active resource plan: {}",
         resourcePlan == null || resourcePlan.getPlan() == null ? "null" : resourcePlan.getPlan().getName());
       HiveConf hiveConf = getHiveConf();
-      // Initialize the queue metrics refresh pool for collecting YARN queue metrics during query execution.
-      // Pool is shared across all queries and sized by hive.server2.tez.queue.metrics.refresh.threads config.
       initializeQueueMetricsPool(hiveConf);
       tezSessionPoolManager = TezSessionPoolManager.getInstance();
       if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS)) {
@@ -976,35 +974,17 @@ public class HiveServer2 extends CompositeService {
    * Initializes the shared JVM-wide queue metrics refresh pool.
    * <p>
    * This pool provides background threads for periodic YARN queue metrics collection across
-   * all Tez sessions. The pool is shared by all queries in this HiveServer2 process to prevent
-   * thread explosion when many queries run concurrently.
-   * <p>
-   * Thread count is configured via {@code hive.server2.tez.queue.metrics.refresh.threads}.
-   * <p>
-   * The pool is only initialized when execution engine is "tez". Whether to actually collect
-   * queue metrics is controlled per-session by {@code hive.tez.queue.metrics.refresh.interval},
-   * which is checked when creating metrics collectors for each query.
-   * <p>
-   * In non-Tez environments (MR, Spark, local), the pool is not created, avoiding unnecessary
-   * thread allocation.
+   * all Tez sessions. Thread count is configured via
+   * {@code hive.server2.tez.queue.metrics.refresh.threads}. Whether to actually collect metrics
+   * is controlled per-session by {@code hive.tez.queue.metrics.refresh.interval}.
    * <p>
    * Failures are non-fatal — logged as warnings so the server can start without queue metrics.
    */
   private void initializeQueueMetricsPool(HiveConf hiveConf) {
     try {
-      // Only initialize for Tez execution engine
-      String executionEngine = hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE);
-      if (!"tez".equalsIgnoreCase(executionEngine)) {
-        LOG.info("Skipping queue metrics refresh pool initialization: execution engine is '{}' (not Tez)",
-            executionEngine);
-        return;
-      }
-
-      // Initialize the pool with configured thread count
-      // Whether to use it is decided per-session based on hive.tez.queue.metrics.refresh.interval
       int refreshThreads = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_TEZ_QUEUE_METRICS_REFRESH_THREADS);
       QueueMetricsRefreshPool.init(refreshThreads);
-      LOG.info("Queue metrics refresh pool initialized with {} threads for Tez execution engine", refreshThreads);
+      LOG.info("Queue metrics refresh pool initialized with {} threads", refreshThreads);
     } catch (Exception e) {
       LOG.warn("Failed to initialize queue metrics refresh pool", e);
     }
