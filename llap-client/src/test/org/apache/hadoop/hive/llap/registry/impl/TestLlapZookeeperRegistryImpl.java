@@ -20,25 +20,34 @@ package org.apache.hadoop.hive.llap.registry.impl;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.api.ACLProvider;
 import org.apache.curator.retry.RetryOneTime;
 import org.apache.curator.test.TestingServer;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
+import org.apache.hadoop.hive.registry.ClusterNotReadyException;
 import org.apache.hadoop.hive.registry.ServiceInstanceSet;
+import org.apache.zookeeper.ZooDefs;
+import org.apache.zookeeper.data.ACL;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static java.lang.Integer.parseInt;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 public class TestLlapZookeeperRegistryImpl {
 
@@ -97,6 +106,66 @@ public class TestLlapZookeeperRegistryImpl {
         parseInt(attributes.get(LlapRegistryService.LLAP_DAEMON_TASK_SCHEDULER_ENABLED_WAIT_QUEUE_SIZE)));
     assertEquals(expectedExecutorCount,
         parseInt(attributes.get(LlapRegistryService.LLAP_DAEMON_NUM_ENABLED_EXECUTORS)));
+  }
+
+  @Test
+  public void testRetryOnInvalidACLException() throws Exception {
+    // Given
+    LlapZookeeperRegistryImpl underTest =
+            new LlapZookeeperRegistryImpl("ClientRegistryRetryTest", hiveConf);
+
+    ACLProvider aclProvider = Mockito.mock(ACLProvider.class);
+    ACL allowAll = new ACL(ZooDefs.Perms.ALL, ZooDefs.Ids.ANYONE_ID_UNSAFE);
+    Mockito.when(aclProvider.getAclForPath(Mockito.any())).
+            thenReturn(Collections.emptyList()). // causes InvalidACLException
+            thenReturn(Collections.singletonList(allowAll)); // allow all
+
+    CuratorFramework curatorFrameworkWithAclProvider = CuratorFrameworkFactory.
+            builder().
+            connectString(server.getConnectString()).
+            sessionTimeoutMs(10000).
+            retryPolicy(new RetryOneTime(1000)).
+            aclProvider(aclProvider).
+            build();
+
+    trySetMock(underTest, "zooKeeperClient", curatorFrameworkWithAclProvider);
+    underTest.start();
+
+    // When
+    ServiceInstanceSet<LlapServiceInstance> serviceInstanceSet =
+            underTest.getInstances("LLAP", 10000);
+
+    // Then
+    Collection<LlapServiceInstance> llaps = serviceInstanceSet.getAll();
+    assertEquals(0, llaps.size());
+    Mockito.verify(aclProvider, Mockito.atLeast(4)).getAclForPath(Mockito.any());
+  }
+
+  @Test
+  public void testClusterNotReadyExceptionIsThrownWhenZkNodeNotExists() throws Exception {
+    // Given
+    LlapZookeeperRegistryImpl underTest =
+            new LlapZookeeperRegistryImpl("ClientRegistryClusterNotReadyTest", hiveConf);
+
+    ACLProvider aclProvider = Mockito.mock(ACLProvider.class);
+    List<ACL> secureAcls = new ArrayList<>();
+    secureAcls.addAll(ZooDefs.Ids.READ_ACL_UNSAFE); // Read all to the world
+    secureAcls.addAll(ZooDefs.Ids.CREATOR_ALL_ACL); // Create/Delete/Write/Admin to creator
+    Mockito.when(aclProvider.getAclForPath(Mockito.any())).thenReturn(secureAcls);
+    CuratorFramework curatorFrameworkWithAclProvider = CuratorFrameworkFactory.
+            builder().
+            connectString(server.getConnectString()).
+            sessionTimeoutMs(10000).
+            retryPolicy(new RetryOneTime(1000)).
+            aclProvider(aclProvider).
+            build();
+
+    trySetMock(underTest, "zooKeeperClient", curatorFrameworkWithAclProvider);
+    underTest.start();
+
+    // When - Then
+    assertThrows(ClusterNotReadyException.class,
+            () -> underTest.getInstances("LLAP", 0));
   }
 
   @Test

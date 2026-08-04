@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
+import org.apache.hadoop.hive.registry.ClusterNotReadyException;
 import org.apache.hadoop.hive.registry.RegistryUtilities;
 import org.apache.hadoop.hive.registry.ServiceInstance;
 import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
@@ -651,14 +652,14 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
         long elapsedNs = System.nanoTime() - startTimeNs;
         if (deltaNs == 0 || deltaNs <= elapsedNs) {
           LOG.error("Unable to start curator PathChildrenCache", e);
-          throw new IOException(e);
+          throw new ClusterNotReadyException(e);
         }
         LOG.warn("The cluster is not started yet (InvalidACL); will retry");
         try {
           Thread.sleep(Math.min(sleepTimeMs, (deltaNs - elapsedNs)/1000000L));
         } catch (InterruptedException e1) {
           LOG.error("Interrupted while retrying the PathChildrenCache startup");
-          throw new IOException(e1);
+          throw new ClusterNotReadyException(e1);
         }
         sleepTimeMs = sleepTimeMs << 1;
       } catch (Exception e) {
