@@ -39,8 +39,6 @@ import org.apache.hadoop.hive.metastore.events.PreCreateCatalogEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.thrift.TException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 
@@ -48,7 +46,6 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 @RequestHandler(requestBody = CreateCatalogRequest.class)
 public class CreateCatalogHandler
     extends AbstractRequestHandler<CreateCatalogRequest, CreateCatalogHandler.CreateCatalogResult> {
-  private static final Logger LOG = LoggerFactory.getLogger(CreateCatalogHandler.class);
   private RawStore ms;
   private Catalog catalog;
 

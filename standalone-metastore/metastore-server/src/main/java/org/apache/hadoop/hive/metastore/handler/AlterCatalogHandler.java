@@ -30,19 +30,19 @@ import org.apache.hadoop.hive.metastore.api.AlterCatalogRequest;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.GetCatalogRequest;
 import org.apache.hadoop.hive.metastore.api.GetCatalogResponse;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.events.AlterCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterCatalogEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.thrift.TException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("unused")
 @RequestHandler(requestBody = AlterCatalogRequest.class)
 public class AlterCatalogHandler
     extends AbstractRequestHandler<AlterCatalogRequest, AlterCatalogHandler.AlterCatalogResult> {
-  private static final Logger LOG = LoggerFactory.getLogger(AlterCatalogHandler.class);
   private RawStore ms;
+  private String catName;
+  private Catalog newCat;
   private Catalog oldCat;
 
   AlterCatalogHandler(IHMSHandler handler, AlterCatalogRequest request) {
@@ -51,11 +51,15 @@ public class AlterCatalogHandler
 
   @Override
   protected void beforeExecute() throws TException, IOException {
+    this.catName = request.getName();
+    this.newCat = request.getNewCat();
     this.ms = handler.getMS();
-    GetCatalogResponse oldCatResp = ((HMSHandler) handler).get_catalog(new GetCatalogRequest(request.getName()));
-    assert oldCatResp != null && oldCatResp.getCatalog() != null;
+    GetCatalogResponse oldCatResp = ((HMSHandler) handler).get_catalog(new GetCatalogRequest(catName));
+    if (oldCatResp == null || oldCatResp.getCatalog() == null) {
+      throw new MetaException("Catalog " + catName + " has no catalog body");
+    }
     this.oldCat = oldCatResp.getCatalog();
-    ((HMSHandler) handler).firePreEvent(new PreAlterCatalogEvent(oldCat, request.getNewCat(), handler));
+    ((HMSHandler) handler).firePreEvent(new PreAlterCatalogEvent(oldCat, newCat, handler));
   }
 
   @Override
@@ -64,13 +68,13 @@ public class AlterCatalogHandler
     Map<String, String> transactionalListenersResponses = Collections.emptyMap();
     ms.openTransaction();
     try {
-      ms.alterCatalog(request.getName(), request.getNewCat());
+      ms.alterCatalog(catName, newCat);
 
       if (!handler.getTransactionalListeners().isEmpty()) {
         transactionalListenersResponses =
             MetaStoreListenerNotifier.notifyEvent(handler.getTransactionalListeners(),
                 EventType.ALTER_CATALOG,
-                new AlterCatalogEvent(oldCat, request.getNewCat(), true, handler));
+                new AlterCatalogEvent(oldCat, newCat, true, handler));
       }
 
       success = ms.commitTransaction();
@@ -88,7 +92,7 @@ public class AlterCatalogHandler
     if (!handler.getListeners().isEmpty()) {
       MetaStoreListenerNotifier.notifyEvent(handler.getListeners(),
           EventType.ALTER_CATALOG,
-          new AlterCatalogEvent(oldCat, request.getNewCat(), success, handler),
+          new AlterCatalogEvent(oldCat, newCat, success, handler),
           null,
           result != null ? result.transactionalListenersResponses() : Collections.emptyMap(), ms);
     }
@@ -97,7 +101,7 @@ public class AlterCatalogHandler
 
   @Override
   public String toString() {
-    return "AlterCatalogHandler [" + id + "] - alter catalog " + request.getName() + ":";
+    return "AlterCatalogHandler [" + id + "] - alter catalog " + catName + ":";
   }
 
   public record AlterCatalogResult(boolean success, Map<String, String> transactionalListenersResponses)

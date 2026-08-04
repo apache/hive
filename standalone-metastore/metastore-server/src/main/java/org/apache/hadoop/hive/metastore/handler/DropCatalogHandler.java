@@ -38,8 +38,6 @@ import org.apache.hadoop.hive.metastore.events.DropCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropCatalogEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.thrift.TException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
@@ -49,7 +47,6 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependNotNu
 @RequestHandler(requestBody = DropCatalogRequest.class)
 public class DropCatalogHandler
     extends AbstractRequestHandler<DropCatalogRequest, DropCatalogHandler.DropCatalogResult> {
-  private static final Logger LOG = LoggerFactory.getLogger(DropCatalogHandler.class);
   private RawStore ms;
   private Catalog cat;
   private String catName;
@@ -110,17 +107,16 @@ public class DropCatalogHandler
     } catch (NoSuchObjectException e) {
       if (!request.isIfExists()) {
         throw new NoSuchObjectException(e.getMessage());
-      } else {
-        ms.rollbackTransaction();
       }
+      success = true;
     } finally {
-      if (success) {
+      if (success && cat != null) {
         handler.getWh().deleteDir(handler.getWh().getDnsPath(new Path(cat.getLocationUri())), false, false);
       } else {
         ms.rollbackTransaction();
       }
     }
-    return new DropCatalogResult(success, cat, transactionalListenerResponses);
+    return new DropCatalogResult(success, transactionalListenerResponses);
   }
 
   @Override
@@ -140,7 +136,7 @@ public class DropCatalogHandler
     return "DropCatalogHandler [" + id + "] - drop catalog " + catName + ":";
   }
 
-  public record DropCatalogResult(boolean success, Catalog catalog,
+  public record DropCatalogResult(boolean success,
                                   Map<String, String> transactionalListenerResponses) implements Result {
 
   }
