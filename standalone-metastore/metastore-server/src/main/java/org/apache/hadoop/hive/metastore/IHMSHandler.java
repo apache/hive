@@ -111,5 +111,7 @@ public interface IHMSHandler extends ThriftHiveMetastore.Iface, Configurable {
 
   IMetaStoreMetadataTransformer getMetadataTransformer();
 
+  AlterHandler getAlterHandler();
+
   MetaStoreFilterHook getMetaFilterHook();
 }
