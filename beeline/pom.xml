@@ -366,6 +366,14 @@
                             entry so users can reach hive.apache.org.
         license-file        Shows the ASL 2.0 as a license-agreement wizard
                             page (jpackage auto-converts to RTF for the MSI).
+        resource-dir        Points at src/main/jpackage/windows/. jpackage
+                            picks up main.wxs from that directory and uses it
+                            in place of its own built-in WiX template. Our
+                            override adds a public ADD_TO_PATH property
+                            (default 1) and a Component whose Environment
+                            element appends INSTALLDIR to the system PATH.
+                            Users can opt out at silent install time with
+                              msiexec /i beeline-x.y.z.msi /qn ADD_TO_PATH=0
 
       Deliberately NOT set:
         win-shortcut        Desktop shortcut on by default is pushy for a
@@ -382,7 +390,7 @@
         </os>
       </activation>
       <properties>
-        <jpackage.platform.args>--win-console --type msi --win-dir-chooser --win-menu --win-menu-group "Apache Hive" --win-shortcut-prompt --win-help-url https://hive.apache.org/ --license-file ${project.basedir}/../LICENSE</jpackage.platform.args>
+        <jpackage.platform.args>--win-console --type msi --win-dir-chooser --win-menu --win-menu-group "Apache Hive" --win-shortcut-prompt --win-help-url https://hive.apache.org/ --license-file ${project.basedir}/../LICENSE --resource-dir ${project.basedir}/src/main/jpackage/windows</jpackage.platform.args>
       </properties>
     </profile>
     <profile>
