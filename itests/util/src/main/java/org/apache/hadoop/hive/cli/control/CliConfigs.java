@@ -213,7 +213,7 @@ public class CliConfigs {
       try {
         databaseType = QTestDatabaseHandler.DatabaseType.POSTGRES;
         jdbcInitScript = "q_test_tpcds_schema.postgres.sql";
-        externalTablesInitScript = "q_test_tpcds_extDB_schema-postgres.sql";
+        externalTablesInitScript = "q_test_tpcds_external_tables_schema.postgres.sql";
 
         setQueryDir("ql/src/test/queries/clientpositive/perf");
         setLogDir("itests/qtest/target/qfile-results/clientpositive/jdbc/postgres");
@@ -381,8 +381,7 @@ public class CliConfigs {
       }
     }
   }
-
-
+  
   public static class NegativeLlapLocalCliConfig extends AbstractCliConfig {
     public NegativeLlapLocalCliConfig() {
       super(CoreNegativeCliDriver.class);

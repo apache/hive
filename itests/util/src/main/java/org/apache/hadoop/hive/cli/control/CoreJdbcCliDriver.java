@@ -18,8 +18,6 @@
 package org.apache.hadoop.hive.cli.control;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.hadoop.hive.cli.control.CoreCliDriver;
-import org.apache.hadoop.hive.cli.control.AbstractCliConfig;
 import org.apache.hadoop.hive.ql.externalDB.AbstractExternalDB;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.junit.After;

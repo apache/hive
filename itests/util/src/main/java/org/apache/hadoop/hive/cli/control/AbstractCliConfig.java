@@ -345,7 +345,6 @@ public abstract class AbstractCliConfig {
       this.initScript = initScript;
     }
   }
-
   public String getHiveConfDir() {
     return hiveConfDir;
   }
