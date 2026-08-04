@@ -1556,6 +1556,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
         resultSchema = convertRowSchemaToResultSetSchema(relToHiveRR.get(calcitePlan),
             (forViewCreation || getQB().isMaterializedView()) ? false : HiveConf.getBoolVar(conf,
                 HiveConf.ConfVars.HIVE_RESULTSET_USE_UNIQUE_COLUMN_NAMES));
+        if (getQB().isCTAS()) {
+          // check the non-uniquified names: getNewColAlias would rename a duplicate away
+          ParseUtils.validateColumnNameUniqueness(
+              convertRowSchemaToResultSetSchema(relToHiveRR.get(calcitePlan), false));
+        }
       } catch (SemanticException e) {
         semanticException = e;
         throw new RuntimeException(e);
@@ -4545,6 +4550,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           ColumnInfo colInfo = outputRR.getColumnInfos().get(i);
           ColumnInfo newColInfo = new ColumnInfo(colInfo.getInternalName(),
               colInfo.getType(), colInfo.getTabAlias(), colInfo.getIsVirtualCol());
+          newColInfo.setAmbiguousName(colInfo.hasAmbiguousName());
           groupByOutputRowResolver.put(colInfo.getTabAlias(), colInfo.getAlias(), newColInfo);
           if (gbyKeyExpressions != null && gbyKeyExpressions.size() == outputRR.getColumnInfos().size()) {
             groupByOutputRowResolver.putExpression(gbyKeyExpressions.get(i), colInfo);
@@ -4886,6 +4892,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
             newCi.setAlias(tmp[1]);
           } else if ("".equals(tmp[0]) || tmp[1] == null) {
             // ast expression is not a valid column name for table
+            tmp[1] = colInfo.getInternalName();
+          } else if (newRR.get(alias, tmp[1]) != null) {
+            // Duplicate alias escaping the subquery boundary: tolerated for positional use
+            // (HIVE-19770), but poison the name so a later by-name reference fails (HIVE-29580).
+            // Binding the duplicate to its internal name here is deliberate, not redundant:
+            // putWithCheck would otherwise do it via its own fallback AND call keepAmbiguousInfo,
+            // whose reference-time throw in RowResolver.get would then shadow this marker with a
+            // differently formatted message. Do not "simplify" this line away.
+            newRR.get(alias, tmp[1]).setAmbiguousName(true);
             tmp[1] = colInfo.getInternalName();
           }
           newRR.putWithCheck(alias, tmp[1], colInfo.getInternalName(), newCi);

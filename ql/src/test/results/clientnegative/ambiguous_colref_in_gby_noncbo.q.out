@@ -1,9 +1,9 @@
-PREHOOK: query: create table t1 (a int)
+PREHOOK: query: create table t1gnc (a int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@t1
-POSTHOOK: query: create table t1 (a int)
+PREHOOK: Output: default@t1gnc
+POSTHOOK: query: create table t1gnc (a int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@t1
+POSTHOOK: Output: default@t1gnc
 FAILED: SemanticException [Error 10007]: Ambiguous column reference a in s
