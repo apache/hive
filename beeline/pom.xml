@@ -362,12 +362,6 @@
         win-shortcut-prompt Adds checkboxes on the last wizard page so users
                             can opt in / out of Start menu and desktop
                             shortcuts.
-        win-upgrade-uuid    Stable per-product GUID. Required for MSI upgrade
-                            semantics: installing 4.3.1 over 4.3.0 with the
-                            same UUID replaces the old version in place. If
-                            the UUID changes across releases, MSI treats
-                            versions as unrelated products and both install
-                            side-by-side. Generated once; DO NOT modify.
         win-help-url        Adds a "Help" link to the Add/Remove Programs
                             entry so users can reach hive.apache.org.
         license-file        Shows the ASL 2.0 as a license-agreement wizard
@@ -388,17 +382,7 @@
         </os>
       </activation>
       <properties>
-        <jpackage.platform.args>
-          --win-console
-          --type msi
-          --win-dir-chooser
-          --win-menu
-          --win-menu-group "Apache Hive"
-          --win-shortcut-prompt
-          --win-upgrade-uuid EAE2EABD-5ACF-4E3D-9099-1FB567055C31
-          --win-help-url https://hive.apache.org/
-          --license-file ${project.basedir}/../LICENSE
-        </jpackage.platform.args>
+        <jpackage.platform.args>--win-console --type msi --win-dir-chooser --win-menu --win-menu-group "Apache Hive" --win-shortcut-prompt --win-help-url https://hive.apache.org/ --license-file ${project.basedir}/../LICENSE</jpackage.platform.args>
       </properties>
     </profile>
     <profile>
