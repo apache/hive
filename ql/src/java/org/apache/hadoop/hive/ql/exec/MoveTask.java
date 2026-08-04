@@ -146,12 +146,18 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           Path path = i.next().getPath();
           Path parent = path.getParent();
           if (parent.getName().startsWith(prefix)) {
-            // We do rename by including the name of parent directory into the filename so that there are no clashes
-            // when we move the files to the parent directory. Ex. HIVE_UNION_SUBDIR_1/000000_0 -> 1_000000_0
+            // Fold the subdir index into the filename so there are no clashes when the files
+            // are moved to the parent directory, and so that the resulting name still matches
+            // the "original data file" convention that both the ACID reader (AcidUtils.
+            // ORIGINAL_PATTERN_COPY) and the metastore's non-ACID→ACID validator (Transactional
+            // ValidationListener.ORIGINAL_PATTERN_COPY) recognize:
+            //   HIVE_UNION_SUBDIR_1/000000_0 -> 000000_0_copy_1
+            // See Utilities.COPY_KEYWORD.
             String parentOfParent = parent.getParent().toString();
             String parentNameSuffix = parent.getName().substring(prefix.length());
 
-            fs.rename(path, new Path(parentOfParent + "/" + parentNameSuffix + "_" + path.getName()));
+            fs.rename(path,
+                new Path(parentOfParent + "/" + path.getName() + Utilities.COPY_KEYWORD + parentNameSuffix));
 
             unionSubdirs.add(parent);
           }

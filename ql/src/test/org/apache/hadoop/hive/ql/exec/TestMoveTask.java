@@ -35,7 +35,9 @@ public class TestMoveTask {
   @Test
   public void flattenUnionSubdirectories() throws IOException, HiveException {
     String initialPath = "/table_users/" + AbstractFileMergeOperator.UNION_SUDBIR_PREFIX + "1/000000_0";
-    String flattenPath = "/table_users/1_000000_0";
+    // The flattened name matches ORIGINAL_PATTERN_COPY ([0-9]+_[0-9]+_copy_[0-9]+) so a
+    // subsequent non-ACID→ACID conversion isn't rejected by the metastore validator.
+    String flattenPath = "/table_users/000000_0_copy_1";
 
     MockFileSystem.MockFile file1 = new MockFileSystem.MockFile("mock://" + initialPath, 0, new byte[1]);
     MockFileSystem fs = new MockFileSystem(new Configuration(), file1);
