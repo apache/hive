@@ -40,7 +40,10 @@ public class PrunedPartitionList {
   /** Partitions that either satisfy the partition criteria, or may satisfy it. */
   private final Set<Partition> partitions;
 
-  /** partition columns referred by pruner expr */
+  /**
+   * Partition columns referred by the pruner expr; empty when no partition predicate narrowed the list,
+   * or when the predicate was constant false - the list is empty in that case as well.
+   */
   private final List<String> referred;
 
   /** Whether there are partitions in the list that may or may not satisfy the criteria. */

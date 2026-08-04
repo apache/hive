@@ -20,9 +20,11 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.time.ZoneId;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -84,7 +86,6 @@ import org.apache.iceberg.PartitionsTable;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.SnapshotRef;
-import org.apache.iceberg.SnapshotSummary;
 import org.apache.iceberg.StatisticsFile;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
@@ -105,7 +106,6 @@ import org.apache.iceberg.puffin.BlobMetadata;
 import org.apache.iceberg.puffin.Puffin;
 import org.apache.iceberg.puffin.PuffinReader;
 import org.apache.iceberg.relocated.com.google.common.collect.FluentIterable;
-import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Iterables;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
@@ -483,6 +483,15 @@ public class IcebergTableUtil {
   }
 
   /**
+   * Returns the partition name of the given tuple, or {@link DummyPartition#VOID} for the empty
+   * name an unpartitioned spec renders. Statistics and partition pruning join on this name, so both must
+   * render it the same way.
+   */
+  static String toPartitionName(PartitionSpec spec, PartitionData data) {
+    return StringUtils.defaultIfEmpty(spec.partitionToPath(data), DummyPartition.VOID);
+  }
+
+  /**
    * Builds a filter expression for data table operations (deleteFromRowFilter, FindFiles).
    * Only supports identity transforms. Keys are partition field names.
    */
@@ -525,20 +534,6 @@ public class IcebergTableUtil {
         (column, value) ->
             buildSourceValuePredicate(table, value, bySourceColumn.get(column)),
         bySourceColumn::containsKey);
-  }
-
-  /**
-   * Builds a filter expression for the PARTITIONS metadata table from partition field names
-   * with already-transformed values (e.g. {key_bucket_8: 5}).
-   */
-  private static Expression buildPartitionsFilterFromPath(Table table, Map<String, String> partitionSpec)
-      throws SemanticException {
-    Types.StructType partitionType = Partitioning.partitionType(table);
-
-    return buildExpression(partitionSpec,
-        (column, value) ->
-            buildFieldPredicate(partitionType, column, value, "partition."),
-        col -> partitionType.field(col) != null);
   }
 
   static List<PartitionField> getPartitionFields(Table table, boolean latestSpecOnly) {
@@ -723,7 +718,7 @@ public class IcebergTableUtil {
             }
             PartitionData data = toPartitionData(
                 row.get(PART_IDX, StructProjection.class), partitionType, spec.partitionType());
-            return Maps.immutableEntry(spec.partitionToPath(data), spec.specId());
+            return Maps.immutableEntry(toPartitionName(spec, data), spec.specId());
           })
           .filter(Objects::nonNull)
           .toSortedList(specIdComparator).stream()
@@ -736,86 +731,33 @@ public class IcebergTableUtil {
   }
 
   /**
-   * Returns aggregated partition statistics from the PARTITIONS metadata table as a summary map.
-   * @param table the iceberg table
-   * @param partitionSpec partition spec map for filtering, or null for all partitions
-   * @return summary map with record count, file count, file size, and delete counts
+   * Reads the given snapshot's partition statistics file in a single pass, keyed by partition name;
+   * empty when the file is missing.
    */
-  static Map<String, String> getPartitionStats(Table table, Map<String, String> partitionSpec,
-      Snapshot snapshot) throws IOException {
-    PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils.createMetadataTableInstance(
-        table, MetadataTableType.PARTITIONS);
-
-    Expression filter;
-    TableScan scan = partitionsTable.newScan();
-    if (snapshot != null) {
-      scan = scan.useSnapshot(snapshot.snapshotId());
+  static Map<String, PartitionStatistics> readPartitionStats(Table table, Snapshot snapshot) {
+    PartitionStatisticsFile statsFile = getPartitionStatsFile(table, snapshot.snapshotId());
+    if (statsFile == null) {
+      LOG.warn("Partition stats file not found for snapshot: {}", snapshot.snapshotId());
+      return Map.of();
     }
-    try {
-      filter = buildPartitionsFilterFromPath(table, partitionSpec);
-      scan = scan.filter(filter);
-    } catch (SemanticException e) {
-      throw new IOException("Failed to build partition filter for " + partitionSpec, e);
+    Map<String, PartitionStatistics> result = Maps.newHashMap();
+    Types.StructType partitionType = Partitioning.partitionType(table);
+
+    try (CloseableIterable<PartitionStatistics> records =
+        table.newPartitionStatisticsScan().useSnapshot(snapshot.snapshotId()).scan()) {
+      LOG.info("Using partition stats from: {}", statsFile.path());
+      for (PartitionStatistics partitionStats : records) {
+        PartitionSpec spec = table.specs().get(partitionStats.specId());
+        PartitionData data = toPartitionData(partitionStats.partition(), partitionType,
+            spec.partitionType());
+        // the scan copies the counters into a fresh object per row, so retaining it is safe;
+        // only the partition tuple may alias the reader's reused struct - do not use it after this loop
+        result.put(toPartitionName(spec, data), partitionStats);
+      }
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     }
-
-    Evaluator evaluator = new Evaluator(partitionsTable.schema().asStruct(), filter);
-
-    try (CloseableIterable<FileScanTask> fileScanTasks = scan.planFiles()) {
-      return FluentIterable.from(fileScanTasks)
-          .transformAndConcat(task -> task.asDataTask().rows())
-          .filter(evaluator::eval)
-          .transform(BasicPartitionStats::from)
-          .stream().reduce(BasicPartitionStats::merge)
-          .orElse(BasicPartitionStats.EMPTY)
-          .toStatsMap();
-    }
-  }
-
-  static Map<String, String> toStatsMap(PartitionStatistics stats) {
-    return ImmutableMap.of(
-        SnapshotSummary.TOTAL_DATA_FILES_PROP, String.valueOf(stats.dataFileCount()),
-        SnapshotSummary.TOTAL_RECORDS_PROP, String.valueOf(stats.dataRecordCount()),
-        SnapshotSummary.TOTAL_EQ_DELETES_PROP, String.valueOf(stats.equalityDeleteRecordCount()),
-        SnapshotSummary.TOTAL_POS_DELETES_PROP, String.valueOf(stats.positionDeleteRecordCount()),
-        SnapshotSummary.TOTAL_FILE_SIZE_PROP, String.valueOf(stats.totalDataFileSizeInBytes())
-    );
-  }
-
-  /** The subset of partition stats counters Hive reports, summed across PARTITIONS metadata table rows. */
-  private record BasicPartitionStats(
-      long recordCount, long fileCount, long totalFileSizeInBytes,
-      long positionDeleteRecordCount, long equalityDeleteRecordCount) {
-
-    static final BasicPartitionStats EMPTY = new BasicPartitionStats(0,
-        0, 0, 0, 0);
-
-    static BasicPartitionStats from(StructLike row) {
-      return new BasicPartitionStats(
-          row.get(2, Long.class),      // record_count
-          row.get(3, Integer.class),   // file_count
-          row.get(4, Long.class),      // total_data_file_size_in_bytes
-          row.get(5, Long.class),      // position_delete_record_count
-          row.get(7, Long.class));     // equality_delete_record_count
-    }
-
-    BasicPartitionStats merge(BasicPartitionStats other) {
-      return new BasicPartitionStats(
-          recordCount + other.recordCount,
-          fileCount + other.fileCount,
-          totalFileSizeInBytes + other.totalFileSizeInBytes,
-          positionDeleteRecordCount + other.positionDeleteRecordCount,
-          equalityDeleteRecordCount + other.equalityDeleteRecordCount);
-    }
-
-    Map<String, String> toStatsMap() {
-      return ImmutableMap.of(
-          SnapshotSummary.TOTAL_DATA_FILES_PROP, String.valueOf(fileCount),
-          SnapshotSummary.TOTAL_RECORDS_PROP, String.valueOf(recordCount),
-          SnapshotSummary.TOTAL_EQ_DELETES_PROP, String.valueOf(equalityDeleteRecordCount),
-          SnapshotSummary.TOTAL_POS_DELETES_PROP, String.valueOf(positionDeleteRecordCount),
-          SnapshotSummary.TOTAL_FILE_SIZE_PROP, String.valueOf(totalFileSizeInBytes)
-      );
-    }
+    return Collections.unmodifiableMap(result);
   }
 
   public static PartitionSpec getPartitionSpec(Table icebergTable, String partitionPath)
@@ -849,6 +791,7 @@ public class IcebergTableUtil {
 
     String statsPath = IcebergTableUtil.getColStatsPath(table, snapshotId);
     if (statsPath == null) {
+      LOG.warn("Column stats file not found for snapshot: {}", snapshotId);
       return colStats;
     }
     try (PuffinReader reader = Puffin.read(table.io().newInputFile(statsPath)).build()) {

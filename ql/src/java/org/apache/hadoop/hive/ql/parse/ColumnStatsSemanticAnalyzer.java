@@ -629,6 +629,11 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       originalTree = ast;
       boolean isPartitionStats = AnalyzeCommandUtils.isPartitionLevelStats(ast) 
           || StatsUtils.isPartitionStats(tbl, conf);
+      // a partition-scoped column statistics ANALYZE cannot be honored for non-native tables: the stats
+      // of all partitions are rewritten as a whole, so it would drop every other partition's statistics
+      // (table-level ANALYZE of a partitioned table still computes all partitions - only the explicit
+      // partition spec is rejected; the auto-gather path merges instead and stays unaffected)
+      validateUnsupportedPartitionClause(tbl, AnalyzeCommandUtils.isPartitionLevelStats(ast));
       
       Map<Integer, List<TransformSpec>> partTransformSpecs = Collections.singletonMap(-1, null);
       Map<String, String> partSpec = (isPartitionStats) ?

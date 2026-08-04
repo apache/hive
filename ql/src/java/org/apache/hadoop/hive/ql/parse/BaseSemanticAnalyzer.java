@@ -1727,6 +1727,23 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   /**
+   * Rejects a query that has a partition clause but targets a table that is never partitioned on the HMS-level.
+   * Even though the table is not partitioned from the HMS's point of view, it might have some other notion of
+   * partitioning under the hood (e.g. Iceberg tables). In these cases, we might decide to proactively throw a more
+   * descriptive, unified error message instead of failing on some other semantic analysis validation step, which
+   * could provide a more counter-intuitive exception message.
+   *
+   * @param tbl The table object, should not be null.
+   * @param partitionClausePresent Whether a partition clause is present in the query (e.g. PARTITION(p='x'))
+   */
+  protected static void validateUnsupportedPartitionClause(Table tbl, boolean partitionClausePresent)
+      throws SemanticException {
+    if (partitionClausePresent && tbl.hasNonNativePartitionSupport()) {
+      throw new SemanticException(ErrorMsg.ANALYZE_PARTITION_NON_NATIVE.getMsg());
+    }
+  }
+
+  /**
    * Get the partition specs from the tree.
    *
    * @param ast
