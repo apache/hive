@@ -1,0 +1,101 @@
+PREHOOK: query: select 'a' as c, 'b' as c
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'a' as c, 'b' as c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+a	b
+PREHOOK: query: select 'a' as c, 'b' as c order by c
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'a' as c, 'b' as c order by c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+a	b
+PREHOOK: query: select * from (select 'a' as c, 'b' as c) t
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select 'a' as c, 'b' as c) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+a	b
+PREHOOK: query: create table dup_alias_ins (x string, y string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dup_alias_ins
+POSTHOOK: query: create table dup_alias_ins (x string, y string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dup_alias_ins
+PREHOOK: query: insert into dup_alias_ins select 'a' as c, 'b' as c
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@dup_alias_ins
+POSTHOOK: query: insert into dup_alias_ins select 'a' as c, 'b' as c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@dup_alias_ins
+POSTHOOK: Lineage: dup_alias_ins.x SIMPLE []
+POSTHOOK: Lineage: dup_alias_ins.y SIMPLE []
+PREHOOK: query: select x, y from dup_alias_ins
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dup_alias_ins
+#### A masked pattern was here ####
+POSTHOOK: query: select x, y from dup_alias_ins
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dup_alias_ins
+#### A masked pattern was here ####
+a	b
+PREHOOK: query: select 'a' as c, 'b' as c
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'a' as c, 'b' as c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+a	b
+PREHOOK: query: select 'a' as c, 'b' as c order by c
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 'a' as c, 'b' as c order by c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+a	b
+PREHOOK: query: select * from (select 'a' as c, 'b' as c) t
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select 'a' as c, 'b' as c) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+a	b
+PREHOOK: query: insert into dup_alias_ins select 'c' as c, 'd' as c
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@dup_alias_ins
+POSTHOOK: query: insert into dup_alias_ins select 'c' as c, 'd' as c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@dup_alias_ins
+POSTHOOK: Lineage: dup_alias_ins.x SIMPLE []
+POSTHOOK: Lineage: dup_alias_ins.y SIMPLE []
+PREHOOK: query: select x, y from dup_alias_ins order by x
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dup_alias_ins
+#### A masked pattern was here ####
+POSTHOOK: query: select x, y from dup_alias_ins order by x
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dup_alias_ins
+#### A masked pattern was here ####
+a	b
+c	d

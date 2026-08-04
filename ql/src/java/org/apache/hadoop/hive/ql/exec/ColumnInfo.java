@@ -60,6 +60,8 @@ public class ColumnInfo implements Serializable {
 
   private boolean isHiddenVirtualCol;
 
+  private boolean ambiguousName;
+
   private String typeName;
 
   private final boolean nullable;
@@ -130,7 +132,21 @@ public class ColumnInfo implements Serializable {
     this.isVirtualCol = columnInfo.getIsVirtualCol();
     this.isHiddenVirtualCol = columnInfo.isHiddenVirtualCol();
     this.nullable = columnInfo.nullable;
+    this.ambiguousName = columnInfo.ambiguousName;
     this.setType(columnInfo.getType());
+  }
+
+  /**
+   * True when this column's alias collided with another column's at a subquery/CTE boundary:
+   * the column stays usable positionally (star expansion, count(*)) but any by-name reference
+   * is ambiguous and must be rejected.
+   */
+  public boolean hasAmbiguousName() {
+    return ambiguousName;
+  }
+
+  public void setAmbiguousName(boolean ambiguousName) {
+    this.ambiguousName = ambiguousName;
   }
 
   public String getTypeName() {
