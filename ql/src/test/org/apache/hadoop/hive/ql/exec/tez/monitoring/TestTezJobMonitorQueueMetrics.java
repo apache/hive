@@ -38,15 +38,16 @@ import org.apache.tez.dag.api.client.DAGClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.atLeastOnce;
@@ -57,6 +58,7 @@ import static org.mockito.Mockito.when;
 /**
  * Test cases for TezJobMonitor queue metrics initialization.
  */
+@RunWith(MockitoJUnitRunner.class)
 public class TestTezJobMonitorQueueMetrics {
 
   @Mock
@@ -77,11 +79,9 @@ public class TestTezJobMonitorQueueMetrics {
   private HiveConf hiveConf;
   private List<BaseWork> topSortedWorks;
   private SessionState sessionState;
-  private AutoCloseable mockCloseable;
 
   @Before
   public void setUp() {
-    mockCloseable = MockitoAnnotations.openMocks(this);
     hiveConf = new HiveConfForTest(TestTezJobMonitorQueueMetrics.class);
     hiveConf.set("hive.security.authorization.manager",
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdConfOnlyAuthorizerFactory");
@@ -92,9 +92,6 @@ public class TestTezJobMonitorQueueMetrics {
 
   @After
   public void tearDown() throws Exception {
-    if (mockCloseable != null) {
-      mockCloseable.close();
-    }
     if (sessionState != null) {
       sessionState.close();
     }
@@ -102,14 +99,10 @@ public class TestTezJobMonitorQueueMetrics {
 
   @Test
   public void testMetricsCollectorDisabledByDefault() throws Exception {
-    when(mockSession.getYarnClient()).thenReturn(null); // YarnClient should not be initialized
-    when(mockSession.getQueueName()).thenReturn("default");
 
-    TezJobMonitor monitor =
-        new TezJobMonitor(mockSession, topSortedWorks, mockDagClient, hiveConf, mockDag, mockContext, mockCounters,
-            mockPerfLogger);
+    new TezJobMonitor(mockSession, topSortedWorks, mockDagClient, hiveConf, mockDag, mockContext, mockCounters,
+        mockPerfLogger);
 
-    assertNotNull("Monitor should be created", monitor);
     // When metrics are disabled (interval=0), getYarnClient() is never called because
     // the check happens before attempting to retrieve the YarnClient
     verify(mockSession, never()).getYarnClient();
@@ -123,11 +116,9 @@ public class TestTezJobMonitorQueueMetrics {
     when(mockSession.getYarnClient()).thenReturn(mockYarnClient);
     when(mockSession.getQueueName()).thenReturn("default");
 
-    TezJobMonitor monitor =
-        new TezJobMonitor(mockSession, topSortedWorks, mockDagClient, hiveConf, mockDag, mockContext, mockCounters,
-            mockPerfLogger);
+    new TezJobMonitor(mockSession, topSortedWorks, mockDagClient, hiveConf, mockDag, mockContext, mockCounters,
+        mockPerfLogger);
 
-    assertNotNull("Monitor should be created", monitor);
     verify(mockSession, atLeastOnce()).getYarnClient();
   }
 
@@ -135,14 +126,9 @@ public class TestTezJobMonitorQueueMetrics {
   public void testMetricsCollectorDisabledWithZeroInterval() throws Exception {
     hiveConf.setTimeVar(HiveConf.ConfVars.HIVE_TEZ_QUEUE_METRICS_REFRESH_INTERVAL, 0, TimeUnit.SECONDS);
 
-    when(mockSession.getYarnClient()).thenReturn(null); // YarnClient should not be initialized
-    when(mockSession.getQueueName()).thenReturn("default");
+    new TezJobMonitor(mockSession, topSortedWorks, mockDagClient, hiveConf, mockDag, mockContext, mockCounters,
+        mockPerfLogger);
 
-    TezJobMonitor monitor =
-        new TezJobMonitor(mockSession, topSortedWorks, mockDagClient, hiveConf, mockDag, mockContext, mockCounters,
-            mockPerfLogger);
-
-    assertNotNull("Monitor should be created", monitor);
     // When metrics are disabled (interval=0), getYarnClient() is never called
     verify(mockSession, never()).getYarnClient();
     verify(mockYarnClient, never()).getQueueInfo(anyString());
@@ -152,32 +138,14 @@ public class TestTezJobMonitorQueueMetrics {
   public void testMetricsCollectorDisabledWithNegativeInterval() throws Exception {
     hiveConf.setTimeVar(HiveConf.ConfVars.HIVE_TEZ_QUEUE_METRICS_REFRESH_INTERVAL, -1, TimeUnit.SECONDS);
 
-    when(mockSession.getYarnClient()).thenReturn(null); // YarnClient should not be initialized
-    when(mockSession.getQueueName()).thenReturn("default");
+    new TezJobMonitor(mockSession, topSortedWorks, mockDagClient, hiveConf, mockDag, mockContext, mockCounters,
+        mockPerfLogger);
 
-    TezJobMonitor monitor =
-        new TezJobMonitor(mockSession, topSortedWorks, mockDagClient, hiveConf, mockDag, mockContext, mockCounters,
-            mockPerfLogger);
-
-    assertNotNull("Monitor should be created", monitor);
     // When metrics are disabled (interval<0), getYarnClient() is never called
     verify(mockSession, never()).getYarnClient();
     verify(mockYarnClient, never()).getQueueInfo(anyString());
   }
 
-  @Test
-  public void testMetricsCollectorWithSmallInterval() {
-    hiveConf.setTimeVar(HiveConf.ConfVars.HIVE_TEZ_QUEUE_METRICS_REFRESH_INTERVAL, 500, TimeUnit.MILLISECONDS);
-
-    when(mockSession.getYarnClient()).thenReturn(mockYarnClient);
-    when(mockSession.getQueueName()).thenReturn("default");
-
-    TezJobMonitor monitor =
-        new TezJobMonitor(mockSession, topSortedWorks, mockDagClient, hiveConf, mockDag, mockContext, mockCounters,
-            mockPerfLogger);
-
-    assertNotNull("Monitor should be created with adjusted interval", monitor);
-  }
 
   @Test
   public void testMetricsCollectorWithCustomQueue() {
@@ -186,108 +154,79 @@ public class TestTezJobMonitorQueueMetrics {
     when(mockSession.getYarnClient()).thenReturn(mockYarnClient);
     when(mockSession.getQueueName()).thenReturn("production.analytics");
 
-    TezJobMonitor monitor =
-        new TezJobMonitor(mockSession, topSortedWorks, mockDagClient, hiveConf, mockDag, mockContext, mockCounters,
-            mockPerfLogger);
+    new TezJobMonitor(mockSession, topSortedWorks, mockDagClient, hiveConf, mockDag, mockContext, mockCounters,
+        mockPerfLogger);
 
     verify(mockSession, atLeastOnce()).getQueueName();
-    assertNotNull("Monitor should be created with custom queue", monitor);
   }
 
-  /**
-   * Metrics enabled with a null YarnClient: monitor must still be created and must
-   * reach the YarnClient gate (verify getYarnClient called), but must NOT call
-   * getQueueName (nothing to resolve without a client).
-   */
-  @Test
-  public void testMetricsCollectorWithNullYarnClient() {
-    hiveConf.setTimeVar(HiveConf.ConfVars.HIVE_TEZ_QUEUE_METRICS_REFRESH_INTERVAL, 10, TimeUnit.SECONDS);
-    when(mockSession.getYarnClient()).thenReturn(null);
-    when(mockSession.getQueueName()).thenReturn("default");
-
-    TezJobMonitor monitor =
-        new TezJobMonitor(mockSession, topSortedWorks, mockDagClient, hiveConf, mockDag, mockContext, mockCounters,
-            mockPerfLogger);
-
-    assertNotNull("Monitor must be created when YarnClient is null", monitor);
-    verify(mockSession, atLeastOnce()).getYarnClient();
-  }
-
-  /**
-   * Metrics enabled with a null queue name: monitor must be created and the code
-   * must reach both the YarnClient and queue-name gates.
-   */
-  @Test
-  public void testMetricsCollectorWithNullQueueName() {
-    hiveConf.setTimeVar(HiveConf.ConfVars.HIVE_TEZ_QUEUE_METRICS_REFRESH_INTERVAL, 10, TimeUnit.SECONDS);
-    when(mockSession.getYarnClient()).thenReturn(mockYarnClient);
-    when(mockSession.getQueueName()).thenReturn(null);
-
-    TezJobMonitor monitor =
-        new TezJobMonitor(mockSession, topSortedWorks, mockDagClient, hiveConf, mockDag, mockContext, mockCounters,
-            mockPerfLogger);
-
-    assertNotNull("Monitor must be created when queue name is null", monitor);
-    verify(mockSession, atLeastOnce()).getYarnClient();
-    verify(mockSession, atLeastOnce()).getQueueName();
-  }
-
-  /**
-   * Metrics enabled with a blank (whitespace-only) queue name: monitor must be
-   * created and both client and queue-name gates must be reached.
-   */
-  @Test
-  public void testMetricsCollectorWithBlankQueueName() {
-    hiveConf.setTimeVar(HiveConf.ConfVars.HIVE_TEZ_QUEUE_METRICS_REFRESH_INTERVAL, 10, TimeUnit.SECONDS);
-    when(mockSession.getYarnClient()).thenReturn(mockYarnClient);
-    when(mockSession.getQueueName()).thenReturn("  ");
-
-    TezJobMonitor monitor =
-        new TezJobMonitor(mockSession, topSortedWorks, mockDagClient, hiveConf, mockDag, mockContext, mockCounters,
-            mockPerfLogger);
-
-    assertNotNull("Monitor must be created when queue name is blank", monitor);
-    verify(mockSession, atLeastOnce()).getYarnClient();
-    verify(mockSession, atLeastOnce()).getQueueName();
-  }
-
-  @Test
-  public void testMetricsCollectorTypeWhenEnabled() throws Exception {
-    hiveConf.setTimeVar(HiveConf.ConfVars.HIVE_TEZ_QUEUE_METRICS_REFRESH_INTERVAL, 10, TimeUnit.SECONDS);
-    when(mockSession.getYarnClient()).thenReturn(mockYarnClient);
-    when(mockSession.getQueueName()).thenReturn("default");
-
-    TezJobMonitor monitor =
-        new TezJobMonitor(mockSession, topSortedWorks, mockDagClient, hiveConf, mockDag, mockContext, mockCounters,
-            mockPerfLogger);
-
-    // Use reflection to access metricsCollector field and verify type
+  private QueueMetricsCollector getCollector(TezJobMonitor monitor) throws Exception {
     Field collectorField = TezJobMonitor.class.getDeclaredField("metricsCollector");
     collectorField.setAccessible(true);
-    QueueMetricsCollector collector = (QueueMetricsCollector) collectorField.get(monitor);
+    return (QueueMetricsCollector) collectorField.get(monitor);
+  }
 
-    assertTrue("Should return YarnQueueMetricsCollector when enabled",
-        collector instanceof YarnQueueMetricsCollector);
-    assertTrue("Collector should report as enabled", collector.isEnabled());
+  /**
+   * When metrics are enabled but YarnClient is null, the monitor should fall back
+   * to NoOpQueueMetricsCollector rather than throwing or attempting collection.
+   */
+  @Test
+  public void testMetricsCollectorWithNullYarnClient() throws Exception {
+    hiveConf.setTimeVar(HiveConf.ConfVars.HIVE_TEZ_QUEUE_METRICS_REFRESH_INTERVAL, 10, TimeUnit.SECONDS);
+    when(mockSession.getYarnClient()).thenReturn(null);
+
+    TezJobMonitor monitor =
+        new TezJobMonitor(mockSession, topSortedWorks, mockDagClient, hiveConf, mockDag, mockContext, mockCounters,
+            mockPerfLogger);
+
+    QueueMetricsCollector collector = getCollector(monitor);
+    assertEquals("Should fall back to NoOpQueueMetricsCollector when YarnClient is null",
+        NoOpQueueMetricsCollector.class, collector.getClass());
+    assertFalse("Collector should be disabled when YarnClient is null", collector.isEnabled());
+    assertEquals("Queue name should be empty for NoOp collector", "", collector.getQueueName());
+  }
+
+  /**
+   * When metrics are enabled but queue name is null or blank, the monitor should fall back
+   * to the default queue name rather than failing.
+   * Tests null, blank ("  "), and explicitly "default" queue names.
+   */
+  @Test
+  public void testMetricsCollectorWithDefaultQueueFallback() throws Exception {
+    String[] queueNames = {null, "  ", "default"};
+    String[] descriptions = {"null", "blank", "explicit default"};
+
+    for (int i = 0; i < queueNames.length; i++) {
+      String queueName = queueNames[i];
+      String desc = descriptions[i];
+
+      hiveConf.setTimeVar(HiveConf.ConfVars.HIVE_TEZ_QUEUE_METRICS_REFRESH_INTERVAL, 10, TimeUnit.SECONDS);
+      when(mockSession.getYarnClient()).thenReturn(mockYarnClient);
+      when(mockSession.getQueueName()).thenReturn(queueName);
+
+      TezJobMonitor monitor =
+          new TezJobMonitor(mockSession, topSortedWorks, mockDagClient, hiveConf, mockDag, mockContext, mockCounters,
+              mockPerfLogger);
+
+      QueueMetricsCollector collector = getCollector(monitor);
+      assertEquals("Should use YarnQueueMetricsCollector with default queue when queue name is " + desc,
+          YarnQueueMetricsCollector.class, collector.getClass());
+      assertTrue("Collector should be enabled when queue name is " + desc, collector.isEnabled());
+      assertEquals("Queue name should default to 'default' when " + desc, "default", collector.getQueueName());
+    }
   }
 
   @Test
   public void testMetricsCollectorTypeWhenDisabled() throws Exception {
     // Default config has interval = 0 (disabled)
-    when(mockSession.getYarnClient()).thenReturn(mockYarnClient);
-    when(mockSession.getQueueName()).thenReturn("default");
-
     TezJobMonitor monitor =
         new TezJobMonitor(mockSession, topSortedWorks, mockDagClient, hiveConf, mockDag, mockContext, mockCounters,
             mockPerfLogger);
 
-    // Use reflection to access metricsCollector field and verify type
-    Field collectorField = TezJobMonitor.class.getDeclaredField("metricsCollector");
-    collectorField.setAccessible(true);
-    QueueMetricsCollector collector = (QueueMetricsCollector) collectorField.get(monitor);
-
-    assertTrue("Should return NoOpQueueMetricsCollector when disabled",
-        collector instanceof NoOpQueueMetricsCollector);
-    assertFalse("Collector should report as disabled", collector.isEnabled());
+    QueueMetricsCollector collector = getCollector(monitor);
+    assertEquals("Should use NoOpQueueMetricsCollector when disabled",
+        NoOpQueueMetricsCollector.class, collector.getClass());
+    assertFalse("Collector should be disabled", collector.isEnabled());
+    assertEquals("Queue name should be empty for NoOp collector", "", collector.getQueueName());
   }
 }

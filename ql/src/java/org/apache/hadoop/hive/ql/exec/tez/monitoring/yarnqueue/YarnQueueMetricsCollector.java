@@ -24,6 +24,7 @@ import org.apache.hadoop.yarn.client.api.YarnClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
 
 /**
  * Collects YARN queue resource metrics using a shared cache to reduce ResourceManager load.
@@ -39,8 +40,7 @@ public class YarnQueueMetricsCollector implements QueueMetricsCollector {
   private final YarnClient yarnClient;
   private final String queueName;
   private final long refreshIntervalMs;
-  private final String queryId;
-
+  private final String dagName;
 
   /**
    * Creates a collector for the given queue and query. Non-blocking: metrics are
@@ -50,52 +50,42 @@ public class YarnQueueMetricsCollector implements QueueMetricsCollector {
    * @param yarnClient        Live YarnClient from the Tez session
    * @param queueName         YARN queue this query runs on
    * @param refreshIntervalMs How often to poll YARN RM (ms)
-   * @param queryId           DAG name for logging
+   * @param dagName           Hive query identifier used for logging
    * @param hiveConf          Unused (kept for API compatibility)
    */
-  public YarnQueueMetricsCollector(YarnClient yarnClient, String queueName, long refreshIntervalMs, String queryId,
+  public YarnQueueMetricsCollector(YarnClient yarnClient, String queueName, long refreshIntervalMs, String dagName,
       HiveConf hiveConf) {
-    if (yarnClient == null) {
-      throw new IllegalArgumentException("YarnClient cannot be null");
-    }
-    if (queueName == null) {
-      throw new IllegalArgumentException("Queue name cannot be null");
-    }
+    this.yarnClient = Objects.requireNonNull(yarnClient, "YarnClient cannot be null");
+    this.queueName = Objects.requireNonNull(queueName, "Queue name cannot be null");
     if (refreshIntervalMs <= 0) {
       throw new IllegalArgumentException("refreshIntervalMs must be > 0, got: " + refreshIntervalMs);
     }
 
-    this.yarnClient = yarnClient;
-    this.queueName = queueName;
     this.refreshIntervalMs = refreshIntervalMs;
-    this.queryId = queryId;
-
+    this.dagName = dagName;
 
     // Register session and start background refresh scheduling.
     initializeSession();
 
     LOG.info("Started queue metrics collector for queue: {}, refresh interval: {}ms, query: {}", queueName,
-        refreshIntervalMs, queryId);
+        refreshIntervalMs, dagName);
   }
-
 
   /**
    * Startup sequence: get or create the cache entry for {@code queueName},
    * register this session's interval, then schedule the refresh task if needed.
-   * Concurrent safety: {@link QueueMetricsCache#putPlaceholder} uses
-   * {@code putIfAbsent} — two threads seeing null both get back the same entry.
+   * Concurrent safety: {@link QueueMetricsCache#getOrCreate} uses
+   * {@code computeIfAbsent} — concurrent sessions always get the same entry back.
    */
   private void initializeSession() {
-    QueueMetricsCache cache = QueueMetricsCache.getInstance();
-    QueueMetricsState state = cache.get(queueName);
+    QueueMetricsState state = QueueMetricsCache.getInstance().getOrCreate(queueName, refreshIntervalMs);
     if (state == null) {
-      state = cache.putPlaceholder(queueName, refreshIntervalMs);
+      throw new IllegalStateException("Failed to create QueueMetricsState for queue: " + queueName);
     }
     if (state.registerInterval(refreshIntervalMs)) {
       state.ensureTaskScheduled(QueueMetricsRefreshPool.getInstance(), this::refreshMetrics, queueName);
     }
   }
-
 
   private void refreshMetrics() {
     try {
@@ -154,7 +144,6 @@ public class YarnQueueMetricsCollector implements QueueMetricsCollector {
     }
   }
 
-
   /**
    * Returns the latest snapshot from cache (non-blocking). Null if not yet available.
    */
@@ -184,10 +173,10 @@ public class YarnQueueMetricsCollector implements QueueMetricsCollector {
   public void shutdown() {
     QueueMetricsState state = QueueMetricsCache.getInstance().get(queueName);
     if (state == null) {
-      LOG.info("Cache entry already cleared for queue: {} on shutdown of query: {}", queueName, queryId);
+      LOG.info("Cache entry already cleared for queue: {} on shutdown of query: {}", queueName, dagName);
       return;
     }
-    LOG.info("Query finished for queue: {}, query: {}", queueName, queryId);
+    LOG.info("Query finished for queue: {}, query: {}", queueName, dagName);
     if (state.deregisterInterval(refreshIntervalMs)) {
       state.ensureTaskScheduled(QueueMetricsRefreshPool.getInstance(), this::refreshMetrics, queueName);
     }

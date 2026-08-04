@@ -47,7 +47,15 @@ public class TestInPlaceUpdate {
     return new ProgressMonitor() {
       @Override
       public List<String> headers() {
-        return Arrays.asList("VERTICES", "MODE", "STATUS", "TOTAL", "COMPLETED", "RUNNING", "PENDING", "FAILED", "KILLED");
+        return Arrays.asList("VERTICES",
+            "MODE",
+            "STATUS",
+            "TOTAL",
+            "COMPLETED",
+            "RUNNING",
+            "PENDING",
+            "FAILED",
+            "KILLED");
       }
 
       @Override
@@ -94,13 +102,12 @@ public class TestInPlaceUpdate {
    * print a separator line immediately after the metrics block — so total separators
    * = 4 (VERTICES table) + 1 (after queue metrics) = 5.
    *
-   * This is the MOST CRITICAL test - verifies line 183 of InPlaceUpdate.java.
+   * This is the MOST CRITICAL test - verifies the separator is printed after the metrics block.
    */
   @Test
   public void testSeparatorPrintedAfterQueueMetrics() {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     PrintStream ps = new PrintStream(baos);
-    InPlaceUpdate inPlace = new InPlaceUpdate(ps);
 
     // Updated to new 4-line format (no staleness in line 1)
     String metrics = """
@@ -109,7 +116,7 @@ public class TestInPlaceUpdate {
         CAPACITY: 60.00% (allocated) | 25.00% (used)
         APPS: 1 running, 0 pending | CONTAINERS: 2 allocated, 0 pending""";
 
-    inPlace.render(makeMonitor(metrics));
+    new InPlaceUpdate(ps).render(makeMonitor(metrics));
     ps.flush();
 
     String output = baos.toString();
@@ -126,15 +133,12 @@ public class TestInPlaceUpdate {
     assertTrue("APPS: line should be found in output", appsIdx > 0);
 
     // Separator should appear after APPS line
-    int separatorIdx = output.indexOf(SEPARATOR, appsIdx);
-    assertTrue("Separator must appear after APPS: line (separatorIdx=" + separatorIdx
-            + ", appsIdx=" + appsIdx + ")",
-        separatorIdx > appsIdx);
+    assertTrue("Separator must appear after APPS: line",
+        output.indexOf(SEPARATOR, appsIdx) > appsIdx);
 
     // Total separators = 4 (VERTICES table) + 1 (after queue metrics) = 5
-    int count = StringUtils.countMatches(output, SEPARATOR);
     assertEquals("With queue metrics, total separators should be 5 (4 VERTICES + 1 after metrics)",
-        5, count);
+        5, StringUtils.countMatches(output, SEPARATOR));
   }
 
 
@@ -146,18 +150,16 @@ public class TestInPlaceUpdate {
   public void testNoExtraSeparatorWhenQueueMetricsEmpty() {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     PrintStream ps = new PrintStream(baos);
-    InPlaceUpdate inPlace = new InPlaceUpdate(ps);
 
-    inPlace.render(makeMonitor(""));
+    new InPlaceUpdate(ps).render(makeMonitor(""));
     ps.flush();
 
     String output = baos.toString();
 
     // VERTICES table renders 4 separators (before-header, after-header, before-footer, after-footer)
     // With empty queueMetrics there should be exactly 4, not 5.
-    int count = StringUtils.countMatches(output, SEPARATOR);
     assertEquals("With empty queue metrics, only 4 VERTICES-table separators should appear",
-        4, count);
+        4, StringUtils.countMatches(output, SEPARATOR));
   }
 
 
@@ -168,16 +170,14 @@ public class TestInPlaceUpdate {
   public void testNoExtraSeparatorWhenQueueMetricsNull() {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     PrintStream ps = new PrintStream(baos);
-    InPlaceUpdate inPlace = new InPlaceUpdate(ps);
 
-    inPlace.render(makeMonitor(null));
+    new InPlaceUpdate(ps).render(makeMonitor(null));
     ps.flush();
 
     String output = baos.toString();
 
-    int count = StringUtils.countMatches(output, SEPARATOR);
     assertEquals("With null queue metrics, only 4 VERTICES-table separators should appear",
-        4, count);
+        4, StringUtils.countMatches(output, SEPARATOR));
   }
 
   /**

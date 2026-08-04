@@ -20,8 +20,10 @@ package org.apache.hadoop.hive.ql.exec.tez.monitoring.yarnqueue;
  * Interface for collecting YARN queue metrics.
  * Implementations include the active collector ({@link YarnQueueMetricsCollector})
  * and a no-op variant ({@link NoOpQueueMetricsCollector}) following the Null Object pattern.
+ * <p>
+ * Implements {@link AutoCloseable} to support try-with-resources and ensure proper cleanup.
  */
-public interface QueueMetricsCollector {
+public interface QueueMetricsCollector extends AutoCloseable {
   /**
    * Returns the latest queue metrics snapshot.
    * 
@@ -37,8 +39,19 @@ public interface QueueMetricsCollector {
   /**
    * Shuts down the metrics collector and releases resources.
    * Safe to call multiple times.
+   * <p>
+   * This method is called by {@link #close()} to support the AutoCloseable pattern.
    */
   void shutdown();
+  /**
+   * Closes the collector and releases resources.
+   * Implements {@link AutoCloseable#close()} by delegating to {@link #shutdown()}.
+   * Does not throw checked exceptions.
+   */
+  @Override
+  default void close() {
+    shutdown();
+  }
   /**
    * Returns whether queue metrics collection is enabled for this collector.
    *

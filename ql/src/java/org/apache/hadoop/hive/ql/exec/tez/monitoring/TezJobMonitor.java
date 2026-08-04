@@ -155,8 +155,6 @@ public class TezJobMonitor {
 
   /**
    * Initializes the YARN queue metrics collector based on configuration.
-   *
-   * <p>This method implements the Null Object pattern - it always returns a non-null collector.
    * When metrics collection is disabled or initialization fails, a no-op collector is returned.
    *
    * <p>Metrics collection requires:
@@ -192,14 +190,13 @@ public class TezJobMonitor {
       // Get queue name, default to "default" if not specified
       String queueName = getValidatedQueueName();
 
-      // Get query ID from DAG name
-      String queryId = dag.getName();
+      // Use the DAG name as the query identifier for logging
+      String dagName = dag.getName();
 
       LOG.info("Initializing YARN queue metrics collector for queue: {}, refresh interval: {}ms",
           queueName, refreshInterval);
 
-      // Pool sizing (topology computation) is delegated to QueueMetricsRefreshPool.
-      return new YarnQueueMetricsCollector(yarnClient, queueName, refreshInterval, queryId, hiveConf);
+      return new YarnQueueMetricsCollector(yarnClient, queueName, refreshInterval, dagName, hiveConf);
     } catch (Exception e) {
       LOG.warn("Unable to initialize YARN queue metrics collector", e);
       return NoOpQueueMetricsCollector.INSTANCE;
@@ -414,13 +411,9 @@ public class TezJobMonitor {
             shutdownList.remove(dagClient);
           }
 
-          // Shutdown metrics collector (no-op if disabled)
-          try {
-            metricsCollector.shutdown();
-            LOG.debug("Shut down metrics collector for queue: {}", metricsCollector.getQueueName());
-          } catch (Exception e) {
-            LOG.warn("Error shutting down queue metrics collector", e);
-          }
+          // Close metrics collector (no-op if disabled)
+          metricsCollector.close();
+          LOG.debug("Closed metrics collector for queue: {}", metricsCollector.getQueueName());
 
           break;
         }

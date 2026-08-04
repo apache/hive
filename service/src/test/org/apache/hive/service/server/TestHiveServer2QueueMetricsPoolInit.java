@@ -26,8 +26,8 @@ import org.junit.Test;
 
 import java.lang.reflect.Method;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -36,21 +36,19 @@ import static org.junit.Assert.fail;
  * Verifies that the pool is only initialized when execution engine is "tez",
  * and skipped for other engines (MR, Spark, local).
  *
- * Uses {@link QueueMetricsRefreshPool#getInstanceForTesting()} to verify initialization
+ * Uses {@link QueueMetricsRefreshPool#isInitialized()} to verify initialization
  * state without triggering lazy initialization.
  */
 public class TestHiveServer2QueueMetricsPoolInit {
 
   @Before
   public void setUp() {
-    // Reset the pool before each test
-    QueueMetricsRefreshPool.resetForTesting();
+    QueueMetricsRefreshPool.shutdown();
   }
 
   @After
   public void tearDown() {
-    // Clean up after each test
-    QueueMetricsRefreshPool.resetForTesting();
+    QueueMetricsRefreshPool.shutdown();
   }
 
   /**
@@ -64,15 +62,15 @@ public class TestHiveServer2QueueMetricsPoolInit {
     conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_TEZ_QUEUE_METRICS_REFRESH_THREADS, 4);
 
     // Verify pool is not initialized before the call
-    assertNull("Pool should not be initialized before init call",
-        QueueMetricsRefreshPool.getInstanceForTesting());
+    assertFalse("Pool should not be initialized before init call",
+        QueueMetricsRefreshPool.isInitialized());
 
     HiveServer2 hs2 = new HiveServer2();
     invokeInitializeQueueMetricsPool(hs2, conf);
 
     // Verify pool WAS initialized (POSITIVE case)
-    assertNotNull("Pool SHOULD be initialized for Tez engine",
-        QueueMetricsRefreshPool.getInstanceForTesting());
+    assertTrue("Pool SHOULD be initialized for Tez engine",
+        QueueMetricsRefreshPool.isInitialized());
   }
 
   /**
@@ -85,111 +83,57 @@ public class TestHiveServer2QueueMetricsPoolInit {
 
     for (String variant : tezVariants) {
       // Reset between iterations
-      QueueMetricsRefreshPool.resetForTesting();
+      QueueMetricsRefreshPool.shutdown();
 
       HiveConf conf = new HiveConf();
       conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, variant);
       conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_TEZ_QUEUE_METRICS_REFRESH_THREADS, 4);
 
       // Verify not initialized before
-      assertNull("Pool should not be initialized before init call for: " + variant,
-          QueueMetricsRefreshPool.getInstanceForTesting());
+      assertFalse("Pool should not be initialized before init call for: " + variant,
+          QueueMetricsRefreshPool.isInitialized());
 
       HiveServer2 hs2 = new HiveServer2();
       invokeInitializeQueueMetricsPool(hs2, conf);
 
       // Verify WAS initialized (POSITIVE case)
-      assertNotNull("Pool SHOULD be initialized for Tez variant: " + variant,
-          QueueMetricsRefreshPool.getInstanceForTesting());
+      assertTrue("Pool SHOULD be initialized for Tez variant: " + variant,
+          QueueMetricsRefreshPool.isInitialized());
     }
   }
 
   /**
-   * Test that pool is NOT initialized when execution engine is "mr".
-   * This is a NEGATIVE test case - verifying the pool remains null.
+   * Test that pool is NOT initialized when execution engine is not "tez".
+   * Tests multiple non-Tez engines: mr, spark, local, and empty.
+   * These are all NEGATIVE test cases - verifying the pool remains null.
    */
   @Test
-  public void testPoolNotInitializedForMrEngine() throws Exception {
-    HiveConf conf = new HiveConf();
-    conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
-    conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_TEZ_QUEUE_METRICS_REFRESH_THREADS, 4);
+  public void testPoolNotInitializedForNonTezEngines() throws Exception {
+    String[] engineNames = {"mr", "spark", "local", ""};
+    String[] descriptions = {"MR engine", "Spark engine", "local engine", "empty engine"};
 
-    // Verify pool is not initialized before
-    assertNull("Pool should not be initialized before init call",
-        QueueMetricsRefreshPool.getInstanceForTesting());
+    for (int i = 0; i < engineNames.length; i++) {
+      String engineName = engineNames[i];
+      String desc = descriptions[i];
 
-    HiveServer2 hs2 = new HiveServer2();
-    invokeInitializeQueueMetricsPool(hs2, conf);
+      // Reset between iterations
+      QueueMetricsRefreshPool.shutdown();
 
-    // Verify pool is STILL not initialized (NEGATIVE case)
-    assertNull("Pool should NOT be initialized for MR engine",
-        QueueMetricsRefreshPool.getInstanceForTesting());
-  }
+      HiveConf conf = new HiveConf();
+      conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, engineName);
+      conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_TEZ_QUEUE_METRICS_REFRESH_THREADS, 4);
 
-  /**
-   * Test that pool is NOT initialized when execution engine is "spark".
-   * This is a NEGATIVE test case.
-   */
-  @Test
-  public void testPoolNotInitializedForSparkEngine() throws Exception {
-    HiveConf conf = new HiveConf();
-    conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "spark");
-    conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_TEZ_QUEUE_METRICS_REFRESH_THREADS, 4);
+      // Verify pool is not initialized before
+      assertFalse("Pool should not be initialized before init call for " + desc,
+          QueueMetricsRefreshPool.isInitialized());
 
-    // Verify not initialized before
-    assertNull("Pool should not be initialized before init call",
-        QueueMetricsRefreshPool.getInstanceForTesting());
+      HiveServer2 hs2 = new HiveServer2();
+      invokeInitializeQueueMetricsPool(hs2, conf);
 
-    HiveServer2 hs2 = new HiveServer2();
-    invokeInitializeQueueMetricsPool(hs2, conf);
-
-    // Verify STILL not initialized (NEGATIVE case)
-    assertNull("Pool should NOT be initialized for Spark engine",
-        QueueMetricsRefreshPool.getInstanceForTesting());
-  }
-
-  /**
-   * Test that pool is NOT initialized when execution engine is empty.
-   * This is a NEGATIVE test case.
-   */
-  @Test
-  public void testPoolNotInitializedForEmptyEngine() throws Exception {
-    HiveConf conf = new HiveConf();
-    conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "");
-    conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_TEZ_QUEUE_METRICS_REFRESH_THREADS, 4);
-
-    // Verify not initialized before
-    assertNull("Pool should not be initialized before init call",
-        QueueMetricsRefreshPool.getInstanceForTesting());
-
-    HiveServer2 hs2 = new HiveServer2();
-    invokeInitializeQueueMetricsPool(hs2, conf);
-
-    // Verify STILL not initialized (NEGATIVE case)
-    assertNull("Pool should NOT be initialized for empty engine",
-        QueueMetricsRefreshPool.getInstanceForTesting());
-  }
-
-  /**
-   * Test that pool is NOT initialized when execution engine is "local".
-   * This is a NEGATIVE test case.
-   */
-  @Test
-  public void testPoolNotInitializedForLocalEngine() throws Exception {
-    HiveConf conf = new HiveConf();
-    conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "local");
-    conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_TEZ_QUEUE_METRICS_REFRESH_THREADS, 4);
-
-    // Verify not initialized before
-    assertNull("Pool should not be initialized before init call",
-        QueueMetricsRefreshPool.getInstanceForTesting());
-
-    HiveServer2 hs2 = new HiveServer2();
-    invokeInitializeQueueMetricsPool(hs2, conf);
-
-    // Verify STILL not initialized (NEGATIVE case)
-    assertNull("Pool should NOT be initialized for local engine",
-        QueueMetricsRefreshPool.getInstanceForTesting());
+      // Verify pool is STILL not initialized (NEGATIVE case)
+      assertFalse("Pool should NOT be initialized for " + desc,
+          QueueMetricsRefreshPool.isInitialized());
+    }
   }
 
   /**
@@ -203,15 +147,15 @@ public class TestHiveServer2QueueMetricsPoolInit {
     conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_TEZ_QUEUE_METRICS_REFRESH_THREADS, 8);
 
     // Verify not initialized before
-    assertNull("Pool should not be initialized before init call",
-        QueueMetricsRefreshPool.getInstanceForTesting());
+    assertFalse("Pool should not be initialized before init call",
+        QueueMetricsRefreshPool.isInitialized());
 
     HiveServer2 hs2 = new HiveServer2();
     invokeInitializeQueueMetricsPool(hs2, conf);
 
     // Verify WAS initialized (POSITIVE case)
-    assertNotNull("Pool SHOULD be initialized with custom thread count",
-        QueueMetricsRefreshPool.getInstanceForTesting());
+    assertTrue("Pool SHOULD be initialized with custom thread count",
+        QueueMetricsRefreshPool.isInitialized());
   }
 
   /**

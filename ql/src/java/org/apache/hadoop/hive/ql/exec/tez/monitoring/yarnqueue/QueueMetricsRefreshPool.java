@@ -27,7 +27,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Singleton manager for the JVM-wide refresh executor pool used by queue metrics collection.
@@ -48,11 +47,9 @@ public final class QueueMetricsRefreshPool {
   private static final int DEFAULT_THREAD_COUNT = 4;
   public static final int JITTER_PERCENT = 10;
 
-  private static final AtomicReference<QueueMetricsRefreshPool> INSTANCE = new AtomicReference<>(null);
-  private static final Object INIT_LOCK = new Object();
+  private static final AtomicReference<QueueMetricsRefreshPool> instance = new AtomicReference<>(null);
 
   private final ScheduledExecutorService refreshPool;
-
 
   /**
    * Initializes the singleton pool with the specified thread count.
@@ -61,14 +58,14 @@ public final class QueueMetricsRefreshPool {
    * @param threadCount number of threads for the refresh pool
    */
   public static void init(int threadCount) {
-    if (INSTANCE.get() != null) {
+    if (instance.get() != null) {
       LOG.debug("QueueMetricsRefreshPool already initialized, ignoring init call");
       return;
     }
-    synchronized (INIT_LOCK) {
-      if (INSTANCE.get() == null) {
-        INSTANCE.set(new QueueMetricsRefreshPool(threadCount));
-      }
+    QueueMetricsRefreshPool newInstance = new QueueMetricsRefreshPool(threadCount);
+    if (!instance.compareAndSet(null, newInstance)) {
+      // Another thread won the race, shut down our instance
+      newInstance.refreshPool.shutdownNow();
     }
   }
 
@@ -79,23 +76,22 @@ public final class QueueMetricsRefreshPool {
    * @return the singleton pool instance
    */
   public static QueueMetricsRefreshPool getInstance() {
-    QueueMetricsRefreshPool local = INSTANCE.get();
-    if (local != null) {
-      return local;
+    QueueMetricsRefreshPool current = instance.get();
+    if (current != null) {
+      return current;
     }
     // Lazy init for tests/non-HS2 with default thread count
-    synchronized (INIT_LOCK) {
-      local = INSTANCE.get();
-      if (local == null) {
-        LOG.warn("QueueMetricsRefreshPool not initialized via init(), using default thread count: {}",
-            DEFAULT_THREAD_COUNT);
-        local = new QueueMetricsRefreshPool(DEFAULT_THREAD_COUNT);
-        INSTANCE.set(local);
-      }
-      return local;
+    LOG.warn("QueueMetricsRefreshPool not initialized via init(), using default thread count: {}",
+        DEFAULT_THREAD_COUNT);
+    QueueMetricsRefreshPool newInstance = new QueueMetricsRefreshPool(DEFAULT_THREAD_COUNT);
+    if (instance.compareAndSet(null, newInstance)) {
+      return newInstance;
+    } else {
+      // Another thread won the race, shut down our instance and return the winner
+      newInstance.refreshPool.shutdownNow();
+      return instance.get();
     }
   }
-
 
   private QueueMetricsRefreshPool(int threadCount) {
     this.refreshPool = Executors.newScheduledThreadPool(threadCount,
@@ -105,7 +101,6 @@ public final class QueueMetricsRefreshPool {
             .build());
     LOG.info("QueueMetricsRefreshPool initialized with {} threads", threadCount);
   }
-
 
   /**
    * Schedules a periodic refresh task. initialDelay=0 so the first fetch runs immediately.
@@ -124,29 +119,25 @@ public final class QueueMetricsRefreshPool {
    * after all Tez sessions have been stopped.
    */
   public static void shutdown() {
-    synchronized (INIT_LOCK) {
-      QueueMetricsRefreshPool current = INSTANCE.get();
-      if (current == null) {
-        return;
-      }
-      LOG.info("Shutting down QueueMetricsRefreshPool");
-      try {
-        current.refreshPool.shutdown();
-        if (!current.refreshPool.awaitTermination(10, TimeUnit.SECONDS)) {
-          LOG.warn("QueueMetricsRefreshPool did not terminate gracefully, forcing shutdown");
-          current.refreshPool.shutdownNow();
-          if (!current.refreshPool.awaitTermination(5, TimeUnit.SECONDS)) {
-            LOG.error("QueueMetricsRefreshPool did not terminate after forced shutdown");
-          }
-        }
-        LOG.info("QueueMetricsRefreshPool shutdown complete");
-      } catch (InterruptedException e) {
-        LOG.warn("Interrupted during QueueMetricsRefreshPool shutdown", e);
+    QueueMetricsRefreshPool current = instance.getAndSet(null);
+    if (current == null) {
+      return;
+    }
+    LOG.info("Shutting down QueueMetricsRefreshPool");
+    try {
+      current.refreshPool.shutdown();
+      if (!current.refreshPool.awaitTermination(10, TimeUnit.SECONDS)) {
+        LOG.warn("QueueMetricsRefreshPool did not terminate gracefully, forcing shutdown");
         current.refreshPool.shutdownNow();
-        Thread.currentThread().interrupt();
-      } finally {
-        INSTANCE.set(null);
+        if (!current.refreshPool.awaitTermination(5, TimeUnit.SECONDS)) {
+          LOG.error("QueueMetricsRefreshPool did not terminate after forced shutdown");
+        }
       }
+      LOG.info("QueueMetricsRefreshPool shutdown complete");
+    } catch (InterruptedException e) {
+      LOG.warn("Interrupted during QueueMetricsRefreshPool shutdown", e);
+      current.refreshPool.shutdownNow();
+      Thread.currentThread().interrupt();
     }
   }
 
@@ -172,29 +163,20 @@ public final class QueueMetricsRefreshPool {
   //  Test Support
   // ─────────────────────────────────────────────────────────
 
-  /**
-   * Returns the current singleton instance without lazy initialization.
-   * Used for testing to verify if the pool was initialized via init().
-   * NEVER call in production code - use {@link #getInstance()} instead.
-   *
-   * @return the current instance, or null if not initialized
-   */
-  @VisibleForTesting
-  public static QueueMetricsRefreshPool getInstanceForTesting() {
-    return INSTANCE.get();
-  }
 
   /**
-   * Resets the singleton for test isolation. NEVER call in production code.
+   * Returns true if the pool has been initialized (either via init() or lazy getInstance()).
+   * Does not trigger lazy initialization. Used for testing.
+   *
+   * @return true if initialized, false otherwise
    */
   @VisibleForTesting
-  public static void resetForTesting() {
-    synchronized (INIT_LOCK) {
-      QueueMetricsRefreshPool current = INSTANCE.get();
-      if (current != null) {
-        current.refreshPool.shutdownNow();
-        INSTANCE.set(null);
-      }
-    }
+  public static boolean isInitialized() {
+    return instance.get() != null;
+  }
+
+  @VisibleForTesting
+  public int getThreadCount() {
+    return ((java.util.concurrent.ScheduledThreadPoolExecutor) refreshPool).getCorePoolSize();
   }
 }
