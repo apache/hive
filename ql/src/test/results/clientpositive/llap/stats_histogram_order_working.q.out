@@ -44,12 +44,12 @@ PREHOOK: query: ANALYZE TABLE tab2 COMPUTE STATISTICS FOR COLUMNS
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@tab2
 PREHOOK: Output: default@tab2
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE tab2 COMPUTE STATISTICS FOR COLUMNS
 POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@tab2
 POSTHOOK: Output: default@tab2
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 PREHOOK: query: DESCRIBE FORMATTED tab2 key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@tab2
