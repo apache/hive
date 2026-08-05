@@ -119,4 +119,45 @@ public class TestHiveIcebergSnapshotOperations {
     result = shell.executeStatement("SELECT COUNT(*) FROM default.testReplaceBranchWithSnapshot.branch_branch1");
     assertEquals(6L, result.get(0)[0]);
   }
+  @Test
+  public void testAncestorsOf() throws Exception {
+    TableIdentifier identifier = TableIdentifier.of("default", "testAncestorsOf");
+    shell.executeStatement(
+        String.format(
+            "CREATE EXTERNAL TABLE %s (id INT) STORED BY iceberg %s %s",
+            identifier.name(),
+            testTables.locationForCreateTableSQL(identifier),
+            testTables.propertiesForCreateTableSQL(ImmutableMap.of())));
+
+    // Create 3 snapshots
+    shell.executeStatement(String.format("INSERT INTO TABLE %s VALUES(1)", identifier.name()));
+    shell.executeStatement(String.format("INSERT INTO TABLE %s VALUES(2)", identifier.name()));
+    shell.executeStatement(String.format("INSERT INTO TABLE %s VALUES(3)", identifier.name()));
+
+    org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
+    icebergTable.refresh();
+
+    // 1. Positive Test: The command should execute successfully without errors
+    shell.executeStatement(String.format("ALTER TABLE %s EXECUTE ANCESTORS_OF", identifier.name()));
+
+    // 2. Positive Test: Run with a specific valid snapshot ID
+    long currentSnapshotId = icebergTable.currentSnapshot().snapshotId();
+    shell.executeStatement(
+        String.format(
+            "ALTER TABLE %s EXECUTE ANCESTORS_OF(%d)", identifier.name(), currentSnapshotId));
+
+    // 3. Negative Test: Run with a completely fake/invalid snapshot ID
+    long fakeSnapshotId = 99999999999999999L;
+    try {
+      shell.executeStatement(
+          String.format(
+              "ALTER TABLE %s EXECUTE ANCESTORS_OF(%d)", identifier.name(), fakeSnapshotId));
+      Assert.fail("Expected an exception to be thrown for an invalid snapshot ID");
+    } catch (Exception e) {
+      Assert.assertTrue(
+          "Exception message should indicate failure to find snapshot",
+          e.getMessage().contains("Cannot find snapshot") ||
+              e.getMessage().contains("Cannot find"));
+    }
+  }
 }

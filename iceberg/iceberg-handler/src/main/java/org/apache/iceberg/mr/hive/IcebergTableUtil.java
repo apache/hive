@@ -888,4 +888,43 @@ public class IcebergTableUtil {
         properties -> IcebergTableUtil.formatVersion(tableProperties) >= 3 &&
             FileFormat.PARQUET == IcebergTableUtil.defaultFileFormat(properties::getOrDefault)).isPresent();
   }
+
+  /**
+   * Returns the ancestors of a given Iceberg snapshot. If snapshotId is null, it defaults to the
+   * current snapshot of the table.
+   */
+  public static Iterable<Snapshot> getAncestorsOf(Table table, Long snapshotId) {
+    long targetSnapshotId = snapshotId != null ? snapshotId : table.currentSnapshot().snapshotId();
+    return SnapshotUtil.ancestorsOf(targetSnapshotId, table::snapshot);
+  }
+
+  /**
+   * Prints the ancestors of a given Iceberg snapshot to the Hive console. If snapshotId is null, it
+   * defaults to the current snapshot of the table.
+   */
+  public static void printAncestorsOf(Table table, Long snapshotId) {
+    long targetSnapshotId = snapshotId != null ? snapshotId : table.currentSnapshot().snapshotId();
+    Iterable<Snapshot> ancestors = getAncestorsOf(table, snapshotId);
+    SessionState.LogHelper console = SessionState.getConsole();
+    if (console != null) {
+      // A width of 25 is used because it fits the column headers. It also safely fits the data,
+      // since a 64-bit long (used for IDs and timestamps) has a maximum of 19 digits.
+      console.printInfo("+---------------------------+---------------------------+");
+      console.printInfo(
+          String.format(
+              "| %s | %s |",
+              StringUtils.center("snapshot_id", 25), StringUtils.center("timestamp_ms", 25)));
+      console.printInfo("+---------------------------+---------------------------+");
+      for (Snapshot snapshot : ancestors) {
+        console.printInfo(
+            String.format("| %-25s | %-25s |", snapshot.snapshotId(), snapshot.timestampMillis()));
+      }
+      console.printInfo("+---------------------------+---------------------------+");
+    } else {
+      LOG.info("Ancestors of snapshot {}:", targetSnapshotId);
+      for (Snapshot snapshot : ancestors) {
+        LOG.info("{} - {}", snapshot.snapshotId(), snapshot.timestampMillis());
+      }
+    }
+  }
 }

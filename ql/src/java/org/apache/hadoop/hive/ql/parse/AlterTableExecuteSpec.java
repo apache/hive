@@ -24,6 +24,7 @@ import com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 
 import java.util.Arrays;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Execute operation specification. It stores the type of the operation and its parameters.
@@ -43,7 +44,8 @@ public class AlterTableExecuteSpec<T> {
     FAST_FORWARD,
     CHERRY_PICK,
     DELETE_METADATA,
-    DELETE_ORPHAN_FILES;
+    DELETE_ORPHAN_FILES,
+    ANCESTORS_OF;
   }
 
   private final ExecuteOperationType operationType;
@@ -252,6 +254,21 @@ public class AlterTableExecuteSpec<T> {
 
     @Override
     public String toString() {
+      return MoreObjects.toStringHelper(this).add("snapshotId", snapshotId).toString();
+    }
+  }
+
+  /**
+   * Value object class, that stores the ancestors of operation specific parameters.
+   *
+   * <ul>
+   *   <li>snapshotId: the snapshotId to find ancestors of (optional)
+   * </ul>
+   */
+  public record AncestorsOfSpec(Long snapshotId) {
+
+    @Override
+    public @NotNull String toString() {
       return MoreObjects.toStringHelper(this).add("snapshotId", snapshotId).toString();
     }
   }

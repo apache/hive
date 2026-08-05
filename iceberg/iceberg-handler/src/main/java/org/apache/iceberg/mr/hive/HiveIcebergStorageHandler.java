@@ -1358,6 +1358,11 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
             (AlterTableExecuteSpec.CherryPickSpec) executeSpec.getOperationParams();
         IcebergTableUtil.cherryPick(icebergTable, cherryPickSpec.getSnapshotId());
         break;
+      case ANCESTORS_OF:
+        AlterTableExecuteSpec.AncestorsOfSpec ancestorsOfSpec =
+            (AlterTableExecuteSpec.AncestorsOfSpec) executeSpec.getOperationParams();
+        IcebergTableUtil.printAncestorsOf(icebergTable, ancestorsOfSpec.snapshotId());
+        break;
       case DELETE_METADATA:
         AlterTableExecuteSpec.DeleteMetadataSpec deleteMetadataSpec =
             (AlterTableExecuteSpec.DeleteMetadataSpec) executeSpec.getOperationParams();
