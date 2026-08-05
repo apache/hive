@@ -21,8 +21,18 @@ import java.io.IOException;
 
 public class ClusterNotReadyException extends IOException {
 
+  private static final long serialVersionUID = 1L;
+
+  public ClusterNotReadyException(String message) {
+    super(message);
+  }
+
   public ClusterNotReadyException(Throwable cause) {
     super(cause);
+  }
+
+  public ClusterNotReadyException(String message, Throwable cause) {
+    super(message, cause);
   }
 
 }

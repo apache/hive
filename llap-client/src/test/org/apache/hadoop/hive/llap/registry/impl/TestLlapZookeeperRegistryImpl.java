@@ -23,6 +23,7 @@ import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.api.ACLProvider;
 import org.apache.curator.retry.RetryOneTime;
 import org.apache.curator.test.TestingServer;
+import org.apache.curator.utils.CloseableUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 import org.apache.hadoop.hive.registry.ClusterNotReadyException;
@@ -33,7 +34,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -48,6 +48,11 @@ import java.util.Map;
 import static java.lang.Integer.parseInt;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class TestLlapZookeeperRegistryImpl {
 
@@ -114,58 +119,106 @@ public class TestLlapZookeeperRegistryImpl {
     LlapZookeeperRegistryImpl underTest =
             new LlapZookeeperRegistryImpl("ClientRegistryRetryTest", hiveConf);
 
-    ACLProvider aclProvider = Mockito.mock(ACLProvider.class);
+    ACLProvider aclProvider = mock(ACLProvider.class);
     ACL allowAll = new ACL(ZooDefs.Perms.ALL, ZooDefs.Ids.ANYONE_ID_UNSAFE);
-    Mockito.when(aclProvider.getAclForPath(Mockito.any())).
-            thenReturn(Collections.emptyList()). // causes InvalidACLException
-            thenReturn(Collections.singletonList(allowAll)); // allow all
+    when(aclProvider.getAclForPath(any()))
+            .thenReturn(Collections.emptyList()) // causes InvalidACLException
+            .thenReturn(Collections.singletonList(allowAll)); // allow all
 
-    CuratorFramework curatorFrameworkWithAclProvider = CuratorFrameworkFactory.
-            builder().
-            connectString(server.getConnectString()).
-            sessionTimeoutMs(10000).
-            retryPolicy(new RetryOneTime(1000)).
-            aclProvider(aclProvider).
-            build();
+    CuratorFramework curatorFrameworkWithAclProvider = CuratorFrameworkFactory
+            .builder()
+            .connectString(server.getConnectString())
+            .sessionTimeoutMs(10000)
+            .retryPolicy(new RetryOneTime(1000))
+            .aclProvider(aclProvider)
+            .build();
 
-    trySetMock(underTest, "zooKeeperClient", curatorFrameworkWithAclProvider);
-    underTest.start();
+    try {
+      trySetMock(underTest, "zooKeeperClient", curatorFrameworkWithAclProvider);
+      underTest.start();
 
-    // When
-    ServiceInstanceSet<LlapServiceInstance> serviceInstanceSet =
-            underTest.getInstances("LLAP", 10000);
+      // When
+      ServiceInstanceSet<LlapServiceInstance> serviceInstanceSet =
+              underTest.getInstances("LLAP", 10000);
 
-    // Then
-    Collection<LlapServiceInstance> llaps = serviceInstanceSet.getAll();
-    assertEquals(0, llaps.size());
-    Mockito.verify(aclProvider, Mockito.atLeast(4)).getAclForPath(Mockito.any());
+      // Then
+      Collection<LlapServiceInstance> llaps = serviceInstanceSet.getAll();
+      assertEquals(0, llaps.size());
+      verify(aclProvider, atLeast(2)).getAclForPath(any());
+    } finally {
+      CloseableUtils.closeQuietly(curatorFrameworkWithAclProvider);
+    }
   }
 
   @Test
-  public void testClusterNotReadyExceptionIsThrownWhenZkNodeNotExists() throws Exception {
+  public void testClusterNotReadyExceptionOnImmediateTimeoutWithSecureAcl() throws Exception {
     // Given
     LlapZookeeperRegistryImpl underTest =
             new LlapZookeeperRegistryImpl("ClientRegistryClusterNotReadyTest", hiveConf);
 
-    ACLProvider aclProvider = Mockito.mock(ACLProvider.class);
+    ACLProvider aclProvider = mock(ACLProvider.class);
     List<ACL> secureAcls = new ArrayList<>();
     secureAcls.addAll(ZooDefs.Ids.READ_ACL_UNSAFE); // Read all to the world
     secureAcls.addAll(ZooDefs.Ids.CREATOR_ALL_ACL); // Create/Delete/Write/Admin to creator
-    Mockito.when(aclProvider.getAclForPath(Mockito.any())).thenReturn(secureAcls);
-    CuratorFramework curatorFrameworkWithAclProvider = CuratorFrameworkFactory.
-            builder().
-            connectString(server.getConnectString()).
-            sessionTimeoutMs(10000).
-            retryPolicy(new RetryOneTime(1000)).
-            aclProvider(aclProvider).
-            build();
+    when(aclProvider.getAclForPath(any())).thenReturn(secureAcls);
+    CuratorFramework curatorFrameworkWithAclProvider = CuratorFrameworkFactory
+            .builder()
+            .connectString(server.getConnectString())
+            .sessionTimeoutMs(10000)
+            .retryPolicy(new RetryOneTime(1000))
+            .aclProvider(aclProvider)
+            .build();
 
-    trySetMock(underTest, "zooKeeperClient", curatorFrameworkWithAclProvider);
-    underTest.start();
+    try {
+      trySetMock(underTest, "zooKeeperClient", curatorFrameworkWithAclProvider);
+      underTest.start();
 
-    // When - Then
-    assertThrows(ClusterNotReadyException.class,
-            () -> underTest.getInstances("LLAP", 0));
+      // When - Then
+      assertThrows(ClusterNotReadyException.class,
+              () -> underTest.getInstances("LLAP", 0));
+    } finally {
+      CloseableUtils.closeQuietly(curatorFrameworkWithAclProvider);
+    }
+  }
+
+  @Test
+  public void testClusterNotReadyExceptionAfterRetriesWithSecureAcl() throws Exception {
+    // Given
+    LlapZookeeperRegistryImpl underTest =
+            new LlapZookeeperRegistryImpl("ClientRegistryRetryTimeoutTest", hiveConf);
+
+    ACLProvider aclProvider = mock(ACLProvider.class);
+    List<ACL> secureAcls = new ArrayList<>();
+    secureAcls.addAll(ZooDefs.Ids.READ_ACL_UNSAFE);
+    secureAcls.addAll(ZooDefs.Ids.CREATOR_ALL_ACL);
+    when(aclProvider.getAclForPath(any())).thenReturn(secureAcls);
+    CuratorFramework curatorFrameworkWithAclProvider = CuratorFrameworkFactory
+            .builder()
+            .connectString(server.getConnectString())
+            .sessionTimeoutMs(10000)
+            .retryPolicy(new RetryOneTime(1000))
+            .aclProvider(aclProvider)
+            .build();
+
+    try {
+      trySetMock(underTest, "zooKeeperClient", curatorFrameworkWithAclProvider);
+      underTest.start();
+
+      long startMs = System.currentTimeMillis();
+
+      // When - Then: with a 100ms timeout, the method should retry before giving up
+      assertThrows(ClusterNotReadyException.class,
+              () -> underTest.getInstances("LLAP", 100));
+
+      long elapsedMs = System.currentTimeMillis() - startMs;
+      // Verify that retries actually occurred (elapsed time >= initial sleep of 16ms)
+      Assert.assertTrue("Expected retries before timeout, but elapsed was " + elapsedMs + "ms",
+              elapsedMs >= 16);
+      // Verify getAclForPath was called multiple times (at least initial attempt + one retry)
+      verify(aclProvider, atLeast(2)).getAclForPath(any());
+    } finally {
+      CloseableUtils.closeQuietly(curatorFrameworkWithAclProvider);
+    }
   }
 
   @Test

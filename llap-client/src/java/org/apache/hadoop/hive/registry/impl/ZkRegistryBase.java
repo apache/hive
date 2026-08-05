@@ -658,7 +658,8 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
         try {
           Thread.sleep(Math.min(sleepTimeMs, (deltaNs - elapsedNs)/1000000L));
         } catch (InterruptedException e1) {
-          LOG.error("Interrupted while retrying the PathChildrenCache startup");
+          Thread.currentThread().interrupt();
+          LOG.error("Interrupted while retrying the PathChildrenCache startup", e1);
           throw new ClusterNotReadyException(e1);
         }
         sleepTimeMs = sleepTimeMs << 1;

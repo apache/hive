@@ -26,6 +26,7 @@ import org.apache.curator.test.TestingServer;
 import org.apache.curator.utils.CloseableUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
+import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.llap.registry.impl.LlapZookeeperRegistryImpl;
 import org.apache.hadoop.hive.registry.impl.ZkRegistryBase;
@@ -42,10 +43,11 @@ import org.mockito.Mockito;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 /**
@@ -77,7 +79,6 @@ public class TestProactiveEviction {
     Mockito.when(ugi.getShortUserName()).thenReturn("hive");
 
     server = new TestingServer();
-    server.start();
 
     hiveConf.setVar(HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS, "@testinstance");
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS, true);
@@ -92,8 +93,16 @@ public class TestProactiveEviction {
 
   @After
   public void tearDown() throws IOException {
-    server.stop();
-    userGroupInformationMockedStatic.close();
+    if (curatorFramework != null) {
+      CloseableUtils.closeQuietly(curatorFramework);
+      curatorFramework = null;
+    }
+    if (server != null) {
+      CloseableUtils.closeQuietly(server);
+    }
+    if (userGroupInformationMockedStatic != null) {
+      userGroupInformationMockedStatic.close();
+    }
   }
 
   /**
@@ -148,6 +157,10 @@ public class TestProactiveEviction {
 
     ((Map<?, ?>) FieldUtils.readStaticField(LlapRegistryService.class, "yarnRegistries", true)).clear();
 
+    // Verify that the registry discovers both registered instances
+    Collection<LlapServiceInstance> instances = registry.getInstances("LLAP", 10000).getAll();
+    assertEquals(2, instances.size());
+
     ProactiveEviction.Request.Builder llapEvictRequestBuilder =
         ProactiveEviction.Request.Builder.create();
     llapEvictRequestBuilder.addTable("testDb", "testTable");
@@ -155,30 +168,29 @@ public class TestProactiveEviction {
 
     CloseableUtils.closeQuietly(znode1);
     CloseableUtils.closeQuietly(znode2);
-    curatorFramework.close();
   }
 
   private PersistentEphemeralNode createZnode(String workersPath, String id) throws Exception {
-    ServiceRecord record = new ServiceRecord();
-    record.addInternalEndpoint(
+    ServiceRecord serviceRecord = new ServiceRecord();
+    serviceRecord.addInternalEndpoint(
         RegistryTypeUtils.ipcEndpoint("llap", new InetSocketAddress("localhost", 4000)));
-    record.addInternalEndpoint(
+    serviceRecord.addInternalEndpoint(
         RegistryTypeUtils.ipcEndpoint("shuffle", new InetSocketAddress("localhost", 4001)));
-    record.addInternalEndpoint(
+    serviceRecord.addInternalEndpoint(
         RegistryTypeUtils.ipcEndpoint("llapmng", new InetSocketAddress("localhost", 4002)));
-    record.addInternalEndpoint(
+    serviceRecord.addInternalEndpoint(
         RegistryTypeUtils.ipcEndpoint("llapoutputformat", new InetSocketAddress("localhost", 4003)));
-    record.addExternalEndpoint(
+    serviceRecord.addExternalEndpoint(
         RegistryTypeUtils.webEndpoint("services", new URI("http://localhost:4004")));
-    record.set(LlapRegistryService.LLAP_DAEMON_NUM_ENABLED_EXECUTORS, "10");
-    record.set(HiveConf.ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname, "100");
-    record.set(ZkRegistryBase.UNIQUE_IDENTIFIER, id);
+    serviceRecord.set(LlapRegistryService.LLAP_DAEMON_NUM_ENABLED_EXECUTORS, "10");
+    serviceRecord.set(HiveConf.ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname, "100");
+    serviceRecord.set(ZkRegistryBase.UNIQUE_IDENTIFIER, id);
 
     PersistentEphemeralNode znode = new PersistentEphemeralNode(
         curatorFramework,
         PersistentEphemeralNode.Mode.EPHEMERAL_SEQUENTIAL,
         workersPath + "/worker-",
-        new RegistryUtils.ServiceRecordMarshal().toBytes(record));
+        new RegistryUtils.ServiceRecordMarshal().toBytes(serviceRecord));
     znode.start();
     if (!znode.waitForInitialCreate(10, TimeUnit.SECONDS)) {
       fail("Max znode creation wait time exhausted");
