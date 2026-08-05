@@ -206,78 +206,11 @@ public class HMSHandler extends PrivilegeHandler {
   @Override
   public void create_catalog(CreateCatalogRequest rqst)
       throws AlreadyExistsException, InvalidObjectException, MetaException {
-    Catalog catalog = rqst.getCatalog();
-    startFunction("create_catalog", ": " + catalog.toString());
+    startFunction("create_catalog", ": " + rqst.getCatalog().toString());
     boolean success = false;
     Exception ex = null;
     try {
-      try {
-        getMS().getCatalog(catalog.getName());
-        throw new AlreadyExistsException("Catalog " + catalog.getName() + " already exists");
-      } catch (NoSuchObjectException e) {
-        // expected
-      }
-
-      if (!MetaStoreUtils.validateName(catalog.getName(), null)) {
-        throw new InvalidObjectException(catalog.getName() + " is not a valid catalog name");
-      }
-
-      if (catalog.getLocationUri() == null) {
-        throw new InvalidObjectException("You must specify a path for the catalog");
-      }
-
-      RawStore ms = getMS();
-      Path catPath = new Path(catalog.getLocationUri());
-      boolean madeDir = false;
-      Map<String, String> transactionalListenersResponses = Collections.emptyMap();
-      try {
-        firePreEvent(new PreCreateCatalogEvent(this, catalog));
-        if (!wh.isDir(catPath)) {
-          if (!wh.mkdirs(catPath)) {
-            throw new MetaException("Unable to create catalog path " + catPath +
-                ", failed to create catalog " + catalog.getName());
-          }
-          madeDir = true;
-        }
-        // set the create time of catalog
-        long time = System.currentTimeMillis() / 1000;
-        catalog.setCreateTime((int) time);
-        ms.openTransaction();
-        ms.createCatalog(catalog);
-
-        // Create a default database inside the catalog
-        CreateDatabaseRequest cdr = new CreateDatabaseRequest(DEFAULT_DATABASE_NAME);
-        cdr.setCatalogName(catalog.getName());
-        cdr.setLocationUri(catalog.getLocationUri());
-        cdr.setParameters(Collections.emptyMap());
-        cdr.setDescription("Default database for catalog " + catalog.getName());
-        AbstractRequestHandler.offer(this, cdr).getResult();
-
-        if (!transactionalListeners.isEmpty()) {
-          transactionalListenersResponses =
-              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                  EventType.CREATE_CATALOG,
-                  new CreateCatalogEvent(true, this, catalog));
-        }
-
-        success = ms.commitTransaction();
-      } finally {
-        if (!success) {
-          ms.rollbackTransaction();
-          if (madeDir) {
-            wh.deleteDir(catPath, false, false);
-          }
-        }
-
-        if (!listeners.isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(listeners,
-              EventType.CREATE_CATALOG,
-              new CreateCatalogEvent(success, this, catalog),
-              null,
-              transactionalListenersResponses, ms);
-        }
-      }
-      success = true;
+      success = AbstractRequestHandler.offer(this, rqst).success();
     } catch (Exception e) {
       ex = e;
       throw handleException(e)
@@ -293,44 +226,14 @@ public class HMSHandler extends PrivilegeHandler {
     startFunction("alter_catalog " + rqst.getName());
     boolean success = false;
     Exception ex = null;
-    RawStore ms = getMS();
-    Map<String, String> transactionalListenersResponses = Collections.emptyMap();
-    GetCatalogResponse oldCat = null;
-
     try {
-      oldCat = get_catalog(new GetCatalogRequest(rqst.getName()));
-      // Above should have thrown NoSuchObjectException if there is no such catalog
-      assert oldCat != null && oldCat.getCatalog() != null;
-      firePreEvent(new PreAlterCatalogEvent(oldCat.getCatalog(), rqst.getNewCat(), this));
-
-      ms.openTransaction();
-      ms.alterCatalog(rqst.getName(), rqst.getNewCat());
-
-      if (!transactionalListeners.isEmpty()) {
-        transactionalListenersResponses =
-            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                EventType.ALTER_CATALOG,
-                new AlterCatalogEvent(oldCat.getCatalog(), rqst.getNewCat(), true, this));
-      }
-
-      success = ms.commitTransaction();
-    } catch (MetaException|NoSuchObjectException e) {
+      success = AbstractRequestHandler.offer(this, rqst).success();
+    } catch (Exception e) {
       ex = e;
-      throw e;
+      throw handleException(e).defaultTException();
     } finally {
-      if (!success) {
-        ms.rollbackTransaction();
-      }
-
-      if ((null != oldCat) && (!listeners.isEmpty())) {
-        MetaStoreListenerNotifier.notifyEvent(listeners,
-            EventType.ALTER_CATALOG,
-            new AlterCatalogEvent(oldCat.getCatalog(), rqst.getNewCat(), success, this),
-            null, transactionalListenersResponses, ms);
-      }
       endFunction("alter_catalog", success, ex);
     }
-
   }
 
   @Override
@@ -373,19 +276,11 @@ public class HMSHandler extends PrivilegeHandler {
   @Override
   public void drop_catalog(DropCatalogRequest rqst)
       throws NoSuchObjectException, InvalidOperationException, MetaException {
-    String catName = rqst.getName();
-    boolean ifExists = rqst.isIfExists();
-    startFunction("drop_catalog", ": " + catName);
-    if (DEFAULT_CATALOG_NAME.equalsIgnoreCase(catName)) {
-      endFunction("drop_catalog", false, null);
-      throw new MetaException("Can not drop " + DEFAULT_CATALOG_NAME + " catalog");
-    }
-
+    startFunction("drop_catalog", ": " + rqst.getName());
     boolean success = false;
     Exception ex = null;
     try {
-      dropCatalogCore(catName, ifExists);
-      success = true;
+      success = AbstractRequestHandler.offer(this, rqst).success();
     } catch (Exception e) {
       ex = e;
       throw handleException(e)
@@ -393,73 +288,6 @@ public class HMSHandler extends PrivilegeHandler {
           .defaultMetaException();
     } finally {
       endFunction("drop_catalog", success, ex);
-    }
-
-  }
-
-  private void dropCatalogCore(String catName, boolean ifExists)
-      throws MetaException, NoSuchObjectException, InvalidOperationException {
-    boolean success = false;
-    Catalog cat = null;
-    Map<String, String> transactionalListenerResponses = Collections.emptyMap();
-    RawStore ms = getMS();
-    try {
-      ms.openTransaction();
-      cat = ms.getCatalog(catName);
-
-      firePreEvent(new PreDropCatalogEvent(this, cat));
-
-      List<String> allDbs = get_databases(prependNotNullCatToDbName(catName, null));
-      if (allDbs != null && !allDbs.isEmpty()) {
-        // It might just be the default, in which case we can drop that one if it's empty
-        if (allDbs.size() == 1 && allDbs.get(0).equals(DEFAULT_DATABASE_NAME)) {
-          try {
-            DropDatabaseRequest req = new DropDatabaseRequest();
-            req.setName(DEFAULT_DATABASE_NAME);
-            req.setCatalogName(catName);
-            req.setDeleteData(true);
-            req.setCascade(false);
-            drop_database_req(req);
-          } catch (InvalidOperationException e) {
-            // This means there are tables of something in the database
-            throw new InvalidOperationException("There are still objects in the default " +
-                "database for catalog " + catName);
-          }
-        } else {
-          throw new InvalidOperationException("There are non-default databases in the catalog " +
-              catName + " so it cannot be dropped.");
-        }
-      }
-
-      ms.dropCatalog(catName);
-      if (!transactionalListeners.isEmpty()) {
-        transactionalListenerResponses =
-            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                EventType.DROP_CATALOG,
-                new DropCatalogEvent(true, this, cat));
-      }
-
-      success = ms.commitTransaction();
-    } catch (NoSuchObjectException e) {
-      if (!ifExists) {
-        throw new NoSuchObjectException(e.getMessage());
-      } else {
-        ms.rollbackTransaction();
-      }
-    } finally {
-      if (success) {
-        wh.deleteDir(wh.getDnsPath(new Path(cat.getLocationUri())), false, false);
-      } else {
-        ms.rollbackTransaction();
-      }
-
-      if (!listeners.isEmpty()) {
-        MetaStoreListenerNotifier.notifyEvent(listeners,
-            EventType.DROP_CATALOG,
-            new DropCatalogEvent(success, this, cat),
-            null,
-            transactionalListenerResponses, ms);
-      }
     }
   }
 
