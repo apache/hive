@@ -28,8 +28,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Covers the non-ACID→full-ACID conversion of a table whose pre-conversion
@@ -300,19 +298,12 @@ class TestUnionAllToAcidConversion extends TxnCommandsBaseForTests {
   // hive.tez.union.flatten.subdirectories=true asks MoveTask to hoist the
   // HIVE_UNION_SUBDIR_<N>/000000_0 leaves into the target directory at write
   // time. MoveTask.flattenUnionSubdirectories folds the source subdir index
-  // into the filename to avoid collisions, producing <index>_000000_0 (e.g.
-  // "1_000000_0"). That name has three numeric parts / two underscores and
-  // therefore does NOT match the metastore's ORIGINAL_PATTERN ([0-9]+_[0-9]+)
-  // — so a subsequent ACID conversion (either CONVERT TO ACID or the
-  // SET TBLPROPERTIES flip) is rejected by
+  // into the filename so that:
+  //   HIVE_UNION_SUBDIR_<N>/000000_0 -> 000000_0_copy_<N>
+  // That name matches the metastore's ORIGINAL_PATTERN_COPY
+  // ([0-9]+_[0-9]+_copy_[0-9]+), so a subsequent ACID conversion (either
+  // CONVERT TO ACID or the SET TBLPROPERTIES flip) is accepted by
   // TransactionalValidationListener.validateTableStructureForPath.
-  //
-  // These four tests pin that current behavior: pre-conversion the layout is
-  // <index>_000000_0 files (partitioned or not), and the conversion attempt
-  // fails at metastore-side validation. When the flatten filename scheme is
-  // aligned with ORIGINAL_PATTERN (or the validator is relaxed for this
-  // shape), these tests should be updated to assert successful conversion +
-  // 3-row read-back.
   // ---------------------------------------------------------------------------
 
   /**
@@ -335,10 +326,11 @@ class TestUnionAllToAcidConversion extends TxnCommandsBaseForTests {
   }
 
   /**
-   * flatten=true + unpartitioned + CONVERT TO ACID. Pins the current
-   * behavior: MoveTask hoists the union-subdir leaves into
-   * {@code <index>_000000_0} files at the table root, and the subsequent
-   * CONVERT TO ACID is rejected by the metastore's file-name validator.
+   * flatten=true + unpartitioned + CONVERT TO ACID. MoveTask hoists the
+   * union-subdir leaves into {@code 000000_0_copy_<N>} files at the table
+   * root — a name that matches ORIGINAL_PATTERN_COPY, so the subsequent
+   * metadata-only CONVERT TO ACID is accepted and the SELECT returns all
+   * rows.
    */
   @Test
   void testUnionAllInsertWithFlattenThenConvertToAcid() throws Exception {
@@ -350,23 +342,26 @@ class TestUnionAllToAcidConversion extends TxnCommandsBaseForTests {
       insertUnionAllInto(tbl);
 
       List<String> expectedLayout = List.of(
-          "/union_all_repro/1_000000_0",
-          "/union_all_repro/2_000000_0",
-          "/union_all_repro/3_000000_0");
+          "/union_all_repro/000000_0_copy_1",
+          "/union_all_repro/000000_0_copy_2",
+          "/union_all_repro/000000_0_copy_3");
       assertEquals(expectedLayout, layoutOf(tbl), "pre-conversion layout (write-time flatten on)");
 
-      Exception thrown = assertThrows(Exception.class,
-          () -> runQuery("alter table " + tbl + " convert to acid"),
-          "flatten=true names don't match ORIGINAL_PATTERN → metastore rejects the conversion");
-      assertTrue(thrown.getMessage().contains("Unexpected data file name format"),
-          "expected metastore-side name-validation failure, got: " + thrown.getMessage());
+      runQuery("alter table " + tbl + " convert to acid");
+
+      assertEquals(expectedLayout, layoutOf(tbl),
+          "CONVERT TO ACID should be a metadata-only flip and preserve the flattened layout");
+
+      List<String> rows = runQuery("select count(*) from " + tbl);
+      assertEquals("3", rows.getFirst(),
+          "expected 3 rows after flattened UNION-ALL insert + CONVERT TO ACID");
     });
   }
 
   /**
    * flatten=true + unpartitioned + SET TBLPROPERTIES ACID conversion. Same
-   * failure as the CONVERT TO ACID variant: the metastore validator rejects
-   * the {@code <index>_000000_0} filenames.
+   * shape as the CONVERT TO ACID variant: {@code 000000_0_copy_<N>} matches
+   * ORIGINAL_PATTERN_COPY, so the conversion succeeds.
    */
   @Test
   void testUnionAllInsertWithFlattenThenSetTblpropertiesAcid() throws Exception {
@@ -378,22 +373,26 @@ class TestUnionAllToAcidConversion extends TxnCommandsBaseForTests {
       insertUnionAllInto(tbl);
 
       List<String> expectedLayout = List.of(
-          "/union_all_repro_setprops/1_000000_0",
-          "/union_all_repro_setprops/2_000000_0",
-          "/union_all_repro_setprops/3_000000_0");
+          "/union_all_repro_setprops/000000_0_copy_1",
+          "/union_all_repro_setprops/000000_0_copy_2",
+          "/union_all_repro_setprops/000000_0_copy_3");
       assertEquals(expectedLayout, layoutOf(tbl), "pre-conversion layout (write-time flatten on)");
 
-      Exception thrown = assertThrows(Exception.class,
-          () -> runQuery("alter table " + tbl + " set tblproperties ('transactional'='true')"),
-          "flatten=true names don't match ORIGINAL_PATTERN → metastore rejects the conversion");
-      assertTrue(thrown.getMessage().contains("Unexpected data file name format"),
-          "expected metastore-side name-validation failure, got: " + thrown.getMessage());
+      runQuery("alter table " + tbl + " set tblproperties ('transactional'='true')");
+
+      assertEquals(expectedLayout, layoutOf(tbl),
+          "SET TBLPROPERTIES ('transactional'='true') should preserve the flattened layout");
+
+      List<String> rows = runQuery("select count(*) from " + tbl);
+      assertEquals("3", rows.getFirst(),
+          "expected 3 rows after flattened UNION-ALL insert + SET TBLPROPERTIES ACID conversion");
     });
   }
 
   /**
-   * flatten=true + partitioned + CONVERT TO ACID. Same failure as the
-   * unpartitioned variant, inside the partition directory.
+   * flatten=true + partitioned + CONVERT TO ACID. Same shape as the
+   * unpartitioned variant, inside the partition directory: the conversion
+   * succeeds and the SELECT returns all rows.
    */
   @Test
   void testPartitionedUnionAllInsertWithFlattenThenConvertToAcid() throws Exception {
@@ -405,16 +404,19 @@ class TestUnionAllToAcidConversion extends TxnCommandsBaseForTests {
       insertUnionAllIntoPartition(tbl, "x");
 
       List<String> expectedLayout = List.of(
-          "/union_all_repro_part/p=x/1_000000_0",
-          "/union_all_repro_part/p=x/2_000000_0",
-          "/union_all_repro_part/p=x/3_000000_0");
+          "/union_all_repro_part/p=x/000000_0_copy_1",
+          "/union_all_repro_part/p=x/000000_0_copy_2",
+          "/union_all_repro_part/p=x/000000_0_copy_3");
       assertEquals(expectedLayout, layoutOf(tbl), "pre-conversion layout (write-time flatten on)");
 
-      Exception thrown = assertThrows(Exception.class,
-          () -> runQuery("alter table " + tbl + " convert to acid"),
-          "flatten=true names don't match ORIGINAL_PATTERN → metastore rejects the conversion");
-      assertTrue(thrown.getMessage().contains("Unexpected data file name format"),
-          "expected metastore-side name-validation failure, got: " + thrown.getMessage());
+      runQuery("alter table " + tbl + " convert to acid");
+
+      assertEquals(expectedLayout, layoutOf(tbl),
+          "CONVERT TO ACID should be a metadata-only flip and preserve the flattened layout");
+
+      List<String> rows = runQuery("select count(*) from " + tbl);
+      assertEquals("3", rows.getFirst(),
+          "expected 3 rows after partitioned flattened UNION-ALL insert + CONVERT TO ACID");
     });
   }
 
@@ -431,16 +433,19 @@ class TestUnionAllToAcidConversion extends TxnCommandsBaseForTests {
       insertUnionAllIntoPartition(tbl, "x");
 
       List<String> expectedLayout = List.of(
-          "/union_all_repro_part_setprops/p=x/1_000000_0",
-          "/union_all_repro_part_setprops/p=x/2_000000_0",
-          "/union_all_repro_part_setprops/p=x/3_000000_0");
+          "/union_all_repro_part_setprops/p=x/000000_0_copy_1",
+          "/union_all_repro_part_setprops/p=x/000000_0_copy_2",
+          "/union_all_repro_part_setprops/p=x/000000_0_copy_3");
       assertEquals(expectedLayout, layoutOf(tbl), "pre-conversion layout (write-time flatten on)");
 
-      Exception thrown = assertThrows(Exception.class,
-          () -> runQuery("alter table " + tbl + " set tblproperties ('transactional'='true')"),
-          "flatten=true names don't match ORIGINAL_PATTERN → metastore rejects the conversion");
-      assertTrue(thrown.getMessage().contains("Unexpected data file name format"),
-          "expected metastore-side name-validation failure, got: " + thrown.getMessage());
+      runQuery("alter table " + tbl + " set tblproperties ('transactional'='true')");
+
+      assertEquals(expectedLayout, layoutOf(tbl),
+          "SET TBLPROPERTIES ('transactional'='true') should preserve the flattened layout");
+
+      List<String> rows = runQuery("select count(*) from " + tbl);
+      assertEquals("3", rows.getFirst(),
+          "expected 3 rows after partitioned flattened UNION-ALL insert + SET TBLPROPERTIES ACID conversion");
     });
   }
 }
