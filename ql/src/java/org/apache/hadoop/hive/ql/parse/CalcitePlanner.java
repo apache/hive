@@ -1556,11 +1556,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
         resultSchema = convertRowSchemaToResultSetSchema(relToHiveRR.get(calcitePlan),
             (forViewCreation || getQB().isMaterializedView()) ? false : HiveConf.getBoolVar(conf,
                 HiveConf.ConfVars.HIVE_RESULTSET_USE_UNIQUE_COLUMN_NAMES));
-        if (getQB().isCTAS()) {
-          // check the non-uniquified names: getNewColAlias would rename a duplicate away
-          ParseUtils.validateColumnNameUniqueness(
-              convertRowSchemaToResultSetSchema(relToHiveRR.get(calcitePlan), false));
-        }
       } catch (SemanticException e) {
         semanticException = e;
         throw new RuntimeException(e);

@@ -1,3 +1,3 @@
-with bse as (select 'a' as delivery_date, concat('a') as delivery_date),
+with bse as (select 'a' as c, 'b' as c),
      tpm as (select * from bse)
-select tpm.delivery_date from tpm;
+select tpm.c from tpm;
