@@ -170,6 +170,18 @@ public abstract class MultiInsertSqlGenerator {
   public void appendAllColsOfTargetTable() {
     appendCols(targetTable.getAllCols(), FieldSchema::getName);
   }
+
+  /**
+   * Appends the target table's columns, omitting the partition columns when the table uses native
+   * partitioning: appendAcidSelectColumns has already emitted those, and emitting them a second
+   * time yields a projection with duplicate column names, making any by-name reference to them
+   * ambiguous. Non-native tables (e.g. Iceberg) carry partition columns as regular columns, so for
+   * those all columns are appended.
+   */
+  public void appendNonPartitionColsOfTargetTable() {
+    appendCols(targetTable.hasNonNativePartitionSupport()
+        ? targetTable.getAllCols() : targetTable.getCols(), FieldSchema::getName);
+  }
   
   public <T> void appendCols(List<T> columns, Function<T, String> stringConverter) {
     appendCols(columns, null, null, stringConverter);
