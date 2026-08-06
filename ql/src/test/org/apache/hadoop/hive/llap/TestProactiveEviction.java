@@ -17,6 +17,12 @@
  */
 package org.apache.hadoop.hive.llap;
 
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -38,17 +44,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
-
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.URI;
-import java.util.Collection;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests for {@link ProactiveEviction} focusing on the ZooKeeper-based LLAP registry interaction
@@ -72,11 +73,11 @@ public class TestProactiveEviction {
 
   @Before
   public void setUp() throws Exception {
-    ugi = Mockito.mock(UserGroupInformation.class);
-    userGroupInformationMockedStatic = Mockito.mockStatic(UserGroupInformation.class);
+    ugi = mock(UserGroupInformation.class);
+    userGroupInformationMockedStatic = mockStatic(UserGroupInformation.class);
     userGroupInformationMockedStatic.when(UserGroupInformation::isSecurityEnabled).thenReturn(true);
     userGroupInformationMockedStatic.when(UserGroupInformation::getCurrentUser).thenReturn(ugi);
-    Mockito.when(ugi.getShortUserName()).thenReturn("hive");
+    when(ugi.getShortUserName()).thenReturn("hive");
 
     server = new TestingServer();
 
@@ -92,7 +93,7 @@ public class TestProactiveEviction {
   }
 
   @After
-  public void tearDown() throws IOException {
+  public void tearDown() {
     if (curatorFramework != null) {
       CloseableUtils.closeQuietly(curatorFramework);
       curatorFramework = null;
@@ -119,7 +120,12 @@ public class TestProactiveEviction {
     ProactiveEviction.Request.Builder llapEvictRequestBuilder =
         ProactiveEviction.Request.Builder.create();
     llapEvictRequestBuilder.addTable("testDb", "testTable");
-    ProactiveEviction.evict(hiveConf, llapEvictRequestBuilder.build());
+
+    try {
+      ProactiveEviction.evict(hiveConf, llapEvictRequestBuilder.build());
+    } catch (Exception e) {
+      fail("Expected evict() to handle missing instances gracefully, but threw: " + e);
+    }
   }
 
   /**
