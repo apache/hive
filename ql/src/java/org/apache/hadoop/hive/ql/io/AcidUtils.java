@@ -246,7 +246,7 @@ public class AcidUtils {
    * _copy_&lt;queryTag&gt;). See ParsedOutputFileName#REGEX.
    */
   public static final Pattern ORIGINAL_PATTERN_COPY =
-    Pattern.compile("[0-9]+_[0-9]+" + COPY_KEYWORD + "(?:[0-9]{1,6}|[0-9a-fA-F]{16})");
+      Pattern.compile("[0-9]+_[0-9]+" + COPY_KEYWORD + "(?:[0-9]{1,6}|[0-9a-fA-F]{16})");
 
   public static final PathFilter acidHiddenFileFilter = new PathFilter() {
     @Override

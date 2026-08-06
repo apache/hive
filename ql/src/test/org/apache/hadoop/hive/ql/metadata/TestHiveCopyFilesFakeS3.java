@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.ql.exec.ParsedOutputFileName;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.util.FakeS3FileSystem;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -40,7 +39,6 @@ import java.net.URI;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -63,7 +61,7 @@ import static org.junit.Assert.assertTrue;
  * an actual rename() call is made through the tag-suffix branch of
  * {@link Hive#pickDestFilePath}, and the resulting on-disk layout is asserted.
  */
-public class TestHiveCopyFilesFakeS3 {
+class TestHiveCopyFilesFakeS3 {
 
   /** Scheme registered as {@code fs.fakes3.impl} for the duration of these tests. */
   private static final String FAKE_SCHEME = FakeS3FileSystem.SCHEME;
