@@ -139,13 +139,13 @@ Stage-0
                     Filter Operator [FIL_21] (rows=238 width=188)
                       predicate:((part = '1') and key is not null)
                       TableScan [TS_3] (rows=238 width=188)
-                        default@srcbucket_mapjoin_part_2_n4,b,Tbl:COMPLETE,Col:PARTIAL,Output:["key","part"]
+                        default@srcbucket_mapjoin_part_2_n4,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","part"]
               <-Select Operator [SEL_25] (rows=238 width=4)
                   Output:["_col0"]
                   Filter Operator [FIL_24] (rows=238 width=188)
                     predicate:((part = '1') and key is not null)
                     TableScan [TS_0] (rows=238 width=188)
-                      default@srcbucket_mapjoin_part_1_n1,a,Tbl:COMPLETE,Col:PARTIAL,Grouping Num Buckets:2,Grouping Partition Columns:["key"],Output:["key","part"]
+                      default@srcbucket_mapjoin_part_1_n1,a,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:2,Grouping Partition Columns:["key"],Output:["key","part"]
 
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1_n1 a JOIN srcbucket_mapjoin_part_2_n4 b
@@ -219,7 +219,7 @@ Stage-0
                   Filter Operator [FIL_29] (rows=238 width=188)
                     predicate:((part = '1') and key is not null)
                     TableScan [TS_0] (rows=238 width=188)
-                      default@srcbucket_mapjoin_part_1_n1,a,Tbl:COMPLETE,Col:PARTIAL,Grouping Num Buckets:2,Grouping Partition Columns:["key"],Output:["key","part"]
+                      default@srcbucket_mapjoin_part_1_n1,a,Tbl:COMPLETE,Col:COMPLETE,Grouping Num Buckets:2,Grouping Partition Columns:["key"],Output:["key","part"]
 
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1_n1 a JOIN srcbucket_mapjoin_part_2_n4 b
