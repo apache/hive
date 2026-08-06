@@ -41,6 +41,11 @@ public class HiveBetween extends SqlSpecialOperator {
           new HiveBetween();
 
   /**
+   * Ordinal of the 'negated flag' operand (if enabled, the BETWEEN is inverted: NOT BETWEEN).
+   */
+  public static final int NEGATED_FLAG_OPERAND = 0;
+
+  /**
    * Ordinal of the 'value' operand.
    */
   public static final int VALUE_OPERAND = 1;
@@ -104,6 +109,10 @@ public class HiveBetween extends SqlSpecialOperator {
     final SqlWriter.Frame frame =
         writer.startList(SqlWriter.FrameTypeEnum.create("BETWEEN"), "", "");
     call.operand(VALUE_OPERAND).unparse(writer, getLeftPrec(), 0);
+    final SqlLiteral negatedFlag = call.operand(NEGATED_FLAG_OPERAND);
+    if (negatedFlag.booleanValue()) {
+      writer.sep("NOT");
+    }
     writer.sep(super.getName());
 
     // If the expression for the lower bound contains a call to an AND
