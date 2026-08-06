@@ -55,13 +55,12 @@ public class TestHiveAlterHandler {
     newTable.setSd(newSd);
 
     RawStore msdb = Mockito.mock(RawStore.class);
+    Mockito.when(msdb.getConf()).thenReturn(conf);
     Mockito.doThrow(new RuntimeException("shouldn't be called")).when(msdb).deleteTableColumnStatistics(
         Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyList(), Mockito.anyString());
-    HiveAlterHandler handler = new HiveAlterHandler();
-    handler.setConf(conf);
     Deadline.registerIfNot(100_000);
     Deadline.startTimer("updateTableColumnStats");
-    handler.deleteTableColumnStats(msdb, oldTable, newTable);
+    HiveAlterHandler.deleteTableColumnStats(msdb, oldTable, newTable);
   }
 
   @Test
@@ -84,11 +83,10 @@ public class TestHiveAlterHandler {
     newTable.setSd(newSd);
 
     RawStore msdb = Mockito.mock(RawStore.class);
-    HiveAlterHandler handler = new HiveAlterHandler();
-    handler.setConf(conf);
+    Mockito.when(msdb.getConf()).thenReturn(conf);
     Deadline.registerIfNot(100_000);
     Deadline.startTimer("updateTableColumnStats");
-    handler.deleteTableColumnStats(msdb, oldTable, newTable);
+    HiveAlterHandler.deleteTableColumnStats(msdb, oldTable, newTable);
     Mockito.verify(msdb, Mockito.times(1)).deleteTableColumnStatistics(
         getDefaultCatalog(conf), oldTable.getDbName(), oldTable.getTableName(), Arrays.asList("col4"), null);
   }
@@ -113,13 +111,12 @@ public class TestHiveAlterHandler {
     newTable.setSd(newSd);
 
     RawStore msdb = Mockito.mock(RawStore.class);
+    Mockito.when(msdb.getConf()).thenReturn(conf);
     Mockito.doThrow(new RuntimeException("shouldn't be called")).when(msdb).deleteTableColumnStatistics(
         Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyList(), Mockito.anyString());
-    HiveAlterHandler handler = new HiveAlterHandler();
-    handler.setConf(conf);
     Deadline.registerIfNot(100_000);
     Deadline.startTimer("updateTableColumnStats");
-    handler.deleteTableColumnStats(msdb, oldTable, newTable);
+    HiveAlterHandler.deleteTableColumnStats(msdb, oldTable, newTable);
   }
 
 }

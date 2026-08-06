@@ -2076,7 +2076,9 @@ public class HMSHandler extends PrivilegeHandler {
   @Override
   public AlterTableResponse alter_table_req(AlterTableRequest req)
       throws InvalidOperationException, MetaException {
-    startFunction("alter_table", ": " + TableName.getQualified(req.getCatName(), req.getDbName(),
+    String catName = req.isSetCatName() && req.getCatName() != null
+        ? req.getCatName() : getDefaultCatalog(conf);
+    startFunction("alter_table", ": " + TableName.getQualified(catName, req.getDbName(),
         req.getTableName()) + " newtbl=" + req.getTable().getTableName());
     Exception ex = null;
     boolean ret = false;
