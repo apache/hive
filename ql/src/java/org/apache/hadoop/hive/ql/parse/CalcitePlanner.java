@@ -2966,7 +2966,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         int allColCount = tabMetaData.getAllCols().size();
         List<ColumnInfo> colInfoList = new ArrayList<>(Collections.nCopies(allColCount, null));
         Set<String> partColNames = new HashSet<>(tabMetaData.getPartColNames());
-        ArrayList<ColumnInfo> nonPartitionColumns = new ArrayList<>(fields.size());
+        List<ColumnInfo> nonPartitionColumns = new ArrayList<>(fields.size());
 
         for (StructField structField : fields) {
           String colName = structField.getFieldName();
@@ -2998,7 +2998,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           partitionColumnSet.add(colInfo);
         }
 
-        List<ColumnInfo> partitionColumns = new ArrayList<>(partitionColumnSet);
+        List<ColumnInfo> partitionColumns = List.copyOf(partitionColumnSet);
 
         for (ColumnInfo colInfo : colInfoList) {
           rr.put(tableAlias, colInfo.getInternalName(), colInfo);
