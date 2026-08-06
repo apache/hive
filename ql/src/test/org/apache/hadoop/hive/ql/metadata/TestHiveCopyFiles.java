@@ -29,7 +29,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.net.URI;
@@ -41,6 +40,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 
 @RunWith(Parameterized.class)
@@ -163,8 +164,8 @@ public class TestHiveCopyFiles {
     Path targetPath = new Path(targetFolder.getRoot().getAbsolutePath());
 
     // Simulate different filesystems by returning a different URI
-    FileSystem spyTargetFs = Mockito.spy(targetPath.getFileSystem(hiveConf));
-    Mockito.when(spyTargetFs.getUri()).thenReturn(URI.create("hdfs://" + targetPath.toUri().getPath()));
+    FileSystem spyTargetFs = spy(targetPath.getFileSystem(hiveConf));
+    when(spyTargetFs.getUri()).thenReturn(URI.create("hdfs://" + targetPath.toUri().getPath()));
 
     try {
       Hive.copyFiles(hiveConf, sourcePath, targetPath, spyTargetFs, isSourceLocal, NO_ACID, false, null, false, false, false,
@@ -191,8 +192,8 @@ public class TestHiveCopyFiles {
     Path targetPath = new Path(targetFolder.getRoot().getAbsolutePath());
 
     // Simulate different filesystems by returning a different URI
-    FileSystem spyTargetFs = Mockito.spy(targetPath.getFileSystem(hiveConf));
-    Mockito.when(spyTargetFs.getUri()).thenReturn(URI.create("hdfs://" + targetPath.toUri().getPath()));
+    FileSystem spyTargetFs = spy(targetPath.getFileSystem(hiveConf));
+    when(spyTargetFs.getUri()).thenReturn(URI.create("hdfs://" + targetPath.toUri().getPath()));
 
     try {
       Hive.copyFiles(hiveConf, sourcePath, targetPath, spyTargetFs, isSourceLocal, NO_ACID, false, null,
@@ -262,14 +263,14 @@ public class TestHiveCopyFiles {
     assertFalse("null fs is not flagged", Hive.isNonAtomicRenameFs((FileSystem) null));
 
     for (String scheme : new String[] {"s3a", "s3n", "s3", "gs", "abfs", "abfss", "wasb", "wasbs"}) {
-      FileSystem spy = Mockito.spy(localFs);
-      Mockito.when(spy.getUri()).thenReturn(URI.create(scheme + ":///bucket/path"));
+      FileSystem spy = spy(localFs);
+      when(spy.getUri()).thenReturn(URI.create(scheme + ":///bucket/path"));
       assertTrue(scheme + " must be flagged non-atomic-rename",
           Hive.isNonAtomicRenameFs(spy));
     }
     for (String scheme : new String[] {"hdfs", "file", "ofs", "adl"}) {
-      FileSystem spy = Mockito.spy(localFs);
-      Mockito.when(spy.getUri()).thenReturn(URI.create(scheme + ":///whatever"));
+      FileSystem spy = spy(localFs);
+      when(spy.getUri()).thenReturn(URI.create(scheme + ":///whatever"));
       assertFalse(scheme + " must not be flagged non-atomic-rename",
           Hive.isNonAtomicRenameFs(spy));
     }

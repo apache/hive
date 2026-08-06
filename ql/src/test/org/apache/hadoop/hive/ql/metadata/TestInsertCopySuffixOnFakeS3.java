@@ -71,12 +71,12 @@ class TestInsertCopySuffixOnFakeS3 extends TxnCommandsBaseForTests {
       + "-" + System.currentTimeMillis()).getPath().replaceAll("\\\\", "/");
 
   @BeforeAll
-  public static void addFakeSchemeToUnstableSet() {
+  static void addFakeSchemeToUnstableSet() {
     Hive.NON_ATOMIC_RENAME_SCHEMES.add(FAKE_SCHEME);
   }
 
   @AfterAll
-  public static void removeFakeSchemeFromUnstableSet() {
+  static void removeFakeSchemeFromUnstableSet() {
     Hive.NON_ATOMIC_RENAME_SCHEMES.remove(FAKE_SCHEME);
   }
 
@@ -100,6 +100,18 @@ class TestInsertCopySuffixOnFakeS3 extends TxnCommandsBaseForTests {
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_TEZ_UNION_FLATTEN_SUBDIRECTORIES, false);
   }
 
+  @AfterEach
+  void dropAllTestTables() throws Exception {
+    for (String t : new String[] {"insert_into_fakes3", "union_all_fakes3", "union_all_dyn_part_fakes3",
+        "insert_only_fakes3", "full_acid_fakes3", "union_src"}) {
+      try {
+        runQuery("drop table if exists " + t);
+      } catch (Exception ignore) {
+        // don't let a residual-drop failure hide the real test failure
+      }
+    }
+  }
+
   @Override
   protected void setUpSchema() {
     // Override the parent's schema — we don't need the ACID/bucketed
@@ -111,18 +123,6 @@ class TestInsertCopySuffixOnFakeS3 extends TxnCommandsBaseForTests {
   protected void dropTables() {
     // The parent's dropTables would try to drop the schema tables that we
     // never created; skip.
-  }
-
-  @AfterEach
-  public void dropAllTestTables() throws Exception {
-    for (String t : new String[] {"insert_into_fakes3", "union_all_fakes3", "union_all_dyn_part_fakes3",
-        "insert_only_fakes3", "full_acid_fakes3", "union_src"}) {
-      try {
-        runQuery("drop table if exists " + t);
-      } catch (Exception ignore) {
-        // don't let a residual-drop failure hide the real test failure
-      }
-    }
   }
 
   private List<String> runQuery(String stmt) throws Exception {
