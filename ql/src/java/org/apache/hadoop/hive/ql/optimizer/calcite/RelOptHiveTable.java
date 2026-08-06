@@ -667,6 +667,8 @@ public class RelOptHiveTable implements RelOptTable {
         LOG.error(logMsg);
         throw new RuntimeException(logMsg);
       }
+    } else {
+      colStatsCached.updateState(State.COMPLETE);
     }
   }
 
