@@ -3617,6 +3617,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
           // As we said before, here we use genSelectLogicalPlan to rewrite AllColRef
           srcRel = genSelectLogicalPlan(qb, srcRel, srcRel, null, null, true).getKey();
           RowResolver rr = relToHiveRR.get(srcRel);
+          // genSelectDIAST synthesizes one reference per rslvMap entry, each unique by
+          // construction, so clear the HIVE-29580 ambiguity markers on this rewrite-private
+          // projection; the subquery's own RowResolver keeps them for user-written references.
+          for (ColumnInfo colInfo : rr.getColumnInfos()) {
+            colInfo.setAmbiguousName(false);
+          }
           qbp.setSelExprForClause(destClauseName, genSelectDIAST(rr));
         }
       }
