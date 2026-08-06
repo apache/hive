@@ -24,6 +24,8 @@ import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -45,7 +47,8 @@ public class ShowTablePropertiesAnalyzer extends BaseSemanticAnalyzer {
     TableName tableName = getQualifiedTableName((ASTNode) root.getChild(0));
     String propertyName = (root.getChildCount() > 1) ? unescapeSQLString(root.getChild(1).getText()) : null;
 
-    getTable(tableName); // validate that table exists
+    Table table = getTable(tableName);
+    inputs.add(new ReadEntity(table));
 
     ShowTablePropertiesDesc desc = new ShowTablePropertiesDesc(ctx.getResFile().toString(), tableName, propertyName);
     Task<DDLWork> task = TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc));
