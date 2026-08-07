@@ -36,16 +36,16 @@ jobs:
         include:
           - os: macos-13
             label: macos-x64
-            artifact_glob: beeline/target/installer/x64/*.dmg
+            artifact_glob: beeline/target/apache-hive-beeline-*/x64/*.dmg
           - os: macos-latest
             label: macos-arm64
-            artifact_glob: beeline/target/installer/arm64/*.dmg
+            artifact_glob: beeline/target/apache-hive-beeline-*/arm64/*.dmg
           - os: ubuntu-latest
             label: linux-x64
-            artifact_glob: beeline/target/installer/x64/*.deb
+            artifact_glob: beeline/target/apache-hive-beeline-*/x64/*.deb
           - os: windows-latest
             label: windows-x64
-            artifact_glob: beeline/target/installer/x64/*.msi
+            artifact_glob: beeline/target/apache-hive-beeline-*/x64/*.msi
 
     runs-on: ${{ matrix.os }}
     # Bounds total job time (queue + execution). Notably guards against macos-13

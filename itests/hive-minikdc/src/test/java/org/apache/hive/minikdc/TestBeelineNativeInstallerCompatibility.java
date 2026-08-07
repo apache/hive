@@ -266,13 +266,5 @@ public class TestBeelineNativeInstallerCompatibility {
     return env;
   }
 
-  private static final class BeelineResult {
-    private final int exitCode;
-    private final String output;
-
-    private BeelineResult(int exitCode, String output) {
-      this.exitCode = exitCode;
-      this.output = output;
-    }
-  }
+  private record BeelineResult(int exitCode, String output) {}
 }
