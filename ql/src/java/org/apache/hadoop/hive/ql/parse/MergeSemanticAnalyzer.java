@@ -130,7 +130,15 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer<MergeStatemen
         .sourceName(sourceName)
         .sourceAlias(getSourceAlias(source, sourceName))
         .onClauseAsText(onClauseAsText);
-
+     
+    OnClauseAnalyzer oca = new OnClauseAnalyzer(onClause, targetTable, targetAlias,
+            conf, onClauseAsText);
+    oca.analyze();
+    // unresolved columns are not allowed in the on clause to avoid wrong results
+    if (!oca.unresolvedColumns.isEmpty()) {
+      throw new SemanticException("UnResolvedColumns exist: " + String.join(",", oca.unresolvedColumns) +
+              ". We should assign a table name to each column in the ON clause like tbl.col.");
+    }
     int whenClauseBegins = 3;
     boolean hasHint = false;
     // query hint
@@ -159,12 +167,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer<MergeStatemen
     for (ASTNode whenClause : whenClauses) {
       switch (getWhenClauseOperation(whenClause).getType()) {
       case HiveParser.TOK_INSERT:
-        numInsertClauses++;
-
-        OnClauseAnalyzer oca = new OnClauseAnalyzer(onClause, targetTable, targetAlias,
-          conf, onClauseAsText);
-        oca.analyze();
-        
+        numInsertClauses++;       
         mergeStatementBuilder.addWhenClause(
             handleInsert(whenClause, oca.getPredicate(), targetTable))
           .onClausePredicate(oca.getPredicate());
