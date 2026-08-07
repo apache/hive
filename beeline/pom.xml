@@ -250,11 +250,6 @@
       mvn package -pl beeline -am -DskipTests -P native-installer
 
     Output (versioned parent dir mirrors packaging's apache-hive-beeline-X.Y.Z
-    tarball naming; arch sub-directory so x64 and arm64 artifacts coexist):
-      beeline/target/apache-hive-beeline-4.3.0/x64/beeline-4.3.0.dmg    (Intel Mac)
-      beeline/target/apache-hive-beeline-4.3.0/arm64/beeline-4.3.0.dmg  (Apple Silicon — macos-arm64 auto-activates)
-      beeline/target/apache-hive-beeline-4.3.0/x64/beeline-4.3.0.exe    (Windows)
-      beeline/target/apache-hive-beeline-4.3.0/x64/beeline_4.3.0_amd64.deb (Linux)
     -->
     <profile>
       <id>native-installer</id>
@@ -278,16 +273,6 @@
                 </goals>
                 <configuration>
                   <target>
-                    <!--
-                      Maven does not propagate empty Maven properties to Ant, so
-                      on macOS/Linux (where jpackage.platform.args is empty by
-                      design) the raw "${jpackage.platform.args}" literal would
-                      otherwise reach jpackage. Ant properties are set-once —
-                      when the Windows profile has already provided a real value
-                      through maven-antrun, this line is a no-op; when nothing
-                      was provided, it sets the property to empty, which the
-                      `<arg line="">` tokenizer then expands to zero args.
-                    -->
                     <property name="jpackage.platform.args" value=""/>
                     <mkdir dir="${project.build.directory}/apache-hive-beeline-${project.version}/${installer.arch}"/>
                     <exec executable="jpackage" failonerror="true">
