@@ -245,18 +245,14 @@
   <profiles>
     <!--
     Build a native installer (dmg on macOS, exe/msi on Windows, deb/rpm on Linux).
-
     Usage:
       mvn package -pl beeline -am -DskipTests -P native-installer
-
     Output (versioned parent dir mirrors packaging's apache-hive-beeline-X.Y.Z
     -->
     <profile>
       <id>native-installer</id>
       <properties>
-        <!-- jpackage requires version as 1-3 integers separated by dots -->
         <installer.app.version>${jpackage.plugin.version}</installer.app.version>
-        <!-- Default architecture label; overridden to arm64 by the macos-arm64 profile -->
         <installer.arch>x64</installer.arch>
       </properties>
       <build>
@@ -315,9 +311,6 @@
     </profile>
     <!--
       Auto-detects Apple Silicon and sets installer.arch=arm64.
-      Declared AFTER native-installer so its property value wins over the x64
-      default when both profiles are active simultaneously on Apple Silicon.
-      No -P flag needed — activates automatically via os.name=Mac OS X + os.arch=aarch64.
     -->
     <profile>
       <id>macos-arm64-installer</id>
