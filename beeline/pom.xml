@@ -245,7 +245,6 @@
   <profiles>
     <!--
     Build a native installer (dmg on macOS, exe/msi on Windows, deb/rpm on Linux).
-    The installer bundles a JRE — end-users need no Java pre-installed.
 
     Usage:
       mvn package -pl beeline -am -DskipTests -P native-installer
@@ -255,9 +254,6 @@
       beeline/target/installer/arm64/beeline-4.3.0.dmg  (Apple Silicon — macos-arm64 auto-activates)
       beeline/target/installer/x64/beeline-4.3.0.exe    (Windows)
       beeline/target/installer/x64/beeline_4.3.0_amd64.deb (Linux)
-
-    installer.arch defaults to x64 and is overridden to arm64 by the
-    macos-arm64 profile below when running on Apple Silicon.
     -->
     <profile>
       <id>native-installer</id>
@@ -266,7 +262,6 @@
         <installer.app.version>${jpackage.plugin.version}</installer.app.version>
         <!-- Default architecture label; overridden to arm64 by the macos-arm64 profile -->
         <installer.arch>x64</installer.arch>
-        <jpackage.platform.args></jpackage.platform.args>
       </properties>
       <build>
         <plugins>
@@ -341,46 +336,6 @@
     </profile>
     <!--
       Auto-activates on Windows.
-
-      Flags jpackage supports natively:
-        win-console         Launcher uses the CUI (console) subsystem so
-                            stdout/stderr, pipes and exit codes work in
-                            cmd/PowerShell. Without this beeline.exe is
-                            built as a GUI-subsystem binary and produces
-                            no output.
-        type msi            Force MSI output instead of the default EXE
-                            (WiX Burn bundle). MSI is what enterprise
-                            deployment tooling (Group Policy, Intune,
-                            SCCM, Ansible win_package) consumes directly,
-                            and its WiX customization surface is easier
-                            to extend later (e.g. a PATH environment
-                            fragment via resource-dir).
-        win-dir-chooser     Adds a wizard page letting the user pick the
-                            install directory instead of the silent default.
-        win-menu            Create a Start menu shortcut.
-        win-menu-group      Group the Start menu shortcut under this folder.
-        win-shortcut-prompt Adds checkboxes on the last wizard page so users
-                            can opt in / out of Start menu and desktop
-                            shortcuts.
-        win-help-url        Adds a "Help" link to the Add/Remove Programs
-                            entry so users can reach hive.apache.org.
-        license-file        Shows the ASL 2.0 as a license-agreement wizard
-                            page (jpackage auto-converts to RTF for the MSI).
-        resource-dir        Points at src/main/jpackage/windows/. jpackage
-                            picks up main.wxs from that directory and uses it
-                            in place of its own built-in WiX template. Our
-                            override adds a public ADD_TO_PATH property
-                            (default 1) and a Component whose Environment
-                            element appends INSTALLDIR to the system PATH.
-                            Users can opt out at silent install time with
-                              msiexec /i beeline-x.y.z.msi /qn ADD_TO_PATH=0
-
-      Deliberately NOT set:
-        win-shortcut        Desktop shortcut on by default is pushy for a
-                            CLI tool. win-shortcut-prompt above lets the
-                            user add one if they want it.
-        win-per-user-install  Would skip UAC by installing under
-                            %LOCALAPPDATA%, but breaks multi-user machines.
     -->
     <profile>
       <id>windows-installer</id>
