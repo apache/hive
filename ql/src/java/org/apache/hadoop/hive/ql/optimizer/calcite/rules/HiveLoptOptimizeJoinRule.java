@@ -40,6 +40,7 @@ import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.BitSets;
@@ -48,9 +49,12 @@ import org.apache.calcite.util.ImmutableIntList;
 import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.mapping.IntPair;
 import org.apache.hadoop.hive.ql.optimizer.calcite.Bug;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -66,6 +70,8 @@ import static java.util.Objects.requireNonNull;
 
 public class HiveLoptOptimizeJoinRule extends RelRule<HiveLoptOptimizeJoinRule.Config>
         implements TransformationRule {
+
+  private static final Logger LOG = LoggerFactory.getLogger(HiveLoptOptimizeJoinRule.class);
 
   /** Creates an HiveLoptOptimizeJoinRule. */
   protected HiveLoptOptimizeJoinRule(HiveLoptOptimizeJoinRule.Config config) {
@@ -113,7 +119,7 @@ public class HiveLoptOptimizeJoinRule extends RelRule<HiveLoptOptimizeJoinRule.C
 
     findRemovableSelfJoins(mq, multiJoin);
 
-    findBestOrderings(mq, call.builder(), multiJoin, semiJoinOpt, call);
+    findBestOrderings(mq, call.builder(), multiJoin, semiJoinOpt, call, config.broadcastThreshold());
   }
 
   /**
@@ -419,6 +425,9 @@ public class HiveLoptOptimizeJoinRule extends RelRule<HiveLoptOptimizeJoinRule.C
     return areSelfJoinKeysUnique(mq, leftRel, rightRel, joinFilters);
   }
 
+  /** {@code broadcastThreshold} value that keeps the legacy max-NDV ordering generation unchanged. */
+  private static final long NO_BROADCAST_PREFERENCE = -1L;
+
   /**
    * Generates N optimal join orderings. Each ordering contains each factor as
    * the first factor in the ordering.
@@ -426,38 +435,70 @@ public class HiveLoptOptimizeJoinRule extends RelRule<HiveLoptOptimizeJoinRule.C
    * @param multiJoin join factors being optimized
    * @param semiJoinOpt optimal semijoins for each factor
    * @param call RelOptRuleCall associated with this rule
+   * @param broadcastThreshold map-join build-side size budget for the data-movement-aware
+   *        ordering; negative = legacy behavior (see {@link Config#withBroadcastThreshold(long)})
    */
   private static void findBestOrderings(
           RelMetadataQuery mq,
           RelBuilder relBuilder,
           HiveLoptMultiJoin multiJoin,
           HiveLoptSemiJoinOptimizer semiJoinOpt,
-          RelOptRuleCall call) {
+          RelOptRuleCall call,
+          long broadcastThreshold) {
     final List<RelNode> plans = new ArrayList<>();
 
     final List<String> fieldNames =
             multiJoin.getMultiJoinRel().getRowType().getFieldNames();
 
-    // generate the N join orderings
+    final boolean shuffleCostSelect = broadcastThreshold >= 0;
+
+    // generate the N legacy join orderings (one greedy ordering per seed factor). These are also the
+    // default emitted set when shuffle-cost selection is off, and the fail-safe set when it is on.
     for (int i = 0; i < multiJoin.getNumJoinFactors(); i++) {
       // first factor cannot be null generating
       if (multiJoin.isNullGenerating(i)) {
         continue;
       }
-      HiveLoptJoinTree joinTree =
-              createOrdering(
-                      mq,
-                      relBuilder,
-                      multiJoin,
-                      semiJoinOpt,
-                      i);
-      if (joinTree == null) {
-        continue;
-      }
+      addOrderingPlan(mq, relBuilder, multiJoin, semiJoinOpt, call, fieldNames, plans, i, NO_BROADCAST_PREFERENCE);
+    }
 
-      RelNode newProject =
-              createTopProject(call.builder(), multiJoin, joinTree, fieldNames);
-      plans.add(newProject);
+    if (shuffleCostSelect && !plans.isEmpty()) {
+      // Emit only the ordering with the lowest estimated SHUFFLE cost: the HEP planner's cumulative
+      // row-count cost is data-movement-blind (cpu=io=0) and cannot make this choice. The pool is the
+      // N legacy orderings PLUS a broadcast-preferring ordering per seed - the legacy max-NDV
+      // tie-break never yields a fact-reducing ordering, so the variant supplies it, while keeping the
+      // legacy orderings in the pool guarantees the selection can never do worse than the legacy
+      // orderings BY THE SHUFFLE METRIC (the row-count metric no longer decides here).
+      // FAIL-SAFE: if nothing is costable (missing stats) or anything throws, fall through to emit all N.
+      RelNode bestPlan = null;
+      try {
+        final List<RelNode> candidates = new ArrayList<>(plans);
+        for (int i = 0; i < multiJoin.getNumJoinFactors(); i++) {
+          if (!multiJoin.isNullGenerating(i)) {
+            addOrderingPlan(mq, relBuilder, multiJoin, semiJoinOpt, call, fieldNames, candidates, i, broadcastThreshold);
+          }
+        }
+        double bestCost = Double.POSITIVE_INFINITY;
+        for (RelNode plan : candidates) {
+          final double cost = estimateShuffleCost(plan, mq, broadcastThreshold);
+          // strict '<' is a deterministic tie-break: the first candidate at the minimum cost wins
+          // (candidates are stably ordered - the N legacy orderings by seed, then the variants).
+          if (!Double.isNaN(cost) && cost < bestCost) {
+            bestCost = cost;
+            bestPlan = plan;
+          }
+        }
+      } catch (Exception e) {
+        // Unexpected: missing statistics surface as NaN and are skipped above, so an exception here
+        // is a genuine estimation defect. Warn (not debug) - the plan silently degrades to the
+        // legacy orderings and that should be visible in production logs.
+        LOG.warn("Shuffle-cost join-order selection failed; falling back to the legacy orderings", e);
+        bestPlan = null;
+      }
+      if (bestPlan != null) {
+        call.transformTo(bestPlan);
+        return;
+      }
     }
 
     // transform the selected plans; note that we wait till then the end to
@@ -468,6 +509,142 @@ public class HiveLoptOptimizeJoinRule extends RelRule<HiveLoptOptimizeJoinRule.C
     for (RelNode plan : plans) {
       call.transformTo(plan);
     }
+  }
+
+  /**
+   * Builds one candidate join ordering for the given seed factor (optionally preferring
+   * broadcastable joins first) and, if successful, adds the corresponding top-projected plan to
+   * {@code plans}.
+   */
+  private static void addOrderingPlan(
+          RelMetadataQuery mq,
+          RelBuilder relBuilder,
+          HiveLoptMultiJoin multiJoin,
+          HiveLoptSemiJoinOptimizer semiJoinOpt,
+          RelOptRuleCall call,
+          List<String> fieldNames,
+          List<RelNode> plans,
+          int firstFactor,
+          long broadcastThreshold) {
+    HiveLoptJoinTree joinTree =
+            createOrdering(mq, relBuilder, multiJoin, semiJoinOpt, firstFactor, broadcastThreshold);
+    if (joinTree == null) {
+      return;
+    }
+    plans.add(createTopProject(call.builder(), multiJoin, joinTree, fieldNames));
+  }
+
+  /**
+   * Whether a join build side of the given estimated bytes can be broadcast (map-join), i.e. its
+   * size is known and fits {@code broadcastThreshold} (hive.auto.convert.join.noconditionaltask.size).
+   * This threshold predicate is shared by the order GENERATION ({@link #getBestNextFactor}, which
+   * feeds it the candidate factor's bytes) and the order SELECTION ({@link #estimateShuffleCost},
+   * which feeds it the build side permitted by the join type) - the sides they test differ by
+   * design (generation asks "can the incoming factor be a build side", selection scores the built
+   * tree). It is a deliberate, conservative APPROXIMATION of the physical map-join decision
+   * made later by ConvertJoinMapJoin (which also accounts for the summed small-side budget,
+   * build-side hash-table sizing and bucket joins); here it is used only to RANK logical orderings,
+   * and the physical planner still makes the final conversion call.
+   */
+  @VisibleForTesting
+  static boolean isBroadcastable(double buildBytes, long broadcastThreshold) {
+    return !Double.isNaN(buildBytes) && buildBytes <= broadcastThreshold;
+  }
+
+  /**
+   * Estimates the data-movement (shuffle) cost of a candidate plan: the sum, over every Join in
+   * the tree, of the bytes that must cross the network. A join whose build side (as permitted by
+   * the join type) is broadcastable replicates only that build side; otherwise it is a shuffle
+   * (reduce-side) join and both inputs are charged (cost = left + right). Charging the
+   * build side rather than 0 for a broadcast keeps broadcast much cheaper than a shuffle without
+   * over-rewarding plans that stack many small broadcasts. This makes "shuffle the large fact raw
+   * early" expensive relative to "reduce the fact with broadcast joins first, then shuffle the
+   * small result", independent of the (data-movement-blind) cumulative row-count cost.
+   */
+  @VisibleForTesting
+  static double estimateShuffleCost(RelNode rel, RelMetadataQuery mq, long broadcastThreshold) {
+    double cost = 0.0;
+    for (RelNode input : rel.getInputs()) {
+      final double childCost = estimateShuffleCost(input, mq, broadcastThreshold);
+      if (Double.isNaN(childCost)) {
+        return Double.NaN; // uncostable subtree -> propagate; caller skips this candidate
+      }
+      cost += childCost;
+    }
+    if (rel instanceof Join join) {
+      final double leftBytes = estimatedBytes(mq, join.getLeft());
+      final double rightBytes = estimatedBytes(mq, join.getRight());
+      if (Double.isNaN(leftBytes) || Double.isNaN(rightBytes)) {
+        return Double.NaN; // unknown stats -> uncostable, fail safe (do not guess)
+      }
+      // Only an INNER join is modelled as a broadcast map-join, building its smaller side.
+      // Outer joins are conservatively charged as full shuffles: Hive CAN map-join a LEFT/RIGHT
+      // outer join (building the non-preserved side), but modelling that cheapness lets the
+      // reorder move outer joins on the strength of estimates alone - runtime-validated as
+      // harmful (an estimate-better outer-join placement in TPC-DS query72 ran 14x slower).
+      final double buildBytes = join.getJoinType() == JoinRelType.INNER
+              ? Math.min(leftBytes, rightBytes)
+              : Double.NaN; // never broadcastable (isBroadcastable is NaN-pessimistic)
+      // Model as a broadcast (map-)join only what can HASH-join: eligibility additionally
+      // requires a usable key (see hasCrossSideEquality). A keyless join (cross product / pure
+      // theta) is charged conservatively as a full shuffle of both inputs - its |L|x|R|-shaped
+      // output must not look cheaper than hash-joinable alternatives.
+      final boolean broadcast = isBroadcastable(buildBytes, broadcastThreshold)
+              && hasCrossSideEquality(join);
+      // broadcast map-join replicates only the build side; a shuffle (reduce-side) join sends
+      // both inputs across the network.
+      cost += broadcast ? buildBytes : (leftBytes + rightBytes);
+    }
+    return cost;
+  }
+
+  /**
+   * Whether the join condition contains at least one equality conjunct with one operand computed
+   * purely from the left input's fields and the other purely from the right input's fields - i.e.
+   * the join is hash-joinable on some (possibly computed) key, so its output cardinality is
+   * bounded by the key match rate rather than |L|x|R|. Unlike {@code Join#analyzeCondition()},
+   * which only recognizes bare column equalities, this also accepts expression keys such as
+   * {@code l.a + l.b = r.c}. {@code HiveCalciteUtil.JoinPredicateInfo} is deliberately NOT
+   * reused here: it classifies IS NOT DISTINCT FROM as non-equi (so null-safe equi joins would
+   * be mistaken for cross products), throws checked exceptions, and allocates full key
+   * structures - too heavy and wrong-shaped for a boolean probe on the selection hot path.
+   */
+  @VisibleForTesting
+  static boolean hasCrossSideEquality(Join join) {
+    final int nLeftFields = join.getLeft().getRowType().getFieldCount();
+    final int nTotalFields = nLeftFields + join.getRight().getRowType().getFieldCount();
+    final ImmutableBitSet leftFields = ImmutableBitSet.range(0, nLeftFields);
+    final ImmutableBitSet rightFields = ImmutableBitSet.range(nLeftFields, nTotalFields);
+    for (RexNode conjunct : RelOptUtil.conjunctions(join.getCondition())) {
+      if (!(conjunct instanceof RexCall equality)
+              || (equality.getKind() != SqlKind.EQUALS && equality.getKind() != SqlKind.IS_NOT_DISTINCT_FROM)) {
+        continue;
+      }
+      final ImmutableBitSet op0 = RelOptUtil.InputFinder.bits(equality.getOperands().get(0));
+      final ImmutableBitSet op1 = RelOptUtil.InputFinder.bits(equality.getOperands().get(1));
+      if (op0.isEmpty() || op1.isEmpty()) {
+        continue; // an equality against a constant is a filter, not a join key
+      }
+      if ((leftFields.contains(op0) && rightFields.contains(op1))
+              || (leftFields.contains(op1) && rightFields.contains(op0))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Estimated bytes of a relation (rowCount * average row size), or NaN when the metadata is
+   * unavailable - callers treat NaN as "uncostable" and fail safe rather than guess.
+   */
+  @VisibleForTesting
+  static double estimatedBytes(RelMetadataQuery mq, RelNode rel) {
+    final Double rows = mq.getRowCount(rel);
+    final Double rowSize = mq.getAverageRowSize(rel);
+    if (rows == null || rowSize == null) {
+      return Double.NaN;
+    }
+    return rows * rowSize;
   }
 
   /**
@@ -668,7 +845,8 @@ public class HiveLoptOptimizeJoinRule extends RelRule<HiveLoptOptimizeJoinRule.C
           RelBuilder relBuilder,
           HiveLoptMultiJoin multiJoin,
           HiveLoptSemiJoinOptimizer semiJoinOpt,
-          int firstFactor) {
+          int firstFactor,
+          long broadcastThreshold) {
     HiveLoptJoinTree joinTree = null;
     final int nJoinFactors = multiJoin.getNumJoinFactors();
     final BitSet factorsToAdd = BitSets.range(0, nJoinFactors);
@@ -702,7 +880,8 @@ public class HiveLoptOptimizeJoinRule extends RelRule<HiveLoptOptimizeJoinRule.C
                           factorsAdded,
                           semiJoinOpt,
                           joinTree,
-                          filtersToAdd);
+                          filtersToAdd,
+                          broadcastThreshold);
         }
       }
 
@@ -757,12 +936,23 @@ public class HiveLoptOptimizeJoinRule extends RelRule<HiveLoptOptimizeJoinRule.C
           BitSet factorsAdded,
           HiveLoptSemiJoinOptimizer semiJoinOpt,
           @Nullable HiveLoptJoinTree joinTree,
-          List<RexNode> filtersToAdd) {
+          List<RexNode> filtersToAdd,
+          long broadcastThreshold) {
+    // A non-negative threshold turns on the data-movement-aware tie-break: on a weight tie, prefer
+    // a factor whose build side fits the broadcast (map-join) threshold over a non-broadcastable
+    // one, so the selective fact-reducing broadcast joins are sequenced before a non-broadcastable
+    // shuffle join. This produces a fact-reducing ordering the legacy max-NDV tie-break never would;
+    // it only widens the candidate pool - findBestOrderings still selects the final ordering by
+    // estimated shuffle cost. A negative threshold leaves the legacy max-NDV tie-break unchanged.
+    final boolean preferBroadcast = broadcastThreshold >= 0;
     // iterate through the remaining factors and determine the
     // best one to add next
     int nextFactor = -1;
     int bestWeight = 0;
     Double bestCardinality = null;
+    // Initialized to the non-broadcastable sentinel so it can never spuriously beat a real candidate
+    // (the first joinable factor wins via dimWeight > bestWeight and resets it regardless).
+    boolean bestBroadcastable = false;
     int [][] factorWeights = multiJoin.getFactorWeights();
     for (int factor : BitSets.toIter(factorsToAdd)) {
       // if the factor corresponds to a dimension table whose
@@ -811,17 +1001,39 @@ public class HiveLoptOptimizeJoinRule extends RelRule<HiveLoptOptimizeJoinRule.C
                         factor);
       }
 
-      // if two factors have the same weight, pick the one
-      // with the higher cardinality join key, relative to
-      // the join being considered
-      if ((dimWeight > bestWeight)
-              || ((dimWeight == bestWeight)
-              && ((bestCardinality == null)
-              || ((cardinality != null)
-              && (cardinality > bestCardinality))))) {
+      // whether joining this factor would be a broadcast (map-join): its build side fits the
+      // noconditionaltask threshold. Only computed for candidates that can still win
+      // (dimWeight >= bestWeight, mirroring the cardinality guard above) - lower-weight
+      // candidates lose on weight before the broadcast tie-break is consulted.
+      boolean broadcastable = true;
+      if (preferBroadcast && (dimWeight > 0) && (dimWeight >= bestWeight)) {
+        // unknown size -> treat as non-broadcastable (pessimistic), consistent with the
+        // estimatedBytes/estimateShuffleCost selection below.
+        final double factorBytes = estimatedBytes(mq, semiJoinOpt.getChosenSemiJoin(factor));
+        broadcastable = isBroadcastable(factorBytes, broadcastThreshold);
+      }
+
+      // higher weight always wins. On a weight tie: when preferBroadcast is on, a broadcastable
+      // candidate beats a non-broadcastable one (so the non-broadcastable shuffle join floats to
+      // the end of the build, after the fact has been reduced); among equally-broadcastable
+      // candidates fall back to the legacy max-NDV tiebreak.
+      boolean newBest;
+      if (dimWeight > bestWeight) {
+        newBest = true;
+      } else if (dimWeight < bestWeight) {
+        newBest = false;
+      } else if (preferBroadcast && (bestBroadcastable != broadcastable)) {
+        newBest = broadcastable;
+      } else {
+        newBest = (bestCardinality == null)
+                || ((cardinality != null) && (cardinality > bestCardinality));
+      }
+
+      if (newBest) {
         nextFactor = factor;
         bestWeight = dimWeight;
         bestCardinality = cardinality;
+        bestBroadcastable = broadcastable;
       }
     }
 
@@ -2068,12 +2280,36 @@ public class HiveLoptOptimizeJoinRule extends RelRule<HiveLoptOptimizeJoinRule.C
             joinInfo.leftSet());
   }
 
-  public static final RelOptRule INSTANCE =
-      new Config().withOperandSupplier(b -> b.operand(MultiJoin.class).anyInputs())
-          .withDescription("HiveLoptOptimizeJoinRule")
-          .toRule();
+  public static final RelOptRule INSTANCE = create(-1L);
+
+  /**
+   * Creates the rule. A non-negative {@code broadcastThreshold} (the map-join build-side size
+   * budget, hive.auto.convert.join.noconditionaltask.size) enables the data-movement-aware
+   * ordering (hive.cbo.join.reorder.shuffle.cost); a negative value keeps the legacy behavior.
+   * The caller must only pass a non-negative threshold when map-join conversion is enabled -
+   * the cost model ranks orderings against broadcast joins the physical planner must be able
+   * to materialize.
+   */
+  public static RelOptRule create(long broadcastThreshold) {
+    return new Config()
+        .withBroadcastThreshold(broadcastThreshold)
+        .withOperandSupplier(b -> b.operand(MultiJoin.class).anyInputs())
+        .withDescription("HiveLoptOptimizeJoinRule")
+        .toRule();
+  }
 
   public static class Config extends HiveRuleConfig {
+    private long broadcastThreshold = -1L;
+
+    public Config withBroadcastThreshold(long broadcastThreshold) {
+      this.broadcastThreshold = broadcastThreshold;
+      return this;
+    }
+
+    public long broadcastThreshold() {
+      return broadcastThreshold;
+    }
+
     @Override
     public HiveLoptOptimizeJoinRule toRule() {
       return new HiveLoptOptimizeJoinRule(this);
