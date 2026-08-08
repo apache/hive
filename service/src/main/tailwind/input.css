@@ -1,0 +1,56 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { scrollbar-color: rgb(100 116 139 / .4) transparent; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: rgb(100 116 139 / .35); border-radius: 9999px; }
+}
+
+@layer components {
+  /* Transparent Hive bee silhouette as a mask -> takes the element's color,
+     so it adapts to the active theme (amber via text-brand here). */
+  .hive-mark {
+    display: inline-block;
+    -webkit-mask: url('/static/hive-mark.png') center / contain no-repeat;
+    mask: url('/static/hive-mark.png') center / contain no-repeat;
+    background-color: currentColor;
+  }
+}
+
+@layer utilities {
+  @keyframes riseIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  @keyframes breathe {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgb(16 185 129 / .45); }
+    50% { opacity: .5; box-shadow: 0 0 0 5px rgb(16 185 129 / 0); }
+  }
+  @keyframes spinSlow { to { transform: rotate(360deg); } }
+  .pulse-dot { animation: breathe 2.8s ease-in-out infinite; }
+  .spin-slow { animation: spinSlow 1.6s linear infinite; }
+  .stagger > * { animation: riseIn .5s cubic-bezier(.2, .7, .2, 1) both; }
+  .stagger > *:nth-child(2) { animation-delay: .06s; }
+  .stagger > *:nth-child(3) { animation-delay: .12s; }
+  .stagger > *:nth-child(4) { animation-delay: .18s; }
+  .stagger > *:nth-child(5) { animation-delay: .24s; }
+  .stagger > *:nth-child(6) { animation-delay: .30s; }
+  @media (prefers-reduced-motion: reduce) {
+    .stagger > *, .pulse-dot, .spin-slow { animation: none !important; }
+  }
+}
