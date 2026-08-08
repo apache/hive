@@ -312,6 +312,18 @@ public class QueryPlan implements Serializable {
   }
 
   /**
+   * Extract a compact per-query uniqueness tag (16 lowercase hex chars) from a query id emitted
+   * by {@link #makeQueryId()}. The tag is the {@code getMostSignificantBits()} half of the UUID
+   * at the tail of the id, rendered as 16-char lowercase hex. Used by callers that need a stable
+   * per-query filename component — e.g. {@code Hive.mvFile}'s destination naming on filesystems
+   * whose {@code rename} is not atomic-if-absent.
+   */
+  public static String extractUniquenessTag(String queryId) {
+    UUID uuid = UUID.fromString(queryId.substring(queryId.lastIndexOf('_') + 1));
+    return String.format("%016x", uuid.getMostSignificantBits());
+  }
+
+  /**
    * generate the operator graph and operator list for the given task based on
    * the operators corresponding to that task.
    *

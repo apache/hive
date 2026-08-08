@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.metadata;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -163,6 +164,7 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.RetryUtilities;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.ddl.database.drop.DropDatabaseDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
@@ -271,6 +273,23 @@ public class Hive implements AutoCloseable {
 
   static final private Logger LOG = LoggerFactory.getLogger("hive.ql.metadata.Hive");
   private final String CLASS_NAME = Hive.class.getName();
+
+  /**
+   * Schemes whose single-file {@link FileSystem#rename(Path, Path)} is not atomic-if-absent and
+   * can silently overwrite an existing destination when two concurrent writers race between an
+   * {@code exists()} probe and the rename call (object stores where rename is client-side
+   * copy+delete). Callers use this to decide whether to switch to a uniqueness-tag copy suffix
+   * in {@link #mvFile}. The list is in code because the set of unsafe filesystems is a property
+   * of the filesystem implementation, not something an operator should override.
+   * <p>
+   * Note on Azure: {@code abfs}/{@code abfss} only guarantee atomic rename when the ADLS Gen2
+   * account has hierarchical namespace enabled; without HNS they degrade to copy+delete like
+   * {@code wasb}. Since {@code mvFile} cannot cheaply tell the two apart at rename time, the
+   * Azure schemes are included unconditionally — a false positive costs only a slightly longer
+   * filename, whereas a false negative would be silent data loss.
+   */
+  public static final Set<String> NON_ATOMIC_RENAME_SCHEMES = new HashSet<>(
+      Arrays.asList("s3a", "s3n", "s3", "gs", "abfs", "abfss", "wasb", "wasbs"));
 
   private HiveConf conf = null;
   private IMetaStoreClient metaStoreClient;
@@ -5171,6 +5190,110 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   /**
+   * Compute a compact per-query uniqueness tag used by the non-ACID rename branch of
+   * {@link #mvFile} to make each concurrent writer's destination key unique on filesystems
+   * whose {@code rename} is not atomic-if-absent. The tag becomes the copy suffix
+   * ({@code basename_copy_<tag>}) in place of the numeric {@code _copy_N} counter.
+   * <p>
+   * Reads {@code hive.query.id} from the passed {@link HiveConf} and delegates to
+   * {@link QueryPlan#extractUniquenessTag(String)} for the actual UUID → hex derivation.
+   * The shape matches {@link ParsedOutputFileName}'s copy-index group so downstream filename
+   * parsing (taskId, attemptId, copyIndex) keeps working.
+   */
+  static String computeUniquenessTag(HiveConf conf) {
+    String qid = HiveConf.getVar(conf, ConfVars.HIVE_QUERY_ID);
+    if (Strings.isNullOrEmpty(qid)) {
+      throw new IllegalStateException("hive.query.id is required to derive a unique destination name");
+    }
+    return QueryPlan.extractUniquenessTag(qid);
+  }
+
+  /**
+   * @return {@code true} when the filesystem's URI scheme is one of the known non-atomic-rename
+   *         schemes ({@link #NON_ATOMIC_RENAME_SCHEMES}); {@code false} otherwise (including a
+   *         {@code null} fs or missing scheme).
+   */
+  static boolean isNonAtomicRenameFs(FileSystem fs) {
+    if (fs == null || fs.getUri() == null || fs.getUri().getScheme() == null) {
+      return false;
+    }
+    return NON_ATOMIC_RENAME_SCHEMES.contains(fs.getUri().getScheme().toLowerCase());
+  }
+
+  /**
+   * Picks the destination {@link Path} for {@link #mvFile}, choosing between a per-query
+   * uniqueness-tagged name (on filesystems without atomic rename-if-absent semantics) and the
+   * legacy {@code _copy_N} counter-based picker.
+   *
+   * <p>On file systems without atomic rename-if-absent semantics (e.g. S3), two concurrent inserts
+   * targeting the same new dynamic partition race in the counter-based picker below: their
+   * {@code exists()} probes both fire before either PUT commits, both rename to the same final
+   * key, and the second PUT silently overwrites the first (last writer wins, no error surfaces).
+   * To eliminate the collision, on such filesystems we skip the counter-based {@code _copy_N}
+   * picker entirely and use a per-query uniqueness tag (8-hex derived from {@code hive.query.id})
+   * as the copy suffix, so two concurrent writers rename to distinct keys.
+   *
+   * <p>The uniqueness-tag path is only taken in the non-ACID rename branch
+   * ({@code taskId == -1 && isRenameAllowed && !isOverwrite}): ACID writers already own unique
+   * taskIds, copy/copyFromLocal do not race on the destination filename, and overwrite explicitly
+   * clears the target first.
+   */
+  private static Path pickDestFilePath(HiveConf conf, FileSystem sourceFs, Path sourcePath, FileSystem destFs,
+                                       Path destDirPath, int taskId, boolean isOverwrite, boolean isRenameAllowed)
+      throws IOException {
+
+    final String type = FilenameUtils.getExtension(sourcePath.getName());
+
+    // Strip off the file type, if any so we don't make:
+    // 000000_0.gz -> 000000_0.gz_copy_1
+    final String fullName = sourcePath.getName();
+
+    final String name;
+    if (taskId == -1) { // non-acid
+      name = FilenameUtils.getBaseName(sourcePath.getName());
+    } else { // acid
+      name = getPathName(taskId);
+    }
+
+    // In case of ACID, the file is ORC so the extension is not relevant and should not be inherited.
+    Path destFilePath = new Path(destDirPath, taskId == -1 ? fullName : name);
+
+    final String uniqueCopySuffix =
+        // Only apply the unique suffix in case of files, as it's supposed to handle file name collisions.
+        // When mvFile is called with a directory, we can fall back to the original logic.
+        (taskId == -1 && isRenameAllowed && !isOverwrite && sourceFs.getFileStatus(sourcePath).isFile()
+            && isNonAtomicRenameFs(destFs))
+            ? computeUniquenessTag(conf)
+            : null;
+
+    if (uniqueCopySuffix != null && !uniqueCopySuffix.isEmpty()) {
+      // Unstable-rename FS: use `name_copy_<tag>` unconditionally as the destination. No
+      // exists()-probe loop, no _copy_N counter — the per-query tag alone is enough to keep
+      // concurrent writers from colliding, and ParsedOutputFileName recognizes the shape.
+      return new Path(destDirPath, name + Utilities.COPY_KEYWORD + uniqueCopySuffix +
+          (!type.isEmpty() ? "." + type : ""));
+    }
+
+    /*
+     * The below loop may perform bad when the destination file already exists and it has too many _copy_
+     * files as well. A desired approach was to call listFiles() and get a complete list of files from
+     * the destination, and check whether the file exists or not on that list. However, millions of files
+     * could live on the destination directory, and on concurrent situations, this can cause OOM problems.
+     *
+     * I'll leave the below loop for now until a better approach is found.
+     */
+    for (int counter = 1; destFs.exists(destFilePath); counter++) {
+      if (isOverwrite) {
+        destFs.delete(destFilePath, false);
+        break;
+      }
+      destFilePath = new Path(destDirPath, name + (Utilities.COPY_KEYWORD + counter) +
+          ((taskId == -1 && !type.isEmpty()) ? "." + type : ""));
+    }
+    return destFilePath;
+  }
+
+  /**
    * <p>
    *   Moves a file from one {@link Path} to another. If {@code isRenameAllowed} is true then the
    *   {@link FileSystem#rename(Path, Path)} method is used to move the file. If its false then the data is copied, if
@@ -5199,37 +5322,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
   private static Path mvFile(HiveConf conf, FileSystem sourceFs, Path sourcePath, FileSystem destFs, Path destDirPath,
                              boolean isSrcLocal, boolean isOverwrite, boolean isRenameAllowed,
                              int taskId) throws IOException {
-
-    // Strip off the file type, if any so we don't make:
-    // 000000_0.gz -> 000000_0.gz_copy_1
-    final String fullname = sourcePath.getName();
-    final String name;
-    if (taskId == -1) { // non-acid
-      name = FilenameUtils.getBaseName(sourcePath.getName());
-    } else { // acid
-      name = getPathName(taskId);
-    }
-    final String type = FilenameUtils.getExtension(sourcePath.getName());
-
-    // Incase of ACID, the file is ORC so the extension is not relevant and should not be inherited.
-    Path destFilePath = new Path(destDirPath, taskId == -1 ? fullname : name);
-
-    /*
-    * The below loop may perform bad when the destination file already exists and it has too many _copy_
-    * files as well. A desired approach was to call listFiles() and get a complete list of files from
-    * the destination, and check whether the file exists or not on that list. However, millions of files
-    * could live on the destination directory, and on concurrent situations, this can cause OOM problems.
-    *
-    * I'll leave the below loop for now until a better approach is found.
-    */
-    for (int counter = 1; destFs.exists(destFilePath); counter++) {
-      if (isOverwrite) {
-        destFs.delete(destFilePath, false);
-        break;
-      }
-      destFilePath =  new Path(destDirPath, name + (Utilities.COPY_KEYWORD + counter) +
-              ((taskId == -1 && !type.isEmpty()) ? "." + type : ""));
-    }
+    Path destFilePath = pickDestFilePath(conf, sourceFs, sourcePath, destFs, destDirPath, taskId, isOverwrite,
+        isRenameAllowed);
 
     if (isRenameAllowed) {
       destFs.rename(sourcePath, destFilePath);
@@ -5241,7 +5335,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           false,  // overwrite destination
           conf,
           new DataCopyStatistics())) {
-        LOG.error("Copy failed for source: " + sourcePath + " to destination: " + destFilePath);
+        LOG.error("Copy failed for source: {} to destination: {}", sourcePath, destFilePath);
         throw new IOException("File copy failed.");
       }
 
@@ -5249,10 +5343,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
       // have permission to delete the files in the source path. Ignore this failure.
       try {
         if (!sourceFs.delete(sourcePath, true)) {
-          LOG.warn("Delete source failed for source: " + sourcePath + " during copy to destination: " + destFilePath);
+          LOG.warn("Delete source failed for source: {} during copy to destination: {}", sourcePath, destFilePath);
         }
       } catch (Exception e) {
-        LOG.warn("Delete source failed for source: " + sourcePath + " during copy to destination: " + destFilePath, e);
+        LOG.warn("Delete source failed for source: {} during copy to destination: {}", sourcePath, destFilePath, e);
       }
     }
     return destFilePath;
