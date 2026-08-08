@@ -175,6 +175,13 @@ public class InPlaceUpdate {
     reprintLine(SEPARATOR);
     reprintLineWithColorAsBold(footer, Ansi.Color.RED);
     reprintLine(SEPARATOR);
+
+    // Display queue metrics if available (may be multi-line: queue name + metrics)
+    String queueMetrics = monitor.queueMetrics();
+    if (queueMetrics != null && !queueMetrics.isEmpty()) {
+      reprintMultiLine(queueMetrics);
+      reprintLine(SEPARATOR);
+    }
   }
 
 

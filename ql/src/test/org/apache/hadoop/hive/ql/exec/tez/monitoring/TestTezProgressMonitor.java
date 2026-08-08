@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.tez.monitoring;
 
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.exec.tez.monitoring.yarnqueue.NoOpQueueMetricsCollector;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.api.client.DAGClient;
@@ -91,7 +92,7 @@ public class TestTezProgressMonitor {
 
     TezProgressMonitor monitor =
         new TezProgressMonitor(dagClient, dagStatus, new ArrayList<BaseWork>(), progressMap(), console,
-            Long.MAX_VALUE);
+            Long.MAX_VALUE, NoOpQueueMetricsCollector.INSTANCE);
 
     verify(dagClient).getVertexStatus(eq(MAPPER), isNull());
     verify(dagClient).getVertexStatus(eq(REDUCER), isNull());
