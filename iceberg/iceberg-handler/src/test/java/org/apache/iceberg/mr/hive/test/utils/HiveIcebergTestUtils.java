@@ -424,4 +424,12 @@ public class HiveIcebergTestUtils {
     return simpleDateFormat.format(new Date(time));
   }
 
+  public static int parseBucketIdFromFileName(String path) {
+    String filename = path.substring(path.lastIndexOf('/') + 1);
+    if (!filename.contains("-")) {
+      return Integer.parseInt(filename.split("_")[0]);
+    }
+    return Integer.parseInt(filename.split("-")[0]);
+  }
+
 }

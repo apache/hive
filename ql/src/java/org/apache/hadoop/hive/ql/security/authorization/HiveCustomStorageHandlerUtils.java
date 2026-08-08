@@ -17,10 +17,15 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.*;
+import java.util.Properties;
+import java.util.function.BiConsumer;
+import java.util.function.UnaryOperator;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -34,6 +39,36 @@ public class HiveCustomStorageHandlerUtils {
   public static final String WRITE_OPERATION_IS_SORTED = "file.sink.write.operation.sorted.";
 
   public static final String MERGE_TASK_ENABLED = "file.sink.merge.task.enabled.";
+
+  // Iceberg: gate Hive-native bucketing (CLUSTERED BY) file routing for a specific write target.
+  // When enabled, bucket metadata is propagated via jobconf (set by SDPO / FileSinkOperator).
+  public static final String ICEBERG_HIVE_BUCKETING_ROUTE_ENABLED =
+      "file.sink.iceberg.hive.bucketing.route.enabled.";
+  public static final String ICEBERG_HIVE_BUCKETING_NUM_BUCKETS =
+      "file.sink.iceberg.hive.bucketing.num.buckets.";
+  public static final String ICEBERG_HIVE_BUCKETING_BUCKET_COLS =
+      "file.sink.iceberg.hive.bucketing.bucket.cols.";
+  public static final String ICEBERG_HIVE_BUCKETING_VERSION =
+      "file.sink.iceberg.hive.bucketing.version.";
+
+  /**
+   * Hive {@code CLUSTERED BY} metadata for an Iceberg write target, carried in jobconf when available.
+   */
+  public record IcebergHiveBucketingConf(int numBuckets, List<String> bucketCols, int bucketingVersion) {
+
+    public IcebergHiveBucketingConf {
+      bucketCols = bucketCols == null ? Collections.emptyList() : bucketCols;
+    }
+
+    public static IcebergHiveBucketingConf fromTable(org.apache.hadoop.hive.ql.metadata.Table table) {
+      return new IcebergHiveBucketingConf(
+          table.getNumBuckets(), table.getBucketCols(), table.getBucketingVersion());
+    }
+
+    public boolean hasHiveBucketing() {
+      return numBuckets > 0 && !bucketCols.isEmpty();
+    }
+  }
 
   public static String getTablePropsForCustomStorageHandler(Map<String, String> tableProperties) {
     StringBuilder properties = new StringBuilder();
@@ -94,5 +129,69 @@ public class HiveCustomStorageHandlerUtils {
   public static boolean isMergeTaskEnabled(UnaryOperator<String> ops, String tableName) {
     String operation = ops.apply(MERGE_TASK_ENABLED + tableName);
     return Boolean.parseBoolean(operation);
+  }
+
+  public static void setIcebergHiveBucketingRouteEnabled(Configuration conf, String tableName, boolean enabled) {
+    if (conf == null || tableName == null) {
+      return;
+    }
+    conf.set(ICEBERG_HIVE_BUCKETING_ROUTE_ENABLED + tableName, Boolean.toString(enabled));
+  }
+
+  public static boolean getIcebergHiveBucketingRouteEnabled(UnaryOperator<String> ops, String tableName) {
+    String value = ops.apply(ICEBERG_HIVE_BUCKETING_ROUTE_ENABLED + tableName);
+    return Boolean.parseBoolean(value);
+  }
+
+  public static void writeIcebergHiveBucketingMetadata(BiConsumer<String, String> store, String tableName,
+      IcebergHiveBucketingConf metadata) {
+    if (store == null || tableName == null || metadata == null) {
+      return;
+    }
+    store.accept(ICEBERG_HIVE_BUCKETING_NUM_BUCKETS + tableName, Integer.toString(metadata.numBuckets()));
+    store.accept(ICEBERG_HIVE_BUCKETING_BUCKET_COLS + tableName, String.join(",", metadata.bucketCols()));
+    store.accept(ICEBERG_HIVE_BUCKETING_VERSION + tableName, Integer.toString(metadata.bucketingVersion()));
+  }
+
+  public static Optional<IcebergHiveBucketingConf> readIcebergHiveBucketingMetadata(
+      UnaryOperator<String> lookup, String tableName) {
+    if (lookup == null || tableName == null) {
+      return Optional.empty();
+    }
+    String numBuckets = lookup.apply(ICEBERG_HIVE_BUCKETING_NUM_BUCKETS + tableName);
+    if (numBuckets == null) {
+      return Optional.empty();
+    }
+    String version = lookup.apply(ICEBERG_HIVE_BUCKETING_VERSION + tableName);
+    return Optional.of(new IcebergHiveBucketingConf(
+        Integer.parseInt(numBuckets),
+        parseBucketCols(lookup.apply(ICEBERG_HIVE_BUCKETING_BUCKET_COLS + tableName)),
+        version == null ? 2 : Integer.parseInt(version)));
+  }
+
+  /**
+   * Copies Iceberg Hive bucketing route flag and metadata from FileSink table properties into the task JobConf.
+   */
+  public static void propagateIcebergHiveBucketingFromTableInfo(Properties tableInfoProps, Configuration conf,
+      String tableName) {
+    if (tableInfoProps == null || conf == null || tableName == null) {
+      return;
+    }
+    String routeEnabledStr = tableInfoProps.getProperty(ICEBERG_HIVE_BUCKETING_ROUTE_ENABLED + tableName);
+    if (routeEnabledStr != null) {
+      setIcebergHiveBucketingRouteEnabled(conf, tableName, Boolean.parseBoolean(routeEnabledStr));
+    }
+    readIcebergHiveBucketingMetadata(tableInfoProps::getProperty, tableName)
+        .ifPresent(metadata -> writeIcebergHiveBucketingMetadata(conf::set, tableName, metadata));
+  }
+
+  private static List<String> parseBucketCols(String cols) {
+    if (cols == null || cols.isEmpty()) {
+      return Collections.emptyList();
+    }
+    return Arrays.stream(cols.split(","))
+        .map(String::trim)
+        .filter(s -> !s.isEmpty())
+        .toList();
   }
 }

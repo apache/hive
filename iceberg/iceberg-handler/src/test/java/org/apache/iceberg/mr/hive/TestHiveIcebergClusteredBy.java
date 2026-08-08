@@ -32,6 +32,7 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.hive.test.TestTables.TestTableType;
 import org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils;
+import org.apache.iceberg.mr.hive.test.utils.HiveIcebergTestUtils;
 import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -117,7 +118,7 @@ public class TestHiveIcebergClusteredBy extends HiveIcebergStorageHandlerWithEng
 
     // Insert initial records into the Native Hive table
     List<org.apache.iceberg.data.Record> initialRecords =
-            HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2.subList(0, 4);
+        HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2.subList(0, 4);
     shell.executeStatement(testTables.getInsertQuery(initialRecords, migrationTableId, false));
 
     validateHmsBucketMetadata(migrationTableName);
@@ -135,7 +136,7 @@ public class TestHiveIcebergClusteredBy extends HiveIcebergStorageHandlerWithEng
 
     // Insert remaining records into the Iceberg table
     List<org.apache.iceberg.data.Record> remainingRecords =
-            HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2.subList(4, 9);
+        HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2.subList(4, 9);
     shell.executeStatement(testTables.getInsertQuery(remainingRecords, migrationTableId, false));
 
     // Validate Iceberg table metadata and bucketing behavior
@@ -164,19 +165,7 @@ public class TestHiveIcebergClusteredBy extends HiveIcebergStorageHandlerWithEng
     Map<Integer, Long> bucketRecordCounts = new LinkedHashMap<>();
     try (CloseableIterable<FileScanTask> tasks = icebergTable.newScan().planFiles()) {
       for (FileScanTask task : tasks) {
-        String path = task.file().location();
-        String filename = path.substring(path.lastIndexOf('/') + 1);
-
-        int bucketId;
-        if (!filename.contains("-")) {
-          // Native Hive: 000000_0 → bucket 0
-          bucketId = Integer.parseInt(filename.split("_")[0]);
-        } else {
-          // Iceberg: 00000-0-... → bucket 0
-          bucketId = Integer.parseInt(filename.split("-")[0]);
-        }
-
-        // Sum records across multiple files in the same bucket (e.g., multiple inserts)
+        int bucketId = HiveIcebergTestUtils.parseBucketIdFromFileName(task.file().location());
         bucketRecordCounts.merge(bucketId, task.file().recordCount(), Long::sum);
       }
     }

@@ -256,29 +256,39 @@ public class VectorReduceSinkObjectHashOperator extends VectorReduceSinkCommonOp
       for (int logical = 0; logical< size; logical++) {
         final int batchIndex = (selectedInUse ? selected[logical] : logical);
         int hashCode;
-        if (isEmptyPartitions) {
-          if (isSingleReducer) {
-            // Empty partition, single reducer -> constant hashCode
-            hashCode = 0;
-          } else {
-            // Empty partition, multiple reducers -> random hashCode
-            hashCode = nonPartitionRandom.nextInt();
-          }
-        } else {
-          // Compute hashCode from partitions
-          partitionVectorExtractRow.extractRow(batch, batchIndex, partitionFieldValues);
-          hashCode = partitionHashFunc.applyAsInt(partitionFieldValues);
-        }
-
-        // Compute hashCode from buckets
-        if (!isEmptyBuckets) {
+        if (isEmptyPartitions && !isEmptyBuckets) {
+          // CLUSTERED BY: distribute only by bucket number (see ReduceSinkOperator.computeHashCode).
           bucketVectorExtractRow.extractRow(batch, batchIndex, bucketFieldValues);
-          final int bucketNum = ObjectInspectorUtils.getBucketNumber(
+          hashCode = ObjectInspectorUtils.getBucketNumber(
               bucketHashFunc.applyAsInt(bucketFieldValues), numBuckets);
           if (bucketExpr != null) {
-            evaluateBucketExpr(batch, batchIndex, bucketNum);
+            evaluateBucketExpr(batch, batchIndex, hashCode);
           }
-          hashCode = hashCode * 31 + bucketNum;
+        } else {
+          if (isEmptyPartitions) {
+            if (isSingleReducer) {
+              // Empty partition, single reducer -> constant hashCode
+              hashCode = 0;
+            } else {
+              // Empty partition, multiple reducers -> random hashCode
+              hashCode = nonPartitionRandom.nextInt();
+            }
+          } else {
+            // Compute hashCode from partitions
+            partitionVectorExtractRow.extractRow(batch, batchIndex, partitionFieldValues);
+            hashCode = partitionHashFunc.applyAsInt(partitionFieldValues);
+          }
+
+          // Compute hashCode from buckets
+          if (!isEmptyBuckets) {
+            bucketVectorExtractRow.extractRow(batch, batchIndex, bucketFieldValues);
+            final int bucketNum = ObjectInspectorUtils.getBucketNumber(
+                bucketHashFunc.applyAsInt(bucketFieldValues), numBuckets);
+            if (bucketExpr != null) {
+              evaluateBucketExpr(batch, batchIndex, bucketNum);
+            }
+            hashCode = hashCode * 31 + bucketNum;
+          }
         }
 
         postProcess(batch, batchIndex, tag, hashCode);
