@@ -69,8 +69,8 @@ public class SetHashGroupByMinReduction implements SemanticNodeProcessor {
     Statistics parentStats = groupByOperator.getParentOperators().get(0).getStatistics();
     long ndvProduct = StatsUtils.computeNDVGroupingColumns(
         colStats, parentStats, true);
-    // if ndvProduct is 0 then column stats state must be partial and we are missing
-    if (ndvProduct == 0) {
+    if (ndvProduct < 0) {
+      // unknown product - same fallback as old "overloaded NDV=0" path
       return null;
     }
 
