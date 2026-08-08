@@ -1983,7 +1983,9 @@ public class MetaStoreDirectSql {
       assert pm.currentTransaction().isActive(); // must be inside tx together with queries
       executeNoResult(stmt);
     } catch (SQLException sqlEx) {
-      throw new MetaException("Error setting ansi quotes: " + sqlEx.getMessage());
+      MetaException metaException = new MetaException("Error setting ansi quotes: " + sqlEx.getMessage());
+      metaException.initCause(sqlEx);
+      throw metaException;
     }
   }
 
