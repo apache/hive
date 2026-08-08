@@ -19,6 +19,7 @@
 package org.apache.hive.jdbc;
 
 import static org.apache.hadoop.hive.conf.Constants.MODE;
+import static org.apache.hc.core5.http.Method.isIdempotent;
 import static org.apache.hive.service.auth.HiveAuthConstants.AuthTypes;
 import static org.apache.hive.service.cli.operation.hplsql.HplSqlQueryExecutor.HPLSQL;
 
@@ -69,6 +70,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Stream;
 
@@ -92,6 +94,33 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hadoop.hive.common.IPStackUtils;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
+import org.apache.hc.client5.http.config.ConnectionConfig;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.cookie.BasicCookieStore;
+import org.apache.hc.client5.http.cookie.CookieStore;
+import org.apache.hc.client5.http.impl.DefaultHttpRequestRetryStrategy;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.BasicHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.io.HttpClientConnectionManager;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
+import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
+import org.apache.hc.client5.http.ssl.DefaultHostnameVerifier;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
+import org.apache.hc.core5.http.HttpRequest;
+import org.apache.hc.core5.http.HttpResponse;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.NoHttpResponseException;
+import org.apache.hc.core5.http.config.Registry;
+import org.apache.hc.core5.http.config.RegistryBuilder;
+import org.apache.hc.core5.http.protocol.HttpContext;
+import org.apache.hc.core5.ssl.SSLContexts;
+import org.apache.hc.core5.util.Args;
+import org.apache.hc.core5.util.TimeValue;
+import org.apache.hc.core5.util.Timeout;
 import org.apache.hive.jdbc.jwt.HttpJwtAuthRequestInterceptor;
 import org.apache.hive.jdbc.saml.HiveJdbcBrowserClientFactory;
 import org.apache.hive.jdbc.saml.HiveJdbcSamlRedirectStrategy;
@@ -122,31 +151,6 @@ import org.apache.hive.service.rpc.thrift.TProtocolVersion;
 import org.apache.hive.service.rpc.thrift.TRenewDelegationTokenReq;
 import org.apache.hive.service.rpc.thrift.TRenewDelegationTokenResp;
 import org.apache.hive.service.rpc.thrift.TSessionHandle;
-import org.apache.http.HttpEntityEnclosingRequest;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.NoHttpResponseException;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.CookieStore;
-import org.apache.http.client.HttpRequestRetryHandler;
-import org.apache.http.client.ServiceUnavailableRetryStrategy;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.ssl.DefaultHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.client.RequestWrapper;
-import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.ssl.SSLContexts;
-import org.apache.http.util.Args;
 import org.apache.thrift.TBaseHelper;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -674,36 +678,15 @@ public class HiveConnection implements java.sql.Connection {
     }
     // Configure http client for cookie based authentication
     if (isCookieEnabled) {
-      // Create a http client with a retry mechanism when the server returns a status code of 401.
-      httpClientBuilder =
-          HttpClients.custom().setDefaultCookieStore(cookieStore).setServiceUnavailableRetryStrategy(
-              new ServiceUnavailableRetryStrategy() {
-                @Override
-                public boolean retryRequest(final HttpResponse response, final int executionCount,
-                    final HttpContext context) {
-                  int statusCode = response.getStatusLine().getStatusCode();
-                  boolean sentCredentials = context.getAttribute(Utils.HIVE_SERVER2_SENT_CREDENTIALS) != null &&
-                      context.getAttribute(Utils.HIVE_SERVER2_SENT_CREDENTIALS).equals(Utils.HIVE_SERVER2_CONST_TRUE);
-                  boolean ret = statusCode == 401 && executionCount <= 1 && !sentCredentials;
-
-                  // Set the context attribute to true which will be interpreted by the request
-                  // interceptor
-                  if (ret) {
-                    context.setAttribute(Utils.HIVE_SERVER2_RETRY_KEY,
-                        Utils.HIVE_SERVER2_CONST_TRUE);
-                  }
-                  return ret;
-                }
-
-                @Override
-                public long getRetryInterval() {
-                  // Immediate retry
-                  return 0;
-                }
-              });
+      httpClientBuilder = HttpClients.custom().setDefaultCookieStore(cookieStore);
     } else {
       httpClientBuilder = HttpClientBuilder.create();
     }
+    final boolean cookieAuthEnabled = isCookieEnabled;
+
+    httpClientBuilder.addRequestInterceptorLast((request, entity, context) ->
+      context.setAttribute("hive.request_sent", Boolean.TRUE)
+    );
 
     // Beeline <------> LB <------> Reverse Proxy <-----> Hiveserver2
     // In case of deployments like above, the LoadBalancer (LB) can be configured with Idle Timeout after which the LB
@@ -715,7 +698,7 @@ public class HiveConnection implements java.sql.Connection {
     // SocketTimeoutException (Read Timeout) or NoHttpResponseException both of which can be retried if maxRetries is
     // also specified by the user (jdbc param).
     // The following retry handler handles the above cases in addition to retries for idempotent and unsent requests.
-    httpClientBuilder.setRetryHandler(new HttpRequestRetryHandler() {
+    httpClientBuilder.setRetryStrategy(new DefaultHttpRequestRetryStrategy() {
       // This handler is mostly a copy of DefaultHttpRequestRetryHandler except it also retries some exceptions
       // which could be thrown in certain cases where idle timeout from intermediate proxy triggers a connection reset.
       private final List<Class<? extends IOException>> nonRetriableClasses = Arrays.asList(
@@ -732,7 +715,7 @@ public class HiveConnection implements java.sql.Connection {
       );
 
       @Override
-      public boolean retryRequest(IOException exception, int executionCount, HttpContext context) {
+      public boolean retryRequest(HttpRequest request, IOException exception, int executionCount, HttpContext context) {
         Args.notNull(exception, "Exception parameter");
         Args.notNull(context, "HTTP context");
         if (executionCount > maxRetries) {
@@ -755,21 +738,20 @@ public class HiveConnection implements java.sql.Connection {
             }
           }
         }
-        final HttpClientContext clientContext = HttpClientContext.adapt(context);
-        final HttpRequest request = clientContext.getRequest();
 
         if(requestIsAborted(request)){
           LOG.info("Not retrying as request is aborted.");
           return false;
         }
 
-        if (handleAsIdempotent(request)) {
+        if (isIdempotent(request.getMethod())) {
           LOG.info("Retrying idempotent request. Attempt " + executionCount + " of " + maxRetries);
           // Retry if the request is considered idempotent
           return true;
         }
 
-        if (!clientContext.isRequestSent()) {
+        Boolean isSent = (Boolean) context.getAttribute("hive.request_sent");
+        if (isSent == null || !isSent) {
           LOG.info("Retrying unsent request. Attempt " + executionCount + " of " + maxRetries);
           // Retry if the request has not been sent fully or
           // if it's OK to retry methods that have been sent
@@ -781,22 +763,40 @@ public class HiveConnection implements java.sql.Connection {
         return false;
       }
 
-      // requests that handles "Expect continue" handshakes. If server received the header and is waiting for body
-      // then those requests can be retried. Most basic http method methods except DELETE are idempotent as long as they
-      // are not aborted.
-      protected boolean handleAsIdempotent(final HttpRequest request) {
-        return !(request instanceof HttpEntityEnclosingRequest);
-      }
-
       // checks if the request got aborted
       protected boolean requestIsAborted(final HttpRequest request) {
-        HttpRequest req = request;
-        if (request instanceof RequestWrapper) { // does not forward request to original
-          req = ((RequestWrapper) request).getOriginal();
-        }
-        return (req instanceof HttpUriRequest && ((HttpUriRequest)req).isAborted());
+        return (request instanceof HttpUriRequest httpUriRequest && httpUriRequest.isAborted());
       }
 
+      // Retry on HTTP 401 when cookie auth is enabled: the server rejected the
+      // session cookie, so re-issue the request and let the request interceptor
+      // add the Authorization header this time (driven by HIVE_SERVER2_RETRY_KEY).
+      // In httpclient4 this lived on the separate ServiceUnavailableRetryStrategy
+      // slot; in httpclient5 both I/O retry and response retry share this single
+      // strategy, so we handle 401 here rather than as a second setRetryStrategy(...)
+      // call (which would just overwrite this one).
+      @Override
+      public boolean retryRequest(final HttpResponse response, final int executionCount,
+          final HttpContext context) {
+        if (cookieAuthEnabled && response.getCode() == 401) {
+          boolean sentCredentials = Utils.HIVE_SERVER2_CONST_TRUE
+              .equals(context.getAttribute(Utils.HIVE_SERVER2_SENT_CREDENTIALS));
+          boolean ret = executionCount <= 1 && !sentCredentials;
+          if (ret) {
+            context.setAttribute(Utils.HIVE_SERVER2_RETRY_KEY, Utils.HIVE_SERVER2_CONST_TRUE);
+          }
+          return ret;
+        }
+        return super.retryRequest(response, executionCount, context);
+      }
+
+      @Override
+      public TimeValue getRetryInterval(HttpResponse response, int execCount, HttpContext context) {
+        if (cookieAuthEnabled && response.getCode() == 401) {
+          return TimeValue.ZERO_MILLISECONDS;
+        }
+        return super.getRetryInterval(response, execCount, context);
+      }
     });
 
     if (isBrowserAuthMode()) {
@@ -807,21 +807,30 @@ public class HiveConnection implements java.sql.Connection {
     requestInterceptor.setRequestTrackingEnabled(isRequestTrackingEnabled());
 
     // Add the request interceptor to the client builder
-    httpClientBuilder.addInterceptorFirst(requestInterceptor.sessionId(getSessionId()));
-    httpClientBuilder.addInterceptorLast(new HttpDefaultResponseInterceptor());
+    httpClientBuilder.addRequestInterceptorFirst(requestInterceptor.sessionId(getSessionId()));
+    httpClientBuilder.addResponseInterceptorLast(new HttpDefaultResponseInterceptor());
 
     // Add an interceptor to add in an XSRF header
-    httpClientBuilder.addInterceptorLast(new XsrfHttpRequestInterceptor());
+    httpClientBuilder.addRequestInterceptorLast(new XsrfHttpRequestInterceptor());
 
     // Add an interceptor to add in a CSRF header
-    httpClientBuilder.addInterceptorLast(new CsrfHttpRequestInterceptor());
+    httpClientBuilder.addRequestInterceptorLast((new CsrfHttpRequestInterceptor()));
 
     // set the specified timeout (socketTimeout jdbc param) for http connection as well
     RequestConfig config = RequestConfig.custom()
-            .setConnectTimeout(loginTimeout * 1000)
-            .setConnectionRequestTimeout(loginTimeout * 1000)
-            .setSocketTimeout(loginTimeout * 1000).build();
+        .setConnectionRequestTimeout(Timeout.ofSeconds(loginTimeout))
+        .setResponseTimeout(Timeout.ofSeconds(loginTimeout))
+        .build();
+    ConnectionConfig connectionConfig = ConnectionConfig.custom()
+        .setConnectTimeout(Timeout.ofSeconds(loginTimeout))
+        .setSocketTimeout(Timeout.ofSeconds(loginTimeout))
+        .build();
+
     httpClientBuilder.setDefaultRequestConfig(config);
+    HttpClientConnectionManager cm = PoolingHttpClientConnectionManagerBuilder.create()
+        .setDefaultConnectionConfig(connectionConfig)
+        .build();
+    httpClientBuilder.setConnectionManager(cm);
 
     // Configure http client for SSL
     if (useSsl) {
@@ -1332,20 +1341,48 @@ public class HiveConnection implements java.sql.Connection {
    * THttpClient doesn't expose that information.
    */
   private boolean isSamlRedirect(TException e) {
-    //Unfortunately, thrift over http doesn't return the response code
-    if (e.getMessage().startsWith("HTTP Response code: ")) {
-      String code = e.getMessage().substring("HTTP Response code: ".length());
-      try {
-        int statusCode = Integer.parseInt(code.trim());
-        if (statusCode == HttpStatus.SC_SEE_OTHER
-            || statusCode == HttpStatus.SC_MOVED_TEMPORARILY) {
-          return true;
+    // Unfortunately, thrift over http doesn't return the response code directly.
+    // In older libthrift (<= 0.16) the HTTP status was surfaced as
+    //   new TTransportException("HTTP Response code: <code>")
+    // so the marker string appeared as the exception's direct message. In libthrift
+    // 0.23 the HTTP status is thrown from THttpClientResponseHandler as an
+    // IOException that is wrapped by TTransportException(Throwable), so the marker
+    // string ends up in the cause's message (and the outer message is prefixed with
+    // "java.io.IOException: "). Look for the marker in the exception message or any
+    // cause message to work with both.
+    final String marker = "HTTP Response code: ";
+    String msg = e.getMessage();
+    String codeSource = null;
+    if (msg != null && msg.contains(marker)) {
+      codeSource = msg;
+    } else {
+      for (Throwable c = e.getCause(); c != null; c = c.getCause()) {
+        String cm = c.getMessage();
+        if (cm != null && cm.contains(marker)) {
+          codeSource = cm;
+          break;
         }
-      } catch (NumberFormatException ex) {
-        // ignore, return false
       }
     }
-    return false;
+    if (codeSource == null) {
+      return false;
+    }
+    String tail = codeSource.substring(codeSource.indexOf(marker) + marker.length()).trim();
+    // Trim off anything after the numeric status code (e.g. a trailing description).
+    int end = 0;
+    while (end < tail.length() && Character.isDigit(tail.charAt(end))) {
+      end++;
+    }
+    if (end == 0) {
+      return false;
+    }
+    try {
+      int statusCode = Integer.parseInt(tail.substring(0, end));
+      return statusCode == HttpStatus.SC_SEE_OTHER
+          || statusCode == HttpStatus.SC_MOVED_TEMPORARILY;
+    } catch (NumberFormatException ex) {
+      return false;
+    }
   }
 
   public boolean isHplSqlMode() {

@@ -23,11 +23,11 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.security.auth.Subject;
 
+import org.apache.hc.client5.http.cookie.CookieStore;
+import org.apache.hc.core5.http.HttpException;
+import org.apache.hc.core5.http.HttpRequest;
+import org.apache.hc.core5.http.protocol.HttpContext;
 import org.apache.hive.service.auth.HttpAuthUtils;
-import org.apache.http.HttpException;
-import org.apache.http.HttpRequest;
-import org.apache.http.client.CookieStore;
-import org.apache.http.protocol.HttpContext;
 
 /**
  * Authentication interceptor which adds Base64 encoded payload,

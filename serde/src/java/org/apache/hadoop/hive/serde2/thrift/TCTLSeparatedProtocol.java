@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -587,6 +588,11 @@ public class TCTLSeparatedProtocol extends TProtocol implements
   }
 
   @Override
+  public void writeUuid(UUID uuid) throws TException {
+    writeString(uuid.toString());
+  }
+
+  @Override
   public void writeDouble(double dub) throws TException {
     writeString(String.valueOf(dub));
   }
@@ -819,6 +825,11 @@ public class TCTLSeparatedProtocol extends TProtocol implements
       lastPrimitiveWasNullFlag = true;
       return 0;
     }
+  }
+
+  @Override
+  public UUID readUuid() throws TException {
+    return UUID.fromString(readString());
   }
 
   @Override

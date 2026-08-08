@@ -20,16 +20,18 @@ package org.apache.hive.jdbc.saml;
 
 import com.google.common.base.Preconditions;
 import java.net.URI;
+
+import org.apache.hc.client5.http.impl.DefaultRedirectStrategy;
+import org.apache.hc.client5.http.protocol.RedirectStrategy;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpException;
+import org.apache.hc.core5.http.HttpRequest;
+import org.apache.hc.core5.http.HttpResponse;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.ProtocolException;
+import org.apache.hc.core5.http.protocol.HttpContext;
 import org.apache.hive.jdbc.saml.IJdbcBrowserClient.JdbcBrowserClientContext;
 import org.apache.hive.service.auth.saml.HiveSamlUtils;
-import org.apache.http.Header;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.ProtocolException;
-import org.apache.http.client.RedirectStrategy;
-import org.apache.http.impl.client.DefaultRedirectStrategy;
-import org.apache.http.protocol.HttpContext;
 
 /**
  * This is an implementation of {@link RedirectStrategy} to intercept the HTTP redirect
@@ -51,20 +53,35 @@ public class HiveJdbcSamlRedirectStrategy extends DefaultRedirectStrategy {
       final HttpRequest request,
       final HttpResponse response,
       final HttpContext context) throws ProtocolException {
-    int status = response.getStatusLine().getStatusCode();
+    int status = response.getCode();
     if (status == HttpStatus.SC_MOVED_TEMPORARILY || status == HttpStatus.SC_SEE_OTHER) {
-      URI locationUri = getLocationURI(request, response, context);
+      // Only the HS2-originated SAML redirect carries the SSO_CLIENT_IDENTIFIER header.
+      // When we see it, capture the redirect location + identifier for the browser
+      // client, then return false so httpclient5 does NOT transparently follow the
+      // redirect. Letting the 302 propagate back to THttpClient is what allows
+      // HiveConnection.isSamlRedirect() to detect it and drive the browser SSO flow.
+      // For any other 302/303 (intermediate IDP redirects, unrelated traffic) fall
+      // through to the superclass's default handling.
       Header clientIdentifier = response
           .getFirstHeader(HiveSamlUtils.SSO_CLIENT_IDENTIFIER);
-      IJdbcBrowserClient.JdbcBrowserClientContext browserClientContext = new JdbcBrowserClientContext(
-          locationUri, clientIdentifier.getValue());
-      browserClient.init(browserClientContext);
+      if (clientIdentifier != null) {
+        URI locationUri;
+        try {
+          locationUri = getLocationURI(request, response, context);
+        } catch (HttpException e) {
+          throw new ProtocolException(e.getMessage(), e);
+        }
+        IJdbcBrowserClient.JdbcBrowserClientContext browserClientContext = new JdbcBrowserClientContext(
+            locationUri, clientIdentifier.getValue());
+        browserClient.init(browserClientContext);
+        return false;
+      }
     }
     return super.isRedirected(request, response, context);
   }
 
   @Override
-  public URI getLocationURI(HttpRequest request, HttpResponse response, HttpContext context) throws ProtocolException {
+  public URI getLocationURI(HttpRequest request, HttpResponse response, HttpContext context) throws HttpException {
     // add our own check to super-call
     return checkSsoUri(super.getLocationURI(request, response, context));
   }

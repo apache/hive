@@ -21,14 +21,17 @@ import java.io.IOException;
 
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.util.Time;
-import org.apache.http.HttpException;
-import org.apache.http.HttpResponse;
-import org.apache.http.protocol.HttpContext;
+import org.apache.hc.core5.http.EntityDetails;
+import org.apache.hc.core5.http.HttpException;
+import org.apache.hc.core5.http.HttpResponse;
+import org.apache.hc.core5.http.protocol.HttpContext;
 
 public class HttpDefaultResponseInterceptor extends HttpResponseInterceptorBase {
 
   @Override
-  public void process(HttpResponse response, HttpContext context) throws HttpException, IOException {
+  public void process(HttpResponse response, EntityDetails entityDetails, HttpContext context)
+      throws HttpException, IOException {
+
     String trackHeader = (String) context.getAttribute(Constants.HTTP_HEADER_REQUEST_TRACK);
     if (trackHeader == null) {
       return;

@@ -26,12 +26,13 @@ import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
-import org.apache.http.Header;
-import org.apache.http.HttpException;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpRequestInterceptor;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.protocol.HttpContext;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.core5.http.EntityDetails;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpException;
+import org.apache.hc.core5.http.HttpRequest;
+import org.apache.hc.core5.http.HttpRequestInterceptor;
+import org.apache.hc.core5.http.protocol.HttpContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -58,9 +59,9 @@ public class TestHiveMetastoreHttpHeaders {
     @Override
     protected HttpClientBuilder createHttpClientBuilder() throws MetaException {
       HttpClientBuilder builder = super.createHttpClientBuilder();
-      builder.addInterceptorLast(new HttpRequestInterceptor() {
+      builder.addRequestInterceptorLast(new HttpRequestInterceptor() {
         @Override
-        public void process(HttpRequest httpRequest, HttpContext httpContext) throws HttpException, IOException {
+        public void process(HttpRequest httpRequest, EntityDetails entity, HttpContext httpContext) {
           Header header1 = httpRequest.getFirstHeader(testHeaderKey1);
           Assert.assertEquals(testHeaderVal1, header1.getValue());
           Header header2 = httpRequest.getFirstHeader(testHeaderKey2);

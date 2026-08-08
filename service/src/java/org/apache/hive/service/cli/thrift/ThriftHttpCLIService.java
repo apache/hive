@@ -29,6 +29,7 @@ import java.util.Set;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.servlet.DispatcherType;
+import javax.servlet.http.HttpServlet;
 import javax.ws.rs.HttpMethod;
 
 import com.google.common.base.Splitter;
@@ -54,7 +55,6 @@ import org.apache.hive.service.server.ThreadFactoryWithGarbageCleanup;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocolFactory;
-import org.apache.thrift.server.TServlet;
 import org.eclipse.jetty.io.Connection;
 import org.eclipse.jetty.io.EndPoint;
 import org.eclipse.jetty.security.ConstraintMapping;
@@ -214,7 +214,7 @@ public class ThriftHttpCLIService extends ThriftCLIService {
       UserGroupInformation serviceUGI = cliService.getServiceUGI();
       // UGI for the http/_HOST (SPNego) principal
       UserGroupInformation httpUGI = cliService.getHttpUGI();
-      TServlet thriftHttpServlet = new ThriftHttpServlet(processor, protocolFactory, serviceUGI, httpUGI,
+      HttpServlet thriftHttpServlet = new ThriftHttpServlet(processor, protocolFactory, serviceUGI, httpUGI,
           hiveAuthFactory, hiveConf);
 
       // Context handler

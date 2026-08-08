@@ -31,16 +31,9 @@
       <version>${hive.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-      <version>${httpcomponents.client.version}</version>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>commons-codec</groupId>
-          <artifactId>commons-codec</artifactId>
-        </exclusion>
-      </exclusions>
+      <groupId>org.apache.httpcomponents.client5</groupId>
+      <artifactId>httpclient5</artifactId>
+      <version>${httpcomponents5.client.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.orc</groupId>
@@ -283,11 +276,17 @@
     </dependency>
     <dependency>
       <groupId>org.apache.thrift</groupId>
-      <artifactId>libfb303</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.thrift</groupId>
       <artifactId>libthrift</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpclient</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpcore</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.datanucleus</groupId>
