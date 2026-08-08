@@ -279,7 +279,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"c1\":\"true\",\"c10\":\"true\",\"c11\":\"true\",\"c12\":\"true\",\"c13\":\"true\",\"c14\":\"true\",\"c15\":\"true\",\"c2\":\"true\",\"c3\":\"true\",\"c4\":\"true\",\"c5\":\"true\",\"c6\":\"true\",\"c7\":\"true\",\"c8\":\"true\",\"c9\":\"true\",\"insert_num\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"c1\":\"true\",\"c10\":\"true\",\"c12\":\"true\",\"c13\":\"true\",\"c15\":\"true\",\"c3\":\"true\",\"c4\":\"true\",\"c6\":\"true\",\"c7\":\"true\",\"c9\":\"true\",\"insert_num\":\"true\"}}
 	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	5                   
