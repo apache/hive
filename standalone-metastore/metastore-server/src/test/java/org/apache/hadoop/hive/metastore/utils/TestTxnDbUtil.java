@@ -240,8 +240,8 @@ public final class TestTxnDbUtil {
         DatabaseProduct databaseProduct = determineDatabaseProduct(dbProduct, conf);
         try {
           resetTxnSequence(databaseProduct, stmt);
-          stmt.executeUpdate("INSERT INTO \"NEXT_LOCK_ID\" VALUES(1)");
-          stmt.executeUpdate("INSERT INTO \"NEXT_COMPACTION_QUEUE_ID\" VALUES(1)");
+          stmt.executeUpdate("INSERT INTO \"NEXT_LOCK_ID\" (\"NL_NEXT\") VALUES(1)");
+          stmt.executeUpdate("INSERT INTO \"NEXT_COMPACTION_QUEUE_ID\" (\"NCQ_NEXT\") VALUES(1)");
         } catch (SQLException e) {
           if (!databaseProduct.isTableNotExistsError(e)) {
             LOG.error("Error initializing sequence values", e);
