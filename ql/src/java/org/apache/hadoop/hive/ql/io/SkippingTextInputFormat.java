@@ -27,6 +27,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.TextInputFormat;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayDeque;
 import java.util.Map;
 import java.util.Queue;
@@ -78,6 +79,10 @@ public class SkippingTextInputFormat extends TextInputFormat {
     } catch (IOException e) {
       LOG.warn("Could not detect header/footer", e);
       return new NullRowsInputFormat.DummyInputSplit(file);
+    } catch (RuntimeException e) {
+      // Report unexpected detection failures clearly instead of a cryptic cast.
+      throw new RuntimeException("Failed to detect header/footer boundaries for file "
+          + file + " during split generation", e);
     }
     if (cachedStart > start + length) {
       return new NullRowsInputFormat.DummyInputSplit(file);
@@ -105,15 +110,14 @@ public class SkippingTextInputFormat extends TextInputFormat {
     }
     Long startIndexForFile = startIndexMap.get(path);
     if (startIndexForFile == null) {
-      FileSystem fileSystem;
-      FSDataInputStream fis = null;
-      fileSystem = path.getFileSystem(conf);
-      try {
-        fis = fileSystem.open(path);
-        long currPos = fis.getPos();
+      FileSystem fileSystem = path.getFileSystem(conf);
+      // ByteCountingLineReader avoids the unreliable readLine()+getPos() idiom.
+      try (FSDataInputStream fis = fileSystem.open(path)) {
+        ByteCountingLineReader reader = new ByteCountingLineReader(fis);
+        long currPos = 0;
         int delimiterIdx = -1;
         for (int j = 0; j < headerCount; j++) {
-          String headerLine = fis.readLine();
+          String headerLine = reader.readLine();
           if (headerLine == null) {
             startIndexMap.put(path, Long.MAX_VALUE);
             return Long.MAX_VALUE;
@@ -124,10 +128,10 @@ public class SkippingTextInputFormat extends TextInputFormat {
             if (delimiter != null && !delimiter.isEmpty()) {
               delimiterIdx = headerLine.indexOf(delimiter);
             } else {
-              currPos = fis.getPos();
+              currPos = reader.getBytesConsumed();
             }
           } else {
-            currPos = fis.getPos();
+            currPos = reader.getBytesConsumed();
           }
         }
         // Readers skip the entire first row if the start index of the
@@ -136,10 +140,6 @@ public class SkippingTextInputFormat extends TextInputFormat {
         // is discarded instead of the first valid input row.
         // We consider record delimiters if they exist.
         startIndexForFile = currPos + delimiterIdx;
-      } finally {
-        if (fis != null) {
-          fis.close();
-        }
       }
       startIndexMap.put(path, startIndexForFile);
     }
@@ -160,20 +160,20 @@ public class SkippingTextInputFormat extends TextInputFormat {
 
         // we need 'footer count' lines and one space for EOF
         LineBuffer buffer = new LineBuffer(footerCount + 1);
-        FSDataInputStream fis = null;
-        try {
-          fis = fileSystem.open(path);
+        try (FSDataInputStream fis = fileSystem.open(path)) {
           while (bufferSectionEnd > bufferSectionStart) {
             fis.seek(bufferSectionStart);
-            long pos = fis.getPos();
+            // Fresh reader per seek; offsets are seek position + bytes consumed.
+            ByteCountingLineReader reader = new ByteCountingLineReader(fis);
+            long pos = bufferSectionStart;
             while (pos < bufferSectionEnd) {
-              if (fis.readLine() == null) {
+              if (reader.readLine() == null) {
                 // if there is not enough lines in this section, check the previous
                 // section. If this is the beginning section, there are simply not
                 // enough lines in the file.
                 break;
               }
-              pos = fis.getPos();
+              pos = bufferSectionStart + reader.getBytesConsumed();
               buffer.consume(pos, bufferSectionEnd);
             }
             if (buffer.getRemainingLineCount() == 0) {
@@ -193,15 +193,70 @@ public class SkippingTextInputFormat extends TextInputFormat {
             // there were not enough lines in the file to consume all footer rows.
             endIndexForFile = Long.MIN_VALUE;
           }
-        } finally {
-          if (fis != null) {
-            fis.close();
-          }
         }
       }
       endIndexMap.put(path, endIndexForFile);
     }
     return endIndexForFile;
+  }
+
+  /**
+   * Reads lines while counting bytes consumed, so offsets can be computed without
+   * {@link FSDataInputStream#getPos()} -- which is unreliable after {@code readLine()}:
+   * a lone {@code '\r'} makes it swap in a non-Seekable {@code PushbackInputStream}, so
+   * the next {@code getPos()} throws {@code ClassCastException}. Handles {@code '\n'},
+   * {@code '\r\n'} and lone {@code '\r'}; after {@link #readLine()},
+   * {@link #getBytesConsumed()} is the offset just past the line's terminator.
+   */
+  static final class ByteCountingLineReader {
+    private final InputStream in;
+    private long bytesConsumed;
+    // Look-ahead byte past a '\r' (belongs to the next line, not yet counted); -1 = empty.
+    private int pushedBack = -1;
+
+    ByteCountingLineReader(InputStream in) {
+      this.in = in;
+    }
+
+    long getBytesConsumed() {
+      return bytesConsumed;
+    }
+
+    private int nextByte() throws IOException {
+      if (pushedBack != -1) {
+        int b = pushedBack;
+        pushedBack = -1;
+        return b;
+      }
+      return in.read();
+    }
+
+    /** Returns the next line without its terminator, or {@code null} at end of stream. */
+    String readLine() throws IOException {
+      int c = nextByte();
+      if (c == -1) {
+        return null;
+      }
+      StringBuilder sb = new StringBuilder();
+      while (c != -1) {
+        bytesConsumed++;
+        if (c == '\n') {
+          return sb.toString();
+        }
+        if (c == '\r') {
+          int next = nextByte();
+          if (next == '\n') {
+            bytesConsumed++;
+          } else if (next != -1) {
+            pushedBack = next; // belongs to the next line, not yet counted
+          }
+          return sb.toString();
+        }
+        sb.append((char) c);
+        c = nextByte();
+      }
+      return sb.toString();
+    }
   }
 
   static class LineBuffer {
