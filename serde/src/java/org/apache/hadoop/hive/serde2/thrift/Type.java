@@ -112,7 +112,11 @@ public enum Type {
       true, false),
   UNKNOWN_TYPE(serdeConstants.UNKNOWN_TYPE_NAME.toUpperCase(),
       java.sql.Types.NULL,
-      TTypeId.UNKNOWN_TYPE);
+      TTypeId.UNKNOWN_TYPE),
+  VARIANT_TYPE(serdeConstants.VARIANT_TYPE_NAME.toUpperCase(),
+      java.sql.Types.OTHER,
+      TTypeId.VARIANT_TYPE,
+      true, false);
 
   private final String name;
   private final TTypeId tType;
@@ -267,6 +271,9 @@ public enum Type {
     }
     case UNKNOWN: {
       return Type.UNKNOWN_TYPE;
+    }
+    case VARIANT: {
+      return Type.VARIANT_TYPE;
     }
     default: {
       throw new RuntimeException("Unrecognized type: " + typeInfo.getCategory());
