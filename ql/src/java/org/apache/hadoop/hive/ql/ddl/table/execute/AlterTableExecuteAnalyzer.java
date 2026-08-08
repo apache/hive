@@ -59,6 +59,7 @@ import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOpera
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.FAST_FORWARD;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.ROLLBACK;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.SET_CURRENT_SNAPSHOT;
+import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.ExecuteOperationType.ANCESTORS_OF;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.RollbackSpec.RollbackType.TIME;
 import static org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec.RollbackSpec.RollbackType.VERSION;
 import static org.apache.hadoop.hive.ql.parse.HiveLexer.KW_RETAIN;
@@ -102,6 +103,9 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
         break;
       case HiveParser.KW_ORPHAN_FILES:
         desc = getDeleteOrphanFilesDesc(tableName, partitionSpec,  command.getChildren());
+        break;
+      case HiveParser.KW_ANCESTORS_OF:
+        desc = getAncestorsOfDesc(tableName, partitionSpec, command);
         break;
     }
 
@@ -209,6 +213,20 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
       time = getTimeStampMillis((ASTNode) children.get(1));
     }
     AlterTableExecuteSpec spec = new AlterTableExecuteSpec(DELETE_ORPHAN_FILES, new DeleteOrphanFilesDesc(time));
+    return new AlterTableExecuteDesc(tableName, partitionSpec, spec);
+  }
+
+  private AlterTableExecuteDesc getAncestorsOfDesc(
+      TableName tableName, Map<String, String> partitionSpec, ASTNode command)
+      throws SemanticException {
+    Long snapshotId = null;
+    if (command.getChildCount() == 2) {
+      ASTNode childNode = (ASTNode) command.getChild(1);
+      snapshotId = Long.parseLong(childNode.getText());
+    }
+    AlterTableExecuteSpec spec =
+        new AlterTableExecuteSpec(
+            ANCESTORS_OF, new AlterTableExecuteSpec.AncestorsOfSpec(snapshotId));
     return new AlterTableExecuteDesc(tableName, partitionSpec, spec);
   }
 
