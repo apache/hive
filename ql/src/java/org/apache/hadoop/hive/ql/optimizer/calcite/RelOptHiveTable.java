@@ -128,9 +128,9 @@ public class RelOptHiveTable implements RelOptTable {
     this.hiveTblMetadata = hiveTblMetadata;
     this.hiveColStatsMap = new HashMap<>();
     this.hiveNonPartitionCols = ImmutableList.copyOf(hiveNonPartitionCols);
-    this.hiveNonPartitionColsMap = HiveCalciteUtil.getColInfoMap(hiveNonPartitionCols, 0);
+    this.hiveNonPartitionColsMap = HiveCalciteUtil.getColInfoMap(hiveNonPartitionCols, hiveTblMetadata);
     this.hivePartitionCols = ImmutableList.copyOf(hivePartitionCols);
-    this.hivePartitionColsMap = HiveCalciteUtil.getColInfoMap(hivePartitionCols, hiveNonPartitionColsMap.size());
+    this.hivePartitionColsMap = HiveCalciteUtil.getColInfoMap(hivePartitionCols, hiveTblMetadata);
     this.noOfNonVirtualCols = hiveNonPartitionCols.size() + hivePartitionCols.size();
     this.hiveVirtualCols = ImmutableList.copyOf(hiveVirtualCols);
     this.hiveConf = hconf;
@@ -666,6 +666,8 @@ public class RelOptHiveTable implements RelOptTable {
         LOG.error(logMsg);
         throw new RuntimeException(logMsg);
       }
+    } else {
+      colStatsCached.updateState(State.COMPLETE);
     }
   }
 
