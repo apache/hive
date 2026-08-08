@@ -25,6 +25,7 @@
   <name>Hive Beeline</name>
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
+    <jpackage.plugin.version>4.3.0</jpackage.plugin.version>
   </properties>
   <dependencies>
     <!-- dependencies are always listed in sorted order by groupId, artifactId -->
@@ -68,10 +69,10 @@
     </dependency>
     <dependency>
       <!--
-      Since the compile-time hive-jdbc dependency contains Utils.java,
-      which directly imports HiveSQLException from hive-service,
-      hive-service is also required at runtime and should therefore be declared as a compile-time dependency.
-      -->
+        Since the compile-time hive-jdbc dependency contains Utils.java,
+        which directly imports HiveSQLException from hive-service,
+        hive-service is also required at runtime and should therefore be declared as a compile-time dependency.
+        -->
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-service</artifactId>
       <version>${project.version}</version>
@@ -147,7 +148,7 @@
     <!--
     hive-exec, hive-llap-server, and hive-hplsql are declared test scope here so that
     are all needed to run BeelineCli test to manage the embedded HS2 session.
-    -->
+  -->
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-exec</artifactId>
@@ -242,6 +243,101 @@
     </dependency>
   </dependencies>
   <profiles>
+    <!--
+    Build a native installer (dmg on macOS, exe/msi on Windows, deb/rpm on Linux).
+    Usage:
+      mvn package -pl beeline -am -DskipTests -P native-installer
+    Output (versioned parent dir mirrors packaging's apache-hive-beeline-X.Y.Z
+    -->
+    <profile>
+      <id>native-installer</id>
+      <properties>
+        <installer.app.version>${jpackage.plugin.version}</installer.app.version>
+        <installer.arch>x64</installer.arch>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>jpackage</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <target>
+                    <property name="jpackage.platform.args" value=""/>
+                    <mkdir dir="${project.build.directory}/apache-hive-beeline-${project.version}/${installer.arch}"/>
+                    <exec executable="jpackage" failonerror="true">
+                      <!-- Application identity -->
+                      <arg value="--name"/>
+                      <arg value="beeline"/>
+                      <arg value="--app-version"/>
+                      <arg value="${installer.app.version}"/>
+                      <arg value="--vendor"/>
+                      <arg value="Apache Software Foundation"/>
+                      <arg value="--description"/>
+                      <arg value="Apache Hive Beeline SQL client"/>
+                      <!-- Input: the self-contained fat jar -->
+                      <arg value="--input"/>
+                      <arg value="${project.build.directory}"/>
+                      <arg value="--main-jar"/>
+                      <arg value="beeline-standalone.jar"/>
+                      <arg value="--main-class"/>
+                      <arg value="org.apache.hive.beeline.BeeLine"/>
+                      <!-- Output: arch-specific subdirectory so x64 and arm64 coexist -->
+                      <arg value="--dest"/>
+                      <arg value="${project.build.directory}/apache-hive-beeline-${project.version}/${installer.arch}"/>
+                      <arg line="${jpackage.platform.args}"/>
+                      <!--
+                        jpackage picks the native format automatically:
+                          macOS   → dmg  (x64 on Intel, arm64 on Apple Silicon)
+                          Windows → exe
+                          Linux   → deb
+                        To force a specific type, add:
+                          <arg value="- -type"/> <arg value="pkg"/>
+                      -->
+                    </exec>
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <!--
+      Auto-detects Apple Silicon and sets installer.arch=arm64.
+    -->
+    <profile>
+      <id>macos-arm64-installer</id>
+      <activation>
+        <os>
+          <name>Mac OS X</name>
+          <arch>aarch64</arch>
+        </os>
+      </activation>
+      <properties>
+        <installer.arch>arm64</installer.arch>
+      </properties>
+    </profile>
+    <!--
+      Auto-activates on Windows.
+    -->
+    <profile>
+      <id>windows-installer</id>
+      <activation>
+        <os>
+          <family>windows</family>
+        </os>
+      </activation>
+      <properties>
+        <jpackage.platform.args>--win-console --type msi --win-dir-chooser --win-menu --win-menu-group "Apache Hive" --win-shortcut-prompt --win-help-url https://hive.apache.org/ --license-file ${project.basedir}/../LICENSE --resource-dir ${project.basedir}/src/main/jpackage/windows</jpackage.platform.args>
+      </properties>
+    </profile>
     <profile>
       <id>sources</id>
       <build>
