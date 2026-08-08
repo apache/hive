@@ -103,6 +103,10 @@ public class AlterTableExecuteAnalyzer extends AbstractAlterTableAnalyzer {
       case HiveParser.KW_ORPHAN_FILES:
         desc = getDeleteOrphanFilesDesc(tableName, partitionSpec,  command.getChildren());
         break;
+      case HiveParser.KW_REWRITE_MANIFESTS:
+        desc = new AlterTableExecuteDesc(tableName, partitionSpec,
+            new AlterTableExecuteSpec(AlterTableExecuteSpec.ExecuteOperationType.REWRITE_MANIFESTS, null));
+        break;
     }
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
