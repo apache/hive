@@ -79,6 +79,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.SecretManager.InvalidToken;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
+import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
 import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.NodeId;
@@ -126,6 +127,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   private final String user;
   private String amHost;
   private String timelineServerUri;
+  private final ApplicationAttemptId appAttemptId;
 
   // These two structures track the list of known nodes, and the list of nodes which are sending in keep-alive heartbeats.
   // Primarily for debugging purposes a.t.m, since there's some unexplained TASK_TIMEOUTS which are currently being observed.
@@ -136,13 +138,6 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
   private volatile QueryIdentifierProto currentQueryIdentifierProto;
   private volatile String currentHiveQueryId;
-
-  // TODO: this is an ugly hack because Tez plugin isolation does not make sense for LLAP plugins.
-  //       We are going to register a thread-local here for now, so that the scheduler, initializing
-  //       in the same thread after the communicator, will pick up. Or the other way around.
-  //       This only lives for the duration of the service init.
-  static final Object pluginInitLock = new Object();
-  static LlapTaskCommunicator instance = null;
 
   public LlapTaskCommunicator(
       TaskCommunicatorContext taskCommunicatorContext) {
@@ -158,17 +153,8 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
     credentialMap = new ConcurrentHashMap<>();
     sourceStateTracker = new SourceStateTracker(getContext(), this);
-    synchronized (pluginInitLock) {
-      LlapTaskSchedulerService peer = LlapTaskSchedulerService.instance;
-      if (peer != null) {
-        // We are the last to initialize.
-        peer.setTaskCommunicator(this);
-        this.setScheduler(peer);
-        LlapTaskSchedulerService.instance = null;
-      } else {
-        instance = this;
-      }
-    }
+    this.appAttemptId = getContext().getApplicationAttemptId();
+    LlapPluginBroker.INSTANCE.registerCommunicator(appAttemptId, this);
   }
 
   @SuppressWarnings("unchecked")
@@ -188,6 +174,11 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
   void setScheduler(LlapTaskSchedulerService peer) {
     this.scheduler = peer;
+  }
+
+  @VisibleForTesting
+  LlapTaskSchedulerService getScheduler() {
+    return scheduler;
   }
 
   private static final String LLAP_TOKEN_NAME = LlapTokenIdentifier.KIND_NAME.toString();
@@ -241,6 +232,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   @Override
   public void shutdown() {
     super.shutdown();
+    LlapPluginBroker.INSTANCE.unregisterCommunicator(appAttemptId, this);
     if (this.communicator != null) {
       this.communicator.stop();
     }
