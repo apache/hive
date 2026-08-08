@@ -80,4 +80,4 @@ POSTHOOK: query: select 'expected 1',count(*) from ax where ((s,t) in (('a','a')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ax
 #### A masked pattern was here ####
-expected 1	1
+expected 1	0

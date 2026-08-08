@@ -103,7 +103,7 @@ POSTHOOK: Input: default@my_table_0003
 OPTIMIZED SQL: SELECT `t0`.`col_7` AS `table__323.col_7`, `t0`.`col_3`, `t0`.`col_20` AS `table__323.col_20`, `t2`.`col_21` AS `col_21_1232`, `t0`.`col_1` AS `table__323.col_1`, `t4`.`col_22` AS `table__133.col_22`, `t6`.`col_21` AS `col_21_879`, `t4`.`col_23` AS `table__133.col_23`
 FROM (SELECT `col_1`, `col_7`, `col_20`, CAST(`col_3` AS DATE) AS `col_3`
 FROM `default`.`my_table_0001`
-WHERE (`col_7` IS NULL OR CAST(`col_7` AS DOUBLE) IS NOT NULL) AND `col_20` IN ('part1', 'part2', 'part3') AND CAST(`col_3` AS DATE) BETWEEN DATE '2018-07-01' AND DATE '2019-01-23') AS `t0`
+WHERE (`col_7` IS NULL OR CAST(`col_7` AS DOUBLE) IS NOT NULL) AND CAST(`col_3` AS DATE) BETWEEN DATE '2018-07-01' AND DATE '2019-01-23' AND `col_20` IN ('part1', 'part2', 'part3')) AS `t0`
 LEFT JOIN (SELECT `col_24`, `col_21`
 FROM `default`.`my_table_0003`
 WHERE `col_24` IN ('part1', 'part2', 'part3')) AS `t2` ON `t0`.`col_20` = `t2`.`col_24`
@@ -135,12 +135,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table__323
-                  filterExpr: ((col_7 is null or UDFToDouble(col_7) is not null) and (col_20) IN ('part1', 'part2', 'part3') and CAST( col_3 AS DATE) BETWEEN DATE'2018-07-01' AND DATE'2019-01-23') (type: boolean)
+                  filterExpr: ((col_7 is null or UDFToDouble(col_7) is not null) and CAST( col_3 AS DATE) BETWEEN DATE'2018-07-01' AND DATE'2019-01-23' and (col_20) IN ('part1', 'part2', 'part3')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 592 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((col_7 is null or UDFToDouble(col_7) is not null) and (col_20) IN ('part1', 'part2', 'part3') and CAST( col_3 AS DATE) BETWEEN DATE'2018-07-01' AND DATE'2019-01-23') (type: boolean)
+                    predicate: ((col_7 is null or UDFToDouble(col_7) is not null) and CAST( col_3 AS DATE) BETWEEN DATE'2018-07-01' AND DATE'2019-01-23' and (col_20) IN ('part1', 'part2', 'part3')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 592 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: col_1 (type: string), col_7 (type: string), col_20 (type: string), CAST( col_3 AS DATE) (type: date)
