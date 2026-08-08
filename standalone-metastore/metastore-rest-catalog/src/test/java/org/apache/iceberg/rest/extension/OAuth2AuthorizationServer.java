@@ -43,6 +43,8 @@ public class OAuth2AuthorizationServer {
   private static final String ICEBERG_CLIENT_SECRET = "iceberg-client-secret";
   private static final String ICEBERG_CLIENT_ID_PERMISSION_TEST = "iceberg-client-permission-test";
   private static final String ICEBERG_CLIENT_SECRET_PERMISSION_TEST = "iceberg-client-secret-permission-test";
+  private static final String ICEBERG_CLIENT_ID_PERMISSION_READ_ONLY = "iceberg-client-permission-read-only";
+  private static final String ICEBERG_CLIENT_SECRET_PERMISSION_READ_ONLY = "iceberg-client-secret-permission-read-only";
 
   private GenericContainer<?> container;
   private Keycloak keycloak;
@@ -136,6 +138,8 @@ public class OAuth2AuthorizationServer {
         ICEBERG_CLIENT_SECRET);
     createClient(realm, scopes, List.of(audience, createEmailClaim(MockHiveAuthorizer.PERMISSION_TEST_USER)),
         ICEBERG_CLIENT_ID_PERMISSION_TEST, ICEBERG_CLIENT_SECRET_PERMISSION_TEST);
+    createClient(realm, scopes, List.of(audience, createEmailClaim(MockHiveAuthorizer.PERMISSION_READ_ONLY_USER)),
+        ICEBERG_CLIENT_ID_PERMISSION_READ_ONLY, ICEBERG_CLIENT_SECRET_PERMISSION_READ_ONLY);
   }
 
   private static String getAccessToken(String url, List<String> scopes) {
@@ -196,6 +200,10 @@ public class OAuth2AuthorizationServer {
 
   public String getClientCredentialForPermissionTest() {
     return "%s:%s".formatted(ICEBERG_CLIENT_ID_PERMISSION_TEST, ICEBERG_CLIENT_SECRET_PERMISSION_TEST);
+  }
+
+  public String getClientCredentialForPermissionReadOnly() {
+    return "%s:%s".formatted(ICEBERG_CLIENT_ID_PERMISSION_READ_ONLY, ICEBERG_CLIENT_SECRET_PERMISSION_READ_ONLY);
   }
 
   public String getAccessToken() {

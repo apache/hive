@@ -44,4 +44,9 @@ class TestRESTCatalogNoneAuth extends BaseRESTCatalogTests {
   protected Optional<Map<String, String>> getPermissionTestClientConfiguration() {
     return Optional.empty();
   }
+
+  @Override
+  protected Optional<Map<String, String>> getPermissionReadOnlyClientConfiguration() {
+    return Optional.empty();
+  }
 }
