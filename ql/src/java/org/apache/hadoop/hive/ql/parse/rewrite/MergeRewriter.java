@@ -113,7 +113,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
     sqlGenerator.append("FROM\n");
     sqlGenerator.append("(SELECT ");
     sqlGenerator.appendAcidSelectColumns(Operation.MERGE);
-    sqlGenerator.appendAllColsOfTargetTable();
+    sqlGenerator.appendNonPartitionColsOfTargetTable();
     addSourceColumnsForRowLineage(isRowLineageSupported, sqlGenerator, "", conf);
     sqlGenerator.append(" FROM ").appendTargetTableName().append(") ");
     sqlGenerator.appendSubQueryAlias();

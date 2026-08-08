@@ -1,0 +1,17 @@
+PREHOOK: query: create table wj3 (k int, v int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@wj3
+POSTHOOK: query: create table wj3 (k int, v int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@wj3
+PREHOOK: query: create table wj4 (k int, w int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@wj4
+POSTHOOK: query: create table wj4 (k int, w int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@wj4
+FAILED: SemanticException [Error 10007]: Ambiguous column reference k in t

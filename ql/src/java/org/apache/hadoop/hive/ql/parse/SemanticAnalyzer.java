@@ -4014,6 +4014,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             colList.add(Pair.of(colInfo, colSrcRR));
             oColInfo = new ColumnInfo(getColumnInternalName(pos), colInfo.getType(),
                 colInfo.getTabAlias(), colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol());
+            oColInfo.setAmbiguousName(colInfo.hasAmbiguousName());
             inputColsProcessed.put(colInfo, oColInfo);
           }
           if (ensureUniqueCols) {
@@ -4101,6 +4102,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           colList.add(Pair.of(colInfo, input));
           oColInfo = new ColumnInfo(getColumnInternalName(pos), colInfo.getType(),
               colInfo.getTabAlias(), colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol());
+          oColInfo.setAmbiguousName(colInfo.hasAmbiguousName());
           inputColsProcessed.put(colInfo, oColInfo);
         }
         assert nonNull(tmp);
