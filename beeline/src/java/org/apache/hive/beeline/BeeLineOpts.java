@@ -72,6 +72,7 @@ public class BeeLineOpts implements Completer {
   private boolean silent = false;
   private Boolean report = null;
   private boolean color = false;
+  private boolean syntaxHighlighting = true;
   private boolean showHeader = true;
   private boolean escapeCRLF = false;
   private boolean showDbInPrompt = false;
@@ -488,6 +489,14 @@ public class BeeLineOpts implements Completer {
 
   public boolean getColor() {
     return color;
+  }
+
+  public void setSyntaxHighlighting(boolean syntaxHighlighting) {
+    this.syntaxHighlighting = syntaxHighlighting;
+  }
+
+  public boolean getSyntaxHighlighting() {
+    return syntaxHighlighting;
   }
 
   public void setShowHeader(boolean showHeader) {

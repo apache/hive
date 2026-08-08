@@ -1477,9 +1477,9 @@ public class BeeLine implements Closeable {
     }
 
     builder.completer(new BeeLineCompleter(this));
+    builder.highlighter(new HiveSqlHighlighter(() -> getOpts().getSyntaxHighlighting()));
     lineReader = builder.build();
     lineReader.unsetOpt(LineReader.Option.HISTORY_TIMESTAMPED);
-    // need to disable expansion, otherwise commands (starting with "!") will activate history items
     lineReader.setOpt(LineReader.Option.DISABLE_EVENT_EXPANSION);
 
     if (this.history != null) {
