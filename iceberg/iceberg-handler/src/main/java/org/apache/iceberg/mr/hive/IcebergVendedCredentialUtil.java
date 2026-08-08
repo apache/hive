@@ -38,8 +38,6 @@ import org.apache.iceberg.MetadataTableUtils;
 import org.apache.iceberg.StaticTableOperations;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableMetadata;
-import org.apache.iceberg.aws.AwsClientProperties;
-import org.apache.iceberg.aws.s3.S3FileIOProperties;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.hive.rest.catalog.RestCatalogAccessDelegation;
@@ -47,6 +45,8 @@ import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.StorageCredential;
 import org.apache.iceberg.io.SupportsStorageCredentials;
 import org.apache.iceberg.mr.InputFormatConfig;
+import org.apache.iceberg.mr.hive.vended.VendedCredentialHadoopMapper;
+import org.apache.iceberg.mr.hive.vended.VendedCredentialSupport;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.util.SerializationUtil;
@@ -102,17 +102,23 @@ public final class IcebergVendedCredentialUtil {
   /**
    * Writes each key in one vended {@link StorageCredential} into job configuration.
    *
-   * <p>Derives the S3 bucket from {@link StorageCredential#prefix()} and delegates to
+   * <p>Derives storage scope from {@link StorageCredential#prefix()} and delegates to
    * {@link #addCredentialEntry} for every entry in {@link StorageCredential#config()}, which maps
-   * Iceberg keys to catalog-level and per-bucket S3A job properties or secrets.
+   * Iceberg keys to catalog-level and provider-specific Hadoop job properties or secrets.
    */
   private static void addCredentialEntries(String catalogName, StorageCredential credential,
       Map<String, String> jobProperties, Map<String, String> jobSecrets, Configuration conf) {
 
-    String bucket = bucketFromPrefix(credential.prefix());
+    VendedCredentialHadoopMapper mapper = VendedCredentialSupport.mapperFor(credential);
+    String scope = mapper != null ? mapper.scopeFromPrefix(credential.prefix()) :
+        VendedCredentialSupport.scopeFromPrefix(credential.prefix());
     for (Map.Entry<String, String> entry : credential.config().entrySet()) {
       addCredentialEntry(
-          catalogName, bucket, entry.getKey(), entry.getValue(), jobProperties, jobSecrets, conf);
+          catalogName, scope, mapper, entry.getKey(), entry.getValue(), jobProperties, jobSecrets, conf);
+    }
+    if (jobProperties != null) {
+      VendedCredentialSupport.additionalNonSecretHadoopProperties(mapper, scope, credential.config())
+          .forEach(jobProperties::putIfAbsent);
     }
   }
 
@@ -124,7 +130,8 @@ public final class IcebergVendedCredentialUtil {
    * secret keys (access key, secret key, session token) to {@code jobSecrets}. Either map may be
    * {@code null} when {@link #propagateToJob} is called for only properties or only secrets.
    */
-  private static void addCredentialEntry(String catalogName, String bucket, String icebergKey, String value,
+  private static void addCredentialEntry(String catalogName, String scope,
+      VendedCredentialHadoopMapper mapper, String icebergKey, String value,
       Map<String, String> jobProperties, Map<String, String> jobSecrets, Configuration conf) {
 
     if (StringUtils.isBlank(value)) {
@@ -133,22 +140,22 @@ public final class IcebergVendedCredentialUtil {
     String resolvedValue = resolveCredentialValue(catalogName, icebergKey, value, conf);
 
     if (jobProperties != null && !isSecretKey(icebergKey, conf)) {
-      addNonSecretCredentialEntry(catalogName, bucket, icebergKey, resolvedValue, jobProperties);
+      addNonSecretCredentialEntry(catalogName, scope, mapper, icebergKey, resolvedValue, jobProperties);
     }
 
     if (jobSecrets != null && isSecretKey(icebergKey, conf)) {
-      addSecretCredentialEntry(bucket, icebergKey, resolvedValue, jobSecrets);
+      addSecretCredentialEntry(scope, mapper, icebergKey, resolvedValue, jobSecrets);
     }
   }
 
   /**
-   * Adds one non-secret vended value to {@code jobProperties} for Iceberg and Hadoop S3A.
+   * Adds one non-secret vended value to {@code jobProperties} for Iceberg and Hadoop.
    *
    * <p>When {@code catalogName} is set, writes {@code iceberg.catalog.&lt;catalog&gt;.&lt;key&gt;}.
-   * When {@code bucket} is set, also writes the matching {@code fs.s3a.bucket.&lt;bucket&gt;.*}
-   * key if {@link #toS3aBucketProperty} maps the Iceberg key.
+   * When a Hadoop mapper is present, also writes the matching provider-specific Hadoop key.
    */
-  private static void addNonSecretCredentialEntry(String catalogName, String bucket, String icebergKey, String value,
+  private static void addNonSecretCredentialEntry(String catalogName, String scope,
+      VendedCredentialHadoopMapper mapper, String icebergKey, String value,
       Map<String, String> jobProperties) {
 
     if (catalogName != null) {
@@ -157,23 +164,21 @@ public final class IcebergVendedCredentialUtil {
       jobProperties.putIfAbsent(catalogConfigKey, value);
     }
 
-    if (bucket != null) {
-      String s3aKey = toS3aBucketProperty(bucket, icebergKey);
-      if (s3aKey != null) {
-        jobProperties.putIfAbsent(s3aKey, value);
+    if (mapper != null && scope != null) {
+      String hadoopKey = VendedCredentialSupport.toHadoopProperty(mapper, scope, icebergKey);
+      if (hadoopKey != null) {
+        jobProperties.putIfAbsent(hadoopKey, value);
       }
     }
   }
 
-  /** Writes Hadoop S3A per-bucket keys only; Iceberg secrets are carried in the serialized blob.
-   * First table wins on a shared bucket, matching the non-secret entries, so an endpoint and its
-   * key always come from the same credential. */
-  private static void addSecretCredentialEntry(String bucket, String icebergKey, String value,
-      Map<String, String> jobSecrets) {
-    if (bucket != null) {
-      String s3aSecretKey = toS3aBucketProperty(bucket, icebergKey);
-      if (s3aSecretKey != null) {
-        jobSecrets.putIfAbsent(s3aSecretKey, value);
+  /** Writes Hadoop keys only; Iceberg secrets are carried in the serialized blob. */
+  private static void addSecretCredentialEntry(String scope, VendedCredentialHadoopMapper mapper,
+      String icebergKey, String value, Map<String, String> jobSecrets) {
+    if (mapper != null && scope != null) {
+      String hadoopSecretKey = VendedCredentialSupport.toHadoopProperty(mapper, scope, icebergKey);
+      if (hadoopSecretKey != null) {
+        jobSecrets.putIfAbsent(hadoopSecretKey, value);
       }
     }
   }
@@ -386,50 +391,16 @@ public final class IcebergVendedCredentialUtil {
         return credentials;
       }
     }
-    return credentialsFromFileIoProperties(table, io);
-  }
-
-  private static List<StorageCredential> credentialsFromFileIoProperties(Table table, FileIO io) {
-    Map<String, String> props = io.properties();
-    if (props == null || StringUtils.isBlank(props.get(S3FileIOProperties.ACCESS_KEY_ID)) ||
-        StringUtils.isBlank(props.get(S3FileIOProperties.SECRET_ACCESS_KEY))) {
-      return List.of();
-    }
-    Map<String, String> config = new LinkedHashMap<>();
-    putIfPresent(config, props, S3FileIOProperties.ACCESS_KEY_ID);
-    putIfPresent(config, props, S3FileIOProperties.SECRET_ACCESS_KEY);
-    putIfPresent(config, props, S3FileIOProperties.SESSION_TOKEN);
-    putIfPresent(config, props, S3FileIOProperties.ENDPOINT);
-    putIfPresent(config, props, S3FileIOProperties.PATH_STYLE_ACCESS);
-    putIfPresent(config, props, AwsClientProperties.CLIENT_REGION);
-    return List.of(StorageCredential.create(credentialPrefix(table), config));
-  }
-
-  private static void putIfPresent(Map<String, String> target, Map<String, String> source, String key) {
-    if (source.containsKey(key) && StringUtils.isNotBlank(source.get(key))) {
-      target.put(key, source.get(key));
-    }
-  }
-
-  private static String credentialPrefix(Table table) {
-    String location = table.location();
-    if (StringUtils.isBlank(location)) {
-      return "";
-    }
-    String bucket = bucketFromPrefix(location);
-    if (bucket != null) {
-      return "s3://" + bucket + "/";
-    }
-    return location.endsWith("/") ? location : location + "/";
+    return VendedCredentialSupport.credentialsFromFileIoProperties(table, io);
   }
 
   /**
-   * REST catalogs vend credentials together with S3 connectivity settings such as endpoint
+   * REST catalogs vend credentials together with storage connectivity settings such as endpoint
    * and path-style access. These settings reflect the catalog's network view and may reference
    * hosts that are not reachable from Hive (for example, an internal {@code s3.ozone:9878}
    * hostname).
    *
-   * Catalog S3 properties configured in the Hive session (for example,
+   * Catalog properties configured in the Hive session (for example,
    * {@code iceberg.catalog.ice01.s3.endpoint}) override the corresponding vended connectivity
    * settings so the driver and executors use reachable endpoints. Vended credentials are
    * preserved; only non-secret connectivity properties are overridden.
@@ -469,32 +440,5 @@ public final class IcebergVendedCredentialUtil {
     String override =
         conf.get(IcebergCatalogProperties.catalogPropertyConfigKey(catalogName, icebergKey));
     return StringUtils.isNotBlank(override) ? override : vendedValue;
-  }
-
-  /** Authority (bucket) of a storage prefix such as {@code s3://bucket/path}, any scheme.
-   * Plain string parse: {@code URI.getHost()} rejects legal bucket names with underscores. */
-  @SuppressWarnings("java:S1075") // storage URI path separator, not a filesystem path
-  private static String bucketFromPrefix(String prefix) {
-    int schemeEnd = prefix == null ? -1 : prefix.indexOf("://");
-    if (schemeEnd < 0) {
-      return null;
-    }
-    String withoutScheme = prefix.substring(schemeEnd + 3);
-    int slash = withoutScheme.indexOf('/');
-    String bucket = slash >= 0 ? withoutScheme.substring(0, slash) : withoutScheme;
-    return StringUtils.defaultIfBlank(bucket, null);
-  }
-
-  private static String toS3aBucketProperty(String bucket, String icebergKey) {
-    String bucketPrefix = "fs.s3a.bucket." + bucket + ".";
-    return switch (icebergKey) {
-      case S3FileIOProperties.ACCESS_KEY_ID -> bucketPrefix + "access.key";
-      case S3FileIOProperties.SECRET_ACCESS_KEY -> bucketPrefix + "secret.key";
-      case S3FileIOProperties.SESSION_TOKEN -> bucketPrefix + "session.token";
-      case S3FileIOProperties.ENDPOINT -> bucketPrefix + "endpoint";
-      case S3FileIOProperties.PATH_STYLE_ACCESS -> bucketPrefix + "path.style.access";
-      case AwsClientProperties.CLIENT_REGION -> bucketPrefix + "endpoint.region";
-      default -> null;
-    };
   }
 }
