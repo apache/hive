@@ -34,7 +34,9 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.utils.DecimalUtils;
 import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
@@ -1201,6 +1203,62 @@ public class TestObjectStore {
     statsAggrResourceCleanup();
   }
 
+  @Test
+  public void testMissingPartsStatsAggrWithBackendDBDistinctBorders() throws Exception {
+    setAggrConf(false, false, 2);
+    List<ColumnStatisticsData> statsPerPartition = Arrays.asList(
+        new ColStatsBuilder<>(long.class).numNulls(1).numDVs(2).low(1L).high(5L).build(),
+        new ColStatsBuilder<>(long.class).numNulls(1).numDVs(2).low(3L).high(7L).build(),
+        new ColStatsBuilder<>(long.class).numNulls(1).numDVs(2).low(3L).high(7L).build());
+    createPartitionedTable(true, true, new HashSet<>(Collections.singletonList(1)), "int", statsPerPartition);
+    AggrStats aggrStats = runStatsAggregation();
+    ColumnStatisticsData computedStats = aggrStats.getColStats().get(0).getStatsData();
+    Assert.assertEquals(2, aggrStats.getPartsFound());
+    ColumnStatisticsData expectedStats = new ColStatsBuilder<>(long.class).numNulls(3).numDVs(2)
+        .low(1L).high(7L).build();
+    assertEqualStatistics(expectedStats, computedStats);
+    statsAggrResourceCleanup();
+  }
+
+  @Test
+  public void testMissingPartsStatsAggrWithBackendDBDecimal() throws Exception {
+    setAggrConf(false, false, 2);
+    Decimal one = DecimalUtils.createThriftDecimal("1.0");
+    Decimal three = DecimalUtils.createThriftDecimal("3.0");
+    Decimal four = DecimalUtils.createThriftDecimal("4.0");
+    Decimal seven = DecimalUtils.createThriftDecimal("7.0");
+    List<ColumnStatisticsData> statsPerPartition = Arrays.asList(
+        new ColStatsBuilder<>(Decimal.class).numNulls(1).numDVs(2).low(one).high(four).build(),
+        new ColStatsBuilder<>(Decimal.class).numNulls(1).numDVs(2).low(three).high(seven).build(),
+        new ColStatsBuilder<>(Decimal.class).numNulls(1).numDVs(2).low(three).high(seven).build());
+    createPartitionedTable(true, true, new HashSet<>(Collections.singletonList(1)),
+        "decimal(10,2)", statsPerPartition);
+    AggrStats aggrStats = runStatsAggregation();
+    ColumnStatisticsData computedStats = aggrStats.getColStats().get(0).getStatsData();
+    Assert.assertEquals(2, aggrStats.getPartsFound());
+    ColumnStatisticsData expectedStats = new ColStatsBuilder<>(Decimal.class).numNulls(3).numDVs(2)
+        .low(one).high(seven).build();
+    assertEqualStatistics(expectedStats, computedStats);
+    statsAggrResourceCleanup();
+  }
+
+  @Test
+  public void testMissingPartsStatsAggrWithBackendDBMissingLastPartition() throws Exception {
+    setAggrConf(false, false, 2);
+    List<ColumnStatisticsData> statsPerPartition = Arrays.asList(
+        new ColStatsBuilder<>(long.class).numNulls(1).numDVs(2).low(1L).high(5L).build(),
+        new ColStatsBuilder<>(long.class).numNulls(1).numDVs(2).low(3L).high(7L).build(),
+        new ColStatsBuilder<>(long.class).numNulls(1).numDVs(2).low(3L).high(7L).build());
+    createPartitionedTable(true, true, new HashSet<>(Collections.singletonList(2)), "int", statsPerPartition);
+    AggrStats aggrStats = runStatsAggregation();
+    ColumnStatisticsData computedStats = aggrStats.getColStats().get(0).getStatsData();
+    Assert.assertEquals(2, aggrStats.getPartsFound());
+    ColumnStatisticsData expectedStats = new ColStatsBuilder<>(long.class).numNulls(3).numDVs(2)
+        .low(1L).high(9L).build();
+    assertEqualStatistics(expectedStats, computedStats);
+    statsAggrResourceCleanup();
+  }
+
   /**
    * Creates DB1 database, TABLE1 table with 3 partitions.
    * @param withPrivileges Should we create privileges as well
@@ -1208,6 +1266,12 @@ public class TestObjectStore {
    */
   private void createPartitionedTable(boolean withPrivileges, boolean withStatistics, Set<Integer> statsMissingIndices)
       throws Exception {
+    createPartitionedTable(withPrivileges, withStatistics, statsMissingIndices, "int", null);
+  }
+
+  private void createPartitionedTable(boolean withPrivileges, boolean withStatistics,
+      Set<Integer> statsMissingIndices, String statsColumnType,
+      List<ColumnStatisticsData> statsDataPerPartition) throws Exception {
     Database db1 = new DatabaseBuilder()
                        .setName(DB1)
                        .setDescription("description")
@@ -1285,10 +1349,15 @@ public class TestObjectStore {
         stats.setStatsObj(statsObjList);
         stats.setEngine(ENGINE);
 
-        ColumnStatisticsData data = new ColStatsBuilder<>(long.class).numNulls(1).numDVs(2)
-            .low(3L).high(4L).hll(3, 4).kll(3, 4).build();
+        ColumnStatisticsData data;
+        if (statsDataPerPartition != null) {
+          data = statsDataPerPartition.get(i);
+        } else {
+          data = new ColStatsBuilder<>(long.class).numNulls(1).numDVs(2)
+              .low(3L).high(4L).hll(3, 4).kll(3, 4).build();
+        }
 
-        ColumnStatisticsObj partStats = new ColumnStatisticsObj("test_part_col", "int", data);
+        ColumnStatisticsObj partStats = new ColumnStatisticsObj("test_part_col", statsColumnType, data);
         statsObjList.add(partStats);
 
         try (AutoCloseable c = deadline()) {

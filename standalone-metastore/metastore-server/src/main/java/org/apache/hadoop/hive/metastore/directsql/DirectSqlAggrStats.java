@@ -296,10 +296,8 @@ public class DirectSqlAggrStats {
         IExtrapolatePartStatus extrapolateMethod = new LinearExtrapolatePartStatus();
         // fill in colstatus
         Integer[] index;
-        boolean decimal = false;
         if (colType.toLowerCase().startsWith("decimal")) {
           index = IExtrapolatePartStatus.indexMaps.get("decimal");
-          decimal = true;
         } else {
           index = IExtrapolatePartStatus.indexMaps.get(colType.toLowerCase());
         }
@@ -309,8 +307,8 @@ public class DirectSqlAggrStats {
           index = IExtrapolatePartStatus.indexMaps.get("default");
         }
 
+        List<Integer> minMaxStatIndices = new ArrayList<>();
         for (int colStatIndex : index) {
-          String colStatName = IExtrapolatePartStatus.colStatNames[colStatIndex];
           // if the aggregation type is sum, we do a scale-up
           if (
               IExtrapolatePartStatus.aggrTypes[colStatIndex] == IExtrapolatePartStatus.AggrType.Sum
@@ -325,51 +323,31 @@ public class DirectSqlAggrStats {
               IExtrapolatePartStatus.aggrTypes[colStatIndex] == IExtrapolatePartStatus.AggrType.Min ||
                   IExtrapolatePartStatus.aggrTypes[colStatIndex] == IExtrapolatePartStatus.AggrType.Max
           ) {
-            // if the aggregation type is min/max, we extrapolate from the
-            // left/right borders
-            String orderByExpr =
-                decimal ? "cast(\"" + colStatName + "\" as decimal)" : "\"" + colStatName + "\"";
-
-            queryText = "select \"" + colStatName + "\",\"PART_NAME\" from " + PART_COL_STATS
-                + " inner join " + PARTITIONS + " on " + PART_COL_STATS + ".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\""
-                + " inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\""
-                + " inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\""
-                + " where " + DBS + ".\"CTLG_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + TBLS + ".\"TBL_NAME\" = ? "
-                + " and " + PART_COL_STATS + ".\"COLUMN_NAME\" in (%1$s)"
-                + " and " + PARTITIONS + ".\"PART_NAME\" in (%2$s)"
-                + " and " + PART_COL_STATS + ".\"ENGINE\" = ? "
-                + " order by " + orderByExpr;
-
-            Batchable<String, Object[]> columnWisePartitionBatches =
-                columnWisePartitionBatcher(queryText, catName, dbName, tableName, partNames, engine, doTrace);
-            try {
-              List<Object[]> list =
-                  Batchable.runBatched(batchSize, Collections.singletonList(colName), columnWisePartitionBatches);
-              Object[] min = list.getFirst();
-              Object[] max = list.getLast();
-              if (batchSize > 0) {
-                for (int i = Math.min(batchSize - 1, list.size() - 1); i < list.size(); i += batchSize) {
-                  Object[] posMax = list.get(i);
-                  if (new BigDecimal(max[0].toString()).compareTo(new BigDecimal(posMax[0].toString())) < 0) {
-                    max = posMax;
-                  }
-                  int j = i + 1;
-                  if (j < list.size()) {
-                    Object[] posMin = list.get(j);
-                    if (new BigDecimal(min[0].toString()).compareTo(new BigDecimal(posMin[0].toString())) > 0) {
-                      min = posMin;
-                    }
-                  }
-                }
-              }
-              if (min[0] == null || max[0] == null) {
+            minMaxStatIndices.add(colStatIndex);
+          }
+        }
+        if (!minMaxStatIndices.isEmpty()) {
+          queryText = createQueryString(minMaxStatIndices);
+          Batchable<String, Object[]> columnWisePartitionBatches =
+              columnWisePartitionBatcher(queryText, catName, dbName, tableName, partNames, engine, doTrace);
+          try {
+            List<Object[]> partitionStatRows =
+                Batchable.runBatched(batchSize, Collections.singletonList(colName), columnWisePartitionBatches);
+            for (int i = 0; i < minMaxStatIndices.size(); i++) {
+              int colStatIndex = minMaxStatIndices.get(i);
+              // row[0] is PART_NAME; stat columns follow in minMaxStatIndices order
+              int statColIdx = i + 1;
+              Object[] minBorder = findStatBorder(partitionStatRows, statColIdx, indexMap, true);
+              Object[] maxBorder = findStatBorder(partitionStatRows, statColIdx, indexMap, false);
+              if (minBorder[0] == null || maxBorder[0] == null) {
                 row[2 + colStatIndex] = null;
               } else {
-                row[2 + colStatIndex] = extrapolateMethod.extrapolate(min, max, colStatIndex, indexMap);
+                row[2 + colStatIndex] =
+                    extrapolateMethod.extrapolate(minBorder, maxBorder, colStatIndex, indexMap);
               }
-            } finally {
-              columnWisePartitionBatches.closeAllQueries();
             }
+          } finally {
+            columnWisePartitionBatches.closeAllQueries();
           }
         }
         colStats.add(prepareCSObjWithAdjustedNDV
@@ -379,6 +357,61 @@ public class DirectSqlAggrStats {
     }
     return colStats;
   }
+
+  private String createQueryString(List<Integer> minMaxStatIndices) {
+    StringBuilder selectClause = new StringBuilder("\"PART_NAME\"");
+    for (int colStatIndex : minMaxStatIndices) {
+      String colStatName = IExtrapolatePartStatus.colStatNames[colStatIndex];
+      selectClause.append(", ");
+      if (IExtrapolatePartStatus.colStatTypes[colStatIndex]
+          == IExtrapolatePartStatus.ColStatType.Decimal) {
+        selectClause.append("cast(\"").append(colStatName).append("\" as decimal)");
+      } else {
+        selectClause.append("\"").append(colStatName).append("\"");
+      }
+    }
+    return "select " + selectClause + " from " + PART_COL_STATS
+        + " inner join " + PARTITIONS + " on " + PART_COL_STATS + ".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\""
+        + " inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\""
+        + " inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\""
+        + " where " + DBS + ".\"CTLG_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + TBLS + ".\"TBL_NAME\" = ? "
+        + " and " + PART_COL_STATS + ".\"COLUMN_NAME\" in (%1$s)"
+        + " and " + PARTITIONS + ".\"PART_NAME\" in (%2$s)"
+        + " and " + PART_COL_STATS + ".\"ENGINE\" = ? ";
+  }
+
+  /*
+   * Find the min/max border of the column partitionStatRows[statColIdx] in the partitionStatRows
+   */
+  private Object[] findStatBorder(
+      List<Object[]> partitionStatRows, int statColIdx, Map<String, Integer> indexMap, boolean findMin) {
+    Object[] bestBorder = new Object[] { null, null };
+    for (Object[] partitionStatRow : partitionStatRows) {
+      Object statValue = partitionStatRow[statColIdx];
+      if (statValue == null) {
+        continue;
+      }
+      Object[] currentBorder = new Object[] { statValue, partitionStatRow[0] };
+      if (bestBorder[0] == null || isBetterBorder(currentBorder, bestBorder, indexMap, findMin)) {
+        bestBorder = currentBorder;
+      }
+    }
+    return bestBorder;
+  }
+
+  private boolean isBetterBorder(
+      Object[] currentBorder, Object[] currentBestBorder, Map<String, Integer> indexMap, boolean findMin) {
+    int valueComparison = new BigDecimal(currentBorder[0].toString())
+        .compareTo(new BigDecimal(currentBestBorder[0].toString()));
+    if (valueComparison != 0) {
+      return findMin ? valueComparison < 0 : valueComparison > 0;
+    }
+    int partitionComparison = Integer.compare(
+        indexMap.get(currentBorder[1].toString()),
+        indexMap.get(currentBestBorder[1].toString()));
+    return findMin ? partitionComparison < 0 : partitionComparison > 0;
+  }
+
 
   private void columnWiseStatsMerger(
       final String queryText, final String catName, final String dbName,
