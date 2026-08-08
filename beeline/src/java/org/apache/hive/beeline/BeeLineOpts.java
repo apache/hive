@@ -217,7 +217,7 @@ public class BeeLineOpts implements Completer {
     }
   }
 
-  public void save(OutputStream out) throws IOException {
+  public void save(OutputStream out) {
     try {
       Properties props = toProperties();
       // don't save maxwidth: it is automatically set based on
