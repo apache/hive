@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.common.io;
 
 import java.io.FileNotFoundException;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +44,12 @@ public class CachingPrintStream extends SessionStream {
   @Override
   public void println(String out) {
     output.add(out);
-    super.println(out);
+    // Delegate to a wrapped PrintStream so downstream transforms (e.g. QTestFetchConverter) apply.
+    if (this.out instanceof PrintStream ps && ps != this) {
+      ps.println(out);
+    } else {
+      super.println(out);
+    }
   }
 
   @Override

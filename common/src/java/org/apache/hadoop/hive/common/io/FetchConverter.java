@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.common.io;
 
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 
 public abstract class FetchConverter extends SessionStream implements FetchCallback {
@@ -48,8 +49,14 @@ public abstract class FetchConverter extends SessionStream implements FetchCallb
     }
   }
 
-  protected final void printDirect(String out) {
-    super.println(out);
+  protected final void printDirect(String line) {
+    // Delegate to a wrapped PrintStream so downstream transforms (e.g. QTestFetchConverter) apply
+    // when this converter is stacked above them (sort/hash then mask).
+    if (this.out instanceof PrintStream ps && ps != this) {
+      ps.println(line);
+    } else {
+      super.println(line);
+    }
   }
 
   protected final boolean byPass() {

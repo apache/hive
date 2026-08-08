@@ -691,7 +691,7 @@ public class QTestUtil {
     ss.out = new QTestFetchConverter(ss.out, false, "UTF-8", line -> {
       notifyOutputLine(line);
       if (qOutProcessor != null) {
-        // ensure that the masking is done before the sorting of the query results
+        // Mask before sort/hash (HIVE-29226); folding runs in maskOutputFile().
         return qOutProcessor.processLine(line).get();
       }
       return line;
@@ -1014,7 +1014,8 @@ public class QTestUtil {
     String outFileName = outPath(outDir, tname + outFileExtension);
 
     File f = new File(logDir, tname + outFileExtension);
-    qOutProcessor.maskPatterns(f.getPath());
+
+    qOutProcessor.maskOutputFile(f.getPath());
 
     if (QTestSystemProperties.shouldOverwriteResults()) {
       qTestResultProcessor.overwriteResults(f.getPath(), outFileName);
