@@ -33,6 +33,7 @@ public enum TxnErrorMsg {
     ABORT_COMPACTION_TXN(50006, "compaction transaction abort"),
     ABORT_MSCK_TXN(50007, "msck transaction abort"),
     ABORT_MIGRATION_TXN(50008, "managed migration transaction abort"),
+    ABORT_DEADLOCK(50009, "deadlock detected"),
 
     // Replication related aborts - 51000 - 51099
     ABORT_DEFAULT_REPL_TXN(51000, "Replication:" +
