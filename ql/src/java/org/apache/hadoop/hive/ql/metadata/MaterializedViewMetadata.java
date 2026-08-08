@@ -61,8 +61,9 @@ public class MaterializedViewMetadata {
 
   private Set<String> toFullTableNames(Collection<SourceTable> sourceTables) {
     return unmodifiableSet(sourceTables.stream()
-            .map(sourceTable -> TableName.getDbTable(
-                    sourceTable.getTable().getDbName(), sourceTable.getTable().getTableName()))
+            .map(sourceTable -> TableName.getQualified(
+                    sourceTable.getTable().getCatName(), sourceTable.getTable().getDbName(),
+                sourceTable.getTable().getTableName()))
             .collect(Collectors.toSet()));
   }
 
@@ -96,8 +97,8 @@ public class MaterializedViewMetadata {
    */
   public MaterializationSnapshot getSnapshot() {
     if (creationMetadata.getValidTxnList() == null || creationMetadata.getValidTxnList().isEmpty()) {
-      LOG.debug("Could not obtain materialization snapshot of materialized view {}.{}",
-          creationMetadata.getDbName(), creationMetadata.getTblName());
+      LOG.debug("Could not obtain materialization snapshot of materialized view {}.{}.{}",
+          creationMetadata.getCatName(), creationMetadata.getDbName(), creationMetadata.getTblName());
       return null;
     }
     return MaterializationSnapshot.fromJson(creationMetadata.getValidTxnList());

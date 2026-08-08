@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore.txn;
 
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.FindNextCompactRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -317,6 +318,7 @@ class CompactionTxnHandler extends TxnHandler {
 
     MapSqlParameterSource parameterSource = new MapSqlParameterSource()
         .addValue("txnId", compactionTxnId)
+        .addValue("catName", ci.catName)
         .addValue("dbName", ci.dbname)
         .addValue("tableName", ci.tableName)
         .addValue("partName", ci.partName, Types.VARCHAR)
@@ -334,9 +336,9 @@ class CompactionTxnHandler extends TxnHandler {
          * a new write id (so as not to invalidate result set caches/materialized views) but
          * we need to set it to something to that markCleaned() only cleans TXN_COMPONENTS up to
          * the level to which aborted files/data has been cleaned.*/
-        "INSERT INTO \"TXN_COMPONENTS\"(\"TC_TXNID\", \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", " +
+        "INSERT INTO \"TXN_COMPONENTS\"(\"TC_TXNID\", \"TC_CATALOG\", \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", " +
             "\"TC_WRITEID\", \"TC_OPERATION_TYPE\") " +
-            "VALUES(:txnId, :dbName, :tableName, :partName, :highestWriteId, :operationType)",
+            "VALUES(:txnId, :catName, :dbName, :tableName, :partName, :highestWriteId, :operationType)",
         parameterSource,
         ParameterizedCommand.EXACTLY_ONE_ROW);
   }
@@ -450,11 +452,12 @@ class CompactionTxnHandler extends TxnHandler {
       try (TxnStore.MutexAPI.LockHandle ignored = getMutexAPI().acquireLock(MUTEX_KEY.CompactionScheduler.name())) {
         long id = new GenerateCompactionQueueIdFunction().execute(jdbcResource);
         int updCnt = jdbcResource.execute(
-            "INSERT INTO \"COMPACTION_QUEUE\" (\"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", " +
+            "INSERT INTO \"COMPACTION_QUEUE\" (\"CQ_ID\", \"CQ_CATALOG\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", " +
                 " \"CQ_TYPE\", \"CQ_STATE\", \"CQ_RETRY_RETENTION\", \"CQ_ERROR_MESSAGE\", \"CQ_COMMIT_TIME\") " +
-                " VALUES (:id, :db, :table, :partition, :type, :state, :retention, :msg, " + getEpochFn(dbProduct) + ")",
+                " VALUES (:id, :cat, :db, :table, :partition, :type, :state, :retention, :msg, " + getEpochFn(dbProduct) + ")",
             new MapSqlParameterSource()
                 .addValue("id", id)
+                .addValue("cat", info.catName)
                 .addValue("db", info.dbname)
                 .addValue("table", info.tableName)
                 .addValue("partition", info.partName, Types.VARCHAR)
@@ -466,7 +469,7 @@ class CompactionTxnHandler extends TxnHandler {
         if (updCnt == 0) {
           LOG.error("Unable to update/insert compaction queue record: {}. updCnt={}", info, updCnt);
           throw new MetaException("Unable to insert abort retry entry into COMPACTION QUEUE: " +
-              " CQ_DATABASE=" + info.dbname + ", CQ_TABLE=" + info.tableName + ", CQ_PARTITION" + info.partName);
+              " CQ_CATALOG=" + info.catName + ", CQ_DATABASE=" + info.dbname + ", CQ_TABLE=" + info.tableName + ", CQ_PARTITION" + info.partName);
         }
       } catch (Exception e) {
         throw new MetaException("Failed to set retry retention time for compaction item: " + info + " Error: " + e);
@@ -545,15 +548,29 @@ class CompactionTxnHandler extends TxnHandler {
   }
 
   @Override
+  @Deprecated
   public CompactionMetricsData getCompactionMetricsData(String dbName, String tblName, String partitionName,
       CompactionMetricsData.MetricType type) throws MetaException {
-    return jdbcResource.execute(new CompactionMetricsDataHandler(dbName, tblName, partitionName, type));
+    return getCompactionMetricsData(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName, partitionName, type);
   }
 
   @Override
+  public CompactionMetricsData getCompactionMetricsData(String catName, String dbName, String tblName, String partitionName,
+                                                        CompactionMetricsData.MetricType type) throws MetaException {
+    return jdbcResource.execute(new CompactionMetricsDataHandler(catName, dbName, tblName, partitionName, type));
+  }
+
+  @Override
+  @Deprecated
   public void removeCompactionMetricsData(String dbName, String tblName, String partitionName,
       CompactionMetricsData.MetricType type) throws MetaException {
-    jdbcResource.execute(new RemoveCompactionMetricsDataCommand(dbName, tblName, partitionName, type));
+    removeCompactionMetricsData(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName, partitionName, type);
+  }
+
+  @Override
+  public void removeCompactionMetricsData(String catName, String dbName, String tblName, String partitionName,
+                                          CompactionMetricsData.MetricType type) throws MetaException {
+    jdbcResource.execute(new RemoveCompactionMetricsDataCommand(catName, dbName, tblName, partitionName, type));
   }
 
 }

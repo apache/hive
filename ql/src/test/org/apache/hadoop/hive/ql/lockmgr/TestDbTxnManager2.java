@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
@@ -506,10 +507,10 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
     driver.run("insert into temp.T13p partition (ds='today', hour='1') values (7, 7)");
     driver.run("insert into temp.T13p partition (ds='tomorrow', hour='2') values (8, 8)");
     int count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\" " +
-        "where \"CTC_DATABASE\"='temp' and \"CTC_TABLE\" in ('t10', 't11')");
+        "where \"CTC_CATALOG\"='hive' and \"CTC_DATABASE\"='temp' and \"CTC_TABLE\" in ('t10', 't11')");
     Assert.assertEquals(4, count);
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\" " +
-        "where \"CTC_DATABASE\"='temp' and \"CTC_TABLE\" in ('t12p', 't13p')");
+        "where \"CTC_CATALOG\"='hive' and \"CTC_DATABASE\"='temp' and \"CTC_TABLE\" in ('t12p', 't13p')");
     Assert.assertEquals(5, count);
 
     // Fail some inserts, so that we have records in TXN_COMPONENTS
@@ -519,72 +520,72 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
     driver.run("insert into temp.T12p partition (ds='today', hour='1') values (11, 11)");
     driver.run("insert into temp.T13p partition (ds='today', hour='1') values (12, 12)");
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"TXN_COMPONENTS\" " +
-        "where \"TC_DATABASE\"='temp' and \"TC_TABLE\" in ('t10', 't11', 't12p', 't13p')");
+        "where \"TC_CATALOG\"='hive' AND \"TC_DATABASE\"='temp' and \"TC_TABLE\" in ('t10', 't11', 't12p', 't13p')");
     Assert.assertEquals(4, count);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_TEST_MODE_ROLLBACK_TXN, false);
 
     // Drop a table/partition; corresponding records in TXN_COMPONENTS and COMPLETED_TXN_COMPONENTS should disappear
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"TXN_COMPONENTS\" " +
-        "where \"TC_DATABASE\"='temp' and \"TC_TABLE\"='t10'");
+        "where \"TC_CATALOG\"='hive' AND \"TC_DATABASE\"='temp' and \"TC_TABLE\"='t10'");
     Assert.assertEquals(1, count);
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\" " +
-        "where \"CTC_DATABASE\"='temp' and \"CTC_TABLE\"='t10'");
+        "where \"CTC_CATALOG\"='hive' and \"CTC_DATABASE\"='temp' and \"CTC_TABLE\"='t10'");
     Assert.assertEquals(2, count);
     driver.run("drop table temp.T10");
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"TXN_COMPONENTS\" " +
-        "where \"TC_DATABASE\"='temp' and \"TC_TABLE\"='t10'");
+        "where \"TC_CATALOG\"='hive' and \"TC_DATABASE\"='temp' and \"TC_TABLE\"='t10'");
     Assert.assertEquals(0, count);
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\" " +
-        "where \"CTC_DATABASE\"='temp' and \"CTC_TABLE\"='t10'");
+        "where \"CTC_CATALOG\"='hive' and \"CTC_DATABASE\"='temp' and \"CTC_TABLE\"='t10'");
     Assert.assertEquals(0, count);
 
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"TXN_COMPONENTS\" " +
-        "where \"TC_DATABASE\"='temp' and \"TC_TABLE\"='t12p' and \"TC_PARTITION\"='ds=today/hour=1'");
+        "where \"TC_CATALOG\"='hive' and \"TC_DATABASE\"='temp' and \"TC_TABLE\"='t12p' and \"TC_PARTITION\"='ds=today/hour=1'");
     Assert.assertEquals(1, count);
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\" " +
-        "where \"CTC_DATABASE\"='temp' and \"CTC_TABLE\"='t12p' and \"CTC_PARTITION\"='ds=today/hour=1'");
+        "where \"CTC_CATALOG\"='hive' and \"CTC_DATABASE\"='temp' and \"CTC_TABLE\"='t12p' and \"CTC_PARTITION\"='ds=today/hour=1'");
     Assert.assertEquals(1, count);
     driver.run("alter table temp.T12p drop partition (ds='today', hour='1')");
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"TXN_COMPONENTS\" " +
-        "where \"TC_DATABASE\"='temp' and \"TC_TABLE\"='t12p' and \"TC_PARTITION\"='ds=today/hour=1'");
+        "where \"TC_CATALOG\"='hive' and \"TC_DATABASE\"='temp' and \"TC_TABLE\"='t12p' and \"TC_PARTITION\"='ds=today/hour=1'");
     Assert.assertEquals(0, count);
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\" " +
-        "where \"CTC_DATABASE\"='temp' and \"CTC_TABLE\"='t12p' and \"CTC_PARTITION\"='ds=today/hour=1'");
+        "where \"CTC_CATALOG\"='hive' and \"CTC_DATABASE\"='temp' and \"CTC_TABLE\"='t12p' and \"CTC_PARTITION\"='ds=today/hour=1'");
     Assert.assertEquals(0, count);
 
     // Successfully perform compaction on a table/partition, so that we have successful records in COMPLETED_COMPACTIONS
     driver.run("alter table temp.T11 compact 'minor'");
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPACTION_QUEUE\" " +
-        "where \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t11' and \"CQ_STATE\"='i' and \"CQ_TYPE\"='i'");
+        "where \"CQ_CATALOG\" = '" + Warehouse.DEFAULT_CATALOG_NAME + "' and \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t11' and \"CQ_STATE\"='i' and \"CQ_TYPE\"='i'");
     Assert.assertEquals(1, count);
     runWorker(conf);
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPACTION_QUEUE\" " +
-        "where \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t11' and \"CQ_STATE\"='r' and \"CQ_TYPE\"='i'");
+        "where \"CQ_CATALOG\" = '" + Warehouse.DEFAULT_CATALOG_NAME + "' and \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t11' and \"CQ_STATE\"='r' and \"CQ_TYPE\"='i'");
     Assert.assertEquals(1, count);
     runCleaner(conf);
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPACTION_QUEUE\" " +
-        "where \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t11'");
+        "where \"CQ_CATALOG\" = '" + Warehouse.DEFAULT_CATALOG_NAME + "' and \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t11'");
     Assert.assertEquals(0, count);
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_COMPACTIONS\" " +
-        "where \"CC_DATABASE\"='temp' and \"CC_TABLE\"='t11' and \"CC_STATE\"='s' and \"CC_TYPE\"='i'");
+        "where \"CC_CATALOG\"='hive' and \"CC_DATABASE\"='temp' and \"CC_TABLE\"='t11' and \"CC_STATE\"='s' and \"CC_TYPE\"='i'");
     Assert.assertEquals(1, count);
 
     driver.run("alter table temp.T12p partition (ds='tomorrow', hour='2') compact 'minor'");
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPACTION_QUEUE\" " +
-        "where \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t12p' and \"CQ_PARTITION\"='ds=tomorrow/hour=2' " +
+        "where \"CQ_CATALOG\" = '" + Warehouse.DEFAULT_CATALOG_NAME + "' and \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t12p' and \"CQ_PARTITION\"='ds=tomorrow/hour=2' " +
         "and \"CQ_STATE\"='i' and \"CQ_TYPE\"='i'");
     Assert.assertEquals(1, count);
     runWorker(conf);
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPACTION_QUEUE\" " +
-        "where \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t12p' and \"CQ_PARTITION\"='ds=tomorrow/hour=2' " +
+        "where \"CQ_CATALOG\" = '" + Warehouse.DEFAULT_CATALOG_NAME + "' and \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t12p' and \"CQ_PARTITION\"='ds=tomorrow/hour=2' " +
         "and \"CQ_STATE\"='r' and \"CQ_TYPE\"='i'");
     Assert.assertEquals(1, count);
     runCleaner(conf);
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPACTION_QUEUE\" " +
-        "where \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t12p'");
+        "where \"CQ_CATALOG\" = '" + Warehouse.DEFAULT_CATALOG_NAME + "' and \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t12p'");
     Assert.assertEquals(0, count);
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_COMPACTIONS\" " +
-        "where \"CC_DATABASE\"='temp' and \"CC_TABLE\"='t12p' and \"CC_STATE\"='s' and \"CC_TYPE\"='i'");
+        "where \"CC_CATALOG\"='hive' and \"CC_DATABASE\"='temp' and \"CC_TABLE\"='t12p' and \"CC_STATE\"='s' and \"CC_TYPE\"='i'");
     Assert.assertEquals(1, count);
 
     // Fail compaction, so that we have failed records in COMPLETED_COMPACTIONS.
@@ -594,90 +595,90 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
     conf.setBoolVar(HiveConf.ConfVars.HIVE_TEST_MODE_FAIL_COMPACTION, true);
     driver.run("alter table temp.T11 compact 'major'");
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPACTION_QUEUE\" " +
-        "where \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t11' and \"CQ_STATE\"='i' and \"CQ_TYPE\"='a'");
+        "where \"CQ_CATALOG\" = '" + Warehouse.DEFAULT_CATALOG_NAME + "' and \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t11' and \"CQ_STATE\"='i' and \"CQ_TYPE\"='a'");
     Assert.assertEquals(1, count);
     runWorker(conf); // will fail
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPACTION_QUEUE\" " +
-        "where \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t11' and \"CQ_STATE\"='i' and \"CQ_TYPE\"='a'");
+        "where \"CQ_CATALOG\" = '" + Warehouse.DEFAULT_CATALOG_NAME + "' and \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t11' and \"CQ_STATE\"='i' and \"CQ_TYPE\"='a'");
     Assert.assertEquals(0, count);
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_COMPACTIONS\" " +
-        "where \"CC_DATABASE\"='temp' and \"CC_TABLE\"='t11' and \"CC_STATE\"='f' and \"CC_TYPE\"='a'");
+        "where \"CC_CATALOG\"='hive' and \"CC_DATABASE\"='temp' and \"CC_TABLE\"='t11' and \"CC_STATE\"='f' and \"CC_TYPE\"='a'");
     Assert.assertEquals(1, count);
 
     driver.run("alter table temp.T12p partition (ds='tomorrow', hour='2') compact 'major'");
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPACTION_QUEUE\" " +
-        "where \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t12p' and \"CQ_PARTITION\"='ds=tomorrow/hour=2' " +
+        "where \"CQ_CATALOG\" = '" + Warehouse.DEFAULT_CATALOG_NAME + "' and \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t12p' and \"CQ_PARTITION\"='ds=tomorrow/hour=2' " +
         "and \"CQ_STATE\"='i' and \"CQ_TYPE\"='a'");
     Assert.assertEquals(1, count);
     runWorker(conf); // will fail
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPACTION_QUEUE\" " +
-        "where \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t12p' and \"CQ_PARTITION\"='ds=tomorrow/hour=2' " +
+        "where \"CQ_CATALOG\" = '" + Warehouse.DEFAULT_CATALOG_NAME + "' and \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t12p' and \"CQ_PARTITION\"='ds=tomorrow/hour=2' " +
         "and \"CQ_STATE\"='i' and \"CQ_TYPE\"='a'");
     Assert.assertEquals(0, count);
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_COMPACTIONS\" " +
-        "where \"CC_DATABASE\"='temp' and \"CC_TABLE\"='t12p' and \"CC_STATE\"='f' and \"CC_TYPE\"='a'");
+        "where \"CC_CATALOG\"='hive' and \"CC_DATABASE\"='temp' and \"CC_TABLE\"='t12p' and \"CC_STATE\"='f' and \"CC_TYPE\"='a'");
     Assert.assertEquals(1, count);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_TEST_MODE_FAIL_COMPACTION, false);
 
     // Put 2 records into COMPACTION_QUEUE and do nothing
     driver.run("alter table temp.T11 compact 'major'");
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPACTION_QUEUE\" " +
-        "where \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t11' and \"CQ_STATE\"='i' and \"CQ_TYPE\"='a'");
+        "where \"CQ_CATALOG\" = '" + Warehouse.DEFAULT_CATALOG_NAME + "' and \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t11' and \"CQ_STATE\"='i' and \"CQ_TYPE\"='a'");
     Assert.assertEquals(1, count);
     driver.run("alter table temp.T12p partition (ds='tomorrow', hour='2') compact 'major'");
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPACTION_QUEUE\" " +
-        "where \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t12p' and \"CQ_PARTITION\"='ds=tomorrow/hour=2' " +
+        "where \"CQ_CATALOG\" = '" + Warehouse.DEFAULT_CATALOG_NAME + "' and \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t12p' and \"CQ_PARTITION\"='ds=tomorrow/hour=2' " +
         "and \"CQ_STATE\"='i' and \"CQ_TYPE\"='a'");
     Assert.assertEquals(1, count);
 
     // Drop a table/partition, corresponding records in COMPACTION_QUEUE and COMPLETED_COMPACTIONS should disappear
     driver.run("drop table temp.T11");
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPACTION_QUEUE\" " +
-        "where \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t11'");
+        "where \"CQ_CATALOG\" = '" + Warehouse.DEFAULT_CATALOG_NAME + "' and \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t11'");
     Assert.assertEquals(0, count);
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_COMPACTIONS\" " +
-        "where \"CC_DATABASE\"='temp' and \"CC_TABLE\"='t11'");
+        "where \"CC_CATALOG\"='hive' and \"CC_DATABASE\"='temp' and \"CC_TABLE\"='t11'");
     Assert.assertEquals(0, count);
 
     driver.run("alter table temp.T12p drop partition (ds='tomorrow', hour='2')");
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPACTION_QUEUE\" " +
-        "where \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t12p'");
+        "where \"CQ_CATALOG\" = '" + Warehouse.DEFAULT_CATALOG_NAME + "' and \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t12p'");
     Assert.assertEquals(0, count);
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_COMPACTIONS\" " +
-        "where \"CC_DATABASE\"='temp' and \"CC_TABLE\"='t12p'");
+        "where \"CC_CATALOG\"='hive' and \"CC_DATABASE\"='temp' and \"CC_TABLE\"='t12p'");
     Assert.assertEquals(0, count);
 
     // Put 1 record into COMPACTION_QUEUE and do nothing
     driver.run("alter table temp.T13p partition (ds='today', hour='1') compact 'major'");
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPACTION_QUEUE\" " +
-        "where \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t13p' and \"CQ_STATE\"='i' and \"CQ_TYPE\"='a'");
+        "where \"CQ_CATALOG\" = '" + Warehouse.DEFAULT_CATALOG_NAME + "' and \"CQ_DATABASE\"='temp' and \"CQ_TABLE\"='t13p' and \"CQ_STATE\"='i' and \"CQ_TYPE\"='a'");
     Assert.assertEquals(1, count);
 
     // Drop database, everything in all 4 meta tables should disappear
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"TXN_COMPONENTS\" " +
-        "where \"TC_DATABASE\"='temp' and \"TC_TABLE\" in ('t10', 't11', 't12p', 't13p')");
+        "where \"TC_CATALOG\"='hive' and \"TC_DATABASE\"='temp' and \"TC_TABLE\" in ('t10', 't11', 't12p', 't13p')");
     Assert.assertEquals(1, count);
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\" " +
-        "where \"CTC_DATABASE\"='temp' and \"CTC_TABLE\" in ('t10', 't11', 't12p', 't13p')");
+        "where \"CTC_CATALOG\"='hive' and \"CTC_DATABASE\"='temp' and \"CTC_TABLE\" in ('t10', 't11', 't12p', 't13p')");
     Assert.assertEquals(2, count);
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPACTION_QUEUE\" " +
-        "where \"CQ_DATABASE\"='temp' and \"CQ_TABLE\" in ('t10', 't11', 't12p', 't13p')");
+        "where \"CQ_CATALOG\" = '" + Warehouse.DEFAULT_CATALOG_NAME + "' and \"CQ_DATABASE\"='temp' and \"CQ_TABLE\" in ('t10', 't11', 't12p', 't13p')");
     Assert.assertEquals(1, count);
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_COMPACTIONS\" " +
-        "where \"CC_DATABASE\"='temp' and \"CC_TABLE\" in ('t10', 't11', 't12p', 't13p')");
+        "where \"CC_CATALOG\"='hive' and \"CC_DATABASE\"='temp' and \"CC_TABLE\" in ('t10', 't11', 't12p', 't13p')");
     Assert.assertEquals(0, count);
     driver.run("drop database if exists temp cascade");
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"TXN_COMPONENTS\" " +
-        "where \"TC_DATABASE\"='temp' and \"TC_TABLE\" in ('t10', 't11', 't12p', 't13p')");
+        "where \"TC_CATALOG\"='hive' and \"TC_DATABASE\"='temp' and \"TC_TABLE\" in ('t10', 't11', 't12p', 't13p')");
     Assert.assertEquals(0, count);
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\" " +
-        "where \"CTC_DATABASE\"='temp' and \"CTC_TABLE\" in ('t10', 't11', 't12p', 't13p')");
+        "where \"CTC_CATALOG\"='hive' and \"CTC_DATABASE\"='temp' and \"CTC_TABLE\" in ('t10', 't11', 't12p', 't13p')");
     Assert.assertEquals(0, count);
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPACTION_QUEUE\" " +
-        "where \"CQ_DATABASE\"='temp' and \"CQ_TABLE\" in ('t10', 't11', 't12p', 't13p')");
+        "where \"CQ_CATALOG\" = '" + Warehouse.DEFAULT_CATALOG_NAME + "' and \"CQ_DATABASE\"='temp' and \"CQ_TABLE\" in ('t10', 't11', 't12p', 't13p')");
     Assert.assertEquals(0, count);
     count = TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_COMPACTIONS\" " +
-        "where \"CC_DATABASE\"='temp' and \"CC_TABLE\" in ('t10', 't11', 't12p', 't13p')");
+        "where \"CC_CATALOG\"='hive' and \"CC_DATABASE\"='temp' and \"CC_TABLE\" in ('t10', 't11', 't12p', 't13p')");
     Assert.assertEquals(0, count);
   }
 
@@ -1105,6 +1106,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
     long writeId = txnMgr.getTableWriteId("default", "TAB_PART");
     AddDynamicPartitions adp = new AddDynamicPartitions(txnId, writeId, "default", "TAB_PART",
       Collections.singletonList("p=blah"));
+    adp.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     adp.setOperationType(DataOperationType.UPDATE);
     txnHandler.addDynamicPartitions(adp);
     txnMgr.commitTxn();
@@ -1163,12 +1165,14 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
     Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"WRITE_SET\""));
 
     AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest("default", "tab2");
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setTxnIds(Collections.singletonList(txnMgr2.getCurrentTxnId()));
     AllocateTableWriteIdsResponse writeIds = txnHandler.allocateTableWriteIds(rqst);
     Assert.assertEquals(txnMgr2.getCurrentTxnId(), writeIds.getTxnToWriteIds().get(0).getTxnId());
 
     AddDynamicPartitions adp = new AddDynamicPartitions(txnMgr2.getCurrentTxnId(), writeIds.getTxnToWriteIds().get(0).getWriteId(),
         "default", "tab2", Collections.EMPTY_LIST);
+    adp.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     adp.setOperationType(DataOperationType.UPDATE);
     txnHandler.addDynamicPartitions(adp);
     txnMgr2.commitTxn();
@@ -1186,12 +1190,14 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
     Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"WRITE_SET\""));
 
     rqst = new AllocateTableWriteIdsRequest("default", "tab2");
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setTxnIds(Collections.singletonList(txnMgr2.getCurrentTxnId()));
     writeIds = txnHandler.allocateTableWriteIds(rqst);
     Assert.assertEquals(txnMgr2.getCurrentTxnId(), writeIds.getTxnToWriteIds().get(0).getTxnId());
 
     adp = new AddDynamicPartitions(txnMgr2.getCurrentTxnId(), writeIds.getTxnToWriteIds().get(0).getWriteId(),
         "default", "tab2", Collections.singletonList("p=two"));
+    adp.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     adp.setOperationType(DataOperationType.UPDATE);
     txnHandler.addDynamicPartitions(adp); //simulate partition update
     txnMgr2.commitTxn();
@@ -1207,6 +1213,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
     txnMgr.acquireLocks(driver.getPlan(), ctx, "Long Running");
 
     rqst = new AllocateTableWriteIdsRequest("default", "tab2");
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setTxnIds(Collections.singletonList(txnMgr.getCurrentTxnId()));
     writeIds = txnHandler.allocateTableWriteIds(rqst);
     Assert.assertEquals(txnMgr.getCurrentTxnId(), writeIds.getTxnToWriteIds().get(0).getTxnId());
@@ -1214,6 +1221,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
     //so generate empty Dyn Part call
     adp = new AddDynamicPartitions(txnMgr.getCurrentTxnId(), writeIds.getTxnToWriteIds().get(0).getWriteId(),
         "default", "tab2", Collections.EMPTY_LIST);
+    adp.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     adp.setOperationType(DataOperationType.UPDATE);
     txnHandler.addDynamicPartitions(adp);
     txnMgr.commitTxn();
@@ -1262,12 +1270,14 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
     txnMgr.rollbackTxn();
 
     AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest("default", "TAB_PART");
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setTxnIds(Collections.singletonList(txnId));
     AllocateTableWriteIdsResponse writeIds = txnHandler.allocateTableWriteIds(rqst);
     Assert.assertEquals(txnId, writeIds.getTxnToWriteIds().get(0).getTxnId());
 
     AddDynamicPartitions adp = new AddDynamicPartitions(txnId, writeIds.getTxnToWriteIds().get(0).getWriteId(),
         "default", "TAB_PART", Collections.singletonList("p=blah"));
+    adp.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     adp.setOperationType(DataOperationType.UPDATE);
     txnHandler.addDynamicPartitions(adp);
     Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"WRITE_SET\""));
@@ -1349,6 +1359,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
     long writeId = txnMgr2.getTableWriteId("default", "tab2");
     AddDynamicPartitions adp = new AddDynamicPartitions(txnMgr2.getCurrentTxnId(), writeId, "default", "tab2",
         Collections.singletonList("p=two"));
+    adp.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     adp.setOperationType(DataOperationType.UPDATE);
     txnHandler.addDynamicPartitions(adp);
     txnMgr2.commitTxn(); //txnid:idTxnUpdate1
@@ -1359,6 +1370,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
     writeId = txnMgr.getTableWriteId("default", "tab2");
     adp = new AddDynamicPartitions(txnMgr.getCurrentTxnId(), writeId, "default", "tab2",
         Collections.singletonList("p=one"));
+    adp.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     adp.setOperationType(DataOperationType.UPDATE);
     txnHandler.addDynamicPartitions(adp);
     txnMgr.commitTxn(); //txnid:idTxnUpdate2
@@ -1407,6 +1419,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
     writeId = txnMgr2.getTableWriteId("default", "tab1");
     adp = new AddDynamicPartitions(txnMgr2.getCurrentTxnId(), writeId, "default", "tab1",
         Collections.singletonList("p=one"));
+    adp.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     adp.setOperationType(DataOperationType.UPDATE);
     txnHandler.addDynamicPartitions(adp);
     txnMgr2.commitTxn(); //txnid:idTxnUpdate3
@@ -1419,6 +1432,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
     writeId = txnMgr.getTableWriteId("default", "tab1");
     adp = new AddDynamicPartitions(txnMgr.getCurrentTxnId(), writeId, "default", "tab1",
         Collections.singletonList("p=two"));
+    adp.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     adp.setOperationType(DataOperationType.UPDATE);
     txnHandler.addDynamicPartitions(adp);
     txnMgr.commitTxn(); //txnid:idTxnUpdate4
@@ -1470,6 +1484,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
     long writeId = txnMgr2.getTableWriteId("default", "tab1");
     AddDynamicPartitions adp = new AddDynamicPartitions(txnMgr2.getCurrentTxnId(), writeId, "default", "tab1",
         Collections.singletonList("p=one"));
+    adp.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     adp.setOperationType(DataOperationType.UPDATE);
     txnHandler.addDynamicPartitions(adp);
     txnMgr2.commitTxn(); //txnid:idTxnUpdate1
@@ -1481,6 +1496,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
     writeId = txnMgr.getTableWriteId("default", "tab1");
     adp = new AddDynamicPartitions(txnMgr.getCurrentTxnId(), writeId, "default", "tab1",
         Collections.singletonList("p=two"));
+    adp.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     adp.setOperationType(DataOperationType.UPDATE);
     txnHandler.addDynamicPartitions(adp);
     txnMgr.commitTxn(); //txnid:idTxnUpdate2
@@ -1533,6 +1549,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
     long writeId = txnMgr2.getTableWriteId("default", "tab1");
     AddDynamicPartitions adp = new AddDynamicPartitions(txnMgr2.getCurrentTxnId(), writeId, "default", "tab1",
         Collections.singletonList("p=one"));
+    adp.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     adp.setOperationType(DataOperationType.UPDATE);
     txnHandler.addDynamicPartitions(adp);
     txnMgr2.commitTxn(); //txnid:idTxnUpdate1

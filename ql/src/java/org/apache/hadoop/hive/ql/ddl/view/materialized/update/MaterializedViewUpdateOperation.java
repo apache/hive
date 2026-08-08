@@ -55,7 +55,7 @@ public class MaterializedViewUpdateOperation extends DDLOperation<MaterializedVi
         Table mvTable = context.getDb().getTable(desc.getName());
         MaterializedViewMetadata newMetadata = mvTable.getMVMetadata().reset(
                 getSnapshotOf(context, mvTable.getMVMetadata().getSourceTableNames()));
-        context.getDb().updateCreationMetadata(mvTable.getDbName(), mvTable.getTableName(), newMetadata);
+        context.getDb().updateCreationMetadata(mvTable.getCatName(), mvTable.getDbName(), mvTable.getTableName(), newMetadata);
         mvTable.setMaterializedViewMetadata(newMetadata);
         HiveMaterializedViewsRegistry.get().refreshMaterializedView(context.getDb().getConf(), mvTable);
       }

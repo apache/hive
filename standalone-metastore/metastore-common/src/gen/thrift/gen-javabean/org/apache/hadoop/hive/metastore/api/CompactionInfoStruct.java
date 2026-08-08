@@ -30,6 +30,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField POOLNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("poolname", org.apache.thrift.protocol.TType.STRING, (short)17);
   private static final org.apache.thrift.protocol.TField NUMBER_OF_BUCKETS_FIELD_DESC = new org.apache.thrift.protocol.TField("numberOfBuckets", org.apache.thrift.protocol.TType.I32, (short)18);
   private static final org.apache.thrift.protocol.TField ORDER_BY_CLAUSE_FIELD_DESC = new org.apache.thrift.protocol.TField("orderByClause", org.apache.thrift.protocol.TType.STRING, (short)19);
+  private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)20);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new CompactionInfoStructStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new CompactionInfoStructTupleSchemeFactory();
@@ -53,6 +54,7 @@ package org.apache.hadoop.hive.metastore.api;
   private @org.apache.thrift.annotation.Nullable java.lang.String poolname; // optional
   private int numberOfBuckets; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String orderByClause; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String catName; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -78,7 +80,8 @@ package org.apache.hadoop.hive.metastore.api;
     RETRY_RETENTION((short)16, "retryRetention"),
     POOLNAME((short)17, "poolname"),
     NUMBER_OF_BUCKETS((short)18, "numberOfBuckets"),
-    ORDER_BY_CLAUSE((short)19, "orderByClause");
+    ORDER_BY_CLAUSE((short)19, "orderByClause"),
+    CAT_NAME((short)20, "catName");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -132,6 +135,8 @@ package org.apache.hadoop.hive.metastore.api;
           return NUMBER_OF_BUCKETS;
         case 19: // ORDER_BY_CLAUSE
           return ORDER_BY_CLAUSE;
+        case 20: // CAT_NAME
+          return CAT_NAME;
         default:
           return null;
       }
@@ -182,7 +187,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final int __RETRYRETENTION_ISSET_ID = 6;
   private static final int __NUMBEROFBUCKETS_ISSET_ID = 7;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.PARTITIONNAME,_Fields.RUNAS,_Fields.PROPERTIES,_Fields.TOOMANYABORTS,_Fields.STATE,_Fields.WORKER_ID,_Fields.START,_Fields.HIGHEST_WRITE_ID,_Fields.ERROR_MESSAGE,_Fields.HASOLDABORT,_Fields.ENQUEUE_TIME,_Fields.RETRY_RETENTION,_Fields.POOLNAME,_Fields.NUMBER_OF_BUCKETS,_Fields.ORDER_BY_CLAUSE};
+  private static final _Fields optionals[] = {_Fields.PARTITIONNAME,_Fields.RUNAS,_Fields.PROPERTIES,_Fields.TOOMANYABORTS,_Fields.STATE,_Fields.WORKER_ID,_Fields.START,_Fields.HIGHEST_WRITE_ID,_Fields.ERROR_MESSAGE,_Fields.HASOLDABORT,_Fields.ENQUEUE_TIME,_Fields.RETRY_RETENTION,_Fields.POOLNAME,_Fields.NUMBER_OF_BUCKETS,_Fields.ORDER_BY_CLAUSE,_Fields.CAT_NAME};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -224,11 +229,15 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     tmpMap.put(_Fields.ORDER_BY_CLAUSE, new org.apache.thrift.meta_data.FieldMetaData("orderByClause", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(CompactionInfoStruct.class, metaDataMap);
   }
 
   public CompactionInfoStruct() {
+    this.catName = "hive";
+
   }
 
   public CompactionInfoStruct(
@@ -291,6 +300,9 @@ package org.apache.hadoop.hive.metastore.api;
     if (other.isSetOrderByClause()) {
       this.orderByClause = other.orderByClause;
     }
+    if (other.isSetCatName()) {
+      this.catName = other.catName;
+    }
   }
 
   public CompactionInfoStruct deepCopy() {
@@ -326,6 +338,8 @@ package org.apache.hadoop.hive.metastore.api;
     setNumberOfBucketsIsSet(false);
     this.numberOfBuckets = 0;
     this.orderByClause = null;
+    this.catName = "hive";
+
   }
 
   public long getId() {
@@ -776,6 +790,30 @@ package org.apache.hadoop.hive.metastore.api;
     }
   }
 
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getCatName() {
+    return this.catName;
+  }
+
+  public void setCatName(@org.apache.thrift.annotation.Nullable java.lang.String catName) {
+    this.catName = catName;
+  }
+
+  public void unsetCatName() {
+    this.catName = null;
+  }
+
+  /** Returns true if field catName is set (has been assigned a value) and false otherwise */
+  public boolean isSetCatName() {
+    return this.catName != null;
+  }
+
+  public void setCatNameIsSet(boolean value) {
+    if (!value) {
+      this.catName = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case ID:
@@ -930,6 +968,14 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case CAT_NAME:
+      if (value == null) {
+        unsetCatName();
+      } else {
+        setCatName((java.lang.String)value);
+      }
+      break;
+
     }
   }
 
@@ -993,6 +1039,9 @@ package org.apache.hadoop.hive.metastore.api;
     case ORDER_BY_CLAUSE:
       return getOrderByClause();
 
+    case CAT_NAME:
+      return getCatName();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -1042,6 +1091,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetNumberOfBuckets();
     case ORDER_BY_CLAUSE:
       return isSetOrderByClause();
+    case CAT_NAME:
+      return isSetCatName();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -1230,6 +1281,15 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_catName = true && this.isSetCatName();
+    boolean that_present_catName = true && that.isSetCatName();
+    if (this_present_catName || that_present_catName) {
+      if (!(this_present_catName && that_present_catName))
+        return false;
+      if (!this.catName.equals(that.catName))
+        return false;
+    }
+
     return true;
   }
 
@@ -1310,6 +1370,10 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetOrderByClause()) ? 131071 : 524287);
     if (isSetOrderByClause())
       hashCode = hashCode * 8191 + orderByClause.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetCatName()) ? 131071 : 524287);
+    if (isSetCatName())
+      hashCode = hashCode * 8191 + catName.hashCode();
 
     return hashCode;
   }
@@ -1512,6 +1576,16 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetCatName(), other.isSetCatName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCatName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1679,6 +1753,16 @@ package org.apache.hadoop.hive.metastore.api;
         sb.append("null");
       } else {
         sb.append(this.orderByClause);
+      }
+      first = false;
+    }
+    if (isSetCatName()) {
+      if (!first) sb.append(", ");
+      sb.append("catName:");
+      if (this.catName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.catName);
       }
       first = false;
     }
@@ -1895,6 +1979,14 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 20: // CAT_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.catName = iprot.readString();
+              struct.setCatNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -2017,6 +2109,13 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.catName != null) {
+        if (struct.isSetCatName()) {
+          oprot.writeFieldBegin(CAT_NAME_FIELD_DESC);
+          oprot.writeString(struct.catName);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -2084,7 +2183,10 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetOrderByClause()) {
         optionals.set(14);
       }
-      oprot.writeBitSet(optionals, 15);
+      if (struct.isSetCatName()) {
+        optionals.set(15);
+      }
+      oprot.writeBitSet(optionals, 16);
       if (struct.isSetPartitionname()) {
         oprot.writeString(struct.partitionname);
       }
@@ -2130,6 +2232,9 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetOrderByClause()) {
         oprot.writeString(struct.orderByClause);
       }
+      if (struct.isSetCatName()) {
+        oprot.writeString(struct.catName);
+      }
     }
 
     @Override
@@ -2143,7 +2248,7 @@ package org.apache.hadoop.hive.metastore.api;
       struct.setTablenameIsSet(true);
       struct.type = org.apache.hadoop.hive.metastore.api.CompactionType.findByValue(iprot.readI32());
       struct.setTypeIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(15);
+      java.util.BitSet incoming = iprot.readBitSet(16);
       if (incoming.get(0)) {
         struct.partitionname = iprot.readString();
         struct.setPartitionnameIsSet(true);
@@ -2203,6 +2308,10 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(14)) {
         struct.orderByClause = iprot.readString();
         struct.setOrderByClauseIsSet(true);
+      }
+      if (incoming.get(15)) {
+        struct.catName = iprot.readString();
+        struct.setCatNameIsSet(true);
       }
     }
   }

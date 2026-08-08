@@ -66,7 +66,7 @@ public class NextCompactionFunction implements TransactionalFunction<CompactionI
   @Override
   public CompactionInfo execute(MultiDataSourceJdbcResource jdbcResource) throws MetaException {
     StringBuilder sb = new StringBuilder();
-    sb.append("SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", " +
+    sb.append("SELECT \"CQ_ID\", \"CQ_CATALOG\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", " +
         "\"CQ_TYPE\", \"CQ_WORKER_ID\", \"CQ_WORKER_VERSION\", \"CQ_POOL_NAME\", \"CQ_NUMBER_OF_BUCKETS\", \"CQ_ORDER_BY\", " +
         "\"CQ_TBLPROPERTIES\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_STATE\" = :state AND ");
     boolean hasPoolName = StringUtils.isNotBlank(request.getPoolName());
@@ -91,6 +91,7 @@ public class NextCompactionFunction implements TransactionalFunction<CompactionI
         while (rs.next()) {
           CompactionInfo info = new CompactionInfo();
           info.id = rs.getLong("CQ_ID");
+          info.catName = rs.getString("CQ_CATALOG");
           info.dbname = rs.getString("CQ_DATABASE");
           info.tableName = rs.getString("CQ_TABLE");
           info.partName = rs.getString("CQ_PARTITION");

@@ -39,12 +39,13 @@ public class GetMaxAllocatedTableWriteIdHandler implements QueryHandler<MaxAlloc
 
   @Override
   public String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
-    return "SELECT \"NWI_NEXT\" FROM \"NEXT_WRITE_ID\" WHERE \"NWI_DATABASE\" = :dbName AND \"NWI_TABLE\" = :tableName";
+    return "SELECT \"NWI_NEXT\" FROM \"NEXT_WRITE_ID\" WHERE \"NWI_CATALOG\" = :catName AND \"NWI_DATABASE\" = :dbName AND \"NWI_TABLE\" = :tableName";
   }
 
   @Override
   public SqlParameterSource getQueryParameters() {
     return new MapSqlParameterSource()
+        .addValue("catName", rqst.getCatName())
         .addValue("dbName", rqst.getDbName())
         .addValue("tableName", rqst.getTableName());
   }

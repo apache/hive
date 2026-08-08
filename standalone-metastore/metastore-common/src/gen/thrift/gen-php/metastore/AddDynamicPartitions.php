@@ -56,6 +56,11 @@ class AddDynamicPartitions
             'type' => TType::I32,
             'class' => '\metastore\DataOperationType',
         ),
+        7 => array(
+            'var' => 'catName',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -82,6 +87,10 @@ class AddDynamicPartitions
      * @var int
      */
     public $operationType =     5;
+    /**
+     * @var string
+     */
+    public $catName = "hive";
 
     public function __construct($vals = null)
     {
@@ -103,6 +112,9 @@ class AddDynamicPartitions
             }
             if (isset($vals['operationType'])) {
                 $this->operationType = $vals['operationType'];
+            }
+            if (isset($vals['catName'])) {
+                $this->catName = $vals['catName'];
             }
         }
     }
@@ -177,6 +189,13 @@ class AddDynamicPartitions
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 7:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->catName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -226,6 +245,11 @@ class AddDynamicPartitions
         if ($this->operationType !== null) {
             $xfer += $output->writeFieldBegin('operationType', TType::I32, 6);
             $xfer += $output->writeI32($this->operationType);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->catName !== null) {
+            $xfer += $output->writeFieldBegin('catName', TType::STRING, 7);
+            $xfer += $output->writeString($this->catName);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

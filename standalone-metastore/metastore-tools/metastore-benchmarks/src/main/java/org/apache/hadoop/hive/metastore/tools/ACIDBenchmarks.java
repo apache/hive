@@ -187,6 +187,7 @@ public class ACIDBenchmarks {
 
   @State(Scope.Benchmark)
   public static class TestAllocateTableWriteIds extends CoreContext {
+    String catName = Warehouse.DEFAULT_CATALOG_NAME;
     String dbName = "test_db";
     String tblName = "tmp_table";
 
@@ -214,7 +215,7 @@ public class ACIDBenchmarks {
 
     @Benchmark
     public void allocateTableWriteIds(TestAllocateTableWriteIds.ThreadState state) throws TException {
-      state.client.allocateTableWriteIds(dbName, tblName, state.openTxns);
+      state.client.allocateTableWriteIds(catName, dbName, tblName, state.openTxns);
     }
 
     private static long executeOpenTxnAndGetTxnId(HMSClient client) {

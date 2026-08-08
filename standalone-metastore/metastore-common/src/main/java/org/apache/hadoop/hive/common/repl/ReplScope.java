@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
  * tables included under the scope of replication.
  */
 public class ReplScope implements Serializable {
+  private String catName;
   private String dbName;
   private Pattern dbNamePattern;
 
@@ -38,8 +39,17 @@ public class ReplScope implements Serializable {
   public ReplScope() {
   }
 
-  public ReplScope(String dbName) {
+  public ReplScope(String catName, String dbName) {
+    setCatName(catName);
     setDbName(dbName);
+  }
+
+  public void setCatName(String catName) {
+    this.catName = catName;
+  }
+
+  public String getCatName() {
+    return catName;
   }
 
   public void setDbName(String dbName) {

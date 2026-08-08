@@ -88,14 +88,15 @@ public class LoadPartitions {
   private final List<String> tablesToBootstrap;
   private Table table;
 
-  public LoadPartitions(Context context, ReplLogger replLogger, TaskTracker tableTracker, TableEvent event, String dbNameToLoadIn,
-      TableContext tableContext, ReplicationMetricCollector metricCollector, List<String> tablesToBootstrap) throws HiveException {
-    this(context, replLogger, tableContext, tableTracker, event, dbNameToLoadIn, null, metricCollector, null,
+  public LoadPartitions(Context context, ReplLogger replLogger, TaskTracker tableTracker, TableEvent event, String catName,
+                        String dbNameToLoadIn, TableContext tableContext, ReplicationMetricCollector metricCollector,
+                        List<String> tablesToBootstrap) throws HiveException {
+    this(context, replLogger, tableContext, tableTracker, event, catName, dbNameToLoadIn, null, metricCollector, null,
         PartitionState.Stage.PARTITION, tablesToBootstrap);
   }
 
   public LoadPartitions(Context context, ReplLogger replLogger, TableContext tableContext, TaskTracker limiter,
-      TableEvent event, String dbNameToLoadIn, AlterTableAddPartitionDesc lastReplicatedPartition,
+      TableEvent event, String catName, String dbNameToLoadIn, AlterTableAddPartitionDesc lastReplicatedPartition,
       ReplicationMetricCollector metricCollector, AlterTableAddPartitionDesc.PartitionDesc lastReplicatedPartitionDesc,
       PartitionState.Stage lastReplicatedStage, List<String> tablesToBootstrap) throws HiveException {
     this.tracker = new TaskTracker(limiter);
@@ -104,7 +105,7 @@ public class LoadPartitions {
     this.replLogger = replLogger;
     this.lastReplicatedPartition = lastReplicatedPartition;
     this.tableContext = tableContext;
-    this.tableDesc = event.tableDesc(dbNameToLoadIn);
+    this.tableDesc = event.tableDesc(catName, dbNameToLoadIn);
     this.table = ImportSemanticAnalyzer.tableIfExists(tableDesc, context.hiveDb);
     this.metricCollector = metricCollector;
     this.lastReplicatedPartitionDesc = lastReplicatedPartitionDesc;
@@ -242,8 +243,8 @@ public class LoadPartitions {
           src.getSerdeParams(), src.getBucketCols(), src.getSortCols(), src.getColStats(),
           src.getWriteId()));
       }
-      AlterTableAddPartitionDesc consolidatedPartitionDesc = new AlterTableAddPartitionDesc(tableDesc.getDatabaseName(),
-        tableDesc.getTableName(), true, partitions);
+      AlterTableAddPartitionDesc consolidatedPartitionDesc = new AlterTableAddPartitionDesc(tableDesc.getCatName(),
+          tableDesc.getDatabaseName(), tableDesc.getTableName(), true, partitions);
 
       //don't need to add ckpt task separately. Added as part of add partition task
       addPartition((toPartitionCount < totalPartitionCount), consolidatedPartitionDesc);

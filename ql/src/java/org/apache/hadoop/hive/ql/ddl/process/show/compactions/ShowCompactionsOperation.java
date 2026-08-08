@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
@@ -79,6 +80,11 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
 
   private ShowCompactRequest getShowCompactioRequest(ShowCompactionsDesc desc) throws SemanticException {
     ShowCompactRequest request = new ShowCompactRequest();
+    if(isBlank(desc.getCatName()) && isNotBlank(desc.getTbName())) {
+      request.setCatName(HiveUtils.getCurrentCatalogOrDefault(context.getConf()));
+    } else {
+      request.setCatName(desc.getCatName());
+    }
     if (isBlank(desc.getDbName()) && isNotBlank(desc.getTbName())) {
       request.setDbName(SessionState.get().getCurrentDatabase());
     } else {
@@ -113,6 +119,8 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
 
   private void writeHeader(DataOutputStream os) throws IOException {
     os.writeBytes("CompactionId");
+    os.write(Utilities.tabCode);
+    os.writeBytes("Catalog");
     os.write(Utilities.tabCode);
     os.writeBytes("Database");
     os.write(Utilities.tabCode);
@@ -156,6 +164,8 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
 
   private void writeRow(DataOutputStream os, ShowCompactResponseElement e) throws IOException {
     os.writeBytes(Long.toString(e.getId()));
+    os.write(Utilities.tabCode);
+    os.writeBytes(e.getCatName());
     os.write(Utilities.tabCode);
     os.writeBytes(e.getDbname());
     os.write(Utilities.tabCode);

@@ -103,8 +103,21 @@ public interface HiveTxnManager {
   * @param partNames List of partitions being written.
   * @throws LockException in case of failure.
   */
+ @Deprecated
   void replTableWriteIdState(String validWriteIdList, String dbName, String tableName, List<String> partNames)
           throws LockException;
+
+ /**
+  * Replicate Table Write Ids state to mark aborted write ids and writeid high water mark.
+  * @param validWriteIdList Snapshot of writeid list when the table/partition is dumped.
+  * @param catName Catalog name
+  * @param dbName Database name
+  * @param tableName Table which is written.
+  * @param partNames List of partitions being written.
+  * @throws LockException in case of failure.
+  */
+ void replTableWriteIdState(String validWriteIdList, String catName, String dbName, String tableName, List<String> partNames)
+     throws LockException;
 
   /**
    * Returns the transaction coordinator managed by this transaction manager.

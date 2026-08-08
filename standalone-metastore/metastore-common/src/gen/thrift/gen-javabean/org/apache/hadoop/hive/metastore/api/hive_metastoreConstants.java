@@ -49,6 +49,8 @@ package org.apache.hadoop.hive.metastore.api;
 
   public static final java.lang.String META_TABLE_NAME = "name";
 
+  public static final java.lang.String META_TABLE_CAT = "cat";
+
   public static final java.lang.String META_TABLE_DB = "db";
 
   public static final java.lang.String META_TABLE_LOCATION = "location";

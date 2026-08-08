@@ -22,11 +22,13 @@ package org.apache.hadoop.hive.metastore.txn.entities;
  */
 public class TxnWriteDetails {
     private final long txnId;
+    private final String catName;
     private final String dbName;
     private final long writeId;
 
-    public TxnWriteDetails(long txnId, String dbName, long writeId) {
+    public TxnWriteDetails(long txnId, String catName, String dbName, long writeId) {
         this.txnId = txnId;
+        this.catName = catName;
         this.dbName = dbName;
         this.writeId = writeId;
     }
@@ -35,6 +37,7 @@ public class TxnWriteDetails {
     public String toString() {
         return "TxnToWriteID{" +
                 "txnId=" + txnId +
+                ", catName='" + catName + '\'' +
                 ", dbName='" + dbName + '\'' +
                 ", writeId=" + writeId +
                 '}';
@@ -42,6 +45,10 @@ public class TxnWriteDetails {
 
     public long getTxnId() {
         return txnId;
+    }
+
+    public String getCatName() {
+        return catName;
     }
 
     public String getDbName() {

@@ -34,15 +34,18 @@ public class CompactionMetricsDataHandler implements QueryHandler<CompactionMetr
   //language=SQL
   private static final String SELECT_COMPACTION_METRICS_CACHE =
       "SELECT \"CMC_METRIC_VALUE\", \"CMC_VERSION\" FROM \"COMPACTION_METRICS_CACHE\" " +
-      "WHERE \"CMC_DATABASE\" = :db AND \"CMC_TABLE\" = :table AND \"CMC_METRIC_TYPE\" = :type " +
+      "WHERE \"CMC_CATALOG\" = :cat AND \"CMC_DATABASE\" = :db AND \"CMC_TABLE\" = :table AND \"CMC_METRIC_TYPE\" = :type " +
           "AND (:partition IS NULL OR \"CMC_PARTITION\" = :partition)";
 
+  private final String catName;
   private final String dbName;
   private final String tblName;
   private final String partitionName;
   private final CompactionMetricsData.MetricType type;
 
-  public CompactionMetricsDataHandler(String dbName, String tblName, String partitionName, CompactionMetricsData.MetricType type) {
+  public CompactionMetricsDataHandler(String catName, String dbName, String tblName, String partitionName,
+                                      CompactionMetricsData.MetricType type) {
+    this.catName = catName;
     this.dbName = dbName;
     this.tblName = tblName;
     this.partitionName = partitionName;
@@ -57,6 +60,7 @@ public class CompactionMetricsDataHandler implements QueryHandler<CompactionMetr
   @Override
   public SqlParameterSource getQueryParameters() {
     return new MapSqlParameterSource()
+        .addValue("cat", catName)
         .addValue("db", dbName)
         .addValue("table", tblName)
         .addValue("type", type.toString())
@@ -68,6 +72,7 @@ public class CompactionMetricsDataHandler implements QueryHandler<CompactionMetr
     CompactionMetricsData.Builder builder = new CompactionMetricsData.Builder();
     if (rs.next()) {
       return builder
+          .catName(catName)
           .dbName(dbName)
           .tblName(tblName)
           .partitionName(partitionName)

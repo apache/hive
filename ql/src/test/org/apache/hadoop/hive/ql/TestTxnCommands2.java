@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
@@ -1114,6 +1115,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p=1) (a,b) " + makeValuesClause(tableData));
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p=2) (a,b) " + makeValuesClause(tableData));
     CompactionRequest request = new CompactionRequest("default", Table.ACIDTBLPART.name(), CompactionType.MAJOR);
+    request.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     request.setPartitionname("p=1");
     txnHandler.compact(request);
     runWorker(hiveConf);
@@ -2325,9 +2327,11 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
 
     // All inserts are committed and hence would expect in TXN_TO_WRITE_ID, 3 entries for acidTbl
     // and 2 entries for acidTblPart as each insert would have allocated a writeid.
-    String acidTblWhereClause = " where t2w_database = " + quoteString("default") +
+    String acidTblWhereClause = " where t2w_catalog = " + quoteString(Warehouse.DEFAULT_CATALOG_NAME) +
+        " and t2w_database = " + quoteString("default") +
         " and t2w_table = " + quoteString(Table.ACIDTBL.name().toLowerCase());
-    String acidTblPartWhereClause = " where t2w_database = " + quoteString("default") +
+    String acidTblPartWhereClause = " where t2w_catalog = " + quoteString(Warehouse.DEFAULT_CATALOG_NAME) +
+        " and t2w_database = " + quoteString("default") +
         " and t2w_table = " + quoteString(Table.ACIDTBLPART.name().toLowerCase());
 
     assertTxnToWriteIdRowCount(
@@ -2407,7 +2411,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
 
       // commit a new txn to advance min open writeId
       TxnStoreHelper.wrap(txnHandler)
-          .allocateTableWriteId("default", Table.ACIDTBL.name(), txnId);
+          .allocateTableWriteId(Warehouse.DEFAULT_CATALOG_NAME, "default", Table.ACIDTBL.name(), txnId);
       txnMgr.commitTxn();
     }
 

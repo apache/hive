@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
@@ -34,10 +35,11 @@ import java.util.Objects;
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeStatementOnDriver;
 
 public class TestIcebergCompactorOnTez extends CompactorOnTezTest {
-  
+
+  private static final String CAT_NAME = Warehouse.DEFAULT_CATALOG_NAME;
   private static final String DB_NAME = "default";
   private static final String TABLE_NAME = "ice_orc";
-  private static final String QUALIFIED_TABLE_NAME = TxnUtils.getFullTableName(DB_NAME, TABLE_NAME);
+  private static final String QUALIFIED_TABLE_NAME = TxnUtils.getFullTableName(CAT_NAME, DB_NAME, TABLE_NAME);
 
   @Override
   @Before

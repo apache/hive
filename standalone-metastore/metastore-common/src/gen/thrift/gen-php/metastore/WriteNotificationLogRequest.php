@@ -56,6 +56,11 @@ class WriteNotificationLogRequest
                 'type' => TType::STRING,
                 ),
         ),
+        7 => array(
+            'var' => 'cat',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -82,6 +87,10 @@ class WriteNotificationLogRequest
      * @var string[]
      */
     public $partitionVals = null;
+    /**
+     * @var string
+     */
+    public $cat = "hive";
 
     public function __construct($vals = null)
     {
@@ -103,6 +112,9 @@ class WriteNotificationLogRequest
             }
             if (isset($vals['partitionVals'])) {
                 $this->partitionVals = $vals['partitionVals'];
+            }
+            if (isset($vals['cat'])) {
+                $this->cat = $vals['cat'];
             }
         }
     }
@@ -178,6 +190,13 @@ class WriteNotificationLogRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 7:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->cat);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -230,6 +249,11 @@ class WriteNotificationLogRequest
                 $xfer += $output->writeString($iter991);
             }
             $output->writeListEnd();
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->cat !== null) {
+            $xfer += $output->writeFieldBegin('cat', TType::STRING, 7);
+            $xfer += $output->writeString($this->cat);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

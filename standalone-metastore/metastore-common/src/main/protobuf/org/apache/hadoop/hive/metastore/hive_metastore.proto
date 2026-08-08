@@ -1988,6 +1988,7 @@ message WriteEventInfo {
   string partition = 5;
   string table_obj = 6;
   string partition_obj = 7;
+  string catalog = 8;
 }
 
 message ReplLastIdInfo {
@@ -2031,6 +2032,7 @@ message ReplTblWriteidStateRequest {
   string host_name = 3;
   string db_name = 4;
   repeated string part_names = 5;
+  string cat_name = 6;
 }
 
 message ReplTblWriteidStateResponse {
@@ -2065,6 +2067,7 @@ message AllocateTableWriteIdsRequest {
   repeated int64 txn_ids = 3;
   string repl_policy = 4;
   repeated TxnToWriteId src_txn_to_write_id_lists = 5;
+  string cat_name = 6;
 }
 
 message AllocateTableWriteIdsResponse {
@@ -2074,6 +2077,7 @@ message AllocateTableWriteIdsResponse {
 message GetMaxAllocatedTableWriteIdRequest {
   string db_name = 1;
   string table_name = 2;
+  string cat_name = 3;
 }
 message GetMaxAllocatedTableWriteIdResponse {
   int64 max_write_id = 1;
@@ -2240,6 +2244,7 @@ message CompactRequest {
   map<string, string> properties = 6;
   string initiator_id = 7;
   string initiator_version = 8;
+  string catname = 9;
 }
 
 message CompactResponse {
@@ -2254,6 +2259,7 @@ message Compact2Request {
   map<string, string> properties = 6;
   string initiator_id = 7;
   string initiator_version = 8;
+  string catname = 9;
 }
 
 message Compact2Response {
@@ -2286,6 +2292,7 @@ message ShowCompactResponseElement {
   string initiator_id = 17;
   string initiator_version = 18;
   int64 cleaner_start = 19;
+  string catname = 20;
 }
 
 message ShowCompactResponse {
@@ -2299,6 +2306,7 @@ message AddDynamicPartitionsRequest {
   string tablename = 4;
   repeated string partitionnames = 5;
   DataOperationType operation_type = 6;
+  string catname = 7;
 }
 
 message AddDynamicPartitionsResponse {
@@ -2325,6 +2333,7 @@ message CompactionInfoStruct {
   bool hasoldabort = 14;
   int64 enqueue_time = 15;
   int64 retry_retention = 16;
+  string catname = 17;
 }
 
 message OptionalCompactionInfoStruct {
@@ -2370,6 +2379,7 @@ message CompactionMetricsDataStruct {
   int32 metricvalue = 5;
   int32 version = 6;
   int32 threshold = 7;
+  string catname = 8;
 }
 
 message UpdateCompactionMetricsDataResponse {
@@ -2381,6 +2391,7 @@ message RemoveCompactionMetricsDataRequest {
   string tbl_name = 2;
   string partition_name = 3;
   CompactionMetricsMetricType type = 4;
+  string cat_name = 5;
 }
 
 message RemoveCompactionMetricsDataResponse {
@@ -2399,6 +2410,7 @@ message GetLatestCommittedCompactionInfoRequest {
   string tablename = 2;
   repeated string partionnames = 3;
   int64 last_compaction_id = 4;
+  string catname = 5;
 }
 
 message GetLatestCommittedCompactionInfoResponse {
@@ -3191,6 +3203,7 @@ message GetAllWriteEventInfoRequest {
   int64 txn_id = 1;
   string db_name = 2;
   string table_name = 3;
+  string cat_name = 4;
 }
 
 message GetAllWriteEventInfoResponse {

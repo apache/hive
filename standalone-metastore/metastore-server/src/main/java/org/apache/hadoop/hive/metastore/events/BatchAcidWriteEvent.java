@@ -70,6 +70,10 @@ public class BatchAcidWriteEvent extends ListenerEvent {
     return writeNotificationLogRequestList.get(idx).getFileInfo().getFilesAddedChecksum();
   }
 
+  public String getCatalog(int idx) {
+    return StringUtils.normalizeIdentifier(writeNotificationLogRequestList.get(idx).getCat());
+  }
+
   public String getDatabase(int idx) {
     return StringUtils.normalizeIdentifier(writeNotificationLogRequestList.get(idx).getDb());
   }

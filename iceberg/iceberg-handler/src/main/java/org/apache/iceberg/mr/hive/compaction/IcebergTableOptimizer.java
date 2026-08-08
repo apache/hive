@@ -139,7 +139,7 @@ public class IcebergTableOptimizer extends TableOptimizer {
       Set<CompactionInfo> compactions, ShowCompactResponse currentCompactions, Set<String> skipDBs,
       Set<String> skipTables) {
 
-    CompactionInfo ci = new CompactionInfo(table.getDbName(), table.getTableName(), partitionName,
+    CompactionInfo ci = new CompactionInfo(table.getCatName(), table.getDbName(), table.getTableName(), partitionName,
         CompactionType.SMART_OPTIMIZE);
 
     // Common Hive compaction eligibility checks

@@ -35,7 +35,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class JSONDropPartitionMessage extends DropPartitionMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableType, tableObjJson;
+  String server, servicePrincipal, cat, db, table, tableType, tableObjJson;
 
   @JsonProperty
   Long timestamp;
@@ -49,15 +49,16 @@ public class JSONDropPartitionMessage extends DropPartitionMessage {
   public JSONDropPartitionMessage() {
   }
 
-  public JSONDropPartitionMessage(String server, String servicePrincipal, String db, String table,
+  public JSONDropPartitionMessage(String server, String servicePrincipal, String cat, String db, String table,
       List<Map<String, String>> partitions, Long timestamp) {
-    this(server, servicePrincipal, db, table,  null, partitions, timestamp);
+    this(server, servicePrincipal, cat, db, table,  null, partitions, timestamp);
   }
 
-  public JSONDropPartitionMessage(String server, String servicePrincipal, String db, String table,
+  public JSONDropPartitionMessage(String server, String servicePrincipal, String cat, String db, String table,
       String tableType, List<Map<String, String>> partitions, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
+    this.cat = cat;
     this.db = db;
     this.table = table;
     this.tableType = tableType;
@@ -68,7 +69,7 @@ public class JSONDropPartitionMessage extends DropPartitionMessage {
 
   public JSONDropPartitionMessage(String server, String servicePrincipal, Table tableObj,
       List<Map<String, String>> partitionKeyValues, long timestamp) {
-    this(server, servicePrincipal, tableObj.getDbName(), tableObj.getTableName(),
+    this(server, servicePrincipal, tableObj.getCatName(), tableObj.getDbName(), tableObj.getTableName(),
         tableObj.getTableType(), partitionKeyValues, timestamp);
     try {
       this.tableObjJson = MessageBuilder.createTableObjJson(tableObj);
@@ -85,6 +86,11 @@ public class JSONDropPartitionMessage extends DropPartitionMessage {
   @Override
   public String getServicePrincipal() {
     return servicePrincipal;
+  }
+
+  @Override
+  public String getCat() {
+    return cat;
   }
 
   @Override

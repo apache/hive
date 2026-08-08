@@ -74,13 +74,14 @@ public class GetValidWriteIdsFunction implements TransactionalFunction<GetValidW
 
   private long getTxnId(MultiDataSourceJdbcResource jdbcResource, String fullTableName, Long writeId) throws MetaException {
     String[] names = TxnUtils.getDbTableName(fullTableName);
-    assert (names.length == 2);
+    assert (names.length == 3);
     Long txnId = jdbcResource.getJdbcTemplate().query(
-        "SELECT \"T2W_TXNID\" FROM \"TXN_TO_WRITE_ID\" WHERE \"T2W_DATABASE\" = :db AND "
+        "SELECT \"T2W_TXNID\" FROM \"TXN_TO_WRITE_ID\" WHERE \"T2W_CATALOG\" = :cat AND \"T2W_DATABASE\" = :db AND "
             + "\"T2W_TABLE\" = :table AND \"T2W_WRITEID\" = :writeId",
         new MapSqlParameterSource()
-            .addValue("db", names[0])
-            .addValue("table", names[1])
+            .addValue("cat", names[0])
+            .addValue("db", names[1])
+            .addValue("table", names[2])
             .addValue("writeId", writeId),
         (ResultSet rs) -> {
           if(rs.next()) {

@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
@@ -176,6 +177,7 @@ public class TestTxnHandler {
     parts.add("p=1");
 
     AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest("default", "T");
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setTxnIds(Collections.singletonList(3L));
     AllocateTableWriteIdsResponse writeIds = txnHandler.allocateTableWriteIds(rqst);
     long writeId = writeIds.getTxnToWriteIds().get(0).getWriteId();
@@ -183,6 +185,7 @@ public class TestTxnHandler {
     assertEquals(1, writeId);
 
     AddDynamicPartitions adp = new AddDynamicPartitions(3, writeId, "default", "T", parts);
+    adp.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     adp.setOperationType(DataOperationType.INSERT);
     txnHandler.addDynamicPartitions(adp);
     GetOpenTxnsInfoResponse txnsInfo = txnHandler.getOpenTxnsInfo();
@@ -1298,6 +1301,7 @@ public class TestTxnHandler {
   @Test
   public void testCompactMajorWithPartition() throws Exception {
     CompactionRequest rqst = new CompactionRequest("foo", "bar", CompactionType.MAJOR);
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setPartitionname("ds=today");
     txnHandler.compact(rqst);
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
@@ -1669,6 +1673,7 @@ public class TestTxnHandler {
       srcTxnToWriteId.add(new TxnToWriteId(startTxnId+idx, idx+1));
     }
     AllocateTableWriteIdsRequest allocMsg = new AllocateTableWriteIdsRequest("destdb", "tbl1");
+    allocMsg.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     allocMsg.setReplPolicy("destdb.*");
     allocMsg.setSrcTxnToWriteIdList(srcTxnToWriteId);
     targetTxnToWriteId = txnHandler.allocateTableWriteIds(allocMsg).getTxnToWriteIds();
@@ -1689,6 +1694,7 @@ public class TestTxnHandler {
     srcTxnToWriteId = new ArrayList<>();
     srcTxnToWriteId.add(new TxnToWriteId(startTxnId, 2*numTxn+1));
     allocMsg = new AllocateTableWriteIdsRequest("destdb", "tbl2");
+    allocMsg.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     allocMsg.setReplPolicy("destdb.*");
     allocMsg.setSrcTxnToWriteIdList(srcTxnToWriteId);
 
@@ -1716,6 +1722,7 @@ public class TestTxnHandler {
 
   @Test
   public void allocateNextWriteIdRetriesAfterDetectingConflictingConcurrentInsert() throws Exception {
+    String catName = Warehouse.DEFAULT_CATALOG_NAME;
     String dbName = "abc";
     String tableName = "def";
     int numTxns = 2;
@@ -1736,6 +1743,7 @@ public class TestTxnHandler {
 
         OpenTxnsResponse resp = txnHandler.openTxns(new OpenTxnRequest(numTxns, "me", "localhost"));
         AllocateTableWriteIdsRequest request = new AllocateTableWriteIdsRequest(dbName, tableName);
+        request.setCatName(catName);
         resp.getTxn_ids().forEach(request::addToTxnIds);
 
         // thread 1: allocating write ids for dbName.tableName
@@ -1817,6 +1825,7 @@ public class TestTxnHandler {
     SourceTable sourceTable = new SourceTable();
     sourceTable.setTable(table);
     CreationMetadata creationMetadata = new CreationMetadata();
+    creationMetadata.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     creationMetadata.setDbName("default");
     creationMetadata.setTblName("mat1");
     creationMetadata.setTablesUsed(new HashSet<String>() {{ add("default.t1"); }});
@@ -1868,6 +1877,7 @@ public class TestTxnHandler {
     }
 
     CreationMetadata creationMetadata = new CreationMetadata();
+    creationMetadata.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     creationMetadata.setDbName("default");
     creationMetadata.setTblName("mat1");
     creationMetadata.setTablesUsed(new HashSet<String>() {{ add("default.t1"); }});

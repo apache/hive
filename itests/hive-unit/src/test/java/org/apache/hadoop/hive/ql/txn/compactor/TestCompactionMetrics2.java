@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.HMSMetricsListener;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -47,8 +48,8 @@ public class TestCompactionMetrics2 extends CompactorTest {
     Map<String, String> params = new HashMap<>();
     params.put(hive_metastoreConstants.NO_AUTO_COMPACT, "false");
     Table t =  newTable(dbName, "comp_disabled", false, params);
-    burnThroughTransactions(dbName, t.getTableName(), 1, null, null);
-    burnThroughTransactions(dbName, t.getTableName(), 1, null, new HashSet<>(
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, dbName, t.getTableName(), 1, null, null);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, dbName, t.getTableName(), 1, null, new HashSet<>(
         Collections.singletonList(2L)));
 
     Assert.assertEquals(MetricsConstants.WRITES_TO_DISABLED_COMPACTION_TABLE + " value incorrect",
@@ -68,8 +69,8 @@ public class TestCompactionMetrics2 extends CompactorTest {
     Map<String, String> params = new HashMap<>();
     params.put(hive_metastoreConstants.NO_AUTO_COMPACT, "true");
     Table t =  newTable(dbName, "comp_enabled", false, params);
-    burnThroughTransactions(dbName, t.getTableName(), 1, null, null);
-    burnThroughTransactions(dbName, t.getTableName(), 1, null, new HashSet<>(
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, dbName, t.getTableName(), 1, null, null);
+    burnThroughTransactions(Warehouse.DEFAULT_CATALOG_NAME, dbName, t.getTableName(), 1, null, new HashSet<>(
         Collections.singletonList(2L)));
 
     Assert.assertEquals(MetricsConstants.WRITES_TO_DISABLED_COMPACTION_TABLE + " value incorrect",

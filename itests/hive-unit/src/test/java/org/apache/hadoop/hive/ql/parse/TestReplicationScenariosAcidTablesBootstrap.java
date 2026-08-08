@@ -213,7 +213,7 @@ public class TestReplicationScenariosAcidTablesBootstrap
     // After bootstrap dump, all the opened txns should be aborted. Verify it.
     verifyAllOpenTxnsAborted(txns, primaryConf);
     releaseLocks(txnHandler, lockIds);
-    verifyNextId(tables, primaryDbName, primaryConf);
+    verifyNextId(tables, PRIMARY_CAT_NAME, primaryDbName, primaryConf);
 
     // Incremental load with ACID bootstrap should also replicate the aborted write ids on
     // tables t1 and t2
@@ -222,20 +222,20 @@ public class TestReplicationScenariosAcidTablesBootstrap
     replica.load(replicatedDbName, primaryDbName);
     verifyIncLoad(replicatedDbName, incDump.lastReplicationId);
     // Verify if HWM is properly set after REPL LOAD
-    verifyNextId(tables, replicatedDbName, replicaConf);
+    verifyNextId(tables, PRIMARY_CAT_NAME, replicatedDbName, replicaConf);
 
     // Verify if all the aborted write ids are replicated to the replicated DB
     for(Map.Entry<String, Long> entry : tables.entrySet()) {
       entry.setValue((long) numTxns);
     }
-    verifyWriteIdsForTables(tables, replicaConf, replicatedDbName);
+    verifyWriteIdsForTables(tables, replicaConf, PRIMARY_CAT_NAME, replicatedDbName);
 
     // Verify if entries added in COMPACTION_QUEUE for each table/partition
     // t1-> 1 entry and t2-> 2 entries (1 per partition)
     tables.clear();
     tables.put("t1", 1L);
     tables.put("t2", 4L);
-    verifyCompactionQueue(tables, replicatedDbName, replicaConf);
+    verifyCompactionQueue(tables, PRIMARY_CAT_NAME, replicatedDbName, replicaConf);
   }
 
   @Test

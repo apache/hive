@@ -57,9 +57,9 @@ public class PurgeCompactionHistoryFunction implements TransactionalFunction<Voi
     int refusedRetention = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_REFUSED);
         /* cc_id is monotonically increasing so for any entity sorts in order of compaction history,
         thus this query groups by entity and withing group sorts most recent first */
-    jdbcTemplate.query("SELECT \"CC_ID\", \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", "
+    jdbcTemplate.query("SELECT \"CC_ID\", \"CC_CATALOG\", \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", "
         + "\"CC_STATE\" , \"CC_START\", \"CC_TYPE\" "
-        + "FROM \"COMPLETED_COMPACTIONS\" ORDER BY \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\"," +
+        + "FROM \"COMPLETED_COMPACTIONS\" ORDER BY \"CC_CATALOG\", \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\"," +
         "\"CC_ID\" DESC", rs -> {
       String lastCompactedEntity = null;
       RetentionCounters counters = null;
@@ -69,10 +69,10 @@ public class PurgeCompactionHistoryFunction implements TransactionalFunction<Voi
        */
       while (rs.next()) {
         CompactionInfo ci = new CompactionInfo(
-            rs.getLong(1), rs.getString(2), rs.getString(3),
-            rs.getString(4), rs.getString(5).charAt(0));
-        ci.start = rs.getLong(6);
-        ci.type = TxnUtils.dbCompactionType2ThriftType(rs.getString(7).charAt(0));
+            rs.getLong(1), rs.getString(2), rs.getString(3), rs.getString(4),
+            rs.getString(5), rs.getString(6).charAt(0));
+        ci.start = rs.getLong(7);
+        ci.type = TxnUtils.dbCompactionType2ThriftType(rs.getString(8).charAt(0));
         if (!ci.getFullPartitionName().equals(lastCompactedEntity)) {
           lastCompactedEntity = ci.getFullPartitionName();
           counters = new RetentionCounters(didNotInitiateRetention, failedRetention, succeededRetention, refusedRetention);

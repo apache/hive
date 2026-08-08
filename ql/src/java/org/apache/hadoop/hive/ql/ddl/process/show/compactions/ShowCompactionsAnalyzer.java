@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -47,6 +48,7 @@ public class ShowCompactionsAnalyzer extends BaseSemanticAnalyzer {
   @Override
   public void analyzeInternal(ASTNode root) throws SemanticException {
     ctx.setResFile(ctx.getLocalTmpPath());
+    String catName = null;
     String dbName = null;
     String tblName = null;
     String poolName = null;
@@ -65,8 +67,13 @@ public class ShowCompactionsAnalyzer extends BaseSemanticAnalyzer {
         case HiveParser.TOK_TABTYPE:
           tblName = child.getChild(0).getText();
           if (child.getChild(0).getChildCount() == 2) {
+            catName = HiveUtils.getCurrentCatalogOrDefault(conf);
             dbName = child.getChild(0).getChild(0).getText();
             tblName = child.getChild(0).getChild(1).getText();
+          } else if (child.getChild(0).getChildCount() == 3) {
+            catName = child.getChild(0).getChild(0).getText();
+            dbName = child.getChild(0).getChild(1).getText();
+            tblName = child.getChild(0).getChild(2).getText();
           }
           if (child.getChildCount() == 2) {
             ASTNode partitionSpecNode = (ASTNode) child.getChild(1);
@@ -95,7 +102,10 @@ public class ShowCompactionsAnalyzer extends BaseSemanticAnalyzer {
           dbName = stripQuotes(child.getText());
       }
     }
-    ShowCompactionsDesc desc = new ShowCompactionsDesc(ctx.getResFile(), compactionId, dbName, tblName, poolName, compactionType,
+    if (catName == null) {
+      catName = HiveUtils.getCurrentCatalogOrDefault(conf);
+    }
+    ShowCompactionsDesc desc = new ShowCompactionsDesc(ctx.getResFile(), compactionId, catName, dbName, tblName, poolName, compactionType,
       compactionStatus, partitionSpec, limit, orderBy);
     Task<DDLWork> task = TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc));
     rootTasks.add(task);
@@ -120,6 +130,7 @@ public class ShowCompactionsAnalyzer extends BaseSemanticAnalyzer {
 
   private enum CompactionColumn {
     COMPACTIONID("\"CC_ID\""),
+    CATNAME("\"CC_CATALOG\""),
     DBNAME("\"CC_DATABASE\""),
     TABNAME("\"CC_TABLE\""),
     PARTNAME("\"CC_PARTITION\""),

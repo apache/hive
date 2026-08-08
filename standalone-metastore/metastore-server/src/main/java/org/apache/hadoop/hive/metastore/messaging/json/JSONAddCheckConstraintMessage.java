@@ -69,6 +69,11 @@ public class JSONAddCheckConstraintMessage extends AddCheckConstraintMessage {
   }
 
   @Override
+  public String getCat() {
+    return null;
+  }
+
+  @Override
   public String getDB() {
     return null;
   }

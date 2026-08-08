@@ -54,6 +54,7 @@ public class CommitTxnHandler extends AbstractMessageHandler {
     int numEntry = (msg.getTables() == null ? 0 : msg.getTables().size());
     List<Task<?>> tasks = new ArrayList<>();
     String dbName = context.dbName;
+    String catName = context.catName;
     String tableNamePrev = null;
     String tblName = null;
 
@@ -68,7 +69,7 @@ public class CommitTxnHandler extends AbstractMessageHandler {
       context.getMetricCollector().setSrcTimeInProgress(msg.getTimestamp());
     }
 
-    ReplTxnWork work = new ReplTxnWork(HiveUtils.getReplPolicy(context.dbName), context.dbName,
+    ReplTxnWork work = new ReplTxnWork(HiveUtils.getReplPolicy(context.dbName), context.catName, context.dbName,
                                        null, msg.getTxnId(), ReplTxnWork.OperationType.REPL_COMMIT_TXN,
                                         context.eventOnlyReplicationSpec(), context.getDumpDirectory(),
                                         context.getMetricCollector());
@@ -82,6 +83,7 @@ public class CommitTxnHandler extends AbstractMessageHandler {
     for (int idx = 0; idx < numEntry; idx++) {
       String actualTblName = msg.getTables().get(idx);
       String actualDBName = msg.getDatabases().get(idx);
+      String actualCatName = msg.getCatalogs().get(idx);
       String completeName = Table.getCompleteName(actualDBName, actualTblName);
 
       // One import task per table. Events for same table are kept together in one dump directory during dump and are
@@ -90,9 +92,10 @@ public class CommitTxnHandler extends AbstractMessageHandler {
         // The data location is created by source, so the location should be formed based on the table name in msg.
         Path location = HiveUtils.getDumpPath(new Path(context.location), actualDBName, actualTblName);
         tblName = actualTblName;
+        catName = (context.isCatNameEmpty() ? actualCatName : context.catName);
         // for warehouse level dump, use db name from write event
         dbName = (context.isDbNameEmpty() ? actualDBName : context.dbName);
-        Context currentContext = new Context(context, dbName,
+        Context currentContext = new Context(context, catName, dbName,
                 context.getDumpDirectory(), context.getMetricCollector());
         currentContext.setLocation(location.toUri().toString());
 
@@ -108,6 +111,7 @@ public class CommitTxnHandler extends AbstractMessageHandler {
       try {
         WriteEventInfo writeEventInfo = new WriteEventInfo(msg.getWriteIds().get(idx),
                 dbName, tblName, msg.getFiles(idx));
+        writeEventInfo.setCatalog(catName);
         if (msg.getPartitions().get(idx) != null && !msg.getPartitions().get(idx).isEmpty()) {
           writeEventInfo.setPartition(msg.getPartitions().get(idx));
         }

@@ -374,7 +374,7 @@ public class TestHiveMetaStoreTxns {
     client.rollbackTxn(tids.get(0));
 
     ValidTxnList validTxnList = client.getValidTxns();
-    String fullTableName = TxnUtils.getFullTableName("db", "tbl");
+    String fullTableName = TxnUtils.getFullTableName(Warehouse.DEFAULT_CATALOG_NAME, "db", "tbl");
 
     List<TableValidWriteIds> tableValidWriteIds = client.getValidWriteIds(
         Collections.singletonList(fullTableName), validTxnList.writeToString());
@@ -439,6 +439,7 @@ public class TestHiveMetaStoreTxns {
 
     // Test invalid inputs
     final String invalidTblName = "invalid";
+    rqst.setCatName(Warehouse.DEFAULT_CATALOG_NAME);
     rqst.setDbname(dbName);
     Assert.assertThrows(MetaException.class, () -> client.getLatestCommittedCompactionInfo(rqst));
     rqst.setTablename(invalidTblName);

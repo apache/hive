@@ -51,12 +51,13 @@ public class LatestTxnIdInConflictHandler implements QueryHandler<Long> {
         " SELECT MAX(\"COMMITTED\".\"WS_TXNID\")" +
         " FROM \"WRITE_SET\" \"COMMITTED\"" +
         " INNER JOIN (" +
-        "   SELECT DISTINCT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_TXNID\"" +
+        "   SELECT DISTINCT \"TC_CATALOG\", \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_TXNID\"" +
         "   FROM \"TXN_COMPONENTS\"" +
         "   WHERE \"TC_TXNID\" = :txnId" +
         "     AND \"TC_OPERATION_TYPE\" IN (:types)" +
         " ) \"CUR\"" +
-        " ON \"COMMITTED\".\"WS_DATABASE\" = \"CUR\".\"TC_DATABASE\"" +
+        " ON \"COMMITTED\".\"WS_CATALOG\" = \"CUR\".\"TC_CATALOG\"" +
+        "   AND \"COMMITTED\".\"WS_DATABASE\" = \"CUR\".\"TC_DATABASE\"" +
         "   AND \"COMMITTED\".\"WS_TABLE\" = \"CUR\".\"TC_TABLE\"" +
         // For partitioned table we always track writes at partition level (never at table)
         // and for non partitioned - always at table level, thus the same table should never

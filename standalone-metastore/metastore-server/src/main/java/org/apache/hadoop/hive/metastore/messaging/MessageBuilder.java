@@ -278,9 +278,9 @@ public class MessageBuilder {
     return new JSONAddCheckConstraintMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, ccs, now());
   }
 
-  public DropConstraintMessage buildDropConstraintMessage(String dbName, String tableName,
+  public DropConstraintMessage buildDropConstraintMessage(String catName, String dbName, String tableName,
       String constraintName) {
-    return new JSONDropConstraintMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, dbName, tableName,
+    return new JSONDropConstraintMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, catName, dbName, tableName,
         constraintName, now());
   }
 
@@ -303,8 +303,8 @@ public class MessageBuilder {
     return new JSONOpenTxnMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, fromTxnId, toTxnId, now());
   }
 
-  public CommitTxnMessage buildCommitTxnMessage(Long txnId,  List<String> databases,  List<Long> writeIds) {
-    return new JSONCommitTxnMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, txnId, now(), databases, writeIds);
+  public CommitTxnMessage buildCommitTxnMessage(Long txnId,  List<String> catalogs, List<String> databases,  List<Long> writeIds) {
+    return new JSONCommitTxnMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, txnId, now(), catalogs, databases, writeIds);
   }
 
   public AbortTxnMessage buildAbortTxnMessage(Long txnId, List<String> dbsUpdated, List<Long> writeIds) {
@@ -312,9 +312,9 @@ public class MessageBuilder {
   }
 
   public AllocWriteIdMessage buildAllocWriteIdMessage(List<TxnToWriteId> txnToWriteIdList,
-      String dbName, String tableName) {
+      String catName, String dbName, String tableName) {
     return new JSONAllocWriteIdMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, txnToWriteIdList,
-        dbName, tableName, now());
+        catName, dbName, tableName, now());
   }
 
   public AcidWriteMessage buildAcidWriteMessage(AcidWriteEvent acidWriteEvent,
@@ -331,8 +331,8 @@ public class MessageBuilder {
             colStats, tableObj, parameters, writeId);
   }
 
-  public JSONDeleteTableColumnStatMessage buildDeleteTableColumnStatMessage(String dbName, String colName) {
-    return new JSONDeleteTableColumnStatMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, now(), dbName, colName);
+  public JSONDeleteTableColumnStatMessage buildDeleteTableColumnStatMessage(String catName, String dbName, String colName) {
+    return new JSONDeleteTableColumnStatMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, now(), catName, dbName, colName);
   }
 
   public JSONUpdatePartitionColumnStatMessage buildUpdatePartitionColumnStatMessage(ColumnStatistics colStats,
@@ -342,9 +342,9 @@ public class MessageBuilder {
             parameters, tableObj, writeId);
   }
 
-  public JSONDeletePartitionColumnStatMessage buildDeletePartitionColumnStatMessage(String dbName, String colName,
+  public JSONDeletePartitionColumnStatMessage buildDeletePartitionColumnStatMessage(String catName, String dbName, String colName,
                                                                             String partName, List<String> partValues) {
-    return new JSONDeletePartitionColumnStatMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, now(), dbName,
+    return new JSONDeletePartitionColumnStatMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, now(), catName, dbName,
             colName, partName, partValues);
   }
 

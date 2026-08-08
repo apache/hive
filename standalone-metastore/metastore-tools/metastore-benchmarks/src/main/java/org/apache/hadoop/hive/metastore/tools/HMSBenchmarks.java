@@ -23,6 +23,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.PartitionManagementTask;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
@@ -581,7 +582,7 @@ final class HMSBenchmarks {
 
     return  bench.measure(
         () -> throwingSupplierWrapper(() -> client.openTxn(howMany)),
-        () -> throwingSupplierWrapper(() -> client.allocateTableWriteIds("test_db", "test_tbl", client.getOpenTxns())),
+        () -> throwingSupplierWrapper(() -> client.allocateTableWriteIds(Warehouse.DEFAULT_CATALOG_NAME, "test_db", "test_tbl", client.getOpenTxns())),
         () -> throwingSupplierWrapper(() -> client.abortTxns(client.getOpenTxns()))
     );
   }

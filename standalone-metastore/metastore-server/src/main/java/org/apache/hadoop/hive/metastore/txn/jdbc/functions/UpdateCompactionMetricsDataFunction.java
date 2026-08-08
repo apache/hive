@@ -39,7 +39,8 @@ public class UpdateCompactionMetricsDataFunction implements TransactionalFunctio
   @Override
   public Boolean execute(MultiDataSourceJdbcResource jdbcResource) throws MetaException {
     CompactionMetricsData prevMetricsData = jdbcResource.execute(
-        new CompactionMetricsDataHandler(data.getDbName(), data.getTblName(), data.getPartitionName(), data.getMetricType()));
+        new CompactionMetricsDataHandler(data.getCatName(), data.getDbName(), data.getTblName(),
+            data.getPartitionName(), data.getMetricType()));
 
     boolean updateRes;
     if (data.getMetricValue() >= data.getThreshold()) {
@@ -51,7 +52,7 @@ public class UpdateCompactionMetricsDataFunction implements TransactionalFunctio
     } else {
       if (prevMetricsData != null) {
         int result = jdbcResource.execute(new RemoveCompactionMetricsDataCommand(
-            data.getDbName(), data.getTblName(), data.getPartitionName(), data.getMetricType()));
+            data.getCatName(), data.getDbName(), data.getTblName(), data.getPartitionName(), data.getMetricType()));
         updateRes = result > 0;
       } else {
         return true;
@@ -63,12 +64,13 @@ public class UpdateCompactionMetricsDataFunction implements TransactionalFunctio
   private boolean updateCompactionMetricsData(CompactionMetricsData data, CompactionMetricsData prevData, NamedParameterJdbcTemplate jdbcTemplate) {
     return jdbcTemplate.update(
         "UPDATE \"COMPACTION_METRICS_CACHE\" SET \"CMC_METRIC_VALUE\" = :value, \"CMC_VERSION\" = :newVersion " +
-            "WHERE \"CMC_DATABASE\" = :db AND \"CMC_TABLE\" = :table AND \"CMC_METRIC_TYPE\" = :type " +
+            "WHERE \"CMC_CATALOG\" = :cat AND \"CMC_DATABASE\" = :db AND \"CMC_TABLE\" = :table AND \"CMC_METRIC_TYPE\" = :type " +
             "AND \"CMC_VERSION\" = :oldVersion AND (:partition IS NULL OR \"CMC_PARTITION\" = :partition)",
         new MapSqlParameterSource()
             .addValue("value", data.getMetricValue())
             .addValue("oldVersion", prevData.getVersion())
             .addValue("newVersion", prevData.getVersion() + 1)
+            .addValue("cat", data.getCatName())
             .addValue("db", data.getDbName())
             .addValue("table", data.getTblName())
             .addValue("type", data.getMetricType().toString())
@@ -78,9 +80,10 @@ public class UpdateCompactionMetricsDataFunction implements TransactionalFunctio
   private boolean createCompactionMetricsData(CompactionMetricsData data, NamedParameterJdbcTemplate jdbcTemplate) {
     return jdbcTemplate.update(
         "INSERT INTO \"COMPACTION_METRICS_CACHE\" ( " +
-            "\"CMC_DATABASE\", \"CMC_TABLE\", \"CMC_PARTITION\", \"CMC_METRIC_TYPE\", \"CMC_METRIC_VALUE\", " +
-            "\"CMC_VERSION\" ) VALUES (:db, :table, :partition, :type, :value, 1)",
+            "\"CMC_CATALOG\", \"CMC_DATABASE\", \"CMC_TABLE\", \"CMC_PARTITION\", \"CMC_METRIC_TYPE\", \"CMC_METRIC_VALUE\", " +
+            "\"CMC_VERSION\" ) VALUES (:cat, :db, :table, :partition, :type, :value, 1)",
         new MapSqlParameterSource()
+            .addValue("cat", data.getCatName())
             .addValue("db", data.getDbName())
             .addValue("table", data.getTblName())
             .addValue("partition", data.getPartitionName(), Types.VARCHAR)

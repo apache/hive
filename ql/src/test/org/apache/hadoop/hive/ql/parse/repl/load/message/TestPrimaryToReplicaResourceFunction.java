@@ -22,6 +22,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.ResourceType;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
@@ -75,7 +76,7 @@ public class TestPrimaryToReplicaResourceFunction {
   public void setup() {
     MetaData metadata = new MetaData(null, null, null, null, functionObj);
     Context context =
-        new Context("primaryDb", null, null, null, hiveConf, null, null, logger);
+        new Context(Warehouse.DEFAULT_CATALOG_NAME, "primaryDb", null, null, null, hiveConf, null, null, logger);
     when(hiveConf.getVar(HiveConf.ConfVars.REPL_FUNCTIONS_ROOT_DIR))
         .thenReturn("/someBasePath/withADir/");
     timeMockedStatic = mockStatic(Time.class);

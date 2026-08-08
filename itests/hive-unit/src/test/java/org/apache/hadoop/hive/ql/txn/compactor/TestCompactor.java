@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
@@ -379,10 +380,10 @@ public class TestCompactor extends TestCompactorBase {
     Table table = msClient.getTable(dbName, tblName);
 
     //compute stats before compaction
-    CompactionInfo ci = new CompactionInfo(dbName, tblName, "bkt=0", CompactionType.MAJOR);
+    CompactionInfo ci = new CompactionInfo(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName, "bkt=0", CompactionType.MAJOR);
     statsUpdater.gatherStats(conf, ci, emptyMap(), System.getProperty("user.name"),
             CompactorUtil.getCompactorJobQueueName(conf, ci, table), msClient);
-    ci = new CompactionInfo(dbName, tblName, "bkt=1", CompactionType.MAJOR);
+    ci = new CompactionInfo(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName, "bkt=1", CompactionType.MAJOR);
     statsUpdater.gatherStats(conf, ci, emptyMap(), System.getProperty("user.name"),
             CompactorUtil.getCompactorJobQueueName(conf, ci, table), msClient);
 
@@ -473,7 +474,7 @@ public class TestCompactor extends TestCompactorBase {
     Table table = msClient.getTable(dbName, tblName);
 
     //compute stats before compaction
-    CompactionInfo ci = new CompactionInfo(dbName, tblName, null, CompactionType.MAJOR);
+    CompactionInfo ci = new CompactionInfo(Warehouse.DEFAULT_CATALOG_NAME, dbName, tblName, null, CompactionType.MAJOR);
     statsUpdater.gatherStats(conf, ci, emptyMap(), System.getProperty("user.name"),
             CompactorUtil.getCompactorJobQueueName(conf, ci, table), msClient);
 
@@ -2329,8 +2330,8 @@ public class TestCompactor extends TestCompactorBase {
 
   @Test
   public void testCompactionInfoEquals() {
-    CompactionInfo compactionInfo = new CompactionInfo("dbName", "tableName", "partName", CompactionType.MINOR);
-    CompactionInfo compactionInfo1 = new CompactionInfo("dbName", "tableName", "partName", CompactionType.MINOR);
+    CompactionInfo compactionInfo = new CompactionInfo(Warehouse.DEFAULT_CATALOG_NAME, "dbName", "tableName", "partName", CompactionType.MINOR);
+    CompactionInfo compactionInfo1 = new CompactionInfo(Warehouse.DEFAULT_CATALOG_NAME, "dbName", "tableName", "partName", CompactionType.MINOR);
     assertEquals("The object must be equal", compactionInfo, compactionInfo);
 
     Assert.assertNotEquals("The object must be not equal", compactionInfo, new Object());
@@ -2339,8 +2340,8 @@ public class TestCompactor extends TestCompactorBase {
 
   @Test
   public void testCompactionInfoHashCode() {
-    CompactionInfo compactionInfo = new CompactionInfo("dbName", "tableName", "partName", CompactionType.MINOR);
-    CompactionInfo compactionInfo1 = new CompactionInfo("dbName", "tableName", "partName", CompactionType.MINOR);
+    CompactionInfo compactionInfo = new CompactionInfo(Warehouse.DEFAULT_CATALOG_NAME, "dbName", "tableName", "partName", CompactionType.MINOR);
+    CompactionInfo compactionInfo1 = new CompactionInfo(Warehouse.DEFAULT_CATALOG_NAME, "dbName", "tableName", "partName", CompactionType.MINOR);
 
     Assert.assertEquals("The hash codes must be equal", compactionInfo.hashCode(), compactionInfo1.hashCode());
   }
@@ -2657,6 +2658,7 @@ public class TestCompactor extends TestCompactorBase {
 
   private void verifyCompactions(List<ShowCompactResponseElement> compacts, SortedSet<String> partNames, String tblName) {
     for (ShowCompactResponseElement compact : compacts) {
+      Assert.assertEquals(Warehouse.DEFAULT_CATALOG_NAME, compact.getCatName());
       Assert.assertEquals("default", compact.getDbname());
       Assert.assertEquals(tblName, compact.getTablename());
       Assert.assertEquals("initiated", compact.getState());

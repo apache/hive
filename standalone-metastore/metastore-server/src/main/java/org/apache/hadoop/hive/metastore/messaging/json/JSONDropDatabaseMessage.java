@@ -32,7 +32,7 @@ import org.apache.thrift.TException;
 public class JSONDropDatabaseMessage extends DropDatabaseMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, dbJson;
+  String server, servicePrincipal, cat, db, dbJson;
 
   @JsonProperty
   Long timestamp;
@@ -45,6 +45,7 @@ public class JSONDropDatabaseMessage extends DropDatabaseMessage {
   public JSONDropDatabaseMessage(String server, String servicePrincipal,  Database db, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
+    this.cat = db.getCatalogName();
     this.db = db.getName();
     this.timestamp = timestamp;
     try {
@@ -61,6 +62,11 @@ public class JSONDropDatabaseMessage extends DropDatabaseMessage {
 
   @Override
   public String getServicePrincipal() { return servicePrincipal; }
+
+  @Override
+  public String getCat() {
+    return cat;
+  }
 
   @Override
   public String getDB() { return db; }
