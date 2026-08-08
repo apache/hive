@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreFilterHook;
 import org.apache.hadoop.hive.metastore.MetaStorePlainSaslHelper;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
@@ -430,6 +431,20 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
   @Override
   public boolean isLocalMetaStore() {
     return localMetaStore;
+  }
+
+  @Override
+  public void syncEmbeddedHandlerConf(Configuration conf) {
+    if (!localMetaStore || client == null) {
+      return;
+    }
+    try {
+      java.lang.reflect.Method setConfMethod =
+          client.getClass().getMethod("setConf", Configuration.class);
+      setConfMethod.invoke(client, conf);
+    } catch (ReflectiveOperationException e) {
+      LOG.warn("Failed to sync embedded metastore handler configuration", e);
+    }
   }
 
   @Override
