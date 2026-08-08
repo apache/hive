@@ -82,9 +82,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: predicate_fold_tb
-          filterExpr: (value is null or (value < 3)) (type: boolean)
+          filterExpr: ((value < 3) or value is null) (type: boolean)
           Filter Operator
-            predicate: (value is null or (value < 3)) (type: boolean)
+            predicate: ((value < 3) or value is null) (type: boolean)
             Select Operator
               expressions: value (type: int)
               outputColumnNames: _col0
@@ -121,9 +121,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: predicate_fold_tb
-          filterExpr: (value is null or (value > 3)) (type: boolean)
+          filterExpr: ((value > 3) or value is null) (type: boolean)
           Filter Operator
-            predicate: (value is null or (value > 3)) (type: boolean)
+            predicate: ((value > 3) or value is null) (type: boolean)
             Select Operator
               expressions: value (type: int)
               outputColumnNames: _col0
@@ -160,9 +160,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: predicate_fold_tb
-          filterExpr: (value is null or (value <= 3)) (type: boolean)
+          filterExpr: ((value <= 3) or value is null) (type: boolean)
           Filter Operator
-            predicate: (value is null or (value <= 3)) (type: boolean)
+            predicate: ((value <= 3) or value is null) (type: boolean)
             Select Operator
               expressions: value (type: int)
               outputColumnNames: _col0
@@ -200,9 +200,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: predicate_fold_tb
-          filterExpr: (value is null or (value >= 3)) (type: boolean)
+          filterExpr: ((value >= 3) or value is null) (type: boolean)
           Filter Operator
-            predicate: (value is null or (value >= 3)) (type: boolean)
+            predicate: ((value >= 3) or value is null) (type: boolean)
             Select Operator
               expressions: value (type: int)
               outputColumnNames: _col0
@@ -278,9 +278,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: predicate_fold_tb
-          filterExpr: (value is null or (value <= 1) or (value > 3)) (type: boolean)
+          filterExpr: ((value <= 1) or (value > 3) or value is null) (type: boolean)
           Filter Operator
-            predicate: (value is null or (value <= 1) or (value > 3)) (type: boolean)
+            predicate: ((value <= 1) or (value > 3) or value is null) (type: boolean)
             Select Operator
               expressions: value (type: int)
               outputColumnNames: _col0

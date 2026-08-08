@@ -1116,6 +1116,39 @@ public class TestFilterSelectivityEstimator {
     checkBetweenSelectivity(0, universe, total, cast, 100f, 0f);
   }
 
+  @Test
+  public void testComputeIsNullSelectivityWithStats() {
+    stats.setNumNulls(3);
+    doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
+    RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.IS_NULL, inputRef0);
+    checkSelectivity(3f / VALUES.length, filter); // 3 / 13
+  }
+
+  @Test
+  public void testComputeIsNullSelectivityNull() {
+    doReturn(Collections.singletonList(null)).when(tableMock).getColStat(Collections.singletonList(0));
+    RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.IS_NULL, inputRef0);
+    checkSelectivity(1f / 3f, filter); // fallback to DEFAULT_COMPARISON_SELECTIVITY
+  }
+
+  @Test
+  public void testComputeIsNullSelectivityMissingStats() {
+    doReturn(Collections.emptyList()).when(tableMock).getColStat(Collections.singletonList(0));
+    RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.IS_NULL, inputRef0);
+    checkSelectivity(1f / 3f, filter); // DEFAULT_COMPARISON_SELECTIVITY
+  }
+
+  @Test
+  public void testComputeIsNullSelectivityEstimatedStatsFallback() {
+    ColStatistics estimated = new ColStatistics();
+    estimated.setIsEstimated(true);
+    estimated.setNumNulls(0);
+    doReturn(Collections.singletonList(estimated)).when(tableMock).getColStat(Collections.singletonList(0));
+    RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.IS_NULL, inputRef0);
+    // estimated stats should be treated as missing and fallback to DEFAULT_COMPARISON_SELECTIVITY
+    checkSelectivity(1f / 3f, filter);
+  }
+
   private void checkSelectivity(float expectedSelectivity, RexNode filter) {
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
     Assert.assertEquals(filter.toString(), expectedSelectivity, estimator.estimateSelectivity(filter), DELTA);
