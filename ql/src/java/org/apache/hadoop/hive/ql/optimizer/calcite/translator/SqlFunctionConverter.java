@@ -260,6 +260,7 @@ public class SqlFunctionConverter {
         case FLOOR:
         case CEIL:
         case LIKE:
+        case CHAR_LENGTH:
         case OTHER_FUNCTION:
           node = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
           node.addChild((ASTNode) ParseDriver.adaptor.create(hToken.type, hToken.text));

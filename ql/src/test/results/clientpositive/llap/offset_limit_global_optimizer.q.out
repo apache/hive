@@ -18,7 +18,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key` AS `srcpart.key`, SUBSTR(`value`, 5) AS `csubstr`, `ds`, `hr`
 FROM `default`.`srcpart`
-ORDER BY `key`, SUBSTR(`value`, 5), `ds`, `hr`
+ORDER BY `key`, 2, `ds`, `hr`
 LIMIT 10
 OFFSET 400
 STAGE DEPENDENCIES:
@@ -301,7 +301,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key` AS `srcpart.key`, SUBSTR(`value`, 5) AS `csubstr`, `ds`, `hr`
 FROM `default`.`srcpart`
-ORDER BY `key`, SUBSTR(`value`, 5), `ds`, `hr`
+ORDER BY `key`, 2, `ds`, `hr`
 LIMIT 10
 OFFSET 490
 STAGE DEPENDENCIES:
@@ -584,7 +584,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key` AS `srcpart.key`, SUBSTR(`value`, 5) AS `csubstr`, `ds`, `hr`
 FROM `default`.`srcpart`
-ORDER BY `key`, SUBSTR(`value`, 5), `ds`, `hr`
+ORDER BY `key`, 2, `ds`, `hr`
 LIMIT 20
 OFFSET 490
 STAGE DEPENDENCIES:
@@ -877,7 +877,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key` AS `srcpart.key`, SUBSTR(`value`, 5) AS `csubstr`, `ds`, `hr`
 FROM `default`.`srcpart`
-ORDER BY `key`, SUBSTR(`value`, 5), `ds`, `hr`
+ORDER BY `key`, 2, `ds`, `hr`
 LIMIT 600
 OFFSET 490
 STAGE DEPENDENCIES:

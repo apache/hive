@@ -2457,7 +2457,13 @@
                   }
                 ]
               }
-            ]
+            ],
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 13,
+              "scale": 2
+            }
           }
         ],
         "rowCount": 1.4671066877753214E31
@@ -4143,7 +4149,13 @@
                   }
                 ]
               }
-            ]
+            ],
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 13,
+              "scale": 2
+            }
           }
         ],
         "rowCount": 1.033048226619305E32
@@ -5974,7 +5986,13 @@
                   }
                 ]
               }
-            ]
+            ],
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 13,
+              "scale": 2
+            }
           }
         ],
         "rowCount": 4.735228068068781E28

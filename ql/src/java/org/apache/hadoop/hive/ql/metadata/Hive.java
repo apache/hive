@@ -567,8 +567,6 @@ public class Hive implements AutoCloseable {
    */
   private Hive(HiveConf c, boolean doRegisterAllFns) throws HiveException {
     conf = c;
-    // turn off calcite rexnode normalization
-    System.setProperty("calcite.enable.rexnode.digest.normalize", "false");
     if (doRegisterAllFns) {
       registerAllFunctionsOnce();
     }
