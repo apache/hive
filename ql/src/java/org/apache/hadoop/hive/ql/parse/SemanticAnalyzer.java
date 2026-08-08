@@ -4737,6 +4737,35 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return false;
   }
 
+  public static String processAllColRefAndExclude(
+      ASTNode expr, RowResolver inputRR, Set<ColumnInfo> excludedColumns) throws SemanticException {
+    // Check if the query uses SELECT * EXCLUDE. If it does, grab the table
+    // alias (like t.*) and build a list of the columns the user wants to exclude.
+    String starTabAlias = null;
+    ASTNode excludeNode = null;
+    if (expr.getChildCount() > 0) {
+      ASTNode firstChild = (ASTNode) expr.getChild(0);
+      if (firstChild.getType() == HiveParser.TOK_TABCOLNAME) {
+        excludeNode = firstChild;
+      } else {
+        starTabAlias = getUnescapedName(firstChild).toLowerCase();
+        if (expr.getChildCount() > 1) {
+          excludeNode = (ASTNode) expr.getChild(1);
+        }
+      }
+    }
+
+    if (excludeNode != null) {
+      for (int e = 0; e < excludeNode.getChildCount(); e++) {
+        String excludeColName = unescapeIdentifier(excludeNode.getChild(e).getText()).toLowerCase();
+        ColumnInfo colInfo = inputRR.get(starTabAlias, excludeColName);
+        if (colInfo != null) {
+          excludedColumns.add(colInfo);
+        }
+      }
+    }
+    return starTabAlias;
+  }
 
   private Operator<?> genSelectPlan(String dest, QB qb, Operator<?> input,
                                     Operator<?> inputForSelectStar) throws SemanticException {
@@ -4914,9 +4943,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // The real expression
       if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
         int initPos = pos;
-        pos = genExprNodeDescRegex(".*", expr.getChildCount() == 0 ? null
-                : getUnescapedName((ASTNode) expr.getChild(0)).toLowerCase(),
-            expr, colList, null, inputRR, starRR, pos, out_rwsch, qb.getAliases(), false);
+
+        Set<ColumnInfo> excludeCols = new HashSet<>();
+        String starTabAlias = processAllColRefAndExclude(expr, inputRR, excludeCols);
+        if (excludeCols.isEmpty()) {
+          excludeCols = null;
+        }
+
+        pos = genExprNodeDescRegex(".*", starTabAlias,
+            expr, colList, excludeCols, inputRR, starRR, pos, out_rwsch, qb.getAliases(), false);
         if (unparseTranslator.isEnabled()) {
           offset += pos - initPos - 1;
         }

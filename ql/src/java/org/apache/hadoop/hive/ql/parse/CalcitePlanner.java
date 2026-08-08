@@ -4366,8 +4366,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
           // 6.4 Build ExprNode corresponding to colums
           if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
-            pos = genRexNodeRegex(".*",
-                expr.getChildCount() == 0 ? null : getUnescapedName((ASTNode) expr.getChild(0)).toLowerCase(),
+            // Parse SELECT * EXCLUDE columns and pass them to the Calcite engine for exclusion
+            String starTabAlias = SemanticAnalyzer.processAllColRefAndExclude(expr, inputRR, excludedColumns);
+            pos = genRexNodeRegex(".*", starTabAlias,
                 expr, columnList, excludedColumns, inputRR, starRR, pos, outputRR, qb.getAliases(), true);
           } else if (expr.getType() == HiveParser.TOK_TABLE_OR_COL
                   && !hasAsClause
