@@ -24,8 +24,10 @@ import java.util.Optional;
 import java.util.TimeZone;
 
 import com.google.common.base.MoreObjects;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
@@ -40,6 +42,8 @@ import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
+import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
+import org.apache.hadoop.hive.ql.io.parquet.ParquetTypeUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
@@ -508,8 +512,7 @@ public enum ETypeConverter {
       // of code paths that do not provide the typeInfo in those cases we default to Text. This idiom is also
       // followed by for example the BigDecimal converter in which if there is no type information,
       // it defaults to the widest representation
-      if (hiveTypeInfo instanceof PrimitiveTypeInfo) {
-        PrimitiveTypeInfo t = (PrimitiveTypeInfo) hiveTypeInfo;
+      if (hiveTypeInfo instanceof PrimitiveTypeInfo t) {
         switch (t.getPrimitiveCategory()) {
           case CHAR:
             return new BinaryConverter<HiveCharWritable>(type, parent, index) {
@@ -525,9 +528,33 @@ public enum ETypeConverter {
                 return new HiveVarcharWritable(binary.getBytes(), ((VarcharTypeInfo) hiveTypeInfo).getLength());
               }
             };
+          case DATE:
+            return new BinaryConverter<DateWritableV2>(type, parent, index) {
+              @Override
+              protected DateWritableV2 convert(Binary binary) {
+                Date date = ParquetTypeUtils.parseDate(binary.getBytes());
+                return date != null ? new DateWritableV2(date) : null;
+              }
+            };
+          case TIMESTAMP:
+            return new BinaryConverter<TimestampWritableV2>(type, parent, index) {
+              @Override
+              protected TimestampWritableV2 convert(Binary binary) {
+                Timestamp ts = ParquetTypeUtils.parseTimestamp(binary.getBytes());
+                return ts != null ? new TimestampWritableV2(ts) : null;
+              }
+            };
+          case TIMESTAMPLOCALTZ:
+            return new BinaryConverter<TimestampLocalTZWritable>(type, parent, index) {
+              @Override
+              protected TimestampLocalTZWritable convert(Binary binary) {
+                TimestampTZ tstz = ParquetTypeUtils.parseTimestampTZ(binary.getBytes(), ZoneId.systemDefault());
+                return tstz != null ? new TimestampLocalTZWritable(tstz) : null;
+              }
+            };
         }
       }
-      // STRING type
+      // Default to STRING type (Text)
       return new BinaryConverter<Text>(type, parent, index) {
         @Override
         protected Text convert(Binary binary) {

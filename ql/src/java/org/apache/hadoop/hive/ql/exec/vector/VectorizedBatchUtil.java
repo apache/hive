@@ -146,6 +146,7 @@ public class VectorizedBatchUtil {
         case DATE:
           return new DateColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
         case TIMESTAMP:
+        case TIMESTAMPLOCALTZ:
           return new TimestampColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
         case INTERVAL_DAY_TIME:
           return new IntervalDayTimeColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
