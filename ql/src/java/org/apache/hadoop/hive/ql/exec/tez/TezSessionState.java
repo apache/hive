@@ -40,6 +40,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -68,6 +69,7 @@ import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.registry.client.api.RegistryOperations;
+import org.apache.hadoop.mapreduce.security.TokenCache;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
@@ -293,6 +295,27 @@ public class TezSessionState implements TezSession {
       commonLocalResources.put(DagUtils.getBaseName(lr), lr);
     }
     return commonLocalResources;
+  }
+
+  @VisibleForTesting
+  Credentials createLocalResourceCredentialsExcludingDefaultFS(
+      Map<String, LocalResource> resourceMap) throws IOException, URISyntaxException {
+    String defaultFS = conf.get(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY);
+    Credentials credentials = new Credentials();
+    List<Path> ps = new ArrayList<>();
+
+    for (LocalResource resource : resourceMap.values()) {
+      Path p = resource.getResource().toPath();
+      String path = p.toString();
+      if (path.startsWith("/") || path.startsWith(defaultFS)) {
+        LOG.info("skip collecting path to issue token because it is defaultFS: path={}", p);
+      } else {
+        LOG.info("collect path to issue token: path={}", p);
+        ps.add(p);
+      }
+    }
+    TokenCache.obtainTokensForNamenodes(credentials, ps.toArray(new Path[0]), conf);
+    return credentials;
   }
 
   /**
