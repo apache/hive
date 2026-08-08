@@ -50,6 +50,7 @@ import org.apache.parquet.io.api.RecordMaterializer;
 import org.apache.parquet.schema.GroupType;
 import org.apache.parquet.schema.LogicalTypeAnnotation;
 import org.apache.parquet.schema.MessageType;
+import org.apache.parquet.schema.MessageTypeParser;
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
 import org.apache.parquet.schema.Type;
 import org.apache.parquet.schema.Type.Repetition;
@@ -438,6 +439,20 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
     }
   }
 
+  public static MessageType getTableParquetSchema(Configuration configuration, MessageType fileSchema,
+      Map<String, String> metadata) {
+    String columnNames = configuration.get(IOConstants.COLUMNS);
+    String columnTypes = configuration.get(IOConstants.COLUMNS_TYPES);
+    if (StringUtils.hasLength(columnNames) && StringUtils.hasLength(columnTypes)) {
+      return getRequestedSchemaForIndexAccess(
+          Boolean.parseBoolean(metadata.get(PARQUET_COLUMN_INDEX_ACCESS)),
+          getColumnNames(columnNames),
+          getColumnTypes(columnTypes),
+          fileSchema);
+    }
+    return MessageTypeParser.parseMessageType(metadata.get(HIVE_TABLE_AS_PARQUET_SCHEMA));
+  }
+
   private static MessageType getRequestedSchemaForIndexAccess(
     boolean indexAccess,
     List<String> columnNamesList,
@@ -535,6 +550,7 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
       }
     }
 
-    return new DataWritableRecordConverter(readContext.getRequestedSchema(), metadata, hiveTypeInfo);
+    MessageType tableSchema = getTableParquetSchema(configuration, fileSchema, metadata);
+    return new DataWritableRecordConverter(readContext.getRequestedSchema(), tableSchema, metadata, hiveTypeInfo);
   }
 }
