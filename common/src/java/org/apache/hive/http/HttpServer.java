@@ -187,8 +187,11 @@ public class HttpServer {
     private final List<Pair<String, Class<? extends HttpServlet>>> servlets =
         new LinkedList<Pair<String, Class<? extends HttpServlet>>>();
     private boolean disableDirListing = false;
-    private final Map<String, Pair<String, Filter>> globalFilters = new LinkedHashMap<>();
+    private final Map<String, GlobalFilter> globalFilters = new LinkedHashMap<>();
     private String contextPath = "/";
+
+    record GlobalFilter(String pathSpec, Filter filter, String className,
+        Map<String, String> initParams) {}
 
     public Builder(String name) {
       Preconditions.checkArgument(name != null && !name.isEmpty(), "Name must be specified");
@@ -329,7 +332,18 @@ public class HttpServer {
     }
 
     public Builder addGlobalFilter(String name, String pathSpec, Filter filter) {
-      globalFilters.put(name, Pair.create(pathSpec, filter));
+      return addGlobalFilter(name, pathSpec, filter, null);
+    }
+
+    public Builder addGlobalFilter(String name, String pathSpec, Filter filter,
+        Map<String, String> initParams) {
+      globalFilters.put(name, new GlobalFilter(pathSpec, filter, null, initParams));
+      return this;
+    }
+
+    public Builder addGlobalFilter(String name, String pathSpec, String filterClassName,
+        Map<String, String> initParams) {
+      globalFilters.put(name, new GlobalFilter(pathSpec, null, filterClassName, initParams));
       return this;
     }
 
@@ -579,8 +593,8 @@ public class HttpServer {
       addServlet(p.getKey(), "/" + p.getKey(), p.getValue(), webAppContext);
     }
 
-    builder.globalFilters.forEach((k, v) -> 
-        addFilter(k, v.getKey(), v.getValue(), webAppContext.getServletHandler()));
+    builder.globalFilters.forEach((k, v) ->
+        addFilter(k, v, webAppContext.getServletHandler()));
 
     // Associate the port handler with the a new connector and add it to the server
     ServerConnector connector = createAndAddChannelConnector(threadPool.getQueueSize(), builder);
@@ -851,7 +865,7 @@ public class HttpServer {
     handlers.ifPresent(hs -> Arrays.stream(hs)
         .filter(h -> h instanceof ServletContextHandler && !"static".equals(((ServletContextHandler) h).getDisplayName()))
         .forEach(h -> b.globalFilters.forEach((k, v) ->
-            addFilter(k, v.getKey(), v.getValue(), ((ServletContextHandler) h).getServletHandler()))));
+            addFilter(k, v, ((ServletContextHandler) h).getServletHandler()))));
   }
 
   private Map<String, String> setHeaders() {
@@ -977,12 +991,20 @@ public class HttpServer {
     webAppContext.addServlet(holder, pathSpec);
   }
 
-  public void addFilter(String name, String pathSpec, Filter filter, ServletHandler handler) {
-    FilterHolder holder = new FilterHolder(filter);
+  private void addFilter(String name, Builder.GlobalFilter gf, ServletHandler handler) {
+    FilterHolder holder = gf.filter() != null
+        ? new FilterHolder(gf.filter())
+        : new FilterHolder();
+    if (gf.className() != null) {
+      holder.setClassName(gf.className());
+    }
     if (name != null) {
       holder.setName(name);
     }
-    handler.addFilterWithMapping(holder, pathSpec, FilterMapping.ALL);
+    if (gf.initParams() != null) {
+      holder.setInitParameters(gf.initParams());
+    }
+    handler.addFilterWithMapping(holder, gf.pathSpec(), FilterMapping.ALL);
   }
 
   private static void disableDirectoryListingOnServlet(ServletContextHandler contextHandler) {
