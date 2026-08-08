@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.metadata;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -225,13 +226,21 @@ public final class HiveMaterializedViewsRegistry {
           " ignored; error creating view replacement");
       return null;
     }
+    final Context context = createContext(conf);
     final CBOPlan plan;
     try {
-      plan = ParseUtils.parseQuery(createContext(conf), viewQuery);
+      plan = ParseUtils.parseQuery(context, viewQuery);
     } catch (Exception e) {
       LOG.warn("Materialized view " + materializedViewTable.getCompleteName() +
           " ignored; error parsing original query; " + e);
       return null;
+    } finally {
+      try {
+        context.clear();
+      } catch (IOException ioe) {
+        LOG.warn("Error while cleaning up staging directories for materialized view " +
+            materializedViewTable.getCompleteName(), ioe);
+      }
     }
 
     return new HiveRelOptMaterialization(viewScan, plan.getPlan(),
