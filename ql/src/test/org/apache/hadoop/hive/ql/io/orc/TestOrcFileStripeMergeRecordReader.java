@@ -28,6 +28,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.FileSplit;
+import org.apache.orc.CompressionKind;
+import org.apache.orc.OrcConf;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -37,7 +39,9 @@ import org.junit.rules.TestName;
 
 public class TestOrcFileStripeMergeRecordReader {
 
-  private static final int TEST_STRIPE_SIZE = 5000;
+  private static final int MAX_ROWS_PER_STRIPE = 5000;
+
+  private static final long STRIPE_SIZE_BYTES = 128;
 
   private OrcFileKeyWrapper key;
   private OrcFileValueWrapper value;
@@ -51,11 +55,16 @@ public class TestOrcFileStripeMergeRecordReader {
   @Before
   public void setup() throws IOException {
     conf = new Configuration();
+    // ORC ≥2.x: orc.stripe.size.check.ratio triggers flushes when buffered tree bytes exceed ratio × orc.stripe.size
+    // Setting it to 0 disables it.
+    OrcConf.STRIPE_SIZE_CHECKRATIO.setDouble(conf, 0);
+    // Maximum number of rows a Stripe can hold in ORC file.
+    OrcConf.STRIPE_ROW_COUNT.setLong(conf, MAX_ROWS_PER_STRIPE);
     fs = FileSystem.getLocal(conf);
     key = new OrcFileKeyWrapper();
     value = new OrcFileValueWrapper();
     tmpPath  = prepareTmpPath();
-    createOrcFile(TEST_STRIPE_SIZE, TEST_STRIPE_SIZE + 1);
+    createOrcFile(MAX_ROWS_PER_STRIPE + 1);
   }
 
   @After
@@ -86,7 +95,7 @@ public class TestOrcFileStripeMergeRecordReader {
     // both stripes will be processed, first stripe has 5000 rows and second stripe has 1 row
     reader.next(key, value);
     Assert.assertEquals("InputPath", tmpPath, key.getInputPath());
-    Assert.assertEquals("NumberOfValues", TEST_STRIPE_SIZE,
+    Assert.assertEquals("NumberOfValues", MAX_ROWS_PER_STRIPE,
         value.getStripeStatistics().getColStats(0).getNumberOfValues());
     reader.next(key, value);
     Assert.assertEquals("InputPath", tmpPath, key.getInputPath());
@@ -96,7 +105,7 @@ public class TestOrcFileStripeMergeRecordReader {
     reader.close();
   }
 
-  private void createOrcFile(int stripSize, int numberOfRows) throws IOException {
+  private void createOrcFile(int numberOfRows) throws IOException {
     ObjectInspector inspector;
     synchronized (TestOrcFileStripeMergeRecordReader.class) {
       inspector = ObjectInspectorFactory.getReflectionObjectInspector
@@ -106,7 +115,7 @@ public class TestOrcFileStripeMergeRecordReader {
     Writer writer = OrcFile.createWriter(tmpPath,
         OrcFile.writerOptions(conf)
             .inspector(inspector)
-            .stripeSize(stripSize)
+            .stripeSize(STRIPE_SIZE_BYTES)
             .compress(CompressionKind.ZLIB)
             .bufferSize(5000)
             .rowIndexStride(1000));

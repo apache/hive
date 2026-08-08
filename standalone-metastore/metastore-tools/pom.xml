@@ -30,7 +30,6 @@
     <errorprone.core.version>2.29.2</errorprone.core.version>
     <picocli.version>3.1.0</picocli.version>
     <commons-math3.version>3.6.1</commons-math3.version>
-    <jetbrain-annotation.version>16.0.2</jetbrain-annotation.version>
     <standalone.metastore.path.to.root>..</standalone.metastore.path.to.root>
   </properties>
   <!-- why the f*ck this pom.xml has a dependencyManagement block? -->
@@ -79,12 +78,6 @@
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-log4j12</artifactId>
         <version>1.7.30</version>
-      </dependency>
-      <!-- https://mvnrepository.com/artifact/org.jetbrains/annotations -->
-      <dependency>
-        <groupId>org.jetbrains</groupId>
-        <artifactId>annotations</artifactId>
-        <version>${jetbrain-annotation.version}</version>
       </dependency>
       <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-jxr-plugin -->
       <dependency>

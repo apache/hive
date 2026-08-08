@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.orc.OrcConf;
 import org.apache.orc.OrcFile.WriterContext;
 import org.apache.orc.impl.OrcAcidUtils;
 import org.junit.Before;
@@ -86,6 +87,8 @@ public class TestFixAcidKeyIndex {
     FileSystem fs = path.getFileSystem(conf);
     fs.delete(path, true);
     TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeStr);
+    OrcConf.STRIPE_SIZE_CHECKRATIO.setDouble(conf, 0);
+    OrcConf.STRIPE_ROW_COUNT.setLong(conf, 5000);
     Writer writer = OrcFile.createWriter(path,
         OrcFile.writerOptions(conf)
             .fileSystem(fs)
