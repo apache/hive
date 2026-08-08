@@ -64,7 +64,6 @@ import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
-import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ReplTblWriteIdStateRequest;
 import org.apache.hadoop.hive.metastore.api.ReplayedTxnsForPolicyResult;
 import org.apache.hadoop.hive.metastore.api.SeedTableWriteIdsRequest;
@@ -985,18 +984,27 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    */
   @Override
   public void cleanupRecords(HiveObjectType type, Database db, Table table,
-        Iterator<Partition> partitionIterator, boolean keepTxnToWriteIdMetaData) throws MetaException {
-    new CleanupRecordsFunction(type, db, table, partitionIterator, getDefaultCatalog(conf), keepTxnToWriteIdMetaData, null)
-        .execute(jdbcResource);
+        Iterator<String> partNamesIterator, boolean keepTxnToWriteIdMetaData) throws MetaException {
+    new CleanupRecordsFunction(type, db, table, partNamesIterator, getDefaultCatalog(conf),
+        keepTxnToWriteIdMetaData, null).execute(jdbcResource);
   }
 
   @Override
   public void cleanupRecords(HiveObjectType type, Database db, Table table,
-        Iterator<Partition> partitionIterator, long txnId) throws MetaException {
-    new CleanupRecordsFunction(type, db, table, partitionIterator, getDefaultCatalog(conf), false, txnId)
+        Iterator<String> partNamesIterator, long txnId) throws MetaException {
+    new CleanupRecordsFunction(type, db, table, partNamesIterator, getDefaultCatalog(conf), false, txnId)
         .execute(jdbcResource);
   }
-  
+
+  @Override
+  public void cleanupCompactionRecords(Table table, List<String> partitionNames) throws MetaException {
+    if (CollectionUtils.isEmpty(partitionNames)) {
+      return;
+    }
+    new CleanupRecordsFunction(HiveObjectType.PARTITION, null, table, partitionNames.iterator(),
+        getDefaultCatalog(conf), false, null).execute(jdbcResource);
+  }
+
   /**
    * Catalog hasn't been added to transactional tables yet, so it's passed in but not used.
    */
