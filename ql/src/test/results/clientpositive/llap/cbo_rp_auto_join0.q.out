@@ -1,4 +1,4 @@
-Warning: Shuffle Join MERGEJOIN[16][tables = [a:cbo_t1:cbo_t3, a:cbo_t2:cbo_t3]] in Stage 'Reducer 2' is a cross product
+Warning: Map Join MAPJOIN[16][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: explain 
 select sum(hash(a.k1,a.v1,a.k2, a.v2))
 from (
@@ -34,8 +34,8 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (XPROD_EDGE), Map 4 (XPROD_EDGE)
-        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+        Map 1 <- Map 3 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -51,14 +51,34 @@ STAGE PLANS:
                       expressions: key (type: string), value (type: string)
                       outputColumnNames: key, value
                       Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        null sort order: 
-                        sort order: 
-                        Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: key (type: string), value (type: string)
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 
+                          1 
+                        outputColumnNames: key, value, key0, value0
+                        input vertices:
+                          1 Map 3
+                        Statistics: Num rows: 36 Data size: 12240 Basic stats: COMPLETE Column stats: COMPLETE
+                        Select Operator
+                          expressions: hash(key,value,key0,value0) (type: int)
+                          outputColumnNames: $f0
+                          Statistics: Num rows: 36 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
+                          Group By Operator
+                            aggregations: sum($f0)
+                            minReductionHashAggr: 0.9722222
+                            mode: hash
+                            outputColumnNames: _col0
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                            Reduce Output Operator
+                              null sort order: 
+                              sort order: 
+                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                              value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
-        Map 4 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: a:cbo_t2:cbo_t3
@@ -79,32 +99,6 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 
-                  1 
-                outputColumnNames: key, value, key0, value0
-                Statistics: Num rows: 36 Data size: 12240 Basic stats: COMPLETE Column stats: COMPLETE
-                Select Operator
-                  expressions: hash(key,value,key0,value0) (type: int)
-                  outputColumnNames: $f0
-                  Statistics: Num rows: 36 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
-                  Group By Operator
-                    aggregations: sum($f0)
-                    minReductionHashAggr: 0.9722222
-                    mode: hash
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      null sort order: 
-                      sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: bigint)
-        Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -126,7 +120,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[16][tables = [a:cbo_t1:cbo_t3, a:cbo_t2:cbo_t3]] in Stage 'Reducer 2' is a cross product
+Warning: Map Join MAPJOIN[16][bigTable=?] in task 'Map 1' is a cross product
 PREHOOK: query: explain 
 select sum(hash(a.k1,a.v1,a.k2, a.v2))
 from (
@@ -162,8 +156,8 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (XPROD_EDGE), Map 4 (XPROD_EDGE)
-        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+        Map 1 <- Map 3 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -179,14 +173,34 @@ STAGE PLANS:
                       expressions: key (type: string), value (type: string)
                       outputColumnNames: key, value
                       Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        null sort order: 
-                        sort order: 
-                        Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: key (type: string), value (type: string)
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 
+                          1 
+                        outputColumnNames: key, value, key0, value0
+                        input vertices:
+                          1 Map 3
+                        Statistics: Num rows: 36 Data size: 12240 Basic stats: COMPLETE Column stats: COMPLETE
+                        Select Operator
+                          expressions: hash(key,value,key0,value0) (type: int)
+                          outputColumnNames: $f0
+                          Statistics: Num rows: 36 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
+                          Group By Operator
+                            aggregations: sum($f0)
+                            minReductionHashAggr: 0.9722222
+                            mode: hash
+                            outputColumnNames: _col0
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                            Reduce Output Operator
+                              null sort order: 
+                              sort order: 
+                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                              value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
-        Map 4 
+        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: a:cbo_t2:cbo_t3
@@ -207,32 +221,6 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 
-                  1 
-                outputColumnNames: key, value, key0, value0
-                Statistics: Num rows: 36 Data size: 12240 Basic stats: COMPLETE Column stats: COMPLETE
-                Select Operator
-                  expressions: hash(key,value,key0,value0) (type: int)
-                  outputColumnNames: $f0
-                  Statistics: Num rows: 36 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
-                  Group By Operator
-                    aggregations: sum($f0)
-                    minReductionHashAggr: 0.9722222
-                    mode: hash
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      null sort order: 
-                      sort order: 
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: bigint)
-        Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
