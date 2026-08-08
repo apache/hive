@@ -433,6 +433,30 @@ public class TestHiveMetaStoreChecker {
   }
 
   @Test
+  public void testPartitionUriMismatchCheck()
+      throws HiveException, IOException, TException, MetastoreException {
+    Table table = createTestTable(false);
+
+    List<Partition> partitions = hive.getPartitions(table);
+    Partition part = partitions.getFirst();
+
+    // Change location to inject "localhost" authority to simulate HDFS HA mismatch
+    String originalPathStr = part.getDataLocation().toString();
+    String manipulatedPathStr = originalPathStr.replace("file:/", "file://localhost/");
+
+    part.setLocation(manipulatedPathStr);
+    hive.alterPartition(catName, dbName, tableName, part, null, true);
+
+    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null);
+
+    // MSCK should succeed and NOT report this partition as missing from FS or missing from DB
+    assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());
+    assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
+    assertEquals(Collections.<CheckResult.PartitionResult>emptySet(), result.getPartitionsNotOnFs());
+    assertEquals(Collections.<CheckResult.PartitionResult>emptySet(), result.getPartitionsNotInMs());
+  }
+
+  @Test
   public void testDataDeletion() throws HiveException,
     IOException, TException {
 
