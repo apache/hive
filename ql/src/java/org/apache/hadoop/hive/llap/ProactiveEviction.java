@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.llap.impl.LlapManagementProtocolClientImpl;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.registry.ClusterNotReadyException;
 import org.apache.hadoop.io.retry.RetryPolicies;
 import org.apache.hadoop.io.retry.RetryPolicy;
 import org.apache.hadoop.net.NetUtils;
@@ -100,6 +101,8 @@ public final class ProactiveEviction {
         EXECUTOR.execute(task);
       }
 
+    } catch (ClusterNotReadyException e) {
+      LOG.debug("LLAP cluster not ready, skipping proactive eviction.", e);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
