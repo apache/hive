@@ -259,6 +259,22 @@ public class TestAlterPartitions extends MetaStoreClientTest {
   }
 
   @Test
+  public void testAlterPartitionPreservesCreateTimeWhenUnset() throws Exception {
+    createTable4PartColsParts(client);
+    Partition partition = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1).get(0);
+    int createTime = partition.getCreateTime();
+    assertTrue(createTime > 0);
+
+    partition.setCreateTime(0);
+    partition.putToParameters("test_key", "test_value");
+    client.alter_partition(DB_NAME, TABLE_NAME, partition);
+
+    Partition altered = client.getPartition(DB_NAME, TABLE_NAME, partition.getValues());
+    assertEquals(createTime, altered.getCreateTime());
+    assertEquals("test_value", altered.getParameters().get("test_key"));
+  }
+
+  @Test
   @ConditionalIgnoreOnSessionHiveMetastoreClient
   public void otherCatalog() throws TException {
     String catName = "alter_partition_catalog";
@@ -655,6 +671,27 @@ public class TestAlterPartitions extends MetaStoreClientTest {
       assertPartitionChanged(oldParts.get(i), testValues.get(i), PARTCOL_SCHEMA);
     }
     assertPartitionsHaveCorrectValues(newParts, testValues);
+  }
+
+  @Test
+  public void testAlterPartitionsPreserveCreateTimeWhenUnset() throws Exception {
+    createTable4PartColsParts(client);
+    List<Partition> partitions = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1);
+    List<Integer> createTimes = new ArrayList<>();
+    for (Partition partition : partitions) {
+      assertTrue(partition.getCreateTime() > 0);
+      createTimes.add(partition.getCreateTime());
+      partition.setCreateTime(0);
+      partition.putToParameters("test_key", "test_value");
+    }
+
+    client.alter_partitions(DB_NAME, TABLE_NAME, partitions);
+
+    List<Partition> altered = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1);
+    for (int i = 0; i < altered.size(); ++i) {
+      assertEquals(createTimes.get(i).intValue(), altered.get(i).getCreateTime());
+      assertEquals("test_value", altered.get(i).getParameters().get("test_key"));
+    }
   }
 
   @Test(expected = InvalidOperationException.class)

@@ -2751,7 +2751,7 @@ public class Hive implements AutoCloseable {
     }
 
     if (oldPart == null) {
-      addPartitionToMetastore(newTPart, resetStatistics, tbl, tableSnapshot);
+      newTPart = addPartitionToMetastore(newTPart, resetStatistics, tbl, tableSnapshot);
       // For acid table, add the acid_write event with file list at the time of load itself. But
       // it should be done after partition is created.
       if (isTxnTable && (null != newFiles)) {
@@ -2986,11 +2986,11 @@ public class Hive implements AutoCloseable {
     }
   }
 
-  private void addPartitionToMetastore(Partition newTPart, boolean resetStatistics,
-                                       Table tbl, TableSnapshot tableSnapshot) throws HiveException{
+  private Partition addPartitionToMetastore(Partition newTPart, boolean resetStatistics,
+                                            Table tbl, TableSnapshot tableSnapshot) throws HiveException {
     try {
       LOG.debug("Adding new partition " + newTPart.getSpec());
-      getMSC().add_partition(newTPart.getTPartition());
+      return new Partition(tbl, getMSC().add_partition(newTPart.getTPartition()));
     } catch (AlreadyExistsException aee) {
       // With multiple users concurrently issuing insert statements on the same partition has
       // a side effect that some queries may not see a partition at the time when they're issued,
@@ -3006,6 +3006,7 @@ public class Hive implements AutoCloseable {
       LOG.debug("Caught AlreadyExistsException, trying to alter partition instead");
       try {
         setStatsPropAndAlterPartition(resetStatistics, tbl, newTPart, tableSnapshot);
+        return getPartition(tbl, newTPart.getSpec(), false);
       } catch (TException e) {
         LOG.error("Error setStatsPropAndAlterPartition", e);
         throw new HiveException(e);
@@ -3024,21 +3025,27 @@ public class Hive implements AutoCloseable {
     }
   }
 
-  private void addPartitionsToMetastore(List<Partition> partitions,
-                                        boolean resetStatistics, Table tbl,
-                                        List<AcidUtils.TableSnapshot> tableSnapshots)
-                                        throws HiveException {
+  private List<Partition> addPartitionsToMetastore(List<Partition> partitions,
+                                                   boolean resetStatistics, Table tbl,
+                                                   List<AcidUtils.TableSnapshot> tableSnapshots)
+                                                   throws HiveException {
     try {
       if (partitions.isEmpty() || tableSnapshots.isEmpty()) {
-        return;
+        return partitions;
       }
       if (LOG.isDebugEnabled()) {
         StringBuffer debugMsg = new StringBuffer("Adding new partitions ");
         partitions.forEach(partition -> debugMsg.append(partition.getSpec() + " "));
         LOG.debug(debugMsg.toString());
       }
-      getMSC().add_partitions(partitions.stream().map(Partition::getTPartition)
-              .collect(Collectors.toList()));
+      List<org.apache.hadoop.hive.metastore.api.Partition> addedPartitions =
+          getMSC().add_partitions(partitions.stream().map(Partition::getTPartition)
+              .collect(Collectors.toList()), false, true);
+      List<Partition> result = new ArrayList<>(addedPartitions.size());
+      for (org.apache.hadoop.hive.metastore.api.Partition partition : addedPartitions) {
+        result.add(new Partition(tbl, partition));
+      }
+      return result;
     } catch(AlreadyExistsException aee) {
       // With multiple users concurrently issuing insert statements on the same partition has
       // a side effect that some queries may not see a partition at the time when they're issued,
@@ -3053,10 +3060,12 @@ public class Hive implements AutoCloseable {
       // In that case, we want to retry with alterPartition.
       LOG.debug("Caught AlreadyExistsException, trying to add partitions one by one.");
       assert partitions.size() == tableSnapshots.size();
+      List<Partition> addedPartitions = new ArrayList<>(partitions.size());
       for (int i = 0; i < partitions.size(); i++) {
-        addPartitionToMetastore(partitions.get(i), resetStatistics, tbl,
-                tableSnapshots.get(i));
+        addedPartitions.add(addPartitionToMetastore(partitions.get(i), resetStatistics, tbl,
+                tableSnapshots.get(i)));
       }
+      return addedPartitions;
     } catch (Exception e) {
       try {
         for (Partition partition : partitions) {
@@ -3447,12 +3456,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
       // add new partitions in batch
 
-      addPartitionsToMetastore(
-              partitionDetailsMap.entrySet()
-                      .stream()
-                      .filter(entry -> !entry.getValue().hasOldPartition)
-                      .map(entry -> entry.getValue().partition)
-                      .collect(Collectors.toList()),
+      List<Partition> partitionsToAdd = partitionDetailsMap.entrySet()
+              .stream()
+              .filter(entry -> !entry.getValue().hasOldPartition)
+              .map(entry -> entry.getValue().partition)
+              .collect(Collectors.toList());
+      List<Partition> addedPartitions = addPartitionsToMetastore(
+              partitionsToAdd,
               resetStatistics,
               tbl,
               partitionDetailsMap.entrySet()
@@ -3460,6 +3470,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
                       .filter(entry -> !entry.getValue().hasOldPartition)
                       .map(entry -> entry.getValue().tableSnapshot)
                       .collect(Collectors.toList()));
+      addedPartitions.forEach(partition -> result.put(partition.getSpec(), partition));
       // For acid table, add the acid_write event with file list at the time of load itself. But
       // it should be done after partition is created.
 

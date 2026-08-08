@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.metadata;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -37,7 +38,10 @@ import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.ql.exec.Utilities.PartitionDetails;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
+import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.TextInputFormat;
@@ -139,6 +143,57 @@ public class TestHiveLoadPartitionKeepExisting {
         fs.exists(new Path(partPath, "000000_0_old")));
     assertTrue("REPLACE_ALL loadPartition should publish staged data",
         fs.exists(new Path(partPath, "000000_0_new")));
+  }
+
+  @Test
+  public void testLoadPartitionReturnsMetastoreCreateTime() throws Exception {
+    Table table = hive.getTable(tableName);
+    Map<String, String> partSpec = partitionSpec("2026-07-22");
+    FileSystem fs = table.getDataLocation().getFileSystem(hiveConf);
+    Path staging = createStagingDir(fs, table.getDataLocation(), "create_time");
+    try (OutputStream out = fs.create(new Path(staging, "000000_0"))) {
+      out.write("data\n".getBytes());
+    }
+
+    Partition loaded = hive.loadPartition(staging, table, partSpec, LoadFileType.REPLACE_ALL,
+        true, false, false, false, false, false, null, 0, true, false);
+    Partition stored = hive.getPartition(table, partSpec, false);
+
+    assertTrue("loadPartition should return the createTime assigned by HMS",
+        loaded.getTPartition().getCreateTime() > 0);
+    assertEquals(stored.getTPartition().getCreateTime(), loaded.getTPartition().getCreateTime());
+  }
+
+  @Test
+  public void testLoadDynamicPartitionsReturnsMetastoreCreateTime() throws Exception {
+    Table table = hive.getTable(tableName);
+    FileSystem fs = table.getDataLocation().getFileSystem(hiveConf);
+    Map<Path, PartitionDetails> partitionDetails = new LinkedHashMap<>();
+
+    for (String loadDate : Arrays.asList("2026-07-23", "2026-07-24")) {
+      Map<String, String> partSpec = partitionSpec(loadDate);
+      Path staging = createStagingDir(fs, table.getDataLocation(), loadDate);
+      try (OutputStream out = fs.create(new Path(staging, "000000_0"))) {
+        out.write(loadDate.getBytes());
+      }
+      PartitionDetails details = new PartitionDetails();
+      details.fullSpec = partSpec;
+      partitionDetails.put(staging, details);
+    }
+
+    LoadTableDesc loadTableDesc = new LoadTableDesc(table.getDataLocation(), table,
+        false, true, new LinkedHashMap<>());
+    Map<Map<String, String>, Partition> loaded = hive.loadDynamicPartitions(loadTableDesc,
+        0, false, 0, 0, false, AcidUtils.Operation.NOT_ACID, partitionDetails);
+
+    assertEquals(2, loaded.size());
+    for (Partition partition : loaded.values()) {
+      Partition stored = hive.getPartition(table, partition.getSpec(), false);
+      assertTrue("loadDynamicPartitions should return the createTime assigned by HMS",
+          partition.getTPartition().getCreateTime() > 0);
+      assertEquals(stored.getTPartition().getCreateTime(),
+          partition.getTPartition().getCreateTime());
+    }
   }
 
   @Test
