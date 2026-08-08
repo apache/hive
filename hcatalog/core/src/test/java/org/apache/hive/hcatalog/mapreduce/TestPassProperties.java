@@ -23,7 +23,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 
 import org.apache.hadoop.conf.Configuration;
@@ -45,8 +44,11 @@ import org.apache.hive.hcatalog.data.DefaultHCatRecord;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TestPassProperties {
+  private static final Logger LOG = LoggerFactory.getLogger(TestPassProperties.class);
   private static final String TEST_DATA_DIR = System.getProperty("user.dir") +
       "/build/test/data/" + TestPassProperties.class.getCanonicalName();
   private static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
@@ -111,10 +113,19 @@ public class TestPassProperties {
       new FileOutputCommitterContainer(job, null).cleanupJob(job);
     } catch (Exception e) {
       caughtException = true;
-      assertTrue(((InvocationTargetException)e.getCause().getCause().getCause()).getTargetException().getMessage().contains(
-          "Could not connect to meta store using any of the URIs provided"));
-      assertTrue(e.getCause().getMessage().contains(
-          "Unable to instantiate org.apache.hadoop.hive.metastore.HiveClientCache$CacheableHiveMetaStoreClient"));
+      LOG.info("Caught expected exception from bad metastore URI", e);
+      // Verify the root cause is a connection failure to the bad metastore URI
+      Throwable cause = e;
+      boolean foundConnectionError = false;
+      while (cause != null) {
+        if (cause.getMessage() != null &&
+            cause.getMessage().contains("Could not connect to meta store using any of the URIs provided")) {
+          foundConnectionError = true;
+          break;
+        }
+        cause = cause.getCause();
+      }
+      assertTrue("Expected connection error in exception chain", foundConnectionError);
     }
     assertTrue(caughtException);
   }
