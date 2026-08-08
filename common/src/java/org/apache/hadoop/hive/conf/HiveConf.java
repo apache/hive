@@ -1284,6 +1284,11 @@ public class HiveConf extends Configuration {
         "StorageBasedAuthorization already does this check for managed table. For external table however,\n" +
         "anyone who has read permission of the directory could drop external table, which is surprising.\n" +
         "The flag is set to false by default to maintain backward compatibility."),
+    METASTORE_AUTHORIZATION_FILEINFO_SLOW_WARN_THRESHOLD_MS(
+        "hive.metastore.authorization.fileinfo.slow.warn.threshold.ms", 300L,
+        "Threshold in milliseconds above which a WARN log is emitted for slow HDFS getFileInfo calls\n" +
+        "during storage-based authorization checks. A value of -1 disables the warning entirely.\n" +
+        "Default is 300ms."),
     /**
      * @deprecated Use MetastoreConf.EVENT_CLEAN_FREQ
      */

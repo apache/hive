@@ -401,8 +401,17 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
     }
 
     final FileSystem fs = path.getFileSystem(conf);
+    final long slowWarnThresholdMs = conf.getLong(
+        HiveConf.ConfVars.METASTORE_AUTHORIZATION_FILEINFO_SLOW_WARN_THRESHOLD_MS.varname,
+        HiveConf.ConfVars.METASTORE_AUTHORIZATION_FILEINFO_SLOW_WARN_THRESHOLD_MS.defaultLongVal);
 
+    long t0 = System.currentTimeMillis();
     FileStatus pathStatus = FileUtils.getFileStatusOrNull(fs, path);
+    long elapsed = System.currentTimeMillis() - t0;
+    if (slowWarnThresholdMs >= 0 && elapsed > slowWarnThresholdMs) {
+      LOG.warn("Slow getFileInfo during storage-based authorization check: path={}, elapsed={}ms",
+          path, elapsed);
+    }
     if (pathStatus != null) {
       checkPermissions(fs, pathStatus, actions, authenticator.getUserName());
     } else if (path.getParent() != null) {
@@ -410,7 +419,13 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
       Path par = path.getParent();
       FileStatus parStatus = null;
       while (par != null) {
+        long t1 = System.currentTimeMillis();
         parStatus = FileUtils.getFileStatusOrNull(fs, par);
+        long elapsedPar = System.currentTimeMillis() - t1;
+        if (slowWarnThresholdMs >= 0 && elapsedPar > slowWarnThresholdMs) {
+          LOG.warn("Slow getFileInfo during storage-based authorization check (parent traversal): "
+              + "path={}, elapsed={}ms", par, elapsedPar);
+        }
         if (parStatus != null) {
           break;
         }
