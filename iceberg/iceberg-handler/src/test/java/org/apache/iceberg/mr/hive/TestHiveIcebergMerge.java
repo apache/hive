@@ -25,6 +25,7 @@ import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.mr.TestHelper;
+import org.apache.iceberg.mr.hive.test.utils.HiveIcebergTestUtils;
 import org.apache.iceberg.relocated.com.google.common.base.Throwables;
 import org.apache.iceberg.types.Types;
 import org.junit.Assert;
@@ -46,11 +47,6 @@ public class TestHiveIcebergMerge extends HiveIcebergStorageHandlerWithEngineBas
       .add(0, 1)
       .add(9, 9)
       .build();
-
-
-  @Override
-  protected void validateTestParams() {
-  }
 
   @Test
   public void testMergeIntoOnClauseColumnsNoAssignedTables() {
