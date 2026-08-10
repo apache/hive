@@ -342,6 +342,8 @@ public class HiveStatement implements java.sql.Statement {
     return true;
   }
 
+  private static final String DECOMMISSIONED_ERROR = "HiveServer2 is decommissioned or inactive";
+
   private void runAsyncOnServer(String sql) throws SQLException {
     checkConnection("execute");
 
@@ -357,25 +359,55 @@ public class HiveStatement implements java.sql.Statement {
     execReq.setRunAsync(true);
     execReq.setConfOverlay(sessConf);
     execReq.setQueryTimeout(queryTimeout);
-    try {
-      LOG.debug("Submitting statement [{}]: {}", sessHandle, sql);
-      TExecuteStatementResp execResp = client.ExecuteStatement(execReq);
-      Utils.verifySuccessWithInfo(execResp.getStatus());
-      List<String> infoMessages = execResp.getStatus().getInfoMessages();
-      if (infoMessages != null) {
-        for (String message : infoMessages) {
-          LOG.info(message);
+
+    int maxRetries = connection.getNumRetries();
+    for (int attempt = 0; ; attempt++) {
+      try {
+        LOG.debug("Submitting statement [{}]: {}", sessHandle, sql);
+        TExecuteStatementResp execResp = client.ExecuteStatement(execReq);
+        Utils.verifySuccessWithInfo(execResp.getStatus());
+        List<String> infoMessages = execResp.getStatus().getInfoMessages();
+        if (infoMessages != null) {
+          for (String message : infoMessages) {
+            LOG.info(message);
+          }
         }
+        stmtHandle = Optional.of(execResp.getOperationHandle());
+        LOG.debug("Running with statement handle: {}", stmtHandle.get());
+        return;
+      } catch (SQLException eS) {
+        if (isDecommissionedError(eS) && attempt < maxRetries && connection.isPersistableSession()) {
+          LOG.warn("HiveServer2 is decommissioned. Reconnecting and retrying attempt {} of {}.",
+              attempt + 1, maxRetries);
+          try {
+            Thread.sleep(1000L);
+          } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+            isLogBeingGenerated = false;
+            throw eS;
+          }
+          try {
+            connection.reconnect();
+            client = connection.getClient();
+          } catch (SQLException reconnectEx) {
+            LOG.error("Failed to reconnect after decommissioning error", reconnectEx);
+            isLogBeingGenerated = false;
+            throw eS;
+          }
+          continue;
+        }
+        isLogBeingGenerated = false;
+        throw eS;
+      } catch (Exception ex) {
+        isLogBeingGenerated = false;
+        throw new SQLException("Failed to run async statement", "08S01", ex);
       }
-      stmtHandle = Optional.of(execResp.getOperationHandle());
-      LOG.debug("Running with statement handle: {}", stmtHandle.get());
-    } catch (SQLException eS) {
-      isLogBeingGenerated = false;
-      throw eS;
-    } catch (Exception ex) {
-      isLogBeingGenerated = false;
-      throw new SQLException("Failed to run async statement", "08S01", ex);
     }
+  }
+
+  private static boolean isDecommissionedError(SQLException e) {
+    String msg = e.getMessage();
+    return msg != null && msg.contains(DECOMMISSIONED_ERROR);
   }
 
   /**

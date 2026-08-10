@@ -312,6 +312,12 @@ public class HiveConnection implements java.sql.Connection {
     return maxRetries;
   }
 
+  boolean isPersistableSession() {
+    String fetchStrategy = connParams.getHiveConfs().get(
+        Utils.JdbcConnectionParams.HIVE_CONF_PREFIX + ConfVars.HIVE_SERVER2_SESSION_STATE_STORE_FETCH_STRATEGY.varname);
+    return fetchStrategy != null && !"NEVER".equalsIgnoreCase(fetchStrategy);
+  }
+
   @VisibleForTesting
   protected HiveConnection(String uri, Properties info,
       IJdbcBrowserClientFactory browserClientFactory) throws SQLException {
@@ -559,6 +565,18 @@ public class HiveConnection implements java.sql.Connection {
       transport.open();
     }
     logZkDiscoveryMessage("Connected to " + connParams.getHost() + ":" + connParams.getPort());
+  }
+
+  void reconnect() throws SQLException {
+    try {
+      if (transport != null && transport.isOpen()) {
+        transport.close();
+      }
+      openTransport();
+      client = newSynchronizedClient(new TCLIService.Client(new TBinaryProtocol(transport)));
+    } catch (Exception e) {
+      throw new SQLException("Failed to reconnect transport", "08S01", e);
+    }
   }
 
   public String getConnectedUrl() {
