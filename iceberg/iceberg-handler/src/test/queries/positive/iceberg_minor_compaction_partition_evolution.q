@@ -1,3 +1,4 @@
+-- SORT_QUERY_RESULTS
 -- Mask neededVirtualColumns due to non-strict order
 --! qt:replace:/(\s+neededVirtualColumns:\s)(.*)/$1#Masked#/
 -- Mask random uuid
@@ -65,5 +66,20 @@ alter table ice_orc COMPACT 'minor' and wait pool 'iceberg' where fist_name in (
 
 select * from ice_orc where dept_id=1;
 select * from ice_orc where dept_id=2;
+describe formatted ice_orc;
+show compactions order by 'partition';
+
+alter table ice_orc set partition spec();
+
+insert into ice_orc VALUES ('fn9','ln9', 3), ('fn10','ln10', 3);
+insert into ice_orc VALUES ('fn11','ln11', 3), ('fn12','ln12', 3);
+
+select * from ice_orc;
+describe formatted ice_orc;
+
+alter table ice_orc set tblproperties ('compactor.threshold.target.size'='4000');
+alter table ice_orc COMPACT 'minor' and wait pool 'iceberg';
+
+select * from ice_orc;
 describe formatted ice_orc;
 show compactions order by 'partition';

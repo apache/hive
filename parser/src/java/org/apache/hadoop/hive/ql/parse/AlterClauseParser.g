@@ -516,8 +516,8 @@ alterStatementSuffixSetOwner
 alterStatementSuffixSetPartSpec
 @init { gParent.pushMsg("alter table set partition spec", state); }
 @after { gParent.popMsg(state); }
-    : KW_SET KW_PARTITION KW_SPEC LPAREN (spec = partitionTransformSpec) RPAREN
-    -> ^(TOK_ALTERTABLE_SETPARTSPEC $spec)
+    : KW_SET KW_PARTITION KW_SPEC LPAREN (spec = partitionTransformSpec)? RPAREN
+    -> ^(TOK_ALTERTABLE_SETPARTSPEC $spec?)
     ;
 
 alterStatementSuffixConvert

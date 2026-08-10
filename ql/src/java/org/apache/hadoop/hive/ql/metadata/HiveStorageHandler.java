@@ -902,6 +902,15 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   /**
+   * Validates that partition compaction can resolve a unique partition spec for the given partition name.
+   * @param hmsTable table metadata stored in Hive Metastore
+   * @param partitionName fully qualified partition name
+   */
+  default void validateCompactionPartition(org.apache.hadoop.hive.ql.metadata.Table hmsTable, String partitionName)
+      throws HiveException {
+  }
+
+  /**
    * Returns partitions names for the current table spec that correspond to the provided partition spec.
    * @param table {@link org.apache.hadoop.hive.ql.metadata.Table} table metadata stored in Hive Metastore
    * @param partitionSpec Map of Strings {@link java.util.Map} partition specification
