@@ -1,1 +1,2 @@
 FAILED: SemanticException [Error 10007]: Ambiguous column reference c in tpm
+FAILED: SemanticException [Error 10007]: Ambiguous column reference c in t
