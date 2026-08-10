@@ -107,8 +107,7 @@
     <io.grpc.version>1.72.0</io.grpc.version>
     <sqlline.version>1.9.0</sqlline.version>
     <netty.version>4.1.127.Final</netty.version>
-    <!-- HIVE-28992: only upgrade to newer than 3.25.0 if you tested the prompt -->
-    <jline.version>3.25.0</jline.version>
+    <jline.version>3.30.16</jline.version>
     <ST4.version>4.0.4</ST4.version>
     <storage-api.version>4.3.0-SNAPSHOT</storage-api.version>
     <beanutils.version>1.9.4</beanutils.version>
