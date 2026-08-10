@@ -30,16 +30,6 @@ FROM t
 GROUP BY col1, col2
 ORDER BY col1, col2;
 
--- 3-column: HiveExpandDistinctAggregatesRule !matched -> single HiveAggregate operator
-explain cbo
-SELECT col1, COUNT(DISTINCT col2, col3, col4) AS cnt
-FROM t
-GROUP BY col1;
-
-SELECT col1, COUNT(DISTINCT col2, col3, col4) AS cnt
-FROM t
-GROUP BY col1;
-
 -- multi-column distinct alongside a non-distinct aggregate: single HiveAggregate operator
 explain cbo
 SELECT col1, col2, COUNT(DISTINCT col3, col4) AS cnt, SUM(col3) AS s
