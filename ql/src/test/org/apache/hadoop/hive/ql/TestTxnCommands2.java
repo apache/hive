@@ -1789,7 +1789,7 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     Assert.assertEquals(stringifyValues(vals), r);
     String query = "merge into " + Table.ACIDTBL +
       " using " + Table.NONACIDPART2 + " source ON " + Table.ACIDTBL + ".a = source.a2 and " +
-      Table.ACIDTBL +".b + 1 = source.b2 + 1 " +
+        Table.ACIDTBL +".b + 1 = source.b2 + 1 " +
       "WHEN MATCHED THEN UPDATE set b = source.b2 " +
       "WHEN NOT MATCHED THEN INSERT VALUES(source.a2, source.b2)";
     runStatementOnDriver(query);
