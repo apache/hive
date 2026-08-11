@@ -118,8 +118,8 @@ public class HMSCatalogFactory {
     String catalogName = MetastoreConf.getVar(configuration, ConfVars.CATALOG_DEFAULT);
     IcebergAuthorizer icebergAuthorizer = new IcebergAuthorizer(configuration);
     List<IcebergMetricsReporter> reporters = createReporters();
-    return security.proxy(new HMSCatalogServlet(new HMSCatalogAdapter(catalogName, catalog, icebergAuthorizer,
-        reporters)));
+    var adapter = new HMSCatalogAdapter(catalogName, catalog, icebergAuthorizer, reporters);
+    return security.proxy(new HMSCatalogServlet(adapter));
   }
 
   private List<IcebergMetricsReporter> createReporters() {
