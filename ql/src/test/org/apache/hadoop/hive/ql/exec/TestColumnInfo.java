@@ -16,43 +16,24 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.parse.type;
+package org.apache.hadoop.hive.ql.exec;
 
-import org.apache.hadoop.hive.ql.exec.ColumnInfo;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestAmbiguousColumnName {
+public class TestColumnInfo {
 
-  private static ColumnInfo colInfo() {
+  @Test
+  public void testAmbiguousNameDefaultsToFalse() {
     ColumnInfo colInfo = new ColumnInfo("_col0", TypeInfoFactory.stringTypeInfo, "t", false);
-    colInfo.setAlias("c");
-    return colInfo;
+    Assert.assertFalse(colInfo.hasAmbiguousName());
   }
 
   @Test
   public void testCopyConstructorPreservesAmbiguousName() {
-    ColumnInfo original = colInfo();
+    ColumnInfo original = new ColumnInfo("_col0", TypeInfoFactory.stringTypeInfo, "t", false);
     original.setAmbiguousName(true);
     Assert.assertTrue(new ColumnInfo(original).hasAmbiguousName());
-  }
-
-  @Test
-  public void testCheckAmbiguousNameThrows() {
-    ColumnInfo marked = colInfo();
-    marked.setAmbiguousName(true);
-    try {
-      TypeCheckProcFactory.checkAmbiguousName(marked);
-      Assert.fail("expected SemanticException");
-    } catch (SemanticException e) {
-      Assert.assertTrue(e.getMessage(), e.getMessage().contains("Ambiguous column reference c in t"));
-    }
-  }
-
-  @Test
-  public void testCheckAmbiguousNameNoThrow() throws SemanticException {
-    TypeCheckProcFactory.checkAmbiguousName(colInfo());
   }
 }

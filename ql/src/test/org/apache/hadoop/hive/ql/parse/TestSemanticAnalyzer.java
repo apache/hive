@@ -22,6 +22,7 @@ package org.apache.hadoop.hive.ql.parse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -34,13 +35,17 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
 import com.google.common.collect.Sets;
+import org.antlr.runtime.CommonToken;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.common.MaterializationSnapshot;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -56,6 +61,7 @@ import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryProperties.QueryType;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
@@ -67,6 +73,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.security.HadoopDefaultAuthenticator;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -545,5 +552,109 @@ public class TestSemanticAnalyzer {
       assertTrue("CTE materialization should use CreateTableAnalyzer",
           cteAnalyzer[0] instanceof CreateTableAnalyzer);
     }
+  }
+
+  // ==== HIVE-29580: duplicate column aliases escaping a subquery/CTE boundary ====
+
+  private BaseSemanticAnalyzer analyzeWithCbo(String query) throws Exception {
+    HiveConf cboConf = new HiveConf(conf);
+    cboConf.setBoolVar(HiveConf.ConfVars.HIVE_CBO_ENABLED, true);
+    SessionState.start(cboConf);
+    Context ctx = new Context(cboConf);
+    ASTNode astNode = ParseUtils.parse(query, ctx);
+    QueryState queryState = new QueryState.Builder().withHiveConf(cboConf).build();
+    BaseSemanticAnalyzer analyzer = SemanticAnalyzerFactory.get(queryState, astNode);
+    analyzer.initCtx(ctx);
+    try {
+      analyzer.analyze(astNode, ctx);
+    } finally {
+      analyzer.endAnalysis(astNode);
+    }
+    return analyzer;
+  }
+
+  private void assertCboRejectsAmbiguous(String query, String expectedReference) {
+    SemanticException e = assertThrows(SemanticException.class, () -> analyzeWithCbo(query));
+    assertTrue(e.getMessage(),
+        e.getMessage().contains("Ambiguous column reference " + expectedReference));
+  }
+
+  @Test
+  public void testCboRejectsAmbiguousReferenceAcrossCteBoundary() throws Exception {
+    assertCboRejectsAmbiguous(
+        "with bse as (select 'a' as c, 'b' as c), tpm as (select * from bse) select tpm.c from tpm",
+        "c in tpm");
+  }
+
+  @Test
+  public void testCboAmbiguityMarkerSurvivesWindowingProjection() throws Exception {
+    assertCboRejectsAmbiguous(
+        "select x.c from (select distinct *, rank() over (order by d) r"
+            + " from (select 'a' as c, 'b' as c, 'x' as d) t) x",
+        "c in x");
+  }
+
+  @Test
+  public void testCboToleratesUnionDistinctWithDuplicateAliases() throws Exception {
+    // UNION DISTINCT is rewritten into SELECT DISTINCT * whose group by references are
+    // synthesized by genSelectDIAST; despite the duplicate output alias this must compile
+    assertNotNull(analyzeWithCbo("select x.key, z.value, y.value"
+        + " from table1 x join table2 y on x.key = y.key"
+        + " join (select * from table1 union select * from table2) z on x.value = z.value"
+        + " union"
+        + " select x.key, z.value, y.value"
+        + " from table1 x join table2 y on x.key = y.key"
+        + " join (select * from table1 union select * from table2) z on x.value = z.value"));
+  }
+
+  private static ColumnInfo stringCol(String internalName, String tab, String alias, boolean markedAmbiguous) {
+    ColumnInfo colInfo = new ColumnInfo(internalName, TypeInfoFactory.stringTypeInfo, tab, false);
+    colInfo.setAlias(alias);
+    colInfo.setAmbiguousName(markedAmbiguous);
+    return colInfo;
+  }
+
+  private SemanticAnalyzer newAnalyzerForDirectCalls() throws Exception {
+    SessionState.start(conf);
+    QueryState queryState = new QueryState.Builder().withHiveConf(conf).build();
+    SemanticAnalyzer analyzer = new SemanticAnalyzer(queryState);
+    analyzer.initCtx(new Context(conf));
+    // genColListRegex consults tableMask, which analyzeInternal normally initializes
+    analyzer.tableMask = new TableMask(analyzer, conf, true);
+    return analyzer;
+  }
+
+  private static ASTNode allColRef() {
+    return new ASTNode(new CommonToken(HiveParser.TOK_ALLCOLREF, "TOK_ALLCOLREF"));
+  }
+
+  @Test
+  public void testGenColListRegexPropagatesAmbiguousNameMarker() throws Exception {
+    SemanticAnalyzer analyzer = newAnalyzerForDirectCalls();
+    RowResolver input = new RowResolver();
+    input.put("t", "c", stringCol("_c0", "t", "c", true));
+    input.put("t", "d", stringCol("_c1", "t", "d", false));
+    RowResolver output = new RowResolver();
+
+    analyzer.genColListRegex(".*", "t", allColRef(), new ArrayList<>(),
+        new HashSet<>(), input, null, 0, output, new ArrayList<>(Arrays.asList("t")), false);
+
+    assertTrue(output.get("t", "c").hasAmbiguousName());
+    assertFalse(output.get("t", "d").hasAmbiguousName());
+  }
+
+  @Test
+  public void testGenColListRegexPropagatesAmbiguousNameMarkerForNamedJoin() throws Exception {
+    SemanticAnalyzer analyzer = newAnalyzerForDirectCalls();
+    RowResolver colSrcRR = new RowResolver();
+    colSrcRR.put("l", "c", stringCol("_l0", "l", "c", true));
+    colSrcRR.put("r", "c", stringCol("_r0", "r", "c", false));
+    colSrcRR.setNamedJoinInfo(new NamedJoinInfo(Arrays.asList("l", "r"), Arrays.asList("c"), JoinType.INNER));
+    RowResolver output = new RowResolver();
+
+    analyzer.genColListRegex(".*", null, allColRef(), new ArrayList<>(),
+        new HashSet<>(), colSrcRR, colSrcRR, 0, output, new ArrayList<>(Arrays.asList("l", "r")), false);
+
+    assertTrue(output.get("l", "c").hasAmbiguousName());
   }
 }
