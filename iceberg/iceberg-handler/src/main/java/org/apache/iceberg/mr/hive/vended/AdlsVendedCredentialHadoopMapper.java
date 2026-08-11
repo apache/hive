@@ -36,7 +36,7 @@ enum AdlsVendedCredentialHadoopMapper implements VendedCredentialHadoopMapper {
   @Override
   public boolean supportsPrefix(String prefix) {
     String scheme = VendedCredentialPrefixUtil.schemeFromPrefix(prefix);
-    return "abfs".equals(scheme) || "abfss".equals(scheme) || "wasb".equals(scheme) || "wasbs".equals(scheme);
+    return "abfs".equals(scheme) || "abfss".equals(scheme);
   }
 
   @Override

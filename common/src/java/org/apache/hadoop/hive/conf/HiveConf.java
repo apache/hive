@@ -5555,6 +5555,12 @@ public class HiveConf extends Configuration {
         + ",client.access-key-id"
         + ",client.access-key-secret"
         + ",client.security-token"
+        // Hadoop connector keys materialized from vended credentials (ADLS, OSS)
+        + ",fs.azure.account.key."
+        + ",fs.azure.sas.fixed.token."
+        + ",fs.oss.accessKeyId"
+        + ",fs.oss.accessKeySecret"
+        + ",fs.oss.securityToken"
         + ",dfs.adls.oauth2.credential"
         + ",fs.adl.oauth2.credential"
         + ",fs.azure.account.oauth2.client.secret"
