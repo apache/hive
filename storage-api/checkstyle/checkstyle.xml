@@ -62,7 +62,9 @@
   <module name="Translation"/>
 
   <module name="Header">
+    <property name="severity" value="error"/>
     <property name="headerFile" value="${config_loc}/asf.header"/>
+    <property name="fileExtensions" value="java"/>
   </module>
 
   <!-- Maximum file line length -->
