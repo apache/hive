@@ -18,6 +18,7 @@
 package org.apache.hive.search.search;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hive.search.config.IndexOptions;
@@ -30,7 +31,6 @@ import org.apache.hive.search.inference.EmbedderRegistry;
 import org.apache.hive.search.mapping.IndexMapping;
 import org.apache.hive.search.metastore.MetastoreEventListener;
 import org.apache.hive.search.metastore.MetastoreIndexSchema;
-import org.apache.hive.search.metastore.MetastoreTableMapper;
 import org.apache.hive.search.metastore.SearchTextSegment;
 import org.apache.hive.search.testutil.IndexMutationApplier;
 import org.apache.hive.search.testutil.StubEmbedder;
@@ -134,16 +134,16 @@ public final class InMemorySearchFixture implements AutoCloseable {
   }
 
   public TableSearchResult loadTable(String catalog, String db, String table) throws Exception {
-    return loadTables(MetastoreTableMapper.tableId(catalog, db, table));
+    return loadTables(new TableName(catalog, db, table));
   }
 
-  public TableSearchResult loadTables(String... tableIds) throws Exception {
+  public TableSearchResult loadTables(TableName... tableNames) throws Exception {
     if (searcherManager == null || bayesianParameters == null) {
       throw new IllegalStateException("call commit() before loading");
     }
-    try (Searcher searchIO = new Searcher(
+    try (Searcher searcher = new Searcher(
         searcherManager, indexManager, modelRegistry, searchConfig, bayesianParameters)) {
-      return searchIO.loadTables(List.of(tableIds));
+      return searcher.loadTables(List.of(tableNames));
     }
   }
 
