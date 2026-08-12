@@ -155,12 +155,11 @@ public abstract class CompactorTest {
     }
     // Set this config to true in the base class, there are extended test classes which set this config to false.
     MetastoreConf.setBoolVar(conf, ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER, true);
-    // Post-compaction stats gathering runs an ANALYZE TABLE query through the Driver,
-    // which triggers SessionState.setupAuth() and fails here with a ClassNotFoundException:
-    // data/conf/hive-site.xml points hive.security.authorization.manager at
-    // SQLStdHiveAuthorizerFactoryForTest, but that class lives in itests/util which
-    // isn't on the ql test classpath. StatsUpdater swallows the failure so tests still pass.
-    // Disable stats by default as these tests do not assert on the stats that StatsUpdater.gatherStats produces.
+    // Disable stats by default as these tests do not assert on the stats that
+    // StatsUpdater.gatherStats produces.
+    // Note: Enabling it requires a properly configured authorizer,
+    // since post-compaction stats gathering runs ANALYZE TABLE through
+    // the Driver and triggers SessionState.setupAuth().
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_GATHER_STATS, false);
     TestTxnDbUtil.setConfValues(conf);
     TestTxnDbUtil.cleanDb(conf);
