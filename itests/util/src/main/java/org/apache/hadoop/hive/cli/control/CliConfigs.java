@@ -726,6 +726,50 @@ public class CliConfigs {
     }
   }
 
+  public static class TestIcebergRESTCatalogGravitinoAdlsLlapLocalCliDriver extends AbstractCliConfig {
+
+    public TestIcebergRESTCatalogGravitinoAdlsLlapLocalCliDriver() {
+      super(CoreCliDriver.class);
+      try {
+        setQueryDir("iceberg/iceberg-handler/src/test/queries/positive");
+        includesFrom(testConfigProps, "iceberg.llap.query.rest.gravitino.adls.files");
+
+        setResultsDir("iceberg/iceberg-handler/src/test/results/positive/llap");
+        setLogDir("itests/qtest/target/qfile-results/iceberg-handler/positive");
+
+        setInitScript("q_test_init_tez.sql");
+        setCleanupScript("q_test_cleanup_tez.sql");
+
+        setHiveConfDir("data/conf/iceberg/llap");
+        setClusterType(MiniClusterType.LLAP_LOCAL);
+      } catch (Exception e) {
+        throw new RuntimeException("can't contruct cliconfig", e);
+      }
+    }
+  }
+
+  public static class TestIcebergRESTCatalogGravitinoGcsLlapLocalCliDriver extends AbstractCliConfig {
+
+    public TestIcebergRESTCatalogGravitinoGcsLlapLocalCliDriver() {
+      super(CoreCliDriver.class);
+      try {
+        setQueryDir("iceberg/iceberg-handler/src/test/queries/positive");
+        includesFrom(testConfigProps, "iceberg.llap.query.rest.gravitino.gcs.files");
+
+        setResultsDir("iceberg/iceberg-handler/src/test/results/positive/llap");
+        setLogDir("itests/qtest/target/qfile-results/iceberg-handler/positive");
+
+        setInitScript("q_test_init_tez.sql");
+        setCleanupScript("q_test_cleanup_tez.sql");
+
+        setHiveConfDir("data/conf/iceberg/llap");
+        setClusterType(MiniClusterType.LLAP_LOCAL);
+      } catch (Exception e) {
+        throw new RuntimeException("can't contruct cliconfig", e);
+      }
+    }
+  }
+
   public static class IcebergLlapLocalCompactorCliConfig extends AbstractCliConfig {
 
     public IcebergLlapLocalCompactorCliConfig() {

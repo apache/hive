@@ -116,6 +116,7 @@
     <apache-directory-server.version>2.0.0-M24</apache-directory-server.version>
     <avro.version>1.12.0</avro.version>
     <awaitility.version>4.2.1</awaitility.version>
+    <azure-storage-file-datalake.version>12.22.0</azure-storage-file-datalake.version>
     <bcprov-jdk18on.version>1.84</bcprov-jdk18on.version>
     <calcite.version>1.42.0</calcite.version>
     <datanucleus-api-jdo.version>6.0.5</datanucleus-api-jdo.version>
@@ -297,6 +298,11 @@
             <artifactId>secretsmanager</artifactId>
           </exclusion>
         </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>com.azure</groupId>
+        <artifactId>azure-storage-file-datalake</artifactId>
+        <version>${azure-storage-file-datalake.version}</version>
       </dependency>
       <dependency>
         <groupId>com.esotericsoftware.kryo</groupId>

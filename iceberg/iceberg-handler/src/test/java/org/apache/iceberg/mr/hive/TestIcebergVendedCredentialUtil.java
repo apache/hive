@@ -611,6 +611,26 @@ public class TestIcebergVendedCredentialUtil {
         .containsEntry("fs.azure.account.key.mystorageaccount.dfs.core.windows.net", "account-key");
   }
 
+  @Test
+  public void propagateToJobMapsAdlsAccountKeyForWasbPrefix() {
+    String prefix = "wasb://iceberg-vend@devstoreaccount1.blob.core.windows.net/";
+    CredentialFileIO fileIO = new CredentialFileIO();
+    fileIO.setCredentials(
+        List.of(
+            StorageCredential.create(
+                prefix,
+                Map.of("adls.auth.shared-key.account.key", "account-key"))));
+
+    Table table =
+        new BaseTable(new StaticTableOperations(prefix + "t", fileIO), "db.t");
+    Map<String, String> jobSecrets = Maps.newHashMap();
+
+    IcebergVendedCredentialUtil.propagateToJob(table, "ice01", null, jobSecrets, new HiveConf());
+
+    assertThat(jobSecrets)
+        .containsEntry("fs.azure.account.key.devstoreaccount1.blob.core.windows.net", "account-key");
+  }
+
   /**
    * Tests that a provider access-key id is treated as a secret: with only {@code jobProperties}
    * passed, an OSS access-key id must not leak into job properties (neither the catalog-prefixed
