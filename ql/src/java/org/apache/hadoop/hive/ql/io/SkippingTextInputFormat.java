@@ -21,13 +21,15 @@ package org.apache.hadoop.hive.ql.io;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.hadoop.util.LineReader;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.Map;
 import java.util.Queue;
@@ -79,10 +81,6 @@ public class SkippingTextInputFormat extends TextInputFormat {
     } catch (IOException e) {
       LOG.warn("Could not detect header/footer", e);
       return new NullRowsInputFormat.DummyInputSplit(file);
-    } catch (RuntimeException e) {
-      // Report unexpected detection failures clearly instead of a cryptic cast.
-      throw new RuntimeException("Failed to detect header/footer boundaries for file "
-          + file + " during split generation", e);
     }
     if (cachedStart > start + length) {
       return new NullRowsInputFormat.DummyInputSplit(file);
@@ -111,14 +109,17 @@ public class SkippingTextInputFormat extends TextInputFormat {
     Long startIndexForFile = startIndexMap.get(path);
     if (startIndexForFile == null) {
       FileSystem fileSystem = path.getFileSystem(conf);
-      // ByteCountingLineReader avoids the unreliable readLine()+getPos() idiom.
+      // Hadoop's LineReader counts bytes internally and handles '\n', '\r\n' and
+      // lone '\r', so we avoid the unreliable readLine()+getPos() idiom that throws
+      // ClassCastException on lone-CR files.
       try (FSDataInputStream fis = fileSystem.open(path)) {
-        ByteCountingLineReader reader = new ByteCountingLineReader(fis);
+        LineReader reader = new LineReader(fis);
+        Text headerLine = new Text();
         long currPos = 0;
         int delimiterIdx = -1;
         for (int j = 0; j < headerCount; j++) {
-          String headerLine = reader.readLine();
-          if (headerLine == null) {
+          int bytesRead = reader.readLine(headerLine);
+          if (bytesRead == 0) {
             startIndexMap.put(path, Long.MAX_VALUE);
             return Long.MAX_VALUE;
           }
@@ -126,12 +127,17 @@ public class SkippingTextInputFormat extends TextInputFormat {
             String delimiter = conf.get("textinputformat.record.delimiter");
             // If record delimiter is defined
             if (delimiter != null && !delimiter.isEmpty()) {
-              delimiterIdx = headerLine.indexOf(delimiter);
+              // Decode as ISO-8859-1 (one char per byte) so the delimiter's index is a
+              // byte offset, matching currPos. Text.toString() would decode UTF-8 and
+              // shift the index for multi-byte header bytes preceding the delimiter.
+              String lastHeader =
+                  new String(headerLine.getBytes(), 0, headerLine.getLength(), StandardCharsets.ISO_8859_1);
+              delimiterIdx = lastHeader.indexOf(delimiter);
             } else {
-              currPos = reader.getBytesConsumed();
+              currPos += bytesRead;
             }
           } else {
-            currPos = reader.getBytesConsumed();
+            currPos += bytesRead;
           }
         }
         // Readers skip the entire first row if the start index of the
@@ -161,19 +167,23 @@ public class SkippingTextInputFormat extends TextInputFormat {
         // we need 'footer count' lines and one space for EOF
         LineBuffer buffer = new LineBuffer(footerCount + 1);
         try (FSDataInputStream fis = fileSystem.open(path)) {
+          Text line = new Text();
           while (bufferSectionEnd > bufferSectionStart) {
             fis.seek(bufferSectionStart);
             // Fresh reader per seek; offsets are seek position + bytes consumed.
-            ByteCountingLineReader reader = new ByteCountingLineReader(fis);
+            LineReader reader = new LineReader(fis);
+            long consumed = 0;
             long pos = bufferSectionStart;
             while (pos < bufferSectionEnd) {
-              if (reader.readLine() == null) {
+              int bytesRead = reader.readLine(line);
+              if (bytesRead == 0) {
                 // if there is not enough lines in this section, check the previous
                 // section. If this is the beginning section, there are simply not
                 // enough lines in the file.
                 break;
               }
-              pos = bufferSectionStart + reader.getBytesConsumed();
+              consumed += bytesRead;
+              pos = bufferSectionStart + consumed;
               buffer.consume(pos, bufferSectionEnd);
             }
             if (buffer.getRemainingLineCount() == 0) {
@@ -198,65 +208,6 @@ public class SkippingTextInputFormat extends TextInputFormat {
       endIndexMap.put(path, endIndexForFile);
     }
     return endIndexForFile;
-  }
-
-  /**
-   * Reads lines while counting bytes consumed, so offsets can be computed without
-   * {@link FSDataInputStream#getPos()} -- which is unreliable after {@code readLine()}:
-   * a lone {@code '\r'} makes it swap in a non-Seekable {@code PushbackInputStream}, so
-   * the next {@code getPos()} throws {@code ClassCastException}. Handles {@code '\n'},
-   * {@code '\r\n'} and lone {@code '\r'}; after {@link #readLine()},
-   * {@link #getBytesConsumed()} is the offset just past the line's terminator.
-   */
-  static final class ByteCountingLineReader {
-    private final InputStream in;
-    private long bytesConsumed;
-    // Look-ahead byte past a '\r' (belongs to the next line, not yet counted); -1 = empty.
-    private int pushedBack = -1;
-
-    ByteCountingLineReader(InputStream in) {
-      this.in = in;
-    }
-
-    long getBytesConsumed() {
-      return bytesConsumed;
-    }
-
-    private int nextByte() throws IOException {
-      if (pushedBack != -1) {
-        int b = pushedBack;
-        pushedBack = -1;
-        return b;
-      }
-      return in.read();
-    }
-
-    /** Returns the next line without its terminator, or {@code null} at end of stream. */
-    String readLine() throws IOException {
-      int c = nextByte();
-      if (c == -1) {
-        return null;
-      }
-      StringBuilder sb = new StringBuilder();
-      while (c != -1) {
-        bytesConsumed++;
-        if (c == '\n') {
-          return sb.toString();
-        }
-        if (c == '\r') {
-          int next = nextByte();
-          if (next == '\n') {
-            bytesConsumed++;
-          } else if (next != -1) {
-            pushedBack = next; // belongs to the next line, not yet counted
-          }
-          return sb.toString();
-        }
-        sb.append((char) c);
-        c = nextByte();
-      }
-      return sb.toString();
-    }
   }
 
   static class LineBuffer {
