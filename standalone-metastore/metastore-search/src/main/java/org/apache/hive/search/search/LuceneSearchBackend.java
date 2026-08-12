@@ -28,6 +28,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hive.search.config.SearchOptions;
 import org.apache.hive.search.exception.IndexNotHealthyException;
 import org.apache.hive.search.exception.IndexNotReadyException;
@@ -81,9 +82,7 @@ public final class LuceneSearchBackend implements SearchBackend {
   @Override
   public TableSearchResult search(SearchQuery query)
       throws SearchException, IOException {
-    if (!isReady()) {
-      throw new IndexNotReadyException("Search index is not ready. " + session.getIndexBuildProgress());
-    }
+    validateIndex();
     int limit = query.limit() > 0 ? query.limit() : searchConfig.getDefaultLimit();
     query = SearchQuery.of(query, limit);
     try (Searcher searcher = session.getSearcher()) {
@@ -92,13 +91,18 @@ public final class LuceneSearchBackend implements SearchBackend {
   }
 
   @Override
-  public TableSearchResult loadTables(List<String> tableIds)
+  public TableSearchResult loadTables(List<TableName> names)
       throws SearchException, IOException {
-    if (!isReady()) {
-      throw new IndexNotReadyException("Search index is not ready. " + session.getIndexBuildProgress());
-    }
+    validateIndex();
     try (Searcher searcher = session.getSearcher()) {
-      return searcher.loadTables(tableIds);
+      return searcher.loadTables(names);
+    }
+  }
+
+  private void validateIndex() throws IOException {
+    if (!isReady()) {
+      throw new IndexNotReadyException("Search index is not ready. "
+          + session.getIndexBuildProgress());
     }
   }
 
