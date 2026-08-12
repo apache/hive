@@ -33,9 +33,11 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -108,6 +110,9 @@ public class AlterViewAddPartitionAnalyzer extends AbstractAddPartitionAnalyzer 
 
   private static String formatPartitionLiteral(FieldSchema partCol, String partSpecValue) {
     TypeInfo typeInfo = TypeInfoFactory.getPrimitiveTypeInfo(partCol.getType());
+    if (typeInfo.getTypeName().equals(serdeConstants.STRING_TYPE_NAME) || typeInfo instanceof BaseCharTypeInfo) {
+      return "'" + HiveUtils.escapeString(partSpecValue) + "'";
+    }
     ObjectInspector partColOI = TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(typeInfo);
     Object converted = ObjectInspectorConverters.getConverter(
         PrimitiveObjectInspectorFactory.javaStringObjectInspector, partColOI).convert(partSpecValue);
