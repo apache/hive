@@ -104,16 +104,13 @@ public final class Searcher implements AutoCloseable {
     return new TableSearchResult(hits, topDocs.totalHits.value(), processedEventId);
   }
 
-  public TableSearchResult loadTables(List<String> tableIds) throws SearchException, IOException {
-    if (tableIds == null || tableIds.isEmpty()) {
+  public TableSearchResult loadTables(List<TableName> tableNames) throws SearchException, IOException {
+    if (tableNames == null || tableNames.isEmpty()) {
       return new TableSearchResult(List.of(), 0, processedEventId);
     }
-    List<String> ids = new ArrayList<>(tableIds.size());
-    for (String tableId : tableIds) {
-      if (StringUtils.isBlank(tableId)) {
-        continue;
-      }
-      ids.add(tableId);
+    List<String> ids = new ArrayList<>(tableNames.size());
+    for (TableName table : tableNames) {
+      ids.add(MetastoreTableMapper.tableId(table));
     }
     BooleanQuery.Builder builder = new BooleanQuery.Builder();
     for (String id : ids) {

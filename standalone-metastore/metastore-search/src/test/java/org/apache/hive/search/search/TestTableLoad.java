@@ -17,6 +17,7 @@
 
 package org.apache.hive.search.search;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.junit.Test;
@@ -64,7 +65,8 @@ public class TestTableLoad {
           InMemorySearchFixture.table("hive", "sales", "customers", "customer list"));
       fixture.commit(1L);
 
-      TableSearchResult loaded = fixture.loadTables("hive.sales.orders", "hive.sales.customers");
+      TableSearchResult loaded = fixture.loadTables(new TableName("hive", "sales", "orders"),
+          new TableName("hive", "sales", "customers"));
       assertEquals(2, loaded.hits().size());
       Map<String, Table> byName = loaded.hits().stream()
           .map(TableSearchHit::table)

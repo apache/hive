@@ -30,7 +30,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
@@ -119,7 +118,7 @@ public class TestSearchProvider {
     }
 
     @Override
-    public TableSearchResult loadTables(List<String> tableIds) {
+    public TableSearchResult loadTables(List<TableName> names) {
       return new TableSearchResult(List.of(), 0, 12);
     }
 
