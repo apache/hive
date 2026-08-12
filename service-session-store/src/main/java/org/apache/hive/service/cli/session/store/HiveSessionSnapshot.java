@@ -35,7 +35,10 @@ public class HiveSessionSnapshot {
   private final String currentDatabase;
   private final Map<String, String> overriddenConfigurations;
   private final List<String> addedJars;
+  private final List<String> addedFiles;
   private final Map<String, String> tempTableDefinitions;
+  private final Map<String, List<TempTablePartitionSnapshot>> tempTablePartitionDefinitions;
+  private final List<String> tempFunctionDefinitions;
   private final int protocolVersion;
   private final long creationTime;
   private final long lastAccessTime;
@@ -48,7 +51,10 @@ public class HiveSessionSnapshot {
       @JsonProperty("currentDatabase") String currentDatabase,
       @JsonProperty("overriddenConfigurations") Map<String, String> overriddenConfigurations,
       @JsonProperty("addedJars") List<String> addedJars,
+      @JsonProperty("addedFiles") List<String> addedFiles,
       @JsonProperty("tempTableDefinitions") Map<String, String> tempTableDefinitions,
+      @JsonProperty("tempTablePartitionDefinitions") Map<String, List<TempTablePartitionSnapshot>> tempTablePartitionDefinitions,
+      @JsonProperty("tempFunctionDefinitions") List<String> tempFunctionDefinitions,
       @JsonProperty("protocolVersion") int protocolVersion,
       @JsonProperty("creationTime") long creationTime,
       @JsonProperty("lastAccessTime") long lastAccessTime) {
@@ -59,8 +65,13 @@ public class HiveSessionSnapshot {
     this.overriddenConfigurations = overriddenConfigurations != null
         ? new HashMap<>(overriddenConfigurations) : Collections.emptyMap();
     this.addedJars = addedJars != null ? new ArrayList<>(addedJars) : Collections.emptyList();
+    this.addedFiles = addedFiles != null ? new ArrayList<>(addedFiles) : Collections.emptyList();
     this.tempTableDefinitions = tempTableDefinitions != null
         ? new HashMap<>(tempTableDefinitions) : Collections.emptyMap();
+    this.tempTablePartitionDefinitions = tempTablePartitionDefinitions != null
+        ? new HashMap<>(tempTablePartitionDefinitions) : Collections.emptyMap();
+    this.tempFunctionDefinitions = tempFunctionDefinitions != null
+        ? new ArrayList<>(tempFunctionDefinitions) : Collections.emptyList();
     this.protocolVersion = protocolVersion;
     this.creationTime = creationTime;
     this.lastAccessTime = lastAccessTime;
@@ -96,9 +107,24 @@ public class HiveSessionSnapshot {
     return addedJars;
   }
 
+  @JsonProperty("addedFiles")
+  public List<String> getAddedFiles() {
+    return addedFiles;
+  }
+
   @JsonProperty("tempTableDefinitions")
   public Map<String, String> getTempTableDefinitions() {
     return tempTableDefinitions;
+  }
+
+  @JsonProperty("tempTablePartitionDefinitions")
+  public Map<String, List<TempTablePartitionSnapshot>> getTempTablePartitionDefinitions() {
+    return tempTablePartitionDefinitions;
+  }
+
+  @JsonProperty("tempFunctionDefinitions")
+  public List<String> getTempFunctionDefinitions() {
+    return tempFunctionDefinitions;
   }
 
   @JsonProperty("protocolVersion")
@@ -127,7 +153,10 @@ public class HiveSessionSnapshot {
     private String currentDatabase;
     private Map<String, String> overriddenConfigurations;
     private List<String> addedJars;
+    private List<String> addedFiles;
     private Map<String, String> tempTableDefinitions;
+    private Map<String, List<TempTablePartitionSnapshot>> tempTablePartitionDefinitions;
+    private List<String> tempFunctionDefinitions;
     private int protocolVersion;
     private long creationTime;
     private long lastAccessTime;
@@ -162,8 +191,24 @@ public class HiveSessionSnapshot {
       return this;
     }
 
+    public Builder addedFiles(List<String> addedFiles) {
+      this.addedFiles = addedFiles;
+      return this;
+    }
+
     public Builder tempTableDefinitions(Map<String, String> tempTableDefinitions) {
       this.tempTableDefinitions = tempTableDefinitions;
+      return this;
+    }
+
+    public Builder tempTablePartitionDefinitions(
+        Map<String, List<TempTablePartitionSnapshot>> tempTablePartitionDefinitions) {
+      this.tempTablePartitionDefinitions = tempTablePartitionDefinitions;
+      return this;
+    }
+
+    public Builder tempFunctionDefinitions(List<String> tempFunctionDefinitions) {
+      this.tempFunctionDefinitions = tempFunctionDefinitions;
       return this;
     }
 
@@ -184,8 +229,9 @@ public class HiveSessionSnapshot {
 
     public HiveSessionSnapshot build() {
       return new HiveSessionSnapshot(sessionHandleId, username, ipAddress, currentDatabase,
-          overriddenConfigurations, addedJars, tempTableDefinitions,
-          protocolVersion, creationTime, lastAccessTime);
+          overriddenConfigurations, addedJars, addedFiles, tempTableDefinitions,
+          tempTablePartitionDefinitions, tempFunctionDefinitions, protocolVersion, creationTime,
+          lastAccessTime);
     }
   }
 }

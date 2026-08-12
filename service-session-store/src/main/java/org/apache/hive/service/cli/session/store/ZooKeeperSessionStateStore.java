@@ -40,6 +40,7 @@ public class ZooKeeperSessionStateStore implements SessionStateStore {
 
   private CuratorFramework zkClient;
   private String zkBasePath;
+  private long ttlMillis;
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   @Override
@@ -54,6 +55,8 @@ public class ZooKeeperSessionStateStore implements SessionStateStore {
     int maxRetries = conf.getIntVar(ConfVars.HIVE_ZOOKEEPER_CONNECTION_MAX_RETRIES);
 
     this.zkBasePath = conf.get(CONF_ZK_PATH, CONF_ZK_PATH_DEFAULT);
+    this.ttlMillis = conf.getTimeVar(
+        ConfVars.HIVE_SERVER2_SESSION_STATE_STORE_TTL, TimeUnit.MILLISECONDS);
 
     zkClient = CuratorFrameworkFactory.builder()
         .connectString(quorum)
@@ -72,7 +75,8 @@ public class ZooKeeperSessionStateStore implements SessionStateStore {
       throw new RuntimeException("Failed to initialize ZooKeeperSessionStateStore", e);
     }
 
-    LOG.info("Initialized ZooKeeperSessionStateStore with quorum={}, basePath={}", quorum, zkBasePath);
+    LOG.info("Initialized ZooKeeperSessionStateStore with quorum={}, basePath={}, ttl={}ms",
+        quorum, zkBasePath, ttlMillis);
   }
 
   @Override
@@ -81,12 +85,11 @@ public class ZooKeeperSessionStateStore implements SessionStateStore {
     try {
       byte[] data = OBJECT_MAPPER.writeValueAsBytes(snapshot);
       if (zkClient.checkExists().forPath(path) != null) {
-        zkClient.setData().forPath(path, data);
-      } else {
-        zkClient.create().creatingParentsIfNeeded()
-            .withMode(CreateMode.PERSISTENT)
-            .forPath(path, data);
+        zkClient.delete().forPath(path);
       }
+      zkClient.create().withTtl(ttlMillis).creatingParentsIfNeeded()
+          .withMode(CreateMode.PERSISTENT_WITH_TTL)
+          .forPath(path, data);
       LOG.debug("Saved session snapshot to ZooKeeper: {}", path);
     } catch (Exception e) {
       LOG.error("Failed to save session snapshot to ZooKeeper: {}", path, e);

@@ -120,6 +120,7 @@ public class SessionManager extends CompositeService {
   private SessionStateStore sessionStateStore;
   private FetchStrategy fetchStrategy;
   private final ThreadLocal<Boolean> recoveringSession = ThreadLocal.withInitial(() -> false);
+  private final ConcurrentHashMap<SessionHandle, HiveSession> recoverySessions = new ConcurrentHashMap<>();
 
   public SessionManager(HiveServer2 hiveServer2, boolean allowSessions) {
     super(SessionManager.class.getSimpleName());
@@ -770,7 +771,22 @@ public class SessionManager extends CompositeService {
     if (fetchStrategy == FetchStrategy.NEVER) {
       throw new HiveSQLException("Invalid SessionHandle: " + sessionHandle);
     }
-    return recoverSession(sessionHandle);
+    try {
+      return recoverySessions.computeIfAbsent(sessionHandle, handle -> {
+        try {
+          return recoverSession(handle);
+        } catch (HiveSQLException e) {
+          throw new RuntimeException(e);
+        }
+      });
+    } catch (RuntimeException e) {
+      if (e.getCause() instanceof HiveSQLException) {
+        throw (HiveSQLException) e.getCause();
+      }
+      throw e;
+    } finally {
+      recoverySessions.remove(sessionHandle);
+    }
   }
 
   private void syncFromRemoteIfStale(HiveSession session) {

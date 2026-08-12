@@ -21,24 +21,36 @@ package org.apache.hive.service.cli.session;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.StringUtils;
+import java.util.LinkedHashMap;
+
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.ql.exec.DDLPlanUtils;
+import org.apache.hadoop.hive.ql.exec.FunctionInfo;
+import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionResource;
+import org.apache.hadoop.hive.ql.exec.Registry;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.TempTable;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationHandle;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.session.store.HiveSessionSnapshot;
 import org.apache.hive.service.cli.session.store.SessionStateStore;
+import org.apache.hive.service.cli.session.store.TempTablePartitionSnapshot;
 import org.apache.hive.service.rpc.thrift.TProtocolVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,6 +83,9 @@ public final class PersistableSessionUtils {
       "(?i)^\\s*(USE\\b|SET\\b|ADD\\s+(JAR|FILE)\\b|DELETE\\s+(JAR|FILE)\\b" +
           "|(CREATE|DROP)\\s+TEMPORARY\\s+(TABLE|FUNCTION)\\b).*");
 
+  private static final Pattern TEMP_TABLE_DML_PATTERN = Pattern.compile(
+      "(?i)^\\s*(INSERT\\s+(INTO|OVERWRITE)|LOAD\\s+DATA\\s+(INPATH|LOCAL\\s+INPATH))\\b.*");
+
   private PersistableSessionUtils() {
   }
 
@@ -86,6 +101,17 @@ public final class PersistableSessionUtils {
   }
 
   /**
+   * Returns true when a finished statement may have changed persisted session state,
+   * including DML that adds data or partition metadata to temporary tables.
+   */
+  public static boolean shouldPersistSnapshot(String statement) {
+    if (statement == null) {
+      return false;
+    }
+    return isStateChangingCommand(statement) || TEMP_TABLE_DML_PATTERN.matcher(statement).matches();
+  }
+
+  /**
    * Captures the current session state into a snapshot DTO.
    */
   public static HiveSessionSnapshot captureSnapshot(SessionHandle sessionHandle,
@@ -93,26 +119,43 @@ public final class PersistableSessionUtils {
       HiveConf sessionConf, TProtocolVersion protocol,
       long creationTime, long lastAccessTime) {
     List<String> jars = new ArrayList<>();
-    String addedJarsStr = Utilities.getResourceFiles(sessionConf, SessionState.ResourceType.JAR);
-    if (StringUtils.isNotBlank(addedJarsStr)) {
-      Collections.addAll(jars, addedJarsStr.split(","));
+    List<String> files = new ArrayList<>();
+    if (sessionState != null) {
+      Set<String> jarSet = sessionState.list_resource(SessionState.ResourceType.JAR, null);
+      if (jarSet != null) {
+        jars.addAll(jarSet);
+      }
+      Set<String> fileSet = sessionState.list_resource(SessionState.ResourceType.FILE, null);
+      if (fileSet != null) {
+        files.addAll(fileSet);
+      }
     }
 
     Map<String, String> tempTableDefs = new HashMap<>();
+    Map<String, List<TempTablePartitionSnapshot>> tempTablePartitionDefs = new HashMap<>();
     if (sessionState != null && sessionState.getTempTables() != null) {
+      DDLPlanUtils ddlPlanUtils = new DDLPlanUtils();
       for (Map.Entry<String, Map<String, Table>> dbEntry :
           sessionState.getTempTables().entrySet()) {
         String dbName = dbEntry.getKey();
         for (Map.Entry<String, Table> tableEntry : dbEntry.getValue().entrySet()) {
           String tableName = tableEntry.getKey();
           Table table = tableEntry.getValue();
-          String ddl = generateTempTableDDL(tableName, table);
+          String tableKey = TableName.getDbTable(dbName, tableName);
+          String ddl = generateTempTableDDL(ddlPlanUtils, table);
           if (ddl != null) {
-            tempTableDefs.put(TableName.getDbTable(dbName, tableName), ddl);
+            tempTableDefs.put(tableKey, ddl);
+          }
+          List<TempTablePartitionSnapshot> partitionSnapshots = captureTempTablePartitions(
+              sessionState, dbName, tableName, table);
+          if (!partitionSnapshots.isEmpty()) {
+            tempTablePartitionDefs.put(tableKey, partitionSnapshots);
           }
         }
       }
     }
+
+    List<String> tempFuncDefs = captureTempFunctions(sessionState);
 
     return HiveSessionSnapshot.builder()
         .sessionHandleId(storeKey(sessionHandle))
@@ -122,7 +165,10 @@ public final class PersistableSessionUtils {
         .overriddenConfigurations(sessionState != null
             ? new HashMap<>(sessionState.getOverriddenConfigurations()) : null)
         .addedJars(jars)
+        .addedFiles(files)
         .tempTableDefinitions(tempTableDefs)
+        .tempTablePartitionDefinitions(tempTablePartitionDefs)
+        .tempFunctionDefinitions(tempFuncDefs)
         .protocolVersion(protocol.getValue())
         .creationTime(creationTime)
         .lastAccessTime(lastAccessTime)
@@ -130,45 +176,98 @@ public final class PersistableSessionUtils {
   }
 
   /**
-   * Generates the CREATE TEMPORARY TABLE DDL for a temp table,
-   * including LOCATION so data can be recovered on shared storage.
+   * Generates the CREATE TEMPORARY TABLE DDL for a temp table using DDLPlanUtils,
+   * which handles partitions, table properties, complex types, bucket specs, etc.
    */
-  public static String generateTempTableDDL(String tableName, Table table) {
+  static String generateTempTableDDL(DDLPlanUtils ddlPlanUtils, Table table) {
     try {
-      StringBuilder sb = new StringBuilder("CREATE TEMPORARY TABLE ");
-      sb.append(tableName).append(" (");
-      List<FieldSchema> cols = table.getCols();
-      for (int i = 0; i < cols.size(); i++) {
-        if (i > 0) {
-          sb.append(", ");
-        }
-        sb.append(cols.get(i).getName()).append(" ").append(cols.get(i).getType());
-      }
-      sb.append(")");
-      if (table.getSerializationLib() != null) {
-        sb.append(" ROW FORMAT SERDE '").append(table.getSerializationLib()).append("'");
-      }
-      if (table.getStorageHandler() != null) {
-        sb.append(" STORED BY '").append(table.getStorageHandler().getClass().getName()).append("'");
-      } else if (table.getInputFormatClass() != null) {
-        sb.append(" STORED AS INPUTFORMAT '").append(table.getInputFormatClass().getName()).append("'");
-        if (table.getOutputFormatClass() != null) {
-          sb.append(" OUTPUTFORMAT '").append(table.getOutputFormatClass().getName()).append("'");
-        }
-      }
-      if (table.getDataLocation() != null) {
-        sb.append(" LOCATION '").append(table.getDataLocation()).append("'");
-      }
-      return sb.toString();
+      return ddlPlanUtils.getCreateTableCommand(table, true);
     } catch (Exception e) {
-      LOG.warn("Failed to generate DDL for temp table: {}", tableName, e);
+      LOG.warn("Failed to generate DDL for temp table: {}", table.getTableName(), e);
       return null;
     }
   }
 
   /**
+   * Captures session-local partition metadata for a partitioned temp table.
+   */
+  static List<TempTablePartitionSnapshot> captureTempTablePartitions(SessionState sessionState,
+      String dbName, String tableName, Table table) {
+    List<TempTablePartitionSnapshot> partitions = new ArrayList<>();
+    if (sessionState == null || !table.isPartitioned()) {
+      return partitions;
+    }
+    Map<String, TempTable> tempPartitions = sessionState.getTempPartitions();
+    if (tempPartitions == null || tempPartitions.isEmpty()) {
+      return partitions;
+    }
+    String qualifiedKey = Warehouse.getQualifiedName(dbName.toLowerCase(), tableName.toLowerCase());
+    TempTable tempTable = tempPartitions.get(qualifiedKey);
+    if (tempTable == null) {
+      return partitions;
+    }
+    for (org.apache.hadoop.hive.metastore.api.Partition apiPartition : tempTable.listPartitions()) {
+      String location = apiPartition.getSd() != null ? apiPartition.getSd().getLocation() : null;
+      partitions.add(new TempTablePartitionSnapshot(
+          new ArrayList<>(apiPartition.getValues()), location));
+    }
+    return partitions;
+  }
+
+  /**
+   * Captures temporary function definitions as CREATE TEMPORARY FUNCTION DDL statements.
+   * Uses the passed sessionState's registry directly rather than the thread-local,
+   * since the snapshot may be captured on a thread different from the session's own.
+   */
+  static List<String> captureTempFunctions(SessionState sessionState) {
+    List<String> funcDefs = new ArrayList<>();
+    if (sessionState == null) {
+      return funcDefs;
+    }
+    Registry registry = sessionState.getSessionRegistry();
+    if (registry == null) {
+      return funcDefs;
+    }
+    for (String funcName : registry.getCurrentFunctionNames()) {
+      try {
+        FunctionInfo info = registry.getFunctionInfo(funcName);
+        if (info == null || info.getFunctionType() != FunctionInfo.FunctionType.TEMPORARY) {
+          continue;
+        }
+        String className = info.getClassName();
+        if (className == null) {
+          Class<?> funcClass = info.getFunctionClass();
+          if (funcClass != null) {
+            className = funcClass.getName();
+          }
+        }
+        if (className == null) {
+          continue;
+        }
+        StringBuilder ddl = new StringBuilder("CREATE TEMPORARY FUNCTION ");
+        ddl.append(funcName).append(" AS '").append(className).append("'");
+        FunctionResource[] resources = info.getResources();
+        if (resources != null && resources.length > 0) {
+          ddl.append(" USING");
+          for (int i = 0; i < resources.length; i++) {
+            if (i > 0) {
+              ddl.append(",");
+            }
+            ddl.append(" ").append(resources[i].getResourceType().name())
+                .append(" '").append(resources[i].getResourceURI()).append("'");
+          }
+        }
+        funcDefs.add(ddl.toString());
+      } catch (Exception e) {
+        LOG.warn("Failed to capture temp function: {}", funcName, e);
+      }
+    }
+    return funcDefs;
+  }
+
+  /**
    * Hydrates a recovered session from a snapshot: restores database, configs,
-   * JARs, and temp tables.
+   * JARs, files, temp functions, and temp tables.
    */
   public static void hydrateSession(HiveSession session, HiveSessionSnapshot snapshot)
       throws HiveSQLException {
@@ -188,8 +287,17 @@ public final class PersistableSessionUtils {
           sessionState.add_resource(SessionState.ResourceType.JAR, jar);
         }
       }
+      if (snapshot.getAddedFiles() != null) {
+        for (String file : snapshot.getAddedFiles()) {
+          sessionState.add_resource(SessionState.ResourceType.FILE, file);
+        }
+      }
+      if (snapshot.getTempFunctionDefinitions() != null) {
+        restoreTempFunctions(session, snapshot.getTempFunctionDefinitions());
+      }
       if (snapshot.getTempTableDefinitions() != null) {
-        restoreTempTables(session, sessionState, snapshot.getTempTableDefinitions());
+        restoreTempTables(session, sessionState, snapshot.getTempTableDefinitions(),
+            snapshot.getTempTablePartitionDefinitions());
       }
     } catch (Exception e) {
       LOG.error("Failed to hydrate session: {}", session.getSessionHandle(), e);
@@ -197,8 +305,20 @@ public final class PersistableSessionUtils {
     }
   }
 
+  private static void restoreTempFunctions(HiveSession session, List<String> tempFuncDefs) {
+    for (String ddl : tempFuncDefs) {
+      try {
+        OperationHandle opHandle = session.executeStatement(ddl, null);
+        session.closeOperation(opHandle);
+      } catch (Exception e) {
+        LOG.warn("Failed to restore temporary function: {}", ddl, e);
+      }
+    }
+  }
+
   private static void restoreTempTables(HiveSession session, SessionState sessionState,
-      Map<String, String> tempTableDefs) {
+      Map<String, String> tempTableDefs, Map<String, List<TempTablePartitionSnapshot>> tempTablePartitionDefs)
+      throws HiveSQLException {
     String currentDb = sessionState.getCurrentDatabase();
     for (Map.Entry<String, String> entry : tempTableDefs.entrySet()) {
       try {
@@ -209,11 +329,42 @@ public final class PersistableSessionUtils {
         }
         OperationHandle opHandle = session.executeStatement(entry.getValue(), null);
         session.closeOperation(opHandle);
+        List<TempTablePartitionSnapshot> partitions = tempTablePartitionDefs != null
+            ? tempTablePartitionDefs.get(entry.getKey()) : null;
+        if (partitions != null && !partitions.isEmpty()) {
+          Table table = sessionState.getTempTables().get(db).get(tn.getTable());
+          restoreTempTablePartitions(sessionState, table, partitions);
+        }
       } catch (Exception e) {
         LOG.warn("Failed to restore temporary table {}", entry.getKey(), e);
+        throw new HiveSQLException("Failed to restore temporary table " + entry.getKey(), e);
       }
     }
     sessionState.setCurrentDatabase(currentDb);
+  }
+
+  private static void restoreTempTablePartitions(SessionState sessionState, Table table,
+      List<TempTablePartitionSnapshot> partitions)
+      throws HiveException, MetaException, AlreadyExistsException {
+    String qualifiedKey = Warehouse.getQualifiedName(
+        table.getDbName().toLowerCase(), table.getTableName().toLowerCase());
+    TempTable tempTable = sessionState.getTempPartitions().get(qualifiedKey);
+    if (tempTable == null) {
+      throw new HiveException("TempTable partition metadata missing for " + qualifiedKey);
+    }
+    List<org.apache.hadoop.hive.metastore.api.Partition> toAdd = new ArrayList<>(partitions.size());
+    List<FieldSchema> partCols = table.getPartitionKeys();
+    for (TempTablePartitionSnapshot snapshot : partitions) {
+      Map<String, String> partSpec = new LinkedHashMap<>();
+      List<String> values = snapshot.getValues();
+      for (int i = 0; i < partCols.size(); i++) {
+        partSpec.put(partCols.get(i).getName(), values.get(i));
+      }
+      Path location = snapshot.getLocation() != null ? new Path(snapshot.getLocation()) : null;
+      Partition qlPart = new Partition(table, partSpec, location);
+      toAdd.add(qlPart.getTPartition());
+    }
+    tempTable.addPartitions(toAdd, true);
   }
 
   /**

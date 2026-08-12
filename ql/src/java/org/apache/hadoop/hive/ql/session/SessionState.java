@@ -1139,6 +1139,10 @@ public class SessionState implements ISessionAuthState {
     return session != null ? session.registry : null;
   }
 
+  public Registry getSessionRegistry() {
+    return registry;
+  }
+
   public static Registry getRegistryForWrite() {
     Registry registry = getRegistry();
     if (registry == null) {

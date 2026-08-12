@@ -67,6 +67,9 @@ public abstract class TestSessionStateStoreBase {
     assertEquals("nonstrict", retrieved.getOverriddenConfigurations().get("hive.exec.dynamic.partition.mode"));
     assertEquals(2, retrieved.getAddedJars().size());
     assertEquals("hdfs:///user/hive/udfs/my-udf.jar", retrieved.getAddedJars().get(0));
+    assertEquals(2, retrieved.getAddedFiles().size());
+    assertEquals("hdfs:///user/hive/files/data.csv", retrieved.getAddedFiles().get(0));
+    assertEquals("/tmp/local_file.txt", retrieved.getAddedFiles().get(1));
     assertEquals(1, retrieved.getTempTableDefinitions().size());
     assertEquals("CREATE TEMPORARY TABLE tmp_t (col1 STRING, col2 INT)",
         retrieved.getTempTableDefinitions().get("tmp_t"));
@@ -167,6 +170,7 @@ public abstract class TestSessionStateStoreBase {
         .currentDatabase(database)
         .overriddenConfigurations(configs)
         .addedJars(Arrays.asList("hdfs:///user/hive/udfs/my-udf.jar", "hdfs:///user/hive/udfs/other.jar"))
+        .addedFiles(Arrays.asList("hdfs:///user/hive/files/data.csv", "/tmp/local_file.txt"))
         .tempTableDefinitions(tempTables)
         .protocolVersion(10)
         .creationTime(1000L)

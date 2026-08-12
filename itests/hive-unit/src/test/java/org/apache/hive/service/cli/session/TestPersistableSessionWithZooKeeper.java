@@ -36,6 +36,7 @@ public class TestPersistableSessionWithZooKeeper extends TestPersistableSessionB
 
   @BeforeClass
   public static void beforeTest() throws Exception {
+    System.setProperty("zookeeper.extendedTypesEnabled", "true");
     MiniHS2.cleanupLocalDir();
     zkServer = new TestingServer();
     zkServer.start();
@@ -59,6 +60,7 @@ public class TestPersistableSessionWithZooKeeper extends TestPersistableSessionB
   protected void configureStore(HiveConf conf) {
     conf.setVar(ConfVars.HIVE_ZOOKEEPER_QUORUM, zkServer.getConnectString());
     conf.set(ZooKeeperSessionStateStore.CONF_ZK_PATH, ZK_SESSION_PATH);
+    conf.setTimeDuration(ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT.varname, 2, TimeUnit.SECONDS);
     conf.setTimeDuration(ConfVars.HIVE_ZOOKEEPER_CONNECTION_TIMEOUT.varname, 2, TimeUnit.SECONDS);
     conf.setTimeDuration(ConfVars.HIVE_ZOOKEEPER_CONNECTION_BASESLEEPTIME.varname,
         100, TimeUnit.MILLISECONDS);
@@ -70,6 +72,11 @@ public class TestPersistableSessionWithZooKeeper extends TestPersistableSessionB
     HiveConf verifyConf = new HiveConf();
     verifyConf.setVar(ConfVars.HIVE_ZOOKEEPER_QUORUM, zkServer.getConnectString());
     verifyConf.set(ZooKeeperSessionStateStore.CONF_ZK_PATH, ZK_SESSION_PATH);
+    verifyConf.setTimeDuration(ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT.varname, 2, TimeUnit.SECONDS);
+    verifyConf.setTimeDuration(ConfVars.HIVE_ZOOKEEPER_CONNECTION_TIMEOUT.varname, 2, TimeUnit.SECONDS);
+    verifyConf.setTimeDuration(ConfVars.HIVE_ZOOKEEPER_CONNECTION_BASESLEEPTIME.varname,
+        100, TimeUnit.MILLISECONDS);
+    verifyConf.setInt(ConfVars.HIVE_ZOOKEEPER_CONNECTION_MAX_RETRIES.varname, 1);
     ZooKeeperSessionStateStore store = new ZooKeeperSessionStateStore();
     store.init(verifyConf);
     return store;

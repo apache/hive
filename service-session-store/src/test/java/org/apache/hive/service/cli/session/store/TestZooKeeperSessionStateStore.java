@@ -32,6 +32,7 @@ public class TestZooKeeperSessionStateStore extends TestSessionStateStoreBase {
 
   @BeforeClass
   public static void startZk() throws Exception {
+    System.setProperty("zookeeper.extendedTypesEnabled", "true");
     zkServer = new TestingServer();
     zkServer.start();
   }

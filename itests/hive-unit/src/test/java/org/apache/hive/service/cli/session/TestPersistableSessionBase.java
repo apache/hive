@@ -27,6 +27,7 @@ import static org.junit.Assert.fail;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -108,6 +109,27 @@ public abstract class TestPersistableSessionBase {
       }
       Thread.sleep(200);
     }
+  }
+
+  /**
+   * Polls the session state store until the snapshot satisfies the given condition or times out.
+   * Needed because the snapshot save runs asynchronously on the background thread after the
+   * operation state becomes FINISHED (there is a small window between state visibility and
+   * save completion).
+   */
+  private HiveSessionSnapshot waitForSnapshotCondition(SessionStateStore store,
+      String storeKey, java.util.function.Predicate<HiveSessionSnapshot> condition,
+      long timeoutMs) throws Exception {
+    long deadline = System.currentTimeMillis() + timeoutMs;
+    HiveSessionSnapshot snapshot = null;
+    while (System.currentTimeMillis() < deadline) {
+      snapshot = store.getSnapshot(storeKey);
+      if (snapshot != null && condition.test(snapshot)) {
+        return snapshot;
+      }
+      Thread.sleep(100);
+    }
+    return snapshot;
   }
 
   private void configurePersistableSession(HiveConf conf) {
@@ -396,6 +418,197 @@ public abstract class TestPersistableSessionBase {
   }
 
   @Test(timeout = 120000)
+  public void testTempTableWithPartitionsAndComplexTypesRecovered() throws Exception {
+    Map<String, String> confOverlay = new HashMap<>();
+    miniHs2First.start(confOverlay);
+
+    CLIServiceClient client1 = miniHs2First.getServiceClient();
+    SessionHandle sessHandle = client1.openSession("foo", "bar");
+
+    executeStatementAndWait(client1, sessHandle,
+        "CREATE TEMPORARY TABLE tmp_complex ("
+            + "id INT, "
+            + "info STRUCT<name:STRING,age:INT>, "
+            + "tags ARRAY<STRING>, "
+            + "metadata MAP<STRING,STRING>"
+            + ") PARTITIONED BY (dt STRING) "
+            + "TBLPROPERTIES ('custom.key'='custom.value', 'transient_lastDdlTime'='0')",
+        confOverlay);
+    executeStatementAndWait(client1, sessHandle,
+        "INSERT INTO tmp_complex PARTITION(dt='2024-01-01') "
+            + "VALUES (1, named_struct('name','alice','age',30), "
+            + "array('tag1','tag2'), map('k1','v1'))",
+        confOverlay);
+
+    // Verify partition metadata is captured in the snapshot after INSERT
+    SessionStateStore verifyStore = createVerifyStore();
+    String storeKey = sessHandle.getHandleIdentifier().getPublicId().toString() + ":"
+        + sessHandle.getHandleIdentifier().getSecretId().toString();
+    HiveSessionSnapshot snapshot = waitForSnapshotCondition(verifyStore, storeKey,
+        s -> s.getTempTablePartitionDefinitions() != null
+            && !s.getTempTablePartitionDefinitions().isEmpty(),
+        10000);
+    assertNotNull("Snapshot should exist after INSERT into partitioned temp table", snapshot);
+    assertTrue("tempTablePartitionDefinitions should contain partition metadata for tmp_complex",
+        snapshot.getTempTablePartitionDefinitions().values().stream()
+            .flatMap(List::stream)
+            .anyMatch(p -> p.getValues().contains("2024-01-01")
+                && p.getLocation() != null && !p.getLocation().isEmpty()));
+    verifyStore.close();
+
+    miniHs2First.stop();
+    miniHs2Second.start(confOverlay);
+
+    CLIServiceClient client2 = miniHs2Second.getServiceClient();
+
+    // Verify table schema is recovered with complex types and partitions
+    OperationHandle opHandle = client2.executeStatement(sessHandle,
+        "DESCRIBE tmp_complex", confOverlay);
+    RowSet rowSet = client2.fetchResults(opHandle);
+    assertTrue("Partitioned temp table with complex types should be recovered",
+        rowSet.numRows() > 0);
+
+    // Verify pre-failover data is queryable (partition metadata + LOCATION restored)
+    opHandle = client2.executeStatement(sessHandle,
+        "SELECT id, info.name, tags[0], metadata['k1'], dt FROM tmp_complex "
+            + "WHERE dt='2024-01-01'", confOverlay);
+    rowSet = client2.fetchResults(opHandle);
+    assertEquals(1, rowSet.numRows());
+    Object[] row = rowSet.iterator().next();
+    assertEquals("1", row[0].toString());
+    assertEquals("alice", row[1].toString());
+    assertEquals("tag1", row[2].toString());
+    assertEquals("v1", row[3].toString());
+    assertEquals("2024-01-01", row[4].toString());
+
+    // Verify new inserts still work after recovery
+    executeStatementAndWait(client2, sessHandle,
+        "INSERT INTO tmp_complex PARTITION(dt='2024-02-01') "
+            + "VALUES (2, named_struct('name','bob','age',25), "
+            + "array('x'), map('k2','v2'))",
+        confOverlay);
+    opHandle = client2.executeStatement(sessHandle,
+        "SELECT id, info.name, tags[0], metadata['k2'], dt FROM tmp_complex "
+            + "WHERE dt='2024-02-01'", confOverlay);
+    rowSet = client2.fetchResults(opHandle);
+    assertEquals(1, rowSet.numRows());
+    row = rowSet.iterator().next();
+    assertEquals("2", row[0].toString());
+    assertEquals("bob", row[1].toString());
+    assertEquals("x", row[2].toString());
+    assertEquals("v2", row[3].toString());
+    assertEquals("2024-02-01", row[4].toString());
+
+    client2.closeSession(sessHandle);
+  }
+
+  @Test(timeout = 120000)
+  public void testAddedFilesRecoveredAfterFailover() throws Exception {
+    Map<String, String> confOverlay = new HashMap<>();
+    miniHs2First.start(confOverlay);
+
+    CLIServiceClient client1 = miniHs2First.getServiceClient();
+    SessionHandle sessHandle = client1.openSession("foo", "bar");
+
+    // Create the file before ADD FILE
+    executeStatementAndWait(client1, sessHandle,
+        "CREATE TEMPORARY TABLE tmp_file_helper (line STRING)", confOverlay);
+    executeStatementAndWait(client1, sessHandle,
+        "INSERT INTO tmp_file_helper VALUES ('hello')", confOverlay);
+
+    executeStatementAndWait(client1, sessHandle,
+        "INSERT OVERWRITE LOCAL DIRECTORY '/tmp/test_persistable_file_dir' "
+            + "SELECT 'test_content' FROM tmp_file_helper LIMIT 1", confOverlay);
+    executeStatementAndWait(client1, sessHandle,
+        "ADD FILE /tmp/test_persistable_file_dir/000000_0", confOverlay);
+
+    // Verify the snapshot contains the file — poll briefly because the snapshot save
+    // runs on the background thread after the operation state becomes FINISHED
+    SessionStateStore verifyStore = createVerifyStore();
+    String storeKey = sessHandle.getHandleIdentifier().getPublicId().toString() + ":"
+        + sessHandle.getHandleIdentifier().getSecretId().toString();
+    HiveSessionSnapshot snapshot = waitForSnapshotCondition(verifyStore, storeKey,
+        s -> !s.getAddedFiles().isEmpty(), 5000);
+    assertNotNull("Snapshot should exist", snapshot);
+    assertTrue("addedFiles should contain the file",
+        snapshot.getAddedFiles().stream()
+            .anyMatch(f -> f.contains("000000_0")));
+
+    // Failover to second HS2
+    miniHs2First.stop();
+    miniHs2Second.start(confOverlay);
+
+    CLIServiceClient client2 = miniHs2Second.getServiceClient();
+
+    // Verify session is recovered and file resource is available
+    OperationHandle opHandle = client2.executeStatement(sessHandle,
+        "SELECT 1", confOverlay);
+    RowSet rowSet = client2.fetchResults(opHandle);
+    assertEquals(1, rowSet.numRows());
+
+    // Verify the recovered snapshot on the second HS2 also has the file
+    HiveSessionSnapshot recoveredSnapshot = verifyStore.getSnapshot(storeKey);
+    assertNotNull("Snapshot should exist after recovery", recoveredSnapshot);
+    assertTrue("addedFiles should be preserved after recovery",
+        recoveredSnapshot.getAddedFiles().stream()
+            .anyMatch(f -> f.contains("000000_0")));
+
+    client2.closeSession(sessHandle);
+    verifyStore.close();
+  }
+
+  @Test(timeout = 120000)
+  public void testTempFunctionRecoveredAfterFailover() throws Exception {
+    Map<String, String> confOverlay = new HashMap<>();
+    miniHs2First.start(confOverlay);
+
+    CLIServiceClient client1 = miniHs2First.getServiceClient();
+    SessionHandle sessHandle = client1.openSession("foo", "bar");
+
+    // Register a temporary function using GenericUDFUpper (always on HS2 classpath)
+    executeStatementAndWait(client1, sessHandle,
+        "CREATE TEMPORARY FUNCTION tmp_my_upper AS "
+            + "'org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper'",
+        confOverlay);
+
+    // Verify snapshot has the function captured — poll briefly because the snapshot save
+    // runs on the background thread after the operation state becomes FINISHED
+    SessionStateStore verifyStore = createVerifyStore();
+    String storeKey = sessHandle.getHandleIdentifier().getPublicId().toString() + ":"
+        + sessHandle.getHandleIdentifier().getSecretId().toString();
+    HiveSessionSnapshot snapshot = waitForSnapshotCondition(verifyStore, storeKey,
+        s -> !s.getTempFunctionDefinitions().isEmpty(), 5000);
+    assertNotNull("Snapshot should exist after CREATE TEMPORARY FUNCTION", snapshot);
+    assertTrue("tempFunctionDefinitions should contain tmp_my_upper, but got: "
+            + snapshot.getTempFunctionDefinitions(),
+        snapshot.getTempFunctionDefinitions().stream()
+            .anyMatch(d -> d.contains("tmp_my_upper")));
+    verifyStore.close();
+
+    // Verify it works before failover
+    OperationHandle opHandle = client1.executeStatement(sessHandle,
+        "SELECT tmp_my_upper('hello')", confOverlay);
+    RowSet rowSet = client1.fetchResults(opHandle);
+    assertEquals(1, rowSet.numRows());
+    assertEquals("HELLO", rowSet.iterator().next()[0].toString());
+
+    // Failover
+    miniHs2First.stop();
+    miniHs2Second.start(confOverlay);
+
+    CLIServiceClient client2 = miniHs2Second.getServiceClient();
+
+    // Verify the temp function is usable after recovery
+    opHandle = client2.executeStatement(sessHandle,
+        "SELECT tmp_my_upper('recovered')", confOverlay);
+    rowSet = client2.fetchResults(opHandle);
+    assertEquals(1, rowSet.numRows());
+    assertEquals("RECOVERED", rowSet.iterator().next()[0].toString());
+
+    client2.closeSession(sessHandle);
+  }
+
+  @Test(timeout = 120000)
   public void testAlwaysStrategySyncsFromRemoteWhenStale() throws Exception {
     hiveConf1.setVar(ConfVars.HIVE_SERVER2_SESSION_STATE_STORE_FETCH_STRATEGY, "ALWAYS");
     miniHs2First = new MiniHS2.Builder().withConf(hiveConf1).withHTTPTransport()
@@ -429,7 +642,11 @@ public abstract class TestPersistableSessionBase {
         .currentDatabase(current.getCurrentDatabase())
         .overriddenConfigurations(updatedConfigs)
         .addedJars(current.getAddedJars() != null ? current.getAddedJars() : new ArrayList<>())
+        .addedFiles(current.getAddedFiles() != null ? current.getAddedFiles() : new ArrayList<>())
         .tempTableDefinitions(current.getTempTableDefinitions())
+        .tempTablePartitionDefinitions(current.getTempTablePartitionDefinitions())
+        .tempFunctionDefinitions(current.getTempFunctionDefinitions() != null
+            ? current.getTempFunctionDefinitions() : new ArrayList<>())
         .protocolVersion(current.getProtocolVersion())
         .creationTime(current.getCreationTime())
         .lastAccessTime(System.currentTimeMillis() + 60000)

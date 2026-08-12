@@ -829,7 +829,7 @@ public class HiveSessionImpl implements HiveSession {
   }
 
   private void notifyIfStateChanging(String statement) {
-    if (PersistableSessionUtils.isStateChangingCommand(statement) && sessionManager != null) {
+    if (PersistableSessionUtils.shouldPersistSnapshot(statement) && sessionManager != null) {
       sessionManager.notifySessionStateChanged(sessionHandle);
     }
   }
