@@ -43,7 +43,8 @@ public class AlterTableExecuteSpec<T> {
     FAST_FORWARD,
     CHERRY_PICK,
     DELETE_METADATA,
-    DELETE_ORPHAN_FILES;
+    DELETE_ORPHAN_FILES,
+    REWRITE_MANIFESTS;
   }
 
   private final ExecuteOperationType operationType;
