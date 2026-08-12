@@ -275,23 +275,6 @@ public class Hive implements AutoCloseable {
   static final private Logger LOG = LoggerFactory.getLogger("hive.ql.metadata.Hive");
   private final String CLASS_NAME = Hive.class.getName();
 
-  /**
-   * Schemes whose single-file {@link FileSystem#rename(Path, Path)} is not atomic-if-absent and
-   * can silently overwrite an existing destination when two concurrent writers race between an
-   * {@code exists()} probe and the rename call (object stores where rename is client-side
-   * copy+delete). Callers use this to decide whether to switch to a uniqueness-tag copy suffix
-   * in {@link #mvFile}. The list is in code because the set of unsafe filesystems is a property
-   * of the filesystem implementation, not something an operator should override.
-   * <p>
-   * Note on Azure: {@code abfs}/{@code abfss} only guarantee atomic rename when the ADLS Gen2
-   * account has hierarchical namespace enabled; without HNS they degrade to copy+delete like
-   * {@code wasb}. Since {@code mvFile} cannot cheaply tell the two apart at rename time, the
-   * Azure schemes are included unconditionally — a false positive costs only a slightly longer
-   * filename, whereas a false negative would be silent data loss.
-   */
-  public static final Set<String> NON_ATOMIC_RENAME_SCHEMES = new HashSet<>(
-      Arrays.asList("s3a", "s3n", "s3", "gs", "abfs", "abfss", "wasb", "wasbs"));
-
   private HiveConf conf = null;
   private IMetaStoreClient metaStoreClient;
   private UserGroupInformation owner;
@@ -5191,37 +5174,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   /**
-   * Compute a compact per-query uniqueness tag used by the non-ACID rename branch of
-   * {@link #mvFile} to make each concurrent writer's destination key unique on filesystems
-   * whose {@code rename} is not atomic-if-absent. The tag becomes the copy suffix
-   * ({@code basename_copy_<tag>}) in place of the numeric {@code _copy_N} counter.
-   * <p>
-   * Reads {@code hive.query.id} from the passed {@link HiveConf} and delegates to
-   * {@link QueryPlan#extractUniquenessTag(String)} for the actual UUID → hex derivation.
-   * The shape matches {@link ParsedOutputFileName}'s copy-index group so downstream filename
-   * parsing (taskId, attemptId, copyIndex) keeps working.
-   */
-  static String computeUniquenessTag(HiveConf conf) {
-    String qid = HiveConf.getVar(conf, ConfVars.HIVE_QUERY_ID);
-    if (Strings.isNullOrEmpty(qid)) {
-      throw new IllegalStateException("hive.query.id is required to derive a unique destination name");
-    }
-    return QueryPlan.extractUniquenessTag(qid);
-  }
-
-  /**
-   * @return {@code true} when the filesystem's URI scheme is one of the known non-atomic-rename
-   *         schemes ({@link #NON_ATOMIC_RENAME_SCHEMES}); {@code false} otherwise (including a
-   *         {@code null} fs or missing scheme).
-   */
-  static boolean isNonAtomicRenameFs(FileSystem fs) {
-    if (fs == null || fs.getUri() == null || fs.getUri().getScheme() == null) {
-      return false;
-    }
-    return NON_ATOMIC_RENAME_SCHEMES.contains(fs.getUri().getScheme().toLowerCase());
-  }
-
-  /**
    * Picks the destination {@link Path} for {@link #mvFile}, choosing between a per-query
    * uniqueness-tagged name (on filesystems without atomic rename-if-absent semantics) and the
    * legacy {@code _copy_N} counter-based picker.
@@ -5263,8 +5215,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
         // Only apply the unique suffix in case of files, as it's supposed to handle file name collisions.
         // When mvFile is called with a directory, we can fall back to the original logic.
         (taskId == -1 && isRenameAllowed && !isOverwrite && sourceFs.getFileStatus(sourcePath).isFile()
-            && isNonAtomicRenameFs(destFs))
-            ? computeUniquenessTag(conf)
+            && FileUtils.isNonAtomicRenameFs(destFs))
+            ? QueryPlan.extractUniquenessTag(conf)
             : null;
 
     if (uniqueCopySuffix != null && !uniqueCopySuffix.isEmpty()) {

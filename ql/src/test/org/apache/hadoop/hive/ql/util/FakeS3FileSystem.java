@@ -35,8 +35,8 @@ import org.apache.hadoop.fs.permission.FsPermission;
  * {@link FileSystem#getFileSystem(URI, Configuration)} sees {@code fakes3://…}.
  *
  * <p>Tests using this class typically add {@value #SCHEME} to
- * {@code org.apache.hadoop.hive.ql.metadata.Hive.NON_ATOMIC_RENAME_SCHEMES} so
- * {@code Hive.isNonAtomicRenameFs} treats it like S3A and drives the
+ * {@code org.apache.hadoop.hive.common.FileUtils.NON_ATOMIC_RENAME_SCHEMES} so
+ * {@code FileUtils.isNonAtomicRenameFs} treats it like S3A and drives the
  * non-atomic-rename branch of the move logic. Remove it again in an
  * {@code @AfterClass}/{@code @AfterAll} hook so no other test sees the mutation.
  *

@@ -37,7 +37,9 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.nio.charset.StandardCharsets;
 
+import com.google.common.base.Strings;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
@@ -310,6 +312,25 @@ public class QueryPlan implements Serializable {
         .get(Calendar.MINUTE), gc.get(Calendar.SECOND))
         + "_"
         + UUID.randomUUID().toString();
+  }
+
+  /**
+   * Compute a compact per-query uniqueness tag used by the non-ACID rename branch of
+   * {@link Hive#mvFile} to make each concurrent writer's destination key unique on filesystems
+   * whose {@code rename} is not atomic-if-absent. The tag becomes the copy suffix
+   * ({@code basename_copy_<tag>}) in place of the numeric {@code _copy_N} counter.
+   * <p>
+   * Reads {@code hive.query.id} from the passed {@link HiveConf} and delegates to
+   * {@link QueryPlan#extractUniquenessTag(String)} for the actual UUID → hex derivation.
+   * The shape matches {@link ParsedOutputFileName}'s copy-index group so downstream filename
+   * parsing (taskId, attemptId, copyIndex) keeps working.
+   */
+  public static String extractUniquenessTag(HiveConf conf) {
+    String qid = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_QUERY_ID);
+    if (Strings.isNullOrEmpty(qid)) {
+      throw new IllegalStateException("hive.query.id is required to derive a unique destination name");
+    }
+    return QueryPlan.extractUniquenessTag(qid);
   }
 
   /**

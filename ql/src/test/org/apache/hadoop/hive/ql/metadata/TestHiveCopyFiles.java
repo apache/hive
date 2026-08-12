@@ -20,8 +20,10 @@ package org.apache.hadoop.hive.ql.metadata;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfForTest;
+import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -246,7 +248,7 @@ public class TestHiveCopyFiles {
    * scheme to be flagged non-atomic-rename, which is not easily synthesizable with
    * LocalFileSystem in a JUnit environment:
    * <ol>
-   *   <li>{@link Hive#isNonAtomicRenameFs(FileSystem)} recognizes S3-family schemes on the URI
+   *   <li>{@link FileUtils#isNonAtomicRenameFs(FileSystem)} recognizes S3-family schemes on the URI
    *       and rejects HDFS / local schemes.</li>
    *   <li>Two distinct {@code hive.query.id} values map to two distinct 8-hex uniqueness tags
    *       — the compact per-query identifier that mvFile appends when the destination
@@ -259,20 +261,20 @@ public class TestHiveCopyFiles {
   public void testUniquenessTagAndUnstableFsGating() throws IOException {
     // (1) non-atomic-rename filesystem detection via URI scheme
     FileSystem localFs = new Path(targetFolder.getRoot().getAbsolutePath()).getFileSystem(hiveConf);
-    assertFalse("local FS is atomic-rename", Hive.isNonAtomicRenameFs(localFs));
-    assertFalse("null fs is not flagged", Hive.isNonAtomicRenameFs((FileSystem) null));
+    assertFalse("local FS is atomic-rename", FileUtils.isNonAtomicRenameFs(localFs));
+    assertFalse("null fs is not flagged", FileUtils.isNonAtomicRenameFs((FileSystem) null));
 
     for (String scheme : new String[] {"s3a", "s3n", "s3", "gs", "abfs", "abfss", "wasb", "wasbs"}) {
       FileSystem spy = spy(localFs);
       when(spy.getUri()).thenReturn(URI.create(scheme + ":///bucket/path"));
       assertTrue(scheme + " must be flagged non-atomic-rename",
-          Hive.isNonAtomicRenameFs(spy));
+          FileUtils.isNonAtomicRenameFs(spy));
     }
     for (String scheme : new String[] {"hdfs", "file", "ofs", "adl"}) {
       FileSystem spy = spy(localFs);
       when(spy.getUri()).thenReturn(URI.create(scheme + ":///whatever"));
       assertFalse(scheme + " must not be flagged non-atomic-rename",
-          Hive.isNonAtomicRenameFs(spy));
+          FileUtils.isNonAtomicRenameFs(spy));
     }
 
     // (2) uniqueness tag: the 16-hex most-significant-bits half of the UUID at the tail of
@@ -280,10 +282,10 @@ public class TestHiveCopyFiles {
     // QueryPlan.extractUniquenessTag). Distinct UUIDs → distinct tags.
     hiveConf.setVar(HiveConf.ConfVars.HIVE_QUERY_ID,
         "lbodor_20260101120000_f47ac10b-58cc-4372-a567-0e02b2c3d479");
-    String tag1 = Hive.computeUniquenessTag(hiveConf);
+    String tag1 = QueryPlan.extractUniquenessTag(hiveConf);
     hiveConf.setVar(HiveConf.ConfVars.HIVE_QUERY_ID,
         "lbodor_20260101120001_9c8a44f1-e2b3-4a1c-9d3e-000000000000");
-    String tag2 = Hive.computeUniquenessTag(hiveConf);
+    String tag2 = QueryPlan.extractUniquenessTag(hiveConf);
 
     assertEquals("MSB half of the UUID at the tail", "f47ac10b58cc4372", tag1);
     assertEquals("MSB half of the UUID at the tail", "9c8a44f1e2b34a1c", tag2);
@@ -295,8 +297,8 @@ public class TestHiveCopyFiles {
     // fall back to a shared filename when the query state is absent).
     hiveConf.unset(HiveConf.ConfVars.HIVE_QUERY_ID.varname);
     try {
-      Hive.computeUniquenessTag(hiveConf);
-      fail("computeUniquenessTag must throw when hive.query.id is unset");
+      QueryPlan.extractUniquenessTag(hiveConf);
+      fail("extractUniquenessTag must throw when hive.query.id is unset");
     } catch (IllegalStateException expected) {
       assertTrue("exception message must mention hive.query.id: " + expected.getMessage(),
           expected.getMessage() != null && expected.getMessage().contains("hive.query.id"));

@@ -47,7 +47,7 @@ public class ParsedOutputFileName {
       "(\\(.*\\))?" + // taskId prefix
       "(\\d+)" + // taskId
       "(?:_(\\d{1,6}))?" + // _<attemptId> (limited to 6 digits)
-      "(?:_copy_(\\d{1,6}|[\\da-fA-F]{16}))?" + // copy suffix: numeric counter, or 16-hex uniqueness tag
+      "(?:_copy_(\\d{1,6}|[0-9a-fA-F]{16}))?" + // copy suffix: numeric counter, or 16-hex uniqueness tag
       "(\\..*)?$"); // any suffix/file extension
 
   public static ParsedOutputFileName parse(String fileName) {

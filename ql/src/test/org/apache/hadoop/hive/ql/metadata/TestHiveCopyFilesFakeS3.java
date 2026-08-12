@@ -21,6 +21,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RawLocalFileSystem;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.exec.ParsedOutputFileName;
@@ -53,8 +54,8 @@ import static org.junit.Assert.assertTrue;
  * End-to-end tests for {@link Hive#copyFiles} through the non-atomic-rename-FS branch of
  * {@link Hive}'s move logic. Registers a synthetic {@code fakes3://} scheme backed by
  * {@link RawLocalFileSystem} (so real files land under a JUnit {@link TemporaryFolder})
- * and appends it directly to {@link Hive#NON_ATOMIC_RENAME_SCHEMES} for the duration of
- * this test class so {@link Hive#isNonAtomicRenameFs} treats it as a non-atomic-rename
+ * and appends it directly to {@link FileUtils#NON_ATOMIC_RENAME_SCHEMES} for the duration of
+ * this test class so {@link FileUtils#isNonAtomicRenameFs} treats it as a non-atomic-rename
  * FS. The scheme is removed in {@link #tearDownClass()} so no other test sees it.
  *
  * <p>What this covers that the mockito-spy tests in {@link TestHiveCopyFiles} do not:
@@ -78,16 +79,16 @@ class TestHiveCopyFilesFakeS3 {
     // instance rooted under its own TemporaryFolder without cross-test leakage.
     hiveConf.setClass("fs." + FAKE_SCHEME + ".impl", FakeS3FileSystem.class, FileSystem.class);
     hiveConf.setBoolean("fs." + FAKE_SCHEME + ".impl.disable.cache", true);
-    // Have Hive.isNonAtomicRenameFs treat our fake scheme as a non-atomic-rename FS.
+    // Have FileUtils.isNonAtomicRenameFs treat our fake scheme as a non-atomic-rename FS.
     // This is a JVM-global mutation of a production static — we undo it in tearDownClass
     // so no test that runs after this class sees fakes3 in the set.
-    Hive.NON_ATOMIC_RENAME_SCHEMES.add(FAKE_SCHEME);
+    FileUtils.NON_ATOMIC_RENAME_SCHEMES.add(FAKE_SCHEME);
     SessionState.start(hiveConf);
   }
 
   @AfterClass
   public static void tearDownClass() {
-    Hive.NON_ATOMIC_RENAME_SCHEMES.remove(FAKE_SCHEME);
+    FileUtils.NON_ATOMIC_RENAME_SCHEMES.remove(FAKE_SCHEME);
   }
 
   @Before
@@ -110,7 +111,7 @@ class TestHiveCopyFilesFakeS3 {
   /**
    * fakes3 must be recognized as a non-atomic-rename FS once
    * {@link #setUpClass()} has appended it to
-   * {@link Hive#NON_ATOMIC_RENAME_SCHEMES}; a plain {@code file://} filesystem
+   * {@link FileUtils#NON_ATOMIC_RENAME_SCHEMES}; a plain {@code file://} filesystem
    * must not be.
    */
   @Test
@@ -119,10 +120,10 @@ class TestHiveCopyFilesFakeS3 {
     FileSystem fakeFs = fakePath.getFileSystem(hiveConf);
 
     assertEquals(FAKE_SCHEME, fakeFs.getUri().getScheme());
-    assertTrue("fakes3 must be non-atomic-rename", Hive.isNonAtomicRenameFs(fakeFs));
+    assertTrue("fakes3 must be non-atomic-rename", FileUtils.isNonAtomicRenameFs(fakeFs));
 
     FileSystem localFs = new Path(tmp.getRoot().getAbsolutePath()).getFileSystem(hiveConf);
-    assertFalse("local FS must not be flagged", Hive.isNonAtomicRenameFs(localFs));
+    assertFalse("local FS must not be flagged", FileUtils.isNonAtomicRenameFs(localFs));
   }
 
   /**

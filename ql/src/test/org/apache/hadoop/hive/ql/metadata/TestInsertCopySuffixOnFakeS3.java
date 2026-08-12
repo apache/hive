@@ -29,6 +29,7 @@ import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RawLocalFileSystem;
 import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.TxnCommandsBaseForTests;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
@@ -54,8 +55,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * the resulting on-disk layout of tables whose LOCATION is a
  * synthetic {@code fakes3://} URI. The scheme is registered as an alias for
  * {@link RawLocalFileSystem} (so files still live under {@code test.tmp.dir}
- * on the local disk) and appended to {@link Hive#NON_ATOMIC_RENAME_SCHEMES}
- * so {@link Hive#isNonAtomicRenameFs} treats it like S3A.
+ * on the local disk) and appended to {@link FileUtils#NON_ATOMIC_RENAME_SCHEMES}
+ * so {@link FileUtils#isNonAtomicRenameFs} treats it like S3A.
  *
  * <p>What this covers over {@link TestHiveCopyFilesFakeS3}: the whole
  * planner/executor/MoveTask path is exercised, not just {@code Hive.copyFiles}
@@ -72,12 +73,12 @@ class TestInsertCopySuffixOnFakeS3 extends TxnCommandsBaseForTests {
 
   @BeforeAll
   static void addFakeSchemeToUnstableSet() {
-    Hive.NON_ATOMIC_RENAME_SCHEMES.add(FAKE_SCHEME);
+    FileUtils.NON_ATOMIC_RENAME_SCHEMES.add(FAKE_SCHEME);
   }
 
   @AfterAll
   static void removeFakeSchemeFromUnstableSet() {
-    Hive.NON_ATOMIC_RENAME_SCHEMES.remove(FAKE_SCHEME);
+    FileUtils.NON_ATOMIC_RENAME_SCHEMES.remove(FAKE_SCHEME);
   }
 
   @Override

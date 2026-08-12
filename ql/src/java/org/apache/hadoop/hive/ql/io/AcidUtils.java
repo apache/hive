@@ -459,7 +459,7 @@ public class AcidUtils {
         // Copy suffix is either a numeric counter or a 16-hex per-query uniqueness tag.
         // Hex-tagged files are unordered peers from concurrent writers on an
         // non-atomic-rename FS, so there is no meaningful copy number to assign — use 0.
-        int copyNumber = (copySuffix.length() == 16) ? 0 : Integer.parseInt(copySuffix);
+        int copyNumber = StringUtils.isNumeric(copySuffix) ? Integer.parseInt(copySuffix) : 0;
         int bucketId = Integer
             .parseInt(bucketFileName.substring(0, bucketFileName.indexOf('_')));
         return new BucketMetaData(bucketId, copyNumber);
