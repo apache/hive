@@ -83,8 +83,10 @@ public final class PersistableSessionUtils {
       "(?i)^\\s*(USE\\b|SET\\b|ADD\\s+(JAR|FILE)\\b|DELETE\\s+(JAR|FILE)\\b" +
           "|(CREATE|DROP)\\s+TEMPORARY\\s+(TABLE|FUNCTION)\\b).*");
 
-  private static final Pattern TEMP_TABLE_DML_PATTERN = Pattern.compile(
-      "(?i)^\\s*(INSERT\\s+(INTO|OVERWRITE)|LOAD\\s+DATA\\s+(INPATH|LOCAL\\s+INPATH))\\b.*");
+  private static final Pattern INSERT_TARGET_PATTERN = Pattern.compile(
+      "(?i)^\\s*INSERT\\s+(?:INTO|OVERWRITE)\\s+(?:TABLE\\s+)?([^\\s(]+)");
+  private static final Pattern LOAD_TARGET_PATTERN = Pattern.compile(
+      "(?i)^\\s*LOAD\\s+DATA\\s+(?:LOCAL\\s+)?INPATH\\s+.+\\s+INTO\\s+TABLE\\s+([^\\s(]+)");
 
   private PersistableSessionUtils() {
   }
@@ -104,11 +106,58 @@ public final class PersistableSessionUtils {
    * Returns true when a finished statement may have changed persisted session state,
    * including DML that adds data or partition metadata to temporary tables.
    */
-  public static boolean shouldPersistSnapshot(String statement) {
+  public static boolean shouldPersistSnapshot(String statement, SessionState sessionState) {
     if (statement == null) {
       return false;
     }
-    return isStateChangingCommand(statement) || TEMP_TABLE_DML_PATTERN.matcher(statement).matches();
+    if (isStateChangingCommand(statement)) {
+      return true;
+    }
+    String targetTable = extractTempTableDmlTarget(statement);
+    return targetTable != null && isSessionTempTable(sessionState, targetTable);
+  }
+
+  /**
+   * Extracts the target table from INSERT or LOAD DATA statements, or returns null.
+   */
+  static String extractTempTableDmlTarget(String statement) {
+    if (statement == null) {
+      return null;
+    }
+    java.util.regex.Matcher insertMatcher = INSERT_TARGET_PATTERN.matcher(statement);
+    if (insertMatcher.find()) {
+      return normalizeTableReference(insertMatcher.group(1));
+    }
+    java.util.regex.Matcher loadMatcher = LOAD_TARGET_PATTERN.matcher(statement);
+    if (loadMatcher.find()) {
+      return normalizeTableReference(loadMatcher.group(1));
+    }
+    return null;
+  }
+
+  private static String normalizeTableReference(String tableRef) {
+    return tableRef.replace("`", "");
+  }
+
+  /**
+   * Returns true if the given table reference resolves to a session-local temp table.
+   */
+  static boolean isSessionTempTable(SessionState sessionState, String tableReference) {
+    if (sessionState == null || tableReference == null) {
+      return false;
+    }
+    try {
+      TableName tableName = TableName.fromString(tableReference, null,
+          sessionState.getCurrentDatabase());
+      Map<String, Map<String, Table>> tempTables = sessionState.getTempTables();
+      if (tempTables == null || tempTables.isEmpty()) {
+        return false;
+      }
+      Map<String, Table> dbTables = tempTables.get(tableName.getDb().toLowerCase());
+      return dbTables != null && dbTables.containsKey(tableName.getTable().toLowerCase());
+    } catch (IllegalArgumentException e) {
+      return false;
+    }
   }
 
   /**
