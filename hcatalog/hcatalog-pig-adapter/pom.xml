@@ -30,8 +30,7 @@
   <name>Hive HCatalog Pig Adapter</name>
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
-    <!-- HIVE-28992: only upgrade to newer than 3.25.0 if you tested the prompt -->
-    <jline.version>3.25.0</jline.version>
+    <jline.version>3.30.16</jline.version>
   </properties>
   <dependencies>
     <!-- dependencies are always listed in sorted order by groupId, artifactId -->
