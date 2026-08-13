@@ -45,7 +45,6 @@ import java.util.TreeSet;
 
 import com.google.common.collect.Sets;
 import org.antlr.runtime.CommonToken;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.common.MaterializationSnapshot;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -580,14 +579,14 @@ public class TestSemanticAnalyzer {
   }
 
   @Test
-  public void testCboRejectsAmbiguousReferenceAcrossCteBoundary() throws Exception {
+  public void testCboRejectsAmbiguousReferenceAcrossCteBoundary() {
     assertCboRejectsAmbiguous(
         "with bse as (select 'a' as c, 'b' as c), tpm as (select * from bse) select tpm.c from tpm",
         "c in tpm");
   }
 
   @Test
-  public void testCboAmbiguityMarkerSurvivesWindowingProjection() throws Exception {
+  public void testCboAmbiguityMarkerSurvivesWindowingProjection() {
     assertCboRejectsAmbiguous(
         "select x.c from (select distinct *, rank() over (order by d) r"
             + " from (select 'a' as c, 'b' as c, 'x' as d) t) x",

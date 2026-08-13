@@ -1,4 +1,7 @@
 --! qt:dataset:src
+-- HIVE-29580: duplicate aliases that are never referenced by name stay accepted under CBO
+-- (HIVE-19770/HIVE-20215); the non-CBO planner rejects most of these shapes at definition
+-- time, see this file's non-CBO mirror ambiguous_col_noncbo_baseline.q.
 select t.d from (select 'a' as c, 'b' as c, 'x' as d) t;
 with c1 as (select 'a' as c, 'b' as c, 'x' as d)
 select d from c1;

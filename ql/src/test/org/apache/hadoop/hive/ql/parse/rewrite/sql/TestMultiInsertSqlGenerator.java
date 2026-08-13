@@ -28,7 +28,9 @@ import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class TestMultiInsertSqlGenerator {
 
@@ -40,13 +42,14 @@ public class TestMultiInsertSqlGenerator {
   private static final HiveConf CONF = new HiveConf();
 
   private static MultiInsertSqlGenerator generator(boolean nonNativePartitionSupport) {
-    Table table = Mockito.mock(Table.class);
-    Mockito.when(table.getCols()).thenReturn(DATA_COLS);
-    Mockito.when(table.getAllCols()).thenReturn(ALL_COLS);
-    Mockito.when(table.hasNonNativePartitionSupport()).thenReturn(nonNativePartitionSupport);
+    Table table = mock(Table.class);
+    when(table.getCols()).thenReturn(DATA_COLS);
+    when(table.getAllCols()).thenReturn(ALL_COLS);
+    when(table.hasNonNativePartitionSupport()).thenReturn(nonNativePartitionSupport);
     return new MultiInsertSqlGenerator(table, "t", CONF, null) {
       @Override
       public void appendAcidSelectColumns(Operation operation) {
+        // ACID select columns are irrelevant to appendNonPartitionCols; keep the stub inert
       }
 
       @Override

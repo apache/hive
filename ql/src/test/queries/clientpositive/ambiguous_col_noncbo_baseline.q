@@ -1,11 +1,9 @@
 --! qt:dataset:src
--- HIVE-29580: baseline of the non-CBO planner's PRE-EXISTING duplicate-alias strictness, which
--- the ticket deliberately leaves untouched. Every statement below fails; the FAILED messages
--- appear in the golden in statement order (hive.cli.errors.ignore format, resourceplan.q
--- precedent). The first section rejects duplicates at DEFINITION time even when never referenced
--- by name — CBO tolerates those same shapes since HIVE-19770/HIVE-20215: see
--- ambiguous_col_unreferenced_tolerated.q, this file's CBO mirror. The second section rejects
--- ambiguous REFERENCES, which CBO rejects too (ambiguous_col_rejected.q and ambiguous_col.q).
+-- HIVE-29580: baseline of the non-CBO planner's pre-existing duplicate-alias strictness, left
+-- untouched by the ticket. Every statement fails; the FAILED messages pair to statements by
+-- order (hive.cli.errors.ignore). Section 1: definition-time rejections that CBO tolerates
+-- since HIVE-19770/HIVE-20215 (CBO mirror: ambiguous_col_unreferenced_tolerated.q).
+-- Section 2: ambiguous references, which CBO also rejects (ambiguous_col_rejected.q).
 set hive.cli.errors.ignore=true;
 set hive.cbo.enable=false;
 
