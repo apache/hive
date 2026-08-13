@@ -25,9 +25,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
-
 import java.util.LinkedHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
@@ -124,11 +124,11 @@ public final class PersistableSessionUtils {
     if (statement == null) {
       return null;
     }
-    java.util.regex.Matcher insertMatcher = INSERT_TARGET_PATTERN.matcher(statement);
+    Matcher insertMatcher = INSERT_TARGET_PATTERN.matcher(statement);
     if (insertMatcher.find()) {
       return normalizeTableReference(insertMatcher.group(1));
     }
-    java.util.regex.Matcher loadMatcher = LOAD_TARGET_PATTERN.matcher(statement);
+    Matcher loadMatcher = LOAD_TARGET_PATTERN.matcher(statement);
     if (loadMatcher.find()) {
       return normalizeTableReference(loadMatcher.group(1));
     }
@@ -366,8 +366,7 @@ public final class PersistableSessionUtils {
   }
 
   private static void restoreTempTables(HiveSession session, SessionState sessionState,
-      Map<String, String> tempTableDefs, Map<String, List<TempTablePartitionSnapshot>> tempTablePartitionDefs)
-      throws HiveSQLException {
+      Map<String, String> tempTableDefs, Map<String, List<TempTablePartitionSnapshot>> tempTablePartitionDefs) {
     String currentDb = sessionState.getCurrentDatabase();
     for (Map.Entry<String, String> entry : tempTableDefs.entrySet()) {
       try {
@@ -386,7 +385,6 @@ public final class PersistableSessionUtils {
         }
       } catch (Exception e) {
         LOG.warn("Failed to restore temporary table {}", entry.getKey(), e);
-        throw new HiveSQLException("Failed to restore temporary table " + entry.getKey(), e);
       }
     }
     sessionState.setCurrentDatabase(currentDb);
@@ -399,7 +397,8 @@ public final class PersistableSessionUtils {
         table.getDbName().toLowerCase(), table.getTableName().toLowerCase());
     TempTable tempTable = sessionState.getTempPartitions().get(qualifiedKey);
     if (tempTable == null) {
-      throw new HiveException("TempTable partition metadata missing for " + qualifiedKey);
+      LOG.warn("TempTable partition metadata missing for {}, skipping partition restore", qualifiedKey);
+      return;
     }
     List<org.apache.hadoop.hive.metastore.api.Partition> toAdd = new ArrayList<>(partitions.size());
     List<FieldSchema> partCols = table.getPartitionKeys();
