@@ -1406,7 +1406,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     qb.rewriteCTEToSubq(cteAlias, cteName, cteQBExpr);
   }
 
-  private final CTEClause rootClause = new CTEClause(null, null, null);
+  final CTEClause rootClause = new CTEClause(null, null, null);
 
   @Override
   public List<Task<?>> getAllRootTasks() {
@@ -1424,7 +1424,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Set<ReadEntity> readEntities = new HashSet<ReadEntity>(getInputs());
     for (CTEClause cte : rootClause.asExecutionOrder()) {
       if (cte.source != null) {
-        readEntities.addAll(cte.source.getInputs());
+        readEntities.addAll(cte.source.getAllInputs());
       }
     }
     return readEntities;
@@ -1435,7 +1435,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Set<WriteEntity> writeEntities = new HashSet<WriteEntity>(getOutputs());
     for (CTEClause cte : rootClause.asExecutionOrder()) {
       if (cte.source != null) {
-        writeEntities.addAll(cte.source.getOutputs());
+        writeEntities.addAll(cte.source.getAllOutputs());
       }
     }
     return writeEntities;
@@ -1595,9 +1595,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     LOG.info("{} will be materialized into {}", cteName, location);
     cte.source = analyzer;
-
+    
     ctx.addMaterializedTable(cteName, table, getMaterializedTableStats(analyzer.getSinkOp()));
-
     return table;
   }
 
@@ -13312,7 +13311,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         new HashSet<SMBMapJoinOperator>(smbMapJoinContext.keySet()),
         loadTableWork, loadFileWork, columnStatsAutoGatherContexts, ctx, idToTableNameMap, destTableId, uCtx,
         listMapJoinOpsNoReducer, prunedPartitions, tabNameToTabObject, opToSamplePruner,
-        globalLimitCtx, nameToSplitSample, inputs, rootTasks, opToPartToSkewedPruner,
+        globalLimitCtx, nameToSplitSample, getAllInputs(), rootTasks, opToPartToSkewedPruner,
         viewAliasToInput, reduceSinkOperatorsAddedByEnforceBucketingSorting,
         analyzeRewrite, tableDesc, createVwDesc, materializedViewUpdateDesc,
         queryProperties, viewProjectToTableSchema);
@@ -13387,7 +13386,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               || HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_SCANCOLS)) {
         ColumnAccessAnalyzer columnAccessAnalyzer = new ColumnAccessAnalyzer(pCtx);
         // view column access info is carried by this.getColumnAccessInfo().
-        setColumnAccessInfo(columnAccessAnalyzer.analyzeColumnAccess(this.getColumnAccessInfo()));
+        setColumnAccessInfo(columnAccessAnalyzer.analyzeColumnAccess(this));
       }
     }
     perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.LOGICAL_OPTIMIZATION);
@@ -13426,7 +13425,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // 11. put accessed columns to readEntity
     if (HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_SCANCOLS)) {
-      putAccessedColumnsToReadEntity(inputs, columnAccessInfo);
+      putAccessedColumnsToReadEntity(getAllInputs(), columnAccessInfo);
     }
 
     if (isCacheEnabled && lookupInfo != null) {
@@ -15288,7 +15287,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private QueryResultsCache.QueryInfo createCacheQueryInfoForQuery(QueryResultsCache.LookupInfo lookupInfo) {
     long queryTime = SessionState.get().getQueryCurrentTimestamp().toEpochMilli();
     return new QueryResultsCache.QueryInfo(queryTime, lookupInfo, queryState.getHiveOperation(),
-        resultSchema, getTableAccessInfo(), getColumnAccessInfo(), inputs);
+        resultSchema, getTableAccessInfo(), getColumnAccessInfo(), getAllInputs());
   }
 
   /**

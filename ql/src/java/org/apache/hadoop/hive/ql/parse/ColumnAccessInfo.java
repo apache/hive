@@ -93,6 +93,20 @@ public class ColumnAccessInfo {
   }
 
   /**
+   * Merge direct column accesses from another ColumnAccessInfo into this one.
+   */
+  public void merge(ColumnAccessInfo other) {
+    if (other == null) {
+      return;
+    }
+    for (Map.Entry<String, List<String>> entry : other.getTableToColumnAccessMap().entrySet()) {
+      for (String col : entry.getValue()) {
+        add(entry.getKey(), col);
+      }
+    }
+  }
+
+  /**
    * Strip a virtual column out of the set of columns.  This is useful in cases where we do not
    * want to be checking against the user reading virtual columns, namely update and delete.
    * @param vc

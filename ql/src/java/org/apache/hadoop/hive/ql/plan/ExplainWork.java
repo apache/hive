@@ -81,7 +81,7 @@ public class ExplainWork implements Serializable {
     }
     this.analyzer = analyzer;
     if (analyzer != null) {
-      this.inputs = analyzer.getInputs();
+      this.inputs = analyzer.getAllInputs();
     }
     if (analyzer != null) {
       this.outputs = analyzer.getAllOutputs();
