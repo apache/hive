@@ -78,3 +78,26 @@ WHEN MATCHED THEN
 SELECT id, data, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER
 FROM ice_merge_cow
 ORDER BY ROW__LINEAGE__ID;
+
+-- cow delete
+CREATE TABLE ice_cow_delete (
+  id INT,
+  data STRING
+)
+STORED BY iceberg
+TBLPROPERTIES ('format-version'='3', 'write.delete.mode'='copy-on-write');
+
+INSERT INTO ice_cow_delete VALUES
+  (1, 'apple'),
+  (2, 'banana'),
+  (3, 'cherry');
+
+SELECT id, data, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER
+FROM ice_cow_delete
+ORDER BY id;
+
+DELETE FROM ice_cow_delete WHERE id = 2;
+
+SELECT id, data, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER
+FROM ice_cow_delete
+ORDER BY id;

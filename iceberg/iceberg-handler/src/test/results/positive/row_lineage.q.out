@@ -314,3 +314,72 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	a	0	1
 2	bb_changed	1	2
 3	c	2	1
+PREHOOK: query: CREATE TABLE ice_cow_delete (
+  id INT,
+  data STRING
+)
+STORED BY iceberg
+TBLPROPERTIES ('format-version'='3', 'write.delete.mode'='copy-on-write')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_cow_delete
+POSTHOOK: query: CREATE TABLE ice_cow_delete (
+  id INT,
+  data STRING
+)
+STORED BY iceberg
+TBLPROPERTIES ('format-version'='3', 'write.delete.mode'='copy-on-write')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_cow_delete
+PREHOOK: query: INSERT INTO ice_cow_delete VALUES
+  (1, 'apple'),
+  (2, 'banana'),
+  (3, 'cherry')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_cow_delete
+POSTHOOK: query: INSERT INTO ice_cow_delete VALUES
+  (1, 'apple'),
+  (2, 'banana'),
+  (3, 'cherry')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_cow_delete
+PREHOOK: query: SELECT id, data, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER
+FROM ice_cow_delete
+ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_cow_delete
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT id, data, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER
+FROM ice_cow_delete
+ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_cow_delete
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	apple	0	1
+2	banana	1	1
+3	cherry	2	1
+PREHOOK: query: DELETE FROM ice_cow_delete WHERE id = 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_cow_delete
+PREHOOK: Output: default@ice_cow_delete
+POSTHOOK: query: DELETE FROM ice_cow_delete WHERE id = 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_cow_delete
+POSTHOOK: Output: default@ice_cow_delete
+PREHOOK: query: SELECT id, data, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER
+FROM ice_cow_delete
+ORDER BY id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_cow_delete
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT id, data, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER
+FROM ice_cow_delete
+ORDER BY id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_cow_delete
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	apple	0	1
+3	cherry	2	1
