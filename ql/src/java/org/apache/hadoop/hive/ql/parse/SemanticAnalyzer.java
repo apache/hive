@@ -13311,7 +13311,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         new HashSet<SMBMapJoinOperator>(smbMapJoinContext.keySet()),
         loadTableWork, loadFileWork, columnStatsAutoGatherContexts, ctx, idToTableNameMap, destTableId, uCtx,
         listMapJoinOpsNoReducer, prunedPartitions, tabNameToTabObject, opToSamplePruner,
-        globalLimitCtx, nameToSplitSample, getAllInputs(), rootTasks, opToPartToSkewedPruner,
+        globalLimitCtx, nameToSplitSample, inputs, rootTasks, opToPartToSkewedPruner,
         viewAliasToInput, reduceSinkOperatorsAddedByEnforceBucketingSorting,
         analyzeRewrite, tableDesc, createVwDesc, materializedViewUpdateDesc,
         queryProperties, viewProjectToTableSchema);
