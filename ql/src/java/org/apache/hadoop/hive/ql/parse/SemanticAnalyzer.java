@@ -1421,7 +1421,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   public Set<ReadEntity> getAllInputs() {
-    Set<ReadEntity> readEntities = new HashSet<ReadEntity>(getInputs());
+    Set<ReadEntity> readEntities = new LinkedHashSet<>(getInputs());
     for (CTEClause cte : rootClause.asExecutionOrder()) {
       if (cte.source != null) {
         readEntities.addAll(cte.source.getAllInputs());
