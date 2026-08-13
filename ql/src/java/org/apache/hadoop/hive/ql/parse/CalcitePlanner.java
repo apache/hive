@@ -2966,32 +2966,31 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         int allColCount = tabMetaData.getAllCols().size();
         List<ColumnInfo> colInfoList = new ArrayList<>(Collections.nCopies(allColCount, null));
-        Set<String> partColNames = new HashSet<>(tabMetaData.getPartColNames());
-        List<ColumnInfo> nonPartitionColumns = new ArrayList<>(fields.size());
-
-        for (StructField structField : fields) {
-          String colName = structField.getFieldName();
-          if (partColNames.contains(colName)) {
-            continue;
-          }
-
-          ColumnInfo colInfo = new ColumnInfo(
-                  structField.getFieldName(),
-                  TypeInfoUtils.getTypeInfoFromObjectInspector(structField.getFieldObjectInspector()),
-                  isNullable(colName, nnc, pkc), tableAlias, false);
-          colInfo.setSkewedCol(isSkewedCol(tableAlias, qb, colName));
-          colInfoList.set(tabMetaData.getColumnIndexByName(colName), colInfo);
-          nonPartitionColumns.add(colInfo);
-        }
 
         // 3.2 Add column info corresponding to partition columns
         // Normally, the column names in a schema should be unique, but in the case of Iceberg v1 tables,
         // updating the partition spec doesn't remove the existing partition keys, so we can end up with a
         // partition spec containing multiple columns with the same name.
         Set<ColumnInfo> partitionColumnSet = LinkedHashSet.newLinkedHashSet(tabMetaData.getPartCols().size());
+        Set<String> nonIdentityPartitionColumnNames = Collections.emptySet();
+        if (tabMetaData.hasNonNativePartitionSupport()) {
+          nonIdentityPartitionColumnNames = tabMetaData.getStorageHandler().getPartitionTransformSpec(tabMetaData)
+              .stream()
+              .filter(transformSpec -> transformSpec.getTransformType() != TransformSpec.TransformType.IDENTITY)
+              .map(TransformSpec::getColumnName)
+              .collect(Collectors.toSet());
+        }
+        Set<String> partitionColNames = HashSet.newHashSet(
+            tabMetaData.getPartCols().size() - nonIdentityPartitionColumnNames.size());
 
         for (FieldSchema partCol : tabMetaData.getPartCols()) {
           String colName = partCol.getName();
+          if (nonIdentityPartitionColumnNames.contains(colName)) {
+            continue;
+          }
+
+          partitionColNames.add(colName);
+
           ColumnInfo colInfo = new ColumnInfo(colName,
               TypeInfoFactory.getPrimitiveTypeInfo(partCol.getType()),
               isNullable(colName, nnc, pkc), tableAlias, true);
@@ -3000,6 +2999,22 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
 
         List<ColumnInfo> partitionColumns = List.copyOf(partitionColumnSet);
+
+        List<ColumnInfo> nonPartitionColumns = new ArrayList<>(fields.size());
+        for (StructField structField : fields) {
+          String colName = structField.getFieldName();
+          if (partitionColNames.contains(colName)) {
+            continue;
+          }
+
+          ColumnInfo colInfo = new ColumnInfo(
+              structField.getFieldName(),
+              TypeInfoUtils.getTypeInfoFromObjectInspector(structField.getFieldObjectInspector()),
+              isNullable(colName, nnc, pkc), tableAlias, false);
+          colInfo.setSkewedCol(isSkewedCol(tableAlias, qb, colName));
+          colInfoList.set(tabMetaData.getColumnIndexByName(colName), colInfo);
+          nonPartitionColumns.add(colInfo);
+        }
 
         for (ColumnInfo colInfo : colInfoList) {
           rr.put(tableAlias, colInfo.getInternalName(), colInfo);

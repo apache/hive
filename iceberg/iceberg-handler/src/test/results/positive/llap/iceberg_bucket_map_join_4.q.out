@@ -242,7 +242,7 @@ Stage-0
           PARTITION_ONLY_SHUFFLE [RS_28]
             Group By Operator [GBY_27] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
-              Map Join Operator [MAPJOIN_26] (rows=544644 width=8)
+              Map Join Operator [MAPJOIN_26] (rows=1797 width=8)
                 Conds:SEL_25._col0=RS_23._col0(Inner)
               <-Map 3 [BROADCAST_EDGE] vectorized, llap
                 BROADCAST [RS_23]
@@ -309,7 +309,7 @@ Stage-0
           PARTITION_ONLY_SHUFFLE [RS_37]
             Group By Operator [GBY_36] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
-              Map Join Operator [MAPJOIN_35] (rows=272322 width=8)
+              Map Join Operator [MAPJOIN_35] (rows=1797 width=8)
                 Conds:SEL_34._col0, _col1=RS_29._col0, _col1(Inner)
               <-Map 3 [BROADCAST_EDGE] vectorized, llap
                 BROADCAST [RS_29]

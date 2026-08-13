@@ -1029,6 +1029,9 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
   @Override
   public List<TransformSpec> getPartitionTransformSpec(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    if (hmsTable.getMetaTable() != null) {
+      return Collections.emptyList();
+    }
     if (HiveTableUtil.isIcebergView(hmsTable.getTTable())) {
       return Collections.emptyList();
     }

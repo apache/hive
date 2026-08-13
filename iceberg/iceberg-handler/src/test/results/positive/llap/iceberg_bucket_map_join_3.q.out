@@ -129,7 +129,7 @@ Stage-0
           PARTITION_ONLY_SHUFFLE [RS_28]
             Group By Operator [GBY_27] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
-              Map Join Operator [MAPJOIN_26] (rows=56644 width=8)
+              Map Join Operator [MAPJOIN_26] (rows=372 width=8)
                 BucketMapJoin:true,Conds:SEL_25._col0=RS_23._col0(Inner)
               <-Map 3 [CUSTOM_EDGE] vectorized, llap
                 MULTICAST [RS_23]
