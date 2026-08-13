@@ -219,7 +219,7 @@ public class CliConfigs {
         setQueryDir("ql/src/test/queries/clientpositive/perf");
         setLogDir("itests/qtest/target/qfile-results/clientpositive/jdbc/postgres");
         setResultsDir("ql/src/test/results/clientpositive/jdbc/postgres");
-        setHiveConfDir("data/conf/llap");
+        setHiveConfDir("data/conf/jdbc");
         setClusterType(MiniClusterType.LLAP_LOCAL);
         excludesFrom(testConfigProps, "jdbc.disabled.query.files");
       } catch (Exception e) {
