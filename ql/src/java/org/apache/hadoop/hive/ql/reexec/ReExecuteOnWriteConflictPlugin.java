@@ -28,11 +28,11 @@ import org.slf4j.LoggerFactory;
 
 public class ReExecuteOnWriteConflictPlugin implements IReExecutionPlugin {
   private static final Logger LOG = LoggerFactory.getLogger(ReExecuteOnWriteConflictPlugin.class);
-  private static boolean retryPossible;
+  private boolean retryPossible;
 
   private static final String validationException = "org.apache.iceberg.exceptions.ValidationException";
 
-  private static final class LocalHook implements ExecuteWithHookContext {
+  class LocalHook implements ExecuteWithHookContext {
     @Override
     public void run(HookContext hookContext) {
       if (hookContext.getHookType() != HookContext.HookType.ON_FAILURE_HOOK) {
@@ -57,7 +57,7 @@ public class ReExecuteOnWriteConflictPlugin implements IReExecutionPlugin {
 
   @Override
   public void initialize(Driver driver) {
-    driver.getHookRunner().addOnFailureHook(new ReExecuteOnWriteConflictPlugin.LocalHook());
+    driver.getHookRunner().addOnFailureHook(new LocalHook());
   }
 
   @Override

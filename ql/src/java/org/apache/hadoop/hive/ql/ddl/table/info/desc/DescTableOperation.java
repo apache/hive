@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.ddl.table.info.desc.formatter.DescTableFormatte
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
+import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
@@ -279,7 +280,10 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
 
   private void addStatsForRegularColumn(Table table, List<ColumnStatisticsObj> colStats,
       String colName, Map<String, String> tableProps) throws HiveException {
-    List<String> parts = context.getDb().getPartitionNames(table, (short) -1);
+    // the handler's partitions carry the id of the spec that wrote their rows, which the
+    // statistics are keyed by; native stats requests travel by name
+    List<Partition> parts = table.hasNonNativePartitionSupport() ? context.getDb().getPartitions(table) :
+        DummyPartition.forNames(table, context.getDb().getPartitionNames(table, (short) -1));
     AggrStats aggrStats = context.getDb().getAggrColStatsFor(table, Lists.newArrayList(colName.toLowerCase()),
         parts, false);
     colStats.addAll(aggrStats.getColStats());

@@ -303,26 +303,30 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   /**
-   * Returns an aggregated column statistics for the supplied partition list
+   * Returns an aggregated column statistics for the supplied partition list. A pruned partition
+   * carries the id of the spec that wrote its rows (see {@link Partition#getSpecId()}), letting the
+   * handler verify the statistics it aggregates belong to that spec.
    * @param table table object
    * @param colNames list of column names
-   * @param partNames list of partition names
+   * @param partitions the pruned partitions
    * @return AggrStats object
   */
   default AggrStats getAggrColStatsFor(org.apache.hadoop.hive.ql.metadata.Table table, List<String> colNames,
-        List<String> partNames) throws MetaException {
+        List<Partition> partitions) throws MetaException {
     return null;
   }
 
   /**
    * Fetches basic statistics (numRows, numFiles, totalSize) for the supplied partitions in a single batch.
+   * A pruned partition carries the id of the spec that wrote its rows (see {@link DummyPartition#getSpecId()}),
+   * letting the handler verify the statistics it serves belong to that spec.
    * @param hmsTable table object
-   * @param partNames list of partition names
+   * @param partitions the pruned partitions
    * @return map of partition name to basic statistics, omitting partitions that have none;
    *         empty if the handler does not provide them
    */
   default Map<String, Map<String, String>> getAggrBasicStatsFor(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
-      List<String> partNames) {
+      List<Partition> partitions) {
     return Map.of();
   }
 
@@ -365,14 +369,16 @@ public interface HiveStorageHandler extends Configurable {
 
   /**
    * Returns the row count of the given partitions, omitting the ones whose count cannot be determined
-   * exactly, e.g. because they are covered by delete files.
+   * exactly, e.g. because they are covered by delete files. A pruned partition carries the id of the
+   * spec that wrote its rows (see {@link Partition#getSpecId()}), letting the handler verify the
+   * count it serves belongs to that spec.
    * @param hmsTable table object
-   * @param partNames list of partition names
+   * @param partitions the pruned partitions
    * @return map of partition name to row count, empty if the handler cannot determine partition
    *         row counts at all, e.g. when some rows do not belong to any partition
    */
   default Map<String, Long> getRowCount(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
-      List<String> partNames) {
+      List<Partition> partitions) {
     return Map.of();
   }
 
@@ -603,7 +609,15 @@ public interface HiveStorageHandler extends Configurable {
     return null;
   }
 
-  default Map<Integer,List<TransformSpec>> getPartitionTransformSpecs(org.apache.hadoop.hive.ql.metadata.Table table) {
+  /**
+   * Returns the partition transform specifications of every partition spec of the table, keyed by spec id,
+   * with void transforms filtered out. A void spec - unpartitioned, or all of its transforms void - maps
+   * to an empty list: its rows belong to no partition, and column statistics ANALYZE groups them under
+   * {@link DummyPartition#VOID}. A format v2 table has at most one such spec (equivalent specs are
+   * deduplicated); v1 partition evolution voids dropped fields in place, so several distinct void
+   * specs may be reachable.
+   */
+  default Map<Integer, List<TransformSpec>> getPartitionTransformSpecs(org.apache.hadoop.hive.ql.metadata.Table table) {
     return null;
   }
 

@@ -42,8 +42,9 @@ public class DummyPartition extends Partition {
    */
   public static final String VOID = "__NO_PARTITION__";
 
-  public static boolean isVoid(String partName) {
-    return VOID.equals(partName);
+  @Override
+  public boolean isVoid() {
+    return VOID.equals(name);
   }
 
   private String name;
@@ -56,6 +57,13 @@ public class DummyPartition extends Partition {
   public DummyPartition(Table table, String name) {
     setTable(table);
     this.name = name;
+  }
+
+  /** Name-only pruned partitions for callers that hold no partition objects; the writing spec is unknown. */
+  public static List<Partition> forNames(Table table, List<String> partNames) {
+    return partNames.stream()
+        .<Partition>map(partName -> new DummyPartition(table, partName))
+        .toList();
   }
 
   public DummyPartition(Table table) {

@@ -970,15 +970,13 @@ public class StatsOptimizer extends Transform {
           if (!StatsUtils.checkCanProvidePartitionStats(tbl)) {
             return null;
           }
-          List<String> partNames = prunedList.getPartitions().stream()
-              .map(Partition::getName)
-              .toList();
-          if (partNames.isEmpty()) {
+          List<Partition> partitions = List.copyOf(prunedList.getPartitions());
+          if (partitions.isEmpty()) {
             // the predicate matched nothing the scan would read
             return 0L;
           }
-          Map<String, Long> rowCounts = storageHandler.getRowCount(tbl, partNames);
-          if (rowCounts.size() != partNames.size()) {
+          Map<String, Long> rowCounts = storageHandler.getRowCount(tbl, partitions);
+          if (rowCounts.size() != partitions.size()) {
             // the rewrite substitutes a constant, so it needs an exact count for every partition
             return null;
           }

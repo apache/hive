@@ -6305,25 +6305,31 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public AggrStats getAggrColStatsFor(String dbName, String tblName,
       List<String> colNames, List<String> partName, boolean checkTransactional) throws HiveException {
     Table tbl = getTable(dbName, tblName);
-    return getAggrColStatsFor(tbl, colNames, partName, checkTransactional);
+    return getAggrColStatsFor(tbl, colNames, DummyPartition.forNames(tbl, partName), checkTransactional);
   }
-  
-  public AggrStats getAggrColStatsFor(Table tbl, 
-      List<String> colNames, List<String> partName, boolean checkTransactional) {
-    
+
+  /**
+   * Aggregated column statistics over the given pruned partitions, each carrying the id of the
+   * partition spec that wrote its rows when known - a storage handler verifies the statistics it
+   * aggregates belong to that spec.
+   */
+  public AggrStats getAggrColStatsFor(Table tbl,
+      List<String> colNames, List<Partition> partitions, boolean checkTransactional) {
+
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_AGGR_COL_STATS);
     
     String writeIdList = null;
     try {
       if (tbl.isNonNative() && tbl.getStorageHandler().canProvideColStatistics(tbl)) {
-        return tbl.getStorageHandler().getAggrColStatsFor(tbl, colNames, partName);
+        return tbl.getStorageHandler().getAggrColStatsFor(tbl, colNames, partitions);
       }
       if (checkTransactional) {
         AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl);
         writeIdList = tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null;
       }
-      return getMSC().getAggrColStatsFor(tbl.getDbName(), tbl.getTableName(), colNames, partName, 
+      return getMSC().getAggrColStatsFor(tbl.getDbName(), tbl.getTableName(), colNames,
+          Lists.transform(partitions, Partition::getName),
           Constants.HIVE_ENGINE, writeIdList);
     } catch (Exception e) {
       LOG.debug("Failed getAggrColStatsFor", e);

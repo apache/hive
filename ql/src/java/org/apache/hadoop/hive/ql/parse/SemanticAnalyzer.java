@@ -12262,6 +12262,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return output;
   }
 
+  /**
+   * True when the given table is the target of a column-stats analyze rewrite: the rewrite may
+   * compute its partition group keys in a CTE, placing the analyze marker on the root query block
+   * while the target table's scan sits in a nested one.
+   */
+  private boolean isAnalyzeRewriteTarget(Table tab) {
+    QBParseInfo rootQbp = getQB() == null ? null : getQB().getParseInfo();
+    return rootQbp != null && rootQbp.getAnalyzeRewrite() != null
+        && tab.getFullyQualifiedName().equals(rootQbp.getAnalyzeRewrite().getTableName());
+  }
+
   boolean isSkewedCol(String alias, QB qb, String colName) {
     return qb.getSkewedColumnNames(alias).stream()
         .anyMatch(skewedCol -> skewedCol.equalsIgnoreCase(colName));
@@ -12272,7 +12283,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throws SemanticException {
 
     // if it is not analyze command and not column stats, then do not gatherstats
-    if (!qbp.isAnalyzeCommand() && qbp.getAnalyzeRewrite() == null) {
+    if (!qbp.isAnalyzeCommand() && qbp.getAnalyzeRewrite() == null && !isAnalyzeRewriteTarget(tab)) {
       tsDesc.setGatherStats(false);
       return;
     }

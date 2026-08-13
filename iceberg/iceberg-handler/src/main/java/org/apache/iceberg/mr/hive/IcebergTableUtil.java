@@ -20,13 +20,11 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.time.ZoneId;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -45,6 +43,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -61,6 +60,7 @@ import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
@@ -101,6 +101,7 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.expressions.Evaluator;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
+import org.apache.iceberg.expressions.Literal;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.FileIO;
@@ -110,7 +111,6 @@ import org.apache.iceberg.puffin.BlobMetadata;
 import org.apache.iceberg.puffin.Puffin;
 import org.apache.iceberg.puffin.PuffinReader;
 import org.apache.iceberg.relocated.com.google.common.collect.FluentIterable;
-import org.apache.iceberg.relocated.com.google.common.collect.Iterables;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.transforms.Transform;
@@ -119,6 +119,7 @@ import org.apache.iceberg.types.Conversions;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.ByteBuffers;
+import org.apache.iceberg.util.DateTimeUtil;
 import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.PartitionUtil;
 import org.apache.iceberg.util.SnapshotUtil;
@@ -139,7 +140,8 @@ public class IcebergTableUtil {
   public static final int SPEC_IDX = 1;
   public static final int PART_IDX = 0;
 
-  private static final String SPEC_ID_FIELD = "spec_id";
+  /** The spec id token: the partitions metadata table's field, and the column stats blobs' property key. */
+  static final String SPEC_ID_FIELD = "spec_id";
   private static final String NULL_VALUE = "null";
 
   private IcebergTableUtil() {
@@ -498,6 +500,61 @@ public class IcebergTableUtil {
   }
 
   /**
+   * Returns the final partition name of a column statistics group and the id of the spec that wrote
+   * its rows, resolved from the provisional name - the group keys of the stats query, the spec id
+   * and the transform values in their Hive-rendered form, encoded with Hive's {@code makePartName}.
+   * The values are resolved against the writing spec - only its own fields; the unified tuple nulls
+   * every other spec's - and rendered with the same {@code partitionToPath} the read side uses, so
+   * statistics and partition pruning join on the name (e.g. the year transform ordinal 53 renders
+   * as "2023"). A provisional name without a spec id resolves against the current spec: the
+   * single-spec and auto-gather queries do not project it.
+   */
+  static Map.Entry<String, Integer> toPartitionEntry(Table table, String provisionalName) {
+    // the components come from Hive's makePartName, which lowercases the keys - Iceberg's
+    // case-preserving field names fold to match. Parsed by hand because
+    // Warehouse.makeSpecFromName silently drops empty values ("col=")
+    Map<String, String> partSpecMap = Maps.newHashMap();
+    for (String component : provisionalName.split(Path.SEPARATOR)) {
+      int eq = component.indexOf('=');
+      partSpecMap.put(FileUtils.unescapePathName(component.substring(0, eq)),
+          FileUtils.unescapePathName(component.substring(eq + 1)));
+    }
+    String specId = partSpecMap.remove(VirtualColumn.PARTITION_SPEC_ID.getName().toLowerCase());
+    PartitionSpec spec = specId == null ? table.spec() : table.specs().get(Integer.parseInt(specId));
+
+    PartitionData data = new PartitionData(spec.partitionType());
+    for (int pos = 0; pos < spec.fields().size(); pos++) {
+      data.set(pos, toPartitionValue(spec.fields().get(pos), spec.partitionType().fields().get(pos).type(),
+          partSpecMap.get(spec.fields().get(pos).name().toLowerCase())));
+    }
+    return Maps.immutableEntry(toPartitionName(spec, data), spec.specId());
+  }
+
+  /**
+   * Parses a partition value from its Hive-rendered string form, covering what
+   * {@code Conversions.fromPartitionString} cannot: the day transform's value is its epoch-day
+   * ordinal - the internal form of the DateType the field declares - and timestamps (unsupported
+   * there) are parsed the way it parses dates itself, with Hive's space separator normalized to
+   * the ISO form.
+   */
+  private static Object toPartitionValue(PartitionField field, Type type, String value) {
+    if (value == null || HiveConf.ConfVars.DEFAULT_PARTITION_NAME.getDefaultValue().equals(value)) {
+      return null;
+    }
+    if (TransformType.DAY.name().equalsIgnoreCase(field.transform().toString())) {
+      return Integer.valueOf(value);
+    }
+    if (type.typeId() == Type.TypeID.TIMESTAMP) {
+      if (((Types.TimestampType) type).shouldAdjustToUTC()) {
+        // Hive renders zoned timestamps with a trailing zone id, e.g. "2023-11-11 23:59:59.0 UTC"
+        return DateTimeUtil.microsFromInstant(TimestampTZUtil.parse(value).getZonedDateTime().toInstant());
+      }
+      return Literal.of(value.replace(' ', 'T')).to(type).value();
+    }
+    return Conversions.fromPartitionString(type, value);
+  }
+
+  /**
    * Builds a filter expression for data table operations (deleteFromRowFilter, FindFiles).
    * Only supports identity transforms. Keys are partition field names.
    */
@@ -640,20 +697,18 @@ public class IcebergTableUtil {
       org.apache.hadoop.hive.ql.metadata.Table table, Map<String, String> partitionSpec)
       throws SemanticException {
     // Get partitions sorted by spec ID descending
-    List<String> partitionNames = getPartitionNames(conf, table, partitionSpec, false,
+    List<Map.Entry<String, Integer>> partitionEntries = getPartitionEntries(conf, table, partitionSpec, false,
         Map.Entry.comparingByValue(Comparator.reverseOrder()));
 
-    if (partitionNames.isEmpty()) {
-      return null;
-    }
-
     // Find first partition with matching spec size (highest spec ID due to sort order)
-    Optional<String> partitionName = partitionNames.stream()
-        .filter(p -> hasMatchingSpecSize(p, partitionSpec.size()))
-        .findFirst();
-
-    return partitionName
-        .map(p -> new DummyPartition(table, p, partitionSpec))
+    return partitionEntries.stream()
+        .filter(entry -> hasMatchingSpecSize(entry.getKey(), partitionSpec.size()))
+        .findFirst()
+        .map(entry -> {
+          DummyPartition partition = new DummyPartition(table, entry.getKey(), partitionSpec);
+          partition.setSpecId(entry.getValue());
+          return (Partition) partition;
+        })
         .orElse(null);
   }
 
@@ -680,15 +735,28 @@ public class IcebergTableUtil {
   public static List<String> getPartitionNames(Configuration conf,
       org.apache.hadoop.hive.ql.metadata.Table table, Map<String, String> partSpecMap,
       boolean latestSpecOnly) throws SemanticException {
-    return getPartitionNames(conf, table, partSpecMap, latestSpecOnly, Map.Entry.comparingByKey());
+    return Lists.transform(
+        getPartitionEntries(conf, table, partSpecMap, latestSpecOnly, Map.Entry.comparingByKey()),
+        Map.Entry::getKey);
   }
 
   /**
-   * Returns partition names matching the provided partition spec, sorted by the given comparator.
-   *
-   * @param specIdComparator Comparator for Entry&lt;partitionPath, specId&gt;
+   * Returns the partitions matching the provided partition spec as pruned-partition objects, each
+   * carrying the id of the spec that wrote its rows.
    */
-  private static List<String> getPartitionNames(Configuration conf,
+  public static List<Partition> getPartitions(Configuration conf,
+      org.apache.hadoop.hive.ql.metadata.Table table, Map<String, String> partSpecMap,
+      boolean latestSpecOnly) throws SemanticException {
+    return getPartitionEntries(conf, table, partSpecMap, latestSpecOnly, Map.Entry.comparingByKey()).stream()
+        .map(entry -> toDummyPartition(table, entry.getKey(), entry.getValue()))
+        .toList();
+  }
+
+  /**
+   * Returns the (partitionPath, specId) entries matching the provided partition spec, sorted by the
+   * given comparator.
+   */
+  private static List<Map.Entry<String, Integer>> getPartitionEntries(Configuration conf,
       org.apache.hadoop.hive.ql.metadata.Table table, Map<String, String> partitionSpec, boolean latestSpecOnly,
       Comparator<Map.Entry<String, Integer>> specIdComparator) throws SemanticException {
     Table icebergTable = getTable(conf, table.getTTable());
@@ -727,9 +795,7 @@ public class IcebergTableUtil {
             return Maps.immutableEntry(toPartitionName(spec, data), spec.specId());
           })
           .filter(Objects::nonNull)
-          .toSortedList(specIdComparator).stream()
-          .map(Map.Entry::getKey)
-          .toList();
+          .toSortedList(specIdComparator);
 
     } catch (IOException e) {
       throw new SemanticException("Error while fetching the partitions", e);
@@ -738,15 +804,16 @@ public class IcebergTableUtil {
 
   /**
    * Reads the given snapshot's partition statistics file in a single pass, keyed by partition name;
-   * empty when the file is missing.
+   * empty when the file is missing. With partition evolution several specs may render the same name,
+   * so a name maps to every entry rendering it, each carrying its writing spec id.
    */
-  static Map<String, PartitionStatistics> readPartitionStats(Table table, Snapshot snapshot) {
+  static Map<String, List<PartitionStatistics>> readPartitionStats(Table table, Snapshot snapshot) {
     PartitionStatisticsFile statsFile = getPartitionStatsFile(table, snapshot.snapshotId());
     if (statsFile == null) {
       LOG.warn("Partition stats file not found for snapshot: {}", snapshot.snapshotId());
       return Map.of();
     }
-    Map<String, PartitionStatistics> result = Maps.newHashMap();
+    Map<String, List<PartitionStatistics>> result = Maps.newHashMap();
     Types.StructType partitionType = Partitioning.partitionType(table);
 
     try (CloseableIterable<PartitionStatistics> records =
@@ -758,10 +825,11 @@ public class IcebergTableUtil {
             spec.partitionType());
         // the scan copies the counters into a fresh object per row, so retaining it is safe;
         // only the partition tuple may alias the reader's reused struct - do not use it after this loop
-        result.put(toPartitionName(spec, data), partitionStats);
+        result.computeIfAbsent(toPartitionName(spec, data), name -> Lists.newArrayList())
+            .add(partitionStats);
       }
-    } catch (IOException e) {
-      throw new UncheckedIOException(e);
+    } catch (Exception e) {
+      LOG.warn("Could not read partition stats: ", e);
     }
     return Collections.unmodifiableMap(result);
   }
@@ -793,7 +861,14 @@ public class IcebergTableUtil {
   }
 
   public static <T> List<T> readColStats(Table table, Long snapshotId, Predicate<BlobMetadata> filter) {
-    List<T> colStats = Lists.newArrayList();
+    return Lists.transform(IcebergTableUtil.<T>readColStatsEntries(table, snapshotId, filter),
+        Map.Entry::getValue);
+  }
+
+  /** Column statistics blobs paired with their metadata, e.g. the partition name and writing spec id. */
+  public static <T> List<Map.Entry<BlobMetadata, T>> readColStatsEntries(Table table, Long snapshotId,
+      Predicate<BlobMetadata> filter) {
+    List<Map.Entry<BlobMetadata, T>> colStats = Lists.newArrayList();
 
     String statsPath = IcebergTableUtil.getColStatsPath(table, snapshotId);
     if (statsPath == null) {
@@ -807,12 +882,10 @@ public class IcebergTableUtil {
         blobMetadata = blobMetadata.stream().filter(filter)
           .toList();
       }
-      Iterator<ByteBuffer> it = Iterables.transform(reader.readAll(blobMetadata), Pair::second).iterator();
       LOG.info("Using column stats from: {}", statsPath);
-
-      while (it.hasNext()) {
-        byte[] byteBuffer = ByteBuffers.toByteArray(it.next());
-        colStats.add(SerializationUtils.deserialize(byteBuffer));
+      for (Pair<BlobMetadata, ByteBuffer> blob : reader.readAll(blobMetadata)) {
+        colStats.add(Maps.immutableEntry(blob.first(),
+            SerializationUtils.deserialize(ByteBuffers.toByteArray(blob.second()))));
       }
     } catch (Exception e) {
       LOG.warn("Unable to read column stats: {}", e.getMessage());
@@ -962,13 +1035,18 @@ public class IcebergTableUtil {
 
   public static List<Partition> convertNameToMetastorePartition(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
       Collection<String> partNames) {
-    List<Partition> partitions = Lists.newArrayList();
-    for (String partName : partNames) {
-      Map<String, String> partSpecMap = Maps.newLinkedHashMap();
-      Warehouse.makeSpecFromName(partSpecMap, new Path(partName), null);
-      partitions.add(new DummyPartition(hmsTable, partName, partSpecMap));
-    }
-    return partitions;
+    return partNames.stream()
+        .map(partName -> toDummyPartition(hmsTable, partName, null))
+        .toList();
+  }
+
+  private static Partition toDummyPartition(org.apache.hadoop.hive.ql.metadata.Table hmsTable, String partName,
+      Integer specId) {
+    Map<String, String> partSpecMap = Maps.newLinkedHashMap();
+    Warehouse.makeSpecFromName(partSpecMap, new Path(partName), null);
+    DummyPartition partition = new DummyPartition(hmsTable, partName, partSpecMap);
+    partition.setSpecId(specId);
+    return partition;
   }
 
   public static TableFetcher getTableFetcher(IMetaStoreClient msc, String catalogName, String dbPattern,

@@ -41,6 +41,7 @@ public class TransformSpec {
   private Integer transformParam;
 
   private String fieldName;
+  private Integer specId;
 
   public TransformSpec() {
   }
@@ -83,6 +84,14 @@ public class TransformSpec {
     return fieldName;
   }
 
+  public void setSpecId(Integer specId) {
+    this.specId = specId;
+  }
+
+  public Integer getSpecId() {
+    return specId;
+  }
+
   public String transformTypeString() {
     if (transformType == null) {
       return null;
@@ -110,7 +119,7 @@ public class TransformSpec {
       case TRUNCATE:
         fn += ", " + transformParam;
     }
-    return  fn + ")";
+    return fn + ")";
   }
 
   public static TransformType fromString(String transformString) {

@@ -20,17 +20,19 @@ package org.apache.hadoop.hive.ql.parse;
 
 import static org.apache.hadoop.hive.ql.metadata.HiveUtils.unparseIdentifier;
 import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.PARTITION_SPEC_ID;
+import static org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory.SUB_QUERY_ALIAS;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.Maps;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -175,7 +177,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     }
   }
 
-  private static CharSequence genPartitionClause(Table tbl, List<TransformSpec> partTransformSpec, int specId, 
+  private static CharSequence genPartitionClause(Table tbl, List<TransformSpec> partTransformSpec,
     Map<String, String> partSpec, HiveConf conf) {
     boolean predPresent = partSpec.values().stream().anyMatch(Objects::nonNull);
     
@@ -186,12 +188,6 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
             + genPartValueString(getColTypeOf(tbl, part.getKey()), part.getValue()))
         .collect(Collectors.joining(" and "))
     );
-
-    if (specId >= 0) {
-      whereClause.append((predPresent) ? " and " : "")
-          .append(unparseIdentifier(PARTITION_SPEC_ID.getName(), conf) + "=" + specId);
-      predPresent = true;
-    }
 
     StringBuilder groupByClause = new StringBuilder(" group by ").append((
       (partTransformSpec != null) ?
@@ -205,7 +201,113 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     return predPresent ? whereClause.append(groupByClause) : groupByClause;
   }
 
+  /** Renders the predicate selecting the rows written under any of the given specs. */
+  private static String genSpecIdPredicate(List<Integer> specIds, HiveConf conf) {
+    return "%s in (%s)".formatted(
+        unparseIdentifier(PARTITION_SPEC_ID.getName(), conf),
+        StringUtils.join(specIds, ", "));
+  }
 
+  /** The unified-partition-tuple rewrite fragments: the projection, group by clause and CTE keys. */
+  private record PartitionTupleSql(String projection, String groupByClause, String cteKeys) {
+  }
+
+  /**
+   * Builds the rewrite fragments over the unified partition tuple - the union of every spec's
+   * fields, mirroring Iceberg's Partitioning.partitionType: a single scan groups every row by the
+   * spec that wrote it and that spec's transform values, computed once in a CTE as the single
+   * group key. For specs 0 (unpartitioned history), 1 = bucket[8](a), 2 = bucket[4](a) + year(b):
+   * <pre>
+   *   with s as (
+   *     select a, b, id,
+   *       PARTITION__SPEC__ID as k0,
+   *       if(PARTITION__SPEC__ID in (1), iceberg_bucket(a, 8), null) as k1,
+   *       if(PARTITION__SPEC__ID in (2), iceberg_bucket(a, 4), null) as k2,
+   *       if(PARTITION__SPEC__ID in (2), iceberg_year(b), null) as k3
+   *     from t
+   *   )
+   *   select compute_stats(...),
+   *          named_struct('PARTITION__SPEC__ID', k0, 'a_bucket_8', k1, 'a_bucket_4', k2, 'b_year', k3)
+   *   from s
+   *   group by k0, k1, k2, k3
+   * </pre>
+   * The stats processor passes the tuple through as a provisional partition name; the storage
+   * handler renders each group's final name from it at persist time - the spec that wrote the rows
+   * knows its own fields, so the values of the specs not owning a field, nulled by the guards, are
+   * ignored, and a void spec renders the synthetic no-partition name.
+   * Returns null for a native table (no transform specs) and for a single-spec table with no void
+   * specs: the rewrite is then the master-shaped query.
+   */
+  private static PartitionTupleSql genPartitionTupleSql(Map<Integer, List<TransformSpec>> transformSpecsBySpecId,
+      HiveConf conf) throws SemanticException {
+    if (transformSpecsBySpecId == null) {
+      return null;
+    }
+    List<Integer> voidSpecIds = transformSpecsBySpecId.entrySet().stream()
+        .filter(e -> e.getValue().isEmpty())
+        .map(Map.Entry::getKey)
+        .sorted().toList();
+    List<TransformSpec> partitionedFields = transformSpecsBySpecId.keySet().stream()
+        .filter(specId -> !voidSpecIds.contains(specId))
+        .sorted()
+        .flatMap(specId -> transformSpecsBySpecId.get(specId).stream())
+        .toList();
+    List<Integer> partitionedSpecIds = partitionedFields.stream()
+        .map(TransformSpec::getSpecId)
+        .distinct().toList();
+    if (voidSpecIds.isEmpty() && partitionedSpecIds.size() == 1) {
+      return null;
+    }
+
+    // the unified fields: distinct field names across the partitioned specs, with their owning specs
+    // (mirrors Iceberg's Partitioning.partitionType). The tuple is joined by name, so a name reused
+    // for a different transform is rejected - Iceberg's own partition stats fail on such reuse too,
+    // and evolution-generated names encode the transform, so they never conflict
+    Map<String, TransformSpec> fieldsByName = new LinkedHashMap<>();
+    Map<String, List<Integer>> ownerSpecIds = new LinkedHashMap<>();
+    for (TransformSpec field : partitionedFields) {
+      TransformSpec known = fieldsByName.putIfAbsent(field.getFieldName(), field);
+      if (known != null && (known.getTransformType() != field.getTransformType() ||
+          !Objects.equals(known.getColumnName(), field.getColumnName()) ||
+          !Objects.equals(known.getTransformParam(), field.getTransformParam()))) {
+        throw new SemanticException("Conflicting transforms for partition field '%s': %s(%s) vs %s(%s)"
+            .formatted(field.getFieldName(), known.getTransformType(), known.getColumnName(),
+                field.getTransformType(), field.getColumnName()));
+      }
+      ownerSpecIds.computeIfAbsent(field.getFieldName(), name -> new ArrayList<>()).add(field.getSpecId());
+    }
+
+    // group keys: one expression per unified field, nulled for the rows of the specs not owning it
+    Map<String, String> fieldKeyExprs = new LinkedHashMap<>();
+    fieldsByName.forEach((name, field) -> fieldKeyExprs.put(name,
+        "if(%s, %s, null)".formatted(genSpecIdPredicate(ownerSpecIds.get(name), conf), field.toHiveExpr(conf))));
+
+    // several void specs must fold into one group, keyed by a representative among them; a single
+    // one groups by its own id (either way the void spec renders the empty tuple at persist time)
+    String specIdIdentifier = unparseIdentifier(PARTITION_SPEC_ID.getName(), conf);
+    String specKey = voidSpecIds.size() > 1 ?
+        "if(%s, %d, %s)".formatted(genSpecIdPredicate(voidSpecIds, conf), voidSpecIds.get(0), specIdIdentifier) :
+        specIdIdentifier;
+
+    // the group keys are computed once in the CTE, under synthetic aliases: an identity transform's
+    // field name is its column's, which the stats projection selects too; the keys stay scalar -
+    // a complex-typed group key would disqualify the aggregation from vectorization - and the
+    // unified tuple is assembled from them after the aggregation, carrying the real field names
+    List<String> fieldNames = new ArrayList<>(fieldKeyExprs.keySet());
+    StringBuilder cteKeys = new StringBuilder("%s as k0".formatted(specKey));
+    StringBuilder tupleFields = new StringBuilder("'%s', k0".formatted(PARTITION_SPEC_ID.getName()));
+    List<String> groupKeys = new ArrayList<>(List.of("k0"));
+    for (int i = 0; i < fieldNames.size(); i++) {
+      String key = "k" + (i + 1);
+      cteKeys.append(",\n    %s as %s".formatted(fieldKeyExprs.get(fieldNames.get(i)), key));
+      tupleFields.append(", '%s', %s".formatted(fieldNames.get(i), key));
+      groupKeys.add(key);
+    }
+    return new PartitionTupleSql(
+        ",\n  named_struct(%s)".formatted(tupleFields),
+        "\ngroup by " + String.join(", ", groupKeys),
+        cteKeys.toString());
+  }
 
   private static String getColTypeOf(Table tbl, String partKey) {
     for (FieldSchema fs : tbl.getPartCols()) {
@@ -260,10 +362,10 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
   }
 
   private String genRewrittenQuery(FieldSchemas columnSchemas, HiveConf conf,
-      List<TransformSpec> partTransformSpec, int specId, Map<String, String> partSpec, 
-      boolean isPartitionStats) {
-    String rewritten = genRewrittenQuery(tbl, columnSchemas, conf, partTransformSpec, specId, partSpec,
-        isPartitionStats, false);
+      List<TransformSpec> partTransformSpec, Map<String, String> partSpec,
+      boolean isPartitionStats, PartitionTupleSql partitionTuple) {
+    String rewritten = genRewrittenQuery(tbl, columnSchemas, conf, partTransformSpec, partSpec,
+        isPartitionStats, false, partitionTuple);
     isRewritten = true;
     return rewritten;
   }
@@ -273,15 +375,22 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
    * included in the input table.
    */
   protected static String genRewrittenQuery(Table tbl,
-      HiveConf conf, List<TransformSpec> partTransformSpec, Map<String, String> partSpec, 
+      HiveConf conf, List<TransformSpec> partTransformSpec, Map<String, String> partSpec,
       boolean isPartitionStats) {
     return ColumnStatsSemanticAnalyzer.genRewrittenQuery(tbl, getStatsEligibleFieldSchemas(tbl), conf,
-        partTransformSpec, -1, partSpec, isPartitionStats, true);
+        partTransformSpec, partSpec, isPartitionStats, true, null);
   }
 
+  /**
+   * @param partTransformSpec the current spec's transforms, projected as the partition struct;
+   *     null for a native table, whose raw partition columns are projected instead
+   * @param partitionTuple the unified-partition-tuple fragments grouping all specs' rows in one scan;
+   *     null on the auto-gather and single-spec paths, which keep the current spec's
+   *     partition-struct projection
+   */
   private static String genRewrittenQuery(Table tbl, FieldSchemas columnSchemas,
-      HiveConf conf, List<TransformSpec> partTransformSpec, int specId, Map<String, String> partSpec, 
-      boolean isPartitionStats, boolean useTableValues) {
+      HiveConf conf, List<TransformSpec> partTransformSpec, Map<String, String> partSpec,
+      boolean isPartitionStats, boolean useTableValues, PartitionTupleSql partitionTuple) {
     StringBuilder rewrittenQueryBuilder = new StringBuilder("select ");
 
     StringBuilder columnNamesBuilder = new StringBuilder();
@@ -310,7 +419,12 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     }
 
     if (isPartitionStats) {
-      if (partTransformSpec == null) {
+      if (partitionTuple != null) {
+        rewrittenQueryBuilder.append(partitionTuple.projection());
+      } else if (partTransformSpec != null) {
+        rewrittenQueryBuilder.append(", ")
+          .append(TransformSpec.toNamedStruct(partTransformSpec, conf));
+      } else {
         for (FieldSchema fs : tbl.getPartCols()) {
           String identifier = unparseIdentifier(fs.getName(), conf);
           rewrittenQueryBuilder.append(", ").append(identifier);
@@ -320,9 +434,6 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
             .append(TypeInfoUtils.getTypeInfoFromTypeString(fs.getType()).toString())
             .append(")");
         }
-      } else {
-        rewrittenQueryBuilder.append(", ")
-          .append(TransformSpec.toNamedStruct(partTransformSpec, conf));
       }
     }
 
@@ -339,26 +450,34 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
         .append(columnNamesBuilder)
         .append(")");
     } else {
-      rewrittenQueryBuilder.append(unparseIdentifier(tbl.getDbName(), conf))
-        .append(".")
-        .append(unparseIdentifier(tbl.getTableName(), conf));
-      
-      if (tbl.getMetaTable() != null) {
-        rewrittenQueryBuilder.append(".")
-          .append(unparseIdentifier(tbl.getMetaTable(), conf));
-      }
+      rewrittenQueryBuilder.append(partitionTuple != null ? SUB_QUERY_ALIAS : genTableRef(tbl, conf));
     }
 
     // If partition level statistics is requested, add predicate and group by as needed to rewritten
     // query
     if (isPartitionStats) {
-      rewrittenQueryBuilder.append(genPartitionClause(tbl, partTransformSpec, specId, partSpec, conf));
+      rewrittenQueryBuilder.append(partitionTuple != null ?
+          partitionTuple.groupByClause() :
+          genPartitionClause(tbl, partTransformSpec, partSpec, conf));
     }
 
     String rewrittenQuery = rewrittenQueryBuilder.toString();
+    if (partitionTuple != null) {
+      // the unified partition tuple is computed once in a CTE and grouped on by name (Hive
+      // resolves CTE output columns in group by, but not select aliases)
+      String cteCols = columnSchemas.getSchemas().stream()
+          .map(schema -> unparseIdentifier(schema.getName(), conf))
+          .collect(Collectors.joining(", "));
+      rewrittenQuery = "with %s as (\n  select %s,\n    %s\n  from %s\n)\n%s"
+          .formatted(SUB_QUERY_ALIAS, cteCols, partitionTuple.cteKeys(), genTableRef(tbl, conf), rewrittenQuery);
+    }
     rewrittenQuery = new VariableSubstitution(
         () -> SessionState.get().getHiveVariables()).substitute(conf, rewrittenQuery);
     return rewrittenQuery;
+  }
+
+  private static String genTableRef(Table tbl, HiveConf conf) {
+    return unparseIdentifier(tbl.getDbName(), conf) + "." + unparseIdentifier(tbl.getTableName(), conf);
   }
 
   private static void genComputeStats(StringBuilder rewrittenQueryBuilder, HiveConf conf,
@@ -635,7 +754,6 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       // partition spec is rejected; the auto-gather path merges instead and stays unaffected)
       validateUnsupportedPartitionClause(tbl, AnalyzeCommandUtils.isPartitionLevelStats(ast));
       
-      Map<Integer, List<TransformSpec>> partTransformSpecs = Collections.singletonMap(-1, null);
       Map<String, String> partSpec = (isPartitionStats) ?
           AnalyzeCommandUtils.getPartKeyValuePairsFromAST(tbl, ast, conf) : null;
 
@@ -643,18 +761,32 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
 
       if (isPartitionStats) {
         handlePartialPartitionSpec(partSpec, null);
-        if (tbl.hasNonNativePartitionSupport()) {
-          partTransformSpecs = tbl.getStorageHandler().getPartitionTransformSpecs(tbl);
-        }
       }
+      Map<Integer, List<TransformSpec>> partTransformSpecs =
+          isPartitionStats && tbl.hasNonNativePartitionSupport() ?
+              tbl.getStorageHandler().getPartitionTransformSpecs(tbl) : null;
       rewrittenColumnSchemas = new FieldSchemas(columnSchemas);
       isTableLevel = !isPartitionStats;
 
-      rewrittenQuery = String.join(" union all ",
-        Maps.transformEntries(partTransformSpecs, (specId, partTransformSpec) ->
-            genRewrittenQuery(rewrittenColumnSchemas, conf, partTransformSpec, specId, partSpec, isPartitionStats))
-          .values());
-      
+      // a single scan groups every row by the unified partition tuple: the spec that wrote it and
+      // that spec's transform values; the rows written under a void spec (unpartitioned, or all of
+      // its transforms void) belong to no partition and form one synthetic group
+      boolean hasPartitionedSpec = partTransformSpecs == null ||
+          !partTransformSpecs.values().stream().allMatch(List::isEmpty);
+      if (hasPartitionedSpec) {
+        PartitionTupleSql partitionTuple = genPartitionTupleSql(partTransformSpecs, conf);
+        // no tuple means the map holds exactly one partitioned spec and no void specs: the
+        // master-shaped single-spec query projects its transforms
+        List<TransformSpec> partTransformSpec = partitionTuple != null || partTransformSpecs == null ?
+            null : Iterables.getOnlyElement(partTransformSpecs.values());
+        rewrittenQuery = genRewrittenQuery(rewrittenColumnSchemas, conf, partTransformSpec, partSpec,
+            isPartitionStats, partitionTuple);
+      } else {
+        // no partitioned spec at all: table-level statistics cover every row
+        isTableLevel = true;
+        rewrittenQuery = genRewrittenQuery(rewrittenColumnSchemas, conf, null, partSpec, false, null);
+      }
+
       rewrittenTree = genRewrittenTree(rewrittenQuery);
     } else {
       // Not an analyze table column compute statistics statement - don't do any rewrites
@@ -720,8 +852,8 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     rewrittenColumnSchemas = new FieldSchemas(columnSchemas);
     isTableLevel = !isPartitionStats;
 
-    rewrittenQuery = genRewrittenQuery(rewrittenColumnSchemas, conf, partTransformSpec, -1,
-        partSpec, isPartitionStats);
+    rewrittenQuery = genRewrittenQuery(rewrittenColumnSchemas, conf,
+        partTransformSpec, partSpec, isPartitionStats, null);
     rewrittenTree = genRewrittenTree(rewrittenQuery);
 
     return rewrittenTree;

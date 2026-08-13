@@ -141,31 +141,9 @@ public class ColStatsProcessor implements IStatsProcessor {
 
       if (!statsObjs.isEmpty()) {
         if (!isTblLevel) {
-          List<FieldSchema> partColSchema = new ArrayList<>();
-          List<String> partVals = new ArrayList<>();
-          
-          if (tbl.hasNonNativePartitionSupport()) {
-            ObjectInspector inspector = fields.get(pos).getFieldObjectInspector();
-            if (inspector.getCategory() == ObjectInspector.Category.STRUCT) {
-              Object obj = values.get(pos);
-              StructObjectInspector oi = (StructObjectInspector) inspector;
-              
-              for (StructField field : oi.getAllStructFieldRefs()) {
-                partColSchema.add(new FieldSchema(field.getFieldName(), null, ""));
-                partVals.add(String.valueOf(oi.getStructFieldData(obj, field)));
-              }
-            }
-          } else {
-            partColSchema.addAll(tbl.getPartCols());
-            // Iterate over partition columns to figure out partition name
-            for (int i = pos; i < pos + partColSchema.size(); i++) {
-              Object partVal = ((PrimitiveObjectInspector) fields.get(i).getFieldObjectInspector())
-                .getPrimitiveJavaObject(values.get(i));
-              partVals.add(partVal == null ? // could be null for default partition
-                this.conf.getVar(ConfVars.DEFAULT_PARTITION_NAME) : partVal.toString());
-            }
-          }
-          partName = Warehouse.makePartName(partColSchema, partVals);
+          partName = tbl.hasNonNativePartitionSupport() ?
+              toNonNativePartName(fields.get(pos), values.get(pos)) :
+              toNativePartName(tbl, fields, values, pos);
         }
 
         ColumnStatisticsDesc statsDesc = buildColumnStatsDesc(tbl, partName, isTblLevel);
@@ -181,6 +159,41 @@ public class ColStatsProcessor implements IStatsProcessor {
     }
     ftOp.clearFetchContext();
     return true;
+  }
+
+  /**
+   * The group's partition tuple travels as a provisional name: the projected group keys - the spec
+   * id (when several specs are reachable) and the raw transform values - encoded by name with
+   * Hive's canonical makePartName; the storage handler decodes it and renders the final partition
+   * name at persist time, where the spec that wrote the rows is known. Nulls travel as the
+   * default-partition token; empty strings stay "" (the empty default).
+   */
+  private static String toNonNativePartName(StructField partitionField, Object partitionTuple)
+      throws MetaException {
+    StructObjectInspector oi = (StructObjectInspector) partitionField.getFieldObjectInspector();
+    List<FieldSchema> partColSchema = new ArrayList<>();
+    List<String> partVals = new ArrayList<>();
+    for (StructField field : oi.getAllStructFieldRefs()) {
+      partColSchema.add(new FieldSchema(field.getFieldName(), null, ""));
+      Object partVal = oi.getStructFieldData(partitionTuple, field);
+      partVals.add(partVal == null ?
+          ConfVars.DEFAULT_PARTITION_NAME.getDefaultValue() : partVal.toString());
+    }
+    return Warehouse.makePartName(partColSchema, partVals, "");
+  }
+
+  private String toNativePartName(Table tbl, List<? extends StructField> fields, List<Object> values, int pos)
+      throws MetaException {
+    List<FieldSchema> partColSchema = tbl.getPartCols();
+    List<String> partVals = new ArrayList<>();
+    // Iterate over partition columns to figure out partition name
+    for (int i = pos; i < pos + partColSchema.size(); i++) {
+      Object partVal = ((PrimitiveObjectInspector) fields.get(i).getFieldObjectInspector())
+          .getPrimitiveJavaObject(values.get(i));
+      partVals.add(partVal == null ? // could be null for default partition
+          conf.getVar(ConfVars.DEFAULT_PARTITION_NAME) : partVal.toString());
+    }
+    return Warehouse.makePartName(partColSchema, partVals);
   }
 
   private ColumnStatisticsDesc buildColumnStatsDesc(Table table, String partName, boolean isTblLevel) {
@@ -212,7 +225,11 @@ public class ColStatsProcessor implements IStatsProcessor {
     }
 
     boolean done = false;
-    long maxNumStats = conf.getLongVar(HiveConf.ConfVars.HIVE_STATS_MAX_NUM_STATS);
+    boolean useStorageHandler = tbl.isNonNative() && tbl.getStorageHandler().canSetColStatistics(tbl);
+    // a storage handler persists all the statistics in a single batch: it holds one statistics file
+    // per snapshot; the cap only bounds the size of an HMS request
+    long maxNumStats = useStorageHandler ?
+        Long.MAX_VALUE : conf.getLongVar(HiveConf.ConfVars.HIVE_STATS_MAX_NUM_STATS);
     while (!done) {
       List<ColumnStatistics> colStats = new ArrayList<>();
 
@@ -236,7 +253,7 @@ public class ColStatsProcessor implements IStatsProcessor {
       }
 
       start = System. currentTimeMillis();
-      if (tbl.isNonNative() && tbl.getStorageHandler().canSetColStatistics(tbl)) {
+      if (useStorageHandler) {
         boolean success = tbl.getStorageHandler().setColStatistics(tbl, colStats);
         if (!(tbl.isMaterializedView() || tbl.isView() || tbl.isTemporary())) {
           setOrRemoveColumnStatsAccurateProperty(db, tbl, colStatDesc.getColName(), success);

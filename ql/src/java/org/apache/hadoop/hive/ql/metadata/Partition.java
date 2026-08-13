@@ -67,6 +67,7 @@ public class Partition implements Serializable {
 
   private Table table;
   private org.apache.hadoop.hive.metastore.api.Partition tPartition;
+  private Integer specId;
 
   /**
    * These fields are cached. The information comes from tPartition.
@@ -81,6 +82,15 @@ public class Partition implements Serializable {
    */
   public List<String> getValues() {
     return tPartition.getValues();
+  }
+
+  public void setSpecId(Integer specId) {
+    this.specId = specId;
+  }
+
+  /** Id of the storage handler partition spec that wrote the rows; null when unknown. */
+  public Integer getSpecId() {
+    return specId;
   }
 
   /**
@@ -206,6 +216,11 @@ public class Partition implements Serializable {
     } catch (MetaException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  /** True for the synthetic partition holding the rows that belong to no partition. */
+  public boolean isVoid() {
+    return false;
   }
 
   public Path[] getPath() {

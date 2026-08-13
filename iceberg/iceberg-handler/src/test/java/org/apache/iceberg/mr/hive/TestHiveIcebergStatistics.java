@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -39,6 +40,7 @@ import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionStatistics;
+import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.TableIdentifier;
@@ -49,7 +51,10 @@ import org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils;
 import org.apache.iceberg.mr.hive.test.utils.HiveIcebergTestUtils;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
+import org.apache.iceberg.relocated.com.google.common.collect.Iterables;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
+import org.apache.iceberg.transforms.Transforms;
+import org.apache.iceberg.types.Types;
 import org.apache.iceberg.types.Types.NestedField;
 import org.apache.thrift.TException;
 import org.junit.Assert;
@@ -370,7 +375,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
   }
 
   @Test
-  public void testGetAggrBasicStatsForPartitioned() {
+  public void testGetAggrBasicStatsForPartitioned() throws SemanticException {
     assumeParquetHiveCatalogIceberg();
 
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
@@ -379,10 +384,11 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     org.apache.hadoop.hive.ql.metadata.Table hmsTable = hmsTable(identifier);
     HiveIcebergStorageHandler handler = storageHandler();
 
-    List<String> partNames = partitionNames(handler, hmsTable);
+    List<Partition> partitions = handler.getPartitions(hmsTable, Collections.emptyMap(), true);
+    List<String> partNames = partitions.stream().map(Partition::getName).toList();
     Assert.assertEquals(3, partNames.size());
 
-    Map<String, Map<String, String>> aggr = handler.getAggrBasicStatsFor(hmsTable, partNames);
+    Map<String, Map<String, String>> aggr = handler.getAggrBasicStatsFor(hmsTable, partitions);
     Assert.assertEquals(3, aggr.size());
 
     // each customer record lands in its own last_name partition
@@ -393,7 +399,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
       Assert.assertTrue(Long.parseLong(basicStats.get(StatsSetupConst.TOTAL_SIZE)) > 0);
     }
     // no deletes: every partition's row count is answered exactly
-    Map<String, Long> rowCounts = handler.getRowCount(hmsTable, partNames);
+    Map<String, Long> rowCounts = handler.getRowCount(hmsTable, partitions);
     Assert.assertEquals(partNames.size(), rowCounts.size());
     rowCounts.values().forEach(rowCount -> Assert.assertEquals(Long.valueOf(1), rowCount));
   }
@@ -424,7 +430,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
   }
 
   @Test
-  public void testAnalyzeCatchesUpPartitionStats() {
+  public void testAnalyzeCatchesUpPartitionStats() throws SemanticException {
     assumeParquetHiveCatalogIceberg();
 
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
@@ -437,21 +443,21 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
 
     org.apache.hadoop.hive.ql.metadata.Table hmsTable = hmsTable(identifier);
     HiveIcebergStorageHandler handler = storageHandler();
-    List<String> partNames = partitionNames(handler, hmsTable);
+    List<Partition> partitions = handler.getPartitions(hmsTable, Collections.emptyMap(), true);
 
     // the partition stats file is missing: every partition is reported missing (estimated by the planner)
     // and exact query answering is refused
-    Assert.assertEquals(0, handler.getAggrBasicStatsFor(hmsTable, partNames).size());
-    Assert.assertTrue(handler.getRowCount(hmsTable, partNames).isEmpty());
+    Assert.assertEquals(0, handler.getAggrBasicStatsFor(hmsTable, partitions).size());
+    Assert.assertTrue(handler.getRowCount(hmsTable, partitions).isEmpty());
 
     // ANALYZE catches up: the incremental computation publishes the partition stats file
     shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS");
 
-    Map<String, Map<String, String>> refreshed = handler.getAggrBasicStatsFor(hmsTable, partNames);
-    Assert.assertEquals(partNames.size(), refreshed.size());
+    Map<String, Map<String, String>> refreshed = handler.getAggrBasicStatsFor(hmsTable, partitions);
+    Assert.assertEquals(partitions.size(), refreshed.size());
     refreshed.values().forEach(basicStats ->
         Assert.assertTrue(Long.parseLong(basicStats.get(StatsSetupConst.ROW_COUNT)) > 0));
-    Assert.assertEquals(partNames.size(), handler.getRowCount(hmsTable, partNames).size());
+    Assert.assertEquals(partitions.size(), handler.getRowCount(hmsTable, partitions).size());
   }
 
   @Test
@@ -466,10 +472,10 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     org.apache.hadoop.hive.ql.metadata.Table hmsTable = hmsTable(identifier);
     HiveIcebergStorageHandler handler = storageHandler();
 
-    List<String> partNames = partitionNames(handler, hmsTable);
-    Assert.assertEquals(3, partNames.size());
+    List<Partition> partitions = handler.getPartitions(hmsTable, Collections.emptyMap(), true);
+    Assert.assertEquals(3, partitions.size());
 
-    AggrStats aggrStats = handler.getAggrColStatsFor(hmsTable, ImmutableList.of("customer_id"), partNames);
+    AggrStats aggrStats = handler.getAggrColStatsFor(hmsTable, ImmutableList.of("customer_id"), partitions);
     Assert.assertEquals(3, aggrStats.getPartsFound());
     Assert.assertEquals(1, aggrStats.getColStatsSize());
     ColumnStatisticsObj statsObj = aggrStats.getColStats().get(0);
@@ -477,6 +483,32 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     // customer ids 0..2, one per last_name partition, merged across the three partitions
     Assert.assertEquals(0, statsObj.getStatsData().getLongStats().getLowValue());
     Assert.assertEquals(2, statsObj.getStatsData().getLongStats().getHighValue());
+  }
+
+  @Test
+  public void testGetAggrColStatsForNullAndEmptyPartitions() throws Exception {
+    // NULL and empty-string partition values render as "last_name=null" and "last_name=" on both the
+    // blob-write side (ANALYZE) and the pruned-name side; a rendering mismatch silently drops the
+    // partition from the aggregation and partial aggregation extrapolates fabricated NDVs
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+    createPartitionedCustomers(identifier);
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (3, 'Alice', NULL), (4, 'Eve', '')");
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+
+    org.apache.hadoop.hive.ql.metadata.Table hmsTable = hmsTable(identifier);
+    HiveIcebergStorageHandler handler = storageHandler();
+
+    List<String> partNames = partitionNames(handler, hmsTable);
+    Assert.assertEquals(partNames.toString(), 5, partNames.size());
+    Assert.assertTrue(partNames.toString(), partNames.contains("last_name=null"));
+    Assert.assertTrue(partNames.toString(), partNames.contains("last_name="));
+
+    // the blobs must carry the read side's names: an empty-string value that decodes as null would
+    // pass the aggregate below by double-serving the null partition's key
+    Assert.assertEquals(partNames.stream().sorted().toList(), colStatsPartNames(identifier));
+    assertAggrColStatsRange(identifier, "customer_id", partNames, 0, 4);
   }
 
   @Test
@@ -526,7 +558,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
   }
 
   @Test
-  public void testRowCountWithDeletes() {
+  public void testRowCountWithDeletes() throws SemanticException {
     assumeParquetHiveCatalogIceberg();
 
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
@@ -544,7 +576,8 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     Assert.assertEquals(11, partNames.size());
 
     // the delete-covered partition's count is inexact and must be omitted; all others stay exact
-    Map<String, Long> rowCounts = handler.getRowCount(hmsTable, partNames);
+    Map<String, Long> rowCounts = handler.getRowCount(hmsTable,
+        handler.getPartitions(hmsTable, Collections.emptyMap(), true));
     Assert.assertEquals(10, rowCounts.size());
     Assert.assertFalse(rowCounts.containsKey("last_name=Silver"));
 
@@ -568,25 +601,29 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     validateBasicStats(icebergTable, "default", identifier.name());
 
     // the partition stats file accounts for the legacy rows too, under the empty partition tuple
-    Map<String, PartitionStatistics> fileStats =
+    Map<String, List<PartitionStatistics>> fileStats =
         IcebergTableUtil.readPartitionStats(icebergTable, icebergTable.currentSnapshot());
-    Assert.assertEquals(3L, fileStats.get(DummyPartition.VOID).dataRecordCount().longValue());
+    PartitionStatistics legacyStats = Iterables.getOnlyElement(fileStats.get(DummyPartition.VOID));
+    Assert.assertEquals(3L, legacyStats.dataRecordCount().longValue());
 
-    // column stats blobs are written for the physical partitions only: values existing solely among the
-    // legacy unpartitioned rows (Green, Pink) get no blob
+    // column stats blobs are written per physical partition; the legacy unpartitioned rows share one
+    // blob under the synthetic partition name, so values existing solely among them (Green, Pink)
+    // are accounted there
     List<ColumnStatistics> colStats =
         IcebergTableUtil.readColStats(icebergTable, icebergTable.currentSnapshot().snapshotId(), null);
     Assert.assertEquals(
-        List.of("last_name=Barna", "last_name=Brown", "last_name=Rozsaszin", "last_name=Zold"),
+        List.of(DummyPartition.VOID,
+            "last_name=Barna", "last_name=Brown", "last_name=Rozsaszin", "last_name=Zold"),
         colStats.stream().map(stats -> stats.getStatsDesc().getPartName()).sorted().toList());
+
+    // the legacy blob covers exactly the rows written before the table was partitioned
+    ColumnStatisticsObj legacyCustomerId = colStatsObj(colStats, DummyPartition.VOID, "customer_id");
+    Assert.assertEquals(0L, legacyCustomerId.getStatsData().getLongStats().getLowValue());
+    Assert.assertEquals(2L, legacyCustomerId.getStatsData().getLongStats().getHighValue());
 
     // a blob describes the physical partition's files only: the legacy Brown row (customer_id 0) does not
     // merge into the Brown partition's blob, which covers just the new-spec row (customer_id 3)
-    ColumnStatisticsObj brownCustomerId = colStats.stream()
-        .filter(stats -> "last_name=Brown".equals(stats.getStatsDesc().getPartName()))
-        .flatMap(stats -> stats.getStatsObj().stream())
-        .filter(obj -> "customer_id".equals(obj.getColName()))
-        .findFirst().orElseThrow();
+    ColumnStatisticsObj brownCustomerId = colStatsObj(colStats, "last_name=Brown", "customer_id");
     Assert.assertEquals(3L, brownCustomerId.getStatsData().getLongStats().getLowValue());
     Assert.assertEquals(3L, brownCustomerId.getStatsData().getLongStats().getHighValue());
 
@@ -598,7 +635,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     // planner basic stats answer the requested partitions and carry the legacy rows as an extra entry
     List<String> statNames = Lists.newArrayList(partNames);
     statNames.add(DummyPartition.VOID);
-    Map<String, Map<String, String>> aggr = handler.getAggrBasicStatsFor(hmsTable, statNames);
+    Map<String, Map<String, String>> aggr = handler.getAggrBasicStatsFor(hmsTable, toPartitions(hmsTable, statNames));
     Assert.assertEquals(statNames.size(), aggr.size());
     partNames.forEach(name -> Assert.assertEquals("1", aggr.get(name).get(StatsSetupConst.ROW_COUNT)));
     Assert.assertEquals("3",
@@ -620,7 +657,31 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
   }
 
   @Test
-  public void testRowCountAfterEvolutionFromUnpartitioned() {
+  public void testAggrColStatsAfterEvolutionFromUnpartitioned() throws Exception {
+    // the legacy unpartitioned-spec rows are computed by a dedicated ANALYZE arm and stored under the
+    // synthetic partition's blob, so an aggregation over a pruned list holding the synthetic partition
+    // is complete: no extrapolation, and the legacy rows' values are accounted for
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+    createEvolvedCustomers(identifier);
+    // a genuine NULL partition value: its group's partition tuple is all null, exactly like the
+    // legacy rows' - only the spec id may tell them apart
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (6, 'Nia', NULL)");
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+
+    org.apache.hadoop.hive.ql.metadata.Table hmsTable = hmsTable(identifier);
+    HiveIcebergStorageHandler handler = storageHandler();
+    List<String> statNames = Lists.newArrayList(partitionNames(handler, hmsTable));
+    statNames.add(DummyPartition.VOID);
+    Assert.assertTrue(statNames.toString(), statNames.contains("last_name=null"));
+
+    // customer ids 0..2 exist only among the legacy unpartitioned rows, 3..6 in the partitioned ones
+    assertAggrColStatsRange(identifier, "customer_id", statNames, 0, 6);
+  }
+
+  @Test
+  public void testRowCountAfterEvolutionFromUnpartitioned() throws SemanticException {
     assumeParquetHiveCatalogIceberg();
 
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
@@ -633,9 +694,10 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     // the synthetic partition cannot answer a predicate exactly, so a pruned list holding it is refused
     List<String> withPseudo = Lists.newArrayList(partNames);
     withPseudo.add(DummyPartition.VOID);
-    Assert.assertTrue(handler.getRowCount(hmsTable, withPseudo).isEmpty());
+    Assert.assertTrue(handler.getRowCount(hmsTable, toPartitions(hmsTable, withPseudo)).isEmpty());
     // without it the partition counts are exact
-    Assert.assertEquals(partNames.size(), handler.getRowCount(hmsTable, partNames).size());
+    Assert.assertEquals(partNames.size(),
+        handler.getRowCount(hmsTable, handler.getPartitions(hmsTable, Collections.emptyMap(), true)).size());
 
     // counts stay correct via a real scan, pruned and unpruned alike; Green exists only in the legacy
     // rows so its pruned list is empty (partition statistics alone would have answered 0)
@@ -653,6 +715,304 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     Assert.assertEquals(2, brown.size());
     Assert.assertEquals(0L, brown.get(0)[0]);
     Assert.assertEquals(3L, brown.get(1)[0]);
+  }
+
+  @Test
+  public void testAnalyzeColStatsInBatches() {
+    // guards the single-batch persist exemption: the storage handler holds one statistics file per
+    // snapshot, so honoring hive.stats.max.num.stats would let every batch replace the previous one
+    // (this cap would force one partition per batch and only the last would survive)
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+    createPartitionedCustomers(identifier);
+    // 3 stats objects per partition (customer_id, first_name, last_name): one partition per batch
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_MAX_NUM_STATS.varname, "3");
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+
+    Assert.assertEquals(
+        List.of("last_name=Brown", "last_name=Green", "last_name=Pink"),
+        colStatsPartNames(identifier));
+  }
+
+  @Test
+  public void testAggrColStatsAfterPartitionedSpecEvolution() {
+    // two partitioned specs: every row is grouped and its blob named under the spec that wrote it,
+    // in a single ANALYZE pass (the per-spec union rewrite could not even compile - the branches'
+    // partition structs had different field names)
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+    PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .identity("last_name").build();
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
+    testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, spec,
+        fileFormat, ImmutableList.of(), formatVersion);
+    shell.executeStatement(testTables.getInsertQuery(
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, identifier, false));
+    shell.executeStatement("ALTER TABLE " + identifier + " SET PARTITION SPEC (first_name)");
+    shell.executeStatement(testTables.getInsertQuery(
+        HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1, identifier, false));
+
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+
+    Assert.assertEquals(
+        List.of("first_name=Laci", "first_name=Marci", "first_name=Peti",
+            "last_name=Brown", "last_name=Green", "last_name=Pink"),
+        colStatsPartNames(identifier));
+  }
+
+  @Test
+  public void testAggrColStatsForYearTransformPartitions() throws Exception {
+    // time-transform partition values must render as Iceberg's human form ("2023"), not the raw
+    // transform ordinal ("53"): statistics and partition pruning join on the rendered name
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "orders_by_year");
+    createDatePartitionedTable(identifier);
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, date '2023-03-04'), " +
+        "(2, date '2023-11-11'), (3, date '2024-06-01'), (4, date '1969-06-01')");
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+
+    // partition names as the read side renders them via partitionToPath (getPartitions cannot list
+    // non-identity transforms - its partition filter only supports identity columns); the year
+    // ordinal is negative for pre-1970 dates
+    List<String> partNames = ImmutableList.of("d_year=1969", "d_year=2023", "d_year=2024");
+    assertAggrColStatsRange(identifier, "id", partNames, 1, 4);
+  }
+
+  @Test
+  public void testAggrColStatsForTimestampIdentityPartitions() throws Exception {
+    // identity-partitioned timestamps: Hive renders the value with a space separator, the blob name
+    // must carry Iceberg's ISO rendering (Conversions.fromPartitionString cannot parse timestamps)
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "events_by_ts");
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier + " (id bigint, ts timestamp) " +
+        "PARTITIONED BY SPEC (ts) STORED BY ICEBERG STORED AS PARQUET");
+    shell.executeStatement("INSERT INTO " + identifier +
+        " VALUES (1, timestamp '2024-06-01 10:00:00'), (2, timestamp '2024-06-01 10:00:00'), " +
+        "(3, timestamp '2023-11-11 23:59:59')");
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+
+    // partitionToPath URL-escapes the ISO rendering (':' -> %3A)
+    List<String> partNames = ImmutableList.of("ts=2023-11-11T23%3A59%3A59", "ts=2024-06-01T10%3A00%3A00");
+    Assert.assertEquals(partNames, colStatsPartNames(identifier));
+    assertAggrColStatsRange(identifier, "id", partNames, 1, 3);
+  }
+
+  @Test
+  public void testAggrColStatsForCaseSensitivePartitionField() throws Exception {
+    // Hive's makePartName lowercases the wire keys, so the decode must match the partition field
+    // case-insensitively: a case-preserving field name (e.g. Spark-created) would otherwise decode
+    // every group's value to null
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "events_case");
+    Schema schema = new Schema(
+        NestedField.optional(1, "id", Types.LongType.get()),
+        NestedField.optional(2, "eventDate", Types.DateType.get()));
+    PartitionSpec spec = PartitionSpec.builderFor(schema).identity("eventDate").build();
+    testTables.createTable(shell, identifier.name(), schema, spec, fileFormat, ImmutableList.of(), formatVersion);
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, date '2023-03-04'), (2, date '2024-06-01')");
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+
+    List<String> partNames = ImmutableList.of("eventDate=2023-03-04", "eventDate=2024-06-01");
+    Assert.assertEquals(partNames, colStatsPartNames(identifier));
+    assertAggrColStatsRange(identifier, "id", partNames, 1, 2);
+  }
+
+  @Test
+  public void testAggrColStatsForTimestampLocalTZIdentityPartitions() throws Exception {
+    // identity-partitioned zoned timestamps: Hive renders the group value with a trailing zone id
+    // ("2024-06-01 10:00:00.0 UTC"), which the decode must map back to the instant's micros
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "events_by_ltz");
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier +
+        " (id bigint, ts timestamp with local time zone) " +
+        "PARTITIONED BY SPEC (ts) STORED BY ICEBERG STORED AS PARQUET");
+    shell.executeStatement("INSERT INTO " + identifier +
+        " VALUES (1, timestamp '2024-06-01 10:00:00'), (2, timestamp '2024-06-01 10:00:00'), " +
+        "(3, timestamp '2023-11-11 23:59:59')");
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+
+    org.apache.hadoop.hive.ql.metadata.Table hmsTable = hmsTable(identifier);
+    List<String> partNames = partitionNames(storageHandler(), hmsTable);
+    Assert.assertEquals(2, partNames.size());
+    Assert.assertEquals(partNames.stream().sorted().toList(), colStatsPartNames(identifier));
+    assertAggrColStatsRange(identifier, "id", partNames, 1, 3);
+  }
+
+  @Test
+  public void testAggrColStatsForTimeTransformEvolutions() throws Exception {
+    // year -> month -> day evolutions: one ANALYZE pass names each group's blob with the human
+    // rendering of the owning spec's transform ordinal
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "orders_by_time");
+    createDatePartitionedTable(identifier);
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, date '2023-03-04')");
+    shell.executeStatement("ALTER TABLE " + identifier + " SET PARTITION SPEC (month(d))");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (2, date '2023-11-11')");
+    shell.executeStatement("ALTER TABLE " + identifier + " SET PARTITION SPEC (day(d))");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (3, date '2024-06-01')");
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+
+    List<String> partNames = List.of("d_day=2024-06-01", "d_month=2023-11", "d_year=2023");
+    Assert.assertEquals(partNames, colStatsPartNames(identifier));
+    assertAggrColStatsRange(identifier, "id", partNames, 1, 3);
+  }
+
+  @Test
+  public void testAutoGatherColStatsForTimeTransformPartitions() {
+    // incremental auto-compute on a time-transform table: each INSERT's statistics land under the
+    // human-rendered partition names and merge with the previous snapshot's blobs - never replace them
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "orders_autogather");
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
+    createDatePartitionedTable(identifier);
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, date '2023-03-04')");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (2, date '2023-11-11'), " +
+        "(3, date '2024-06-01')");
+
+    Table icebergTable = testTables.loadTable(identifier);
+    List<ColumnStatistics> colStats =
+        IcebergTableUtil.readColStats(icebergTable, icebergTable.currentSnapshot().snapshotId(), null);
+    Assert.assertEquals(List.of("d_year=2023", "d_year=2024"),
+        colStats.stream().map(stats -> stats.getStatsDesc().getPartName()).sorted().toList());
+
+    // the 2023 blob accounts for the rows of both inserts
+    ColumnStatisticsObj id2023 = colStatsObj(colStats, "d_year=2023", "id");
+    Assert.assertEquals(1L, id2023.getStatsData().getLongStats().getLowValue());
+    Assert.assertEquals(2L, id2023.getStatsData().getLongStats().getHighValue());
+  }
+
+  @Test
+  public void testIncrementalColStatsSkippedAfterStatsGap() {
+    // incremental statistics may only extend a provably cumulative history: a snapshot written
+    // without statistics breaks the chain and freezes auto-compute until ANALYZE re-anchors it
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "orders_gap");
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
+    createDatePartitionedTable(identifier);
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, date '2023-03-04')");
+    Assert.assertTrue(hasColStatsForCurrentSnapshot(identifier));
+
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, false);
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (2, date '2023-11-11')");
+    Assert.assertFalse(hasColStatsForCurrentSnapshot(identifier));
+
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (3, date '2023-06-01')");
+    Assert.assertFalse(hasColStatsForCurrentSnapshot(identifier));
+
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+    Assert.assertTrue(hasColStatsForCurrentSnapshot(identifier));
+
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (4, date '2023-09-09')");
+    Table icebergTable = testTables.loadTable(identifier);
+    List<ColumnStatistics> colStats =
+        IcebergTableUtil.readColStats(icebergTable, icebergTable.currentSnapshot().snapshotId(), null);
+    // the re-anchored chain accounts for every row, including the gap snapshot's
+    ColumnStatisticsObj id2023 = colStatsObj(colStats, "d_year=2023", "id");
+    Assert.assertEquals(1L, id2023.getStatsData().getLongStats().getLowValue());
+    Assert.assertEquals(4L, id2023.getStatsData().getLongStats().getHighValue());
+  }
+
+  private boolean hasColStatsForCurrentSnapshot(TableIdentifier identifier) {
+    Table icebergTable = testTables.loadTable(identifier);
+    long snapshotId = icebergTable.currentSnapshot().snapshotId();
+    return icebergTable.statisticsFiles().stream().anyMatch(statsFile -> statsFile.snapshotId() == snapshotId);
+  }
+
+  @Test
+  public void testAggrColStatsAfterBucketAndYearEvolutionsFromUnpartitioned() throws Exception {
+    // unpartitioned history plus two partitioned specs - different bucket widths and a year
+    // transform - with null and empty-string source values scattered across all three: one ANALYZE
+    // pass groups every row under the spec that wrote it and names the blobs like the read side
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "orders_evolved");
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier + " (id bigint, a string, b date) " +
+        "STORED BY ICEBERG STORED AS PARQUET");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (0, 'x', date '2023-03-04'), " +
+        "(1, '', NULL), (2, NULL, date '2024-06-01')");
+    shell.executeStatement("ALTER TABLE " + identifier + " SET PARTITION SPEC (bucket(8, a))");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (3, 'x', date '2023-05-05'), " +
+        "(4, '', date '2023-06-06'), (5, NULL, NULL)");
+    shell.executeStatement("ALTER TABLE " + identifier + " SET PARTITION SPEC (bucket(4, a), year(b))");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (6, 'x', date '2023-07-07'), " +
+        "(7, '', date '2024-08-08'), (8, NULL, NULL)");
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+
+    // the null source values produce null partition values; the empty string hashes to a genuine bucket
+    List<String> statNames = Stream.of(
+            DummyPartition.VOID,
+            "a_bucket_8=" + bucket(8, "x"), "a_bucket_8=" + bucket(8, ""), "a_bucket_8=null",
+            "a_bucket_4=" + bucket(4, "x") + "/b_year=2023",
+            "a_bucket_4=" + bucket(4, "") + "/b_year=2024",
+            "a_bucket_4=null/b_year=null")
+        .sorted().toList();
+
+    Assert.assertEquals(statNames, colStatsPartNames(identifier));
+    // ids 0..2 exist only among the unpartitioned rows, 6..8 only in the latest spec's
+    assertAggrColStatsRange(identifier, "id", statNames, 0, 8);
+  }
+
+  private static int bucket(int numBuckets, String value) {
+    return Transforms.bucket(numBuckets).bind(Types.StringType.get()).apply(value);
+  }
+
+  private void createDatePartitionedTable(TableIdentifier identifier) {
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier + " (id bigint, d date) " +
+        "PARTITIONED BY SPEC (year(d)) STORED BY ICEBERG STORED AS PARQUET");
+  }
+
+  /** The named column's statistics object within the named partition's blob. */
+  private static ColumnStatisticsObj colStatsObj(List<ColumnStatistics> colStats, String partName, String colName) {
+    return colStats.stream()
+        .filter(stats -> partName.equals(stats.getStatsDesc().getPartName()))
+        .flatMap(stats -> stats.getStatsObj().stream())
+        .filter(obj -> colName.equals(obj.getColName()))
+        .findFirst().orElseThrow();
+  }
+
+  /** The persisted column-statistics blobs' partition names, sorted. */
+  private List<String> colStatsPartNames(TableIdentifier identifier) {
+    Table icebergTable = testTables.loadTable(identifier);
+    List<ColumnStatistics> colStats =
+        IcebergTableUtil.readColStats(icebergTable, icebergTable.currentSnapshot().snapshotId(), null);
+    return colStats.stream().map(stats -> stats.getStatsDesc().getPartName()).sorted().toList();
+  }
+
+  /** Asserts a complete aggregation over the given partition names: none missing, min/max spanning. */
+  private void assertAggrColStatsRange(TableIdentifier identifier, String column, List<String> statNames,
+      long lowValue, long highValue) throws Exception {
+    org.apache.hadoop.hive.ql.metadata.Table hmsTable = hmsTable(identifier);
+    List<Partition> partitions = Lists.newArrayList();
+    storageHandler().getPartitions(hmsTable, Collections.emptyMap(), false).stream()
+        .filter(partition -> statNames.contains(partition.getName()))
+        .forEach(partitions::add);
+    // the partition listing covers partitioned specs only: the no-partition pseudo entry is
+    // requested under the unpartitioned spec that wrote its rows
+    if (statNames.contains(DummyPartition.VOID)) {
+      DummyPartition voidPartition = new DummyPartition(hmsTable, DummyPartition.VOID);
+      voidPartition.setSpecId(testTables.loadTable(identifier).specs().values().stream()
+          .filter(spec -> !spec.isPartitioned())
+          .map(PartitionSpec::specId)
+          .findFirst().orElseThrow());
+      partitions.add(voidPartition);
+    }
+    Assert.assertEquals(statNames.size(), partitions.size());
+
+    AggrStats aggrStats = storageHandler().getAggrColStatsFor(hmsTable, ImmutableList.of(column), partitions);
+    Assert.assertEquals(statNames.size(), aggrStats.getPartsFound());
+    ColumnStatisticsObj statsObj = aggrStats.getColStats().get(0);
+    Assert.assertEquals(lowValue, statsObj.getStatsData().getLongStats().getLowValue());
+    Assert.assertEquals(highValue, statsObj.getStatsData().getLongStats().getHighValue());
   }
 
   private void createEvolvedCustomers(TableIdentifier identifier) {
@@ -717,6 +1077,12 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     } catch (SemanticException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  /** Pruned partitions for names the listing does not return, e.g. the synthetic no-partition name. */
+  private static List<Partition> toPartitions(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+      List<String> partNames) {
+    return IcebergTableUtil.convertNameToMetastorePartition(hmsTable, partNames);
   }
 
   private void checkColStat(String tableName, String colName, boolean accurate) {

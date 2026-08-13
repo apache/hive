@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -80,6 +81,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.Statistics.State;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.BasicStats.Factory;
 import org.apache.hadoop.hive.ql.stats.estimator.StatEstimator;
 import org.apache.hadoop.hive.ql.stats.estimator.StatEstimatorProvider;
@@ -239,11 +241,11 @@ public class StatsUtils {
         // are exactly their aggregate - skip the per-partition read
         return List.of(buildTableStats(table, factory));
       }
-      List<String> partNames = inputs.stream()
-          .map(partish -> partish.getPartition().getName())
+      List<Partition> partitions = inputs.stream()
+          .map(Partish::getPartition)
           .toList();
-      Map<String, Map<String, String>> aggrBasicStats = partNames.isEmpty() ? Map.of() :
-          storageHandler.getAggrBasicStatsFor(table, partNames);
+      Map<String, Map<String, String>> aggrBasicStats = partitions.isEmpty() ? Map.of() :
+          storageHandler.getAggrBasicStatsFor(table, partitions);
       if (!aggrBasicStats.isEmpty()) {
         return inputs.stream()
             .map(pi -> factory.build(pi,
@@ -409,7 +411,8 @@ public class StatsUtils {
         // size is 0, aggrStats is null after several retries. Thus, we can
         // skip the step to connect to the metastore.
         if (fetchColStats && !neededColsToRetrieve.isEmpty() && !partNames.isEmpty()) {
-          aggrStats = Hive.get().getAggrColStatsFor(table, neededColsToRetrieve, partNames, false);
+          aggrStats = Hive.get().getAggrColStatsFor(table, neededColsToRetrieve,
+              partList.getNotDeniedPartns(), false);
         }
 
         boolean statsRetrieved = aggrStats != null &&
@@ -2016,7 +2019,9 @@ public class StatsUtils {
    * Can run additional checks compared to the version in StatsSetupConst.
    */
   public static boolean areBasicStatsUptoDateForQueryAnswering(Table table, Map<String, String> params) {
-    return checkCanProvideStats(table) && StatsSetupConst.areBasicStatsUptoDate(params);
+    return checkCanProvideStats(table) && (
+        table.isNonNative() && DDLUtils.isIcebergStatsSource(SessionState.getSessionConf())
+            || StatsSetupConst.areBasicStatsUptoDate(params));
   }
 
   /**
@@ -2024,7 +2029,9 @@ public class StatsUtils {
    * Can run additional checks compared to the version in StatsSetupConst.
    */
   public static boolean areColumnStatsUptoDateForQueryAnswering(Table table, Map<String, String> params, String colName) {
-    return checkCanProvideStats(table) && StatsSetupConst.areColumnStatsUptoDate(params, colName);
+    return checkCanProvideStats(table) && checkCanProvideColumnStats(table) && (
+        table.isNonNative() && DDLUtils.isIcebergStatsSource(SessionState.getSessionConf())
+            || StatsSetupConst.areColumnStatsUptoDate(params, colName));
   }
 
   /**
