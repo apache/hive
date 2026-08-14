@@ -19,8 +19,14 @@
 
 package org.apache.iceberg.mr.hive.vended.hadoop;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.iceberg.aws.AwsClientProperties;
 import org.apache.iceberg.aws.s3.S3FileIOProperties;
+import org.apache.iceberg.io.StorageCredential;
+import org.apache.iceberg.mr.hive.vended.CredentialProperties;
 import org.apache.iceberg.mr.hive.vended.HadoopMapper;
 import org.apache.iceberg.mr.hive.vended.PrefixUtil;
 
@@ -58,5 +64,21 @@ public enum S3Mapper implements HadoopMapper {
       case AwsClientProperties.CLIENT_REGION -> bucketPrefix + "endpoint.region";
       default -> null;
     };
+  }
+
+  @Override
+  public List<StorageCredential> credentialsFromProperties(String prefix, Map<String, String> props) {
+    if (StringUtils.isBlank(props.get(S3FileIOProperties.ACCESS_KEY_ID)) ||
+        StringUtils.isBlank(props.get(S3FileIOProperties.SECRET_ACCESS_KEY))) {
+      return List.of();
+    }
+    Map<String, String> config = new LinkedHashMap<>();
+    CredentialProperties.putIfPresent(config, props, S3FileIOProperties.ACCESS_KEY_ID);
+    CredentialProperties.putIfPresent(config, props, S3FileIOProperties.SECRET_ACCESS_KEY);
+    CredentialProperties.putIfPresent(config, props, S3FileIOProperties.SESSION_TOKEN);
+    CredentialProperties.putIfPresent(config, props, S3FileIOProperties.ENDPOINT);
+    CredentialProperties.putIfPresent(config, props, S3FileIOProperties.PATH_STYLE_ACCESS);
+    CredentialProperties.putIfPresent(config, props, AwsClientProperties.CLIENT_REGION);
+    return List.of(StorageCredential.create(prefix, config));
   }
 }

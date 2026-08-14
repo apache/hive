@@ -19,6 +19,8 @@
 
 package org.apache.iceberg.mr.hive.vended;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import org.apache.commons.lang3.StringUtils;
 
 /** Helpers for parsing Iceberg {@link org.apache.iceberg.io.StorageCredential#prefix()} values. */
@@ -31,11 +33,11 @@ public final class PrefixUtil {
     if (prefix == null) {
       return null;
     }
-    int schemeEnd = prefix.indexOf("://");
-    if (schemeEnd <= 0) {
+    try {
+      return new URI(prefix).getScheme();
+    } catch (URISyntaxException e) {
       return null;
     }
-    return prefix.substring(0, schemeEnd).toLowerCase();
   }
 
   /**
@@ -43,16 +45,15 @@ public final class PrefixUtil {
    * {@code abfss://container@account.dfs.core.windows.net/path} →
    * {@code container@account.dfs.core.windows.net}).
    */
-  @SuppressWarnings("java:S1075")
   public static String scopeFromPrefix(String prefix) {
-    int schemeEnd = prefix == null ? -1 : prefix.indexOf("://");
-    if (schemeEnd < 0) {
+    if (StringUtils.isBlank(prefix)) {
       return null;
     }
-    String withoutScheme = prefix.substring(schemeEnd + 3);
-    int slash = withoutScheme.indexOf('/');
-    String scope = slash >= 0 ? withoutScheme.substring(0, slash) : withoutScheme;
-    return StringUtils.defaultIfBlank(scope, null);
+    try {
+      return StringUtils.defaultIfBlank(new URI(prefix).getAuthority(), null);
+    } catch (URISyntaxException e) {
+      return null;
+    }
   }
 
   /** Normalizes a table location to a credential prefix with trailing slash. */

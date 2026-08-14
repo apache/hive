@@ -20,6 +20,7 @@
 package org.apache.iceberg.mr.hive.vended;
 
 import java.util.List;
+import java.util.Map;
 import org.apache.iceberg.io.StorageCredential;
 import org.apache.iceberg.mr.hive.vended.hadoop.AdlsMapper;
 import org.apache.iceberg.mr.hive.vended.hadoop.GcsMapper;
@@ -44,18 +45,27 @@ final class HadoopMappers {
       return null;
     }
     String prefix = credential.prefix();
+    HadoopMapper configMapper = null;
     for (HadoopMapper mapper : MAPPERS) {
       if (mapper.supportsPrefix(prefix)) {
         return mapper;
       }
-    }
-    for (String icebergKey : credential.config().keySet()) {
-      for (HadoopMapper mapper : MAPPERS) {
-        if (mapper.supportsConfigKey(icebergKey)) {
-          return mapper;
-        }
+      if (configMapper == null && credential.config().keySet().stream()
+          .anyMatch(mapper::supportsConfigKey)) {
+        configMapper = mapper;
       }
     }
-    return null;
+    return configMapper;
+  }
+
+  static List<StorageCredential> credentialsFromProperties(
+      String prefix, Map<String, String> properties) {
+    for (HadoopMapper mapper : MAPPERS) {
+      List<StorageCredential> credentials = mapper.credentialsFromProperties(prefix, properties);
+      if (!credentials.isEmpty()) {
+        return credentials;
+      }
+    }
+    return List.of();
   }
 }

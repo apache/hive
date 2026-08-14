@@ -19,17 +19,19 @@
 
 package org.apache.iceberg.mr.hive.vended.hadoop;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.iceberg.aliyun.AliyunProperties;
+import org.apache.iceberg.io.StorageCredential;
+import org.apache.iceberg.mr.hive.vended.CredentialProperties;
 import org.apache.iceberg.mr.hive.vended.HadoopMapper;
 import org.apache.iceberg.mr.hive.vended.PrefixUtil;
 
 /** Maps Iceberg OSS FileIO properties to Hadoop Aliyun OSS filesystem keys. */
 public enum OssMapper implements HadoopMapper {
   INSTANCE;
-
-  public static final String CLIENT_ACCESS_KEY_ID = "client.access-key-id";
-  public static final String CLIENT_ACCESS_KEY_SECRET = "client.access-key-secret";
-  public static final String CLIENT_SECURITY_TOKEN = "client.security-token";
-  public static final String OSS_ENDPOINT = "oss.endpoint";
 
   @Override
   public boolean supportsPrefix(String prefix) {
@@ -49,11 +51,25 @@ public enum OssMapper implements HadoopMapper {
   @Override
   public String toHadoopProperty(String bucket, String icebergKey) {
     return switch (icebergKey) {
-      case CLIENT_ACCESS_KEY_ID -> "fs.oss.accessKeyId";
-      case CLIENT_ACCESS_KEY_SECRET -> "fs.oss.accessKeySecret";
-      case CLIENT_SECURITY_TOKEN -> "fs.oss.securityToken";
-      case OSS_ENDPOINT -> "fs.oss.endpoint";
+      case AliyunProperties.CLIENT_ACCESS_KEY_ID -> "fs.oss.accessKeyId";
+      case AliyunProperties.CLIENT_ACCESS_KEY_SECRET -> "fs.oss.accessKeySecret";
+      case AliyunProperties.CLIENT_SECURITY_TOKEN -> "fs.oss.securityToken";
+      case AliyunProperties.OSS_ENDPOINT -> "fs.oss.endpoint";
       default -> null;
     };
+  }
+
+  @Override
+  public List<StorageCredential> credentialsFromProperties(String prefix, Map<String, String> props) {
+    if (StringUtils.isBlank(props.get(AliyunProperties.CLIENT_ACCESS_KEY_ID)) ||
+        StringUtils.isBlank(props.get(AliyunProperties.CLIENT_ACCESS_KEY_SECRET))) {
+      return List.of();
+    }
+    Map<String, String> config = new LinkedHashMap<>();
+    CredentialProperties.putIfPresent(config, props, AliyunProperties.CLIENT_ACCESS_KEY_ID);
+    CredentialProperties.putIfPresent(config, props, AliyunProperties.CLIENT_ACCESS_KEY_SECRET);
+    CredentialProperties.putIfPresent(config, props, AliyunProperties.CLIENT_SECURITY_TOKEN);
+    CredentialProperties.putIfPresent(config, props, AliyunProperties.OSS_ENDPOINT);
+    return List.of(StorageCredential.create(prefix, config));
   }
 }

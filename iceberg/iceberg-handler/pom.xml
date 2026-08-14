@@ -52,6 +52,20 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <!-- compile-time only, for GCPProperties string constants (inlined by javac) -->
+      <groupId>org.apache.iceberg</groupId>
+      <artifactId>iceberg-gcp</artifactId>
+      <version>${iceberg.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <!-- compile-time only, for AliyunProperties string constants (inlined by javac) -->
+      <groupId>org.apache.iceberg</groupId>
+      <artifactId>iceberg-aliyun</artifactId>
+      <version>${iceberg.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-client</artifactId>
     </dependency>

@@ -19,17 +19,19 @@
 
 package org.apache.iceberg.mr.hive.vended.hadoop;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.iceberg.gcp.GCPProperties;
+import org.apache.iceberg.io.StorageCredential;
+import org.apache.iceberg.mr.hive.vended.CredentialProperties;
 import org.apache.iceberg.mr.hive.vended.HadoopMapper;
 import org.apache.iceberg.mr.hive.vended.PrefixUtil;
 
 /** Maps Iceberg GCS FileIO properties to Hadoop Google Cloud Storage connector keys. */
 public enum GcsMapper implements HadoopMapper {
   INSTANCE;
-
-  public static final String GCS_OAUTH2_TOKEN = "gcs.oauth2.token";
-  public static final String GCS_OAUTH2_TOKEN_EXPIRES_AT = "gcs.oauth2.token-expires-at";
-  public static final String GCS_PROJECT_ID = "gcs.project-id";
-  public static final String GCS_SERVICE_HOST = "gcs.service.host";
 
   @Override
   public boolean supportsPrefix(String prefix) {
@@ -55,9 +57,22 @@ public enum GcsMapper implements HadoopMapper {
     // expiry travel only in the serialized Iceberg StorageCredential blob and are consumed by
     // Iceberg GCSFileIO. Only connectivity/config that maps to real connector keys is emitted.
     return switch (icebergKey) {
-      case GCS_PROJECT_ID -> "fs.gs.project.id";
-      case GCS_SERVICE_HOST -> "fs.gs.storage.root.url";
+      case GCPProperties.GCS_PROJECT_ID -> "fs.gs.project.id";
+      case GCPProperties.GCS_SERVICE_HOST -> "fs.gs.storage.root.url";
       default -> null;
     };
+  }
+
+  @Override
+  public List<StorageCredential> credentialsFromProperties(String prefix, Map<String, String> props) {
+    if (StringUtils.isBlank(props.get(GCPProperties.GCS_OAUTH2_TOKEN))) {
+      return List.of();
+    }
+    Map<String, String> config = new LinkedHashMap<>();
+    CredentialProperties.putIfPresent(config, props, GCPProperties.GCS_OAUTH2_TOKEN);
+    CredentialProperties.putIfPresent(config, props, GCPProperties.GCS_OAUTH2_TOKEN_EXPIRES_AT);
+    CredentialProperties.putIfPresent(config, props, GCPProperties.GCS_PROJECT_ID);
+    CredentialProperties.putIfPresent(config, props, GCPProperties.GCS_SERVICE_HOST);
+    return List.of(StorageCredential.create(prefix, config));
   }
 }

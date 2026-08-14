@@ -19,8 +19,10 @@
 package org.apache.iceberg.mr.hive.vended.hadoop;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.iceberg.io.StorageCredential;
 import org.apache.iceberg.mr.hive.vended.HadoopMapper;
 import org.apache.iceberg.mr.hive.vended.PrefixUtil;
 
@@ -32,8 +34,16 @@ public enum AdlsMapper implements HadoopMapper {
   public static final String ADLS_SAS_TOKEN_EXPIRES_AT_MS_PREFIX = "adls.sas-token-expires-at-ms.";
   public static final String ADLS_SHARED_KEY_ACCOUNT_KEY = "adls.auth.shared-key.account.key";
 
-  private static final String DFS_CORE_WINDOWS_NET_SUFFIX = ".dfs.core.windows.net";
-  private static final String BLOB_CORE_WINDOWS_NET_SUFFIX = ".blob.core.windows.net";
+  /**
+   * Authority host suffix for ABFS ({@code abfs/abfss}) Hadoop keys such as
+   * {@code fs.azure.account.key.<account>.dfs.core.windows.net}.
+   */
+  private static final String ABFS_ACCOUNT_AUTHORITY_SUFFIX = ".dfs.core.windows.net";
+  /**
+   * Authority host suffix for WASB ({@code wasb/wasbs}) Hadoop keys such as
+   * {@code fs.azure.account.key.<account>.blob.core.windows.net}.
+   */
+  private static final String WASB_ACCOUNT_AUTHORITY_SUFFIX = ".blob.core.windows.net";
 
   @Override
   public boolean supportsPrefix(String prefix) {
@@ -90,16 +100,35 @@ public enum AdlsMapper implements HadoopMapper {
     return extra;
   }
 
+  @Override
+  public List<StorageCredential> credentialsFromProperties(String prefix, Map<String, String> props) {
+    Map<String, String> config = new LinkedHashMap<>();
+    props.forEach((key, value) -> {
+      if (key.startsWith("adls.") && StringUtils.isNotBlank(value)) {
+        config.put(key, value);
+      }
+    });
+    if (config.isEmpty()) {
+      return List.of();
+    }
+    return List.of(StorageCredential.create(prefix, config));
+  }
+
+  /**
+   * Returns the Azure account authority suffix embedded in Hadoop {@code fs.azure.*} property names.
+   * ABFS URIs use {@link #ABFS_ACCOUNT_AUTHORITY_SUFFIX}; WASB URIs use
+   * {@link #WASB_ACCOUNT_AUTHORITY_SUFFIX}.
+   */
   private static String authoritySuffixFromScope(String scope) {
     if (StringUtils.isBlank(scope)) {
-      return DFS_CORE_WINDOWS_NET_SUFFIX;
+      return ABFS_ACCOUNT_AUTHORITY_SUFFIX;
     }
     int at = scope.indexOf('@');
     String host = at < 0 ? scope : scope.substring(at + 1);
-    if (host.endsWith(BLOB_CORE_WINDOWS_NET_SUFFIX)) {
-      return BLOB_CORE_WINDOWS_NET_SUFFIX;
+    if (host.endsWith(WASB_ACCOUNT_AUTHORITY_SUFFIX)) {
+      return WASB_ACCOUNT_AUTHORITY_SUFFIX;
     }
-    return DFS_CORE_WINDOWS_NET_SUFFIX;
+    return ABFS_ACCOUNT_AUTHORITY_SUFFIX;
   }
 
   /**
@@ -113,10 +142,10 @@ public enum AdlsMapper implements HadoopMapper {
     }
     int at = scope.indexOf('@');
     String host = at < 0 ? scope : scope.substring(at + 1);
-    if (host.endsWith(DFS_CORE_WINDOWS_NET_SUFFIX)) {
-      host = host.substring(0, host.length() - DFS_CORE_WINDOWS_NET_SUFFIX.length());
-    } else if (host.endsWith(BLOB_CORE_WINDOWS_NET_SUFFIX)) {
-      host = host.substring(0, host.length() - BLOB_CORE_WINDOWS_NET_SUFFIX.length());
+    if (host.endsWith(ABFS_ACCOUNT_AUTHORITY_SUFFIX)) {
+      host = host.substring(0, host.length() - ABFS_ACCOUNT_AUTHORITY_SUFFIX.length());
+    } else if (host.endsWith(WASB_ACCOUNT_AUTHORITY_SUFFIX)) {
+      host = host.substring(0, host.length() - WASB_ACCOUNT_AUTHORITY_SUFFIX.length());
     }
     return StringUtils.defaultIfBlank(host, null);
   }

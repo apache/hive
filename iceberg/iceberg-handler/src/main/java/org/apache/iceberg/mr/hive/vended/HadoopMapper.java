@@ -20,6 +20,7 @@
 package org.apache.iceberg.mr.hive.vended;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import org.apache.iceberg.io.StorageCredential;
 
@@ -55,5 +56,13 @@ public interface HadoopMapper {
    */
   default Map<String, String> additionalNonSecretHadoopProperties(String scope, Map<String, String> config) {
     return Collections.emptyMap();
+  }
+
+  /**
+   * Builds vended {@link StorageCredential} entries from FileIO properties when the credential list
+   * is empty after table load. Defaults to none.
+   */
+  default List<StorageCredential> credentialsFromProperties(String prefix, Map<String, String> properties) {
+    return List.of();
   }
 }
