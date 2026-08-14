@@ -20,7 +20,9 @@
 package org.apache.iceberg.rest.extension;
 
 import java.util.List;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.AbstractHiveAuthorizer;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
@@ -36,6 +38,9 @@ import org.slf4j.LoggerFactory;
 
 public class MockHiveAuthorizer extends AbstractHiveAuthorizer {
   public static final String PERMISSION_TEST_USER = "permission_test_user";
+  public static final String PERMISSION_READ_ONLY_USER = "permission_read_only_user";
+  public static final String ALLOWED_PREFIX = MetaStoreTestUtils.getTestWarehouseDir("allowed");
+  public static final String DENIED_PREFIX = MetaStoreTestUtils.getTestWarehouseDir("denied");
   private static final Logger LOG = LoggerFactory.getLogger(MockHiveAuthorizer.class);
 
   private final HiveAuthenticationProvider authenticator;
@@ -102,6 +107,33 @@ public class MockHiveAuthorizer extends AbstractHiveAuthorizer {
       throw new HiveAccessControlException(String.format("Unauthorized. Operation=%s, inputs=%s, outputs=%s",
           hiveOpType, inputsHObjs, outputHObjs));
     }
+    if (PERMISSION_READ_ONLY_USER.equals(authenticator.getUserName()) && isWriteOperation(hiveOpType)) {
+      throw new HiveAccessControlException(String.format(
+          "Unauthorized write operations. Operation=%s, inputs=%s, outputs=%s",
+          hiveOpType, inputsHObjs, outputHObjs));
+    }
+    if (containsDeniedUri(inputsHObjs)) {
+      throw new HiveAccessControlException(String.format("Unauthorized URI. Operation=%s, inputs=%s, outputs=%s",
+          hiveOpType, inputsHObjs, outputHObjs));
+    }
+  }
+
+  private boolean isWriteOperation(HiveOperationType type) {
+    return switch (type) {
+    case CREATEDATABASE, DROPDATABASE, ALTERDATABASE, CREATETABLE, DROPTABLE, ALTERTABLE_ADDCOLS -> true;
+    default -> false;
+    };
+  }
+
+  private boolean containsDeniedUri(List<HivePrivilegeObject> objects) {
+    return objects.stream().anyMatch(this::containsDeniedUri);
+  }
+
+  private boolean containsDeniedUri(HivePrivilegeObject priv) {
+    if (priv.getType() != HivePrivilegeObject.HivePrivilegeObjectType.DFS_URI) {
+      return false;
+    }
+    return priv.getObjectName().startsWith(DENIED_PREFIX + Path.SEPARATOR);
   }
 
   @Override

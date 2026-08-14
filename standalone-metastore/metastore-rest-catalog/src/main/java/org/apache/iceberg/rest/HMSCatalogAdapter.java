@@ -113,16 +113,19 @@ public class HMSCatalogAdapter implements Closeable {
   private final Catalog catalog;
   private final SupportsNamespaces asNamespaceCatalog;
   private final ViewCatalog asViewCatalog;
+  private final IcebergAuthorizer icebergAuthorizer;
   private final List<IcebergMetricsReporter> metricsReporters;
   private final Clock clock = Clock.systemUTC();
 
-  public HMSCatalogAdapter(String catalogName, Catalog catalog, List<IcebergMetricsReporter> metricsReporters) {
+  public HMSCatalogAdapter(String catalogName, Catalog catalog, IcebergAuthorizer icebergAuthorizer,
+      List<IcebergMetricsReporter> metricsReporters) {
     Preconditions.checkArgument(catalog instanceof SupportsNamespaces);
     Preconditions.checkArgument(catalog instanceof ViewCatalog);
     this.catalogName = catalogName;
     this.catalog = catalog;
     this.asNamespaceCatalog = (SupportsNamespaces) catalog;
     this.asViewCatalog = (ViewCatalog) catalog;
+    this.icebergAuthorizer = icebergAuthorizer;
     this.metricsReporters = metricsReporters;
   }
 
@@ -284,6 +287,8 @@ public class HMSCatalogAdapter implements Closeable {
     CreateTableRequest request = castRequest(CreateTableRequest.class, body);
     request.validate();
     if (request.stageCreate()) {
+      Map<String, String> namespaceMetadata = asNamespaceCatalog.loadNamespaceMetadata(namespace);
+      icebergAuthorizer.validateStageCreateTable(catalogName, namespace, namespaceMetadata, request);
       return castResponse(
               responseType, CatalogHandlers.stageTableCreate(catalog, namespace, request));
     } else {

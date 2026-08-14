@@ -116,8 +116,10 @@ public class HMSCatalogFactory {
     List<String> scopes = Collections.singletonList("catalog");
     ServletSecurity security = new ServletSecurity(AuthType.fromString(authType), configuration, req -> scopes);
     String catalogName = MetastoreConf.getVar(configuration, ConfVars.CATALOG_DEFAULT);
+    IcebergAuthorizer icebergAuthorizer = new IcebergAuthorizer(configuration);
     List<IcebergMetricsReporter> reporters = createReporters();
-    return security.proxy(new HMSCatalogServlet(new HMSCatalogAdapter(catalogName, catalog, reporters)));
+    var adapter = new HMSCatalogAdapter(catalogName, catalog, icebergAuthorizer, reporters);
+    return security.proxy(new HMSCatalogServlet(adapter));
   }
 
   private List<IcebergMetricsReporter> createReporters() {

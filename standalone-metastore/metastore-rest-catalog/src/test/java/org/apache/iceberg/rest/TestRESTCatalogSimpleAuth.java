@@ -53,6 +53,14 @@ class TestRESTCatalogSimpleAuth extends BaseRESTCatalogTests {
     ));
   }
 
+  @Override
+  protected Optional<Map<String, String>> getPermissionReadOnlyClientConfiguration() {
+    return Optional.of(Map.of(
+        "uri", REST_CATALOG_EXTENSION.getRestEndpoint(),
+        "header.x-actor-username", MockHiveAuthorizer.PERMISSION_READ_ONLY_USER
+    ));
+  }
+
   @Test
   void testWithoutUserName() {
     Map<String, String> properties = Map.of(

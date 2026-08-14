@@ -54,6 +54,14 @@ class TestRESTCatalogJwtAuth extends BaseRESTCatalogTests {
     ));
   }
 
+  @Override
+  protected Optional<Map<String, String>> getPermissionReadOnlyClientConfiguration() throws Exception {
+    return Optional.of(Map.of(
+        "uri", REST_CATALOG_EXTENSION.getRestEndpoint(),
+        "token", JwksServer.generateValidJWT(MockHiveAuthorizer.PERMISSION_READ_ONLY_USER)
+    ));
+  }
+
   @Test
   void testWithUnauthorizedKey() throws Exception {
     // "token" is a parameter for OAuth 2.0 Bearer token authentication. We use it to pass a JWT token
