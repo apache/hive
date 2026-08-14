@@ -246,11 +246,10 @@
     <!--
     Build a native installer (dmg on macOS, exe/msi on Windows, deb/rpm on Linux).
     Usage:
-      mvn package -pl beeline -am -DskipTests -P native-installer
-    Output (versioned parent dir mirrors packaging's apache-hive-beeline-X.Y.Z
+      mvn package -pl beeline -am -DskipTests -P dist
     -->
     <profile>
-      <id>native-installer</id>
+      <id>dist</id>
       <properties>
         <installer.app.version>${jpackage.plugin.version}</installer.app.version>
         <installer.arch>x64</installer.arch>

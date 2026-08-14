@@ -78,7 +78,7 @@ jobs:
           bash --version
 
       - name: Build Beeline installer
-        run: mvn package -pl beeline -am -DskipTests -P native-installer
+        run: mvn package -pl beeline -am -DskipTests -P dist
 
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
