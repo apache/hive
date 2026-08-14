@@ -8660,6 +8660,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     fileSinkDesc.setWriteOperation(writeOperation);
+    fileSinkDesc.setIsMergeStatement(ctx.getOperation() == Context.Operation.MERGE);
 
     fileSinkDesc.setTemporary(destTableIsTemporary);
     fileSinkDesc.setMaterialization(destTableIsMaterialization);

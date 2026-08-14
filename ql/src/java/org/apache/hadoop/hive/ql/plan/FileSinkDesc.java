@@ -112,6 +112,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   private Path destPath;
   private boolean isHiveServerQuery;
   private boolean isMerge;
+  private boolean isMergeStatement;
   private boolean isMmCtas;
 
   private Set<FileStatus> filesToFetch = null;
@@ -684,6 +685,14 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
 
   public boolean isMmCtas() {
     return isMmCtas;
+  }
+
+  public void setIsMergeStatement(boolean isMergeStatement) {
+    this.isMergeStatement = isMergeStatement;
+  }
+
+  public boolean isMergeStatement() {
+    return isMergeStatement;
   }
 
   @Explain(displayName = "bucketingVersion", explainLevels = { Level.EXTENDED })

@@ -33,6 +33,7 @@ public class HiveCustomStorageHandlerUtils {
 
   public static final String WRITE_OPERATION_CONFIG_PREFIX = "file.sink.write.operation.";
   public static final String WRITE_OPERATION_IS_SORTED = "file.sink.write.operation.sorted.";
+  public static final String IS_MERGE_STATEMENT_CONFIG_PREFIX = "file.sink.write.operation.is.merge.statement.";
 
   public static final String MERGE_TASK_ENABLED = "file.sink.merge.task.enabled.";
 
@@ -94,6 +95,19 @@ public class HiveCustomStorageHandlerUtils {
 
   public static boolean isMergeTaskEnabled(UnaryOperator<String> ops, String tableName) {
     String operation = ops.apply(MERGE_TASK_ENABLED + tableName);
+    return Boolean.parseBoolean(operation);
+  }
+
+  public static void setIsMergeStatement(
+      Configuration conf, String tableName, boolean isMergeStatement) {
+    if (conf == null || tableName == null) {
+      return;
+    }
+    conf.set(IS_MERGE_STATEMENT_CONFIG_PREFIX + tableName, Boolean.toString(isMergeStatement));
+  }
+
+  public static boolean isMergeStatement(UnaryOperator<String> ops, String tableName) {
+    String operation = ops.apply(IS_MERGE_STATEMENT_CONFIG_PREFIX + tableName);
     return Boolean.parseBoolean(operation);
   }
 }

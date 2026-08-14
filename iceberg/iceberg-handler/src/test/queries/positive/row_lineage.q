@@ -78,3 +78,39 @@ WHEN MATCHED THEN
 SELECT id, data, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER
 FROM ice_merge_cow
 ORDER BY ROW__LINEAGE__ID;
+
+-- cow merge delete only
+CREATE TABLE merge_source (
+  id INT,
+  data STRING
+);
+
+INSERT INTO merge_source VALUES
+  (2, 'banana_source');
+
+CREATE TABLE ice_cow_merge_delete_only (
+  id INT,
+  data STRING
+)
+STORED BY iceberg
+TBLPROPERTIES ('format-version'='3', 'write.delete.mode'='copy-on-write');
+
+-- Snapshot 1: Sequence 1
+INSERT INTO ice_cow_merge_delete_only VALUES
+  (1, 'apple'),
+  (2, 'banana'),
+  (3, 'cherry');
+
+SELECT id, data, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER
+FROM ice_cow_merge_delete_only
+ORDER BY id;
+
+MERGE INTO ice_cow_merge_delete_only t
+USING merge_source s
+ON t.id = s.id
+WHEN MATCHED THEN DELETE;
+
+-- Verification: id=1 and id=3 should perfectly retain their original lineage
+SELECT id, data, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER
+FROM ice_cow_merge_delete_only
+ORDER BY id;
