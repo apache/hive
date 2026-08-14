@@ -17,43 +17,42 @@
  * under the License.
  */
 
-package org.apache.iceberg.mr.hive.vended;
+package org.apache.iceberg.mr.hive.vended.hadoop;
 
-import org.apache.iceberg.aws.AwsClientProperties;
-import org.apache.iceberg.aws.s3.S3FileIOProperties;
+import org.apache.iceberg.mr.hive.vended.HadoopMapper;
+import org.apache.iceberg.mr.hive.vended.PrefixUtil;
 
-enum S3VendedCredentialHadoopMapper implements VendedCredentialHadoopMapper {
+/** Maps Iceberg OSS FileIO properties to Hadoop Aliyun OSS filesystem keys. */
+public enum OssMapper implements HadoopMapper {
   INSTANCE;
+
+  public static final String CLIENT_ACCESS_KEY_ID = "client.access-key-id";
+  public static final String CLIENT_ACCESS_KEY_SECRET = "client.access-key-secret";
+  public static final String CLIENT_SECURITY_TOKEN = "client.security-token";
+  public static final String OSS_ENDPOINT = "oss.endpoint";
 
   @Override
   public boolean supportsPrefix(String prefix) {
-    String scheme = VendedCredentialPrefixUtil.schemeFromPrefix(prefix);
-    return "s3".equals(scheme) || "s3a".equals(scheme) || "s3n".equals(scheme);
+    return "oss".equals(PrefixUtil.schemeFromPrefix(prefix));
   }
 
   @Override
   public boolean supportsConfigKey(String icebergKey) {
-    return icebergKey.startsWith("s3.") || AwsClientProperties.CLIENT_REGION.equals(icebergKey);
+    return icebergKey.startsWith("client.") || icebergKey.startsWith("oss.");
   }
 
   @Override
   public String scopeFromPrefix(String prefix) {
-    return VendedCredentialPrefixUtil.scopeFromPrefix(prefix);
+    return PrefixUtil.scopeFromPrefix(prefix);
   }
 
   @Override
   public String toHadoopProperty(String bucket, String icebergKey) {
-    if (bucket == null) {
-      return null;
-    }
-    String bucketPrefix = "fs.s3a.bucket." + bucket + ".";
     return switch (icebergKey) {
-      case S3FileIOProperties.ACCESS_KEY_ID -> bucketPrefix + "access.key";
-      case S3FileIOProperties.SECRET_ACCESS_KEY -> bucketPrefix + "secret.key";
-      case S3FileIOProperties.SESSION_TOKEN -> bucketPrefix + "session.token";
-      case S3FileIOProperties.ENDPOINT -> bucketPrefix + "endpoint";
-      case S3FileIOProperties.PATH_STYLE_ACCESS -> bucketPrefix + "path.style.access";
-      case AwsClientProperties.CLIENT_REGION -> bucketPrefix + "endpoint.region";
+      case CLIENT_ACCESS_KEY_ID -> "fs.oss.accessKeyId";
+      case CLIENT_ACCESS_KEY_SECRET -> "fs.oss.accessKeySecret";
+      case CLIENT_SECURITY_TOKEN -> "fs.oss.securityToken";
+      case OSS_ENDPOINT -> "fs.oss.endpoint";
       default -> null;
     };
   }

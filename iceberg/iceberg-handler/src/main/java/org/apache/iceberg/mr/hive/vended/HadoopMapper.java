@@ -28,7 +28,7 @@ import org.apache.iceberg.io.StorageCredential;
  * FileSystem properties for Tez/LLAP paths that use {@code FileSystem.get()} instead of Iceberg
  * FileIO alone.
  */
-public interface VendedCredentialHadoopMapper {
+public interface HadoopMapper {
 
   /** Returns true when {@code prefix} uses this provider's URI scheme (for example {@code s3://}). */
   boolean supportsPrefix(String prefix);

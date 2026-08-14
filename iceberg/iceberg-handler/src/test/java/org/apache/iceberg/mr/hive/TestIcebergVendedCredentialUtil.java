@@ -562,7 +562,7 @@ public class TestIcebergVendedCredentialUtil {
   }
 
   /**
-   * Tests provider selection via the config-key fallback in {@code VendedCredentialHadoopMappers}:
+   * Tests provider selection via the config-key fallback in {@code HadoopMappers}:
    * when the prefix scheme is not recognized, the mapper is chosen from the Iceberg config keys
    * (here {@code gcs.*}), so GCS Hadoop keys are still emitted.
    */

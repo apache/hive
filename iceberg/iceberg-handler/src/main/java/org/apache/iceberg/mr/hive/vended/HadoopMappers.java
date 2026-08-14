@@ -21,32 +21,36 @@ package org.apache.iceberg.mr.hive.vended;
 
 import java.util.List;
 import org.apache.iceberg.io.StorageCredential;
+import org.apache.iceberg.mr.hive.vended.hadoop.AdlsMapper;
+import org.apache.iceberg.mr.hive.vended.hadoop.GcsMapper;
+import org.apache.iceberg.mr.hive.vended.hadoop.OssMapper;
+import org.apache.iceberg.mr.hive.vended.hadoop.S3Mapper;
 
 /** Selects the Hadoop mapper for a vended {@link StorageCredential}. */
-final class VendedCredentialHadoopMappers {
+final class HadoopMappers {
 
-  private static final List<VendedCredentialHadoopMapper> MAPPERS =
+  private static final List<HadoopMapper> MAPPERS =
       List.of(
-          S3VendedCredentialHadoopMapper.INSTANCE,
-          GcsVendedCredentialHadoopMapper.INSTANCE,
-          AdlsVendedCredentialHadoopMapper.INSTANCE,
-          OssVendedCredentialHadoopMapper.INSTANCE);
+          S3Mapper.INSTANCE,
+          GcsMapper.INSTANCE,
+          AdlsMapper.INSTANCE,
+          OssMapper.INSTANCE);
 
-  private VendedCredentialHadoopMappers() {
+  private HadoopMappers() {
   }
 
-  static VendedCredentialHadoopMapper forCredential(StorageCredential credential) {
+  static HadoopMapper forCredential(StorageCredential credential) {
     if (credential == null) {
       return null;
     }
     String prefix = credential.prefix();
-    for (VendedCredentialHadoopMapper mapper : MAPPERS) {
+    for (HadoopMapper mapper : MAPPERS) {
       if (mapper.supportsPrefix(prefix)) {
         return mapper;
       }
     }
     for (String icebergKey : credential.config().keySet()) {
-      for (VendedCredentialHadoopMapper mapper : MAPPERS) {
+      for (HadoopMapper mapper : MAPPERS) {
         if (mapper.supportsConfigKey(icebergKey)) {
           return mapper;
         }

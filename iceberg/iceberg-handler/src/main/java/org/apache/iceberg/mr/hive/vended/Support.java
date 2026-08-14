@@ -28,27 +28,28 @@ import org.apache.iceberg.aws.AwsClientProperties;
 import org.apache.iceberg.aws.s3.S3FileIOProperties;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.StorageCredential;
+import org.apache.iceberg.mr.hive.vended.hadoop.GcsMapper;
+import org.apache.iceberg.mr.hive.vended.hadoop.OssMapper;
 
 /** Public helpers for {@link org.apache.iceberg.mr.hive.IcebergVendedCredentialUtil}. */
-public final class VendedCredentialSupport {
+public final class Support {
 
-  private VendedCredentialSupport() {
+  private Support() {
   }
 
   public static String storagePrefixFromLocation(String location) {
-    return VendedCredentialPrefixUtil.storagePrefixFromLocation(location);
+    return PrefixUtil.storagePrefixFromLocation(location);
   }
 
   public static String scopeFromPrefix(String prefix) {
-    return VendedCredentialPrefixUtil.scopeFromPrefix(prefix);
+    return PrefixUtil.scopeFromPrefix(prefix);
   }
 
-  public static VendedCredentialHadoopMapper mapperFor(StorageCredential credential) {
-    return VendedCredentialHadoopMappers.forCredential(credential);
+  public static HadoopMapper mapperFor(StorageCredential credential) {
+    return HadoopMappers.forCredential(credential);
   }
 
-  public static String toHadoopProperty(
-      VendedCredentialHadoopMapper mapper, String scope, String icebergKey) {
+  public static String toHadoopProperty(HadoopMapper mapper, String scope, String icebergKey) {
     if (mapper == null || scope == null) {
       return null;
     }
@@ -56,7 +57,7 @@ public final class VendedCredentialSupport {
   }
 
   public static Map<String, String> additionalNonSecretHadoopProperties(
-      VendedCredentialHadoopMapper mapper, String scope, Map<String, String> config) {
+      HadoopMapper mapper, String scope, Map<String, String> config) {
     if (mapper == null) {
       return Map.of();
     }
@@ -102,14 +103,14 @@ public final class VendedCredentialSupport {
 
   private static List<StorageCredential> credentialsFromGcsProperties(
       String prefix, Map<String, String> props) {
-    if (StringUtils.isBlank(props.get(GcsVendedCredentialHadoopMapper.GCS_OAUTH2_TOKEN))) {
+    if (StringUtils.isBlank(props.get(GcsMapper.GCS_OAUTH2_TOKEN))) {
       return List.of();
     }
     Map<String, String> config = new LinkedHashMap<>();
-    putIfPresent(config, props, GcsVendedCredentialHadoopMapper.GCS_OAUTH2_TOKEN);
-    putIfPresent(config, props, GcsVendedCredentialHadoopMapper.GCS_OAUTH2_TOKEN_EXPIRES_AT);
-    putIfPresent(config, props, GcsVendedCredentialHadoopMapper.GCS_PROJECT_ID);
-    putIfPresent(config, props, GcsVendedCredentialHadoopMapper.GCS_SERVICE_HOST);
+    putIfPresent(config, props, GcsMapper.GCS_OAUTH2_TOKEN);
+    putIfPresent(config, props, GcsMapper.GCS_OAUTH2_TOKEN_EXPIRES_AT);
+    putIfPresent(config, props, GcsMapper.GCS_PROJECT_ID);
+    putIfPresent(config, props, GcsMapper.GCS_SERVICE_HOST);
     return List.of(StorageCredential.create(prefix, config));
   }
 
@@ -129,15 +130,15 @@ public final class VendedCredentialSupport {
 
   private static List<StorageCredential> credentialsFromOssProperties(
       String prefix, Map<String, String> props) {
-    if (StringUtils.isBlank(props.get(OssVendedCredentialHadoopMapper.CLIENT_ACCESS_KEY_ID)) ||
-        StringUtils.isBlank(props.get(OssVendedCredentialHadoopMapper.CLIENT_ACCESS_KEY_SECRET))) {
+    if (StringUtils.isBlank(props.get(OssMapper.CLIENT_ACCESS_KEY_ID)) ||
+        StringUtils.isBlank(props.get(OssMapper.CLIENT_ACCESS_KEY_SECRET))) {
       return List.of();
     }
     Map<String, String> config = new LinkedHashMap<>();
-    putIfPresent(config, props, OssVendedCredentialHadoopMapper.CLIENT_ACCESS_KEY_ID);
-    putIfPresent(config, props, OssVendedCredentialHadoopMapper.CLIENT_ACCESS_KEY_SECRET);
-    putIfPresent(config, props, OssVendedCredentialHadoopMapper.CLIENT_SECURITY_TOKEN);
-    putIfPresent(config, props, OssVendedCredentialHadoopMapper.OSS_ENDPOINT);
+    putIfPresent(config, props, OssMapper.CLIENT_ACCESS_KEY_ID);
+    putIfPresent(config, props, OssMapper.CLIENT_ACCESS_KEY_SECRET);
+    putIfPresent(config, props, OssMapper.CLIENT_SECURITY_TOKEN);
+    putIfPresent(config, props, OssMapper.OSS_ENDPOINT);
     return List.of(StorageCredential.create(prefix, config));
   }
 

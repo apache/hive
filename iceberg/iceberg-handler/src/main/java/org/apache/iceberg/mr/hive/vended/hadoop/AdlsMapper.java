@@ -16,26 +16,28 @@
  * limitations under the License.
  */
 
-package org.apache.iceberg.mr.hive.vended;
+package org.apache.iceberg.mr.hive.vended.hadoop;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.iceberg.mr.hive.vended.HadoopMapper;
+import org.apache.iceberg.mr.hive.vended.PrefixUtil;
 
 /** Maps Iceberg ADLS FileIO properties to Hadoop Azure connector keys (ABFS or WASB). */
-enum AdlsVendedCredentialHadoopMapper implements VendedCredentialHadoopMapper {
+public enum AdlsMapper implements HadoopMapper {
   INSTANCE;
 
-  static final String ADLS_SAS_TOKEN_PREFIX = "adls.sas-token.";
-  static final String ADLS_SAS_TOKEN_EXPIRES_AT_MS_PREFIX = "adls.sas-token-expires-at-ms.";
-  static final String ADLS_SHARED_KEY_ACCOUNT_KEY = "adls.auth.shared-key.account.key";
+  public static final String ADLS_SAS_TOKEN_PREFIX = "adls.sas-token.";
+  public static final String ADLS_SAS_TOKEN_EXPIRES_AT_MS_PREFIX = "adls.sas-token-expires-at-ms.";
+  public static final String ADLS_SHARED_KEY_ACCOUNT_KEY = "adls.auth.shared-key.account.key";
 
   private static final String DFS_CORE_WINDOWS_NET_SUFFIX = ".dfs.core.windows.net";
   private static final String BLOB_CORE_WINDOWS_NET_SUFFIX = ".blob.core.windows.net";
 
   @Override
   public boolean supportsPrefix(String prefix) {
-    String scheme = VendedCredentialPrefixUtil.schemeFromPrefix(prefix);
+    String scheme = PrefixUtil.schemeFromPrefix(prefix);
     return "abfs".equals(scheme) || "abfss".equals(scheme) || "wasb".equals(scheme) ||
         "wasbs".equals(scheme);
   }
@@ -47,7 +49,7 @@ enum AdlsVendedCredentialHadoopMapper implements VendedCredentialHadoopMapper {
 
   @Override
   public String scopeFromPrefix(String prefix) {
-    return VendedCredentialPrefixUtil.scopeFromPrefix(prefix);
+    return PrefixUtil.scopeFromPrefix(prefix);
   }
 
   @Override

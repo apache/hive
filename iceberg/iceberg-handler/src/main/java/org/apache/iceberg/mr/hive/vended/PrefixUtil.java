@@ -22,12 +22,12 @@ package org.apache.iceberg.mr.hive.vended;
 import org.apache.commons.lang3.StringUtils;
 
 /** Helpers for parsing Iceberg {@link org.apache.iceberg.io.StorageCredential#prefix()} values. */
-final class VendedCredentialPrefixUtil {
+public final class PrefixUtil {
 
-  private VendedCredentialPrefixUtil() {
+  private PrefixUtil() {
   }
 
-  static String schemeFromPrefix(String prefix) {
+  public static String schemeFromPrefix(String prefix) {
     if (prefix == null) {
       return null;
     }
@@ -44,7 +44,7 @@ final class VendedCredentialPrefixUtil {
    * {@code container@account.dfs.core.windows.net}).
    */
   @SuppressWarnings("java:S1075")
-  static String scopeFromPrefix(String prefix) {
+  public static String scopeFromPrefix(String prefix) {
     int schemeEnd = prefix == null ? -1 : prefix.indexOf("://");
     if (schemeEnd < 0) {
       return null;
@@ -57,7 +57,7 @@ final class VendedCredentialPrefixUtil {
 
   /** Normalizes a table location to a credential prefix with trailing slash. */
   @SuppressWarnings("java:S1075")
-  static String storagePrefixFromLocation(String location) {
+  public static String storagePrefixFromLocation(String location) {
     if (StringUtils.isBlank(location)) {
       return "";
     }

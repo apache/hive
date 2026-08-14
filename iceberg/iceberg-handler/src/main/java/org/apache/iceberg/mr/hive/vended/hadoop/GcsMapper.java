@@ -17,20 +17,23 @@
  * under the License.
  */
 
-package org.apache.iceberg.mr.hive.vended;
+package org.apache.iceberg.mr.hive.vended.hadoop;
+
+import org.apache.iceberg.mr.hive.vended.HadoopMapper;
+import org.apache.iceberg.mr.hive.vended.PrefixUtil;
 
 /** Maps Iceberg GCS FileIO properties to Hadoop Google Cloud Storage connector keys. */
-enum GcsVendedCredentialHadoopMapper implements VendedCredentialHadoopMapper {
+public enum GcsMapper implements HadoopMapper {
   INSTANCE;
 
-  static final String GCS_OAUTH2_TOKEN = "gcs.oauth2.token";
-  static final String GCS_OAUTH2_TOKEN_EXPIRES_AT = "gcs.oauth2.token-expires-at";
-  static final String GCS_PROJECT_ID = "gcs.project-id";
-  static final String GCS_SERVICE_HOST = "gcs.service.host";
+  public static final String GCS_OAUTH2_TOKEN = "gcs.oauth2.token";
+  public static final String GCS_OAUTH2_TOKEN_EXPIRES_AT = "gcs.oauth2.token-expires-at";
+  public static final String GCS_PROJECT_ID = "gcs.project-id";
+  public static final String GCS_SERVICE_HOST = "gcs.service.host";
 
   @Override
   public boolean supportsPrefix(String prefix) {
-    String scheme = VendedCredentialPrefixUtil.schemeFromPrefix(prefix);
+    String scheme = PrefixUtil.schemeFromPrefix(prefix);
     return "gs".equals(scheme) || "gcs".equals(scheme);
   }
 
@@ -41,7 +44,7 @@ enum GcsVendedCredentialHadoopMapper implements VendedCredentialHadoopMapper {
 
   @Override
   public String scopeFromPrefix(String prefix) {
-    return VendedCredentialPrefixUtil.scopeFromPrefix(prefix);
+    return PrefixUtil.scopeFromPrefix(prefix);
   }
 
   @Override

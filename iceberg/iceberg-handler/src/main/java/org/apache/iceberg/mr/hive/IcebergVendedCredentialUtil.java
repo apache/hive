@@ -45,8 +45,8 @@ import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.StorageCredential;
 import org.apache.iceberg.io.SupportsStorageCredentials;
 import org.apache.iceberg.mr.InputFormatConfig;
-import org.apache.iceberg.mr.hive.vended.VendedCredentialHadoopMapper;
-import org.apache.iceberg.mr.hive.vended.VendedCredentialSupport;
+import org.apache.iceberg.mr.hive.vended.HadoopMapper;
+import org.apache.iceberg.mr.hive.vended.Support;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.util.SerializationUtil;
@@ -109,15 +109,15 @@ public final class IcebergVendedCredentialUtil {
   private static void addCredentialEntries(String catalogName, StorageCredential credential,
       Map<String, String> jobProperties, Map<String, String> jobSecrets, Configuration conf) {
 
-    VendedCredentialHadoopMapper mapper = VendedCredentialSupport.mapperFor(credential);
+    HadoopMapper mapper = Support.mapperFor(credential);
     String scope = mapper != null ? mapper.scopeFromPrefix(credential.prefix()) :
-        VendedCredentialSupport.scopeFromPrefix(credential.prefix());
+        Support.scopeFromPrefix(credential.prefix());
     for (Map.Entry<String, String> entry : credential.config().entrySet()) {
       addCredentialEntry(
           catalogName, scope, mapper, entry.getKey(), entry.getValue(), jobProperties, jobSecrets, conf);
     }
     if (jobProperties != null) {
-      VendedCredentialSupport.additionalNonSecretHadoopProperties(mapper, scope, credential.config())
+      Support.additionalNonSecretHadoopProperties(mapper, scope, credential.config())
           .forEach(jobProperties::putIfAbsent);
     }
   }
@@ -131,7 +131,7 @@ public final class IcebergVendedCredentialUtil {
    * {@code null} when {@link #propagateToJob} is called for only properties or only secrets.
    */
   private static void addCredentialEntry(String catalogName, String scope,
-      VendedCredentialHadoopMapper mapper, String icebergKey, String value,
+      HadoopMapper mapper, String icebergKey, String value,
       Map<String, String> jobProperties, Map<String, String> jobSecrets, Configuration conf) {
 
     if (StringUtils.isBlank(value)) {
@@ -155,7 +155,7 @@ public final class IcebergVendedCredentialUtil {
    * When a Hadoop mapper is present, also writes the matching provider-specific Hadoop key.
    */
   private static void addNonSecretCredentialEntry(String catalogName, String scope,
-      VendedCredentialHadoopMapper mapper, String icebergKey, String value,
+      HadoopMapper mapper, String icebergKey, String value,
       Map<String, String> jobProperties) {
 
     if (catalogName != null) {
@@ -165,7 +165,7 @@ public final class IcebergVendedCredentialUtil {
     }
 
     if (mapper != null && scope != null) {
-      String hadoopKey = VendedCredentialSupport.toHadoopProperty(mapper, scope, icebergKey);
+      String hadoopKey = Support.toHadoopProperty(mapper, scope, icebergKey);
       if (hadoopKey != null) {
         jobProperties.putIfAbsent(hadoopKey, value);
       }
@@ -173,10 +173,10 @@ public final class IcebergVendedCredentialUtil {
   }
 
   /** Writes Hadoop keys only; Iceberg secrets are carried in the serialized blob. */
-  private static void addSecretCredentialEntry(String scope, VendedCredentialHadoopMapper mapper,
+  private static void addSecretCredentialEntry(String scope, HadoopMapper mapper,
       String icebergKey, String value, Map<String, String> jobSecrets) {
     if (mapper != null && scope != null) {
-      String hadoopSecretKey = VendedCredentialSupport.toHadoopProperty(mapper, scope, icebergKey);
+      String hadoopSecretKey = Support.toHadoopProperty(mapper, scope, icebergKey);
       if (hadoopSecretKey != null) {
         jobSecrets.putIfAbsent(hadoopSecretKey, value);
       }
@@ -391,7 +391,7 @@ public final class IcebergVendedCredentialUtil {
         return credentials;
       }
     }
-    return VendedCredentialSupport.credentialsFromFileIoProperties(table, io);
+    return Support.credentialsFromFileIoProperties(table, io);
   }
 
   /**
