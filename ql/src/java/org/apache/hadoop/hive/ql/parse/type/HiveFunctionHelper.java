@@ -343,9 +343,7 @@ public class HiveFunctionHelper implements FunctionHelper {
     // Avoid creating incorrect expressions like $1 < NULL or $1 = NULL or NULL = NULL
     // which may be problematic for Calcite later on
     RexSimplify rexSimplify = new RexSimplify(rexBuilder, RelOptPredicateList.EMPTY, RexUtil.EXECUTOR);
-    expr = rexSimplify.simplifyComparisonWithNull(expr, RexUnknownAs.UNKNOWN);
-
-    return expr;
+    return rexSimplify.simplifyComparisonWithNull(expr, RexUnknownAs.UNKNOWN);
   }
 
   private void checkForStatefulFunctions(List<RexNode> exprs)
