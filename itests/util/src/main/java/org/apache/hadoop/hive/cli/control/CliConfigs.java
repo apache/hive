@@ -628,7 +628,7 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "iceberg.llap.only.query.files");
         excludesFrom(testConfigProps, "iceberg.llap.query.compactor.files");
         excludesFrom(testConfigProps, "iceberg.llap.query.rest.hms.files");
-        excludesFrom(testConfigProps, "iceberg.llap.query.rest.gravitino.files");
+        excludesFrom(testConfigProps, "iceberg.llap.query.rest.gravitino.s3.files");
 
         setResultsDir("iceberg/iceberg-handler/src/test/results/positive");
         setLogDir("itests/qtest/target/qfile-results/iceberg-handler/positive");
@@ -704,13 +704,13 @@ public class CliConfigs {
     }
   }
 
-  public static class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver extends AbstractCliConfig {
+  public static class TestIcebergRESTCatalogGravitinoS3LlapLocalCliDriver extends AbstractCliConfig {
 
-    public TestIcebergRESTCatalogGravitinoLlapLocalCliDriver() {
+    public TestIcebergRESTCatalogGravitinoS3LlapLocalCliDriver() {
       super(CoreCliDriver.class);
       try {
         setQueryDir("iceberg/iceberg-handler/src/test/queries/positive");
-        includesFrom(testConfigProps, "iceberg.llap.query.rest.gravitino.files");
+        includesFrom(testConfigProps, "iceberg.llap.query.rest.gravitino.s3.files");
 
         setResultsDir("iceberg/iceberg-handler/src/test/results/positive/llap");
         setLogDir("itests/qtest/target/qfile-results/iceberg-handler/positive");

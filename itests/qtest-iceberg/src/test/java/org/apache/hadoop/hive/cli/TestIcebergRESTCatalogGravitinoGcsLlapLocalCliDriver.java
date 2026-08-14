@@ -206,7 +206,7 @@ public class TestIcebergRESTCatalogGravitinoGcsLlapLocalCliDriver {
 
   /**
    * Wires Hadoop to use the GCS connector for {@code gs://} on the host-visible fake-gcs-server
-   * endpoint (see {@link TestIcebergRESTCatalogGravitinoLlapLocalCliDriver#applyHostS3FilesystemSettings}).
+   * endpoint (see {@link TestIcebergRESTCatalogGravitinoS3LlapLocalCliDriver#applyHostS3FilesystemSettings}).
    */
   private void applyHostGcsFilesystemSettings(Configuration conf) {
     conf.set("fs.gs.impl", "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem");
