@@ -381,10 +381,10 @@
       Runtime dependencies required by org.apache.calcite.avatica:avatica-core:1.28.0
       (pulled in by Calcite 1.42+): Avatica now uses Apache HttpComponents 5 for its
       HTTP/JDBC transport, so hive-exec must bundle httpcore5/httpclient5 or tests fail
-      with "NoClassDefFoundError: org/apache/hc/core5/util/Timeout". Avatica declares
-      these as <scope>runtime</scope> transitively, but they must be declared here explicitly
-      because Hive's enforcer bans org.apache.hc.core5/client5.** imports (see parent pom).
-      These can be removed once Hive migrates to HttpComponents 5 across the board.
+      with "NoClassDefFoundError: org/apache/hc/core5/util/Timeout". On the next
+      Calcite/Avatica upgrade, if it includes calcite-avatica#318 (i.e., CALCITE-7715,
+      which removed HttpCore Timeout references from BuiltInConnectionProperty),
+      these entries would probably be unnecessary and could be removed.
     -->
     <dependency>
       <groupId>org.apache.httpcomponents.core5</groupId>
