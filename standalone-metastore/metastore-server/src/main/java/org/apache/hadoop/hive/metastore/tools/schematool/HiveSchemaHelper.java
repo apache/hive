@@ -43,6 +43,9 @@ public class HiveSchemaHelper {
   public static final String DB_MSSQL = "mssql";
   public static final String DB_MYSQL = "mysql";
   public static final String DB_POSTGRES = "postgres";
+  /** @deprecated use {@link #DB_POSTGRES}; retained for backward compatibility. */
+  @Deprecated
+  public static final String DB_POSTGRACE = DB_POSTGRES;
   public static final String DB_ORACLE = "oracle";
   public static final String EMBEDDED_HS2_URL =
       "jdbc:hive2://?hive.conf.restricted.list=;hive.security.authorization.sqlstd.confwhitelist=.*;"

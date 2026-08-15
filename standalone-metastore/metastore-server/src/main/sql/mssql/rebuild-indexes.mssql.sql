@@ -16,7 +16,6 @@
 
 
 -- Rebuilds all HMS indexes on MSSQL using CREATE ... WITH (DROP_EXISTING = ON).
--- Update this file whenever a new upgrade script adds an index.
 
 CREATE INDEX BUCKETING_COLS_N49 ON BUCKETING_COLS (SD_ID) WITH (DROP_EXISTING = ON);
 

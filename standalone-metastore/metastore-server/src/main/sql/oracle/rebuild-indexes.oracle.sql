@@ -15,9 +15,7 @@
 -- limitations under the License.
 
 
--- Oracle has no DROP INDEX IF EXISTS; this script uses plain DROP INDEX.
--- If an index is already missing, comment out its DROP line before running.
--- Update this file whenever a new upgrade script adds an index.
+-- Rebuilds all HMS indexes on Oracle (plain DROP INDEX; Oracle has no IF EXISTS).
 
 DROP INDEX BUCKETING_COLS_N49;
 CREATE INDEX BUCKETING_COLS_N49 ON BUCKETING_COLS (SD_ID);

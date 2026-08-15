@@ -16,7 +16,6 @@
 
 
 -- Rebuilds all HMS indexes on MySQL using ALTER TABLE for atomicity.
--- Update this file whenever a new upgrade script adds an index.
 
 ALTER TABLE `BUCKETING_COLS` DROP INDEX `BUCKETING_COLS_N49`, ADD INDEX `BUCKETING_COLS_N49` (`SD_ID`);
 
