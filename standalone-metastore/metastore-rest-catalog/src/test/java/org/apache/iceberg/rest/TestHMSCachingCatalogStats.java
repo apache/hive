@@ -157,23 +157,41 @@ class TestHMSCachingCatalogStats {
    *   <li>Assert JMX counter deltas match expectations.</li>
    * </ol>
    */
+  /**
+   * Counter states for the four {@code loadTable} calls in {@link #testCacheCountersAreUpdated}:
+   * <pre>
+   *   Call 1 – cold L2 miss : onCacheMiss  + onCacheLoad               → miss=1, load=1
+   *   Call 2 – L1 hit       : onL1CacheHit + onCacheHit                 → l1Hit=1, hit=1
+   *   Call 3 – L1 hit       : onL1CacheHit + onCacheHit                 → l1Hit=2, hit=2
+   *   [sleep >L1 TTL; mutated table has new METADATA_LOCATION in HMS]
+   *   Call 4 – L1 expired,
+   *            location mismatch: onL1CacheMiss + onCacheInvalidate
+   *                             + onCacheLoad                           → l1Miss=1, invalidate=1, load=2
+   * </pre>
+   * Note: call 4 does NOT fire {@code onCacheMiss}: that counter only increments when the L2
+   * {@code getIfPresent} returns null (the else-branch). The location-mismatch path goes through the
+   * if-branch, evicts L2 internally, and falls straight to {@code tableCache.get} + {@code onCacheLoad}.
+   */
   @Test
   void testCacheCountersAreUpdated() throws Exception {
     // -- JMX baseline -----------------------------------------------------------
-    long baseHit = jmxLong("CacheHitCount");
-    long baseMiss = jmxLong("CacheMissCount");
-    long baseLoad = jmxLong("CacheLoadCount");
-    long baseL1Hit = jmxLong("L1CacheHitCount");
+    long baseHit      = jmxLong("CacheHitCount");
+    long baseMiss     = jmxLong("CacheMissCount");
+    long baseLoad     = jmxLong("CacheLoadCount");
+    long baseL1Hit    = jmxLong("L1CacheHitCount");
+    long baseL1Miss   = jmxLong("L1CacheMissCount");
 
     // -- exercise the cache -----------------------------------------------------
     var db = Namespace.of("caching_stats_test_db");
     var tableId = TableIdentifier.of(db, "caching_stats_test_table");
 
     catalog.createNamespace(db);
-    catalog.createTable(tableId, new Schema());
+    Table created = catalog.createTable(tableId, new Schema());
 
-    // First load  → cache miss + load
-    catalog.loadTable(tableId);
+    // First load  → cache miss + load; must return the table we just created.
+    Table firstLoad = catalog.loadTable(tableId);
+    Assertions.assertEquals(created.location(), firstLoad.location(),
+        "First load must return the table we just created");
     // Second load → L1 hit  (within TTL, HMS location check skipped)
     catalog.loadTable(tableId);
     // Third load  → L1 hit
@@ -189,34 +207,36 @@ class TestHMSCachingCatalogStats {
     table.newAppend().appendFile(dataFile).commit();
 
     long baseInvalidate = jmxLong("CacheInvalidateCount");
-    // The L1 cache has a 3-second default TTL; wait for entries to expire.
-    Thread.sleep(3_000);
+    // Default L1 TTL is 3 000 ms; sleep 3 500 ms to ensure the entry is expired.
+    Thread.sleep(3_500);
     // Fourth load → L1 miss + cache invalidation + reload
-    catalog.loadTable(tableId);
+    Table reloaded = catalog.loadTable(tableId);
 
-    // -- JMX assertions ---------------------------------------------------------
-    long deltaHit = jmxLong("CacheHitCount") - baseHit;
-    long deltaMiss = jmxLong("CacheMissCount") - baseMiss;
-    long deltaLoad = jmxLong("CacheLoadCount") - baseLoad;
+    // -- JMX counter assertions (exact values; see Javadoc above for derivation) -
+    long deltaHit      = jmxLong("CacheHitCount")      - baseHit;
+    long deltaMiss     = jmxLong("CacheMissCount")      - baseMiss;
+    long deltaLoad     = jmxLong("CacheLoadCount")      - baseLoad;
     long deltaInvalidate = jmxLong("CacheInvalidateCount") - baseInvalidate;
-    long deltaL1Hit = jmxLong("L1CacheHitCount") - baseL1Hit;
-    long deltaL1Miss = jmxLong("L1CacheMissCount");   // absolute value is fine for L1 miss
+    long deltaL1Hit    = jmxLong("L1CacheHitCount")     - baseL1Hit;
+    long deltaL1Miss   = jmxLong("L1CacheMissCount")    - baseL1Miss;
 
-    Assertions.assertTrue(deltaMiss >= 1,
-        "Expected at least 1 cache miss (first loadTable), but delta was: " + deltaMiss);
-    Assertions.assertTrue(deltaLoad >= 2,
-        "Expected at least 2 cache loads (initial + post-invalidation reload), but delta was: " + deltaLoad);
-    Assertions.assertTrue(deltaHit >= 2,
-        "Expected at least 2 cache hits (second + third loadTable), but delta was: " + deltaHit);
-    Assertions.assertTrue(deltaInvalidate >= 1,
-        "Expected at least 1 cache invalidation (metadata location changed), but delta was: " + deltaInvalidate);
+    Assertions.assertEquals(1L, deltaMiss,
+        "Expected exactly 1 cache miss (cold load on call 1), but delta was: " + deltaMiss);
+    Assertions.assertEquals(2L, deltaLoad,
+        "Expected exactly 2 cache loads (call 1 + post-invalidation call 4), but delta was: " + deltaLoad);
+    Assertions.assertEquals(2L, deltaHit,
+        "Expected exactly 2 cache hits (calls 2 and 3), but delta was: " + deltaHit);
+    Assertions.assertEquals(1L, deltaInvalidate,
+        "Expected exactly 1 cache invalidation (metadata location changed on call 4), but delta was: " + deltaInvalidate);
+    Assertions.assertEquals(2L, deltaL1Hit,
+        "Expected exactly 2 L1 hits (calls 2 and 3, within TTL), but delta was: " + deltaL1Hit);
+    Assertions.assertEquals(1L, deltaL1Miss,
+        "Expected exactly 1 L1 miss (call 4, after TTL expiry), but delta was: " + deltaL1Miss);
 
-    // L1 hits: the 2nd and 3rd loadTable calls should have been served by L1.
-    Assertions.assertTrue(deltaL1Hit >= 2,
-        "Expected at least 2 L1 cache hits (rapid successive loads within TTL), but delta was: " + deltaL1Hit);
-    // L1 miss: at least the fourth load (after TTL expiry) must have missed L1.
-    Assertions.assertTrue(deltaL1Miss >= 1,
-        "Expected at least 1 L1 cache miss (after TTL expiry), but was: " + deltaL1Miss);
+    // The reloaded table must reflect the new snapshot created by the append above;
+    // this confirms the staleness-detection path returned fresh data, not the stale cache entry.
+    Assertions.assertNotNull(reloaded.currentSnapshot(),
+        "Staleness detection must have reloaded the table with its new snapshot");
 
     // Rate attributes must be valid ratios in [0.0, 1.0].
     double hitRate = jmxDouble("CacheHitRate");
@@ -244,8 +264,10 @@ class TestHMSCachingCatalogStats {
     var db = Namespace.of("jmx_reset_test_db");
     var tableId = TableIdentifier.of(db, "jmx_reset_test_table");
     catalog.createNamespace(db);
-    catalog.createTable(tableId, new Schema());
-    catalog.loadTable(tableId);  // miss + load
+    Table created = catalog.createTable(tableId, new Schema());
+    Table loaded = catalog.loadTable(tableId);  // miss + load
+    Assertions.assertEquals(created.location(), loaded.location(),
+        "Warm-up load must return the table we just created");
     catalog.loadTable(tableId);  // hit (L1 hit on the fast path)
 
     // Sanity: at least one counter must be non-zero before the reset.

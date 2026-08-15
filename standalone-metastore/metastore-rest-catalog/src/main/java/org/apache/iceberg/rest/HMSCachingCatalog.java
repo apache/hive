@@ -18,14 +18,23 @@
 
 package org.apache.iceberg.rest;
 
+import static org.apache.iceberg.rest.HMSPrivilegeHelper.AccessLevel;
+
 import java.io.Closeable;
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.ref.SoftReference;
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
@@ -33,10 +42,14 @@ import javax.management.JMException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.Ticker;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.RangerPrivilegeHelper;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.iceberg.BaseMetadataTable;
-import org.apache.iceberg.CachingCatalog;
 import org.apache.iceberg.HasTableOperations;
 import org.apache.iceberg.MetadataTableType;
 import org.apache.iceberg.MetadataTableUtils;
@@ -48,6 +61,7 @@ import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.SupportsNamespaces;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.catalog.ViewCatalog;
+import org.apache.iceberg.exceptions.ForbiddenException;
 import org.apache.iceberg.exceptions.NamespaceNotEmptyException;
 import org.apache.iceberg.exceptions.NoSuchNamespaceException;
 import org.apache.iceberg.hive.HiveCatalog;
@@ -58,14 +72,63 @@ import org.jetbrains.annotations.TestOnly;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.benmanes.caffeine.cache.Ticker;
-
 /**
- * Class that wraps an Iceberg Catalog to cache tables.
+ * Caching wrapper around a {@link HiveCatalog} that adds two-level table caching and
+ * per-request authorization enforcement.
+ *
+ * <h3>Table caching (L2 + L1)</h3>
+ * <p><b>L2 — Caffeine cache.</b> The primary table store. Each {@link Table} object is keyed by
+ * its {@link TableIdentifier} and expires after the configured inactivity period
+ * ({@code ICEBERG_CATALOG_CACHE_EXPIRY}, in milliseconds). On a cache miss, the table is loaded
+ * from the underlying {@link HiveCatalog} and its current metadata location is recorded.
+ * Subsequent hits skip the HMS round-trip entirely.</p>
+ *
+ * <p><b>L1 — LinkedHashMap recency guard.</b> A small bounded map (default 32 entries, 3 s TTL;
+ * configurable via {@code hms.caching.catalog.l1.cache.size} and
+ * {@code hms.caching.catalog.l1.cache.ttl}) that tracks when each L2-cached table was last
+ * confirmed fresh. While the L1 entry is live, {@code loadTable} skips the metadata-location
+ * staleness check against HMS. Once the L1 entry expires, the next call re-validates the stored
+ * metadata location; if it has changed, the L2 entry is evicted ({@code onCacheInvalidate}) and
+ * a fresh load is performed. The L1 layer trades a small risk of serving a stale snapshot for a
+ * large reduction in HMS round-trips under repeated access to the same table.</p>
+ *
+ * <p>Both cache levels are invalidated together by {@link #invalidateTable(TableIdentifier)},
+ * which also evicts all derived {@link org.apache.iceberg.MetadataTableType metadata-table}
+ * entries that share the base identifier.</p>
+ *
+ * <h3>Authorization</h3>
+ * <p>Every table and view operation enforces an access-level check against the authenticated user
+ * (resolved via {@link org.apache.hadoop.security.UserGroupInformation#getCurrentUser()}).
+ * Authorization is performed by the configured {@link HMSPrivilegeHelper}
+ * (typically {@link org.apache.hadoop.hive.metastore.RangerPrivilegeHelper}). If no Ranger
+ * authorizer is configured the helper returns {@link HMSPrivilegeHelper.AccessLevel#NONE} for
+ * all requests, so access is <em>denied</em> rather than open by default.</p>
+ *
+ * <p>Access levels are cached in a single Caffeine cache (configurable via
+ * {@code hms.caching.catalog.access.cache.size}, default 256) that expires entries after the same
+ * TTL as the table cache. The cache is keyed by {@link TableIdentifier}: table and view operations
+ * use the identifier directly; namespace operations use a synthetic
+ * {@code TableIdentifier(namespace, "*")} key — {@code "*"} is not a valid Hive identifier
+ * character, so there is no collision with real table entries.</p>
+ * <ul>
+ *   <li>{@link HMSPrivilegeHelper.AccessLevel#READ_ONLY READ_ONLY} is required for
+ *       {@code loadTable}/{@code loadView}/{@code listTables}/{@code listViews}.</li>
+ *   <li>{@link HMSPrivilegeHelper.AccessLevel#READ_WRITE READ_WRITE} is required for
+ *       {@code dropTable}/{@code dropView}/{@code renameTable}/{@code renameView}/
+ *       {@code registerTable}/{@code buildTable}/{@code buildView}.</li>
+ * </ul>
+ * <p>Authorization entries are invalidated alongside their object — table-level on
+ * {@link #invalidateTable(TableIdentifier)}, namespace-level on
+ * {@link #dropNamespace(org.apache.iceberg.catalog.Namespace)}.</p>
+ *
+ * <h3>Observability</h3>
+ * <p>This class implements {@link HMSCachingCatalogMXBean} and registers itself with the platform
+ * MBean server under the name {@code org.apache.hive:type=IcebergRESTCatalog,name=&lt;catalogName&gt;}
+ * so that cache hit/miss counts and invalidation counts can be monitored via JMX.</p>
  */
-public class HMSCachingCatalog extends CachingCatalog
-    implements SupportsNamespaces, ViewCatalog, HMSCachingCatalogMXBean, Closeable {
-  protected static final Logger LOG = LoggerFactory.getLogger(HMSCachingCatalog.class);
+public final class HMSCachingCatalog
+    implements Catalog, SupportsNamespaces, ViewCatalog, HMSCachingCatalogMXBean, Closeable {
+  private static final Logger LOG = LoggerFactory.getLogger(HMSCachingCatalog.class);
 
   @TestOnly
   private static SoftReference<HMSCachingCatalog> cacheRef = new SoftReference<>(null);
@@ -85,13 +148,12 @@ public class HMSCachingCatalog extends CachingCatalog
     return hiveCatalog;
   }
 
-  // The underlying HiveCatalog instance.
+  // The underlying HiveCatalog that this caching catalog wraps.
   private final HiveCatalog hiveCatalog;
-  // Duplicate because CachingCatalog doesn't expose the case sensitivity of the underlying catalog,
-  // which is needed for canonicalizing identifiers before caching.
-  private final boolean caseSensitive;
-  // The locator.
+  // A helper that locates the metadata location for a given base table identifier.
   private final MetadataLocator metadataLocator;
+  // An L2 table cache (Caffeine).
+  private final Cache<TableIdentifier, Table> tableCache;
   // An L1 small latency cache.
   // This is used to cache the last cached time for each table identifier,
   // so that we can skip location check for repeated access to the same table within a short period of time,
@@ -101,7 +163,10 @@ public class HMSCachingCatalog extends CachingCatalog
   private final int l1Ttl;
   // The L1 cache size.
   private final int l1CacheSize;
-
+  // Computes privileges for a given table identifier and user.
+  private final HMSPrivilegeHelper privilegeHelper;
+  // Unified authz cache: keyed by TableIdentifier for tables/views, or by namespaceIdent(ns) for namespaces.
+  private final Cache<TableIdentifier, ConcurrentMap<String, HMSPrivilegeHelper.AccessLevel>> accessLevelCache;
   // Metrics counters.
   private final AtomicLong cacheHitCount = new AtomicLong(0);
   private final AtomicLong cacheMissCount = new AtomicLong(0);
@@ -111,19 +176,32 @@ public class HMSCachingCatalog extends CachingCatalog
   // L1 cache metrics: counted only when the L2 (Caffeine) cache already has the entry.
   private final AtomicLong l1CacheHitCount = new AtomicLong(0);
   private final AtomicLong l1CacheMissCount = new AtomicLong(0);
-
   // JMX ObjectName under which this instance is registered (may be null if registration failed).
   private ObjectName jmxObjectName;
 
+
+  /**
+   * Creates a new caching catalog that wraps the given HiveCatalog.
+   * @param catalog the underlying HiveCatalog
+   * @param expirationMs the expiration time for the L2 cache, in milliseconds
+   */
   public HMSCachingCatalog(HiveCatalog catalog, long expirationMs) {
-    this(catalog, expirationMs, /*caseSensitive*/ true);
+    this(catalog, expirationMs, RangerPrivilegeHelper.create(catalog.getConf()));
   }
 
-  public HMSCachingCatalog(HiveCatalog catalog, long expirationMs, boolean caseSensitive) {
-    super(catalog, caseSensitive, expirationMs, Ticker.systemTicker());
+  /**
+   * Creates a new caching catalog that wraps the given HiveCatalog.
+   * @param catalog the underlying HiveCatalog
+   * @param expirationMs the expiration time for the L2 cache, in milliseconds
+   * @param privilegeHelper the helper to compute access levels for tables and namespaces
+   */
+  HMSCachingCatalog(HiveCatalog catalog, long expirationMs, HMSPrivilegeHelper privilegeHelper) {
     this.hiveCatalog = catalog;
-    this.caseSensitive = caseSensitive;
     this.metadataLocator = new MetadataLocator(catalog);
+    this.tableCache = Caffeine.newBuilder()
+        .expireAfterAccess(expirationMs, TimeUnit.MILLISECONDS)
+        .ticker(Ticker.systemTicker())
+        .build();
     Configuration conf = catalog.getConf();
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEST)) {
       // Only keep a reference to the latest cache for testing purpose, so that tests can manipulate the catalog.
@@ -145,7 +223,103 @@ public class HMSCachingCatalog extends CachingCatalog
       l1Ttl = 0;
       l1CacheSize = 0;
     }
+    this.privilegeHelper = privilegeHelper;
+    // Covers both table/view and namespace entries; no need to be greater than the number of
+    // concurrent users × distinct objects, which is usually small (e.g., 256).
+    int accessLevelCacheSize = conf.getInt("hms.caching.catalog.access.cache.size", 256);
+    Caffeine<Object, Object> accessCacheBuilder = Caffeine.newBuilder()
+      .expireAfterWrite(Duration.ofMillis(expirationMs))
+      .ticker(Ticker.systemTicker());
+    if (accessLevelCacheSize > 0) {
+      accessCacheBuilder.maximumSize(accessLevelCacheSize);
+    }
+    this.accessLevelCache = accessCacheBuilder.build();
+    // Register this instance as a JMX MBean for monitoring.
     registerJmx(catalog.name());
+  }
+
+  private AccessLevel computeAccessLevel(TableIdentifier ident, String user) {
+    if (!privilegeHelper.isAvailable()) {
+      return AccessLevel.READ_WRITE;
+    }
+    try {
+      String dbName = ident.namespace().level(0);
+      String tableName = ident.name();
+      return privilegeHelper.getAccessLevel(dbName, tableName, user);
+    } catch (Exception e) {
+      LOG.warn("Access level check failed for {}", ident, e);
+      return AccessLevel.NONE;
+    }
+  }
+
+  private String currentUser() {
+    try {
+      return UserGroupInformation.getCurrentUser().getShortUserName();
+    } catch (IOException e) {
+      LOG.warn("Failed to determine current user", e);
+      return null;
+    }
+  }
+
+  private AccessLevel cachedAccessLevel(TableIdentifier ident) {
+    String user = currentUser();
+    if (user == null) {
+      return AccessLevel.NONE;
+    }
+    ConcurrentMap<String, AccessLevel> perUser = accessLevelCache.get(ident, k -> new ConcurrentHashMap<>());
+    return perUser.computeIfAbsent(user, u -> computeAccessLevel(ident, u));
+  }
+
+  private void checkReadAccess(TableIdentifier ident) {
+    if (cachedAccessLevel(ident) == AccessLevel.NONE) {
+      throw new ForbiddenException("Access denied on %s", ident);
+    }
+  }
+
+  private void checkWriteAccess(TableIdentifier ident) {
+    if (cachedAccessLevel(ident) != AccessLevel.READ_WRITE) {
+      throw new ForbiddenException("Write access denied on %s", ident);
+    }
+  }
+
+  private AccessLevel computeNamespaceAccessLevel(Namespace namespace, String user) {
+    if (namespace.isEmpty()) {
+      return AccessLevel.NONE;
+    }
+    if (!privilegeHelper.isAvailable()) {
+      return AccessLevel.READ_WRITE;
+    }
+    try {
+      return privilegeHelper.getNamespaceAccessLevel(namespace.level(0), user);
+    } catch (Exception e) {
+      LOG.warn("Namespace access level check failed for {}", namespace, e);
+      return AccessLevel.NONE;
+    }
+  }
+
+  private TableIdentifier namespaceIdent(Namespace ns) {
+    return TableIdentifier.of(ns, "*");
+  }
+
+  private AccessLevel cachedNamespaceAccessLevel(Namespace namespace) {
+    String user = currentUser();
+    if (user == null) {
+      return AccessLevel.NONE;
+    }
+    ConcurrentMap<String, AccessLevel> perUser = accessLevelCache.get(namespaceIdent(namespace), k -> new ConcurrentHashMap<>());
+    return perUser.computeIfAbsent(user, u -> computeNamespaceAccessLevel(namespace, u));
+  }
+
+  private void checkNamespaceReadAccess(Namespace namespace) {
+    if (cachedNamespaceAccessLevel(namespace) == AccessLevel.NONE) {
+      throw new ForbiddenException("Access denied on namespace %s", namespace);
+    }
+  }
+
+  private void checkNamespaceWriteAccess(Namespace namespace) {
+    if (cachedNamespaceAccessLevel(namespace) != AccessLevel.READ_WRITE) {
+      throw new ForbiddenException("Write access denied on namespace %s", namespace);
+    }
   }
 
   /**
@@ -176,7 +350,7 @@ public class HMSCachingCatalog extends CachingCatalog
    *
    * @param tid the table identifier to invalidate
    */
-  protected void onCacheInvalidate(TableIdentifier tid) {
+  private void onCacheInvalidate(TableIdentifier tid) {
     long count = cacheInvalidateCount.incrementAndGet();
     LOG.debug("Cache invalidate {}: {}", tid, count);
   }
@@ -186,7 +360,7 @@ public class HMSCachingCatalog extends CachingCatalog
    *
    * @param tid the table identifier
    */
-  protected void onCacheLoad(TableIdentifier tid) {
+  private void onCacheLoad(TableIdentifier tid) {
     long count = cacheLoadCount.incrementAndGet();
     LOG.debug("Cache load {}: {}", tid, count);
   }
@@ -196,7 +370,7 @@ public class HMSCachingCatalog extends CachingCatalog
    *
    * @param tid the table identifier
    */
-  protected void onCacheHit(TableIdentifier tid) {
+  private void onCacheHit(TableIdentifier tid) {
     long count = cacheHitCount.incrementAndGet();
     LOG.debug("Cache hit {} : {}", tid, count);
   }
@@ -206,7 +380,7 @@ public class HMSCachingCatalog extends CachingCatalog
    *
    * @param tid the table identifier
    */
-  protected void onCacheMiss(TableIdentifier tid) {
+  private void onCacheMiss(TableIdentifier tid) {
     long count = cacheMissCount.incrementAndGet();
     LOG.debug("Cache miss {}: {}", tid, count);
   }
@@ -216,7 +390,7 @@ public class HMSCachingCatalog extends CachingCatalog
    *
    * @param tid the table identifier
    */
-  protected void onCacheMetaLoad(TableIdentifier tid) {
+  private void onCacheMetaLoad(TableIdentifier tid) {
     long count = cacheMetaLoadCount.incrementAndGet();
     LOG.debug("Cache meta-load {}: {}", tid, count);
   }
@@ -227,7 +401,7 @@ public class HMSCachingCatalog extends CachingCatalog
    *
    * @param tid the table identifier
    */
-  protected void onL1CacheHit(TableIdentifier tid) {
+  private void onL1CacheHit(TableIdentifier tid) {
     long count = l1CacheHitCount.incrementAndGet();
     LOG.debug("L1 cache hit {}: {}", tid, count);
   }
@@ -238,7 +412,7 @@ public class HMSCachingCatalog extends CachingCatalog
    *
    * @param tid the table identifier
    */
-  protected void onL1CacheMiss(TableIdentifier tid) {
+  private void onL1CacheMiss(TableIdentifier tid) {
     long count = l1CacheMissCount.incrementAndGet();
     LOG.debug("L1 cache miss {}: {}", tid, count);
   }
@@ -330,6 +504,64 @@ public class HMSCachingCatalog extends CachingCatalog
   }
 
   @Override
+  public String name() {
+    return hiveCatalog.name();
+  }
+
+  @Override
+  public List<TableIdentifier> listTables(Namespace namespace) {
+    checkNamespaceReadAccess(namespace);
+    return hiveCatalog.listTables(namespace);
+  }
+
+  @Override
+  public boolean dropTable(TableIdentifier identifier, boolean purge) {
+    checkWriteAccess(identifier);
+    boolean dropped = hiveCatalog.dropTable(identifier, purge);
+    invalidateTable(identifier);
+    return dropped;
+  }
+
+  @Override
+  public void renameTable(TableIdentifier from, TableIdentifier to) {
+    checkWriteAccess(from);
+    hiveCatalog.renameTable(from, to);
+    invalidateTable(from);
+  }
+
+  @Override
+  public Table registerTable(TableIdentifier identifier, String metadataFileLocation) {
+    checkWriteAccess(identifier);
+    Table registered = hiveCatalog.registerTable(identifier, metadataFileLocation);
+    invalidateTable(identifier);
+    return registered;
+  }
+
+  @Override
+  public void invalidateTable(TableIdentifier ident) {
+    hiveCatalog.invalidateTable(ident);
+    TableIdentifier canonicalized = ident;
+    tableCache.invalidate(canonicalized);
+    tableCache.invalidateAll(metadataTableIdentifiers(canonicalized));
+    l1Cache.remove(canonicalized);
+    accessLevelCache.invalidate(canonicalized);
+  }
+
+  /**
+   * Returns the identifiers of all metadata tables derived from the given base table identifier,
+   * in both upper-case and lower-case type-name forms so that eviction covers both variants.
+   */
+  private List<TableIdentifier> metadataTableIdentifiers(TableIdentifier identifier) {
+    MetadataTableType[] types = MetadataTableType.values();
+    List<TableIdentifier> result = new ArrayList<>(types.length * 2);
+    for (MetadataTableType type : types) {
+      result.add(TableIdentifier.parse(identifier + "." + type.name()));
+      result.add(TableIdentifier.parse(identifier + "." + type.name().toLowerCase(Locale.ROOT)));
+    }
+    return result;
+  }
+
+  @Override
   public void createNamespace(Namespace namespace, Map<String, String> map) {
     hiveCatalog.createNamespace(namespace, map);
   }
@@ -339,25 +571,15 @@ public class HMSCachingCatalog extends CachingCatalog
     return hiveCatalog.listNamespaces(namespace);
   }
 
-  /**
-   * Canonicalizes the given table identifier based on the case sensitivity of the underlying catalog.
-   * Copied from CachingCatalog that exposes it as private.
-   * @param tableIdentifier the table identifier to canonicalize
-   * @return the canonicalized table identifier
-   */
-  private TableIdentifier canonicalizeIdentifier(TableIdentifier tableIdentifier) {
-    return this.caseSensitive ? tableIdentifier : tableIdentifier.toLowerCase();
-  }
-
   @Override
-  public void invalidateTable(TableIdentifier ident) {
-    super.invalidateTable(ident);
-    l1Cache.remove(ident);
+  public void invalidateView(TableIdentifier identifier) {
+    hiveCatalog.invalidateView(identifier);
   }
 
   @Override
   public Table loadTable(final TableIdentifier identifier) {
-    final TableIdentifier canonicalized = canonicalizeIdentifier(identifier);
+    final TableIdentifier canonicalized = identifier;
+    checkReadAccess(canonicalized);
     final Table cachedTable = tableCache.getIfPresent(canonicalized);
     long now = System.currentTimeMillis();
     if (cachedTable != null) {
@@ -401,7 +623,6 @@ public class HMSCachingCatalog extends CachingCatalog
     } else {
       onCacheMiss(canonicalized);
     }
-    // The following code is copied from CachingCatalog.loadTable(), but with additional handling for L1 cache and stats.
     final Table table = tableCache.get(canonicalized, this::loadTableWithoutCache);
     if (table instanceof BaseMetadataTable) {
       // Cache underlying table: there must be a table named by the namespace (?)
@@ -412,7 +633,7 @@ public class HMSCachingCatalog extends CachingCatalog
       if (originTable instanceof HasTableOperations tableOps) {
         TableOperations ops = tableOps.operations();
         MetadataTableType type = MetadataTableType.from(canonicalized.name());
-        // Defensive: CachingCatalog doesn't perform this check
+        // Defensive: MetadataTableType.from may return null for unknown names
         if (type != null) {
           Table metadataTable =
               MetadataTableUtils.createMetadataTableInstance(ops, hiveCatalog.name(), originTableIdentifier, canonicalized, type);
@@ -430,6 +651,11 @@ public class HMSCachingCatalog extends CachingCatalog
     return table;
   }
 
+  @Override
+  public boolean tableExists(TableIdentifier identifier) {
+    return metadataLocator.getLocation(identifier) != null;
+  }
+
   private Table loadTableWithoutCache(TableIdentifier identifier) {
     return hiveCatalog.loadTable(identifier);
   }
@@ -441,11 +667,13 @@ public class HMSCachingCatalog extends CachingCatalog
 
   @Override
   public boolean dropNamespace(Namespace namespace) throws NamespaceNotEmptyException {
-    List<TableIdentifier> tables = listTables(namespace);
-    for (TableIdentifier ident : tables) {
+    // Use the underlying catalog directly to avoid the namespace read check for internal cache cleanup.
+    for (TableIdentifier ident : hiveCatalog.listTables(namespace)) {
       invalidateTable(ident);
     }
-    return hiveCatalog.dropNamespace(namespace);
+    boolean dropped = hiveCatalog.dropNamespace(namespace);
+    accessLevelCache.invalidate(namespaceIdent(namespace));
+    return dropped;
   }
 
   @Override
@@ -465,16 +693,19 @@ public class HMSCachingCatalog extends CachingCatalog
 
   @Override
   public Catalog.TableBuilder buildTable(TableIdentifier identifier, Schema schema) {
+    checkNamespaceWriteAccess(identifier.namespace());
     return hiveCatalog.buildTable(identifier, schema);
   }
 
   @Override
   public List<TableIdentifier> listViews(Namespace namespace) {
+    checkNamespaceReadAccess(namespace);
     return hiveCatalog.listViews(namespace);
   }
 
   @Override
   public View loadView(TableIdentifier identifier) {
+    checkReadAccess(identifier);
     return hiveCatalog.loadView(identifier);
   }
 
@@ -485,22 +716,20 @@ public class HMSCachingCatalog extends CachingCatalog
 
   @Override
   public ViewBuilder buildView(TableIdentifier identifier) {
+    checkNamespaceWriteAccess(identifier.namespace());
     return hiveCatalog.buildView(identifier);
   }
 
   @Override
   public boolean dropView(TableIdentifier identifier) {
+    checkWriteAccess(identifier);
     return hiveCatalog.dropView(identifier);
   }
 
   @Override
   public void renameView(TableIdentifier from, TableIdentifier to) {
+    checkWriteAccess(from);
     hiveCatalog.renameView(from, to);
-  }
-
-  @Override
-  public void invalidateView(TableIdentifier identifier) {
-    hiveCatalog.invalidateView(identifier);
   }
 
   @Override
