@@ -64,6 +64,7 @@ import org.apache.iceberg.catalog.ViewCatalog;
 import org.apache.iceberg.exceptions.ForbiddenException;
 import org.apache.iceberg.exceptions.NamespaceNotEmptyException;
 import org.apache.iceberg.exceptions.NoSuchNamespaceException;
+import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hive.HiveCatalog;
 import org.apache.iceberg.hive.MetadataLocator;
 import org.apache.iceberg.view.View;
@@ -123,8 +124,10 @@ import org.slf4j.LoggerFactory;
  *
  * <h3>Observability</h3>
  * <p>This class implements {@link HMSCachingCatalogMXBean} and registers itself with the platform
- * MBean server under the name {@code org.apache.hive:type=IcebergRESTCatalog,name=&lt;catalogName&gt;}
- * so that cache hit/miss counts and invalidation counts can be monitored via JMX.</p>
+ * MBean server under the name {@code org.apache.iceberg.rest:type=HMSCachingCatalog,name=&lt;catalogName&gt;}
+ * so that cache hit/miss counts and invalidation counts can be monitored via JMX. The
+ * {@code catalogName} is {@link org.apache.iceberg.catalog.Catalog#name()} of the wrapped catalog
+ * (the metastore's configured default catalog name), sanitized for use in an {@link ObjectName}.</p>
  */
 public final class HMSCachingCatalog
     implements Catalog, SupportsNamespaces, ViewCatalog, HMSCachingCatalogMXBean, Closeable {
@@ -234,14 +237,17 @@ public final class HMSCachingCatalog
       accessCacheBuilder.maximumSize(accessLevelCacheSize);
     }
     this.accessLevelCache = accessCacheBuilder.build();
-    // Register this instance as a JMX MBean for monitoring.
+    // Register this instance as a JMX MBean for monitoring. The catalog was initialized with the
+    // metastore's CATALOG_DEFAULT name (see HMSCatalogFactory), so catalog.name() already yields
+    // that value; using it directly keeps this class free of a Configuration/MetastoreConf
+    // dependency and reflects the actual identity of the wrapped catalog.
     registerJmx(catalog.name());
   }
 
   private AccessLevel computeAccessLevel(TableIdentifier ident, String user) {
-    if (!privilegeHelper.isAvailable()) {
-      return AccessLevel.READ_WRITE;
-    }
+    // Do not short-circuit on !isAvailable(): the pass-through helpers already return READ_WRITE
+    // when authorization is intentionally disabled, while a helper whose authorizer failed to
+    // initialize returns NONE (fail-closed). Overriding either here would open access.
     try {
       String dbName = ident.namespace().level(0);
       String tableName = ident.name();
@@ -250,6 +256,22 @@ public final class HMSCachingCatalog
       LOG.warn("Access level check failed for {}", ident, e);
       return AccessLevel.NONE;
     }
+  }
+
+  /**
+   * Resolves the identifier used for authorization. A metadata table (e.g. {@code db.tbl.snapshots})
+   * must be authorized against its base table ({@code db.tbl}); otherwise a user granted on an
+   * unrelated table that happens to share the metadata-type name (e.g. {@code db.snapshots}) could
+   * read the metadata table without access to the table it derives from.
+   */
+  private TableIdentifier authzIdentifier(TableIdentifier identifier) {
+    Namespace ns = identifier.namespace();
+    if (ns.levels().length >= 2 && MetadataTableType.from(identifier.name()) != null) {
+      // TableIdentifier.of(String...) treats the last level as the table name, so passing the
+      // metadata table's namespace levels ([db, tbl]) yields the base table identifier (db.tbl).
+      return TableIdentifier.of(ns.levels());
+    }
+    return identifier;
   }
 
   private String currentUser() {
@@ -286,9 +308,7 @@ public final class HMSCachingCatalog
     if (namespace.isEmpty()) {
       return AccessLevel.NONE;
     }
-    if (!privilegeHelper.isAvailable()) {
-      return AccessLevel.READ_WRITE;
-    }
+    // See computeAccessLevel: never override the helper's decision based on availability.
     try {
       return privilegeHelper.getNamespaceAccessLevel(namespace.level(0), user);
     } catch (Exception e) {
@@ -341,7 +361,7 @@ public final class HMSCachingCatalog
       this.jmxObjectName = name;
       LOG.info("Registered JMX MBean: {}", name);
     } catch (JMException e) {
-      LOG.warn("Failed to register JMX MBean for HMSCachingCatalog", e);
+      LOG.error("Failed to register JMX MBean for HMSCachingCatalog", e);
     }
   }
 
@@ -543,8 +563,26 @@ public final class HMSCachingCatalog
     TableIdentifier canonicalized = ident;
     tableCache.invalidate(canonicalized);
     tableCache.invalidateAll(metadataTableIdentifiers(canonicalized));
-    l1Cache.remove(canonicalized);
+    l1Invalidate(canonicalized);
     accessLevelCache.invalidate(canonicalized);
+  }
+
+  /**
+   * Records {@code now} as the last time the given identifier was confirmed fresh in the L1
+   * recency guard. No-op when L1 is disabled: in that case {@link #l1Cache} is an immutable empty
+   * map, so writing to it would throw {@link UnsupportedOperationException}.
+   */
+  private void l1MarkFresh(TableIdentifier ident, long now) {
+    if (l1Ttl > 0) {
+      l1Cache.put(ident, now);
+    }
+  }
+
+  /** Evicts the given identifier from the L1 recency guard. No-op when L1 is disabled. */
+  private void l1Invalidate(TableIdentifier ident) {
+    if (l1Ttl > 0) {
+      l1Cache.remove(ident);
+    }
   }
 
   /**
@@ -579,7 +617,7 @@ public final class HMSCachingCatalog
   @Override
   public Table loadTable(final TableIdentifier identifier) {
     final TableIdentifier canonicalized = identifier;
-    checkReadAccess(canonicalized);
+    checkReadAccess(authzIdentifier(canonicalized));
     final Table cachedTable = tableCache.getIfPresent(canonicalized);
     long now = System.currentTimeMillis();
     if (cachedTable != null) {
@@ -594,7 +632,7 @@ public final class HMSCachingCatalog
           onCacheHit(canonicalized);
           return cachedTable;
         } else {
-          l1Cache.remove(canonicalized);
+          l1Invalidate(canonicalized);
           onL1CacheMiss(canonicalized);
         }
       } else {
@@ -603,16 +641,18 @@ public final class HMSCachingCatalog
       // If the table is no longer in L1 cache, we need to check the location.
       final String location = metadataLocator.getLocation(canonicalized);
       if (location == null) {
-        LOG.debug("Table {} has no location, returning cached table without location", canonicalized);
-        onCacheHit(canonicalized);
-        l1Cache.put(canonicalized, now);
-        return cachedTable;
+        // A null location means the table no longer exists in HMS. The cached instance is stale and
+        // its metadata/manifests are highly likely to be deleted, so we must not serve it: evict the
+        // entry and signal not-found rather than returning a ghost table.
+        LOG.debug("Table {} no longer exists in HMS, evicting stale cache entry", canonicalized);
+        invalidateTable(canonicalized);
+        throw new NoSuchTableException("Table does not exist: %s", canonicalized);
       }
       String cachedLocation =
           cachedTable instanceof HasTableOperations tableOps ? tableOps.operations().current().metadataFileLocation() : null;
       if (location.equals(cachedLocation)) {
         onCacheHit(canonicalized);
-        l1Cache.put(canonicalized, now);
+        l1MarkFresh(canonicalized, now);
         return cachedTable;
       } else {
         LOG.debug("Invalidate table {}, cached {} != actual {}", canonicalized, cachedLocation, location);
@@ -638,7 +678,7 @@ public final class HMSCachingCatalog
           Table metadataTable =
               MetadataTableUtils.createMetadataTableInstance(ops, hiveCatalog.name(), originTableIdentifier, canonicalized, type);
           tableCache.put(canonicalized, metadataTable);
-          l1Cache.put(canonicalized, now);
+          l1MarkFresh(canonicalized, now);
           onCacheMetaLoad(canonicalized);
           LOG.debug("Loaded metadata table: {} for origin table: {}", canonicalized, originTableIdentifier);
           // Return the metadata table instead of the original table
@@ -646,7 +686,7 @@ public final class HMSCachingCatalog
         }
       }
     }
-    l1Cache.put(canonicalized, now);
+    l1MarkFresh(canonicalized, now);
     onCacheLoad(canonicalized);
     return table;
   }

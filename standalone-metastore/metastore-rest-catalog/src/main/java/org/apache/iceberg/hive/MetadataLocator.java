@@ -30,7 +30,6 @@ import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.ClientPool;
 import org.apache.iceberg.MetadataTableType;
 import org.apache.iceberg.catalog.TableIdentifier;
-import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.thrift.TException;
 
 /**
@@ -59,8 +58,9 @@ public class MetadataLocator {
    * not a metadata table.
    * <p>This uses the Thrift API to fetch the table parameters, which is more efficient than fetching the entire table object.</p>
    * @param  identifier the identifier of the metadata table to fetch the location for
-   * @return the location of the metadata table, or null if the table does not exist or is not a metadata table
-   * @throws NoSuchTableException if the table does not exist
+   * @return the location of the metadata table, or null if the table (or its database/catalog) does
+   *         not exist, or the identifier is not a valid (metadata) table identifier
+   * @throws RuntimeException if the HMS lookup fails for any reason other than the object not existing
    */
   public String getLocation(TableIdentifier identifier) {
     final ClientPool<IMetaStoreClient, TException> clients = catalog.clientPool();
@@ -89,9 +89,11 @@ public class MetadataLocator {
       }
       return null;
     } catch (NoSuchObjectException e) {
-      // NoSuchObjectException is a TException subclass that HMS may raise for an unknown database or catalog.
+      // NoSuchObjectException is a TException subclass HMS raises for an unknown database or catalog.
+      // Like an empty getTables result, it means the object does not exist, so we return null and let
+      // callers treat null uniformly as not-found (matching the missing-table case above).
       LOGGER.debug("Table {} not found: {}", baseTableIdentifier, e.getMessage());
-      throw new NoSuchTableException(e, "Table %s not found: %s", baseTableIdentifier, e.getMessage());
+      return null;
     } catch (TException e) {
       LOGGER.warn("Table {} parameters fetch failed: {}", baseTableIdentifier, e.getMessage());
       throw new RuntimeException("Failed to fetch table parameters for " + baseTableIdentifier, e);

@@ -36,6 +36,7 @@ import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.ForbiddenException;
+import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hive.HiveCatalog;
 import org.apache.iceberg.rest.HMSPrivilegeHelper.AccessLevel;
 import org.apache.iceberg.rest.extension.HiveRESTCatalogServerExtension;
@@ -353,6 +354,100 @@ class TestHMSCachingCatalogAuthz {
     Table reloaded = as("alice", () -> catalog.loadTable(TABLE_ID));
     assertThat(reloaded).isNotSameAs(cached);
     assertThat(reloaded.currentSnapshot()).isNull();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Fail-closed and metadata-table authorization
+  // ---------------------------------------------------------------------------
+
+  @Test
+  void testUnavailableHelperReturningNoneDenies() throws Exception {
+    hiveCatalog.createTable(TABLE_ID, SCHEMA);
+    // A helper whose authorizer failed to initialize: not available, but fail-closed (NONE).
+    // The catalog must honour that NONE and not fall back to READ_WRITE.
+    HMSPrivilegeHelper failClosed = new HMSPrivilegeHelper() {
+      @Override public boolean isAvailable() { return false; }
+      @Override public AccessLevel getAccessLevel(String db, String table, String user) {
+        return AccessLevel.NONE;
+      }
+      @Override public AccessLevel getNamespaceAccessLevel(String db, String user) {
+        return AccessLevel.NONE;
+      }
+    };
+    HMSCachingCatalog failClosedCatalog = new HMSCachingCatalog(hiveCatalog, CACHE_EXPIRY_MS, failClosed);
+
+    assertThatThrownBy(() -> as("alice", () -> { failClosedCatalog.loadTable(TABLE_ID); return null; }))
+        .isInstanceOf(ForbiddenException.class);
+  }
+
+  @Test
+  void testMetadataTableAuthorizedAgainstBaseTable() throws Exception {
+    hiveCatalog.createTable(TABLE_ID, SCHEMA);
+    TableIdentifier metaId = TableIdentifier.of(Namespace.of(NS, TABLE), "snapshots");
+
+    // A grant on a decoy table that merely shares the metadata-type name must NOT leak access
+    // to the metadata table, which derives from TABLE_ID.
+    stub.grantTable("alice", NS, "snapshots", AccessLevel.READ_ONLY);
+    assertThatThrownBy(() -> as("alice", () -> { catalog.loadTable(metaId); return null; }))
+        .isInstanceOf(ForbiddenException.class);
+
+    // A grant on the base table authorizes its metadata tables (distinct user to avoid the
+    // cached NONE from the denial above).
+    stub.grantTable("bob", NS, TABLE, AccessLevel.READ_ONLY);
+    Table snapshots = as("bob", () -> catalog.loadTable(metaId));
+    assertThat(snapshots).isNotNull();
+  }
+
+  @Test
+  void testLoadTableWithL1CacheDisabled() throws Exception {
+    Table created = hiveCatalog.createTable(TABLE_ID, SCHEMA);
+    stub.grantTable("alice", NS, TABLE, AccessLevel.READ_ONLY);
+
+    // Disable the L1 recency guard; its backing map is then an immutable empty map, so any write
+    // to it would throw. The second load exercises the L2-hit path that records L1 freshness.
+    var conf = hiveCatalog.getConf();
+    int prevSize = conf.getInt("hms.caching.catalog.l1.cache.size", 32);
+    int prevTtl = conf.getInt("hms.caching.catalog.l1.cache.ttl", 3_000);
+    conf.setInt("hms.caching.catalog.l1.cache.size", 0);
+    try {
+      HMSCachingCatalog noL1 = new HMSCachingCatalog(hiveCatalog, CACHE_EXPIRY_MS, stub);
+      Table first = as("alice", () -> noL1.loadTable(TABLE_ID));
+      Table second = as("alice", () -> noL1.loadTable(TABLE_ID));
+      assertThat(first.location()).isEqualTo(created.location());
+      assertThat(second.location()).isEqualTo(created.location());
+    } finally {
+      conf.setInt("hms.caching.catalog.l1.cache.size", prevSize);
+      conf.setInt("hms.caching.catalog.l1.cache.ttl", prevTtl);
+    }
+  }
+
+  @Test
+  void testReloadOfDroppedTableThrowsNoSuchTable() throws Exception {
+    hiveCatalog.createTable(TABLE_ID, SCHEMA);
+    stub.grantTable("alice", NS, TABLE, AccessLevel.READ_ONLY);
+
+    // Disable the L1 recency guard so the second load re-checks the HMS location instead of
+    // short-circuiting on L1 freshness.
+    var conf = hiveCatalog.getConf();
+    int prevSize = conf.getInt("hms.caching.catalog.l1.cache.size", 32);
+    conf.setInt("hms.caching.catalog.l1.cache.size", 0);
+    try {
+      HMSCachingCatalog noL1 = new HMSCachingCatalog(hiveCatalog, CACHE_EXPIRY_MS, stub);
+
+      // Warm the L2 cache with the table.
+      Table loaded = as("alice", () -> noL1.loadTable(TABLE_ID));
+      assertThat(loaded).isNotNull();
+
+      // Drop the table straight through the underlying catalog so noL1's L2 entry is left stale.
+      hiveCatalog.dropTable(TABLE_ID, false);
+
+      // Reloading must not serve the ghost: the null HMS location evicts the entry and signals
+      // not-found (the cached alice/READ_ONLY authz decision still passes, so we reach the cache path).
+      assertThatThrownBy(() -> as("alice", () -> { noL1.loadTable(TABLE_ID); return null; }))
+          .isInstanceOf(NoSuchTableException.class);
+    } finally {
+      conf.setInt("hms.caching.catalog.l1.cache.size", prevSize);
+    }
   }
 
   // ---------------------------------------------------------------------------
