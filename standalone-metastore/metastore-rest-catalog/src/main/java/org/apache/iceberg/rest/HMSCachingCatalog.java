@@ -29,7 +29,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Function;
 
 import javax.management.JMException;
@@ -132,14 +132,14 @@ public final class HMSCachingCatalog
   // The L1 cache size.
   private final int l1CacheSize;
   // Metrics counters.
-  private final AtomicLong cacheHitCount = new AtomicLong(0);
-  private final AtomicLong cacheMissCount = new AtomicLong(0);
-  private final AtomicLong cacheLoadCount = new AtomicLong(0);
-  private final AtomicLong cacheInvalidateCount = new AtomicLong(0);
-  private final AtomicLong cacheMetaLoadCount = new AtomicLong(0);
+  private final LongAdder cacheHitCount = new LongAdder();
+  private final LongAdder cacheMissCount = new LongAdder();
+  private final LongAdder cacheLoadCount = new LongAdder();
+  private final LongAdder cacheInvalidateCount = new LongAdder();
+  private final LongAdder cacheMetaLoadCount = new LongAdder();
   // L1 cache metrics: counted only when the L2 (Caffeine) cache already has the entry.
-  private final AtomicLong l1CacheHitCount = new AtomicLong(0);
-  private final AtomicLong l1CacheMissCount = new AtomicLong(0);
+  private final LongAdder l1CacheHitCount = new LongAdder();
+  private final LongAdder l1CacheMissCount = new LongAdder();
   // JMX ObjectName under which this instance is registered (may be null if registration failed).
   private ObjectName jmxObjectName;
 
@@ -216,8 +216,10 @@ public final class HMSCachingCatalog
    * @param tid the table identifier to invalidate
    */
   private void onCacheInvalidate(TableIdentifier tid) {
-    long count = cacheInvalidateCount.incrementAndGet();
-    LOG.debug("Cache invalidate {}: {}", tid, count);
+    cacheInvalidateCount.increment();
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Cache invalidate {}: {}", tid, cacheInvalidateCount.sum());
+    }
   }
 
   /**
@@ -226,8 +228,10 @@ public final class HMSCachingCatalog
    * @param tid the table identifier
    */
   private void onCacheLoad(TableIdentifier tid) {
-    long count = cacheLoadCount.incrementAndGet();
-    LOG.debug("Cache load {}: {}", tid, count);
+    cacheLoadCount.increment();
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Cache load {}: {}", tid, cacheLoadCount.sum());
+    }
   }
 
   /**
@@ -236,8 +240,10 @@ public final class HMSCachingCatalog
    * @param tid the table identifier
    */
   private void onCacheHit(TableIdentifier tid) {
-    long count = cacheHitCount.incrementAndGet();
-    LOG.debug("Cache hit {} : {}", tid, count);
+    cacheHitCount.increment();
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Cache hit {} : {}", tid, cacheHitCount.sum());
+    }
   }
 
   /**
@@ -246,8 +252,10 @@ public final class HMSCachingCatalog
    * @param tid the table identifier
    */
   private void onCacheMiss(TableIdentifier tid) {
-    long count = cacheMissCount.incrementAndGet();
-    LOG.debug("Cache miss {}: {}", tid, count);
+    cacheMissCount.increment();
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Cache miss {}: {}", tid, cacheMissCount.sum());
+    }
   }
 
   /**
@@ -256,8 +264,10 @@ public final class HMSCachingCatalog
    * @param tid the table identifier
    */
   private void onCacheMetaLoad(TableIdentifier tid) {
-    long count = cacheMetaLoadCount.incrementAndGet();
-    LOG.debug("Cache meta-load {}: {}", tid, count);
+    cacheMetaLoadCount.increment();
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Cache meta-load {}: {}", tid, cacheMetaLoadCount.sum());
+    }
   }
 
   /**
@@ -267,8 +277,10 @@ public final class HMSCachingCatalog
    * @param tid the table identifier
    */
   private void onL1CacheHit(TableIdentifier tid) {
-    long count = l1CacheHitCount.incrementAndGet();
-    LOG.debug("L1 cache hit {}: {}", tid, count);
+    l1CacheHitCount.increment();
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("L1 cache hit {}: {}", tid, l1CacheHitCount.sum());
+    }
   }
 
   /**
@@ -278,69 +290,71 @@ public final class HMSCachingCatalog
    * @param tid the table identifier
    */
   private void onL1CacheMiss(TableIdentifier tid) {
-    long count = l1CacheMissCount.incrementAndGet();
-    LOG.debug("L1 cache miss {}: {}", tid, count);
+    l1CacheMissCount.increment();
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("L1 cache miss {}: {}", tid, l1CacheMissCount.sum());
+    }
   }
 
   // Getter methods for accessing metrics
   @Override
   public long getCacheHitCount() {
-    return cacheHitCount.get();
+    return cacheHitCount.sum();
   }
 
   @Override
   public long getCacheMissCount() {
-    return cacheMissCount.get();
+    return cacheMissCount.sum();
   }
 
   @Override
   public long getCacheLoadCount() {
-    return cacheLoadCount.get();
+    return cacheLoadCount.sum();
   }
 
   @Override
   public long getCacheInvalidateCount() {
-    return cacheInvalidateCount.get();
+    return cacheInvalidateCount.sum();
   }
 
   @Override
   public long getCacheMetaLoadCount() {
-    return cacheMetaLoadCount.get();
+    return cacheMetaLoadCount.sum();
   }
 
   @Override
   public double getCacheHitRate() {
-    long hits = cacheHitCount.get();
-    long total = hits + cacheMissCount.get();
+    long hits = cacheHitCount.sum();
+    long total = hits + cacheMissCount.sum();
     return total == 0 ? 0.0 : (double) hits / total;
   }
 
   @Override
   public long getL1CacheHitCount() {
-    return l1CacheHitCount.get();
+    return l1CacheHitCount.sum();
   }
 
   @Override
   public long getL1CacheMissCount() {
-    return l1CacheMissCount.get();
+    return l1CacheMissCount.sum();
   }
 
   @Override
   public double getL1CacheHitRate() {
-    long hits = l1CacheHitCount.get();
-    long total = hits + l1CacheMissCount.get();
+    long hits = l1CacheHitCount.sum();
+    long total = hits + l1CacheMissCount.sum();
     return total == 0 ? 0.0 : (double) hits / total;
   }
 
   @Override
   public void resetCacheStats() {
-    cacheHitCount.set(0);
-    cacheMissCount.set(0);
-    cacheLoadCount.set(0);
-    cacheInvalidateCount.set(0);
-    cacheMetaLoadCount.set(0);
-    l1CacheHitCount.set(0);
-    l1CacheMissCount.set(0);
+    cacheHitCount.reset();
+    cacheMissCount.reset();
+    cacheLoadCount.reset();
+    cacheInvalidateCount.reset();
+    cacheMetaLoadCount.reset();
+    l1CacheHitCount.reset();
+    l1CacheMissCount.reset();
     LOG.debug("Cache stats reset");
   }
 
