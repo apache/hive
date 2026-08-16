@@ -67,7 +67,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Caching wrapper around a {@link HiveCatalog} that adds two-level table caching.
  *
- * <h3>Table caching (L2 + L1)</h3>
+ * <h2>Table caching (L2 + L1)</h2>
  * <p><b>L2 — Caffeine cache.</b> The primary table store. Each {@link Table} object is keyed by
  * its {@link TableIdentifier} and expires after the configured inactivity period
  * ({@code ICEBERG_CATALOG_CACHE_EXPIRY}, in milliseconds). On a cache miss, the table is loaded
@@ -87,7 +87,7 @@ import org.slf4j.LoggerFactory;
  * which also evicts all derived {@link org.apache.iceberg.MetadataTableType metadata-table}
  * entries that share the base identifier.</p>
  *
- * <h3>Observability</h3>
+ * <h2>Observability</h2>
  * <p>This class implements {@link HMSCachingCatalogMXBean} and registers itself with the platform
  * MBean server under the name {@code org.apache.iceberg.rest:type=HMSCachingCatalog,name=&lt;catalogName&gt;}
  * so that cache hit/miss counts and invalidation counts can be monitored via JMX. The
