@@ -84,7 +84,7 @@ public class MetadataLocator {
       if (tables != null && !tables.isEmpty()) {
         Table table = tables.getFirst();
         if (table != null) {
-          HiveOperationsBase.validateTableIsIceberg(table, tableName);
+          HiveOperationsBase.validateIcebergViewNotLoadedAsIcebergTable(table, baseTableIdentifier.toString());
           return table.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
         }
       }
