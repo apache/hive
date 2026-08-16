@@ -74,10 +74,10 @@ import org.slf4j.LoggerFactory;
  * from the underlying {@link HiveCatalog} and its current metadata location is recorded.
  * Subsequent hits skip the HMS round-trip entirely.</p>
  *
- * <p><b>L1 — LinkedHashMap recency guard.</b> A small bounded map (default 32 entries, 3 s TTL;
- * configurable via {@code hms.caching.catalog.l1.cache.size} and
+ * <p><b>L1 — LinkedHashMap recency guard.</b> A small bounded, access-ordered (LRU) map (default
+ * 32 entries, 3 s TTL; configurable via {@code hms.caching.catalog.l1.cache.size} and
  * {@code hms.caching.catalog.l1.cache.ttl}) that tracks when each L2-cached table was last
- * confirmed fresh. While the L1 entry is live, {@code loadTable} skips the metadata-location
+ * confirmed fresh; when it overflows, the least-recently-used entry is evicted. While the L1 entry is live, {@code loadTable} skips the metadata-location
  * staleness check against HMS. Once the L1 entry expires, the next call re-validates the stored
  * metadata location; if it has changed, the L2 entry is evicted ({@code onCacheInvalidate}) and
  * a fresh load is performed. The L1 layer trades a small risk of serving a stale snapshot for a
@@ -164,7 +164,10 @@ public final class HMSCachingCatalog
     int l1size = conf.getInt("hms.caching.catalog.l1.cache.size", 32);
     int l1ttl = conf.getInt("hms.caching.catalog.l1.cache.ttl", 3_000);
     if (l1size > 0 && l1ttl > 0) {
-      l1Cache = Collections.synchronizedMap(new LinkedHashMap<TableIdentifier, Long>() {
+      // Access-ordered (LRU) so that re-confirming a hot table via l1MarkFresh (a put on an
+      // existing key) moves it to the tail; the eldest evicted by removeEldestEntry is then the
+      // least-recently-used entry rather than the least-recently-inserted one.
+      l1Cache = Collections.synchronizedMap(new LinkedHashMap<TableIdentifier, Long>(l1size, 0.75f, true) {
         @Override
         protected boolean removeEldestEntry(Map.Entry<TableIdentifier, Long> eldest) {
           return size() > l1CacheSize;

@@ -54,12 +54,13 @@ public class MetadataLocator {
   }
 
   /**
-   * Returns the location of the metadata table identified by the given identifier, or null if the table is
-   * not a metadata table.
+   * Returns the current metadata-file location of the table identified by the given identifier. The
+   * identifier may be either a base table (e.g. {@code db.table}) or one of its metadata tables
+   * (e.g. {@code db.table.snapshots}), which is resolved to its base table before the lookup.
    * <p>This uses the Thrift API to fetch the table parameters, which is more efficient than fetching the entire table object.</p>
-   * @param  identifier the identifier of the metadata table to fetch the location for
-   * @return the location of the metadata table, or null if the table (or its database/catalog) does
-   *         not exist, or the identifier is not a valid (metadata) table identifier
+   * @param  identifier the base-table or metadata-table identifier to fetch the location for
+   * @return the current metadata-file location, or null if the table (or its database/catalog) does
+   *         not exist, or the identifier is neither a valid table nor a valid metadata-table identifier
    * @throws RuntimeException if the HMS lookup fails for any reason other than the object not existing
    */
   public String getLocation(TableIdentifier identifier) {
