@@ -18,13 +18,9 @@
 
 package org.apache.iceberg.rest;
 
-import static org.apache.iceberg.rest.HMSPrivilegeHelper.AccessLevel;
-
 import java.io.Closeable;
-import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.ref.SoftReference;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -32,8 +28,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
@@ -47,8 +41,6 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.Ticker;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.RangerPrivilegeHelper;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.iceberg.BaseMetadataTable;
 import org.apache.iceberg.HasTableOperations;
 import org.apache.iceberg.MetadataTableType;
@@ -61,7 +53,6 @@ import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.SupportsNamespaces;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.catalog.ViewCatalog;
-import org.apache.iceberg.exceptions.ForbiddenException;
 import org.apache.iceberg.exceptions.NamespaceNotEmptyException;
 import org.apache.iceberg.exceptions.NoSuchNamespaceException;
 import org.apache.iceberg.exceptions.NoSuchTableException;
@@ -74,8 +65,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Caching wrapper around a {@link HiveCatalog} that adds two-level table caching and
- * per-request authorization enforcement.
+ * Caching wrapper around a {@link HiveCatalog} that adds two-level table caching.
  *
  * <h3>Table caching (L2 + L1)</h3>
  * <p><b>L2 — Caffeine cache.</b> The primary table store. Each {@link Table} object is keyed by
@@ -96,31 +86,6 @@ import org.slf4j.LoggerFactory;
  * <p>Both cache levels are invalidated together by {@link #invalidateTable(TableIdentifier)},
  * which also evicts all derived {@link org.apache.iceberg.MetadataTableType metadata-table}
  * entries that share the base identifier.</p>
- *
- * <h3>Authorization</h3>
- * <p>Every table and view operation enforces an access-level check against the authenticated user
- * (resolved via {@link org.apache.hadoop.security.UserGroupInformation#getCurrentUser()}).
- * Authorization is performed by the configured {@link HMSPrivilegeHelper}
- * (typically {@link org.apache.hadoop.hive.metastore.RangerPrivilegeHelper}). If no Ranger
- * authorizer is configured the helper returns {@link HMSPrivilegeHelper.AccessLevel#NONE} for
- * all requests, so access is <em>denied</em> rather than open by default.</p>
- *
- * <p>Access levels are cached in a single Caffeine cache (configurable via
- * {@code hms.caching.catalog.access.cache.size}, default 256) that expires entries after the same
- * TTL as the table cache. The cache is keyed by {@link TableIdentifier}: table and view operations
- * use the identifier directly; namespace operations use a synthetic
- * {@code TableIdentifier(namespace, "*")} key — {@code "*"} is not a valid Hive identifier
- * character, so there is no collision with real table entries.</p>
- * <ul>
- *   <li>{@link HMSPrivilegeHelper.AccessLevel#READ_ONLY READ_ONLY} is required for
- *       {@code loadTable}/{@code loadView}/{@code listTables}/{@code listViews}.</li>
- *   <li>{@link HMSPrivilegeHelper.AccessLevel#READ_WRITE READ_WRITE} is required for
- *       {@code dropTable}/{@code dropView}/{@code renameTable}/{@code renameView}/
- *       {@code registerTable}/{@code buildTable}/{@code buildView}.</li>
- * </ul>
- * <p>Authorization entries are invalidated alongside their object — table-level on
- * {@link #invalidateTable(TableIdentifier)}, namespace-level on
- * {@link #dropNamespace(org.apache.iceberg.catalog.Namespace)}.</p>
  *
  * <h3>Observability</h3>
  * <p>This class implements {@link HMSCachingCatalogMXBean} and registers itself with the platform
@@ -166,10 +131,6 @@ public final class HMSCachingCatalog
   private final int l1Ttl;
   // The L1 cache size.
   private final int l1CacheSize;
-  // Computes privileges for a given table identifier and user.
-  private final HMSPrivilegeHelper privilegeHelper;
-  // Unified authz cache: keyed by TableIdentifier for tables/views, or by namespaceIdent(ns) for namespaces.
-  private final Cache<TableIdentifier, ConcurrentMap<String, HMSPrivilegeHelper.AccessLevel>> accessLevelCache;
   // Metrics counters.
   private final AtomicLong cacheHitCount = new AtomicLong(0);
   private final AtomicLong cacheMissCount = new AtomicLong(0);
@@ -189,16 +150,6 @@ public final class HMSCachingCatalog
    * @param expirationMs the expiration time for the L2 cache, in milliseconds
    */
   public HMSCachingCatalog(HiveCatalog catalog, long expirationMs) {
-    this(catalog, expirationMs, RangerPrivilegeHelper.create(catalog.getConf()));
-  }
-
-  /**
-   * Creates a new caching catalog that wraps the given HiveCatalog.
-   * @param catalog the underlying HiveCatalog
-   * @param expirationMs the expiration time for the L2 cache, in milliseconds
-   * @param privilegeHelper the helper to compute access levels for tables and namespaces
-   */
-  HMSCachingCatalog(HiveCatalog catalog, long expirationMs, HMSPrivilegeHelper privilegeHelper) {
     this.hiveCatalog = catalog;
     this.metadataLocator = new MetadataLocator(catalog);
     this.tableCache = Caffeine.newBuilder()
@@ -226,120 +177,11 @@ public final class HMSCachingCatalog
       l1Ttl = 0;
       l1CacheSize = 0;
     }
-    this.privilegeHelper = privilegeHelper;
-    // Covers both table/view and namespace entries; no need to be greater than the number of
-    // concurrent users × distinct objects, which is usually small (e.g., 256).
-    int accessLevelCacheSize = conf.getInt("hms.caching.catalog.access.cache.size", 256);
-    Caffeine<Object, Object> accessCacheBuilder = Caffeine.newBuilder()
-      .expireAfterWrite(Duration.ofMillis(expirationMs))
-      .ticker(Ticker.systemTicker());
-    if (accessLevelCacheSize > 0) {
-      accessCacheBuilder.maximumSize(accessLevelCacheSize);
-    }
-    this.accessLevelCache = accessCacheBuilder.build();
     // Register this instance as a JMX MBean for monitoring. The catalog was initialized with the
     // metastore's CATALOG_DEFAULT name (see HMSCatalogFactory), so catalog.name() already yields
     // that value; using it directly keeps this class free of a Configuration/MetastoreConf
     // dependency and reflects the actual identity of the wrapped catalog.
     registerJmx(catalog.name());
-  }
-
-  private AccessLevel computeAccessLevel(TableIdentifier ident, String user) {
-    // Do not short-circuit on !isAvailable(): the pass-through helpers already return READ_WRITE
-    // when authorization is intentionally disabled, while a helper whose authorizer failed to
-    // initialize returns NONE (fail-closed). Overriding either here would open access.
-    try {
-      String dbName = ident.namespace().level(0);
-      String tableName = ident.name();
-      return privilegeHelper.getAccessLevel(dbName, tableName, user);
-    } catch (Exception e) {
-      LOG.warn("Access level check failed for {}", ident, e);
-      return AccessLevel.NONE;
-    }
-  }
-
-  /**
-   * Resolves the identifier used for authorization. A metadata table (e.g. {@code db.tbl.snapshots})
-   * must be authorized against its base table ({@code db.tbl}); otherwise a user granted on an
-   * unrelated table that happens to share the metadata-type name (e.g. {@code db.snapshots}) could
-   * read the metadata table without access to the table it derives from.
-   */
-  private TableIdentifier authzIdentifier(TableIdentifier identifier) {
-    Namespace ns = identifier.namespace();
-    if (ns.levels().length >= 2 && MetadataTableType.from(identifier.name()) != null) {
-      // TableIdentifier.of(String...) treats the last level as the table name, so passing the
-      // metadata table's namespace levels ([db, tbl]) yields the base table identifier (db.tbl).
-      return TableIdentifier.of(ns.levels());
-    }
-    return identifier;
-  }
-
-  private String currentUser() {
-    try {
-      return UserGroupInformation.getCurrentUser().getShortUserName();
-    } catch (IOException e) {
-      LOG.warn("Failed to determine current user", e);
-      return null;
-    }
-  }
-
-  private AccessLevel cachedAccessLevel(TableIdentifier ident) {
-    String user = currentUser();
-    if (user == null) {
-      return AccessLevel.NONE;
-    }
-    ConcurrentMap<String, AccessLevel> perUser = accessLevelCache.get(ident, k -> new ConcurrentHashMap<>());
-    return perUser.computeIfAbsent(user, u -> computeAccessLevel(ident, u));
-  }
-
-  private void checkReadAccess(TableIdentifier ident) {
-    if (cachedAccessLevel(ident) == AccessLevel.NONE) {
-      throw new ForbiddenException("Access denied on %s", ident);
-    }
-  }
-
-  private void checkWriteAccess(TableIdentifier ident) {
-    if (cachedAccessLevel(ident) != AccessLevel.READ_WRITE) {
-      throw new ForbiddenException("Write access denied on %s", ident);
-    }
-  }
-
-  private AccessLevel computeNamespaceAccessLevel(Namespace namespace, String user) {
-    if (namespace.isEmpty()) {
-      return AccessLevel.NONE;
-    }
-    // See computeAccessLevel: never override the helper's decision based on availability.
-    try {
-      return privilegeHelper.getNamespaceAccessLevel(namespace.level(0), user);
-    } catch (Exception e) {
-      LOG.warn("Namespace access level check failed for {}", namespace, e);
-      return AccessLevel.NONE;
-    }
-  }
-
-  private TableIdentifier namespaceIdent(Namespace ns) {
-    return TableIdentifier.of(ns, "*");
-  }
-
-  private AccessLevel cachedNamespaceAccessLevel(Namespace namespace) {
-    String user = currentUser();
-    if (user == null) {
-      return AccessLevel.NONE;
-    }
-    ConcurrentMap<String, AccessLevel> perUser = accessLevelCache.get(namespaceIdent(namespace), k -> new ConcurrentHashMap<>());
-    return perUser.computeIfAbsent(user, u -> computeNamespaceAccessLevel(namespace, u));
-  }
-
-  private void checkNamespaceReadAccess(Namespace namespace) {
-    if (cachedNamespaceAccessLevel(namespace) == AccessLevel.NONE) {
-      throw new ForbiddenException("Access denied on namespace %s", namespace);
-    }
-  }
-
-  private void checkNamespaceWriteAccess(Namespace namespace) {
-    if (cachedNamespaceAccessLevel(namespace) != AccessLevel.READ_WRITE) {
-      throw new ForbiddenException("Write access denied on namespace %s", namespace);
-    }
   }
 
   /**
@@ -530,13 +372,11 @@ public final class HMSCachingCatalog
 
   @Override
   public List<TableIdentifier> listTables(Namespace namespace) {
-    checkNamespaceReadAccess(namespace);
     return hiveCatalog.listTables(namespace);
   }
 
   @Override
   public boolean dropTable(TableIdentifier identifier, boolean purge) {
-    checkWriteAccess(identifier);
     boolean dropped = hiveCatalog.dropTable(identifier, purge);
     invalidateTable(identifier);
     return dropped;
@@ -544,14 +384,12 @@ public final class HMSCachingCatalog
 
   @Override
   public void renameTable(TableIdentifier from, TableIdentifier to) {
-    checkWriteAccess(from);
     hiveCatalog.renameTable(from, to);
     invalidateTable(from);
   }
 
   @Override
   public Table registerTable(TableIdentifier identifier, String metadataFileLocation) {
-    checkWriteAccess(identifier);
     Table registered = hiveCatalog.registerTable(identifier, metadataFileLocation);
     invalidateTable(identifier);
     return registered;
@@ -564,7 +402,6 @@ public final class HMSCachingCatalog
     tableCache.invalidate(canonicalized);
     tableCache.invalidateAll(metadataTableIdentifiers(canonicalized));
     l1Invalidate(canonicalized);
-    accessLevelCache.invalidate(canonicalized);
   }
 
   /**
@@ -617,7 +454,6 @@ public final class HMSCachingCatalog
   @Override
   public Table loadTable(final TableIdentifier identifier) {
     final TableIdentifier canonicalized = identifier;
-    checkReadAccess(authzIdentifier(canonicalized));
     final Table cachedTable = tableCache.getIfPresent(canonicalized);
     long now = System.currentTimeMillis();
     if (cachedTable != null) {
@@ -707,13 +543,10 @@ public final class HMSCachingCatalog
 
   @Override
   public boolean dropNamespace(Namespace namespace) throws NamespaceNotEmptyException {
-    // Use the underlying catalog directly to avoid the namespace read check for internal cache cleanup.
     for (TableIdentifier ident : hiveCatalog.listTables(namespace)) {
       invalidateTable(ident);
     }
-    boolean dropped = hiveCatalog.dropNamespace(namespace);
-    accessLevelCache.invalidate(namespaceIdent(namespace));
-    return dropped;
+    return hiveCatalog.dropNamespace(namespace);
   }
 
   @Override
@@ -733,19 +566,16 @@ public final class HMSCachingCatalog
 
   @Override
   public Catalog.TableBuilder buildTable(TableIdentifier identifier, Schema schema) {
-    checkNamespaceWriteAccess(identifier.namespace());
     return hiveCatalog.buildTable(identifier, schema);
   }
 
   @Override
   public List<TableIdentifier> listViews(Namespace namespace) {
-    checkNamespaceReadAccess(namespace);
     return hiveCatalog.listViews(namespace);
   }
 
   @Override
   public View loadView(TableIdentifier identifier) {
-    checkReadAccess(identifier);
     return hiveCatalog.loadView(identifier);
   }
 
@@ -756,19 +586,16 @@ public final class HMSCachingCatalog
 
   @Override
   public ViewBuilder buildView(TableIdentifier identifier) {
-    checkNamespaceWriteAccess(identifier.namespace());
     return hiveCatalog.buildView(identifier);
   }
 
   @Override
   public boolean dropView(TableIdentifier identifier) {
-    checkWriteAccess(identifier);
     return hiveCatalog.dropView(identifier);
   }
 
   @Override
   public void renameView(TableIdentifier from, TableIdentifier to) {
-    checkWriteAccess(from);
     hiveCatalog.renameView(from, to);
   }
 
