@@ -20,7 +20,6 @@ package org.apache.iceberg.rest;
 
 import java.io.Closeable;
 import java.lang.management.ManagementFactory;
-import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -30,7 +29,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.LongAdder;
-import java.util.function.Function;
 
 import javax.management.JMException;
 import javax.management.MBeanServer;
@@ -40,7 +38,6 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.Ticker;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.iceberg.BaseMetadataTable;
 import org.apache.iceberg.HasTableOperations;
 import org.apache.iceberg.MetadataTableType;
@@ -99,19 +96,6 @@ public final class HMSCachingCatalog
   private static final Logger LOG = LoggerFactory.getLogger(HMSCachingCatalog.class);
 
   @TestOnly
-  private static SoftReference<HMSCachingCatalog> cacheRef = new SoftReference<>(null);
-
-  @TestOnly
-  @SuppressWarnings("unchecked")
-  public static <C extends Catalog> C getLatestCache(Function<HMSCachingCatalog, C> extractor) {
-    HMSCachingCatalog cache = cacheRef.get();
-    if (cache == null) {
-      return null;
-    }
-    return extractor == null ? (C) cache : extractor.apply(cache);
-  }
-
-  @TestOnly
   public HiveCatalog getCatalog() {
     return hiveCatalog;
   }
@@ -143,7 +127,6 @@ public final class HMSCachingCatalog
   // JMX ObjectName under which this instance is registered (may be null if registration failed).
   private ObjectName jmxObjectName;
 
-
   /**
    * Creates a new caching catalog that wraps the given HiveCatalog.
    * @param catalog the underlying HiveCatalog
@@ -157,10 +140,6 @@ public final class HMSCachingCatalog
         .ticker(Ticker.systemTicker())
         .build();
     Configuration conf = catalog.getConf();
-    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEST)) {
-      // Only keep a reference to the latest cache for testing purpose, so that tests can manipulate the catalog.
-      cacheRef = new SoftReference<>(this);
-    }
     int l1size = conf.getInt("hms.caching.catalog.l1.cache.size", 32);
     int l1ttl = conf.getInt("hms.caching.catalog.l1.cache.ttl", 3_000);
     if (l1size > 0 && l1ttl > 0) {
@@ -415,10 +394,9 @@ public final class HMSCachingCatalog
   @Override
   public void invalidateTable(TableIdentifier ident) {
     hiveCatalog.invalidateTable(ident);
-    TableIdentifier canonicalized = ident;
-    tableCache.invalidate(canonicalized);
-    tableCache.invalidateAll(metadataTableIdentifiers(canonicalized));
-    l1Invalidate(canonicalized);
+    tableCache.invalidate(ident);
+    tableCache.invalidateAll(metadataTableIdentifiers(ident));
+    l1Invalidate(ident);
   }
 
   /**
@@ -470,77 +448,76 @@ public final class HMSCachingCatalog
 
   @Override
   public Table loadTable(final TableIdentifier identifier) {
-    final TableIdentifier canonicalized = identifier;
-    final Table cachedTable = tableCache.getIfPresent(canonicalized);
+    final Table cachedTable = tableCache.getIfPresent(identifier);
     long now = System.currentTimeMillis();
     if (cachedTable != null) {
       // Determine if L1 cache is valid based on the last cached time and the TTL.
       // If the table is in L1 cache, we can skip the location check and return the cached table directly,
       // which can significantly reduce the latency for repeated access to the same table.
-      Long lastCached = l1Cache.get(canonicalized);
+      Long lastCached = l1Cache.get(identifier);
       if (lastCached != null) {
         if (now - lastCached < l1Ttl) {
-          LOG.debug("Table {} is in L1 cache, returning cached table", canonicalized);
-          onL1CacheHit(canonicalized);
-          onCacheHit(canonicalized);
+          LOG.debug("Table {} is in L1 cache, returning cached table", identifier);
+          onL1CacheHit(identifier);
+          onCacheHit(identifier);
           return cachedTable;
         } else {
-          l1Invalidate(canonicalized);
-          onL1CacheMiss(canonicalized);
+          l1Invalidate(identifier);
+          onL1CacheMiss(identifier);
         }
       } else {
-        onL1CacheMiss(canonicalized);
+        onL1CacheMiss(identifier);
       }
       // If the table is no longer in L1 cache, we need to check the location.
-      final String location = metadataLocator.getLocation(canonicalized);
+      final String location = metadataLocator.getLocation(identifier);
       if (location == null) {
         // A null location means the table no longer exists in HMS. The cached instance is stale and
         // its metadata/manifests are highly likely to be deleted, so we must not serve it: evict the
         // entry and signal not-found rather than returning a ghost table.
-        LOG.debug("Table {} no longer exists in HMS, evicting stale cache entry", canonicalized);
-        invalidateTable(canonicalized);
-        throw new NoSuchTableException("Table does not exist: %s", canonicalized);
+        LOG.debug("Table {} no longer exists in HMS, evicting stale cache entry", identifier);
+        invalidateTable(identifier);
+        throw new NoSuchTableException("Table does not exist: %s", identifier);
       }
       String cachedLocation =
           cachedTable instanceof HasTableOperations tableOps ? tableOps.operations().current().metadataFileLocation() : null;
       if (location.equals(cachedLocation)) {
-        onCacheHit(canonicalized);
-        l1MarkFresh(canonicalized, now);
+        onCacheHit(identifier);
+        l1MarkFresh(identifier, now);
         return cachedTable;
       } else {
-        LOG.debug("Invalidate table {}, cached {} != actual {}", canonicalized, cachedLocation, location);
+        LOG.debug("Invalidate table {}, cached {} != actual {}", identifier, cachedLocation, location);
         // Invalidate the cached table if the location is different
-        invalidateTable(canonicalized);
-        onCacheInvalidate(canonicalized);
+        invalidateTable(identifier);
+        onCacheInvalidate(identifier);
       }
     } else {
-      onCacheMiss(canonicalized);
+      onCacheMiss(identifier);
     }
-    final Table table = tableCache.get(canonicalized, this::loadTableWithoutCache);
+    final Table table = tableCache.get(identifier, this::loadTableWithoutCache);
     if (table instanceof BaseMetadataTable) {
       // Cache underlying table: there must be a table named by the namespace (?)
-      TableIdentifier originTableIdentifier = TableIdentifier.of(canonicalized.namespace().levels());
+      TableIdentifier originTableIdentifier = TableIdentifier.of(identifier.namespace().levels());
       Table originTable = tableCache.get(originTableIdentifier, this::loadTableWithoutCache);
       // Share TableOperations instance of origin table for all metadata tables, so that metadata
       // table instances are refreshed as well when origin table instance is refreshed.
       if (originTable instanceof HasTableOperations tableOps) {
         TableOperations ops = tableOps.operations();
-        MetadataTableType type = MetadataTableType.from(canonicalized.name());
+        MetadataTableType type = MetadataTableType.from(identifier.name());
         // Defensive: MetadataTableType.from may return null for unknown names
         if (type != null) {
           Table metadataTable =
-              MetadataTableUtils.createMetadataTableInstance(ops, hiveCatalog.name(), originTableIdentifier, canonicalized, type);
-          tableCache.put(canonicalized, metadataTable);
-          l1MarkFresh(canonicalized, now);
-          onCacheMetaLoad(canonicalized);
-          LOG.debug("Loaded metadata table: {} for origin table: {}", canonicalized, originTableIdentifier);
+              MetadataTableUtils.createMetadataTableInstance(ops, hiveCatalog.name(), originTableIdentifier, identifier, type);
+          tableCache.put(identifier, metadataTable);
+          l1MarkFresh(identifier, now);
+          onCacheMetaLoad(identifier);
+          LOG.debug("Loaded metadata table: {} for origin table: {}", identifier, originTableIdentifier);
           // Return the metadata table instead of the original table
           return metadataTable;
         }
       }
     }
-    l1MarkFresh(canonicalized, now);
-    onCacheLoad(canonicalized);
+    l1MarkFresh(identifier, now);
+    onCacheLoad(identifier);
     return table;
   }
 

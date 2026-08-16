@@ -108,4 +108,9 @@ public class RESTCatalogServer {
   public String getRestEndpoint() {
     return String.format("http://localhost:%d/iceberg", restPort);
   }
+
+  /** Thrift URI of the embedded metastore, built from the port it actually bound to. */
+  public String getThriftUri() {
+    return String.format("thrift://localhost:%d", hmsPort);
+  }
 }

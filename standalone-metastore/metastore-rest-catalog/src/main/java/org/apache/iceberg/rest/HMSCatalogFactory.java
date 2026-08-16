@@ -72,6 +72,20 @@ public class HMSCatalogFactory {
    * @return the catalog
    */
   private Catalog createCatalog() {
+    final HiveCatalog hiveCatalog = createHiveCatalog(configuration);
+    long expiry = MetastoreConf.getLongVar(configuration, MetastoreConf.ConfVars.ICEBERG_CATALOG_CACHE_EXPIRY);
+    return expiry > 0 ? new HMSCachingCatalog(hiveCatalog, expiry) : hiveCatalog;
+  }
+
+  /**
+   * Builds the underlying {@link HiveCatalog} from the given configuration.
+   * <p>Exposed so tests can obtain a catalog through the exact production construction path rather
+   * than duplicating it; the servlet path wraps the result in an {@link HMSCachingCatalog} when a
+   * positive cache expiry is configured (see {@link #createCatalog()}).</p>
+   * @param configuration the configuration
+   * @return the initialized HiveCatalog
+   */
+  public static HiveCatalog createHiveCatalog(Configuration configuration) {
     final Map<String, String> properties = new TreeMap<>();
     final String configUri = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.THRIFT_URIS);
     // Clear THRIFT_URIS so HiveCatalog doesn't accidentally use Thrift connection
@@ -101,8 +115,7 @@ public class HMSCatalogFactory {
     hiveCatalog.setConf(configuration);
     final String catalogName = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.CATALOG_DEFAULT);
     hiveCatalog.initialize(catalogName, properties);
-    long expiry = MetastoreConf.getLongVar(configuration, MetastoreConf.ConfVars.ICEBERG_CATALOG_CACHE_EXPIRY);
-    return expiry > 0 ? new HMSCachingCatalog(hiveCatalog, expiry) : hiveCatalog;
+    return hiveCatalog;
   }
 
   /**

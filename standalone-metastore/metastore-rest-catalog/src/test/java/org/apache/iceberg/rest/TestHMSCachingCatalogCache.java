@@ -74,9 +74,7 @@ class TestHMSCachingCatalogCache {
 
   @BeforeAll
   void setupAll() {
-    HMSCachingCatalog serverCatalog = HMSCachingCatalog.getLatestCache(null);
-    Assertions.assertNotNull(serverCatalog, "HMSCachingCatalog must be initialized by the server");
-    hiveCatalog = serverCatalog.getCatalog();
+    hiveCatalog = SERVER.newServerCatalog();
   }
 
   @BeforeEach
