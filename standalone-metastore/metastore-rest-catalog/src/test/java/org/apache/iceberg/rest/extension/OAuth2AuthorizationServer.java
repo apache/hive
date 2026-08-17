@@ -164,26 +164,41 @@ public class OAuth2AuthorizationServer {
         .withExposedPorts(8080)
         .withNetwork(dockerNetwork)
         .withStartupTimeout(Duration.ofMinutes(5));
-    container.start();
+    try {
+      container.start();
 
-    var base = "http://%s:%d".formatted(container.getHost(), container.getMappedPort(8080));
-    keycloak = Keycloak.getInstance(base, "master", "admin", "admin", "admin-cli");
+      var base = "http://%s:%d".formatted(container.getHost(), container.getMappedPort(8080));
+      keycloak = KeycloakBuilder.builder()
+          .serverUrl(base)
+          .realm("master")
+          .username("admin")
+          .password("admin")
+          .clientId("admin-cli")
+          .build();
 
-    var realm = createRealm(keycloak);
-    createResourceServer(realm);
-    issuer = "%s/realms/%s".formatted(base, REALM);
-    tokenEndpoint = "%s/protocol/openid-connect/token".formatted(issuer);
+      var realm = createRealm(keycloak);
+      createResourceServer(realm);
+      issuer = "%s/realms/%s".formatted(base, REALM);
+      tokenEndpoint = "%s/protocol/openid-connect/token".formatted(issuer);
 
-    createScope(realm);
-    var audience = createAudience();
-    createClients(realm, List.of("catalog"), audience);
-    accessToken = getAccessToken(base, List.of("catalog"));
+      createScope(realm);
+      var audience = createAudience();
+      createClients(realm, List.of("catalog"), audience);
+      accessToken = getAccessToken(base, List.of("catalog"));
+    } catch (RuntimeException e) {
+      stop();
+      throw e;
+    }
   }
 
   public void stop() {
+    if (keycloak != null) {
+      keycloak.close();
+      keycloak = null;
+    }
     if (container != null) {
       container.stop();
-      keycloak.close();
+      container = null;
     }
   }
 
