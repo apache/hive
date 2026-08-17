@@ -41,6 +41,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -311,6 +312,32 @@ public class TestSkippingTextInputFormat {
   }
 
   /**
+   * Header skipping with a custom textinputformat.record.delimiter must locate the
+   * delimiter by BYTE offset. The last header line is decoded one char per byte
+   * (ISO-8859-1) so indexOf() lines up with the byte-counting currPos; decoding the
+   * header as UTF-8 (Text.toString()) would shrink the index by one for every
+   * multi-byte character preceding the delimiter and shift the split start.
+   */
+  @Test
+  public void testSkipHeaderMultiByteWithRecordDelimiter() throws Exception {
+    // 'é' is two UTF-8 bytes (0xC3 0xA9), so the '~' delimiter sits at byte offset 7
+    // ("h", "é" [2 bytes], "a", "d", "e", "r", "~") but at char index 6 under UTF-8.
+    Path file = new Path(dataDir, "multibyte_delim.csv");
+    writeUtf8File(file, "héader~data_row1~data_row2");
+
+    job.set("textinputformat.record.delimiter", "~");
+    SkippingTextInputFormat inputFormat = new SkippingTextInputFormat();
+    inputFormat.configure(job, 1, 0); // skip one header "line", no footer
+    FileInputFormat.setInputPaths(job, file);
+    InputSplit[] splits = inputFormat.getSplits(job, 1);
+
+    assertEquals(1, splits.length);
+    assertTrue(splits[0] instanceof FileSplit);
+    // Byte offset of the delimiter; char-based UTF-8 decoding would wrongly yield 6.
+    assertEquals(7, ((FileSplit) splits[0]).getStart());
+  }
+
+  /**
    * Generates the single (header-adjusted) split for the given file with
    * skip.header.line.count=1 and no footer.
    */
@@ -331,5 +358,16 @@ public class TestSkippingTextInputFormat {
     OutputStreamWriter writer = new OutputStreamWriter(fileSystem.create(file));
     writer.write(content);
     writer.close();
+  }
+
+  /**
+   * Writes the given string to the given file as UTF-8, so multi-byte characters
+   * land as a deterministic byte sequence regardless of the platform default charset.
+   */
+  private void writeUtf8File(Path file, String content) throws IOException {
+    try (OutputStreamWriter writer =
+        new OutputStreamWriter(fileSystem.create(file), StandardCharsets.UTF_8)) {
+      writer.write(content);
+    }
   }
 }

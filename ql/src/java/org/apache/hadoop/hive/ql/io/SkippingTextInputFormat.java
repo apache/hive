@@ -22,7 +22,6 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.compress.CompressionCodecFactory;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.TextInputFormat;
@@ -109,10 +108,14 @@ public class SkippingTextInputFormat extends TextInputFormat {
     Long startIndexForFile = startIndexMap.get(path);
     if (startIndexForFile == null) {
       FileSystem fileSystem = path.getFileSystem(conf);
-      // Hadoop's LineReader counts bytes internally and handles '\n', '\r\n' and
-      // lone '\r', so we avoid the unreliable readLine()+getPos() idiom that throws
-      // ClassCastException on lone-CR files.
+      String delimiter = conf.get("textinputformat.record.delimiter");
+      boolean hasDelimiter = delimiter != null && !delimiter.isEmpty();
       try (FSDataInputStream fis = fileSystem.open(path)) {
+        // LineReader terminates on '\n', '\r\n' and lone '\r' and returns the number of
+        // bytes it consumed, so offsets come from that count instead of the
+        // readLine()+getPos() idiom, which throws ClassCastException on lone-CR files.
+        // Deliberately not closed: LineReader.close() would close fis, which the
+        // try-with-resources already owns.
         LineReader reader = new LineReader(fis);
         Text headerLine = new Text();
         long currPos = 0;
@@ -123,19 +126,14 @@ public class SkippingTextInputFormat extends TextInputFormat {
             startIndexMap.put(path, Long.MAX_VALUE);
             return Long.MAX_VALUE;
           }
-          if (j == headerCount-1) {
-            String delimiter = conf.get("textinputformat.record.delimiter");
-            // If record delimiter is defined
-            if (delimiter != null && !delimiter.isEmpty()) {
-              // Decode as ISO-8859-1 (one char per byte) so the delimiter's index is a
-              // byte offset, matching currPos. Text.toString() would decode UTF-8 and
-              // shift the index for multi-byte header bytes preceding the delimiter.
-              String lastHeader =
-                  new String(headerLine.getBytes(), 0, headerLine.getLength(), StandardCharsets.ISO_8859_1);
-              delimiterIdx = lastHeader.indexOf(delimiter);
-            } else {
-              currPos += bytesRead;
-            }
+          if (j == headerCount - 1 && hasDelimiter) {
+            // Decode one char per byte so indexOf() yields a byte offset comparable with
+            // currPos. This preserves the old DataInputStream.readLine(), which
+            // zero-extended each byte to a char; Text.toString() would decode UTF-8 and
+            // shift the index whenever the header holds multi-byte characters.
+            String lastHeader =
+                new String(headerLine.getBytes(), 0, headerLine.getLength(), StandardCharsets.ISO_8859_1);
+            delimiterIdx = lastHeader.indexOf(delimiter);
           } else {
             currPos += bytesRead;
           }
@@ -155,7 +153,7 @@ public class SkippingTextInputFormat extends TextInputFormat {
   private long getCachedEndIndex(Path path) throws IOException {
     Long endIndexForFile = endIndexMap.get(path);
     if (endIndexForFile == null) {
-      final long bufferSectionSize = 5 * 1024;
+      final int bufferSectionSize = 5 * 1024;
       FileSystem fileSystem = path.getFileSystem(conf);
       long endOfFile = fileSystem.getFileStatus(path).getLen();
       if (footerCount == 0) {
@@ -167,12 +165,18 @@ public class SkippingTextInputFormat extends TextInputFormat {
         // we need 'footer count' lines and one space for EOF
         LineBuffer buffer = new LineBuffer(footerCount + 1);
         try (FSDataInputStream fis = fileSystem.open(path)) {
-          Text line = new Text();
           while (bufferSectionEnd > bufferSectionStart) {
             fis.seek(bufferSectionStart);
-            // Fresh reader per seek; offsets are seek position + bytes consumed.
-            LineReader reader = new LineReader(fis);
-            long consumed = 0;
+            // A LineReader buffers read-ahead and is not seek-aware, so it is valid only
+            // for the region following this seek and must not outlive the section: a
+            // reader carried across the seek would keep serving bytes from the previously
+            // scanned section while offsets were counted from the new start. Sized to the
+            // section so a 5 KB window does not pull the 64 KB default; the single buffer
+            // of over-read past bufferSectionEnd is expected and discarded by
+            // LineBuffer.consume(). Deliberately not closed: that would close fis, which
+            // the remaining sections still need.
+            LineReader reader = new LineReader(fis, bufferSectionSize);
+            Text line = new Text();
             long pos = bufferSectionStart;
             while (pos < bufferSectionEnd) {
               int bytesRead = reader.readLine(line);
@@ -182,8 +186,7 @@ public class SkippingTextInputFormat extends TextInputFormat {
                 // enough lines in the file.
                 break;
               }
-              consumed += bytesRead;
-              pos = bufferSectionStart + consumed;
+              pos += bytesRead;
               buffer.consume(pos, bufferSectionEnd);
             }
             if (buffer.getRemainingLineCount() == 0) {
