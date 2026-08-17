@@ -204,6 +204,11 @@ public final class HiveConfigBuilder {
     if (spec.tezAm().configOverrides() != null) {
       tezProps.putAll(spec.tezAm().configOverrides());
     }
+    if (llap != null && llap.isEnabled() && llap.autoscaling().isEnabled()) {
+      if (ConfigUtils.getTimeMs(tezProps, ConfigUtils.HIVE_LLAP_TASK_SCHEDULER_LOCALITY_DELAY_KEY, 0) == -1) {
+        tezProps.put(ConfigUtils.HIVE_LLAP_TASK_SCHEDULER_LOCALITY_DELAY_KEY, "0ms");
+      }
+    }
     return tezProps;
   }
 

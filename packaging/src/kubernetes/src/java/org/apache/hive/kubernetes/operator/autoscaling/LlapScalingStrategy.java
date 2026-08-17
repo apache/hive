@@ -28,11 +28,11 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Scaling strategy for LLAP daemons.
- * Formula: avg(QueuedRequests + Configured - Available) across all pods.
- * This represents average "busy slots + queued" per daemon.
- * desired = ceil(avg_busy / scaleUpThreshold)
+ * For Scale-Up: Pending Load across all TezAM pods should be above the threshold.
+ * For Scale-Down: Running Load across all LLAP pods should be below the threshold.
+ * desired = ceil(totalClusterLoad / capacityPerDaemon)
  * <p>
- * Activation gate: only scale if HS2 has open sessions (prevents zombie scaling).
+ * Activation gate: only scale if HS2 has open sessions & TezAMs are running DAGs (prevents zombie scaling).
  */
 public class LlapScalingStrategy implements ScalingStrategy {
 
@@ -41,7 +41,9 @@ public class LlapScalingStrategy implements ScalingStrategy {
   static final String METRIC_QUEUED = "hadoop_llapdaemon_executornumqueuedrequests";
   static final String METRIC_CONFIGURED = "hadoop_llapdaemon_executornumexecutorsconfigured";
   static final String METRIC_AVAILABLE = "hadoop_llapdaemon_executornumexecutorsavailable";
+  static final String METRIC_MAX_FREE_SLOTS_CONFIGURED = "hadoop_llapdaemon_executormaxfreeslotsconfigured";
   static final String METRIC_LLAP_TARGET_PREFIX = "hs2_llap_target_sessions_";
+  static final String METRIC_TEZ_PENDING_TASKS = "tez_am_pending_tasks";
 
   private final HiveClusterAutoscaler orchestrator;
   private final HiveCluster cluster;
@@ -83,36 +85,57 @@ public class LlapScalingStrategy implements ScalingStrategy {
       return minReplica;
     }
 
-    // Compute average busy slots across all LLAP pods
-    double totalBusy = 0;
-    int podCount = 0;
+    List<PodMetrics> tezAmMetrics = orchestrator.getTezAmMetricsFromCache(cluster, llapName);
+    double totalPending = 0;
+    for (PodMetrics pm : tezAmMetrics) {
+      totalPending += pm.metrics().getOrDefault(METRIC_TEZ_PENDING_TASKS, 0.0);
+    }
+
+    double totalLLAPCapacity = 0;
+    double totalLLAPLoad = 0;
     for (PodMetrics pm : podMetrics) {
       double queued = pm.metrics().getOrDefault(METRIC_QUEUED, 0.0);
       double configured = pm.metrics().getOrDefault(METRIC_CONFIGURED, 0.0);
       double available = pm.metrics().getOrDefault(METRIC_AVAILABLE, 0.0);
-      double busy = queued + configured - available;
-      totalBusy += busy;
-      podCount++;
+      totalLLAPCapacity += pm.metrics().getOrDefault(METRIC_MAX_FREE_SLOTS_CONFIGURED, 0.0);
+      totalLLAPLoad += queued + configured - available;
     }
 
-    double avgBusy = totalBusy / podCount;
-    lastMetric = (int) Math.round(avgBusy);
-
-    if (avgBusy <= 0) {
-      // HS2 has sessions (passed activation gate above) but executors are idle between queries.
-      // Keep at least 1 daemon to avoid flapping: scaling to 0 here would cause immediate
-      // scale-back-up on the next evaluation when the empty-pod path triggers.
+    // HS2 has sessions (passed activation gate above) but either
+    // 1. there is no tezAM running, so LLAP running any work is zombie if any.
+    // 2. there are tezAMs running, but no tasks running or pending.
+    if(tezAmMetrics.isEmpty() || (totalPending + totalLLAPLoad) == 0) {
       return Math.max(1, autoscaling.minReplicas());
     }
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("[llap] avgBusy={}, threshold={}", String.format("%.2f", avgBusy),
-          autoscaling.scaleUpThreshold());
+    double capacityPerDaemon = Math.max(1.0, totalLLAPCapacity / podMetrics.size());
+    double freeLLAPCapacity = totalLLAPCapacity - totalLLAPLoad;
+    double avgLLAPLoadPercent = totalLLAPCapacity > 0 ? (totalLLAPLoad / totalLLAPCapacity) * 100.00 : 0.0;
+
+    double totalClusterLoad = totalPending + totalLLAPLoad;
+    double pendingLoadPercent = totalClusterLoad > 0 ? (totalPending / totalClusterLoad) * 100.0 : 0.0;
+
+    int scaleUpThreshold = autoscaling.scaleUpThreshold();
+    int scaleDownThreshold = autoscaling.scaleDownThreshold();
+
+    lastMetric = (int) totalClusterLoad;
+
+    // Scale-up: pending load share of total load exceeds threshold
+    // Scale-down: no pending work AND daemon load below threshold
+    if ((pendingLoadPercent >= scaleUpThreshold && totalPending > freeLLAPCapacity) ||
+        (totalPending == 0 && avgLLAPLoadPercent <= scaleDownThreshold)) {
+      int desired = (int) Math.ceil(totalClusterLoad / capacityPerDaemon);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("[llap-{}] totalClusterLoad={}, capacityPerDaemon={}, pendingLoadPercent={}, avgLLAPLoadPercent={}",
+            llapName, totalClusterLoad, capacityPerDaemon, String.format("%.2f", pendingLoadPercent),
+            String.format("%.2f", avgLLAPLoadPercent));
+      }
+      return desired;
     }
 
-    int threshold = Math.max(1, autoscaling.scaleUpThreshold());
-    int desired = (int) Math.ceil(avgBusy / threshold);
-    return Math.max(desired, autoscaling.minReplicas());
+    // Work is in flight (pending share below threshold) or daemons are moderately loaded.
+    // Return current pod count so the stabilization window keeps the replica count stable.
+    return podMetrics.size();
   }
 
   @Override

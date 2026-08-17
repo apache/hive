@@ -129,6 +129,12 @@ spec:
                           replicas before scale-down occurs. Also acts as the cooldown
                           between consecutive scale-downs.
                         type: integer
+                      scaleDownThreshold:
+                        default: 20
+                        description: "Threshold that triggers scale-down (LLAP only):\
+                          \ average daemon utilization percentage (0-100) below which\
+                          \ scale-down triggers."
+                        type: integer
                       scaleUpStabilizationSeconds:
                         default: 60
                         description: Stabilization window in seconds for scale-up
@@ -138,8 +144,8 @@ spec:
                       scaleUpThreshold:
                         default: 80
                         description: "Threshold that triggers scale-up (component-specific:\
-                          \ sessions per pod for HS2, request rate for HMS, busy slots\
-                          \ per daemon for LLAP). Not used by TezAM (demand-based:\
+                          \ sessions per pod for HS2, request rate for HMS, load percentage\
+                          \ pending in TezAM for LLAP). Not used by TezAM (demand-based:\
                           \ 1 TezAM per session)."
                         type: integer
                     type: object
@@ -312,6 +318,12 @@ spec:
                             fewer replicas before scale-down occurs. Also acts as
                             the cooldown between consecutive scale-downs.
                           type: integer
+                        scaleDownThreshold:
+                          default: 20
+                          description: "Threshold that triggers scale-down (LLAP only):\
+                            \ average daemon utilization percentage (0-100) below\
+                            \ which scale-down triggers."
+                          type: integer
                         scaleUpStabilizationSeconds:
                           default: 60
                           description: Stabilization window in seconds for scale-up
@@ -321,9 +333,9 @@ spec:
                         scaleUpThreshold:
                           default: 80
                           description: "Threshold that triggers scale-up (component-specific:\
-                            \ sessions per pod for HS2, request rate for HMS, busy\
-                            \ slots per daemon for LLAP). Not used by TezAM (demand-based:\
-                            \ 1 TezAM per session)."
+                            \ sessions per pod for HS2, request rate for HMS, load\
+                            \ percentage pending in TezAM for LLAP). Not used by TezAM\
+                            \ (demand-based: 1 TezAM per session)."
                           type: integer
                       type: object
                     configOverrides:
@@ -467,6 +479,12 @@ spec:
                                 fewer replicas before scale-down occurs. Also acts
                                 as the cooldown between consecutive scale-downs.
                               type: integer
+                            scaleDownThreshold:
+                              default: 20
+                              description: "Threshold that triggers scale-down (LLAP\
+                                \ only): average daemon utilization percentage (0-100)\
+                                \ below which scale-down triggers."
+                              type: integer
                             scaleUpStabilizationSeconds:
                               default: 60
                               description: Stabilization window in seconds for scale-up
@@ -477,8 +495,8 @@ spec:
                               default: 80
                               description: "Threshold that triggers scale-up (component-specific:\
                                 \ sessions per pod for HS2, request rate for HMS,\
-                                \ busy slots per daemon for LLAP). Not used by TezAM\
-                                \ (demand-based: 1 TezAM per session)."
+                                \ load percentage pending in TezAM for LLAP). Not\
+                                \ used by TezAM (demand-based: 1 TezAM per session)."
                               type: integer
                           type: object
                         replicas:
@@ -545,6 +563,12 @@ spec:
                           replicas before scale-down occurs. Also acts as the cooldown
                           between consecutive scale-downs.
                         type: integer
+                      scaleDownThreshold:
+                        default: 20
+                        description: "Threshold that triggers scale-down (LLAP only):\
+                          \ average daemon utilization percentage (0-100) below which\
+                          \ scale-down triggers."
+                        type: integer
                       scaleUpStabilizationSeconds:
                         default: 60
                         description: Stabilization window in seconds for scale-up
@@ -554,8 +578,8 @@ spec:
                       scaleUpThreshold:
                         default: 80
                         description: "Threshold that triggers scale-up (component-specific:\
-                          \ sessions per pod for HS2, request rate for HMS, busy slots\
-                          \ per daemon for LLAP). Not used by TezAM (demand-based:\
+                          \ sessions per pod for HS2, request rate for HMS, load percentage\
+                          \ pending in TezAM for LLAP). Not used by TezAM (demand-based:\
                           \ 1 TezAM per session)."
                         type: integer
                     type: object
@@ -753,6 +777,12 @@ spec:
                           replicas before scale-down occurs. Also acts as the cooldown
                           between consecutive scale-downs.
                         type: integer
+                      scaleDownThreshold:
+                        default: 20
+                        description: "Threshold that triggers scale-down (LLAP only):\
+                          \ average daemon utilization percentage (0-100) below which\
+                          \ scale-down triggers."
+                        type: integer
                       scaleUpStabilizationSeconds:
                         default: 60
                         description: Stabilization window in seconds for scale-up
@@ -762,8 +792,8 @@ spec:
                       scaleUpThreshold:
                         default: 80
                         description: "Threshold that triggers scale-up (component-specific:\
-                          \ sessions per pod for HS2, request rate for HMS, busy slots\
-                          \ per daemon for LLAP). Not used by TezAM (demand-based:\
+                          \ sessions per pod for HS2, request rate for HMS, load percentage\
+                          \ pending in TezAM for LLAP). Not used by TezAM (demand-based:\
                           \ 1 TezAM per session)."
                         type: integer
                     type: object
