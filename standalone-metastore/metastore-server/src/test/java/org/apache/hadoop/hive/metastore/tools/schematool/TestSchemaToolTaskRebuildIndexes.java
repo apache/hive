@@ -71,20 +71,21 @@ public class TestSchemaToolTaskRebuildIndexes {
 
     Connection connection = mock(Connection.class);
     Statement statement = mock(Statement.class);
-    // Ignore missing index on DROP.
-    SQLException missingIndex = new SQLException("index does not exist", "42000", 1418);
-    when(statement.execute("DROP INDEX MISSING_IDX")).thenThrow(missingIndex);
+    // ORA-01418: index does not exist.
+    when(statement.execute("DROP INDEX MISSING_IDX"))
+        .thenThrow(new SQLException("index does not exist", "42000", 1418));
     when(statement.execute("CREATE INDEX MISSING_IDX ON TBLS(TBL_ID)")).thenReturn(false);
     when(connection.createStatement()).thenReturn(statement);
 
     when(schemaTool.getDbType()).thenReturn(HiveSchemaHelper.DB_ORACLE);
+    when(schemaTool.isDryRun()).thenReturn(false);
     when(schemaTool.getMetaStoreSchemaInfo()).thenReturn(schemaInfo);
     when(schemaInfo.getMetaStoreScriptDir()).thenReturn(scriptDir.getAbsolutePath());
     when(schemaTool.getConnectionToMetastore(false)).thenReturn(connection);
 
     task.execute();
 
-    // CREATE still executes.
+    // Missing DROP is swallowed; CREATE still runs.
     verify(statement).execute("CREATE INDEX MISSING_IDX ON TBLS(TBL_ID)");
     verify(schemaTool, never()).execSql(anyString(), anyString());
   }
@@ -97,11 +98,12 @@ public class TestSchemaToolTaskRebuildIndexes {
 
     Connection connection = mock(Connection.class);
     Statement statement = mock(Statement.class);
-    // Non-1418 errors must fail.
+    // Any non-1418 error must propagate.
     when(statement.execute("DROP INDEX BAD_IDX")).thenThrow(new SQLException("boom", "42000", 942));
     when(connection.createStatement()).thenReturn(statement);
 
     when(schemaTool.getDbType()).thenReturn(HiveSchemaHelper.DB_ORACLE);
+    when(schemaTool.isDryRun()).thenReturn(false);
     when(schemaTool.getMetaStoreSchemaInfo()).thenReturn(schemaInfo);
     when(schemaInfo.getMetaStoreScriptDir()).thenReturn(scriptDir.getAbsolutePath());
     when(schemaTool.getConnectionToMetastore(false)).thenReturn(connection);
@@ -118,7 +120,7 @@ public class TestSchemaToolTaskRebuildIndexes {
   public void oracleUnterminatedStatementFailsFast() throws Exception {
     File scriptDir = tmp.newFolder("scripts");
     File script = new File(scriptDir, SchemaToolTaskRebuildIndexes.REBUILD_INDEXES_FILE_PREFIX + ".oracle.sql");
-    // Missing semicolon should fail before execution.
+    // No trailing semicolon.
     Files.writeString(script.toPath(), "DROP INDEX INCOMPLETE", StandardCharsets.UTF_8);
 
     Connection connection = mock(Connection.class);
@@ -126,6 +128,7 @@ public class TestSchemaToolTaskRebuildIndexes {
     when(connection.createStatement()).thenReturn(statement);
 
     when(schemaTool.getDbType()).thenReturn(HiveSchemaHelper.DB_ORACLE);
+    when(schemaTool.isDryRun()).thenReturn(false);
     when(schemaTool.getMetaStoreSchemaInfo()).thenReturn(schemaInfo);
     when(schemaInfo.getMetaStoreScriptDir()).thenReturn(scriptDir.getAbsolutePath());
     when(schemaTool.getConnectionToMetastore(false)).thenReturn(connection);
@@ -134,27 +137,110 @@ public class TestSchemaToolTaskRebuildIndexes {
       task.execute();
       fail("Expected HiveMetaException");
     } catch (HiveMetaException e) {
-      assertTrue(e.getMessage().contains("Oracle rebuild-indexes script contains an unterminated SQL statement."));
+      assertTrue(e.getMessage().contains("rebuild-indexes script contains an unterminated SQL statement"));
     }
 
     verify(statement, times(0)).execute(anyString());
   }
 
   @Test
-  public void nonOracleUsesExistingExecSqlPath() throws Exception {
+  public void nonJdbcDbUsesExecSqlPath() throws Exception {
     File scriptDir = tmp.newFolder("scripts");
     File script = new File(scriptDir, SchemaToolTaskRebuildIndexes.REBUILD_INDEXES_FILE_PREFIX + ".postgres.sql");
     Files.writeString(script.toPath(), "DROP INDEX IF EXISTS X;\n", StandardCharsets.UTF_8);
 
     when(schemaTool.getDbType()).thenReturn(HiveSchemaHelper.DB_POSTGRES);
+    when(schemaTool.isDryRun()).thenReturn(false);
     when(schemaTool.getMetaStoreSchemaInfo()).thenReturn(schemaInfo);
     when(schemaInfo.getMetaStoreScriptDir()).thenReturn(scriptDir.getAbsolutePath());
 
     task.execute();
 
-    // Non-Oracle path stays on execSql.
+    // Postgres supports IF EXISTS, so it uses the batch runner, not JDBC.
     verify(schemaTool).execSql(scriptDir.getAbsolutePath(),
         SchemaToolTaskRebuildIndexes.REBUILD_INDEXES_FILE_PREFIX + ".postgres.sql");
     verify(schemaTool, never()).getConnectionToMetastore(false);
+  }
+
+  @Test
+  public void derbyMissingDropIndexIsIgnoredAndCreateStillRuns() throws Exception {
+    File scriptDir = tmp.newFolder("scripts");
+    File script = new File(scriptDir, SchemaToolTaskRebuildIndexes.REBUILD_INDEXES_FILE_PREFIX + ".derby.sql");
+    Files.writeString(script.toPath(),
+        "DROP INDEX MISSING_IDX;\nCREATE INDEX MISSING_IDX ON TBLS(TBL_ID);\n",
+        StandardCharsets.UTF_8);
+
+    Connection connection = mock(Connection.class);
+    Statement statement = mock(Statement.class);
+    // SQL state 42X65: index does not exist.
+    when(statement.execute("DROP INDEX MISSING_IDX"))
+        .thenThrow(new SQLException("index does not exist", "42X65", 30000));
+    when(statement.execute("CREATE INDEX MISSING_IDX ON TBLS(TBL_ID)")).thenReturn(false);
+    when(connection.createStatement()).thenReturn(statement);
+
+    when(schemaTool.getDbType()).thenReturn(HiveSchemaHelper.DB_DERBY);
+    when(schemaTool.isDryRun()).thenReturn(false);
+    when(schemaTool.getMetaStoreSchemaInfo()).thenReturn(schemaInfo);
+    when(schemaInfo.getMetaStoreScriptDir()).thenReturn(scriptDir.getAbsolutePath());
+    when(schemaTool.getConnectionToMetastore(false)).thenReturn(connection);
+
+    task.execute();
+
+    // Missing DROP is swallowed; CREATE still runs.
+    verify(statement).execute("CREATE INDEX MISSING_IDX ON TBLS(TBL_ID)");
+    verify(schemaTool, never()).execSql(anyString(), anyString());
+  }
+
+  @Test
+  public void derbyUnexpectedDropErrorFailsRebuild() throws Exception {
+    File scriptDir = tmp.newFolder("scripts");
+    File script = new File(scriptDir, SchemaToolTaskRebuildIndexes.REBUILD_INDEXES_FILE_PREFIX + ".derby.sql");
+    Files.writeString(script.toPath(), "DROP INDEX BAD_IDX;\n", StandardCharsets.UTF_8);
+
+    Connection connection = mock(Connection.class);
+    Statement statement = mock(Statement.class);
+    // Any non-42X65 error must propagate.
+    when(statement.execute("DROP INDEX BAD_IDX")).thenThrow(new SQLException("boom", "42000", 30000));
+    when(connection.createStatement()).thenReturn(statement);
+
+    when(schemaTool.getDbType()).thenReturn(HiveSchemaHelper.DB_DERBY);
+    when(schemaTool.isDryRun()).thenReturn(false);
+    when(schemaTool.getMetaStoreSchemaInfo()).thenReturn(schemaInfo);
+    when(schemaInfo.getMetaStoreScriptDir()).thenReturn(scriptDir.getAbsolutePath());
+    when(schemaTool.getConnectionToMetastore(false)).thenReturn(connection);
+
+    try {
+      task.execute();
+      fail("Expected HiveMetaException");
+    } catch (HiveMetaException e) {
+      assertTrue(e.getMessage().contains("Index rebuild failed"));
+    }
+  }
+
+  @Test
+  public void derbyUnterminatedStatementFailsFast() throws Exception {
+    File scriptDir = tmp.newFolder("scripts");
+    File script = new File(scriptDir, SchemaToolTaskRebuildIndexes.REBUILD_INDEXES_FILE_PREFIX + ".derby.sql");
+    // No trailing semicolon.
+    Files.writeString(script.toPath(), "DROP INDEX INCOMPLETE", StandardCharsets.UTF_8);
+
+    Connection connection = mock(Connection.class);
+    Statement statement = mock(Statement.class);
+    when(connection.createStatement()).thenReturn(statement);
+
+    when(schemaTool.getDbType()).thenReturn(HiveSchemaHelper.DB_DERBY);
+    when(schemaTool.isDryRun()).thenReturn(false);
+    when(schemaTool.getMetaStoreSchemaInfo()).thenReturn(schemaInfo);
+    when(schemaInfo.getMetaStoreScriptDir()).thenReturn(scriptDir.getAbsolutePath());
+    when(schemaTool.getConnectionToMetastore(false)).thenReturn(connection);
+
+    try {
+      task.execute();
+      fail("Expected HiveMetaException");
+    } catch (HiveMetaException e) {
+      assertTrue(e.getMessage().contains("rebuild-indexes script contains an unterminated SQL statement"));
+    }
+
+    verify(statement, times(0)).execute(anyString());
   }
 }

@@ -46,6 +46,12 @@ import static org.junit.Assert.assertTrue;
 @RunWith(Parameterized.class)
 public class TestRebuildIndexesScriptConsistency {
 
+  // Derby uses schema-qualified "APP"."INDEXNAME" in the schema file but unqualified INDEXNAME
+  // in the rebuild script; the optional schema prefix group skips "APP". when present.
+  private static final Pattern DERBY_PATTERN = Pattern.compile(
+      "CREATE\\s+(?:UNIQUE\\s+)?INDEX\\s+(?:\"[^\"]+\"\\s*\\.\\s*)?\"?([A-Za-z0-9_]+)\"?",
+      Pattern.CASE_INSENSITIVE);
+
   private static final Pattern POSTGRES_PATTERN = Pattern.compile(
       "CREATE\\s+(?:UNIQUE\\s+)?INDEX\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?\"?([A-Za-z0-9_]+)\"?",
       Pattern.CASE_INSENSITIVE);
@@ -67,6 +73,7 @@ public class TestRebuildIndexesScriptConsistency {
 
   private static final Map<String, Pattern> PATTERNS = new HashMap<>();
   static {
+    PATTERNS.put(HiveSchemaHelper.DB_DERBY, DERBY_PATTERN);
     PATTERNS.put(HiveSchemaHelper.DB_POSTGRES, POSTGRES_PATTERN);
     PATTERNS.put(HiveSchemaHelper.DB_MYSQL, MYSQL_PATTERN);
     PATTERNS.put(HiveSchemaHelper.DB_ORACLE, ORACLE_PATTERN);
@@ -80,6 +87,7 @@ public class TestRebuildIndexesScriptConsistency {
   @Parameterized.Parameters(name = "{0}")
   public static Collection<String> dbTypes() {
     return Arrays.asList(
+        HiveSchemaHelper.DB_DERBY,
         HiveSchemaHelper.DB_POSTGRES,
         HiveSchemaHelper.DB_MYSQL,
         HiveSchemaHelper.DB_ORACLE,

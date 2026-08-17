@@ -488,9 +488,6 @@ public class TestSchemaToolForMetastore {
 
   @Test
   public void testRebuildIndexes() throws HiveMetaException {
-    if (dbms.getDbType().startsWith("derby")) {
-      return;
-    }
     schemaTool.setVerbose(true);
     execute(new SchemaToolTaskInit(), "-initSchema");
     execute(new SchemaToolTaskRebuildIndexes(), "-rebuildIndexes");

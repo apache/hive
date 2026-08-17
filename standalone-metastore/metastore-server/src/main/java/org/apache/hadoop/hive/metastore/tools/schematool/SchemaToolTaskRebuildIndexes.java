@@ -34,7 +34,10 @@ class SchemaToolTaskRebuildIndexes extends SchemaToolTask {
 
   private static final Logger LOG = LoggerFactory.getLogger(SchemaToolTaskRebuildIndexes.class);
   static final String REBUILD_INDEXES_FILE_PREFIX = "rebuild-indexes";
+  // Neither Oracle nor Derby support DROP INDEX IF EXISTS, so a missing index is tolerated
+  // per-statement: ORA-01418 for Oracle, SQL state 42X65 ("Index does not exist") for Derby.
   private static final int ORACLE_INDEX_MISSING_ERROR = 1418;
+  private static final String DERBY_INDEX_MISSING_STATE = "42X65";
 
   @Override
   void setCommandLineArguments(SchemaToolCommandLine cl) {
@@ -65,8 +68,9 @@ class SchemaToolTaskRebuildIndexes extends SchemaToolTask {
 
     LOG.info("Starting index rebuild using {}", scriptFile);
     try {
-      if (HiveSchemaHelper.DB_ORACLE.equalsIgnoreCase(dbType)) {
-        executeOracleScript(script);
+      if (HiveSchemaHelper.DB_ORACLE.equalsIgnoreCase(dbType)
+          || HiveSchemaHelper.DB_DERBY.equalsIgnoreCase(dbType)) {
+        executeJdbcScript(script, dbType);
       } else {
         schemaTool.execSql(scriptDir, scriptFile);
       }
@@ -76,7 +80,7 @@ class SchemaToolTaskRebuildIndexes extends SchemaToolTask {
     LOG.info("Index rebuild complete.");
   }
 
-  private void executeOracleScript(File script) throws IOException, HiveMetaException, SQLException {
+  private void executeJdbcScript(File script, String dbType) throws IOException, HiveMetaException, SQLException {
     String content = Files.readString(script.toPath(), StandardCharsets.UTF_8);
     try (Connection connection = schemaTool.getConnectionToMetastore(false);
          Statement statement = connection.createStatement()) {
@@ -88,17 +92,17 @@ class SchemaToolTaskRebuildIndexes extends SchemaToolTask {
         }
         sql.append(line).append('\n');
         if (trimmed.endsWith(";")) {
-          executeOracleStatement(statement, sql.toString());
+          executeJdbcStatement(statement, sql.toString(), dbType);
           sql.setLength(0);
         }
       }
       if (!sql.toString().trim().isEmpty()) {
-        throw new HiveMetaException("Oracle rebuild-indexes script contains an unterminated SQL statement.");
+        throw new HiveMetaException(dbType + " rebuild-indexes script contains an unterminated SQL statement.");
       }
     }
   }
 
-  private void executeOracleStatement(Statement statement, String sql) throws SQLException {
+  private void executeJdbcStatement(Statement statement, String sql, String dbType) throws SQLException {
     String stmt = sql.trim();
     if (stmt.endsWith(";")) {
       stmt = stmt.substring(0, stmt.length() - 1).trim();
@@ -106,12 +110,21 @@ class SchemaToolTaskRebuildIndexes extends SchemaToolTask {
     try {
       statement.execute(stmt);
     } catch (SQLException e) {
-      if (stmt.toUpperCase(Locale.ROOT).startsWith("DROP INDEX")
-          && e.getErrorCode() == ORACLE_INDEX_MISSING_ERROR) {
-        LOG.info("Skipping missing index during Oracle rebuild: {}", stmt);
+      if (stmt.toUpperCase(Locale.ROOT).startsWith("DROP INDEX") && isMissingIndexError(dbType, e)) {
+        LOG.info("Skipping missing index during {} rebuild: {}", dbType, stmt);
         return;
       }
       throw e;
     }
+  }
+
+  private boolean isMissingIndexError(String dbType, SQLException e) {
+    if (HiveSchemaHelper.DB_ORACLE.equalsIgnoreCase(dbType)) {
+      return e.getErrorCode() == ORACLE_INDEX_MISSING_ERROR;
+    }
+    if (HiveSchemaHelper.DB_DERBY.equalsIgnoreCase(dbType)) {
+      return DERBY_INDEX_MISSING_STATE.equals(e.getSQLState());
+    }
+    return false;
   }
 }
