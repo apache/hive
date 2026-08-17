@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.iceberg.rest;
@@ -297,23 +298,6 @@ class TestIcebergAuthorizer {
 
   @Test
   @SuppressWarnings("unchecked")
-  void testAuthorizeLoadView() throws Exception {
-    var hiveAuthorizer = mock(HiveAuthorizer.class);
-    var icebergAuthorizer = new IcebergAuthorizer(() -> hiveAuthorizer);
-
-    icebergAuthorizer.authorizeLoadView(CATALOG_NAME, TableIdentifier.of(NAMESPACE, "a_view"));
-
-    var operation = ArgumentCaptor.forClass(HiveOperationType.class);
-    var inputs = ArgumentCaptor.forClass(List.class);
-    verify(hiveAuthorizer).checkPrivileges(operation.capture(), inputs.capture(), anyList(), any());
-    Assertions.assertEquals(HiveOperationType.QUERY, operation.getValue());
-    var input = (HivePrivilegeObject) inputs.getValue().getFirst();
-    assertThat(input.getType()).isEqualTo(HivePrivilegeObjectType.TABLE_OR_VIEW);
-    assertThat(input.getObjectName()).isEqualTo("a_view");
-  }
-
-  @Test
-  @SuppressWarnings("unchecked")
   void testFilterTables() throws Exception {
     var hiveAuthorizer = mock(HiveAuthorizer.class);
     var visible = TableIdentifier.of(NAMESPACE, "visible");
@@ -406,7 +390,6 @@ class TestIcebergAuthorizer {
     var icebergAuthorizer = new IcebergAuthorizer(() -> null);
     // Permissive when no authorizer is configured.
     icebergAuthorizer.authorizeLoadTable(CATALOG_NAME, TableIdentifier.of(NAMESPACE, TABLE_NAME));
-    icebergAuthorizer.authorizeLoadView(CATALOG_NAME, TableIdentifier.of(NAMESPACE, "a_view"));
   }
 
   @Test

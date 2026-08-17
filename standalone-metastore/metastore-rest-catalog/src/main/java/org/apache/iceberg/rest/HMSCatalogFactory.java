@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.iceberg.rest;
@@ -69,12 +70,15 @@ public class HMSCatalogFactory {
 
   /**
    * Creates the catalog instance.
+   * @param authorizer authorizes reads served from the table cache; the caching catalog enforces it
+   *                   on cache hits, which never reach HMS. Ignored when caching is disabled, as an
+   *                   uncached load reaches HMS and is authorized there.
    * @return the catalog
    */
-  private Catalog createCatalog() {
+  private Catalog createCatalog(IcebergAuthorizer authorizer) {
     final HiveCatalog hiveCatalog = createHiveCatalog(configuration);
     long expiry = MetastoreConf.getLongVar(configuration, MetastoreConf.ConfVars.ICEBERG_CATALOG_CACHE_EXPIRY);
-    return expiry > 0 ? new HMSCachingCatalog(hiveCatalog, expiry) : hiveCatalog;
+    return expiry > 0 ? new HMSCachingCatalog(hiveCatalog, expiry, authorizer) : hiveCatalog;
   }
 
   /**
@@ -123,13 +127,12 @@ public class HMSCatalogFactory {
    * @param catalog the Iceberg catalog
    * @return the servlet
    */
-  private HttpServlet createServlet(Catalog catalog) {
+  private HttpServlet createServlet(Catalog catalog, IcebergAuthorizer icebergAuthorizer) {
     String authType = MetastoreConf.getVar(configuration, ConfVars.CATALOG_SERVLET_AUTH);
     // Iceberg REST client uses "catalog" by default
     List<String> scopes = Collections.singletonList("catalog");
     ServletSecurity security = new ServletSecurity(AuthType.fromString(authType), configuration, req -> scopes);
     String catalogName = MetastoreConf.getVar(configuration, ConfVars.CATALOG_DEFAULT);
-    IcebergAuthorizer icebergAuthorizer = new IcebergAuthorizer(configuration);
     List<IcebergMetricsReporter> reporters = createReporters();
     var adapter = new HMSCatalogAdapter(catalogName, catalog, icebergAuthorizer, reporters);
     return security.proxy(new HMSCatalogServlet(adapter));
@@ -153,7 +156,10 @@ public class HMSCatalogFactory {
    */
   private HttpServlet createServlet() {
     if (port >= 0 && path != null && !path.isEmpty()) {
-      return createServlet(createCatalog());
+      // Build the authorizer first so it can be shared: the caching catalog uses it to authorize
+      // cache hits, and the adapter uses it for list filtering and stage-create.
+      IcebergAuthorizer icebergAuthorizer = new IcebergAuthorizer(configuration);
+      return createServlet(createCatalog(icebergAuthorizer), icebergAuthorizer);
     }
     return null;
   }

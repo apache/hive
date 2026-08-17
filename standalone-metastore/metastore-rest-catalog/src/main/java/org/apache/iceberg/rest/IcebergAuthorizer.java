@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.iceberg.rest;
@@ -37,8 +38,10 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerFactory;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzSessionContext;
@@ -81,26 +84,68 @@ class IcebergAuthorizer {
               .formatted(Arrays.toString(classes)));
     }
 
-    this.authorizerSupplier = () -> {
+    // Building a HiveAuthorizer is dominated by identity-independent work: HiveConf.cloneConf (a full
+    // Configuration deep-copy) and the reflective factory/authenticator lookups. Since read
+    // authorization now runs on every table cache hit, do that work once per thread and keep only the
+    // identity-sensitive steps per call. This mirrors HiveMetaStoreAuthorizer, which caches the
+    // authenticator in a ThreadLocal and refreshes it via setConf on every event; we additionally cache
+    // the cloned conf and factory (which it rebuilds per event) since they carry no identity.
+    //
+    // Per-thread caching is required for correctness, not just speed: the default authenticator
+    // (HadoopDefaultAuthenticator) resolves and caches the user name at setConf time from the current
+    // UserGroupInformation. Jetty worker threads are pooled and reused across end users, so the toolkit
+    // must be thread-confined and setConf must be re-run each call to bind the current request's identity.
+    // A single shared authorizer would pin authorization to whichever user built it first.
+    final ThreadLocal<AuthorizerToolkit> toolkit = ThreadLocal.withInitial(() -> {
       try {
         final var hiveConf = HiveConf.cloneConf(conf);
         final var authorizerFactory = HiveUtils.getAuthorizerFactory(hiveConf,
             HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER);
-
         final var authenticator = HiveUtils.getAuthenticator(hiveConf,
             HiveConf.ConfVars.HIVE_METASTORE_AUTHENTICATOR_MANAGER);
-        authenticator.setConf(hiveConf);
-
-        final var authzContextBuilder = new HiveAuthzSessionContext.Builder();
-        authzContextBuilder.setClientType(HiveAuthzSessionContext.CLIENT_TYPE.HIVEMETASTORE);
-        authzContextBuilder.setSessionString("IcebergRESTCatalog");
-        return authorizerFactory.createHiveAuthorizer(
-            new HiveMetastoreClientFactoryImpl(hiveConf), hiveConf, authenticator, authzContextBuilder.build());
+        return new AuthorizerToolkit(hiveConf, authorizerFactory, authenticator);
       } catch (HiveException e) {
         throw new IllegalStateException("Failed to initialize Hive authorizer for Iceberg REST Catalog", e);
       }
-    };
+    });
+
+    this.authorizerSupplier = () -> newRequestAuthorizer(toolkit.get());
   }
+
+  /**
+   * Builds a request-scoped {@link HiveAuthorizer} from the calling thread's cached {@link
+   * AuthorizerToolkit}. Rebinds the authenticator to the current request's UGI via {@code setConf}
+   * and rebuilds the authorizer on every call (rather than caching it), matching {@link
+   * HiveMetaStoreAuthorizer#createHiveMetaStoreAuthorizer()}, so no authorizer implementation can
+   * retain a stale identity across a pooled thread's successive requests.
+   *
+   * @param kit the calling thread's identity-independent building blocks
+   * @return an authorizer bound to the current request's identity
+   * @throws IllegalStateException if the authorization plugin fails to initialize
+   */
+  private static HiveAuthorizer newRequestAuthorizer(AuthorizerToolkit kit) {
+    try {
+      kit.authenticator.setConf(kit.hiveConf);
+      final var authzContextBuilder = new HiveAuthzSessionContext.Builder();
+      authzContextBuilder.setClientType(HiveAuthzSessionContext.CLIENT_TYPE.HIVEMETASTORE);
+      authzContextBuilder.setSessionString("IcebergRESTCatalog");
+      return kit.authorizerFactory.createHiveAuthorizer(
+          new HiveMetastoreClientFactoryImpl(kit.hiveConf), kit.hiveConf, kit.authenticator,
+          authzContextBuilder.build());
+    } catch (HiveException e) {
+      throw new IllegalStateException("Failed to initialize Hive authorizer for Iceberg REST Catalog", e);
+    }
+  }
+
+  /**
+   * Per-thread, identity-independent building blocks for a {@link HiveAuthorizer}. Cached in a
+   * {@link ThreadLocal} so the expensive {@link HiveConf} clone and reflective factory/authenticator
+   * lookups run once per thread; the identity-sensitive {@code setConf}/{@code createHiveAuthorizer}
+   * steps still run on every authorization call.
+   */
+  private record AuthorizerToolkit(HiveConf hiveConf,
+                                   HiveAuthorizerFactory authorizerFactory,
+                                   HiveAuthenticationProvider authenticator) {}
 
   @VisibleForTesting
   IcebergAuthorizer(Supplier<HiveAuthorizer> authorizerSupplier) {
@@ -159,9 +204,10 @@ class IcebergAuthorizer {
   }
 
   /**
-   * Authorizes loading a table. Table cache hits never reach Hive Metastore, so this check makes
-   * read authorization explicit at the REST layer rather than dependent on cache state. Mirrors
-   * the {@code QUERY} check {@code ReadTableEvent} performs on a metastore {@code get_table}.
+   * Authorizes loading a table. Invoked by {@code HMSCachingCatalog} for reads served from the
+   * cache: a cache hit never reaches Hive Metastore, so its read cannot be authorized by the HMS
+   * pre-event listener (a cache miss reloads through HMS and is authorized there). Mirrors the
+   * {@code QUERY} check {@code ReadTableEvent} performs on a metastore {@code get_table}.
    *
    * @param catalogName the Hive catalog name
    * @param identifier the table identifier (a metadata-table identifier is checked against its
@@ -172,19 +218,6 @@ class IcebergAuthorizer {
   void authorizeLoadTable(String catalogName, TableIdentifier identifier) {
     var base = baseTableIdentifier(identifier);
     check(HiveOperationType.QUERY, List.of(tableOrView(catalogName, base)), List.of(), "select");
-  }
-
-  /**
-   * Authorizes loading a view. Mirrors the {@code QUERY} check performed on a metastore
-   * {@code get_table} for the view.
-   *
-   * @param catalogName the Hive catalog name
-   * @param identifier the view identifier
-   * @throws ForbiddenException if the user does not have the required privileges
-   * @throws IllegalStateException if the authorization plugin fails
-   */
-  void authorizeLoadView(String catalogName, TableIdentifier identifier) {
-    check(HiveOperationType.QUERY, List.of(tableOrView(catalogName, identifier)), List.of(), "select");
   }
 
   /**

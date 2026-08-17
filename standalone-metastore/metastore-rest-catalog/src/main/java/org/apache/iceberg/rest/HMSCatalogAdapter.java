@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.iceberg.rest;
@@ -323,7 +324,6 @@ public class HMSCatalogAdapter implements Closeable {
 
   private LoadTableResponse loadTable(Map<String, String> vars) {
     TableIdentifier ident = identFromPathVars(vars);
-    icebergAuthorizer.authorizeLoadTable(catalogName, ident);
     return castResponse(LoadTableResponse.class, CatalogHandlers.loadTable(catalog, ident));
   }
 
@@ -388,7 +388,8 @@ public class HMSCatalogAdapter implements Closeable {
 
   private LoadViewResponse loadView(Map<String, String> vars) {
     TableIdentifier ident = viewIdentFromPathVars(vars);
-    icebergAuthorizer.authorizeLoadView(catalogName, ident);
+    // Read authorization is enforced by HMS: views are not cached, so loadView always reaches the
+    // metastore, whose pre-event listener authorizes the read. Checking here would double-authorize.
     return castResponse(LoadViewResponse.class, CatalogHandlers.loadView(asViewCatalog, ident));
   }
 

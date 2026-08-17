@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.iceberg.rest;
@@ -102,6 +103,10 @@ public final class HMSCachingCatalog
 
   // The underlying HiveCatalog that this caching catalog wraps.
   private final HiveCatalog hiveCatalog;
+  // Authorizes reads served from the cache. A cache hit never reaches Hive Metastore, so its read
+  // authorization cannot be deferred to HMS and is enforced here instead. May be null (no
+  // authorization), in which case cache hits are served without a check.
+  private final IcebergAuthorizer authorizer;
   // A helper that locates the metadata location for a given base table identifier.
   private final MetadataLocator metadataLocator;
   // An L2 table cache (Caffeine).
@@ -128,12 +133,27 @@ public final class HMSCachingCatalog
   private ObjectName jmxObjectName;
 
   /**
-   * Creates a new caching catalog that wraps the given HiveCatalog.
+   * Creates a new caching catalog that wraps the given HiveCatalog, without cache-hit
+   * authorization.
    * @param catalog the underlying HiveCatalog
    * @param expirationMs the expiration time for the L2 cache, in milliseconds
    */
   public HMSCachingCatalog(HiveCatalog catalog, long expirationMs) {
+    this(catalog, expirationMs, null);
+  }
+
+  /**
+   * Creates a new caching catalog that wraps the given HiveCatalog.
+   * @param catalog the underlying HiveCatalog
+   * @param expirationMs the expiration time for the L2 cache, in milliseconds
+   * @param authorizer authorizes reads served from the cache; may be null for no authorization.
+   *                   A cache hit does not reach Hive Metastore, so read authorization for it is
+   *                   enforced here rather than deferred to HMS. Cache misses reload through the
+   *                   underlying {@link HiveCatalog} and are authorized by HMS as usual.
+   */
+  public HMSCachingCatalog(HiveCatalog catalog, long expirationMs, IcebergAuthorizer authorizer) {
     this.hiveCatalog = catalog;
+    this.authorizer = authorizer;
     this.metadataLocator = new MetadataLocator(catalog);
     this.tableCache = Caffeine.newBuilder()
         .expireAfterAccess(expirationMs, TimeUnit.MILLISECONDS)
@@ -446,6 +466,20 @@ public final class HMSCachingCatalog
     hiveCatalog.invalidateView(identifier);
   }
 
+  /**
+   * Authorizes a read that is about to be served from the cache. A cache hit never reaches Hive
+   * Metastore, so its read authorization cannot be deferred to the HMS pre-event listener as a cache
+   * miss's can, and must be enforced here. No-op when no authorizer is configured.
+   *
+   * @param identifier the table (or metadata-table) identifier being read
+   * @throws org.apache.iceberg.exceptions.ForbiddenException if the current user may not read the table
+   */
+  private void authorizeCachedRead(TableIdentifier identifier) {
+    if (authorizer != null) {
+      authorizer.authorizeLoadTable(hiveCatalog.name(), identifier);
+    }
+  }
+
   @Override
   public Table loadTable(final TableIdentifier identifier) {
     final Table cachedTable = tableCache.getIfPresent(identifier);
@@ -460,6 +494,7 @@ public final class HMSCachingCatalog
           LOG.debug("Table {} is in L1 cache, returning cached table", identifier);
           onL1CacheHit(identifier);
           onCacheHit(identifier);
+          authorizeCachedRead(identifier);
           return cachedTable;
         } else {
           l1Invalidate(identifier);
@@ -483,6 +518,7 @@ public final class HMSCachingCatalog
       if (location.equals(cachedLocation)) {
         onCacheHit(identifier);
         l1MarkFresh(identifier, now);
+        authorizeCachedRead(identifier);
         return cachedTable;
       } else {
         LOG.debug("Invalidate table {}, cached {} != actual {}", identifier, cachedLocation, location);

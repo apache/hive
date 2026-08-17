@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -22,6 +22,8 @@ package org.apache.iceberg.rest;
 import org.apache.hadoop.hive.metastore.ServletSecurity.AuthType;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataFiles;
 import org.apache.iceberg.PartitionSpec;
@@ -29,6 +31,7 @@ import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.exceptions.ForbiddenException;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hive.HiveCatalog;
 import org.apache.iceberg.rest.extension.HiveRESTCatalogServerExtension;
@@ -43,6 +46,13 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 /**
  * Tests the two-level table caching behaviour of {@link HMSCachingCatalog}: L2 (Caffeine) hits
@@ -197,5 +207,43 @@ class TestHMSCachingCatalogCache {
     } finally {
       conf.setInt("hms.caching.catalog.l1.cache.size", prevSize);
     }
+  }
+
+  @Test
+  void testCacheHitEnforcesAuthorization() throws Exception {
+    hiveCatalog.createTable(TABLE_ID, SCHEMA);
+
+    // A denying authorizer: any privilege check throws, mapped to ForbiddenException.
+    HiveAuthorizer hiveAuthorizer = mock(HiveAuthorizer.class);
+    doThrow(new HiveAccessControlException("access denied"))
+        .when(hiveAuthorizer).checkPrivileges(any(), anyList(), anyList(), any());
+    HMSCachingCatalog authzCatalog =
+        new HMSCachingCatalog(hiveCatalog, CACHE_EXPIRY_MS, new IcebergAuthorizer(() -> hiveAuthorizer));
+
+    // Cold miss reloads through HMS (authorized there), so the cache authorizer is NOT consulted.
+    Table firstLoad = authzCatalog.loadTable(TABLE_ID);
+    assertThat(firstLoad).isNotNull();
+    verify(hiveAuthorizer, never()).checkPrivileges(any(), anyList(), anyList(), any());
+
+    // The next load is served from the L1 cache without reaching HMS, so it must be authorized here
+    // — the denying authorizer turns the hit into a ForbiddenException.
+    assertThatThrownBy(() -> authzCatalog.loadTable(TABLE_ID)).isInstanceOf(ForbiddenException.class);
+    verify(hiveAuthorizer, times(1)).checkPrivileges(any(), anyList(), anyList(), any());
+  }
+
+  @Test
+  void testCacheHitAllowedByAuthorizer() {
+    Table created = hiveCatalog.createTable(TABLE_ID, SCHEMA);
+
+    // A permissive authorizer: checkPrivileges is a no-op mock, so it never throws.
+    HiveAuthorizer hiveAuthorizer = mock(HiveAuthorizer.class);
+    HMSCachingCatalog authzCatalog =
+        new HMSCachingCatalog(hiveCatalog, CACHE_EXPIRY_MS, new IcebergAuthorizer(() -> hiveAuthorizer));
+
+    Table first = authzCatalog.loadTable(TABLE_ID);
+    Table second = authzCatalog.loadTable(TABLE_ID);
+    assertThat(first.location()).isEqualTo(created.location());
+    // The second load is an authorized cache hit and returns the identical instance.
+    assertThat(second).isSameAs(first);
   }
 }
