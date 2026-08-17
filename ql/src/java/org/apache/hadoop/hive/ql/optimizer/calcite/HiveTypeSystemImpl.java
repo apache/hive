@@ -189,7 +189,7 @@ public class HiveTypeSystemImpl extends RelDataTypeSystemImpl {
    * overridding it (and keep the new Calcite default MS-SQL-style decimal-divide semantics), but that
    * would lead to "regressions" (precision loss) and would require test adjustments.
    */
-  /* @Override
+  @Override
   public RelDataType deriveDecimalDivideType(RelDataTypeFactory typeFactory,
       RelDataType type1, RelDataType type2) {
     if (SqlTypeUtil.isExactNumeric(type1) && SqlTypeUtil.isExactNumeric(type2) &&
@@ -215,6 +215,6 @@ public class HiveTypeSystemImpl extends RelDataTypeSystemImpl {
       return typeFactory.createSqlType(SqlTypeName.DECIMAL, precision, scale);
     }
     return null;
-  } */
+  }
 
 }
