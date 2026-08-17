@@ -103,7 +103,6 @@ public class VectorPTFOperator extends Operator<PTFDesc>
   private TypeInfo[] outputTypeInfos;
   private DataTypePhysicalVariation[] outputDataTypePhysicalVariations;
 
-  private int evaluatorCount;
   private String[] evaluatorFunctionNames;
 
   private int[] orderColumnMap;
@@ -131,7 +130,7 @@ public class VectorPTFOperator extends Operator<PTFDesc>
 
   private transient int[] streamingEvaluatorNums;
 
-  private transient boolean allEvaluatorsAreStreaming;
+  private transient boolean allEvaluatorsPurelyStreaming;
 
   private transient boolean isFirstPartition;
 
@@ -193,7 +192,6 @@ public class VectorPTFOperator extends Operator<PTFDesc>
     setupVOutContext();
 
     evaluatorFunctionNames = this.vectorDesc.getEvaluatorFunctionNames();
-    evaluatorCount = evaluatorFunctionNames.length;
 
     orderColumnMap = vectorPTFInfo.getOrderColumnMap();
     orderColumnVectorTypes = vectorPTFInfo.getOrderColumnVectorTypes();
@@ -333,8 +331,7 @@ public class VectorPTFOperator extends Operator<PTFDesc>
     }
 
     streamingEvaluatorNums = VectorPTFDesc.getStreamingEvaluatorNums(evaluators);
-
-    allEvaluatorsAreStreaming = (streamingEvaluatorNums.length == evaluatorCount);
+    allEvaluatorsPurelyStreaming = VectorPTFDesc.getAllEvaluatorsPurelyStreaming(evaluators);
 
     groupBatches = new VectorPTFGroupBatches(
         hconf, vectorDesc.getVectorizedPTFMaxMemoryBufferingBatchCount());
@@ -412,14 +409,14 @@ public class VectorPTFOperator extends Operator<PTFDesc>
        * the column vectors on the fly (in a streaming manner), this is handled later on by calling
        * groupBatches.evaluateStreamingGroupBatch for every single batch.
        */
-      if (!allEvaluatorsAreStreaming){
+      if (!allEvaluatorsPurelyStreaming){
         finishPartition(getPartitionKey());
       }
       setCurrentPartition(batch);
       groupBatches.resetEvaluators();
     }
 
-    if (allEvaluatorsAreStreaming) {
+    if (allEvaluatorsPurelyStreaming) {
       // We can process this batch immediately.
       groupBatches.evaluateStreamingGroupBatch(batch, isLastGroupBatch);
       vectorForward(batch);
@@ -782,10 +779,10 @@ public class VectorPTFOperator extends Operator<PTFDesc>
     /*
      * Why would finishPartition be skipped here?
      * 1. abort: obviously
-     * 2. allEvaluatorsAreStreaming: if all evaluators are streaming, we already evaluated
+     * 2. allEvaluatorsPurelyStreaming: if all evaluators are streaming, we already evaluated
      * 3. isFirstPartition: if it's true, we haven't seen any records/batches in the operator
      */
-    if (!abort && !allEvaluatorsAreStreaming && !isFirstPartition){
+    if (!abort && !allEvaluatorsPurelyStreaming && !isFirstPartition){
       finishPartition(getPartitionKey());
     }
     super.closeOp(abort);

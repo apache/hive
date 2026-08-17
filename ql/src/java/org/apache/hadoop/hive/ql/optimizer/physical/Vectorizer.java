@@ -3005,9 +3005,10 @@ public class Vectorizer implements PhysicalPlanResolver {
         throw new RuntimeException("Unexpected window type " + windowFrameDef.getWindowType());
       }
 
-      // RANK/DENSE_RANK don't care about columns.
+      // RANK/DENSE_RANK/CUME_DIST don't care about columns.
       if (supportedFunctionType != SupportedFunctionType.RANK &&
-          supportedFunctionType != SupportedFunctionType.DENSE_RANK) {
+          supportedFunctionType != SupportedFunctionType.DENSE_RANK &&
+          supportedFunctionType != SupportedFunctionType.CUME_DIST) {
 
         if (exprNodeDescList != null) {
           // LEAD and LAG now supports multiple arguments in vectorized mode

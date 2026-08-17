@@ -49,6 +49,8 @@ public abstract class VectorPTFEvaluatorBase {
   final WindowFrameDef windowFrameDef;
   final VectorExpression inputVecExpr;
   protected int inputColumnNum;
+  protected int partitionSize = -1;
+
   protected final int outputColumnNum;
   private boolean nullsLast;
   private boolean respectNulls = true;
@@ -197,5 +199,29 @@ public abstract class VectorPTFEvaluatorBase {
 
   public void setRespectNulls(boolean respectNulls) {
     this.respectNulls = respectNulls;
+  }
+
+  public boolean needPartitionSize() {
+    return false;
+  }
+
+  public void setPartitionSize(int partitionSize) {
+    this.partitionSize = partitionSize;
+  }
+
+  /**
+   * Group Aggregated streaming evaluators (e.g. cume_dist) need to see all rows of a reduce key group
+   * before writing the result in streaming manner.
+   */
+  public boolean isGroupAggregatedStreamingEvaluator() {
+    return false;
+  }
+
+  /**
+   * Aggregates per peer group result using group row count.
+   */
+  public void addStreamingGroupResult(int groupRowCount) throws HiveException {
+    throw new HiveException(
+        "No streaming group result precomputation for " + this.getClass().getName());
   }
 }
