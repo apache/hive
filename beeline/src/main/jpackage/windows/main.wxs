@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!--
+  Overrides the default main.wxs template that jpackage ships in the JDK
+  (src/jdk.jpackage/windows/classes/jdk/jpackage/internal/resources/main.wxs).
+  jpackage picks this file up automatically because it lives in the directory
+  passed via the resource-dir argument.
+
+  This copy is byte-identical to the JDK 21 template EXCEPT for three
+  additions, marked with "APACHE HIVE PATH ADDITION" below:
+
+    1. A public MSI property ADD_TO_PATH (default 1) that gates the PATH
+       component. Users doing silent installs can opt out with
+       msiexec /i beeline-<ver>.msi /qn ADD_TO_PATH=0.
+
+    2. A Component containing a WiX <Environment> element that appends the
+       install directory to the system PATH (System="yes"). The Component
+       lives in the INSTALLDIR directory and uses an HKLM RegistryValue as
+       its KeyPath so MSI can track component state across upgrades and
+       uninstalls. Permanent="no" ensures the PATH entry is removed on
+       uninstall.
+
+    3. A ComponentRef inside the Feature so the Component is actually
+       installed. Without this, WiX would compile the Component but MSI
+       would never activate it.
+
+  The rest of the template — upgrade/downgrade handling, ARP metadata,
+  shortcuts/files/file-associations component groups, custom-action
+  sequencing — must stay verbatim or jpackage's build will fail with
+  missing symbols. If jpackage's template changes in a future JDK, this
+  file needs a manual re-sync; the git-blame here should make the diff
+  obvious.
+-->
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+
+  <?ifdef JpIsSystemWide ?>
+    <?define JpInstallScope="perMachine"?>
+  <?else?>
+    <?define JpInstallScope="perUser"?>
+  <?endif?>
+
+  <?define JpProductLanguage=1033 ?>
+  <?define JpInstallerVersion=200 ?>
+  <?define JpCompressedMsi=yes ?>
+
+  <?include $(var.JpConfigDir)/overrides.wxi ?>
+
+  <?ifdef JpAllowUpgrades ?>
+    <?define JpUpgradeVersionOnlyDetectUpgrade="no"?>
+  <?else?>
+    <?define JpUpgradeVersionOnlyDetectUpgrade="yes"?>
+  <?endif?>
+  <?ifdef JpAllowDowngrades ?>
+    <?define JpUpgradeVersionOnlyDetectDowngrade="no"?>
+  <?else?>
+    <?define JpUpgradeVersionOnlyDetectDowngrade="yes"?>
+  <?endif?>
+
+  <Product
+    Id="$(var.JpProductCode)"
+    Name="$(var.JpAppName)"
+    Language="$(var.JpProductLanguage)"
+    Version="$(var.JpAppVersion)"
+    Manufacturer="$(var.JpAppVendor)"
+    UpgradeCode="$(var.JpProductUpgradeCode)">
+
+    <Package
+      Description="$(var.JpAppDescription)"
+      Manufacturer="$(var.JpAppVendor)"
+      InstallerVersion="$(var.JpInstallerVersion)"
+      Compressed="$(var.JpCompressedMsi)"
+      InstallScope="$(var.JpInstallScope)" Platform="x64"
+    />
+
+    <Media Id="1" Cabinet="Data.cab" EmbedCab="yes" />
+
+    <Upgrade Id="$(var.JpProductUpgradeCode)">
+      <UpgradeVersion
+        OnlyDetect="$(var.JpUpgradeVersionOnlyDetectUpgrade)"
+        Property="JP_UPGRADABLE_FOUND"
+        Maximum="$(var.JpAppVersion)"
+        MigrateFeatures="yes"
+        IncludeMaximum="$(var.JpUpgradeVersionOnlyDetectUpgrade)" />
+      <UpgradeVersion
+        OnlyDetect="$(var.JpUpgradeVersionOnlyDetectDowngrade)"
+        Property="JP_DOWNGRADABLE_FOUND"
+        Minimum="$(var.JpAppVersion)"
+        MigrateFeatures="yes"
+        IncludeMinimum="$(var.JpUpgradeVersionOnlyDetectDowngrade)" />
+    </Upgrade>
+
+    <?ifndef JpAllowUpgrades ?>
+    <CustomAction Id="JpDisallowUpgrade" Error="!(loc.DisallowUpgradeErrorMessage)" />
+    <?endif?>
+    <?ifndef JpAllowDowngrades ?>
+    <CustomAction Id="JpDisallowDowngrade" Error="!(loc.DowngradeErrorMessage)" />
+    <?endif?>
+
+    <Binary Id="JpCaDll" SourceFile="wixhelper.dll"/>
+
+    <CustomAction Id="JpFindRelatedProducts" BinaryKey="JpCaDll" DllEntry="FindRelatedProductsEx" />
+
+    <!-- Standard required root -->
+    <Directory Id="TARGETDIR" Name="SourceDir"/>
+
+    <!-- ==== APACHE HIVE PATH ADDITION (1/3): opt-out property ==== -->
+    <!--
+      Public MSI property. Uppercase means callers can set it on the
+      msiexec command line: `msiexec /i beeline.msi /qn ADD_TO_PATH=0`.
+      Secure="yes" lets the value survive the transition into the
+      elevated portion of the install sequence.
+    -->
+    <Property Id="ADD_TO_PATH" Value="1" Secure="yes"/>
+    <!-- ==== end APACHE HIVE PATH ADDITION (1/3) ==== -->
+
+    <Feature Id="DefaultFeature" Title="!(loc.MainFeatureTitle)" Level="1">
+      <ComponentGroupRef Id="Shortcuts"/>
+      <ComponentGroupRef Id="Files"/>
+      <ComponentGroupRef Id="FileAssociations"/>
+      <!-- ==== APACHE HIVE PATH ADDITION (2/3): pull component into feature ==== -->
+      <ComponentRef Id="BeelinePathComponent"/>
+      <!-- ==== end APACHE HIVE PATH ADDITION (2/3) ==== -->
+    </Feature>
+
+    <!-- ==== APACHE HIVE PATH ADDITION (3/3): the PATH component itself ==== -->
+    <!--
+      Appends [INSTALLDIR] to the system PATH environment variable.
+      Gated by ADD_TO_PATH="1" so silent installs can opt out.
+      System="yes" writes to HKLM (machine-wide PATH); this only works
+      because we do not pass win-per-user-install, so the install is
+      elevated and has HKLM write access.
+      Permanent="no" tells WiX to remove the PATH entry on uninstall.
+      Part="last" appends rather than replaces or prepends.
+      The RegistryValue is the Component's KeyPath — MSI needs a KeyPath
+      per Component to track install/repair/uninstall state, and an
+      HKLM registry entry is the idiomatic choice for an Environment-only
+      component in a per-machine install.
+      Guid must be stable across releases; regenerate ONLY if the
+      Component's semantics fundamentally change.
+    -->
+    <DirectoryRef Id="INSTALLDIR">
+      <Component Id="BeelinePathComponent"
+                 Guid="6EFD65E5-AEE7-4E61-B891-127899E816E1">
+        <Condition>ADD_TO_PATH="1"</Condition>
+        <RegistryValue Root="HKLM"
+                       Key="Software\Apache\Hive\Beeline"
+                       Name="PathInstalled"
+                       Type="integer"
+                       Value="1"
+                       KeyPath="yes"/>
+        <Environment Id="BeelinePathEnv"
+                     Name="PATH"
+                     Value="[INSTALLDIR]"
+                     Permanent="no"
+                     Part="last"
+                     Action="set"
+                     System="yes"/>
+      </Component>
+    </DirectoryRef>
+    <!-- ==== end APACHE HIVE PATH ADDITION (3/3) ==== -->
+
+    <CustomAction Id="JpSetARPINSTALLLOCATION" Property="ARPINSTALLLOCATION" Value="[INSTALLDIR]" />
+    <CustomAction Id="JpSetARPCOMMENTS" Property="ARPCOMMENTS" Value="$(var.JpAppDescription)" />
+    <CustomAction Id="JpSetARPCONTACT" Property="ARPCONTACT" Value="$(var.JpAppVendor)" />
+    <CustomAction Id="JpSetARPSIZE" Property="ARPSIZE" Value="$(var.JpAppSizeKb)" />
+
+    <?ifdef JpHelpURL ?>
+      <CustomAction Id="JpSetARPHELPLINK" Property="ARPHELPLINK" Value="$(var.JpHelpURL)" />
+    <?endif?>
+
+    <?ifdef JpAboutURL ?>
+      <CustomAction Id="JpSetARPURLINFOABOUT" Property="ARPURLINFOABOUT" Value="$(var.JpAboutURL)" />
+    <?endif?>
+
+    <?ifdef JpUpdateURL ?>
+      <CustomAction Id="JpSetARPURLUPDATEINFO" Property="ARPURLUPDATEINFO" Value="$(var.JpUpdateURL)" />
+    <?endif?>
+
+    <?ifdef JpIcon ?>
+    <Property Id="ARPPRODUCTICON" Value="JpARPPRODUCTICON"/>
+    <Icon Id="JpARPPRODUCTICON" SourceFile="$(var.JpIcon)"/>
+    <?endif?>
+
+    <UIRef Id="JpUI"/>
+
+    <InstallExecuteSequence>
+      <Custom Action="JpSetARPINSTALLLOCATION" After="CostFinalize">Not Installed</Custom>
+      <Custom Action="JpSetARPCOMMENTS" After="CostFinalize">Not Installed</Custom>
+      <Custom Action="JpSetARPCONTACT" After="CostFinalize">Not Installed</Custom>
+      <Custom Action="JpSetARPSIZE" After="CostFinalize">Not Installed</Custom>
+      <?ifdef JpHelpURL ?>
+        <Custom Action="JpSetARPHELPLINK" After="CostFinalize">Not Installed</Custom>
+      <?endif?>
+      <?ifdef JpAboutURL ?>
+        <Custom Action="JpSetARPURLINFOABOUT" After="CostFinalize">Not Installed</Custom>
+      <?endif?>
+      <?ifdef JpUpdateURL ?>
+        <Custom Action="JpSetARPURLUPDATEINFO" After="CostFinalize">Not Installed</Custom>
+      <?endif?>
+
+      <?ifndef JpAllowUpgrades ?>
+      <Custom Action="JpDisallowUpgrade" After="JpFindRelatedProducts">JP_UPGRADABLE_FOUND</Custom>
+      <?endif?>
+      <?ifndef JpAllowDowngrades ?>
+      <Custom Action="JpDisallowDowngrade" After="JpFindRelatedProducts">JP_DOWNGRADABLE_FOUND</Custom>
+      <?endif?>
+      <RemoveExistingProducts Before="CostInitialize"/>
+      <Custom Action="JpFindRelatedProducts" After="FindRelatedProducts"/>
+    </InstallExecuteSequence>
+
+    <InstallUISequence>
+      <Custom Action="JpFindRelatedProducts" After="FindRelatedProducts"/>
+    </InstallUISequence>
+
+  </Product>
+</Wix>
