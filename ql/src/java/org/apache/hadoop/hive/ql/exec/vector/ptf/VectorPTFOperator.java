@@ -103,8 +103,6 @@ public class VectorPTFOperator extends Operator<PTFDesc>
   private TypeInfo[] outputTypeInfos;
   private DataTypePhysicalVariation[] outputDataTypePhysicalVariations;
 
-  private String[] evaluatorFunctionNames;
-
   private int[] orderColumnMap;
   private Type[] orderColumnVectorTypes;
   private VectorExpression[] orderExpressions;
@@ -190,8 +188,6 @@ public class VectorPTFOperator extends Operator<PTFDesc>
      */
     vOutContext = new VectorizationContext(getName(), this.vContext);
     setupVOutContext();
-
-    evaluatorFunctionNames = this.vectorDesc.getEvaluatorFunctionNames();
 
     orderColumnMap = vectorPTFInfo.getOrderColumnMap();
     orderColumnVectorTypes = vectorPTFInfo.getOrderColumnVectorTypes();
