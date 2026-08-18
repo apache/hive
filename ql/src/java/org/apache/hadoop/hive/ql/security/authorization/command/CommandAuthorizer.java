@@ -88,14 +88,13 @@ public final class CommandAuthorizer {
 
   private static Set<WriteEntity> getOutputs(BaseSemanticAnalyzer sem) {
     Set<WriteEntity> additionalOutputs = new HashSet<WriteEntity>();
-    for (WriteEntity e : sem.getAllOutputs()) {
+    for (WriteEntity e : sem.getOutputs()) {
       if (e.getType() == Entity.Type.PARTITION) {
         additionalOutputs.add(new WriteEntity(e.getTable(), e.getWriteType()));
       }
     }
 
-    // getAllOutputs() includes writes performed by materialized CTE sub-analyzers.
     // Sets.union keeps the values from the first set if they are present in both
-    return Sets.union(sem.getAllOutputs(), additionalOutputs);
+    return Sets.union(sem.getOutputs(), additionalOutputs);
   }
 }

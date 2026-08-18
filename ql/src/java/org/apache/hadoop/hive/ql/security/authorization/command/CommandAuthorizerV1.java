@@ -159,7 +159,7 @@ final class CommandAuthorizerV1 {
         }
       }
 
-      authorizeTable(op, sem, authorizer, tableUsePartLevelAuth, tab2Cols, tableAuthChecked, tbl);
+      authorizeTable(op, authorizer, tableUsePartLevelAuth, tab2Cols, tableAuthChecked, tbl);
     }
   }
 
@@ -232,8 +232,7 @@ final class CommandAuthorizerV1 {
     }
   }
 
-  private static void authorizeTable(HiveOperation op, BaseSemanticAnalyzer sem,
-      HiveAuthorizationProvider authorizer,
+  private static void authorizeTable(HiveOperation op, HiveAuthorizationProvider authorizer,
       Map<String, Boolean> tableUsePartLevelAuth, Map<Table, List<String>> tab2Cols, Set<String> tableAuthChecked,
       Table tbl) throws HiveException {
     // if we reach here, it means it needs to do a table authorization check, and the table authorization may
@@ -241,9 +240,6 @@ final class CommandAuthorizerV1 {
     if (tbl != null && !tableAuthChecked.contains(tbl.getTableName()) &&
         !(Boolean.TRUE.equals(tableUsePartLevelAuth.get(tbl.getTableName())))) {
       List<String> cols = tab2Cols.get(tbl);
-      if ((cols == null || cols.isEmpty()) && sem.getColumnAccessInfo() != null) {
-        cols = sem.getColumnAccessInfo().getTableToColumnAccessMap().get(tbl.getCompleteName());
-      }
       if (cols != null && cols.size() > 0) {
         authorizer.authorize(tbl, null, cols, op.getInputRequiredPrivileges(), null);
       } else {

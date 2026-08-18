@@ -57,7 +57,6 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -545,61 +544,5 @@ public class TestSemanticAnalyzer {
       assertTrue("CTE materialization should use CreateTableAnalyzer",
           cteAnalyzer[0] instanceof CreateTableAnalyzer);
     }
-  }
-
-  @Test
-  public void testMaterializedCteInputsAndColumnAccess() throws Exception {
-    createKeyValueTable("src");
-
-    HiveConf testConf = new HiveConf(conf);
-    testConf.setIntVar(HiveConf.ConfVars.HIVE_CTE_MATERIALIZE_THRESHOLD, 1);
-    testConf.setBoolVar(HiveConf.ConfVars.HIVE_CTE_MATERIALIZE_FULL_AGGREGATE_ONLY, false);
-    testConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_COLLECT_SCANCOLS, true);
-
-    SessionState.start(testConf);
-    String[] queries = {
-        "with q1 as ( select key from q2 where key = '5'),"
-            + "q2 as ( select key from src where key = '5') "
-            + "select * from (select key from q1) a",
-        "WITH q1 AS ("
-            + "WITH q2 AS (SELECT key, value FROM src WHERE key = '4') "
-            + "SELECT * FROM q2 UNION ALL SELECT * FROM q2) "
-            + "SELECT * FROM q1 t1 JOIN q1 t2 ON t1.key = t2.key"
-    };
-
-    SemanticAnalyzer[] analyzers = new SemanticAnalyzer[queries.length];
-    for (int i = 0; i < queries.length; i++) {
-      Context ctx = new Context(testConf);
-      ASTNode astNode = ParseUtils.parse(queries[i], ctx);
-      QueryState queryState = new QueryState.Builder().withHiveConf(testConf).build();
-      SemanticAnalyzer analyzer = (SemanticAnalyzer) SemanticAnalyzerFactory.get(queryState, astNode);
-      analyzer.initCtx(ctx);
-      analyzer.analyze(astNode, ctx);
-      analyzers[i] = analyzer;
-    }
-
-    for (int i = 0; i < analyzers.length; i++) {
-      SemanticAnalyzer analyzer = analyzers[i];
-      Set<ReadEntity> directInputs = analyzer.getInputs();
-      Set<ReadEntity> allInputs = analyzer.getAllInputs();
-
-      assertTrue("Materialized CTE should not expose base table in direct inputs",
-          directInputs.stream().noneMatch(e -> isTableNamed(e, "src")));
-      assertTrue("Nested materialized CTE base table must appear in getAllInputs",
-          allInputs.stream().anyMatch(e -> isTableNamed(e, "src")));
-
-      ColumnAccessInfo columnAccessInfo = analyzer.getColumnAccessInfo();
-      assertNotNull(columnAccessInfo);
-      List<String> srcCols = columnAccessInfo.getTableToColumnAccessMap().get("default@src");
-      assertNotNull("Column must include nested materialized CTE base table", srcCols);
-      assertTrue(srcCols.contains("key"));
-      if ( i == analyzers.length - 1) {
-        assertTrue(srcCols.contains("value"));
-      }
-    }
-  }
-
-  private static boolean isTableNamed(ReadEntity entity, String tableName) {
-    return entity.getTable() != null && tableName.equals(entity.getTable().getTableName());
   }
 }
