@@ -96,6 +96,10 @@ public final class HMSCachingCatalog
     implements Catalog, SupportsNamespaces, ViewCatalog, HMSCachingCatalogMXBean, Closeable {
   private static final Logger LOG = LoggerFactory.getLogger(HMSCachingCatalog.class);
 
+  /**
+   * Returns the underlying {@link HiveCatalog} that this caching catalog wraps.
+   * This is intended for testing purposes only; production code should not rely on the underlying catalog.
+   */
   @TestOnly
   public HiveCatalog getCatalog() {
     return hiveCatalog;
