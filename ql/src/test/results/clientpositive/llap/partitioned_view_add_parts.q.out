@@ -1,0 +1,193 @@
+PREHOOK: query: create table src_t (
+  label string,
+  p_int int,
+  p_bool boolean,
+  p_date date,
+  p_dec decimal(10,2)
+) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_t
+POSTHOOK: query: create table src_t (
+  label string,
+  p_int int,
+  p_bool boolean,
+  p_date date,
+  p_dec decimal(10,2)
+) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_t
+PREHOOK: query: insert into src_t values
+  ('row1', 42, true, '2024-06-01', 99.50)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@src_t
+POSTHOOK: query: insert into src_t values
+  ('row1', 42, true, '2024-06-01', 99.50)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@src_t
+POSTHOOK: Lineage: src_t.label SCRIPT []
+POSTHOOK: Lineage: src_t.p_bool SCRIPT []
+POSTHOOK: Lineage: src_t.p_date SCRIPT []
+POSTHOOK: Lineage: src_t.p_dec SCRIPT []
+POSTHOOK: Lineage: src_t.p_int SCRIPT []
+PREHOOK: query: create view vp_int partitioned on (p_int) as select label, p_int from src_t
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src_t
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vp_int
+POSTHOOK: query: create view vp_int partitioned on (p_int) as select label, p_int from src_t
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src_t
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vp_int
+POSTHOOK: Lineage: vp_int.label SIMPLE [(src_t)src_t.FieldSchema(name:label, type:string, comment:null), ]
+PREHOOK: query: alter view vp_int add partition (p_int=42)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@src_t
+PREHOOK: Input: default@vp_int
+PREHOOK: Output: default@vp_int
+POSTHOOK: query: alter view vp_int add partition (p_int=42)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@src_t
+POSTHOOK: Input: default@vp_int
+POSTHOOK: Output: default@vp_int
+POSTHOOK: Output: default@vp_int@p_int=42
+PREHOOK: query: show partitions vp_int
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@vp_int
+POSTHOOK: query: show partitions vp_int
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@vp_int
+p_int=42
+PREHOOK: query: create view vp_bool partitioned on (p_bool) as select label, p_bool from src_t
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src_t
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vp_bool
+POSTHOOK: query: create view vp_bool partitioned on (p_bool) as select label, p_bool from src_t
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src_t
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vp_bool
+POSTHOOK: Lineage: vp_bool.label SIMPLE [(src_t)src_t.FieldSchema(name:label, type:string, comment:null), ]
+PREHOOK: query: alter view vp_bool add partition (p_bool=true)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@src_t
+PREHOOK: Input: default@vp_bool
+PREHOOK: Output: default@vp_bool
+POSTHOOK: query: alter view vp_bool add partition (p_bool=true)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@src_t
+POSTHOOK: Input: default@vp_bool
+POSTHOOK: Output: default@vp_bool
+POSTHOOK: Output: default@vp_bool@p_bool=true
+PREHOOK: query: show partitions vp_bool
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@vp_bool
+POSTHOOK: query: show partitions vp_bool
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@vp_bool
+p_bool=true
+PREHOOK: query: create view vp_date partitioned on (p_date) as select label, p_date from src_t
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src_t
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vp_date
+POSTHOOK: query: create view vp_date partitioned on (p_date) as select label, p_date from src_t
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src_t
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vp_date
+POSTHOOK: Lineage: vp_date.label SIMPLE [(src_t)src_t.FieldSchema(name:label, type:string, comment:null), ]
+PREHOOK: query: alter view vp_date add partition (p_date='2024-06-01')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@src_t
+PREHOOK: Input: default@vp_date
+PREHOOK: Output: default@vp_date
+POSTHOOK: query: alter view vp_date add partition (p_date='2024-06-01')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@src_t
+POSTHOOK: Input: default@vp_date
+POSTHOOK: Output: default@vp_date
+POSTHOOK: Output: default@vp_date@p_date=2024-06-01
+PREHOOK: query: show partitions vp_date
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@vp_date
+POSTHOOK: query: show partitions vp_date
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@vp_date
+p_date=2024-06-01
+PREHOOK: query: create view vp_dec partitioned on (p_dec) as select label, p_dec from src_t
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src_t
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vp_dec
+POSTHOOK: query: create view vp_dec partitioned on (p_dec) as select label, p_dec from src_t
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src_t
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vp_dec
+POSTHOOK: Lineage: vp_dec.label SIMPLE [(src_t)src_t.FieldSchema(name:label, type:string, comment:null), ]
+PREHOOK: query: alter view vp_dec add partition (p_dec=99.50)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@src_t
+PREHOOK: Input: default@vp_dec
+PREHOOK: Output: default@vp_dec
+POSTHOOK: query: alter view vp_dec add partition (p_dec=99.50)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@src_t
+POSTHOOK: Input: default@vp_dec
+POSTHOOK: Output: default@vp_dec
+POSTHOOK: Output: default@vp_dec@p_dec=99.5
+PREHOOK: query: show partitions vp_dec
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@vp_dec
+POSTHOOK: query: show partitions vp_dec
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@vp_dec
+p_dec=99.5
+PREHOOK: query: drop view vp_int
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@vp_int
+PREHOOK: Output: default@vp_int
+POSTHOOK: query: drop view vp_int
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@vp_int
+POSTHOOK: Output: default@vp_int
+PREHOOK: query: drop view vp_bool
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@vp_bool
+PREHOOK: Output: default@vp_bool
+POSTHOOK: query: drop view vp_bool
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@vp_bool
+POSTHOOK: Output: default@vp_bool
+PREHOOK: query: drop view vp_date
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@vp_date
+PREHOOK: Output: default@vp_date
+POSTHOOK: query: drop view vp_date
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@vp_date
+POSTHOOK: Output: default@vp_date
+PREHOOK: query: drop view vp_dec
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@vp_dec
+PREHOOK: Output: default@vp_dec
+POSTHOOK: query: drop view vp_dec
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@vp_dec
+POSTHOOK: Output: default@vp_dec
+PREHOOK: query: drop table src_t
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src_t
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_t
+POSTHOOK: query: drop table src_t
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src_t
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_t
