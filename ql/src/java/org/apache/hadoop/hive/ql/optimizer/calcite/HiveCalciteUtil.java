@@ -842,16 +842,6 @@ public class HiveCalciteUtil {
     return deterministicFuncWithSingleInputRef;
   }
 
-  public static ImmutableMap<Integer, ColumnInfo> getColInfoMap(List<ColumnInfo> hiveCols, Table table) {
-    Builder<Integer, ColumnInfo> builder = ImmutableMap.builder();
-
-    for (ColumnInfo ci : hiveCols) {
-      builder.put(table.getColumnIndexByName(ci.getInternalName()), ci);
-    }
-
-    return builder.build();
-  }
-
   public static ImmutableSet<Integer> shiftVColsSet(Set<Integer> hiveVCols, int shift) {
     ImmutableSet.Builder<Integer> bldr = ImmutableSet.<Integer> builder();
 
