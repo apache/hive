@@ -35,6 +35,7 @@ import org.apache.iceberg.hive.rest.catalog.client.HiveRESTCatalogClient;
 import org.apache.iceberg.rest.extension.OAuth2AuthorizationServer;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -53,6 +54,7 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.File;
+import java.net.InetAddress;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -117,6 +119,11 @@ public class TestIcebergRESTCatalogGravitinoGcsLlapLocalCliDriver {
   @Parameters(name = "{0}")
   public static List<Object[]> getParameters() throws Exception {
     return CLI_ADAPTER.getParameters();
+  }
+
+  @BeforeClass
+  public static void verifyHostGatewayIsMapped() throws Exception {
+    InetAddress.getByName(GcsFakeServerContainers.HOST_GATEWAY);
   }
 
   @ClassRule
@@ -196,10 +203,15 @@ public class TestIcebergRESTCatalogGravitinoGcsLlapLocalCliDriver {
   /**
    * Seeds host-reachable Iceberg GCS client settings on the HS2 session so
    * {@link org.apache.iceberg.mr.hive.IcebergVendedCredentialUtil} can override vended
-   * {@code gcs.service.host} for the test JVM (similar to S3 endpoint override).
+   * {@code gcs.service.host} for the test JVM (see
+   * {@link TestIcebergRESTCatalogGravitinoS3LlapLocalCliDriver#applyIcebergS3ClientEndpointOverride}).
+   *
+   * <p>Gravitino vends credentials whose {@code gcs.service.host} targets
+   * {@link GcsFakeServerContainers#DOCKER_ENDPOINT} (reachable inside the Docker network only). Hive
+   * runs on the host and uses {@link GcsFakeServerContainers#getHostGatewayEndpoint()} with
+   * {@code -Djdk.net.hosts.file} so resumable-upload URLs match fake-gcs {@code externalUrl}.
    */
   private void applyHostGcsClientSettings(Configuration conf, String restCatalogPrefix) {
-    // Same host-gateway URL as fake-gcs externalUrl (resumable upload Location headers); see custom_hosts_file.
     conf.set(restCatalogPrefix + GCPProperties.GCS_SERVICE_HOST, fakeGcs.getHostGatewayEndpoint());
     conf.set(restCatalogPrefix + GCPProperties.GCS_PROJECT_ID, GcsFakeServerContainers.PROJECT_ID);
   }
@@ -298,7 +310,7 @@ public class TestIcebergRESTCatalogGravitinoGcsLlapLocalCliDriver {
     String content = readClasspathResource(GRAVITINO_GCS_CONF_TEMPLATE);
     String updatedContent = content
         .replace("GCS_BUCKET", GCS_BUCKET)
-        .replace("GCS_DOCKER_ENDPOINT", fakeGcs.getHostGatewayEndpoint())
+        .replace("GCS_DOCKER_ENDPOINT", GcsFakeServerContainers.DOCKER_ENDPOINT)
         .replace("OAUTH2_SERVER_URI", oAuth2AuthorizationServer.getIssuer())
         .replace("OAUTH2_JWKS_URI", getJwksUri())
         .replace("OAUTH2_CLIENT_ID", OAUTH2_SERVER_ICEBERG_CLIENT_ID)

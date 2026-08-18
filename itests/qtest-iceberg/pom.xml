@@ -566,20 +566,6 @@
         <artifactId>maven-antrun-plugin</artifactId>
         <executions>
           <execution>
-            <id>prepare-gcs-test-hosts-file</id>
-            <phase>process-test-resources</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <target>
-                <copy file="/etc/hosts" tofile="${project.build.directory}/gcs-test-hosts"/>
-                <exec executable="hostname" outputproperty="local.hostname"/>
-                <echo file="${project.build.directory}/gcs-test-hosts" append="true">${line.separator}127.0.0.1 host.testcontainers.internal${line.separator}127.0.0.1 ${local.hostname}${line.separator}</echo>
-              </target>
-            </configuration>
-          </execution>
-          <execution>
             <id>setup-metastore-scripts</id>
             <phase>process-test-resources</phase>
             <goals>
@@ -587,6 +573,13 @@
             </goals>
             <configuration>
               <target>
+                <copy file="/etc/hosts" tofile="${project.build.directory}/gcs-test-hosts" failonerror="false"/>
+                <exec executable="hostname" outputproperty="local.hostname"/>
+                <exec executable="sh" outputproperty="local.fqdn">
+                  <arg value="-c"/>
+                  <arg value="hostname -f || hostname"/>
+                </exec>
+                <echo file="${project.build.directory}/gcs-test-hosts" append="true">${line.separator}127.0.0.1 host.testcontainers.internal${line.separator}127.0.0.1 ${local.hostname}${line.separator}127.0.0.1 ${local.fqdn}${line.separator}</echo>
                 <mkdir dir="${test.tmp.dir}/scripts/metastore"/>
                 <copy todir="${test.tmp.dir}/scripts/metastore/upgrade" overwrite="true">
                   <fileset dir="${basedir}/${hive.path.to.root}/standalone-metastore/metastore-server/src/main/sql/"/>
@@ -615,7 +608,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <argLine>${maven.test.jvm.args} -Djdk.net.hosts.file=${project.build.directory}/gcs-test-hosts</argLine>
+          <argLine>${maven.test.jvm.args} -Xshare:off -Djdk.net.hosts.file=${project.build.directory}/gcs-test-hosts</argLine>
           <additionalClasspathElements>
             <additionalClasspathElement>${test.conf.dir}</additionalClasspathElement>
             <additionalClasspathElement>${basedir}/${hive.path.to.root}/conf</additionalClasspathElement>

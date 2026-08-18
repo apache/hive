@@ -34,10 +34,11 @@ import org.testcontainers.utility.DockerImageName;
 /**
  * {@code fake-gcs-server} emulator for q-tests that need {@code gs://} with vended OAuth tokens.
  *
- * <p>Gravitino (Docker) and Hive (host JVM) both reach fake-gcs via the published host port using
- * {@link #getHostGatewayEndpoint()} ({@code host.testcontainers.internal}) for resumable upload
- * Location headers and for GCS clients in both Gravitino (Docker) and Hive/LLAP (host JVM). Host
- * tests must map {@link #HOST_GATEWAY} to {@code 127.0.0.1} via {@code -Djdk.net.hosts.file}.
+ * <p>Gravitino (Docker) uses {@link #DOCKER_ENDPOINT} on the shared Testcontainers network.
+ * Hive/LLAP (host JVM) reach fake-gcs via {@link #getHostGatewayEndpoint()} ({@code host.testcontainers.internal}
+ * mapped to {@code 127.0.0.1} through {@code -Djdk.net.hosts.file} in the GCS q-test surefire execution).
+ * {@link #configureExternalUrl(String)} uses the same host-gateway URL so resumable-upload Location headers work
+ * for both Gravitino (via Docker {@code host-gateway}) and the host JVM (via the custom hosts file).
  */
 public final class GcsFakeServerContainers {
 
@@ -96,8 +97,7 @@ public final class GcsFakeServerContainers {
   }
 
   /**
-   * GCS API root reachable from Docker containers (via {@code host-gateway}) and from the host JVM
-   * for resumable upload Location headers.
+   * GCS API root reachable from Docker containers via {@code host-gateway} ({@link #HOST_GATEWAY}).
    */
   public String getHostGatewayEndpoint() {
     return String.format("http://%s:%d", HOST_GATEWAY, getMappedPort());
