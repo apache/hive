@@ -116,7 +116,7 @@ public class SkippingTextInputFormat extends TextInputFormat {
         // readLine()+getPos() idiom, which throws ClassCastException on lone-CR files.
         // Deliberately not closed: LineReader.close() would close fis, which the
         // try-with-resources already owns.
-        LineReader reader = new LineReader(fis);
+        LineReader reader = new LineReader(fis, conf);
         Text headerLine = new Text();
         long currPos = 0;
         int delimiterIdx = -1;
@@ -170,12 +170,11 @@ public class SkippingTextInputFormat extends TextInputFormat {
             // A LineReader buffers read-ahead and is not seek-aware, so it is valid only
             // for the region following this seek and must not outlive the section: a
             // reader carried across the seek would keep serving bytes from the previously
-            // scanned section while offsets were counted from the new start. Sized to the
-            // section so a 5 KB window does not pull the 64 KB default; the single buffer
-            // of over-read past bufferSectionEnd is expected and discarded by
+            // scanned section while offsets were counted from the new start. The single
+            // buffer of over-read past bufferSectionEnd is expected and discarded by
             // LineBuffer.consume(). Deliberately not closed: that would close fis, which
             // the remaining sections still need.
-            LineReader reader = new LineReader(fis, bufferSectionSize);
+            LineReader reader = new LineReader(fis, conf);
             Text line = new Text();
             long pos = bufferSectionStart;
             while (pos < bufferSectionEnd) {
