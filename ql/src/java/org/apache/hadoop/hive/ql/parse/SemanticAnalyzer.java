@@ -4737,20 +4737,25 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return false;
   }
 
-  public static String processAllColRefAndExclude(
-      ASTNode expr, RowResolver inputRR, Set<ColumnInfo> excludedColumns) throws SemanticException {
+  protected record ExcludeResult(String tableAlias, Set<ColumnInfo> excludedColumns) {}
+
+  protected ExcludeResult processAllColRefAndExclude(ASTNode expr, RowResolver inputRR)
+      throws SemanticException {
     // Check if the query uses SELECT * EXCLUDE. If it does, grab the table
     // alias (like t.*) and build a list of the columns the user wants to exclude.
     String starTabAlias = null;
     ASTNode excludeNode = null;
-    if (expr.getChildCount() > 0) {
-      ASTNode firstChild = (ASTNode) expr.getChild(0);
-      if (firstChild.getType() == HiveParser.TOK_TABCOLNAME) {
-        excludeNode = firstChild;
-      } else {
-        starTabAlias = getUnescapedName(firstChild).toLowerCase();
-        if (expr.getChildCount() > 1) {
-          excludeNode = (ASTNode) expr.getChild(1);
+    Set<ColumnInfo> excludedColumns = new HashSet<>();
+
+    if (expr.getChildren() != null) {
+      for (Node childNode : expr.getChildren()) {
+        ASTNode child = (ASTNode) childNode;
+        switch (child.getType()) {
+          case HiveParser.TOK_TABNAME -> starTabAlias = getUnescapedName(child).toLowerCase();
+          case HiveParser.TOK_TABCOLNAME -> excludeNode = child;
+          default ->
+              throw new SemanticException(
+                  "Unexpected node type in TOK_ALLCOLREF: " + child.getType());
         }
       }
     }
@@ -4764,7 +4769,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
     }
-    return starTabAlias;
+    return new ExcludeResult(starTabAlias, excludedColumns);
   }
 
   private Operator<?> genSelectPlan(String dest, QB qb, Operator<?> input,
@@ -4944,8 +4949,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
         int initPos = pos;
 
-        Set<ColumnInfo> excludeCols = new HashSet<>();
-        String starTabAlias = processAllColRefAndExclude(expr, inputRR, excludeCols);
+        ExcludeResult excludeResult = processAllColRefAndExclude(expr, inputRR);
+        String starTabAlias = excludeResult.tableAlias();
+        Set<ColumnInfo> excludeCols = excludeResult.excludedColumns();
         if (excludeCols.isEmpty()) {
           excludeCols = null;
         }
