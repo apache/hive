@@ -13,9 +13,8 @@
  */
 package org.apache.hadoop.hive.llap.tezplugins;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
 
@@ -53,16 +52,16 @@ final class LlapPluginBroker {
   static final LlapPluginBroker INSTANCE = new LlapPluginBroker();
 
   /**
-   * Guards the atomic "look at the peer map, and either pair or park" section on both sides.
-   * Held for the tiny window of the two-branch check; the maps are also {@link ConcurrentMap}s
-   * so {@code unregister…} outside the pairing window is safe.
+   * Single source of mutual exclusion for the two maps below: every read, write, and iteration
+   * happens while this lock is held, so the maps themselves need no internal synchronization.
+   * Held only for the tiny "look at the peer map, and either pair or park" window on both sides.
    */
   private final Object lock = new Object();
 
-  private final ConcurrentMap<ApplicationAttemptId, LlapTaskCommunicator> pendingCommunicators =
-      new ConcurrentHashMap<>();
-  private final ConcurrentMap<ApplicationAttemptId, LlapTaskSchedulerService> pendingSchedulers =
-      new ConcurrentHashMap<>();
+  private final Map<ApplicationAttemptId, LlapTaskCommunicator> pendingCommunicators =
+      new HashMap<>();
+  private final Map<ApplicationAttemptId, LlapTaskSchedulerService> pendingSchedulers =
+      new HashMap<>();
 
   private LlapPluginBroker() { }
 
