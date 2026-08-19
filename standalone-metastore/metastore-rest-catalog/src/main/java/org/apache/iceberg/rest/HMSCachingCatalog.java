@@ -99,6 +99,7 @@ public final class HMSCachingCatalog
   /**
    * Returns the underlying {@link HiveCatalog} that this caching catalog wraps.
    * This is intended for testing purposes only; production code should not rely on the underlying catalog.
+   * @return the underlying HiveCatalog
    */
   @TestOnly
   public HiveCatalog getCatalog() {
