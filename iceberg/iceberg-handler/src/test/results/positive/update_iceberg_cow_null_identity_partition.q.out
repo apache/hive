@@ -1,0 +1,253 @@
+PREHOOK: query: drop table if exists iceberg_cow_partitioned
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists iceberg_cow_partitioned
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create external table iceberg_cow_partitioned (
+  index int,
+  string_col string,
+  boolean_col boolean,
+  str_col string,
+  tinyint_col int
+) partitioned by spec(str_col, tinyint_col)
+stored by iceberg
+tblproperties ('write.update.mode'='copy-on-write')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@iceberg_cow_partitioned
+POSTHOOK: query: create external table iceberg_cow_partitioned (
+  index int,
+  string_col string,
+  boolean_col boolean,
+  str_col string,
+  tinyint_col int
+) partitioned by spec(str_col, tinyint_col)
+stored by iceberg
+tblproperties ('write.update.mode'='copy-on-write')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@iceberg_cow_partitioned
+PREHOOK: query: insert into iceberg_cow_partitioned partition (str_col, tinyint_col)
+  values (1, 'a', true, null, 0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@iceberg_cow_partitioned
+POSTHOOK: query: insert into iceberg_cow_partitioned partition (str_col, tinyint_col)
+  values (1, 'a', true, null, 0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@iceberg_cow_partitioned
+PREHOOK: query: explain update iceberg_cow_partitioned set str_col = 'UPDATED NULLS' where str_col is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_cow_partitioned
+PREHOOK: Output: default@iceberg_cow_partitioned
+POSTHOOK: query: explain update iceberg_cow_partitioned set str_col = 'UPDATED NULLS' where str_col is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_cow_partitioned
+POSTHOOK: Output: default@iceberg_cow_partitioned
+Vertex dependency in root stage
+Map 1 <- Union 2 (CONTAINS)
+Reducer 4 <- Map 3 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE), Union 2 (CONTAINS)
+Reducer 6 <- Map 5 (SIMPLE_EDGE)
+Reducer 7 <- Map 5 (SIMPLE_EDGE), Union 2 (CONTAINS)
+
+Stage-3
+  Stats Work{}
+    Stage-0
+      Move Operator
+        table:{"name:":"default.iceberg_cow_partitioned"}
+        Stage-2
+          Dependency Collection{}
+            Stage-1
+              Union 2
+              <-Map 1 [CONTAINS] vectorized
+                File Output Operator [FS_63]
+                  table:{"name:":"default.iceberg_cow_partitioned"}
+                  Select Operator [SEL_62] (rows=1 width=398)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"]
+                    TableScan [TS_48] (rows=1 width=97)
+                      default@iceberg_cow_partitioned,iceberg_cow_partitioned,Tbl:COMPLETE,Col:PARTIAL,Output:["index","string_col","boolean_col","tinyint_col"]
+              <-Reducer 4 [CONTAINS]
+                File Output Operator [FS_55]
+                  table:{"name:":"default.iceberg_cow_partitioned"}
+                  Select Operator [SEL_53] (rows=1 width=523)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"]
+                    Merge Join Operator [MERGEJOIN_52] (rows=1 width=523)
+                      Conds:RS_66._col7=RS_76._col0(Left Semi),Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"]
+                    <-Map 3 [SIMPLE_EDGE] vectorized
+                      SHUFFLE [RS_66]
+                        PartitionCols:_col7
+                        Select Operator [SEL_65] (rows=1 width=476)
+                          Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"]
+                          Filter Operator [FIL_64] (rows=1 width=272)
+                            predicate:(FILE__PATH is not null and str_col is not null)
+                            TableScan [TS_3] (rows=1 width=272)
+                              default@iceberg_cow_partitioned,iceberg_cow_partitioned,Tbl:COMPLETE,Col:PARTIAL,Output:["index","string_col","boolean_col","str_col","tinyint_col"]
+                    <-Reducer 6 [SIMPLE_EDGE] vectorized
+                      SHUFFLE [RS_76]
+                        PartitionCols:_col0
+                        Group By Operator [GBY_75] (rows=1 width=13498)
+                          Output:["_col0"],keys:_col0
+                          Select Operator [SEL_74] (rows=1 width=13498)
+                            Output:["_col0"]
+                            Filter Operator [FIL_73] (rows=1 width=13498)
+                              predicate:(row_number_window_0 = 1)
+                              PTF Operator [PTF_72] (rows=1 width=13498)
+                                Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col7 ASC NULLS FIRST","partition by:":"_col7"}]
+                                Select Operator [SEL_71] (rows=1 width=13498)
+                                  Output:["_col7"]
+                                <-Map 5 [SIMPLE_EDGE] vectorized
+                                  SHUFFLE [RS_69]
+                                    PartitionCols:FILE__PATH
+                                    Filter Operator [FIL_67] (rows=1 width=13498)
+                                      predicate:(FILE__PATH is not null and str_col is null)
+                                      TableScan [TS_6] (rows=1 width=13498)
+                                        default@iceberg_cow_partitioned,iceberg_cow_partitioned,Tbl:COMPLETE,Col:NONE,Output:["boolean_col","index","string_col","tinyint_col"]
+              <-Reducer 7 [CONTAINS] vectorized
+                File Output Operator [FS_81]
+                  table:{"name:":"default.iceberg_cow_partitioned"}
+                  Select Operator [SEL_80] (rows=1 width=385)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"]
+                    Filter Operator [FIL_79] (rows=1 width=293)
+                      predicate:(row_number_window_0 = 1)
+                      PTF Operator [PTF_78] (rows=1 width=293)
+                        Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col7 ASC NULLS FIRST","partition by:":"_col7"}]
+                        Select Operator [SEL_77] (rows=1 width=293)
+                          Output:["_col0","_col1","_col2","_col4","_col5","_col6","_col7"]
+                        <-Map 5 [SIMPLE_EDGE] vectorized
+                          SHUFFLE [RS_70]
+                            PartitionCols:FILE__PATH
+                            Filter Operator [FIL_68]
+                              predicate:str_col is null
+                               Please refer to the previous TableScan [TS_6]
+
+PREHOOK: query: update iceberg_cow_partitioned set str_col = 'UPDATED NULLS' where str_col is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_cow_partitioned
+PREHOOK: Output: default@iceberg_cow_partitioned
+POSTHOOK: query: update iceberg_cow_partitioned set str_col = 'UPDATED NULLS' where str_col is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_cow_partitioned
+POSTHOOK: Output: default@iceberg_cow_partitioned
+PREHOOK: query: select * from iceberg_cow_partitioned
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_cow_partitioned
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from iceberg_cow_partitioned
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_cow_partitioned
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	a	true	UPDATED NULLS	0
+PREHOOK: query: insert into iceberg_cow_partitioned partition (str_col, tinyint_col)
+  values (2, 'b', false, null, 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@iceberg_cow_partitioned
+POSTHOOK: query: insert into iceberg_cow_partitioned partition (str_col, tinyint_col)
+  values (2, 'b', false, null, 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@iceberg_cow_partitioned
+PREHOOK: query: explain update iceberg_cow_partitioned set str_col = 'UPDATED NULLS' where str_col is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_cow_partitioned
+PREHOOK: Output: default@iceberg_cow_partitioned
+POSTHOOK: query: explain update iceberg_cow_partitioned set str_col = 'UPDATED NULLS' where str_col is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_cow_partitioned
+POSTHOOK: Output: default@iceberg_cow_partitioned
+Vertex dependency in root stage
+Map 1 <- Union 2 (CONTAINS)
+Reducer 4 <- Map 3 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE), Union 2 (CONTAINS)
+Reducer 6 <- Map 5 (SIMPLE_EDGE)
+Reducer 7 <- Map 5 (SIMPLE_EDGE), Union 2 (CONTAINS)
+
+Stage-3
+  Stats Work{}
+    Stage-0
+      Move Operator
+        table:{"name:":"default.iceberg_cow_partitioned"}
+        Stage-2
+          Dependency Collection{}
+            Stage-1
+              Union 2
+              <-Map 1 [CONTAINS]
+                File Output Operator [FS_51]
+                  table:{"name:":"default.iceberg_cow_partitioned"}
+                  Select Operator [SEL_49] (rows=1 width=398)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"]
+                    TableScan [TS_48] (rows=1 width=97)
+                      default@iceberg_cow_partitioned,iceberg_cow_partitioned,Tbl:COMPLETE,Col:PARTIAL,Output:["index","string_col","boolean_col","tinyint_col"]
+              <-Reducer 4 [CONTAINS]
+                File Output Operator [FS_55]
+                  table:{"name:":"default.iceberg_cow_partitioned"}
+                  Select Operator [SEL_53] (rows=1 width=16390)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"]
+                    Merge Join Operator [MERGEJOIN_52] (rows=1 width=16390)
+                      Conds:RS_17._col7=RS_18._col0(Left Semi),Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"]
+                    <-Map 3 [SIMPLE_EDGE]
+                      SHUFFLE [RS_17]
+                        PartitionCols:_col7
+                        Select Operator [SEL_5] (rows=1 width=14900)
+                          Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"]
+                          Filter Operator [FIL_36] (rows=1 width=14900)
+                            predicate:FILE__PATH is not null
+                            TableScan [TS_3] (rows=1 width=14900)
+                              default@iceberg_cow_partitioned,iceberg_cow_partitioned,Tbl:COMPLETE,Col:NONE,Output:["index","string_col","boolean_col","str_col","tinyint_col"]
+                    <-Reducer 6 [SIMPLE_EDGE]
+                      SHUFFLE [RS_18]
+                        PartitionCols:_col0
+                        Group By Operator [GBY_16] (rows=1 width=13498)
+                          Output:["_col0"],keys:_col0
+                          Select Operator [SEL_11] (rows=1 width=13498)
+                            Output:["_col0"]
+                            Filter Operator [FIL_37] (rows=1 width=13498)
+                              predicate:(row_number_window_0 = 1)
+                              PTF Operator [PTF_10] (rows=1 width=13498)
+                                Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col7 ASC NULLS FIRST","partition by:":"_col7"}]
+                                Select Operator [SEL_9] (rows=1 width=13498)
+                                  Output:["_col7"]
+                                <-Map 5 [SIMPLE_EDGE]
+                                  SHUFFLE [RS_8]
+                                    PartitionCols:FILE__PATH
+                                    Filter Operator [FIL_38] (rows=1 width=13498)
+                                      predicate:(FILE__PATH is not null and str_col is null)
+                                      TableScan [TS_6] (rows=1 width=13498)
+                                        default@iceberg_cow_partitioned,iceberg_cow_partitioned,Tbl:COMPLETE,Col:NONE,Output:["boolean_col","index","string_col","tinyint_col"]
+              <-Reducer 7 [CONTAINS]
+                File Output Operator [FS_61]
+                  table:{"name:":"default.iceberg_cow_partitioned"}
+                  Select Operator [SEL_59] (rows=1 width=385)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"]
+                    Filter Operator [FIL_58] (rows=1 width=293)
+                      predicate:(row_number_window_0 = 1)
+                      PTF Operator [PTF_57] (rows=1 width=293)
+                        Function definitions:[{},{"name:":"windowingtablefunction","order by:":"_col7 ASC NULLS FIRST","partition by:":"_col7"}]
+                        Select Operator [SEL_56] (rows=1 width=293)
+                          Output:["_col0","_col1","_col2","_col4","_col5","_col6","_col7"]
+                        <-Map 5 [SIMPLE_EDGE]
+                          SHUFFLE [RS_24]
+                            PartitionCols:FILE__PATH
+                            Filter Operator [FIL_47]
+                              predicate:str_col is null
+                               Please refer to the previous TableScan [TS_6]
+
+PREHOOK: query: update iceberg_cow_partitioned set str_col = 'UPDATED NULLS' where str_col is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_cow_partitioned
+PREHOOK: Output: default@iceberg_cow_partitioned
+POSTHOOK: query: update iceberg_cow_partitioned set str_col = 'UPDATED NULLS' where str_col is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_cow_partitioned
+POSTHOOK: Output: default@iceberg_cow_partitioned
+PREHOOK: query: select * from iceberg_cow_partitioned
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_cow_partitioned
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from iceberg_cow_partitioned
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_cow_partitioned
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	a	true	UPDATED NULLS	0
+2	b	false	UPDATED NULLS	1
