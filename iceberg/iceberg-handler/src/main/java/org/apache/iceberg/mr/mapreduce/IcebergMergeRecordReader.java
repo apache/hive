@@ -26,6 +26,7 @@ import org.apache.iceberg.ContentFile;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.MetadataColumns;
+import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.avro.Avro;
 import org.apache.iceberg.data.avro.PlannedDataReader;
@@ -58,8 +59,10 @@ public final class IcebergMergeRecordReader<T> extends AbstractIcebergRecordRead
     CloseableIterator<T> closeableIterator = openGeneric(mergeSplit.getContentFile(), table.schema()).iterator();
     if (mergeSplit.getContentFile() instanceof DeleteFile) {
       Schema deleteSchema = IcebergAcidUtil.createSerdeSchemaForDelete(table.schema().columns());
+      PartitionSpec spec = table.specs().get(mergeSplit.getContentFile().specId());
+
       return new IcebergAcidUtil.MergeTaskVirtualColumnAwareIterator<>(closeableIterator,
-          deleteSchema, mergeSplit.getContentFile(), table);
+          deleteSchema, spec, mergeSplit.getContentFile());
     } else {
       return closeableIterator;
     }

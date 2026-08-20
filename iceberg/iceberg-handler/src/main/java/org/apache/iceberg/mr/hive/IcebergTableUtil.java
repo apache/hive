@@ -493,8 +493,10 @@ public class IcebergTableUtil {
    * name an unpartitioned spec renders. Statistics and partition pruning join on this name, so both must
    * render it the same way.
    */
-  static String toPartitionName(PartitionSpec spec, PartitionData data) {
-    return StringUtils.defaultIfEmpty(spec.partitionToPath(data), DummyPartition.VOID);
+  public static String toPartitionName(PartitionSpec spec, StructLike data) {
+    String path = spec.partitionToPath(data);
+    // an unpartitioned spec renders nothing: its rows belong to the table-level partition
+    return path.isEmpty() ? DummyPartition.VOID : path;
   }
 
   /**

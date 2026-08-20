@@ -686,6 +686,12 @@ public class MapOperator extends AbstractMapOperator {
             vcValues[i] = new Text(ctx.getIoCxt().getPositionDeleteInfo().getPartitionProjection());
           }
           break;
+        case PARTITION_NAME:
+          vcValues[i] = null;
+          if (ctx.getIoCxt().getPartitionName() != null) {
+            vcValues[i] = new Text(ctx.getIoCxt().getPartitionName());
+          }
+          break;
         case FILE_PATH:
           vcValues[i] = null;
           if (ctx.getIoCxt().getPositionDeleteInfo() != null) {
