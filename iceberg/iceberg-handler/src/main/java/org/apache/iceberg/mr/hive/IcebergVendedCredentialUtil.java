@@ -109,15 +109,24 @@ public final class IcebergVendedCredentialUtil {
   private static void addCredentialEntries(String catalogName, StorageCredential credential,
       Map<String, String> jobProperties, Map<String, String> jobSecrets, Configuration conf) {
 
+    if (credential == null) {
+      return;
+    }
+
+    Map<String, String> config = credential.config();
+    if (config == null || config.isEmpty()) {
+      return;
+    }
+
     HadoopMapper mapper = Support.mapperFor(credential);
-    String scope = mapper != null ? mapper.scopeFromPrefix(credential.prefix()) :
-        Support.scopeFromPrefix(credential.prefix());
-    for (Map.Entry<String, String> entry : credential.config().entrySet()) {
+    String prefix = credential.prefix();
+    String scope = mapper != null ? mapper.scopeFromPrefix(prefix) : Support.scopeFromPrefix(prefix);
+    for (Map.Entry<String, String> entry : config.entrySet()) {
       addCredentialEntry(
           catalogName, scope, mapper, entry.getKey(), entry.getValue(), jobProperties, jobSecrets, conf);
     }
     if (jobProperties != null) {
-      Support.additionalNonSecretHadoopProperties(mapper, scope, credential.config())
+      Support.additionalNonSecretHadoopProperties(mapper, scope, config)
           .forEach(jobProperties::putIfAbsent);
     }
   }
@@ -423,9 +432,14 @@ public final class IcebergVendedCredentialUtil {
 
     List<StorageCredential> updated = Lists.newArrayListWithCapacity(credentials.size());
     for (StorageCredential credential : credentials) {
-      Map<String, String> credsConfig = new LinkedHashMap<>(credential.config());
-      applyCatalogConfigOverrides(catalogName, credsConfig, conf);
-      updated.add(StorageCredential.create(credential.prefix(), credsConfig));
+      if (credential == null) {
+        continue;
+      }
+      Map<String, String> credsConfig = credential.config();
+      Map<String, String> updatedConfig =
+          new LinkedHashMap<>(credsConfig != null ? credsConfig : Map.of());
+      applyCatalogConfigOverrides(catalogName, updatedConfig, conf);
+      updated.add(StorageCredential.create(credential.prefix(), updatedConfig));
     }
 
     return updated;

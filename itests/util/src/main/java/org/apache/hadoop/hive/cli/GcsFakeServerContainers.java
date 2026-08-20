@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.cli;
@@ -45,12 +46,13 @@ public final class GcsFakeServerContainers {
   private static final Logger LOG = LoggerFactory.getLogger(GcsFakeServerContainers.class);
   private static final DockerImageName FAKE_GCS_IMAGE =
       DockerImageName.parse("fsouza/fake-gcs-server:1.47.4");
+  private static final String HTTP_HOST_PORT_FORMAT = "http://%s:%d";
 
   public static final String PROJECT_ID = "test-project";
   public static final int PORT = 4443;
   public static final String DOCKER_ALIAS = "gcs.fake";
   public static final String DOCKER_ENDPOINT =
-      String.format("http://%s:%d", DOCKER_ALIAS, PORT);
+      String.format(HTTP_HOST_PORT_FORMAT, DOCKER_ALIAS, PORT);
   /** Host gateway hostname reachable from containers via {@code host-gateway} extra_hosts. */
   public static final String HOST_GATEWAY = "host.testcontainers.internal";
 
@@ -60,7 +62,7 @@ public final class GcsFakeServerContainers {
 
   /** Starts fake-gcs-server on {@code network} and creates {@code bucketName} if absent. */
   @SuppressWarnings("resource")
-  public void start(Network network, String bucketName) throws Exception {
+  public void start(Network network, String bucketName) throws IOException, InterruptedException {
     fakeGcs = new GenericContainer<>(FAKE_GCS_IMAGE)
         .withNetwork(network)
         .withNetworkAliases(DOCKER_ALIAS)
@@ -93,14 +95,14 @@ public final class GcsFakeServerContainers {
 
   /** Host-reachable GCS API root ({@code http://host:port}). */
   public String getHostEndpoint() {
-    return String.format("http://%s:%d", getHost(), getMappedPort());
+    return String.format(HTTP_HOST_PORT_FORMAT, getHost(), getMappedPort());
   }
 
   /**
    * GCS API root reachable from Docker containers via {@code host-gateway} ({@link #HOST_GATEWAY}).
    */
   public String getHostGatewayEndpoint() {
-    return String.format("http://%s:%d", HOST_GATEWAY, getMappedPort());
+    return String.format(HTTP_HOST_PORT_FORMAT, HOST_GATEWAY, getMappedPort());
   }
 
   /**
@@ -115,12 +117,13 @@ public final class GcsFakeServerContainers {
         .header("Content-Type", "application/json")
         .PUT(HttpRequest.BodyPublishers.ofString(body))
         .build();
-    HttpResponse<Void> response =
-        HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.discarding());
-    if (response.statusCode() != 200) {
-      throw new IOException(String.format(
-          "Failed to configure fake-gcs-server externalUrl=%s at %s: HTTP %d",
-          externalUrl, uri, response.statusCode()));
+    try (HttpClient client = HttpClient.newHttpClient()) {
+      HttpResponse<Void> response = client.send(request, HttpResponse.BodyHandlers.discarding());
+      if (response.statusCode() != 200) {
+        throw new IOException(String.format(
+            "Failed to configure fake-gcs-server externalUrl=%s at %s: HTTP %d",
+            externalUrl, uri, response.statusCode()));
+      }
     }
   }
 
@@ -132,13 +135,14 @@ public final class GcsFakeServerContainers {
         .header("Content-Type", "application/json")
         .POST(HttpRequest.BodyPublishers.ofString(body))
         .build();
-    HttpResponse<Void> response =
-        HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.discarding());
-    int status = response.statusCode();
-    if (status == 200 || status == 409) {
-      return;
+    try (HttpClient client = HttpClient.newHttpClient()) {
+      HttpResponse<Void> response = client.send(request, HttpResponse.BodyHandlers.discarding());
+      int status = response.statusCode();
+      if (status == 200 || status == 409) {
+        return;
+      }
+      throw new IOException(String.format(
+          "Failed to create fake-gcs bucket '%s' at %s: HTTP %d", bucketName, uri, status));
     }
-    throw new IOException(String.format(
-        "Failed to create fake-gcs bucket '%s' at %s: HTTP %d", bucketName, uri, status));
   }
 }

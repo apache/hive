@@ -45,12 +45,13 @@ final class HadoopMappers {
       return null;
     }
     String prefix = credential.prefix();
+    Map<String, String> config = credential.config();
     HadoopMapper configMapper = null;
     for (HadoopMapper mapper : MAPPERS) {
       if (mapper.supportsPrefix(prefix)) {
         return mapper;
       }
-      if (configMapper == null && credential.config().keySet().stream()
+      if (configMapper == null && config != null && config.keySet().stream()
           .anyMatch(mapper::supportsConfigKey)) {
         configMapper = mapper;
       }

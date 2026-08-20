@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.cli;
@@ -29,10 +30,25 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.security.KeyManagementException;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Comparator;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import org.apache.hadoop.hive.ql.QTestSystemProperties;
 
 /**
  * Minimal Google OAuth2/STS token endpoint mock for Gravitino {@code gcs-token} credential vending.
@@ -66,9 +82,13 @@ public final class GcsOAuthTokenMock implements AutoCloseable {
   private Path certificatePath;
   private Path workDir;
 
+  private static volatile String opensslCommand;
+  private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
   /** Starts HTTP and HTTPS servers on ephemeral ports. */
-  public void start() throws Exception {
-    workDir = Files.createTempDirectory("gcs-oauth-mock-");
+  public void start() throws IOException, InterruptedException, KeyStoreException, NoSuchAlgorithmException,
+      CertificateException, UnrecoverableKeyException, KeyManagementException {
+    workDir = createWorkDir();
     Path keyPath = workDir.resolve("key.pem");
     certificatePath = workDir.resolve("cert.pem");
     generateSelfSignedCertificate(keyPath, certificatePath);
@@ -116,30 +136,44 @@ public final class GcsOAuthTokenMock implements AutoCloseable {
     }
   }
 
-  private static SSLContext buildSslContext(Path keyPath, Path certPath) throws Exception {
+  private static SSLContext buildSslContext(Path keyPath, Path certPath)
+      throws IOException, InterruptedException, KeyStoreException, NoSuchAlgorithmException,
+          CertificateException, UnrecoverableKeyException, KeyManagementException {
     Path pkcs12 = keyPath.getParent().resolve("keystore.p12");
-    ProcessBuilder pb = new ProcessBuilder(
-        "openssl", "pkcs12", "-export",
-        "-inkey", keyPath.toString(),
-        "-in", certPath.toString(),
-        "-out", pkcs12.toString(),
-        "-passout", "pass:changeit",
-        "-name", STS_CN);
-    runOrThrow(pb);
-    KeyStore keyStore = KeyStore.getInstance("PKCS12");
-    try (InputStream in = Files.newInputStream(pkcs12)) {
-      keyStore.load(in, "changeit".toCharArray());
+    char[] keystorePassword = ephemeralKeystorePassword();
+    try {
+      ProcessBuilder pb = new ProcessBuilder(
+          resolveOpenSslCommand(), "pkcs12", "-export",
+          "-inkey", keyPath.toString(),
+          "-in", certPath.toString(),
+          "-out", pkcs12.toString(),
+          "-passout", "pass:" + new String(keystorePassword),
+          "-name", STS_CN);
+      runOrThrow(pb);
+      KeyStore keyStore = KeyStore.getInstance("PKCS12");
+      try (InputStream in = Files.newInputStream(pkcs12)) {
+        keyStore.load(in, keystorePassword);
+      }
+      KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+      kmf.init(keyStore, keystorePassword);
+      SSLContext sslContext = SSLContext.getInstance("TLS");
+      sslContext.init(kmf.getKeyManagers(), null, null);
+      return sslContext;
+    } finally {
+      Arrays.fill(keystorePassword, '\0');
     }
-    KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-    kmf.init(keyStore, "changeit".toCharArray());
-    SSLContext sslContext = SSLContext.getInstance("TLS");
-    sslContext.init(kmf.getKeyManagers(), null, null);
-    return sslContext;
   }
 
-  private static void generateSelfSignedCertificate(Path keyPath, Path certPath) throws Exception {
+  private static char[] ephemeralKeystorePassword() {
+    byte[] random = new byte[16];
+    SECURE_RANDOM.nextBytes(random);
+    return Base64.getEncoder().encodeToString(random).toCharArray();
+  }
+
+  private static void generateSelfSignedCertificate(Path keyPath, Path certPath)
+      throws IOException, InterruptedException {
     ProcessBuilder pb = new ProcessBuilder(
-        "openssl", "req", "-x509", "-newkey", "rsa:2048",
+        resolveOpenSslCommand(), "req", "-x509", "-newkey", "rsa:2048",
         "-keyout", keyPath.toString(),
         "-out", certPath.toString(),
         "-days", "1", "-nodes",
@@ -147,7 +181,42 @@ public final class GcsOAuthTokenMock implements AutoCloseable {
     runOrThrow(pb);
   }
 
-  private static void runOrThrow(ProcessBuilder pb) throws Exception {
+  private static String resolveOpenSslCommand() throws IOException {
+    if (opensslCommand == null) {
+      synchronized (GcsOAuthTokenMock.class) {
+        if (opensslCommand == null) {
+          opensslCommand = findOpenSslExecutable();
+        }
+      }
+    }
+    return opensslCommand;
+  }
+
+  private static String findOpenSslExecutable() throws IOException {
+    for (String candidate : new String[] {"/usr/bin/openssl", "/bin/openssl"}) {
+      Path path = Paths.get(candidate);
+      if (Files.isExecutable(path)) {
+        return candidate;
+      }
+    }
+    throw new IOException("openssl executable not found (/usr/bin/openssl, /bin/openssl)");
+  }
+
+  private static Path createWorkDir() throws IOException {
+    Path tmpParent = Paths.get(
+        QTestSystemProperties.getTempDir() != null
+            ? QTestSystemProperties.getTempDir()
+            : System.getProperty("test.tmp.dir", "target/tmp"))
+        .toAbsolutePath()
+        .normalize();
+    Files.createDirectories(tmpParent);
+    FileAttribute<Set<PosixFilePermission>> ownerOnlyDir =
+        PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------"));
+    return Files.createTempDirectory(tmpParent, "gcs-oauth-mock-", ownerOnlyDir);
+  }
+
+  private static void runOrThrow(ProcessBuilder pb) throws IOException, InterruptedException {
+    pb.environment().put("PATH", "/usr/bin:/bin");
     Process process = pb.start();
     if (!process.waitFor(30, TimeUnit.SECONDS)) {
       process.destroyForcibly();
@@ -160,16 +229,14 @@ public final class GcsOAuthTokenMock implements AutoCloseable {
   }
 
   private static void deleteQuietly(Path dir) {
-    try {
-      Files.walk(dir)
-          .sorted((a, b) -> b.compareTo(a))
-          .forEach(path -> {
-            try {
-              Files.deleteIfExists(path);
-            } catch (IOException ignored) {
-              // best effort cleanup
-            }
-          });
+    try (var paths = Files.walk(dir)) {
+      paths.sorted(Comparator.reverseOrder()).forEach(path -> {
+        try {
+          Files.deleteIfExists(path);
+        } catch (IOException ignored) {
+          // best effort cleanup
+        }
+      });
     } catch (IOException ignored) {
       // best effort cleanup
     }

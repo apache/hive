@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.cli;
@@ -88,12 +89,12 @@ public final class AdlsAzuriteContainers {
 
   /** Starts Azurite on {@code network} and creates {@code containerName} if absent. */
   @SuppressWarnings("resource")
-  public void start(Network network, String containerName) throws Exception {
+  public void start(Network network, String containerName) throws IOException, InterruptedException {
     azurite = new AzuriteContainer()
         .withNetwork(network)
         .withNetworkAliases(AZURITE_DOCKER_ALIAS)
         .withExposedPorts(BLOB_PORT, GRAVITINO_HTTP_PORT)
-        .withCommand("azurite", "--blobHost", "0.0.0.0", "--blobPort", String.valueOf(BLOB_PORT))
+        .withCommand(AZURITE_DOCKER_ALIAS, "--blobHost", "0.0.0.0", "--blobPort", String.valueOf(BLOB_PORT))
         .waitingFor(Wait.forListeningPorts(BLOB_PORT).withStartupTimeout(STARTUP_TIMEOUT))
         .withLogConsumer(outputFrame -> LOG.debug("[azurite] {}", outputFrame.getUtf8String().trim()));
     azurite.start();
@@ -163,15 +164,16 @@ public final class AdlsAzuriteContainers {
         .header("Authorization", authorization)
         .build();
 
-    HttpResponse<Void> response =
-        HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.discarding());
-    int status = response.statusCode();
-    if (status == 201 || status == 409) {
-      return;
+    try (HttpClient client = HttpClient.newHttpClient()) {
+      HttpResponse<Void> response = client.send(request, HttpResponse.BodyHandlers.discarding());
+      int status = response.statusCode();
+      if (status == 201 || status == 409) {
+        return;
+      }
+      throw new IOException(String.format(
+          "Failed to create Azurite container '%s' at %s: HTTP %d",
+          containerName, uri, status));
     }
-    throw new IOException(String.format(
-        "Failed to create Azurite container '%s' at %s: HTTP %d",
-        containerName, uri, status));
   }
 
   private static String signStringToSign(String stringToSign) throws IOException {
