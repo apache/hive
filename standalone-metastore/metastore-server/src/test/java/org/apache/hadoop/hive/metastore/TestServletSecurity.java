@@ -73,7 +73,9 @@ public class TestServletSecurity {
   @Test
   public void testEvictionClosesFileSystemForUgi() throws Exception {
     // A cache bounded to a single entry: inserting a second user evicts the first.
-    ServletSecurity security = new ServletSecurity(ServletSecurity.AuthType.JWT, confWithCache(1, 3600));
+    // Runnable::run makes removal-listener cleanup run synchronously on this thread, where the static mock is active.
+    ServletSecurity security =
+        new ServletSecurity(ServletSecurity.AuthType.JWT, confWithCache(1, 3600), null, Runnable::run);
     UserGroupInformation loginUser = UserGroupInformation.getCurrentUser();
 
     try (MockedStatic<FileSystem> fsMock = Mockito.mockStatic(FileSystem.class)) {

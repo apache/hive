@@ -31,6 +31,8 @@ import com.google.common.base.Preconditions;
 import java.security.KeyStore;
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import org.apache.hadoop.conf.Configuration;
@@ -120,7 +122,7 @@ public class ServletSecurity {
    * Cache key for a proxy {@link UserGroupInformation}. A proxy UGI is bound to both the effective user it
    * impersonates and the server login user acting as its real user, so both participate in identity.
    */
-  record UgiKey(String realUser, String loginUser) {}
+  record UgiKey(String effectiveUser, String loginUser) {}
 
   public ServletSecurity(AuthType authType, Configuration conf) {
     this(authType, conf, null);
@@ -128,13 +130,20 @@ public class ServletSecurity {
 
   public ServletSecurity(AuthType authType, Configuration conf,
       Function<HttpServletRequest, List<String>> scopeProvider) {
+    this(authType, conf, scopeProvider, ForkJoinPool.commonPool());
+  }
+
+  @VisibleForTesting
+  ServletSecurity(AuthType authType, Configuration conf,
+      Function<HttpServletRequest, List<String>> scopeProvider, Executor cacheCleanupExecutor) {
     this.conf = conf;
     this.isSecurityEnabled = UserGroupInformation.isSecurityEnabled();
     this.authType = authType;
     this.scopeProvider = scopeProvider;
     this.proxyUserCache = createCacheWithConfig(
         MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.CATALOG_SERVLET_UGI_CACHE_EXPIRY, TimeUnit.MILLISECONDS),
-        (int) MetastoreConf.getLongVar(conf, MetastoreConf.ConfVars.CATALOG_SERVLET_UGI_CACHE_SIZE));
+        MetastoreConf.getLongVar(conf, MetastoreConf.ConfVars.CATALOG_SERVLET_UGI_CACHE_SIZE),
+        cacheCleanupExecutor);
   }
 
   /**
@@ -142,9 +151,13 @@ public class ServletSecurity {
    *
    * @param expirationMs Time in milliseconds after which entries expire due to inactivity
    * @param maxSize      Maximum number of entries the cache can hold
+   * @param cacheCleanupExecutor executor on which removal-listener cleanup ({@link FileSystem#closeAllForUGI})
+   *                             runs; production uses {@link ForkJoinPool#commonPool()} so cleanup stays off the
+   *                             request thread
    * @return A configured Caffeine cache for UGI objects
    */
-  private Cache<UgiKey, UserGroupInformation> createCacheWithConfig(long expirationMs, int maxSize) {
+  private Cache<UgiKey, UserGroupInformation> createCacheWithConfig(long expirationMs, long maxSize,
+      Executor cacheCleanupExecutor) {
     // Note: eviction closes the UGI's FileSystems. If an entry is evicted while a request is still inside doAs,
     // that in-flight operation could see a "FileSystem closed" error. We don't reference-count to prevent this;
     // instead we rely on generous margins: expiry is idle-based (expireAfterAccess), and both the expiry window
@@ -167,7 +180,7 @@ public class ServletSecurity {
 
     Caffeine<UgiKey, UserGroupInformation> builder = Caffeine.<UgiKey, UserGroupInformation>newBuilder()
         .maximumSize(maxSize)
-        .executor(Runnable::run)
+        .executor(cacheCleanupExecutor)
         .removalListener(cleanupListener);
 
     if (expirationMs > 0) {
@@ -190,8 +203,8 @@ public class ServletSecurity {
   @VisibleForTesting
   UserGroupInformation getProxyUser(String userName, UserGroupInformation loginUser) {
     return proxyUserCache.get(new UgiKey(userName, loginUser.getUserName()), key -> {
-      LOG.info("Creating proxy user for: {}", key.realUser());
-      return UserGroupInformation.createProxyUser(key.realUser(), loginUser);
+      LOG.debug("Creating proxy user for: {}", key.effectiveUser());
+      return UserGroupInformation.createProxyUser(key.effectiveUser(), loginUser);
     });
   }
 
