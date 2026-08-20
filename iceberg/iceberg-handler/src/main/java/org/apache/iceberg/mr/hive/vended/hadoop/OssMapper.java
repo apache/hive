@@ -40,7 +40,7 @@ public enum OssMapper implements HadoopMapper {
 
   @Override
   public boolean supportsConfigKey(String icebergKey) {
-    return icebergKey.startsWith("client.") || icebergKey.startsWith("oss.");
+    return icebergKey.startsWith("client.") || icebergKey.startsWith("oss.") || icebergKey.startsWith("oss-");
   }
 
   @Override
@@ -51,25 +51,41 @@ public enum OssMapper implements HadoopMapper {
   @Override
   public String toHadoopProperty(String bucket, String icebergKey) {
     return switch (icebergKey) {
-      case AliyunProperties.CLIENT_ACCESS_KEY_ID -> "fs.oss.accessKeyId";
-      case AliyunProperties.CLIENT_ACCESS_KEY_SECRET -> "fs.oss.accessKeySecret";
-      case AliyunProperties.CLIENT_SECURITY_TOKEN -> "fs.oss.securityToken";
-      case AliyunProperties.OSS_ENDPOINT -> "fs.oss.endpoint";
+      case AliyunProperties.CLIENT_ACCESS_KEY_ID, "oss-access-key-id" -> "fs.oss.accessKeyId";
+      case AliyunProperties.CLIENT_ACCESS_KEY_SECRET, "oss-secret-access-key" -> "fs.oss.accessKeySecret";
+      case AliyunProperties.CLIENT_SECURITY_TOKEN, "oss.security-token" -> "fs.oss.securityToken";
+      case AliyunProperties.OSS_ENDPOINT, "oss-endpoint" -> "fs.oss.endpoint";
       default -> null;
     };
   }
 
   @Override
   public List<StorageCredential> credentialsFromProperties(String prefix, Map<String, String> props) {
-    if (StringUtils.isBlank(props.get(AliyunProperties.CLIENT_ACCESS_KEY_ID)) ||
-        StringUtils.isBlank(props.get(AliyunProperties.CLIENT_ACCESS_KEY_SECRET))) {
+    Map<String, String> normalized = normalizeOssProperties(props);
+    if (StringUtils.isBlank(normalized.get(AliyunProperties.CLIENT_ACCESS_KEY_ID)) ||
+        StringUtils.isBlank(normalized.get(AliyunProperties.CLIENT_ACCESS_KEY_SECRET))) {
       return List.of();
     }
     Map<String, String> config = new LinkedHashMap<>();
-    CredentialProperties.putIfPresent(config, props, AliyunProperties.CLIENT_ACCESS_KEY_ID);
-    CredentialProperties.putIfPresent(config, props, AliyunProperties.CLIENT_ACCESS_KEY_SECRET);
-    CredentialProperties.putIfPresent(config, props, AliyunProperties.CLIENT_SECURITY_TOKEN);
-    CredentialProperties.putIfPresent(config, props, AliyunProperties.OSS_ENDPOINT);
+    CredentialProperties.putIfPresent(config, normalized, AliyunProperties.CLIENT_ACCESS_KEY_ID);
+    CredentialProperties.putIfPresent(config, normalized, AliyunProperties.CLIENT_ACCESS_KEY_SECRET);
+    CredentialProperties.putIfPresent(config, normalized, AliyunProperties.CLIENT_SECURITY_TOKEN);
+    CredentialProperties.putIfPresent(config, normalized, AliyunProperties.OSS_ENDPOINT);
     return List.of(StorageCredential.create(prefix, config));
+  }
+
+  private static Map<String, String> normalizeOssProperties(Map<String, String> props) {
+    Map<String, String> normalized = new LinkedHashMap<>(props);
+    copyAlias(normalized, "oss-access-key-id", AliyunProperties.CLIENT_ACCESS_KEY_ID);
+    copyAlias(normalized, "oss-secret-access-key", AliyunProperties.CLIENT_ACCESS_KEY_SECRET);
+    copyAlias(normalized, "oss.security-token", AliyunProperties.CLIENT_SECURITY_TOKEN);
+    copyAlias(normalized, "oss-endpoint", AliyunProperties.OSS_ENDPOINT);
+    return normalized;
+  }
+
+  private static void copyAlias(Map<String, String> target, String alias, String canonical) {
+    if (StringUtils.isBlank(target.get(canonical)) && StringUtils.isNotBlank(target.get(alias))) {
+      target.put(canonical, target.get(alias));
+    }
   }
 }

@@ -59,7 +59,13 @@ public final class Support {
   }
 
   public static List<StorageCredential> credentialsFromFileIoProperties(Table table, FileIO io) {
-    Map<String, String> props = io.properties();
+    final Map<String, String> props;
+    try {
+      props = io.properties();
+    } catch (UnsupportedOperationException ex) {
+      // OSSFileIO and some other FileIO implementations do not expose catalog properties.
+      return List.of();
+    }
     if (props == null || props.isEmpty()) {
       return List.of();
     }

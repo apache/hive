@@ -42,6 +42,7 @@ import org.apache.iceberg.StaticTableOperations;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.TableMetadataParser;
+import org.apache.iceberg.aliyun.AliyunProperties;
 import org.apache.iceberg.aws.s3.S3FileIOProperties;
 import org.apache.iceberg.hadoop.HadoopFileIO;
 import org.apache.iceberg.io.FileIO;
@@ -436,6 +437,73 @@ public class TestIcebergVendedCredentialUtil {
         .containsEntry("fs.oss.securityToken", "oss-token");
   }
 
+  /**
+   * Tests {@link IcebergVendedCredentialUtil#propagateToJob} when a REST catalog vends OSS keys
+   * using Hadoop-style aliases ({@code oss-access-key-id}, etc.) instead of Iceberg canonical names.
+   */
+  @Test
+  public void propagateToJobMapsOssAliasProperties() {
+    CredentialFileIO fileIO = new CredentialFileIO();
+    fileIO.setCredentials(
+        List.of(
+            StorageCredential.create(
+                "oss://my-bucket/",
+                Map.of(
+                    "oss-access-key-id", "oss-access",
+                    "oss-secret-access-key", "oss-secret",
+                    "oss.security-token", "oss-token",
+                    "oss-endpoint", "oss-cn-hangzhou.aliyuncs.com"))));
+
+    Table table =
+        new BaseTable(new StaticTableOperations("oss://my-bucket/t", fileIO), "db.t");
+    Map<String, String> jobProps = Maps.newHashMap();
+    Map<String, String> jobSecrets = Maps.newHashMap();
+
+    IcebergVendedCredentialUtil.propagateToJob(
+        table, "ice01", jobProps, jobSecrets, new HiveConf());
+
+    assertThat(jobProps)
+        .containsEntry("iceberg.catalog.ice01.oss-endpoint", "oss-cn-hangzhou.aliyuncs.com")
+        .containsEntry("fs.oss.endpoint", "oss-cn-hangzhou.aliyuncs.com")
+        .doesNotContainKey("oss-access-key-id");
+
+    assertThat(jobSecrets)
+        .containsEntry("fs.oss.accessKeyId", "oss-access")
+        .containsEntry("fs.oss.accessKeySecret", "oss-secret");
+
+    String securityToken = jobSecrets.get("fs.oss.securityToken");
+    if (securityToken == null) {
+      securityToken = jobProps.get("fs.oss.securityToken");
+    }
+    assertThat(securityToken).isEqualTo("oss-token");
+  }
+
+  /**
+   * Tests {@link IcebergVendedCredentialUtil#extractCredentials(Table)} when FileIO properties
+   * carry OSS alias keys and the credential list is empty.
+   */
+  @Test
+  public void extractCredentialsFromOssAliasFileIoPropertiesWhenCredentialListEmpty() {
+    CredentialFileIO fileIO = new CredentialFileIO();
+    fileIO.initialize(
+        Map.of(
+            "oss-access-key-id", "oss-access",
+            "oss-secret-access-key", "oss-secret",
+            "oss-endpoint", "oss-cn-hangzhou.aliyuncs.com"));
+    Schema schema = new Schema(Types.NestedField.required(1, "x", Types.IntegerType.get()));
+    TableMetadata metadata =
+        TableMetadata.newTableMetadata(
+            schema, PartitionSpec.unpartitioned(), "oss://my-bucket/warehouse/t", Map.of());
+    Table table = new BaseTable(new StaticTableOperations(metadata, fileIO), "db.t");
+
+    StorageCredential extracted = IcebergVendedCredentialUtil.extractCredentials(table).getFirst();
+    assertThat(extracted.prefix()).isEqualTo("oss://my-bucket/");
+    assertThat(extracted.config())
+        .containsEntry(AliyunProperties.CLIENT_ACCESS_KEY_ID, "oss-access")
+        .containsEntry(AliyunProperties.CLIENT_ACCESS_KEY_SECRET, "oss-secret")
+        .containsEntry(AliyunProperties.OSS_ENDPOINT, "oss-cn-hangzhou.aliyuncs.com");
+  }
+
   @Test
   public void propagateToJobMapsS3SessionToken() {
     CredentialFileIO fileIO = new CredentialFileIO();
@@ -656,6 +724,29 @@ public class TestIcebergVendedCredentialUtil {
     assertThat(jobProps)
         .doesNotContainKey("fs.oss.accessKeyId")
         .doesNotContainKey("iceberg.catalog.ice01.client.access-key-id")
+        .doesNotContainKey("fs.oss.accessKeySecret");
+  }
+
+  @Test
+  public void propagateToJobKeepsOssAliasAccessKeyIdOutOfJobProperties() {
+    CredentialFileIO fileIO = new CredentialFileIO();
+    fileIO.setCredentials(
+        List.of(
+            StorageCredential.create(
+                "oss://my-bucket/",
+                Map.of(
+                    "oss-access-key-id", "oss-access",
+                    "oss-secret-access-key", "oss-secret"))));
+
+    Table table =
+        new BaseTable(new StaticTableOperations("oss://my-bucket/t", fileIO), "db.t");
+    Map<String, String> jobProps = Maps.newHashMap();
+
+    IcebergVendedCredentialUtil.propagateToJob(table, "ice01", jobProps, null, new HiveConf());
+
+    assertThat(jobProps)
+        .doesNotContainKey("fs.oss.accessKeyId")
+        .doesNotContainKey("iceberg.catalog.ice01.oss-access-key-id")
         .doesNotContainKey("fs.oss.accessKeySecret");
   }
 

@@ -321,16 +321,25 @@ public final class IcebergVendedCredentialUtil {
     TableMetadata metadata = ((HasTableOperations) table).operations().current();
 
     FileIO io = table.io();
-    Map<String, String> ioProps = new LinkedHashMap<>();
-    io.properties().forEach((k, v) -> {
-      if (!isSecretKey(k, conf)) {
-        ioProps.put(k, v);
-      }
-    });
+    Map<String, String> ioProps = nonSecretFileIoProperties(io, conf);
     FileIO cleanIo = CatalogUtil.loadFileIO(io.getClass().getName(), ioProps, conf);
 
     return new BaseTable(
         new StaticTableOperations(metadata, cleanIo, table.locationProvider()), table.name());
+  }
+
+  private static Map<String, String> nonSecretFileIoProperties(FileIO io, Configuration conf) {
+    Map<String, String> ioProps = new LinkedHashMap<>();
+    try {
+      io.properties().forEach((k, v) -> {
+        if (!isSecretKey(k, conf)) {
+          ioProps.put(k, v);
+        }
+      });
+    } catch (UnsupportedOperationException ex) {
+      // OSSFileIO does not expose catalog properties; nothing to strip before serialization.
+    }
+    return ioProps;
   }
 
   /** {@code metadataTableType()} is package-private; the name suffix is the type by construction. */
