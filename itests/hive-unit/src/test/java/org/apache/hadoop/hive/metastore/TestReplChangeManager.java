@@ -592,4 +592,47 @@ public class TestReplChangeManager {
     assertFalse(ReplChangeManager
         .isCMFileUri(new Path("/somepath/adir/", "ab.jar")));
   }
+
+  /**
+   * Regression test for stale CM-root cache bug: when the CM root directory is deleted from
+   * HDFS (e.g. by DROP DATABASE CASCADE) while the in-memory encryptionZoneToCmrootMapping
+   * still holds the cached path, getCmRoot() must detect the missing directory and recreate it.
+   */
+  @Test
+  public void testRecycleAfterCmRootDeletedFromHdfs() throws Exception {
+    Path dirDb = new Path(warehouse.getWhRoot(), "dbStaleCmRoot");
+    fs.delete(dirDb, true);
+    fs.mkdirs(dirDb);
+
+    Path sourceFile1 = new Path(dirDb, "file1");
+    createFile(sourceFile1, "content1");
+
+    ReplChangeManager cm = ReplChangeManager.getInstance(hiveConf);
+
+    // First recycle: CM root exists, cache is populated, file is moved successfully.
+    int ret = cm.recycle(sourceFile1, RecycleType.MOVE, false);
+    Assert.assertEquals(1, ret);
+    Assert.assertFalse(fs.exists(sourceFile1));
+
+    Path cmRootPath = new Path(cmroot);
+    Assert.assertTrue("CM root should exist after first recycle", fs.exists(cmRootPath));
+
+    // Simulate DROP DATABASE CASCADE removing .cmroot from HDFS.
+    fs.delete(cmRootPath, true);
+    Assert.assertFalse("CM root should be deleted from HDFS", fs.exists(cmRootPath));
+
+    // Do NOT reset ReplChangeManager — preserve stale in-memory cache.
+    Path sourceFile2 = new Path(dirDb, "file2");
+    createFile(sourceFile2, "content2");
+    String file2Checksum = ReplChangeManager.checksumFor(sourceFile2, fs);
+
+    // Second MOVE recycle: cache hit must detect missing CM root, recreate it, and succeed.
+    ret = cm.recycle(sourceFile2, RecycleType.MOVE, false);
+    Assert.assertEquals(1, ret);
+    Assert.assertFalse("Source file should be removed after successful recycle", fs.exists(sourceFile2));
+    Assert.assertTrue("CM root should be recreated on cache hit", fs.exists(cmRootPath));
+
+    Path cmFile2Path = ReplChangeManager.getCMPath(hiveConf, sourceFile2.getName(), file2Checksum, cmroot);
+    Assert.assertTrue("Recycled file should exist under recreated CM root", fs.exists(cmFile2Path));
+  }
 }
