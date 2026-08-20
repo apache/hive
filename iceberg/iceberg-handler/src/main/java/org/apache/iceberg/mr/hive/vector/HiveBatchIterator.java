@@ -130,12 +130,6 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
               lcv.isRepeating = false;
               System.arraycopy(value, 0, lcv.vector, 0, batch.size);
               break;
-            case PARTITION_PROJECTION:
-              bcv = (BytesColumnVector) batch.cols[idx];
-              bcv.noNulls = false;
-              bcv.isNull[0] = true;
-              bcv.isRepeating = true;
-              break;
             case PARTITION_NAME:
               bcv = (BytesColumnVector) batch.cols[idx];
               bcv.fill(partitionName.getBytes());

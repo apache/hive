@@ -90,7 +90,7 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
       return closeableIterator;
     }
     return new IcebergAcidUtil.VirtualColumnAwareIterator<>(closeableIterator,
-        expectedSchema, conf, task);
+        expectedSchema.columns(), conf, task);
   }
 
   @Override
