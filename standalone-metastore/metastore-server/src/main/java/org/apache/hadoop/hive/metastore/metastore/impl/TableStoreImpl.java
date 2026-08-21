@@ -23,6 +23,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
+import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -146,7 +147,6 @@ import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdenti
 @SuppressWarnings("unchecked")
 public class TableStoreImpl extends RawStoreBundle implements TableStore {
   private final static Logger LOG = LoggerFactory.getLogger(TableStoreImpl.class);
-  private DatabaseProduct dbType;
   protected int batchSize = NO_BATCHING;
   private boolean areTxnStatsSupported = false;
   private PartitionExpressionProxy expressionProxy = null;
@@ -155,7 +155,6 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
   @Override
   public void setBaseStore(RawStore store) {
     super.setBaseStore(store);
-    this.dbType = PersistenceManagerProvider.getDatabaseProduct();
     this.batchSize = MetastoreConf.getIntVar(store.getConf(),
         MetastoreConf.ConfVars.RAWSTORE_PARTITION_BATCH_SIZE);
     this.areTxnStatsSupported = MetastoreConf.getBoolVar(baseStore.getConf(),
@@ -442,7 +441,7 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
       return;
     }
     LOG.debug("execute removeUnusedColumnDescriptor");
-    if (!hasRemainingCDReference(oldCD)) {
+    if (!hasRemainingCDReference(pm, oldCD)) {
       // First remove any constraints that may be associated with this CD
       Query query = pm.newQuery(MConstraint.class, "parentColumn == inCD || childColumn == inCD");
       query.declareParameters("MColumnDescriptor inCD");
@@ -464,8 +463,9 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
    * @param oldCD the column descriptor to check if it has references or not
    * @return true if has references
    */
-  private boolean hasRemainingCDReference(MColumnDescriptor oldCD) {
+  public static boolean hasRemainingCDReference(PersistenceManager pm, MColumnDescriptor oldCD) {
     assert oldCD != null;
+    DatabaseProduct dbType = PersistenceManagerProvider.getDatabaseProduct();
     Query query;
     /**
      * In order to workaround oracle not supporting limit statement caused performance issue, HIVE-9447 makes

@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -959,5 +960,66 @@ public class MetaToolObjectStore extends ObjectStore {
       }
     });
     return new HashSet<>(tables);
+  }
+
+  public static final class DedupColumnsResult {
+    private final int tablesScanned;
+    private int tablesWithDuplicates;
+    private int storageDescriptorsUpdated;
+    private int columnDescriptorsRemoved;
+    private final List<String> details = new ArrayList<>();
+    private Exception exception;
+    DedupColumnsResult(int tablesScanned) {
+      this.tablesScanned = tablesScanned;
+    }
+    public int getTablesScanned() {
+      return tablesScanned;
+    }
+
+    public int getTablesWithDuplicates() {
+      return tablesWithDuplicates;
+    }
+
+    void incrementTablesWithDuplicates() {
+      this.tablesWithDuplicates++;
+    }
+
+    public int getStorageDescriptorsUpdated() {
+      return storageDescriptorsUpdated;
+    }
+
+    void incrementStorageDescriptorsUpdated() {
+      this.storageDescriptorsUpdated++;
+    }
+
+    public int getColumnDescriptorsRemoved() {
+      return columnDescriptorsRemoved;
+    }
+
+    void addColumnDescriptorsRemoved(int count) {
+      this.columnDescriptorsRemoved += count;
+    }
+
+    public List<String> getDetails() {
+      return details;
+    }
+
+    void addDetail(String detail) {
+      details.add(detail);
+    }
+
+    void catchException(Exception exception) {
+      this.exception = exception;
+    }
+
+    public Exception getException() {
+      return exception;
+    }
+  }
+
+  public DedupColumnsResult dedupColumns(String catalogFilter, String dbFilter, String tableFilter,
+      AtomicReference<String> progress, boolean isDryRun, boolean isVerbose) {
+    return new ColumnDeduplicator(this.createRawStoreBundle(), progress, isDryRun, isVerbose)
+        .run(catalogFilter, dbFilter, tableFilter);
   }
 }

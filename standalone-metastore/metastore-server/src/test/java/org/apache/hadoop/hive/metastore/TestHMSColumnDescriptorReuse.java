@@ -22,6 +22,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -29,9 +30,11 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
+import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.DatabaseRule;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.Derby;
+import org.apache.hadoop.hive.metastore.tools.MetaToolObjectStore;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -45,9 +48,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 @Category(MetastoreUnitTest.class)
 public class TestHMSColumnDescriptorReuse {
@@ -164,6 +171,57 @@ public class TestHMSColumnDescriptorReuse {
     objectStore.addPartition(newPart(tbl3, "Hungary"));
 
     assertEquals(3, countColumnDescriptors());
+  }
+
+  @Test
+  public void testDeduplicateColumnDescriptorsTool() throws Exception {
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.PARTITION_REUSE_COLUMN_DESCRIPTORS, false);
+
+    FieldSchema id = new FieldSchema("id", ColumnType.STRING_TYPE_NAME, "");
+    FieldSchema fname = new FieldSchema("fname", ColumnType.STRING_TYPE_NAME, "");
+    FieldSchema country = new FieldSchema("country", ColumnType.STRING_TYPE_NAME, "");
+
+    Table tbl1 = newTable(Arrays.asList(id, fname), Collections.singletonList(country));
+    objectStore.createTable(tbl1);
+    objectStore.addPartition(newPart(tbl1, "US"));
+    objectStore.addPartition(newPart(tbl1, "Greece"));
+    int cdsBeforeDedup = countColumnDescriptors();
+    assertTrue(cdsBeforeDedup == 1);
+
+    AtomicReference<String> progress = new AtomicReference<>();
+    MetaToolObjectStore metaToolStore = new MetaToolObjectStore();
+    metaToolStore.setConf(conf);
+    MetaToolObjectStore.DedupColumnsResult result =
+        metaToolStore.dedupColumns(null, "default", "person", progress, false, false);
+    assertEquals(0, result.getTablesWithDuplicates());
+
+    FieldSchema lname = new FieldSchema("lname", ColumnType.STRING_TYPE_NAME, "");
+    Table tbl2 = newTable(Arrays.asList(id, fname, lname), Collections.singletonList(country));
+    objectStore.alterTable(DEFAULT_CATALOG_NAME, tbl1.getDbName(), tbl1.getTableName(), tbl2, null);
+    objectStore.addPartition(newPart(tbl2, "Italy"));
+    objectStore.addPartition(newPart(tbl1, "Germany"));
+    objectStore.addPartition(newPart(tbl1, "Belgium"));
+    objectStore.addPartition(newPart(tbl2, "England"));
+    cdsBeforeDedup = countColumnDescriptors();
+    assertTrue(cdsBeforeDedup > 2);
+
+    result = metaToolStore.dedupColumns(null, "default", "person", progress, false, false);
+    assertTrue(result.getStorageDescriptorsUpdated() > 0);
+    assertEquals(2, countColumnDescriptors());
+    assertNotNull(progress.get());
+
+    Deadline.registerIfNot(30 * 1000);
+    Deadline.startTimer("testDeduplicateColumnDescriptorsTool");
+    GetPartitionsByNamesRequest request = new GetPartitionsByNamesRequest("default", "person");
+    request.setNames(List.of("country=Germany", "country=Belgium", "country=Greece", "country=US"));
+    List<Partition> partitions = objectStore.getPartitionsByNames("hive", "default", "person", GetPartitionsArgs.from(request));
+    assertEquals(4, partitions.size());
+    assertTrue(partitions.stream().allMatch(p -> tbl1.getSd().getCols().equals(p.getSd().getCols())));
+
+    request.setNames(List.of("country=Italy", "country=England"));
+    partitions = objectStore.getPartitionsByNames("hive", "default", "person", GetPartitionsArgs.from(request));
+    assertEquals(2, partitions.size());
+    assertTrue(partitions.stream().allMatch(p -> tbl2.getSd().getCols().equals(p.getSd().getCols())));
   }
 
   private int countColumnDescriptors() {
