@@ -888,7 +888,6 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     // is likely already happening.
   }
 
-  // Needed for GenericUDTFGetSplits, where TaskSpecs are generated
   private String extractQueryId(TaskSpec taskSpec) throws IOException {
     UserPayload processorPayload = taskSpec.getProcessorDescriptor().getUserPayload();
     Configuration conf = TezUtils.createConfFromUserPayload(processorPayload);

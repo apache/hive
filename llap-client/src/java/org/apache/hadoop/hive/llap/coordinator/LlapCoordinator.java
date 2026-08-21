@@ -20,7 +20,6 @@
 package org.apache.hadoop.hive.llap.coordinator;
 
 import java.io.IOException;
-import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -30,13 +29,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.DaemonId;
 import org.apache.hadoop.hive.llap.LlapUtil;
-import org.apache.hadoop.hive.llap.coordinator.LlapCoordinator;
 import org.apache.hadoop.hive.llap.security.LlapSigner;
-import org.apache.hadoop.hive.llap.security.LlapSignerImpl;
 import org.apache.hadoop.hive.llap.security.LlapTokenLocalClient;
 import org.apache.hadoop.hive.llap.security.LlapTokenLocalClientImpl;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,8 +73,6 @@ public class LlapCoordinator {
       }).build();
 
   private HiveConf hiveConf;
-  private String clusterUser;
-  private long startTime;
   private final AtomicInteger appIdCounter = new AtomicInteger(0);
 
   LlapCoordinator() {
@@ -88,37 +82,6 @@ public class LlapCoordinator {
     // Only do the lightweight stuff in ctor; by default, LLAP coordinator is created during
     // HS2 init without the knowledge of LLAP usage (or lack thereof) in the cluster.
     this.hiveConf = hiveConf;
-    this.clusterUser = UserGroupInformation.getCurrentUser().getShortUserName();
-    // TODO: if two HS2s start at exactly the same time, which could happen during a coordinated
-    //       restart, they could start generating the same IDs. Should we store the startTime
-    //       somewhere like ZK? Try to randomize it a bit for now...
-    long randomBits = (long)(new Random().nextInt()) << 32;
-    this.startTime = Math.abs((System.currentTimeMillis() & (long)Integer.MAX_VALUE) | randomBits);
-  }
-
-  public LlapSigner getLlapSigner(final Configuration jobConf) {
-    // Note that we create the cluster name from user conf (hence, a user can target a cluster),
-    // but then we create the signer using hiveConf (hence, we control the ZK config and stuff).
-    assert UserGroupInformation.isSecurityEnabled();
-    final String clusterId = DaemonId.createClusterString(
-        clusterUser, LlapUtil.generateClusterName(jobConf));
-    try {
-      return signers.get(clusterId, new Callable<LlapSigner>() {
-        public LlapSigner call() throws Exception {
-          return new LlapSignerImpl(hiveConf, clusterId);
-        }
-      });
-    } catch (ExecutionException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  public ApplicationId createExtClientAppId() {
-    // Note that we cannot allow users to provide app ID, since providing somebody else's appId
-    // would give one LLAP token (and splits) for that app ID. If we could verify it somehow
-    // (YARN token? nothing we can do in an UDF), we could get it from client already running on
-    // YARN. As such, the clients running on YARN will have two app IDs to be aware of.
-    return ApplicationId.newInstance(startTime, appIdCounter.incrementAndGet());
   }
 
   public LlapTokenLocalClient getLocalTokenClient(
