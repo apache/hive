@@ -125,7 +125,7 @@ public class TestHiveConf {
   }
 
   @Test
-  public void testReplCmRetainTimeUnit() throws Exception {
+  public void testReplCmRetainTimeUnit() {
     HiveConf conf = new HiveConf();
 
     // The default (240h) is 10 days. Guards against accidentally changing the default duration.
