@@ -45,12 +45,6 @@ public interface LlapServiceInstance extends ServiceInstance {
    * @return
    */
   public String getServicesAddress();
-  /**
-   * OutputFormat endpoint for service instance
-   *
-   * @return
-   */
-  public int getOutputFormatPort();
 
   /**
    * Memory and Executors available for the LLAP tasks

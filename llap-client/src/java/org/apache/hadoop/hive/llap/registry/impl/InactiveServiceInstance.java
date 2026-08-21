@@ -62,11 +62,6 @@ public class InactiveServiceInstance implements LlapServiceInstance {
   }
 
   @Override
-  public int getOutputFormatPort() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public Map<String, String> getProperties() {
     return Collections.emptyMap();
   }

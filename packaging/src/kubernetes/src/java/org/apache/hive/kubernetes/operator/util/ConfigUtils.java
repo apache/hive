@@ -135,9 +135,6 @@ public final class ConfigUtils {
   public static final String HIVE_LLAP_DAEMON_WEB_PORT_KEY = "hive.llap.daemon.web.port";
   public static final int HIVE_LLAP_DAEMON_WEB_PORT_DEFAULT = 15002;
 
-  public static final String HIVE_LLAP_DAEMON_OUTPUT_SERVICE_PORT_KEY = "hive.llap.daemon.output.service.port";
-  public static final int HIVE_LLAP_DAEMON_OUTPUT_SERVICE_PORT_DEFAULT = 15003;
-
   public static final String HIVE_LLAP_DAEMON_UMBILICAL_PORT_KEY = "hive.llap.daemon.umbilical.port";
   public static final String HIVE_LLAP_DAEMON_UMBILICAL_PORT_DEFAULT = "0";
 

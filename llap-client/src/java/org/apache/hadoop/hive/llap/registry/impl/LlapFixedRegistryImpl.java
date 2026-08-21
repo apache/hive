@@ -63,7 +63,6 @@ public class LlapFixedRegistryImpl implements ServiceRegistry<LlapServiceInstanc
   private final int shuffle;
   private final int mngPort;
   private final int webPort;
-  private final int outputFormatPort;
   private final String webScheme;
   private final String[] hosts;
   private final int memory;
@@ -78,7 +77,6 @@ public class LlapFixedRegistryImpl implements ServiceRegistry<LlapServiceInstanc
     this.shuffle = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_YARN_SHUFFLE_PORT);
     this.resolveHosts = conf.getBoolean(FIXED_REGISTRY_RESOLVE_HOST_NAMES, true);
     this.mngPort = HiveConf.getIntVar(conf, ConfVars.LLAP_MANAGEMENT_RPC_PORT);
-    this.outputFormatPort = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_PORT);
 
     this.webPort = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_WEB_PORT);
     boolean isSsl = HiveConf.getBoolVar(conf, ConfVars.LLAP_DAEMON_WEB_SSL);
@@ -186,11 +184,6 @@ public class LlapFixedRegistryImpl implements ServiceRegistry<LlapServiceInstanc
     @Override
     public int getShufflePort() {
       return LlapFixedRegistryImpl.this.shuffle;
-    }
-
-    @Override
-    public int getOutputFormatPort() {
-      return LlapFixedRegistryImpl.this.outputFormatPort;
     }
 
     @Override

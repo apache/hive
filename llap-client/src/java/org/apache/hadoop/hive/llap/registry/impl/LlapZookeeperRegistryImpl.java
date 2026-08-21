@@ -71,7 +71,6 @@ public class LlapZookeeperRegistryImpl
   private static final String IPC_MNG = "llapmng";
   private static final String IPC_SHUFFLE = "shuffle";
   private static final String IPC_LLAP = "llap";
-  private static final String IPC_OUTPUTFORMAT = "llapoutputformat";
   private final static String NAMESPACE_PREFIX = "llap-";
   private static final String SLOT_PREFIX = "slot-";
   private static final String SASL_LOGIN_CONTEXT_NAME = "LlapZooKeeperClient";
@@ -130,11 +129,6 @@ public class LlapZookeeperRegistryImpl
         HiveConf.getIntVar(conf, ConfVars.LLAP_MANAGEMENT_RPC_PORT)));
   }
 
-  public Endpoint getOutputFormatEndpoint() {
-    return RegistryTypeUtils.ipcEndpoint(IPC_OUTPUTFORMAT, new InetSocketAddress(hostname,
-        HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_PORT)));
-  }
-
   @Override
   public String register() throws IOException {
     daemonZkRecord = new ServiceRecord();
@@ -143,7 +137,6 @@ public class LlapZookeeperRegistryImpl
     daemonZkRecord.addInternalEndpoint(getMngEndpoint());
     daemonZkRecord.addInternalEndpoint(getShuffleEndpoint());
     daemonZkRecord.addExternalEndpoint(getServicesEndpoint());
-    daemonZkRecord.addInternalEndpoint(getOutputFormatEndpoint());
 
     populateConfigValues(this.conf);
     Map<String, String> capacityValues = new HashMap<>(2);
@@ -220,7 +213,6 @@ public class LlapZookeeperRegistryImpl
       extends ServiceInstanceBase implements LlapServiceInstance {
     private final int mngPort;
     private final int shufflePort;
-    private final int outputFormatPort;
     private final String serviceAddress;
 
     private final Resource resource;
@@ -230,7 +222,6 @@ public class LlapZookeeperRegistryImpl
 
       final Endpoint shuffle = srv.getInternalEndpoint(IPC_SHUFFLE);
       final Endpoint mng = srv.getInternalEndpoint(IPC_MNG);
-      final Endpoint outputFormat = srv.getInternalEndpoint(IPC_OUTPUTFORMAT);
       final Endpoint services = srv.getExternalEndpoint(IPC_SERVICES);
 
       this.mngPort =
@@ -238,9 +229,6 @@ public class LlapZookeeperRegistryImpl
               AddressTypes.ADDRESS_PORT_FIELD));
       this.shufflePort =
           Integer.parseInt(RegistryTypeUtils.getAddressField(shuffle.addresses.get(0),
-              AddressTypes.ADDRESS_PORT_FIELD));
-      this.outputFormatPort =
-          Integer.valueOf(RegistryTypeUtils.getAddressField(outputFormat.addresses.get(0),
               AddressTypes.ADDRESS_PORT_FIELD));
       this.serviceAddress =
           RegistryTypeUtils.getAddressField(services.addresses.get(0), AddressTypes.ADDRESS_URI);
@@ -280,11 +268,6 @@ public class LlapZookeeperRegistryImpl
     @Override
     public int getManagementPort() {
       return mngPort;
-    }
-
-    @Override
-    public int getOutputFormatPort() {
-      return outputFormatPort;
     }
   }
 

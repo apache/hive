@@ -95,7 +95,6 @@ public class TestUtils {
     Endpoint rpcEndpoint = RegistryTypeUtils.ipcEndpoint("llap", new InetSocketAddress(ACTIVE, 4000));
     Endpoint shuffle = RegistryTypeUtils.ipcEndpoint("shuffle", new InetSocketAddress(ACTIVE, 4000));
     Endpoint mng = RegistryTypeUtils.ipcEndpoint("llapmng", new InetSocketAddress(ACTIVE, 4000));
-    Endpoint outputFormat = RegistryTypeUtils.ipcEndpoint("llapoutputformat", new InetSocketAddress(ACTIVE, 4000));
     Endpoint services = RegistryTypeUtils.webEndpoint("services", new URI(ACTIVE + ":4000"));
 
     // Set 1 active instance
@@ -103,7 +102,6 @@ public class TestUtils {
     enabledSrv.addInternalEndpoint(rpcEndpoint);
     enabledSrv.addInternalEndpoint(shuffle);
     enabledSrv.addInternalEndpoint(mng);
-    enabledSrv.addInternalEndpoint(outputFormat);
     enabledSrv.addExternalEndpoint(services);
 
     enabledSrv.set(LlapRegistryService.LLAP_DAEMON_NUM_ENABLED_EXECUTORS, 10);

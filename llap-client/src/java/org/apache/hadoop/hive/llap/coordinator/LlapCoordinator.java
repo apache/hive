@@ -29,7 +29,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.DaemonId;
 import org.apache.hadoop.hive.llap.LlapUtil;
-import org.apache.hadoop.hive.llap.security.LlapSigner;
 import org.apache.hadoop.hive.llap.security.LlapTokenLocalClient;
 import org.apache.hadoop.hive.llap.security.LlapTokenLocalClientImpl;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -48,17 +47,6 @@ import com.google.common.cache.RemovalNotification;
  */
 public class LlapCoordinator {
   private static final Logger LOG = LoggerFactory.getLogger(LlapCoordinator.class);
-
-  /** We'll keep signers per cluster around for some time, for reuse. */
-  private final Cache<String, LlapSigner> signers = CacheBuilder.newBuilder().removalListener(
-      new RemovalListener<String, LlapSigner>() {
-        @Override
-        public void onRemoval(RemovalNotification<String, LlapSigner> notification) {
-          if (notification.getValue() != null) {
-            notification.getValue().close();
-          }
-        }
-      }).expireAfterAccess(10, TimeUnit.MINUTES).build();
 
   // TODO: probably temporary before HIVE-13698; after that we may create one per session.
   private static final Cache<String, LlapTokenLocalClient> localClientCache = CacheBuilder
@@ -107,9 +95,7 @@ public class LlapCoordinator {
   public void close() {
     try {
       localClientCache.invalidateAll();
-      signers.invalidateAll();
       localClientCache.cleanUp();
-      signers.cleanUp();
     } catch (Exception ex) {
       LOG.error("Error closing the coordinator; ignoring", ex);
     }
