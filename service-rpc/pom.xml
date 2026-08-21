@@ -162,6 +162,23 @@
                   </replacements>
                 </configuration>
               </execution>
+              <execution>
+                <id>mask-delegation-token</id>
+                <phase>process-sources</phase>
+                <goals>
+                  <goal>replace</goal>
+                </goals>
+                <configuration>
+                  <basedir>${basedir}/src/gen/thrift/gen-javabean/org/apache/hive/service/rpc/thrift/</basedir>
+                  <filesToInclude>TCancelDelegationTokenReq.java,TRenewDelegationTokenReq.java</filesToInclude>
+                  <replacements>
+                    <replacement>
+                      <token>    if \(this.delegationToken \=\= null\) \{\n      sb.append\(\"null"\)\;\n    \} else \{\n      sb.append\(this.delegationToken\)\;\n    \}</token>
+                      <value>    sb.append("*** REDACTED ***");</value>
+                    </replacement>
+                  </replacements>
+                </configuration>
+              </execution>
             </executions>
           </plugin>
         </plugins>
