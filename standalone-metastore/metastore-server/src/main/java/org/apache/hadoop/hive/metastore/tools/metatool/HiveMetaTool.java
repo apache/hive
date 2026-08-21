@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
  * - execute JDOQL against the metastore using DataNucleus
  * - perform HA name node upgrade
  * - summarize the data in HMS
+ * - de-duplicate column descriptors for partitioned tables
  */
 public final class HiveMetaTool {
   private static final Logger LOGGER = LoggerFactory.getLogger(HiveMetaTool.class.getName());
@@ -60,6 +61,8 @@ public final class HiveMetaTool {
         task = new MetaToolTaskDiffExtTblLocs();
       } else if (cl.isMetadataSummary()) {
         task = new MetaToolTaskMetadataSummary();
+      } else if (cl.isDedupColumns()) {
+        task = new MetaToolTaskDedupColumns();
       } else {
         throw new IllegalArgumentException("No task was specified!");
       }
