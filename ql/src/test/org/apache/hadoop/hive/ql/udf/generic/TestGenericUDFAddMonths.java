@@ -43,10 +43,10 @@ import org.junit.Test;
  */
 public class TestGenericUDFAddMonths {
 
-  private final Text fmtTextWithTime = new Text("YYYY-MM-dd HH:mm:ss");
-  private final Text fmtTextWithTimeAndms = new Text("YYYY-MM-dd HH:mm:ss.SSS");
-  private final Text fmtTextWithoutTime = new Text("YYYY-MM-dd");
-  private final Text fmtTextInvalid = new Text("YYYY-abcdz");
+  private final Text fmtTextWithTime = new Text("yyyy-MM-dd HH:mm:ss");
+  private final Text fmtTextWithTimeAndms = new Text("yyyy-MM-dd HH:mm:ss.SSS");
+  private final Text fmtTextWithoutTime = new Text("yyyy-MM-dd");
+  private final Text fmtTextInvalid = new Text("yyyy-abcdz");
 
   @Test
   public void testAddMonthsInt() throws HiveException {
