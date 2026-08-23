@@ -490,6 +490,7 @@ public class VectorPTFGroupBatches extends PTFPartition {
         }
       }
     }
+    aggregatedGroupRowCounts.clear();
   }
 
   /**

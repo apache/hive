@@ -1,5 +1,7 @@
 set hive.vectorized.testing.reducer.batch.size=2;
 
+DROP TABLE IF EXISTS vector_ptf_cume_dist_int;
+
 CREATE TABLE vector_ptf_cume_dist_int(name string, rowindex int, mynumber int) stored as orc;
 
 INSERT INTO vector_ptf_cume_dist_int values

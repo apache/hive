@@ -473,7 +473,7 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     return ArrayUtils.toPrimitive(streamingEvaluatorNums.toArray(new Integer[0]));
   }
 
-  public static boolean getAllEvaluatorsPurelyStreaming(VectorPTFEvaluatorBase[] evaluators) {
+  public static boolean getAllEvaluatorsAreStreaming(VectorPTFEvaluatorBase[] evaluators) {
     for (VectorPTFEvaluatorBase evaluator : evaluators) {
       if (evaluator.isGroupAggregatedStreamingEvaluator() ||
           evaluator.needPartitionSize() ||

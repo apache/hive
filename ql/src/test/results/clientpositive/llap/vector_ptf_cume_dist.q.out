@@ -1,3 +1,9 @@
+PREHOOK: query: DROP TABLE IF EXISTS vector_ptf_cume_dist_int
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS vector_ptf_cume_dist_int
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE vector_ptf_cume_dist_int(name string, rowindex int, mynumber int) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

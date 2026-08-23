@@ -128,7 +128,7 @@ public class VectorPTFOperator extends Operator<PTFDesc>
 
   private transient int[] streamingEvaluatorNums;
 
-  private transient boolean allEvaluatorsPurelyStreaming;
+  private transient boolean allEvaluatorsAreStreaming;
 
   private transient boolean isFirstPartition;
 
@@ -327,7 +327,7 @@ public class VectorPTFOperator extends Operator<PTFDesc>
     }
 
     streamingEvaluatorNums = VectorPTFDesc.getStreamingEvaluatorNums(evaluators);
-    allEvaluatorsPurelyStreaming = VectorPTFDesc.getAllEvaluatorsPurelyStreaming(evaluators);
+    allEvaluatorsAreStreaming = VectorPTFDesc.getAllEvaluatorsAreStreaming(evaluators);
 
     groupBatches = new VectorPTFGroupBatches(
         hconf, vectorDesc.getVectorizedPTFMaxMemoryBufferingBatchCount());
@@ -405,14 +405,14 @@ public class VectorPTFOperator extends Operator<PTFDesc>
        * the column vectors on the fly (in a streaming manner), this is handled later on by calling
        * groupBatches.evaluateStreamingGroupBatch for every single batch.
        */
-      if (!allEvaluatorsPurelyStreaming){
+      if (!allEvaluatorsAreStreaming){
         finishPartition(getPartitionKey());
       }
       setCurrentPartition(batch);
       groupBatches.resetEvaluators();
     }
 
-    if (allEvaluatorsPurelyStreaming) {
+    if (allEvaluatorsAreStreaming) {
       // We can process this batch immediately.
       groupBatches.evaluateStreamingGroupBatch(batch, isLastGroupBatch);
       vectorForward(batch);
@@ -778,7 +778,7 @@ public class VectorPTFOperator extends Operator<PTFDesc>
      * 2. allEvaluatorsPurelyStreaming: if all evaluators are streaming, we already evaluated
      * 3. isFirstPartition: if it's true, we haven't seen any records/batches in the operator
      */
-    if (!abort && !allEvaluatorsPurelyStreaming && !isFirstPartition){
+    if (!abort && !allEvaluatorsAreStreaming && !isFirstPartition){
       finishPartition(getPartitionKey());
     }
     super.closeOp(abort);

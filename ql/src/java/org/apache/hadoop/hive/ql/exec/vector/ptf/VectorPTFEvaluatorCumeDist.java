@@ -30,17 +30,23 @@ import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 
 /**
  * This class evaluates cume_dist() for a PTF partition.
- * Unlike rank(), cume_dist needs the total partition row count, group row count, so it cannot produce a group's
- * result while the group is still streaming in. It is therefore a peer group aggregated streaming evaluator
- * (see {@link VectorPTFEvaluatorBase#isGroupAggregatedStreamingEvaluator()}): a first pass over the
- * buffered group sizes precomputes each peer group's value via {@link #addStreamingGroupResult(int)}
- * (after {@link #setPartitionSize(int)} has been called), and the regular streaming pass then just
+ * Unlike rank(), cume_dist needs the total partition row count, group row
+ * count, so it cannot produce a group's
+ * result while the group is still streaming in. It is therefore a peer group
+ * aggregated streaming evaluator
+ * (see {@link VectorPTFEvaluatorBase#isGroupAggregatedStreamingEvaluator()}): a
+ * first pass over the
+ * buffered group sizes precomputes each peer group's value via
+ * {@link #addStreamingGroupResult(int)}
+ * (after {@link #setPartitionSize(int)} has been called), and the regular
+ * streaming pass then just
  * populates the precomputed values into the output column.
  */
 public class VectorPTFEvaluatorCumeDist extends VectorPTFEvaluatorBase {
 
   /**
-   * Per peer group cume_dist values computed in the first pass and consumed, in order, by the
+   * Per peer group cume_dist values computed in the first pass and consumed, in
+   * order, by the
    * streaming pass (one value is popped when a group's last batch is processed).
    */
   private final Deque<Double> groupResults = new ArrayDeque<>();
@@ -78,6 +84,7 @@ public class VectorPTFEvaluatorCumeDist extends VectorPTFEvaluatorBase {
     }
     DoubleColumnVector outputColVector = (DoubleColumnVector) batch.cols[outputColumnNum];
     outputColVector.isRepeating = true;
+    outputColVector.noNulls = true;
     outputColVector.isNull[0] = false;
     outputColVector.vector[0] = result;
   }
