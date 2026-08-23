@@ -32,9 +32,9 @@ import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
+import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
@@ -46,6 +46,9 @@ import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.StorageFormat;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 /**
  * Analyzer for create view commands.
@@ -190,6 +193,11 @@ public class CreateViewAnalyzer extends AbstractCreateViewAnalyzer {
     while (columnNameIterator.hasNext()) {
       String columnName = columnNameIterator.next();
       FieldSchema fieldSchema = schemaIterator.next();
+      TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(fieldSchema.getType());
+      if (typeInfo.getCategory() != ObjectInspector.Category.PRIMITIVE) {
+        throw new SemanticException(ErrorMsg.PARTITION_COLUMN_NON_PRIMITIVE.getMsg() + " Found "
+            + columnName + " of type: " + fieldSchema.getType());
+      }
       if (!fieldSchema.getName().equals(columnName)) {
         throw new SemanticException(ErrorMsg.VIEW_PARTITION_MISMATCH.getMsg());
       }
