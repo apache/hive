@@ -38,31 +38,40 @@ class MetaToolTaskDedupColumns extends MetaToolTask {
     AtomicBoolean stopped = new AtomicBoolean(false);
     Thread daemon = null;
     if (isVerbose) {
-       daemon = new Thread(() -> {
-         while (!stopped.get()) {
-           try {
-             Thread.sleep(30 * 1000);
-           } catch (InterruptedException e) {
-             Thread.currentThread().interrupt();
-             break;
-           }
-           if (progress.get() != null) {
-             System.out.println(progress.get());
-           }
-         }
-       });
-       daemon.setDaemon(true);
-       daemon.start();
+      daemon = new Thread(() -> {
+        while (!stopped.get()) {
+          try {
+            Thread.sleep(30 * 1000);
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            break;
+          }
+          String message = progress.get();
+          if (message != null) {
+            System.out.println(message);
+          }
+        }
+      });
+      daemon.setDaemon(true);
+      daemon.start();
     }
-    MetaToolObjectStore.DedupColumnsResult result =
-        getObjectStore().dedupColumns(catalogFilter, dbFilter, tableFilter, progress, isDryRun, isVerbose);
-    printSummary(result, isDryRun, isVerbose);
+    MetaToolObjectStore.DedupColumnsResult result;
+    try {
+      result = getObjectStore().dedupColumns(catalogFilter, dbFilter, tableFilter, progress, isDryRun, isVerbose);
+      printSummary(result, isDryRun, isVerbose);
+    } finally {
+      if (daemon != null) {
+        stopped.set(true);
+        daemon.interrupt();
+      }
+    }
     if (daemon != null) {
       stopped.set(true);
       daemon.interrupt();
     }
     if (result.getException() != null) {
-      throw new IllegalStateException("HiveMetaTool: failed to de-duplicate column descriptors for all tables", result.getException());
+      throw new IllegalStateException("HiveMetaTool: failed to de-duplicate column descriptors for all tables",
+          result.getException());
     }
   }
 

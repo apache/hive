@@ -209,18 +209,19 @@ final class ColumnDeduplicator {
     StringBuilder filter = new StringBuilder();
     List<String> parameterVals = new ArrayList<>();
     if (!isEmpty(catalogFilter)) {
-      appendPatternCondition(filter, "database.catalogName", catalogFilter, parameterVals);
+      appendPatternCondition(filter, "table.database.catalogName", catalogFilter, parameterVals);
     }
     if (!isEmpty(dbFilter)) {
-      appendPatternCondition(filter, "database.name", dbFilter, parameterVals);
+      appendPatternCondition(filter, "table.database.name", dbFilter, parameterVals);
     }
     if (!isEmpty(tableFilter)) {
-      appendPatternCondition(filter, "tableName", tableFilter, parameterVals);
+      appendPatternCondition(filter, "table.tableName", tableFilter, parameterVals);
     }
 
-    Query query = filter.length() > 0 ?
-        pm.newQuery(MTable.class, filter.toString()) :
-        pm.newQuery(MTable.class);
+    Query query = !filter.isEmpty() ?
+        pm.newQuery(MPartition.class, filter.toString()) :
+        pm.newQuery(MPartition.class);
+    query.setResult("DISTINCT this.table");
     boolean success = false;
     List<TableInfo> tables = new ArrayList<>();
     store.openTransaction();
@@ -228,9 +229,6 @@ final class ColumnDeduplicator {
       List<MTable> mTables = (List<MTable>) query.executeWithArray(parameterVals.toArray(new String[0]));
       pm.retrieveAll(mTables);
       for (MTable mTable : mTables) {
-        if (!isPartitionedTable(mTable.getId())) {
-          continue;
-        }
         pm.retrieve(mTable.getDatabase());
         pm.retrieve(mTable.getSd());
         pm.retrieve(mTable.getSd().getCD());
@@ -249,18 +247,6 @@ final class ColumnDeduplicator {
       }
     }
     return tables;
-  }
-
-  private boolean isPartitionedTable(long tableId) {
-    Query query = pm.newQuery(MPartition.class, "table.id == tblId");
-    query.declareParameters("long tblId");
-    query.setRange(0L, 1L);
-    try {
-      List<MPartition> partitions = (List<MPartition>) query.execute(tableId);
-      return partitions != null && !partitions.isEmpty();
-    } finally {
-      query.closeAll();
-    }
   }
 
   private List<PartitionSdInfo> loadPartitionStorageDescriptors(long tableId) {
