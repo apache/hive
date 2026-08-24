@@ -78,13 +78,14 @@ class MetaToolTaskDedupColumns extends MetaToolTask {
   private void printSummary(MetaToolObjectStore.DedupColumnsResult result, boolean isDryRun, boolean isVerbose) {
     System.out.println(isDryRun ?
         "Dry run of -dedupColumns.." :
-        "De-duplicated column descriptors successfully.");
+        "De-duplicated column descriptors..");
     System.out.println("Tables scanned: " + result.getTablesScanned());
     System.out.println("Tables with duplicate column descriptors: " + result.getTablesWithDuplicates());
     System.out.println("Partition storage descriptors " + (isDryRun ? "to update" : "updated") + ": "
         + result.getStorageDescriptorsUpdated());
-    System.out.println("Column descriptors " + (isDryRun ? "to remove" : "removed") + ": "
-        + result.getColumnDescriptorsRemoved());
+    if (!isDryRun) {
+      System.out.println("Column descriptors removed: " + result.getColumnDescriptorsRemoved());
+    }
     if (isVerbose) {
       for (String detail : result.getDetails()) {
         System.out.println(detail);
