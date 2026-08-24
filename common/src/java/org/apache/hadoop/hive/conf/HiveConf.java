@@ -402,9 +402,10 @@ public class HiveConf extends Configuration {
         "Turn on ChangeManager, so delete files will go to cmrootdir."),
     REPL_CM_DIR("hive.repl.cmrootdir","/user/${system:user.name}/cmroot/",
         "Root dir for ChangeManager, used for deleted files."),
-    REPL_CM_RETAIN("hive.repl.cm.retain","10d",
-        new TimeValidator(TimeUnit.DAYS),
-        "Time to retain removed files in cmrootdir."),
+    REPL_CM_RETAIN("hive.repl.cm.retain","240h",
+        new TimeValidator(TimeUnit.HOURS),
+        "Time to retain removed files in cmrootdir. A unit-less value is interpreted in hours, "
+            + "matching the metastore counterpart metastore.repl.cm.retain. Default is 240h (10 days)."),
     REPL_CM_ENCRYPTED_DIR("hive.repl.cm.encryptionzone.rootdir", ".cmroot",
             "Root dir for ChangeManager if encryption zones are enabled, used for deleted files."),
     REPL_CM_FALLBACK_NONENCRYPTED_DIR("hive.repl.cm.nonencryptionzone.rootdir",
