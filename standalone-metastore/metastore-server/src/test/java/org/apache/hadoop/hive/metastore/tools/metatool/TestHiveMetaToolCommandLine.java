@@ -132,8 +132,7 @@ public class TestHiveMetaToolCommandLine {
   @Test
   public void testDryRunNotAllowed() throws ParseException {
     exception.expect(IllegalArgumentException.class);
-    exception.expectMessage("-dryRun, -serdePropKey, -tablePropKey may be used only for the "
-        + "-updateLocation or -dedupColumns commands");
+    exception.expectMessage("-dryRun may be used only for the -updateLocation or -dedupColumns commands");
 
     new HiveMetaToolCommandLine(new String[] {"-listFSRoot", "-dryRun"});
   }

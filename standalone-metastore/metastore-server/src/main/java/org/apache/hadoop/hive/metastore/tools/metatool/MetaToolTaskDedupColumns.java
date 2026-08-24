@@ -65,10 +65,7 @@ class MetaToolTaskDedupColumns extends MetaToolTask {
         daemon.interrupt();
       }
     }
-    if (daemon != null) {
-      stopped.set(true);
-      daemon.interrupt();
-    }
+
     if (result.getException() != null) {
       throw new IllegalStateException("HiveMetaTool: failed to de-duplicate column descriptors for all tables",
           result.getException());
