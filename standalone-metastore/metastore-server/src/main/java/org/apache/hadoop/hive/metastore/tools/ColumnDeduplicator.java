@@ -104,7 +104,7 @@ final class ColumnDeduplicator {
     return result;
   }
 
-  private void deduplicateTable(TableInfo table, MetaToolObjectStore.DedupColumnsResult result) throws MetaException {
+  private void deduplicateTable(TableInfo table, MetaToolObjectStore.DedupColumnsResult result) {
     List<PartitionSdInfo> partitionSds = loadPartitionStorageDescriptors(table.tableId);
     if (partitionSds.isEmpty()) {
       return;
@@ -285,17 +285,6 @@ final class ColumnDeduplicator {
     return groups;
   }
 
-  private int countRemovableColumnDescriptors(Set<Long> candidateCdIds) {
-    int removable = 0;
-    for (long cdId : candidateCdIds) {
-      MColumnDescriptor cd = pm.getObjectById(MColumnDescriptor.class, cdId);
-      if (cd != null && !hasRemainingCDReference(pm, cd)) {
-        removable++;
-      }
-    }
-    return removable;
-  }
-
   private int deleteUnusedColumnDescriptors(PersistenceManager pm, Set<Long> candidateCdIds) {
     int removed = 0;
     for (long cdId : candidateCdIds) {
@@ -312,7 +301,7 @@ final class ColumnDeduplicator {
   }
 
   /** Same constraint cleanup as {@code TableStoreImpl.removeUnusedColumnDescriptor}. */
-  private static void removeConstraintsForCd(PersistenceManager pm, MColumnDescriptor cd) {
+  private void removeConstraintsForCd(PersistenceManager pm, MColumnDescriptor cd) {
     Query query = pm.newQuery(MConstraint.class, "parentColumn == inCD || childColumn == inCD");
     query.declareParameters("MColumnDescriptor inCD");
     try {
