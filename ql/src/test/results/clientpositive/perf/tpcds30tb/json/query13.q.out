@@ -2114,27 +2114,27 @@
                   "name": "$3"
                 },
                 {
-                  "literal": "4 yr Degree",
+                  "literal": "4 yr Degree         ",
                   "type": {
                     "type": "CHAR",
                     "nullable": false,
-                    "precision": 11
+                    "precision": 20
                   }
                 },
                 {
-                  "literal": "Advanced Degree",
+                  "literal": "Advanced Degree     ",
                   "type": {
                     "type": "CHAR",
                     "nullable": false,
-                    "precision": 15
+                    "precision": 20
                   }
                 },
                 {
-                  "literal": "Primary",
+                  "literal": "Primary             ",
                   "type": {
                     "type": "CHAR",
                     "nullable": false,
-                    "precision": 7
+                    "precision": 20
                   }
                 }
               ]
@@ -2193,11 +2193,11 @@
                 "name": "$3"
               },
               {
-                "literal": "4 yr Degree",
+                "literal": "4 yr Degree         ",
                 "type": {
                   "type": "CHAR",
                   "nullable": false,
-                  "precision": 11
+                  "precision": 20
                 }
               }
             ]
@@ -2235,11 +2235,11 @@
                 "name": "$3"
               },
               {
-                "literal": "Primary",
+                "literal": "Primary             ",
                 "type": {
                   "type": "CHAR",
                   "nullable": false,
-                  "precision": 7
+                  "precision": 20
                 }
               }
             ]
@@ -2277,11 +2277,11 @@
                 "name": "$3"
               },
               {
-                "literal": "Advanced Degree",
+                "literal": "Advanced Degree     ",
                 "type": {
                   "type": "CHAR",
                   "nullable": false,
-                  "precision": 15
+                  "precision": 20
                 }
               }
             ]

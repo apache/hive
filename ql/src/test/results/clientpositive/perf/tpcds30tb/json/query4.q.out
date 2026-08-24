@@ -596,13 +596,25 @@
                             "input": 3,
                             "name": "$3"
                           }
-                        ]
+                        ],
+                        "type": {
+                          "type": "DECIMAL",
+                          "nullable": true,
+                          "precision": 8,
+                          "scale": 2
+                        }
                       },
                       {
                         "input": 1,
                         "name": "$1"
                       }
-                    ]
+                    ],
+                    "type": {
+                      "type": "DECIMAL",
+                      "nullable": true,
+                      "precision": 9,
+                      "scale": 2
+                    }
                   },
                   {
                     "input": 2,
@@ -1873,13 +1885,25 @@
                             "input": 3,
                             "name": "$3"
                           }
-                        ]
+                        ],
+                        "type": {
+                          "type": "DECIMAL",
+                          "nullable": true,
+                          "precision": 8,
+                          "scale": 2
+                        }
                       },
                       {
                         "input": 1,
                         "name": "$1"
                       }
-                    ]
+                    ],
+                    "type": {
+                      "type": "DECIMAL",
+                      "nullable": true,
+                      "precision": 9,
+                      "scale": 2
+                    }
                   },
                   {
                     "input": 2,
@@ -2488,13 +2512,25 @@
                             "input": 3,
                             "name": "$3"
                           }
-                        ]
+                        ],
+                        "type": {
+                          "type": "DECIMAL",
+                          "nullable": true,
+                          "precision": 8,
+                          "scale": 2
+                        }
                       },
                       {
                         "input": 1,
                         "name": "$1"
                       }
-                    ]
+                    ],
+                    "type": {
+                      "type": "DECIMAL",
+                      "nullable": true,
+                      "precision": 9,
+                      "scale": 2
+                    }
                   },
                   {
                     "input": 2,
@@ -3378,13 +3414,25 @@
                             "input": 3,
                             "name": "$3"
                           }
-                        ]
+                        ],
+                        "type": {
+                          "type": "DECIMAL",
+                          "nullable": true,
+                          "precision": 8,
+                          "scale": 2
+                        }
                       },
                       {
                         "input": 1,
                         "name": "$1"
                       }
-                    ]
+                    ],
+                    "type": {
+                      "type": "DECIMAL",
+                      "nullable": true,
+                      "precision": 9,
+                      "scale": 2
+                    }
                   },
                   {
                     "input": 2,
@@ -3758,13 +3806,25 @@
                             "input": 3,
                             "name": "$3"
                           }
-                        ]
+                        ],
+                        "type": {
+                          "type": "DECIMAL",
+                          "nullable": true,
+                          "precision": 8,
+                          "scale": 2
+                        }
                       },
                       {
                         "input": 1,
                         "name": "$1"
                       }
-                    ]
+                    ],
+                    "type": {
+                      "type": "DECIMAL",
+                      "nullable": true,
+                      "precision": 9,
+                      "scale": 2
+                    }
                   },
                   {
                     "input": 2,
@@ -4309,13 +4369,25 @@
                             "input": 3,
                             "name": "$3"
                           }
-                        ]
+                        ],
+                        "type": {
+                          "type": "DECIMAL",
+                          "nullable": true,
+                          "precision": 8,
+                          "scale": 2
+                        }
                       },
                       {
                         "input": 1,
                         "name": "$1"
                       }
-                    ]
+                    ],
+                    "type": {
+                      "type": "DECIMAL",
+                      "nullable": true,
+                      "precision": 9,
+                      "scale": 2
+                    }
                   },
                   {
                     "input": 2,
