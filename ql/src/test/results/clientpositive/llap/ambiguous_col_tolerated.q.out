@@ -52,6 +52,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dup_alias_ins
 #### A masked pattern was here ####
 a	b
+PREHOOK: query: with bse as (select 'a' as c, 'b' as c), renamed(a, b) as (select * from bse) select renamed.a from renamed
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: with bse as (select 'a' as c, 'b' as c), renamed(a, b) as (select * from bse) select renamed.a from renamed
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+a
 PREHOOK: query: select 'a' as c, 'b' as c
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table

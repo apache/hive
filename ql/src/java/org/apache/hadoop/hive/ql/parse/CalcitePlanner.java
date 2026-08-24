@@ -3610,6 +3610,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // SEL%SEL% rule.
       ASTNode selExprList = qb.getParseInfo().getSelForClause(destClauseName);
       SubQueryUtils.checkForTopLevelSubqueries(selExprList);
+      List<Integer> clearedAmbiguousPositions = new ArrayList<>();
+      List<ColumnInfo> clearedAmbiguousColumns = null;
       if (selExprList.getToken().getType() == HiveParser.TOK_SELECTDI
           && selExprList.getChildCount() == 1 && selExprList.getChild(0).getChildCount() == 1) {
         ASTNode node = (ASTNode) selExprList.getChild(0).getChild(0);
@@ -3617,11 +3619,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
           // As we said before, here we use genSelectLogicalPlan to rewrite AllColRef
           srcRel = genSelectLogicalPlan(qb, srcRel, srcRel, null, null, true).getKey();
           RowResolver rr = relToHiveRR.get(srcRel);
-          // genSelectDIAST synthesizes one reference per rslvMap entry, each unique by
-          // construction, so clear the HIVE-29580 ambiguity markers on this rewrite-private
-          // projection; the subquery's own RowResolver keeps them for user-written references.
-          for (ColumnInfo colInfo : rr.getColumnInfos()) {
-            colInfo.setAmbiguousName(false);
+          // Clear the HIVE-29580 ambiguity markers on this rewrite-private projection (its
+          // ColumnInfos are genColListRegex copies; the subquery's own RowResolver keeps its
+          // markers) so genSelectDIAST's synthesized by-name references type check; reapplied
+          // to the group by output below so that references crossing this boundary still fail.
+          clearedAmbiguousColumns = rr.getColumnInfos();
+          for (int i = 0; i < clearedAmbiguousColumns.size(); i++) {
+            if (clearedAmbiguousColumns.get(i).hasAmbiguousName()) {
+              clearedAmbiguousPositions.add(i);
+              clearedAmbiguousColumns.get(i).setAmbiguousName(false);
+            }
           }
           qbp.setSelExprForClause(destClauseName, genSelectDIAST(rr));
         }
@@ -3763,6 +3770,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
         groupByRel = genGBRelNode(groupByExpressions, aggregations, groupingSets, srcRel);
         relToHiveColNameCalcitePosMap.put(groupByRel, buildHiveToCalciteColumnMap(groupByOutputRowResolver));
         relToHiveRR.put(groupByRel, groupByOutputRowResolver);
+        // Reapply the markers cleared for the DISTINCT * rewrite above; its group by output is
+        // positionally one key per input column (no aggregations, no grouping sets). Copy the
+        // user-visible names too, so a rejection resolving against this exprResolver RR (e.g.
+        // a HAVING reference) reads "c in t" rather than the expression tree.
+        for (int position : clearedAmbiguousPositions) {
+          ColumnInfo gbColInfo = groupByOutputRowResolver.getColumnInfos().get(position);
+          gbColInfo.setAmbiguousName(true);
+          gbColInfo.setAlias(clearedAmbiguousColumns.get(position).getAlias());
+          gbColInfo.setTabAlias(clearedAmbiguousColumns.get(position).getTabAlias());
+        }
       }
 
       return groupByRel;
@@ -4435,6 +4452,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
             ColumnInfo colInfo = new ColumnInfo(SemanticAnalyzer.getColumnInternalName(pos),
                 TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(typeInfo),
                 tabAlias, false);
+            if (expression instanceof RexInputRef) {
+              // Carry the HIVE-29580 marker through this projection. Only expression-map
+              // resolutions (the DISTINCT * rewrite's synthesized references) reach here with a
+              // marked source; user-written ones already failed checkAmbiguousName in genRexNode.
+              ColumnInfo sourceColInfo = inputRR.getColumnInfos().get(((RexInputRef) expression).getIndex());
+              colInfo.setAmbiguousName(sourceColInfo.hasAmbiguousName());
+            }
             outputRR.put(tabAlias, colAlias, colInfo);
 
             pos = Integer.valueOf(pos.intValue() + 1);
@@ -4890,20 +4914,26 @@ public class CalcitePlanner extends SemanticAnalyzer {
           ColumnInfo newCi = new ColumnInfo(colInfo);
           newCi.setTabAlias(alias);
           if (i < targetColNames.size()) {
+            // An explicit column list disambiguates positionally; a collision with an unlisted
+            // column is re-marked when that later column's turn reaches the branch below.
             tmp[1] = targetColNames.get(i);
             newCi.setAlias(tmp[1]);
+            newCi.setAmbiguousName(false);
           } else if ("".equals(tmp[0]) || tmp[1] == null) {
             // ast expression is not a valid column name for table
             tmp[1] = colInfo.getInternalName();
-          } else if (newRR.get(alias, tmp[1]) != null) {
-            // Duplicate alias escaping the subquery boundary: tolerated for positional use
-            // (HIVE-19770), but poison the name so a later by-name reference fails (HIVE-29580).
-            // Binding the duplicate to its internal name here is deliberate, not redundant:
-            // putWithCheck would otherwise do it via its own fallback AND call keepAmbiguousInfo,
-            // whose reference-time throw in RowResolver.get would then shadow this marker with a
-            // differently formatted message. Do not "simplify" this line away.
-            newRR.get(alias, tmp[1]).setAmbiguousName(true);
-            tmp[1] = colInfo.getInternalName();
+          } else {
+            ColumnInfo clashingColInfo = newRR.get(alias, tmp[1]);
+            if (clashingColInfo != null) {
+              // Duplicate alias escaping the subquery boundary: tolerated for positional use
+              // (HIVE-19770), but poison the name so a later by-name reference fails (HIVE-29580).
+              // Binding the duplicate to its internal name here is deliberate, not redundant:
+              // putWithCheck would otherwise do it via its own fallback AND call keepAmbiguousInfo,
+              // whose reference-time throw in RowResolver.get would then shadow this marker with a
+              // differently formatted message. Do not "simplify" this line away.
+              clashingColInfo.setAmbiguousName(true);
+              tmp[1] = colInfo.getInternalName();
+            }
           }
           newRR.putWithCheck(alias, tmp[1], colInfo.getInternalName(), newCi);
         }

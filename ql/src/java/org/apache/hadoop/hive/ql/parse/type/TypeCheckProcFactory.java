@@ -595,6 +595,12 @@ public class TypeCheckProcFactory<T> {
     return new IntervalExprProcessor();
   }
 
+  /**
+   * Rejects a by-name reference to a column marked ambiguous at a subquery/CTE boundary
+   * (HIVE-29580). Call after each by-name resolution of a user-written column reference;
+   * expression-map resolutions (processGByExpr) stay unchecked so Hive's own rewrites can
+   * reference marked columns.
+   */
   static void checkAmbiguousName(ColumnInfo colInfo) throws SemanticException {
     if (colInfo != null && colInfo.hasAmbiguousName()) {
       throw new SemanticException(ErrorMsg.AMBIGUOUS_COLUMN.getMsg(

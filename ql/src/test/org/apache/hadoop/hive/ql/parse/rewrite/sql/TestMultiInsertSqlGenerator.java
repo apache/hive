@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.parse.rewrite.sql;
@@ -49,7 +50,7 @@ public class TestMultiInsertSqlGenerator {
     return new MultiInsertSqlGenerator(table, "t", CONF, null) {
       @Override
       public void appendAcidSelectColumns(Operation operation) {
-        // ACID select columns are irrelevant to appendNonPartitionCols; keep the stub inert
+        // ACID select columns are irrelevant to these column-append tests; keep the stub inert
       }
 
       @Override
@@ -70,16 +71,20 @@ public class TestMultiInsertSqlGenerator {
    * duplicate column names.
    */
   @Test
-  public void testAppendNonPartitionColsOmitsPartitionColsForNativeTable() {
+  public void testAppendNonPartitionColsOfTargetTableOmitsPartitionCols() {
     MultiInsertSqlGenerator generator = generator(false);
     generator.appendNonPartitionColsOfTargetTable();
     Assert.assertEquals("`a`, `b`", generator.toString());
   }
 
+  /**
+   * Non-native tables carry partition columns as ordinary data columns, so MergeRewriter
+   * selects appendAllColsOfTargetTable for them.
+   */
   @Test
-  public void testAppendNonPartitionColsKeepsAllColsForNonNativeTable() {
+  public void testAppendAllColsOfTargetTable() {
     MultiInsertSqlGenerator generator = generator(true);
-    generator.appendNonPartitionColsOfTargetTable();
+    generator.appendAllColsOfTargetTable();
     Assert.assertEquals("`a`, `b`, `p`", generator.toString());
   }
 }

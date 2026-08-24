@@ -60,6 +60,10 @@ public class ColumnInfo implements Serializable {
 
   private boolean isHiddenVirtualCol;
 
+  /**
+   * Deliberately excluded from equals/hashCode/isSameColumnForRR: a marked and an unmarked
+   * copy of a column are still the same column for RowResolver purposes (HIVE-29580).
+   */
   private boolean ambiguousName;
 
   private String typeName;
@@ -138,8 +142,8 @@ public class ColumnInfo implements Serializable {
 
   /**
    * True when this column's alias collided with another column's at a subquery/CTE boundary:
-   * the column stays usable positionally (star expansion, count(*)) but any by-name reference
-   * is ambiguous and must be rejected.
+   * the column stays usable positionally (star expansion, count(*)) but a user-written by-name
+   * reference is ambiguous and must be rejected.
    */
   public boolean hasAmbiguousName() {
     return ambiguousName;

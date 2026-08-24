@@ -556,8 +556,13 @@ public class TestSemanticAnalyzer {
   // ==== HIVE-29580: duplicate column aliases escaping a subquery/CTE boundary ====
 
   private BaseSemanticAnalyzer analyzeWithCbo(String query) throws Exception {
+    return analyzeWithCbo(query, false);
+  }
+
+  private BaseSemanticAnalyzer analyzeWithCbo(String query, boolean returnPath) throws Exception {
     HiveConf cboConf = new HiveConf(conf);
     cboConf.setBoolVar(HiveConf.ConfVars.HIVE_CBO_ENABLED, true);
+    cboConf.setBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP, returnPath);
     SessionState.start(cboConf);
     Context ctx = new Context(cboConf);
     ASTNode astNode = ParseUtils.parse(query, ctx);
@@ -604,6 +609,72 @@ public class TestSemanticAnalyzer {
         + " select x.key, z.value, y.value"
         + " from table1 x join table2 y on x.key = y.key"
         + " join (select * from table1 union select * from table2) z on x.value = z.value"));
+  }
+
+  @Test
+  public void testCboRejectsReferenceLaunderedThroughDistinctStar() {
+    // the DISTINCT * rewrite clears the markers for its synthesized group by references;
+    // they must be reapplied to the group by output or the outer reference silently binds
+    assertCboRejectsAmbiguous(
+        "select x.c from (select distinct * from (select 'a' as c, 'b' as c) t) x",
+        "c in x");
+  }
+
+  @Test
+  public void testCboRejectsReferenceAcrossUnionDistinctBoundary() {
+    // UNION DISTINCT goes through the same DISTINCT * rewrite as above
+    assertCboRejectsAmbiguous(
+        "select z.c from (select 'a' as c, 'b' as c union select 'x' as c, 'y' as c) z",
+        "c in z");
+  }
+
+  @Test
+  public void testCboRejectsHavingReferenceOverDistinctDuplicate() {
+    // resolves against the group by output's exprResolver RR; also pins the readable
+    // message (without the alias copy in the re-mark loop it prints the expression tree)
+    assertCboRejectsAmbiguous(
+        "select distinct * from (select 'a' as c, 'b' as c) t having c = 'a'",
+        "c in t");
+  }
+
+  @Test
+  public void testCboToleratesCteColumnListRenamingDuplicateColumns() throws Exception {
+    // the explicit column list renames positionally, so renamed.a is unambiguous
+    assertNotNull(analyzeWithCbo(
+        "with bse as (select 'a' as c, 'b' as c), renamed(a, b) as (select * from bse)"
+            + " select renamed.a from renamed"));
+  }
+
+  @Test
+  public void testCboRejectsReferenceWhenUnlistedColumnCollidesWithColumnListName() {
+    // the column list renames only the first column; the second column's own alias collides
+    // with the assigned name, so the reference is ambiguous again
+    assertCboRejectsAmbiguous(
+        "with renamed(a) as (select 'x' as c, 'y' as a) select renamed.a from renamed",
+        "a in renamed");
+  }
+
+  @Test
+  public void testCboAmbiguityChecksAreReturnPathInvariant() throws Exception {
+    // the marker mechanism runs during plan construction, which both values of
+    // hive.cbo.returnpath.hiveop share; retpath=true additionally drives the operator
+    // conversion over the marked (and re-aliased) group by RowResolvers
+    String[] rejected = {
+        "with bse as (select 'a' as c, 'b' as c), tpm as (select * from bse) select tpm.c from tpm",
+        "select x.c from (select distinct * from (select 'a' as c, 'b' as c) t) x",
+        "select z.c from (select 'a' as c, 'b' as c union select 'x' as c, 'y' as c) z"};
+    String[] tolerated = {
+        "select * from (select 'a' as c, 'b' as c) t",
+        "select distinct * from (select 'a' as c, 'b' as c) t",
+        "with bse as (select 'a' as c, 'b' as c), renamed(a, b) as (select * from bse)"
+            + " select renamed.a from renamed"};
+    for (String query : rejected) {
+      SemanticException e = assertThrows(SemanticException.class, () -> analyzeWithCbo(query, true));
+      assertTrue(e.getMessage(), e.getMessage().contains("Ambiguous column reference"));
+    }
+    for (String query : tolerated) {
+      assertNotNull(analyzeWithCbo(query, true));
+    }
   }
 
   private static ColumnInfo stringCol(String internalName, String tab, String alias, boolean markedAmbiguous) {
