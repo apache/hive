@@ -198,6 +198,9 @@ class HiveMetaToolCommandLine {
     help = cl.hasOption(HELP.getOpt());
     metadataSummaryParams = cl.getOptionValues(METADATA_SUMMARY.getOpt());
     dedupColumnsParams = cl.getOptionValues(DEDUP_COLUMNS.getOpt());
+    if (cl.hasOption(DEDUP_COLUMNS.getOpt()) && dedupColumnsParams == null) {
+      dedupColumnsParams = new String[0];
+    }
 
     int commandCount = (isListFSRoot() ? 1 : 0) + (isExecuteJDOQL() ? 1 : 0) + (isUpdateLocation() ? 1 : 0) +
           (isListExtTblLocs() ? 1 : 0) + (isDiffExtTblLocs() ? 1 : 0) + (isMetadataSummary() ? 1 : 0) +
@@ -222,14 +225,14 @@ class HiveMetaToolCommandLine {
               diffExtTblLocsParams.length + " arguments");
     }
 
-    if ((dryRun || serdePropKey != null || tablePropKey != null) && !isUpdateLocation()
-        && !isDedupColumns()) {
-      throw new IllegalArgumentException("-dryRun, -serdePropKey, -tablePropKey may be used only for the "
-          + "-updateLocation or -dedupColumns commands");
+    if (dryRun && !isUpdateLocation() && !isDedupColumns()) {
+      throw new IllegalArgumentException(
+          "-dryRun may be used only for the -updateLocation or -dedupColumns commands");
     }
 
     if ((serdePropKey != null || tablePropKey != null) && !isUpdateLocation()) {
-      throw new IllegalArgumentException("-serdePropKey, -tablePropKey may be used only for the -updateLocation command");
+      throw new IllegalArgumentException(
+          "-serdePropKey, -tablePropKey may be used only for the -updateLocation command");
     }
 
     if (verbose && !isDedupColumns()) {

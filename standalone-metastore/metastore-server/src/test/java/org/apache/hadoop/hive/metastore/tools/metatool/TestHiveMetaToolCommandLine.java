@@ -148,6 +148,10 @@ public class TestHiveMetaToolCommandLine {
     assertEquals("hive", cl.getDedupColumnsParams()[0]);
     assertEquals("default", cl.getDedupColumnsParams()[1]);
     assertEquals("person", cl.getDedupColumnsParams()[2]);
+
+    cl = new HiveMetaToolCommandLine(new String[] {"-dedupColumns"});
+    assertTrue(cl.isDedupColumns());
+    assertEquals(0, cl.getDedupColumnsParams().length);
   }
 
   @Test
