@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hive.tez.yarn;
 
@@ -149,12 +150,23 @@ public class TezYarnClusterContainer {
   }
 
   public void start() {
-    namenode.start();
-    datanode.start();
-    resourcemanager.start();
-    nodemanager.start();
-    waitForNodeManagerRegistration();
-    verifyJava21InNodeManager();
+    try {
+      namenode.start();
+      datanode.start();
+      resourcemanager.start();
+      nodemanager.start();
+      // Avoid flakiness: wait until HDFS has left safemode before running HDFS operations.
+      requireSuccess(namenode.execInContainer("hdfs", "dfsadmin", "-safemode", "wait"),
+              "hdfs dfsadmin -safemode wait");
+      waitForNodeManagerRegistration();
+      verifyJava21InNodeManager();
+    } catch (Exception e) {
+      try {
+        stop();
+      } catch (Exception ignored) {
+      }
+      throw new IllegalStateException("Failed to start TezYarnClusterContainer", e);
+    }
   }
 
   private void verifyJava21InNodeManager() {
