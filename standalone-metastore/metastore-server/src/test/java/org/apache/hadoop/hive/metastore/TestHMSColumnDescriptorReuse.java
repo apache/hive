@@ -52,7 +52,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -214,7 +213,8 @@ public class TestHMSColumnDescriptorReuse {
     Deadline.startTimer("testDeduplicateColumnDescriptorsTool");
     GetPartitionsByNamesRequest request = new GetPartitionsByNamesRequest("default", "person");
     request.setNames(List.of("country=Germany", "country=Belgium", "country=Greece", "country=US"));
-    List<Partition> partitions = objectStore.getPartitionsByNames("hive", "default", "person", GetPartitionsArgs.from(request));
+    List<Partition> partitions = objectStore.getPartitionsByNames("hive", "default", "person",
+        GetPartitionsArgs.from(request));
     assertEquals(4, partitions.size());
     assertTrue(partitions.stream().allMatch(p -> tbl1.getSd().getCols().equals(p.getSd().getCols())));
 
