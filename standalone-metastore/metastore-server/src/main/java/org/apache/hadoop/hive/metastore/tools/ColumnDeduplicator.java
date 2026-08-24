@@ -151,12 +151,6 @@ final class ColumnDeduplicator {
     }
     if (!isDryRun) {
       applyTableChanges(partSdUpdates, result);
-    } else {
-      Set<Long> candidateCdIds = new HashSet<>();
-      for (Map.Entry<PartitionSdInfo, Long> update : partSdUpdates) {
-        candidateCdIds.add(update.getKey().cdId);
-      }
-      result.addColumnDescriptorsRemoved(countRemovableColumnDescriptors(candidateCdIds));
     }
   }
 
