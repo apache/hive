@@ -475,13 +475,17 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
 
   public static boolean getAllEvaluatorsAreStreaming(VectorPTFEvaluatorBase[] evaluators) {
     for (VectorPTFEvaluatorBase evaluator : evaluators) {
-      if (evaluator.isGroupAggregatedStreamingEvaluator() ||
-          evaluator.needPartitionSize() ||
-          !evaluator.streamsResult()) {
+      if (!isPurelyStreamingEvaluator(evaluator)) {
         return false;
       }
     }
     return true;
+  }
+
+  private static boolean isPurelyStreamingEvaluator(VectorPTFEvaluatorBase evaluator) {
+    return evaluator.streamsResult()
+        && !evaluator.isGroupAggregatedStreamingEvaluator()
+        && !evaluator.needPartitionSize();
   }
 
   public TypeInfo[] getReducerBatchTypeInfos() {

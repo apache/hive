@@ -775,7 +775,7 @@ public class VectorPTFOperator extends Operator<PTFDesc>
     /*
      * Why would finishPartition be skipped here?
      * 1. abort: obviously
-     * 2. allEvaluatorsPurelyStreaming: if all evaluators are streaming, we already evaluated
+     * 2. allEvaluatorsAreStreaming: if all evaluators are streaming, we already evaluated
      * 3. isFirstPartition: if it's true, we haven't seen any records/batches in the operator
      */
     if (!abort && !allEvaluatorsAreStreaming && !isFirstPartition){

@@ -94,7 +94,10 @@ public class VectorPTFGroupBatches extends PTFPartition {
 
   List<Integer> inMemoryStartRowIndex;
 
-  private boolean isGroupAggregatedStreamingEvaluator;
+  /**
+   * Whether any of the evaluators is a group-aggregated streaming evaluator.
+   */
+  private boolean hasGroupAggregatedStreamingEvaluator;
 
   /**
    * List of row counts of each reduce key group (peer group) within the current partition.
@@ -329,10 +332,10 @@ public class VectorPTFGroupBatches extends PTFPartition {
     this.blocks = new VectorSpillBlockContainer(spillLimitBufferedBatchCount, spillLocalDirs,
         bufferedColumnMap, bufferedTypeInfos);
 
-    isGroupAggregatedStreamingEvaluator = false;
+    hasGroupAggregatedStreamingEvaluator = false;
     for (VectorPTFEvaluatorBase evaluator : evaluators) {
       if (evaluator.isGroupAggregatedStreamingEvaluator()) {
-        isGroupAggregatedStreamingEvaluator = true;
+        hasGroupAggregatedStreamingEvaluator = true;
         break;
       }
     }
@@ -441,7 +444,6 @@ public class VectorPTFGroupBatches extends PTFPartition {
   public void finishPartition() throws HiveException {
     long startTime = System.currentTimeMillis();
     preFinishPartition();
-    precomputeAggregatedStreamingResults();
     int evaluatorIndex = 0;
     /*
      * This could become a very heavy loop, which runs for all rows in the partition
@@ -480,7 +482,7 @@ public class VectorPTFGroupBatches extends PTFPartition {
    * First pass for peer group aggregated streaming evaluators (e.g. cume_dist)
    */
   private void precomputeAggregatedStreamingResults() throws HiveException {
-    if (!isGroupAggregatedStreamingEvaluator) {
+    if (!hasGroupAggregatedStreamingEvaluator) {
       return;
     }
     for (VectorPTFEvaluatorBase evaluator : evaluators) {
@@ -544,7 +546,7 @@ public class VectorPTFGroupBatches extends PTFPartition {
     bufferedBatch.isLastGroupBatch = isLastGroupBatch;
     cachedSize = -1; // clear cached size as we added new batches
 
-    if (isGroupAggregatedStreamingEvaluator) {
+    if (hasGroupAggregatedStreamingEvaluator) {
       currentAggregatedGroupRowCount += batch.size;
       if (isLastGroupBatch) {
         aggregatedGroupRowCounts.add(currentAggregatedGroupRowCount);
@@ -554,8 +556,6 @@ public class VectorPTFGroupBatches extends PTFPartition {
   }
 
   public void resetEvaluators() {
-    aggregatedGroupRowCounts.clear();
-    currentAggregatedGroupRowCount = 0;
     for (VectorPTFEvaluatorBase evaluator : evaluators) {
       evaluator.resetEvaluator();
       evaluator.onPartitionEnd();
@@ -888,10 +888,9 @@ public class VectorPTFGroupBatches extends PTFPartition {
     int rows = size();
 
     for (VectorPTFEvaluatorBase evaluator : evaluators) {
-      if (evaluator.needPartitionSize()) {
-        evaluator.setPartitionSize(rows);
-      }
+      evaluator.setPartitionSize(rows);
     }
+    precomputeAggregatedStreamingResults();
 
     positionCache = new RowPositionInBatch[rows + 1];
     partitionResults = new PartitionResults(rows);

@@ -45,9 +45,9 @@ import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 public class VectorPTFEvaluatorCumeDist extends VectorPTFEvaluatorBase {
 
   /**
-   * Per peer group cume_dist values computed in the first pass and consumed, in
-   * order, by the
-   * streaming pass (one value is popped when a group's last batch is processed).
+   * Per-peer-group cume_dist values from the first pass, popped in order during
+   * streaming
+   * (one per group at its last batch).
    */
   private final Deque<Double> groupResults = new ArrayDeque<>();
   private int rowPosition;
