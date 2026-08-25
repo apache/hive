@@ -30,7 +30,7 @@ import org.testcontainers.utility.DockerImageName;
  * mock ({@link GcsOAuthTokenMock}). Gravitino {@code GCSTokenGenerator} uses Google STS over HTTPS
  * on port 443; {@code extraHost} alone cannot redirect that to an ephemeral mock port.
  */
-public final class GcsStsProxyContainer {
+public final class GcsStsProxyContainers {
 
   private static final DockerImageName SOCAT_IMAGE = DockerImageName.parse("alpine/socat:1.0.5");
   private static final String STS_HOST = "sts.googleapis.com";

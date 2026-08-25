@@ -58,7 +58,7 @@ import org.apache.hadoop.hive.ql.QTestSystemProperties;
  *   <li>Plain HTTP {@code POST /token} for service-account {@code token_uri}</li>
  *   <li>HTTPS {@code POST /v1/token} with {@code CN=sts.googleapis.com} for Google STS</li>
  * </ul>
- * The test wires {@link GcsStsProxyContainer} to forward {@code sts.googleapis.com:443} to the
+ * The test wires {@link GcsStsProxyContainers} to forward {@code sts.googleapis.com:443} to the
  * HTTPS port, and imports {@link #getCertificatePath()} into the Gravitino container truststore.
  */
 public final class GcsOAuthTokenMock implements AutoCloseable {
@@ -105,7 +105,7 @@ public final class GcsOAuthTokenMock implements AutoCloseable {
     httpsServer.start();
   }
 
-  /** Port forwarded by {@link GcsStsProxyContainer} ({@code sts.googleapis.com:443}). */
+  /** Port forwarded by {@link GcsStsProxyContainers} ({@code sts.googleapis.com:443}). */
   public int getStsPort() {
     return httpsServer.getAddress().getPort();
   }

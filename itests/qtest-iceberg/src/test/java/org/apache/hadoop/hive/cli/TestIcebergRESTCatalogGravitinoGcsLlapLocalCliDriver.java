@@ -113,7 +113,7 @@ public class TestIcebergRESTCatalogGravitinoGcsLlapLocalCliDriver {
   private GenericContainer<?> gravitinoContainer;
   private GcsFakeServerContainers fakeGcs;
   private GcsOAuthTokenMock gcsOAuthTokenMock;
-  private GcsStsProxyContainer gcsStsProxy;
+  private GcsStsProxyContainers gcsStsProxy;
   private Path warehouseDir;
   private OAuth2AuthorizationServer oAuth2AuthorizationServer;
 
@@ -149,7 +149,7 @@ public class TestIcebergRESTCatalogGravitinoGcsLlapLocalCliDriver {
     createWarehouseDir();
     fakeGcs = new GcsFakeServerContainers();
     fakeGcs.start(dockerNetwork, GCS_BUCKET);
-    gcsStsProxy = new GcsStsProxyContainer();
+    gcsStsProxy = new GcsStsProxyContainers();
     gcsStsProxy.start(dockerNetwork, gcsOAuthTokenMock.getStsPort());
     prepareGravitinoConfig();
     startGravitinoContainer(dockerNetwork);
