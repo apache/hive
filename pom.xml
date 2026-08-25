@@ -181,7 +181,7 @@
     <kryo.version>5.5.0</kryo.version>
     <reflectasm.version>1.11.9</reflectasm.version>
     <kudu.version>1.17.0</kudu.version>
-    <libthrift.version>0.23.0</libthrift.version>
+    <libthrift.version>0.24.0</libthrift.version>
     <log4j2.version>2.25.4</log4j2.version>
     <mariadb.version>2.5.0</mariadb.version>
     <mssql.version>6.2.1.jre8</mssql.version>
