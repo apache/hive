@@ -4737,35 +4737,47 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return false;
   }
 
+  /**
+   * Helper method to parse the excluded columns from an EXCLUDE AST node. Returns an unmodifiable
+   * set to ensure the caller cannot accidentally mutate the result.
+   */
+  private Set<ColumnInfo> processExcludeColumns(
+      ASTNode excludeNode, String starTabAlias, RowResolver inputRR) throws SemanticException {
+    Set<ColumnInfo> localExcluded = new HashSet<>();
+    for (int e = 0; e < excludeNode.getChildCount(); e++) {
+      String excludeColName = unescapeIdentifier(excludeNode.getChild(e).getText()).toLowerCase();
+      ColumnInfo colInfo = inputRR.get(starTabAlias, excludeColName);
+      if (colInfo != null) {
+        localExcluded.add(colInfo);
+      }
+    }
+    return Collections.unmodifiableSet(localExcluded);
+  }
+
   protected record ExcludeResult(String tableAlias, Set<ColumnInfo> excludedColumns) {}
 
+  /**
+   * Parses a TOK_ALLCOLREF node (e.g. `*` or `t.* EXCLUDE (a)`) to extract the table alias and the
+   * set of columns to be excluded.
+   */
   protected ExcludeResult processAllColRefAndExclude(ASTNode expr, RowResolver inputRR)
       throws SemanticException {
-    // Check if the query uses SELECT * EXCLUDE. If it does, grab the table
-    // alias (like t.*) and build a list of the columns the user wants to exclude.
+
     String starTabAlias = null;
-    ASTNode excludeNode = null;
-    Set<ColumnInfo> excludedColumns = new HashSet<>();
+
+    // Zero-allocation initialization for queries that don't use EXCLUDE.
+    Set<ColumnInfo> excludedColumns = Set.of();
 
     if (expr.getChildren() != null) {
       for (Node childNode : expr.getChildren()) {
         ASTNode child = (ASTNode) childNode;
         switch (child.getType()) {
           case HiveParser.TOK_TABNAME -> starTabAlias = getUnescapedName(child).toLowerCase();
-          case HiveParser.TOK_TABCOLNAME -> excludeNode = child;
+          case HiveParser.TOK_TABCOLNAME ->
+              excludedColumns = processExcludeColumns(child, starTabAlias, inputRR);
           default ->
               throw new SemanticException(
                   "Unexpected node type in TOK_ALLCOLREF: " + child.getType());
-        }
-      }
-    }
-
-    if (excludeNode != null) {
-      for (int e = 0; e < excludeNode.getChildCount(); e++) {
-        String excludeColName = unescapeIdentifier(excludeNode.getChild(e).getText()).toLowerCase();
-        ColumnInfo colInfo = inputRR.get(starTabAlias, excludeColName);
-        if (colInfo != null) {
-          excludedColumns.add(colInfo);
         }
       }
     }
