@@ -115,8 +115,9 @@
     <antlr4.version>4.9.3</antlr4.version>
     <apache-directory-server.version>2.0.0-M24</apache-directory-server.version>
     <avro.version>1.12.0</avro.version>
+    <awaitility.version>4.2.1</awaitility.version>
     <bcprov-jdk18on.version>1.84</bcprov-jdk18on.version>
-    <calcite.version>1.33.0</calcite.version>
+    <calcite.version>1.42.0</calcite.version>
     <datanucleus-api-jdo.version>6.0.5</datanucleus-api-jdo.version>
     <datanucleus-core.version>6.0.11</datanucleus-core.version>
     <datanucleus-jdo.version>3.2.0-release</datanucleus-jdo.version>
@@ -161,7 +162,7 @@
     <httpcomponents5.core.version>5.3.4</httpcomponents5.core.version>
     <httpcomponents5.client.version>5.5</httpcomponents5.client.version>
     <ivy.version>2.5.2</ivy.version>
-    <jackson.version>2.18.6</jackson.version>
+    <jackson.version>2.21.5</jackson.version>
     <jamon.plugin.version>2.3.4</jamon.plugin.version>
     <jamon-runtime.version>2.4.1</jamon-runtime.version>
     <javax-servlet.version>3.1.0</javax-servlet.version>
@@ -544,6 +545,11 @@
         <groupId>org.antlr</groupId>
         <artifactId>ST4</artifactId>
         <version>${ST4.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.awaitility</groupId>
+        <artifactId>awaitility</artifactId>
+        <version>${awaitility.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>

@@ -97,5 +97,10 @@ public class BeelineInPlaceUpdateStream implements InPlaceUpdateStream {
     public double progressedPercentage() {
       return response.getProgressedPercentage();
     }
+
+    @Override
+    public String queueMetrics() {
+      return response.isSetQueueMetrics() ? response.getQueueMetrics() : "";
+    }
   }
 }
