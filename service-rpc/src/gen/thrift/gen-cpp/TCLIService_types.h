@@ -3667,6 +3667,10 @@ void swap(TRenewDelegationTokenResp &a, TRenewDelegationTokenResp &b) noexcept;
 
 std::ostream& operator<<(std::ostream& out, const TRenewDelegationTokenResp& obj);
 
+typedef struct _TProgressUpdateResp__isset {
+  _TProgressUpdateResp__isset() : queueMetrics(false) {}
+  bool queueMetrics :1;
+} _TProgressUpdateResp__isset;
 
 class TProgressUpdateResp : public virtual ::apache::thrift::TBase {
  public:
@@ -3686,6 +3690,9 @@ class TProgressUpdateResp : public virtual ::apache::thrift::TBase {
   TJobExecutionStatus::type status;
   std::string footerSummary;
   int64_t startTime;
+  std::string queueMetrics;
+
+  _TProgressUpdateResp__isset __isset;
 
   void __set_headerNames(const std::vector<std::string> & val);
 
@@ -3698,6 +3705,8 @@ class TProgressUpdateResp : public virtual ::apache::thrift::TBase {
   void __set_footerSummary(const std::string& val);
 
   void __set_startTime(const int64_t val);
+
+  void __set_queueMetrics(const std::string& val);
 
   bool operator == (const TProgressUpdateResp & rhs) const;
   bool operator != (const TProgressUpdateResp &rhs) const {

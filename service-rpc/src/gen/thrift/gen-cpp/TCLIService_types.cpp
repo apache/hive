@@ -12910,7 +12910,8 @@ TProgressUpdateResp::TProgressUpdateResp() noexcept
    : progressedPercentage(0),
      status(static_cast<TJobExecutionStatus::type>(0)),
      footerSummary(),
-     startTime(0) {
+     startTime(0),
+     queueMetrics() {
 }
 
 void TProgressUpdateResp::__set_headerNames(const std::vector<std::string> & val) {
@@ -13181,6 +13182,10 @@ bool TProgressUpdateResp::operator==(const TProgressUpdateResp & rhs) const
   if (!(footerSummary == rhs.footerSummary))
     return false;
   if (!(startTime == rhs.startTime))
+    return false;
+  if (__isset.queueMetrics != rhs.__isset.queueMetrics)
+    return false;
+  else if (__isset.queueMetrics && !(queueMetrics == rhs.queueMetrics))
     return false;
   return true;
 }
