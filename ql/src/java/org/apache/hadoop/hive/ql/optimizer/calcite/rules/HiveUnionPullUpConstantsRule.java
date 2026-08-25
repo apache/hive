@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 /**
  * Planner rule that pulls up constants through a Union operator.
  */
-public class HiveUnionPullUpConstantsRule {
+public final class HiveUnionPullUpConstantsRule {
 
   private HiveUnionPullUpConstantsRule() {
     throw new IllegalStateException("Instantiation not allowed");

@@ -25,9 +25,9 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
 
 /**
- * Rule to transpose Filter and TableFunctionScan RelNodes
+ * Rule to transpose Filter and TableFunctionScan RelNodes.
  */
-public class HiveFilterTableFunctionTransposeRule {
+public final class HiveFilterTableFunctionTransposeRule {
 
   private HiveFilterTableFunctionTransposeRule() {
     throw new IllegalStateException("Instantiation not allowed");
