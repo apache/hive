@@ -3056,9 +3056,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
             pswd = null;
             LOG.warn("No password found for accessing {} table via JDBC", fullyQualifiedTabName);
           }
-          final String catalogName = tabMetaData.getProperty(Constants.JDBC_CATALOG);
-          final String schemaName = tabMetaData.getProperty(Constants.JDBC_SCHEMA);
-          final String tableName = tabMetaData.getProperty(Constants.JDBC_TABLE);
+          final String catalogName = Utilities.unquoteJdbcIdentifier(tabMetaData.getProperty(Constants.JDBC_CATALOG));
+          final String schemaName = Utilities.unquoteJdbcIdentifier(tabMetaData.getProperty(Constants.JDBC_SCHEMA));
+          final String tableName = Utilities.unquoteJdbcIdentifier(tabMetaData.getProperty(Constants.JDBC_TABLE));
 
           DataSource ds = JdbcSchema.dataSource(url, driver, user, pswd);
           SqlDialect jdbcDialect = JdbcSchema.createDialect(SqlDialectFactoryImpl.INSTANCE, ds);
