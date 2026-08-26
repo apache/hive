@@ -214,7 +214,7 @@ import org.slf4j.LoggerFactory;
 import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.FILE_PATH;
 import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.LAST_UPDATED_SEQUENCE_NUMBER;
 import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.PARTITION_HASH;
-import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.PARTITION_PROJECTION;
+import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.PARTITION_NAME;
 import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.PARTITION_SPEC_ID;
 import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.ROW_LINEAGE_ID;
 import static org.apache.hadoop.hive.ql.metadata.VirtualColumn.ROW_POSITION;
@@ -244,7 +244,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   public static final String MERGE_ON_READ = RowLevelOperationMode.MERGE_ON_READ.modeName();
 
   private static final List<VirtualColumn> ACID_VIRTUAL_COLS = ImmutableList.of(
-      PARTITION_SPEC_ID, PARTITION_HASH, FILE_PATH, ROW_POSITION, PARTITION_PROJECTION);
+      PARTITION_SPEC_ID, PARTITION_HASH, FILE_PATH, ROW_POSITION);
 
   private static final List<FieldSchema> ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA = schema(ACID_VIRTUAL_COLS);
 
@@ -427,7 +427,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
     List<ExprNodeDesc> subExprNodes = pushedPredicate.getChildren();
     Set<String> skipList =
-        Stream.of(FILE_PATH, PARTITION_SPEC_ID, PARTITION_HASH, ROW_LINEAGE_ID, LAST_UPDATED_SEQUENCE_NUMBER)
+        Stream.of(FILE_PATH, PARTITION_SPEC_ID, PARTITION_HASH, PARTITION_NAME,
+                ROW_LINEAGE_ID, LAST_UPDATED_SEQUENCE_NUMBER)
             .map(VirtualColumn::getName).collect(Collectors.toSet());
 
     if (subExprNodes.removeIf(nodeDesc -> nodeDesc.getCols() != null &&

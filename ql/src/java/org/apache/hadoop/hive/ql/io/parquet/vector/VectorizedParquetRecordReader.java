@@ -458,9 +458,11 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       if(!colsToInclude.isEmpty()) {
         for (int i = 0; i < types.size(); ++i) {
           columnReaders[i] =
-              buildVectorizedParquetReader(columnTypesList.get(colsToInclude.get(i)), types.get(i),
+              buildVectorizedParquetReader(
+                  columnTypesList.get(colsToInclude.get(i)), types.get(i),
                   pages, requestedSchema.getColumns(), skipTimestampConversion, writerTimezone, skipProlepticConversion,
-                  legacyConversionEnabled, 0, 0);
+                  legacyConversionEnabled, 0, 0
+              );
         }
       }
     } else {

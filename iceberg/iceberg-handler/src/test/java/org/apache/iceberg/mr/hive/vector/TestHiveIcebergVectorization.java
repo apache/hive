@@ -46,6 +46,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.iceberg.FileFormat;
+import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
@@ -109,9 +110,10 @@ public class TestHiveIcebergVectorization extends HiveIcebergStorageHandlerWithE
     List<Record> records = TestHelper.generateRandomRecords(allSchema, 10, 0L);
     Table table = testTables.createTable(shell, "temptable", allSchema, fileFormat, records);
 
-    // Identify data file location - expected to be 1 file exactly
-    Path dataFilePath = new Path(Lists.newArrayList(Lists.newArrayList(table.newScan().planTasks().iterator()).get(0)
-        .files().iterator()).get(0).file().path().toString());
+    // Identify the scan task - expected to be 1 file exactly
+    FileScanTask fileScanTask = Lists.newArrayList(Lists.newArrayList(table.newScan().planTasks().iterator()).get(0)
+        .files().iterator()).get(0);
+    Path dataFilePath = new Path(fileScanTask.file().path().toString());
 
     // Generate a mock vectorized read job
     JobConf jobConf = prepareMockJob(allSchema, dataFilePath);
@@ -122,7 +124,7 @@ public class TestHiveIcebergVectorization extends HiveIcebergStorageHandlerWithE
         inputFormat.getRecordReader(new FileSplit(dataFilePath, 0L, Long.MAX_VALUE, new String[]{}), jobConf,
             new MockReporter());
     HiveBatchIterator hiveBatchIterator = new HiveBatchIterator(
-        internalVectorizedRecordReader, jobConf, null, null, null);
+        internalVectorizedRecordReader, jobConf, null, null, fileScanTask);
 
     // Expected to be one batch exactly
     HiveBatchContext hiveBatchContext = hiveBatchIterator.next();

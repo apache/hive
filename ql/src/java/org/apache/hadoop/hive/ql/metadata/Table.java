@@ -1463,16 +1463,21 @@ public class Table implements Serializable {
     List<VirtualColumn> virtualColumns = new ArrayList<>();
     if (!isNonNative()) {
       virtualColumns.addAll(VirtualColumn.getRegistry());
+      return virtualColumns;
     }
-    if (isNonNative() && AcidUtils.isNonNativeAcidTable(this)) {
+    if (AcidUtils.isNonNativeAcidTable(this)) {
       virtualColumns.addAll(getStorageHandler().acidVirtualColumns());
     }
-    if (isNonNative() && getStorageHandler().areSnapshotsSupported() &&
-        isBlank(getMetaTable())) {
+    if (!isBlank(getMetaTable())) {
+      return virtualColumns;
+    }
+    if (hasNonNativePartitionSupport()) {
+      virtualColumns.add(VirtualColumn.PARTITION_NAME);
+    }
+    if (getStorageHandler().areSnapshotsSupported()) {
       virtualColumns.add(VirtualColumn.SNAPSHOT_ID);
     }
-    if (isNonNative() && getStorageHandler().supportsRowLineage(getTTable().getParameters()) &&
-        isBlank(getMetaTable())) {
+    if (getStorageHandler().supportsRowLineage(getTTable().getParameters())) {
       virtualColumns.add(VirtualColumn.ROW_LINEAGE_ID);
       virtualColumns.add(VirtualColumn.LAST_UPDATED_SEQUENCE_NUMBER);
     }
