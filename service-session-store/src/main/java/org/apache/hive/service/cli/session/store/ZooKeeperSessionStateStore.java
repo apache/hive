@@ -67,9 +67,9 @@ public class ZooKeeperSessionStateStore implements SessionStateStore {
     zkClient.start();
 
     try {
-      if (zkClient.checkExists().forPath(zkBasePath) == null) {
-        zkClient.create().creatingParentsIfNeeded().forPath(zkBasePath);
-      }
+      zkClient.create().creatingParentsIfNeeded().forPath(zkBasePath);
+    } catch (KeeperException.NodeExistsException e) {
+      LOG.debug("ZooKeeper base path already exists: {}", zkBasePath);
     } catch (Exception e) {
       LOG.error("Failed to create ZooKeeper base path: {}", zkBasePath, e);
       throw new RuntimeException("Failed to initialize ZooKeeperSessionStateStore", e);
@@ -84,8 +84,10 @@ public class ZooKeeperSessionStateStore implements SessionStateStore {
     String path = getNodePath(sessionHandleId);
     try {
       byte[] data = OBJECT_MAPPER.writeValueAsBytes(snapshot);
-      if (zkClient.checkExists().forPath(path) != null) {
+      try {
         zkClient.delete().forPath(path);
+      } catch (KeeperException.NoNodeException e) {
+        // Node doesn't exist yet, fine
       }
       zkClient.create().withTtl(ttlMillis).creatingParentsIfNeeded()
           .withMode(CreateMode.PERSISTENT_WITH_TTL)
