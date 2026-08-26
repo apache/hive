@@ -4738,6 +4738,52 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return false;
   }
 
+  /**
+   * Helper method to parse the excluded columns from an EXCLUDE AST node. Returns an unmodifiable
+   * set to ensure the caller cannot accidentally mutate the result.
+   */
+  private Set<ColumnInfo> processExcludeColumns(
+      ASTNode excludeNode, String starTabAlias, RowResolver inputRR) throws SemanticException {
+    Set<ColumnInfo> localExcluded = new HashSet<>();
+    for (int e = 0; e < excludeNode.getChildCount(); e++) {
+      String excludeColName = unescapeIdentifier(excludeNode.getChild(e).getText()).toLowerCase();
+      ColumnInfo colInfo = inputRR.get(starTabAlias, excludeColName);
+      if (colInfo != null) {
+        localExcluded.add(colInfo);
+      }
+    }
+    return Collections.unmodifiableSet(localExcluded);
+  }
+
+  protected record ExcludeResult(String tableAlias, Set<ColumnInfo> excludedColumns) {}
+
+  /**
+   * Parses a TOK_ALLCOLREF node (e.g. `*` or `t.* EXCLUDE (a)`) to extract the table alias and the
+   * set of columns to be excluded.
+   */
+  protected ExcludeResult processAllColRefAndExclude(ASTNode expr, RowResolver inputRR)
+      throws SemanticException {
+
+    String starTabAlias = null;
+
+    // Zero-allocation initialization for queries that don't use EXCLUDE.
+    Set<ColumnInfo> excludedColumns = Set.of();
+
+    if (expr.getChildren() != null) {
+      for (Node childNode : expr.getChildren()) {
+        ASTNode child = (ASTNode) childNode;
+        switch (child.getType()) {
+          case HiveParser.TOK_TABNAME -> starTabAlias = getUnescapedName(child).toLowerCase();
+          case HiveParser.TOK_TABCOLNAME ->
+              excludedColumns = processExcludeColumns(child, starTabAlias, inputRR);
+          default ->
+              throw new SemanticException(
+                  "Unexpected node type in TOK_ALLCOLREF: " + child.getType());
+        }
+      }
+    }
+    return new ExcludeResult(starTabAlias, excludedColumns);
+  }
 
   private Operator<?> genSelectPlan(String dest, QB qb, Operator<?> input,
                                     Operator<?> inputForSelectStar) throws SemanticException {
@@ -4915,9 +4961,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // The real expression
       if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
         int initPos = pos;
-        pos = genExprNodeDescRegex(".*", expr.getChildCount() == 0 ? null
-                : getUnescapedName((ASTNode) expr.getChild(0)).toLowerCase(),
-            expr, colList, null, inputRR, starRR, pos, out_rwsch, qb.getAliases(), false);
+
+        ExcludeResult excludeResult = processAllColRefAndExclude(expr, inputRR);
+        String starTabAlias = excludeResult.tableAlias();
+        Set<ColumnInfo> excludeCols = excludeResult.excludedColumns();
+        if (excludeCols.isEmpty()) {
+          excludeCols = null;
+        }
+
+        pos = genExprNodeDescRegex(".*", starTabAlias,
+            expr, colList, excludeCols, inputRR, starRR, pos, out_rwsch, qb.getAliases(), false);
         if (unparseTranslator.isEnabled()) {
           offset += pos - initPos - 1;
         }
