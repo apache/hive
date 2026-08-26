@@ -46,7 +46,9 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.VectorPartitionDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFReflect;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Assert;
 import org.junit.Test;
@@ -245,5 +247,71 @@ public class TestSerializationUtilities {
     mapWork.setPathToPartitionInfo(partMap);
 
     return mapWork;
+  }
+
+  @Test
+  public void testUntrustedDeserializationAcceptsLegitimateExpression() throws Exception {
+    ExprNodeGenericFuncDesc expr = buildColumnEqualsConstant(new ExprNodeConstantDesc(
+        TypeInfoFactory.stringTypeInfo, "value"));
+
+    byte[] typed = SerializationUtilities.serializeObjectWithTypeInformation(expr);
+    Object deserialized = SerializationUtilities.deserializeObjectWithTypeInformation(typed, true);
+    Assert.assertTrue(deserialized instanceof ExprNodeGenericFuncDesc);
+
+    String base64 = SerializationUtilities.serializeExpression(expr);
+    Assert.assertNotNull(SerializationUtilities.deserializeExpression(base64));
+  }
+
+  @Test(expected = UnsupportedOperationException.class)
+  public void testUntrustedDeserializationRejectsNonExprRoot() throws Exception {
+    byte[] bytes = SerializationUtilities.serializeObjectWithTypeInformation(
+        new LinkedHashMap<String, String>());
+    SerializationUtilities.deserializeObjectWithTypeInformation(bytes, true);
+  }
+
+  @Test(expected = UnsupportedOperationException.class)
+  public void testUntrustedDeserializationRejectsSmuggledClass() throws Exception {
+    // a class outside the allowlist carried in a "constant" stands in for a gadget object
+    ExprNodeGenericFuncDesc expr = buildColumnEqualsConstant(new ExprNodeConstantDesc(
+        TypeInfoFactory.stringTypeInfo, new java.io.File("/tmp/x")));
+    byte[] bytes = SerializationUtilities.serializeObjectWithTypeInformation(expr);
+    SerializationUtilities.deserializeObjectWithTypeInformation(bytes, true);
+  }
+
+  @Test(expected = UnsupportedOperationException.class)
+  public void testDeserializeExpressionRejectsSmuggledClass() throws Exception {
+    ExprNodeGenericFuncDesc expr = buildColumnEqualsConstant(new ExprNodeConstantDesc(
+        TypeInfoFactory.stringTypeInfo, new java.io.File("/tmp/x")));
+    SerializationUtilities.deserializeExpression(SerializationUtilities.serializeExpression(expr));
+  }
+
+  @Test(expected = UnsupportedOperationException.class)
+  public void testUntrustedDeserializationRejectsReflectUdf() throws Exception {
+    List<ExprNodeDesc> children = new ArrayList<>();
+    children.add(new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, "java.lang.ProcessBuilder"));
+    ExprNodeGenericFuncDesc expr = new ExprNodeGenericFuncDesc(TypeInfoFactory.stringTypeInfo,
+        new GenericUDFReflect(), children);
+    byte[] bytes = SerializationUtilities.serializeObjectWithTypeInformation(expr);
+    SerializationUtilities.deserializeObjectWithTypeInformation(bytes, true);
+  }
+
+  @Test
+  public void testUntrustedDeserializationAllowlist() {
+    Assert.assertTrue(
+        SerializationUtilities.isAllowedForUntrustedDeserialization(ExprNodeGenericFuncDesc.class));
+    Assert.assertTrue(SerializationUtilities.isAllowedForUntrustedDeserialization(GenericUDFOPNull.class));
+    Assert.assertTrue(SerializationUtilities.isAllowedForUntrustedDeserialization(ArrayList.class));
+    Assert.assertTrue(SerializationUtilities.isAllowedForUntrustedDeserialization(byte[].class));
+    Assert.assertFalse(SerializationUtilities.isAllowedForUntrustedDeserialization(java.io.File.class));
+    Assert.assertFalse(SerializationUtilities.isAllowedForUntrustedDeserialization(Path.class));
+    Assert.assertFalse(SerializationUtilities.isAllowedForUntrustedDeserialization(GenericUDFReflect.class));
+  }
+
+  private static ExprNodeGenericFuncDesc buildColumnEqualsConstant(ExprNodeConstantDesc constant) {
+    List<ExprNodeDesc> children = new ArrayList<>();
+    children.add(new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "col1", "tab", false));
+    children.add(constant);
+    return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo,
+        new GenericUDFOPEqual(), children);
   }
 }
