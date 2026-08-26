@@ -19,40 +19,13 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
-import org.apache.calcite.rel.type.RelDataType;
-import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ConversionUtil;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.nio.charset.Charset;
-import java.util.List;
 
 public class HiveTypeFactory extends JavaTypeFactoryImpl {
   public HiveTypeFactory() {
     super(new HiveTypeSystemImpl());
-    if (Bug.CALCITE_6954_FIXED) {
-      throw new IllegalStateException("Class redundant once fix is merged");
-    }
-  }
-
-  @Override
-  protected @Nullable RelDataType leastRestrictiveArrayMultisetType(final List<RelDataType> types,
-      final SqlTypeName sqlTypeName) {
-    RelDataType type = super.leastRestrictiveArrayMultisetType(types, sqlTypeName);
-    if (type != null) {
-      return canonize(type);
-    }
-    return null;
-  }
-
-  @Override
-  protected @Nullable RelDataType leastRestrictiveMapType(final List<RelDataType> types,
-      final SqlTypeName sqlTypeName) {
-    RelDataType type = super.leastRestrictiveMapType(types, sqlTypeName);
-    if (type != null) {
-      return canonize(type);
-    }
-    return null;
   }
 
   @Override
