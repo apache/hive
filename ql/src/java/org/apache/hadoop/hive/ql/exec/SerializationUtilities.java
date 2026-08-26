@@ -32,12 +32,14 @@ import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -58,6 +60,7 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,8 +129,10 @@ public class SerializationUtilities {
     private Hook globalHook;
     // this should be set on-the-fly after borrowing this instance and needs to be reset on release
     private Configuration configuration;
-    // default false, should be reset on release
-    private boolean isExprNodeFirst = false;
+    // when non-null, the stream being deserialized is untrusted: the first class read must be
+    // compatible with this type and every class read must pass
+    // isAllowedForUntrustedDeserialization(); default null (trusted), reset on release
+    private Class<?> untrustedRootType = null;
     // total classes we have met during (de)serialization, should be reset on release
     private long classCounter = 0;
 
@@ -237,13 +242,22 @@ public class SerializationUtilities {
 
     @Override
     public com.esotericsoftware.kryo.kryo5.Registration getRegistration(Class type) {
-      // If PartitionExpressionForMetastore performs deserialization at remote HMS,
-      // the first class encountered during deserialization must be an ExprNodeDesc,
-      // throw exception to avoid potential security problem if it is not.
-      if (isExprNodeFirst && classCounter == 0) {
-        if (!ExprNodeDesc.class.isAssignableFrom(type)) {
+      // If this instance deserializes a payload that a remote client controls (e.g.
+      // PartitionExpressionForMetastore at a remote HMS) or that a client can persist (e.g. a
+      // table property copied into the job conf), the first class encountered during
+      // deserialization must be compatible with the expected root type, and every class in the
+      // stream must pass the allowlist check. Kryo is otherwise willing to instantiate any
+      // classpath class named by the payload (registrationRequired=false plus
+      // StdInstantiatorStrategy), which turns these payloads into a
+      // deserialization-of-untrusted-data primitive.
+      if (untrustedRootType != null) {
+        if (classCounter == 0 && !untrustedRootType.isAssignableFrom(type)) {
+          throw new UnsupportedOperationException("The object to be deserialized must be a "
+              + untrustedRootType.getName() + ", but encountered: " + type);
+        }
+        if (!isAllowedForUntrustedDeserialization(type)) {
           throw new UnsupportedOperationException(
-              "The object to be deserialized must be an ExprNodeDesc, but encountered: " + type);
+              "Deserialization of " + type + " is not allowed from an untrusted payload");
         }
       }
       classCounter++;
@@ -251,15 +265,79 @@ public class SerializationUtilities {
     }
 
     public void setExprNodeFirst(boolean isPartFilter) {
-      this.isExprNodeFirst = isPartFilter;
+      setUntrustedRootType(isPartFilter ? ExprNodeDesc.class : null);
+    }
+
+    void setUntrustedRootType(Class<?> rootType) {
+      this.untrustedRootType = rootType;
+      this.classCounter = 0;
     }
 
     // reset the fields on release
     public void restore() {
       setConf(null);
-      isExprNodeFirst = false;
+      untrustedRootType = null;
       classCounter = 0;
     }
+  }
+
+  /**
+   * Package prefixes that classes read from an untrusted Kryo payload may come from. These cover
+   * everything a legitimate serialized expression ({@link ExprNodeDesc} graph) or search argument
+   * (SearchArgumentImpl graph) contains: expression descriptors and plan literals, builtin and
+   * installed UDFs, type infos and object inspectors, Hive/Hadoop value types, and plain JDK
+   * value/collection classes. Known gadget carriers (commons-collections, beanutils,
+   * xalan/TemplatesImpl, ...) all live outside these prefixes.
+   */
+  private static final String[] UNTRUSTED_ALLOWED_PACKAGE_PREFIXES = new String[] {
+      "java.lang.",
+      "java.util.",
+      "java.sql.",
+      "java.time.",
+      "java.math.",
+      "org.apache.hadoop.hive.ql.plan.",
+      "org.apache.hadoop.hive.ql.udf.",
+      "org.apache.hadoop.hive.ql.io.sarg.",
+      "org.apache.hadoop.hive.serde2.",
+      "org.apache.hadoop.hive.common.type.",
+      "org.apache.hadoop.io."
+  };
+
+  /**
+   * Classes that are never acceptable in an untrusted payload even though they pass the package
+   * allowlist: reflect()/reflect2() invoke arbitrary methods on arbitrary classes, so a
+   * pre-instantiated instance arriving in a client-supplied expression is an
+   * arbitrary-code-execution primitive for whoever evaluates the expression.
+   */
+  private static final Set<String> UNTRUSTED_DENIED_CLASS_NAMES = new HashSet<>(Arrays.asList(
+      "org.apache.hadoop.hive.ql.udf.generic.GenericUDFReflect",
+      "org.apache.hadoop.hive.ql.udf.generic.GenericUDFReflect2"));
+
+  @VisibleForTesting
+  static boolean isAllowedForUntrustedDeserialization(Class<?> type) {
+    Class<?> component = type;
+    while (component.isArray()) {
+      component = component.getComponentType();
+    }
+    if (component.isPrimitive()) {
+      return true;
+    }
+    String name = component.getName();
+    if (UNTRUSTED_DENIED_CLASS_NAMES.contains(name)) {
+      return false;
+    }
+    // Custom (temporary/permanent) UDFs live in user packages. The classes themselves were
+    // installed by an administrator, so allowing kryo to instantiate them is no worse than any
+    // query invoking them.
+    if (GenericUDF.class.isAssignableFrom(component) || UDF.class.isAssignableFrom(component)) {
+      return true;
+    }
+    for (String prefix : UNTRUSTED_ALLOWED_PACKAGE_PREFIXES) {
+      if (name.startsWith(prefix)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private static final Object FAKE_REFERENCE = new Object();
@@ -883,7 +961,29 @@ public class SerializationUtilities {
 
   public static ExprNodeGenericFuncDesc deserializeExpression(String s) {
     byte[] bytes = Base64.decodeBase64(s.getBytes(StandardCharsets.UTF_8));
-    return deserializeObjectFromKryo(bytes, ExprNodeGenericFuncDesc.class);
+    // Serialized expressions travel through configuration values (e.g.
+    // hive.io.filter.expr.serialized) that clients can shadow via table properties or SET, so
+    // they must always be deserialized with the untrusted-payload restrictions.
+    return deserializeUntrustedObjectFromKryo(bytes, ExprNodeGenericFuncDesc.class);
+  }
+
+  /**
+   * Deserializes bytes that a client may control (a remote-supplied expression, a value read back
+   * from a configuration key that table properties can shadow, ...). In addition to pinning the
+   * root object to {@code clazz}, every class named in the stream is validated against a fixed
+   * allowlist, so the payload cannot make Kryo instantiate arbitrary classpath classes.
+   * @param bytes Bytes containing the object.
+   * @param clazz The expected class of the root object.
+   * @return The deserialized object.
+   */
+  public static <T> T deserializeUntrustedObjectFromKryo(byte[] bytes, Class<T> clazz) {
+    KryoWithHooks kryo = (KryoWithHooks) borrowKryo();
+    kryo.setUntrustedRootType(clazz);
+    try (Input inp = new Input(new ByteArrayInputStream(bytes))) {
+      return kryo.readObject(inp, clazz);
+    } finally {
+      releaseKryo(kryo);
+    }
   }
 
   public static byte[] serializeObjectToKryo(Serializable object) {

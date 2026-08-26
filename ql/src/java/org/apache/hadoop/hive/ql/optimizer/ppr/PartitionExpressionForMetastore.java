@@ -30,15 +30,19 @@ import org.apache.hadoop.hive.metastore.FileFormatProxy;
 import org.apache.hadoop.hive.metastore.PartitionExpressionProxy;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.io.orc.OrcFileFormatProxy;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
-import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentImpl;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFMacro;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.slf4j.Logger;
@@ -111,19 +115,59 @@ public class PartitionExpressionForMetastore implements PartitionExpressionProxy
     try {
       expr = SerializationUtilities.deserializeObjectWithTypeInformation(exprBytes, true);
     } catch (Exception ex) {
-      LOG.error("Failed to deserialize the expression, fall back to deserializeObjectFromKryo", ex);
+      LOG.error("Failed to deserialize the expression, fall back to deserializeUntrustedObjectFromKryo", ex);
       try {
-        expr = SerializationUtilities.deserializeObjectFromKryo(exprBytes, ExprNodeGenericFuncDesc.class);
+        // The fallback must use the same untrusted-payload restrictions as the primary path:
+        // these bytes come straight from a Thrift client.
+        expr = SerializationUtilities.deserializeUntrustedObjectFromKryo(exprBytes, ExprNodeGenericFuncDesc.class);
       } catch (Exception e) {
         LOG.error("Failed to deserialize the expression", e);
         throw new MetaException("SerializationUtilities#deserializeObjectWithTypeInformation: " + ex.getMessage() +
-            ", SerializationUtilities#deserializeObjectFromKryo: " + e.getMessage());
+            ", SerializationUtilities#deserializeUntrustedObjectFromKryo: " + e.getMessage());
       }
     }
     if (expr == null) {
       throw new MetaException("Failed to deserialize expression - ExprNodeDesc not present");
     }
+    validateDeserializedExpr(expr);
     return expr;
+  }
+
+  /**
+   * Rejects client-supplied expression graphs that would execute arbitrary code when the
+   * metastore stringifies or evaluates them. The Kryo-level class allowlist already blocks
+   * reflect()/reflect2(); a {@link GenericUDFBridge} instance is legitimate (it wraps builtin
+   * old-style UDFs like year()), but it instantiates whatever class name its
+   * {@code udfClassName} field carries, so that name must resolve to a real {@link UDF}.
+   */
+  private void validateDeserializedExpr(ExprNodeDesc expr) throws MetaException {
+    if (expr instanceof ExprNodeGenericFuncDesc) {
+      GenericUDF genericUDF = ((ExprNodeGenericFuncDesc) expr).getGenericUDF();
+      if (genericUDF instanceof GenericUDFBridge) {
+        String udfClassName = ((GenericUDFBridge) genericUDF).getUdfClassName();
+        Class<?> udfClass;
+        try {
+          udfClass = Class.forName(udfClassName, false, Thread.currentThread().getContextClassLoader());
+        } catch (ClassNotFoundException | LinkageError e) {
+          throw new MetaException("Unknown UDF class in partition filter expression: " + udfClassName);
+        }
+        if (!UDF.class.isAssignableFrom(udfClass)) {
+          throw new MetaException("Class in partition filter expression is not a UDF: " + udfClassName);
+        }
+      }
+      if (genericUDF instanceof GenericUDFMacro) {
+        // a macro body is an expression graph of its own
+        ExprNodeDesc body = ((GenericUDFMacro) genericUDF).getBody();
+        if (body != null) {
+          validateDeserializedExpr(body);
+        }
+      }
+    }
+    if (expr.getChildren() != null) {
+      for (ExprNodeDesc child : expr.getChildren()) {
+        validateDeserializedExpr(child);
+      }
+    }
   }
 
   @Override
@@ -150,6 +194,8 @@ public class PartitionExpressionForMetastore implements PartitionExpressionProxy
 
   @Override
   public SearchArgument createSarg(byte[] expr) {
-    return ConvertAstToSearchArg.create(expr);
+    // These bytes also come straight from a Thrift client (get_file_metadata_by_expr), so they
+    // get the same untrusted-payload restrictions as the partition filter expressions above.
+    return SerializationUtilities.deserializeUntrustedObjectFromKryo(expr, SearchArgumentImpl.class);
   }
 }
