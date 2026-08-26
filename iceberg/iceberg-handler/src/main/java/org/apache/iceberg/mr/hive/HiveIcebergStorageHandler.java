@@ -2210,6 +2210,20 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   }
 
   @Override
+  public void validateCompactionPartition(org.apache.hadoop.hive.ql.metadata.Table hmsTable, String partitionName)
+      throws HiveException {
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    if (!IcebergTableUtil.hasUndergonePartitionEvolution(table)) {
+      return;
+    }
+    try {
+      IcebergTableUtil.getPartitionSpec(table, partitionName);
+    } catch (MetaException e) {
+      throw new HiveException(e);
+    }
+  }
+
+  @Override
   public void validatePartSpec(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Map<String, String> partitionSpec,
       RewritePolicy policy) throws SemanticException {
     Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());

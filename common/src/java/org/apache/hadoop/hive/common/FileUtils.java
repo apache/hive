@@ -85,6 +85,35 @@ public final class FileUtils {
   private static final Random random = new Random();
   public static final int IO_ERROR_SLEEP_TIME = 100;
 
+  /**
+   * Schemes whose single-file {@link FileSystem#rename(Path, Path)} is not atomic-if-absent and
+   * can silently overwrite an existing destination when two concurrent writers race between an
+   * {@code exists()} probe and the rename call (object stores where rename is client-side
+   * copy+delete). Callers use this to decide whether to switch to a uniqueness-tag copy suffix
+   * when moving output files. The list is in code because the set of unsafe filesystems is a
+   * property of the filesystem implementation, not something an operator should override.
+   * <p>
+   * Note on Azure: {@code abfs}/{@code abfss} only guarantee atomic rename when the ADLS Gen2
+   * account has hierarchical namespace enabled; without HNS they degrade to copy+delete like
+   * {@code wasb}. Since callers cannot cheaply tell the two apart at rename time, the Azure
+   * schemes are included unconditionally — a false positive costs only a slightly longer
+   * filename, whereas a false negative would be silent data loss.
+   */
+  public static final Set<String> NON_ATOMIC_RENAME_SCHEMES = new HashSet<>(
+      Arrays.asList("s3a", "s3n", "s3", "gs", "abfs", "abfss", "wasb", "wasbs"));
+
+  /**
+   * @return {@code true} when the filesystem's URI scheme is one of the known non-atomic-rename
+   *         schemes ({@link #NON_ATOMIC_RENAME_SCHEMES}); {@code false} otherwise (including a
+   *         {@code null} fs or missing scheme).
+   */
+  public static boolean isNonAtomicRenameFs(FileSystem fs) {
+    if (fs == null || fs.getUri() == null || fs.getUri().getScheme() == null) {
+      return false;
+    }
+    return NON_ATOMIC_RENAME_SCHEMES.contains(fs.getUri().getScheme().toLowerCase());
+  }
+
   public static final PathFilter HIDDEN_FILES_PATH_FILTER = new PathFilter() {
     @Override
     public boolean accept(Path p) {

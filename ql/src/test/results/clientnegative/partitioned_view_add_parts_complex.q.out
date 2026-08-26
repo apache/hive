@@ -1,0 +1,19 @@
+PREHOOK: query: create table pv_complex_src (id int, p struct<f:string>) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@pv_complex_src
+POSTHOOK: query: create table pv_complex_src (id int, p struct<f:string>) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@pv_complex_src
+PREHOOK: query: insert into pv_complex_src values (1, named_struct('f', 'x'))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@pv_complex_src
+POSTHOOK: query: insert into pv_complex_src values (1, named_struct('f', 'x'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@pv_complex_src
+POSTHOOK: Lineage: pv_complex_src.id SCRIPT []
+POSTHOOK: Lineage: pv_complex_src.p SCRIPT []
+FAILED: SemanticException [Error 10126]: Partition column must be of primitive type. Found p of type: struct<f:string>

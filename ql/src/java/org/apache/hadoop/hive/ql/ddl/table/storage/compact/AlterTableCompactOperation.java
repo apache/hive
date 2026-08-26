@@ -91,6 +91,10 @@ public class AlterTableCompactOperation extends DDLOperation<AlterTableCompactDe
     Map<String, org.apache.hadoop.hive.metastore.api.Partition> partitionMap =
         convertPartitionsFromThriftToDB(getPartitions(table));
 
+    if (desc.getPartitionSpec() != null && !partitionMap.isEmpty() && table.getStorageHandler() != null) {
+      table.getStorageHandler().validateCompactionPartition(table, partitionMap.keySet().iterator().next());
+    }
+
     TxnStore txnHandler = TxnUtils.getTxnStore(context.getConf());
 
     CompactionRequest compactionRequest = new CompactionRequest(table.getDbName(), table.getTableName(),

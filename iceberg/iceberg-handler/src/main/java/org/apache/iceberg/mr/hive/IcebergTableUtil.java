@@ -775,15 +775,25 @@ public class IcebergTableUtil {
     // Extract field names from the path: "field1=val1/field2=val2" → [field1, field2]
     List<String> fieldNames = Lists.newArrayList(Warehouse.makeSpecFromName(partitionPath).keySet());
 
-    return icebergTable.specs().values().stream()
+    List<PartitionSpec> matches = icebergTable.specs().values().stream()
         .filter(spec -> {
           List<String> specFieldNames = spec.fields().stream()
               .map(PartitionField::name)
               .toList();
           return specFieldNames.equals(fieldNames);
         })
-        .findFirst() // Supposed to be only one matching spec
-        .orElseThrow(() -> new HiveException("No matching partition spec found for partition path: " + partitionPath));
+        .toList();
+
+    if (matches.size() > 1) {
+      throw new HiveException(String.format(
+          "Ambiguous partition spec for partition path %s: matched spec ids %s",
+          partitionPath,
+          matches.stream().map(PartitionSpec::specId).map(String::valueOf).collect(Collectors.joining(", "))));
+    }
+    if (matches.isEmpty()) {
+      throw new HiveException("No matching partition spec found for partition path: " + partitionPath);
+    }
+    return matches.get(0);
   }
 
   public static TransformSpec getTransformSpec(Table table, String transformName, int sourceId) {
