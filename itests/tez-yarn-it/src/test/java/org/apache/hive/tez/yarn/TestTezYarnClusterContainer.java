@@ -92,7 +92,7 @@ public class TestTezYarnClusterContainer {
       Assert.assertNotNull("uploadJarToHdfs must return a non-null HDFS path", hdfsPath);
 
       ExecResult ls = cluster.namenodeContainer()
-          .execInContainer("hdfs", "dfs", "-ls", "/tmp/hive-29483-jars");
+          .execInContainer("hdfs", "dfs", "-ls", "/tmp/hive-tez-yarn-jars");
       Assert.assertTrue("Uploaded jar not visible in HDFS:\n" + ls.getStdout(),
           ls.getStdout().contains(tempJar.getFileName().toString()));
     } finally {
