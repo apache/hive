@@ -258,6 +258,9 @@ class IcebergAuthorizer {
       objects.add(tableOrView(catalogName, identifier));
     }
     List<HivePrivilegeObject> allowed = filterListCmd(authorizer, objects, commandString);
+    if (allowed.isEmpty()) {
+      return Collections.emptyList();
+    }
     List<TableIdentifier> result = new ArrayList<>(allowed.size());
     for (HivePrivilegeObject object : allowed) {
       result.add(TableIdentifier.of(object.getDbname(), object.getObjectName()));
@@ -291,6 +294,9 @@ class IcebergAuthorizer {
       }
     }
     List<HivePrivilegeObject> allowed = filterListCmd(authorizer, objects, "show databases");
+    if (allowed.isEmpty()) {
+      return Collections.emptyList();
+    }
     List<Namespace> result = new ArrayList<>(allowed.size());
     for (HivePrivilegeObject object : allowed) {
       result.add(Namespace.of(object.getDbname()));
