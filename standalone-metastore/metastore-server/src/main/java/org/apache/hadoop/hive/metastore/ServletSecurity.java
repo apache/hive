@@ -32,7 +32,8 @@ import java.security.KeyStore;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import org.apache.hadoop.conf.Configuration;
@@ -117,6 +118,7 @@ public class ServletSecurity {
   private SimpleJWTAuthenticator jwtAuthenticator = null;
   private OAuth2Authenticator oAuth2Authenticator = null;
   private final Cache<UgiKey, UserGroupInformation> proxyUserCache;
+  private final ScheduledExecutorService cacheMaintenanceExecutor;
 
   /**
    * Cache key for a proxy {@link UserGroupInformation}. A proxy UGI is bound to both the effective user it
@@ -130,7 +132,28 @@ public class ServletSecurity {
 
   public ServletSecurity(AuthType authType, Configuration conf,
       Function<HttpServletRequest, List<String>> scopeProvider) {
-    this(authType, conf, scopeProvider, ForkJoinPool.commonPool());
+    this.conf = conf;
+    this.isSecurityEnabled = UserGroupInformation.isSecurityEnabled();
+    this.authType = authType;
+    this.scopeProvider = scopeProvider;
+    this.cacheMaintenanceExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
+      Thread t = new Thread(r, "ugi-cache-cleanup");
+      t.setDaemon(true);
+      return t;
+    });
+    long expiryMs = MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.CATALOG_SERVLET_UGI_CACHE_EXPIRY,
+        TimeUnit.MILLISECONDS);
+    this.proxyUserCache = createCacheWithConfig(
+        expiryMs,
+        MetastoreConf.getLongVar(conf, MetastoreConf.ConfVars.CATALOG_SERVLET_UGI_CACHE_SIZE),
+        cacheMaintenanceExecutor);
+    if (expiryMs > 0) {
+      // Periodically flush expired entries that accumulated during idle periods (Caffeine only runs
+      // maintenance when the cache is accessed; without this, a burst followed by silence keeps
+      // UGI/FileSystem resources live past the configured expiry window).
+      cacheMaintenanceExecutor.scheduleAtFixedRate(proxyUserCache::cleanUp,
+          expiryMs, expiryMs, TimeUnit.MILLISECONDS);
+    }
   }
 
   @VisibleForTesting
@@ -140,6 +163,7 @@ public class ServletSecurity {
     this.isSecurityEnabled = UserGroupInformation.isSecurityEnabled();
     this.authType = authType;
     this.scopeProvider = scopeProvider;
+    this.cacheMaintenanceExecutor = null;
     this.proxyUserCache = createCacheWithConfig(
         MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.CATALOG_SERVLET_UGI_CACHE_EXPIRY, TimeUnit.MILLISECONDS),
         MetastoreConf.getLongVar(conf, MetastoreConf.ConfVars.CATALOG_SERVLET_UGI_CACHE_SIZE),
@@ -152,8 +176,8 @@ public class ServletSecurity {
    * @param expirationMs Time in milliseconds after which entries expire due to inactivity
    * @param maxSize      Maximum number of entries the cache can hold
    * @param cacheCleanupExecutor executor on which removal-listener cleanup ({@link FileSystem#closeAllForUGI})
-   *                             runs; production uses {@link ForkJoinPool#commonPool()} so cleanup stays off the
-   *                             request thread
+   *                             runs; production uses a dedicated single-thread daemon executor so cleanup stays
+   *                             off request threads and does not interfere with JVM-wide shared pools
    * @return A configured Caffeine cache for UGI objects
    */
   private Cache<UgiKey, UserGroupInformation> createCacheWithConfig(long expirationMs, long maxSize,
@@ -214,6 +238,16 @@ public class ServletSecurity {
   @VisibleForTesting
   void cleanUpProxyUserCache() {
     proxyUserCache.cleanUp();
+  }
+
+  /**
+   * Releases resources held by this instance: stops the cache maintenance scheduler and runs any
+   * pending eviction cleanup. Should be called when the servlet is destroyed.
+   */
+  public void close() {
+    if (cacheMaintenanceExecutor != null) {
+      cacheMaintenanceExecutor.shutdownNow();
+    }
   }
 
   /**
@@ -278,6 +312,12 @@ public class ServletSecurity {
     @Override
     public String getServletInfo() {
       return delegate.getServletInfo();
+    }
+
+    @Override
+    public void destroy() {
+      ServletSecurity.this.close();
+      delegate.destroy();
     }
   }
 
