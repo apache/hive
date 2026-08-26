@@ -77,7 +77,11 @@ public class TestMaterializedCTEInputs {
         Arguments.of("nested cte", "WITH q1 AS ("
             + "WITH q2 AS (SELECT key, value FROM test_materialized_cte.src WHERE key = '4') "
             + "SELECT * FROM q2 UNION ALL SELECT * FROM q2) "
-            + "SELECT * FROM q1 t1 JOIN q1 t2 ON t1.key = t2.key", Set.of("key", "value"))
+            + "SELECT * FROM q1 t1 JOIN q1 t2 ON t1.key = t2.key", Set.of("key", "value")),
+        Arguments.of("merge columns", "WITH q1 AS ("
+                + "WITH q2 AS (SELECT key FROM test_materialized_cte.src WHERE key = '4') "
+                + "SELECT * FROM q2 UNION ALL SELECT * FROM q2) "
+                + "SELECT * FROM q1 t1 JOIN test_materialized_cte.src t2 ON t1.key = t2.key", Set.of("key", "value"))
     );
   }
 
@@ -92,11 +96,8 @@ public class TestMaterializedCTEInputs {
     analyzer.initCtx(ctx);
     analyzer.analyze(astNode, ctx);
 
-    Set<ReadEntity> directInputs = analyzer.getInputs();
     Set<ReadEntity> allInputs = analyzer.getAllInputs();
 
-    assertTrue(directInputs.stream().noneMatch(e -> isTableNamed(e, "src")),
-        "Materialized CTE should not expose base table in direct inputs");
     assertTrue(allInputs.stream().anyMatch(e -> isTableNamed(e, "src")),
         "Materialized CTE base table must appear in getAllInputs");
 

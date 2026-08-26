@@ -93,16 +93,14 @@ public class ColumnAccessInfo {
   }
 
   /**
-   * Merge direct column accesses from another ColumnAccessInfo into this one.
+   * Merge column accesses from another ColumnAccessInfo into this one.
    */
   public void merge(ColumnAccessInfo other) {
     if (other == null) {
       return;
     }
-    for (Map.Entry<String, List<String>> entry : other.getTableToColumnAccessMap().entrySet()) {
-      for (String col : entry.getValue()) {
-        add(entry.getKey(), col);
-      }
+    for (Map.Entry<String, ColumnAccess> entry : other.tableToColumnAccessMap.entries()) {
+      tableToColumnAccessMap.put(entry.getKey(), entry.getValue());
     }
   }
 

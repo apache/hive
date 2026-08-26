@@ -59,7 +59,6 @@ public class ColumnAccessAnalyzer {
         }
       }
     }
-    // Every Analyzer holds its private rootClause
     columnAccessInfo.merge(getMaterializedCteColumnAccessInfo(analyzer.rootClause.asExecutionOrder()));
     return columnAccessInfo;
   }
