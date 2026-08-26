@@ -113,6 +113,12 @@
       <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.awaitility</groupId>
+      <artifactId>awaitility</artifactId>
+      <version>4.2.1</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
@@ -155,7 +161,7 @@
           <!-- Resolve docker-network hostnames (namenode, resourcemanager, …) to 127.0.0.1
                so HDFS URIs embedded in Tez LocalResources are reachable from both the host JVM
                and inside YARN containers (via the shared docker network alias). -->
-          <argLine>${maven.test.jvm.args} -Xshare:off -Djdk.net.hosts.file=${test.conf.dir}/custom_hosts_file</argLine>
+          <argLine>${maven.test.jvm.args} -Djdk.net.hosts.file=${test.conf.dir}/custom_hosts_file</argLine>
         </configuration>
       </plugin>
     </plugins>

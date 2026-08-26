@@ -46,24 +46,31 @@ public class TestHiveServer2Connectivity {
 
     hdfsUri = cluster.getHdfsUri();
 
-    var r = cluster.namenodeContainer().execInContainer("hdfs", "dfs", "-mkdir", "-p", "/tmp/hive-29483/warehouse");
-    Assert.assertEquals("hdfs dfs -mkdir -p /tmp/hive-29483/warehouse failed:\n" + r.getStderr(), 0, r.getExitCode());
-    r = cluster.namenodeContainer().execInContainer("hdfs", "dfs", "-mkdir", "-p", "/tmp/hive-29483/scratch");
-    Assert.assertEquals("hdfs dfs -mkdir -p /tmp/hive-29483/scratch failed:\n" + r.getStderr(), 0, r.getExitCode());
-    r = cluster.namenodeContainer().execInContainer("hdfs", "dfs", "-chmod", "-R", "777", "/tmp/hive-29483");
-    Assert.assertEquals("hdfs dfs -chmod -R 777 /tmp/hive-29483 failed:\n" + r.getStderr(), 0, r.getExitCode());
+    String testId = java.util.UUID.randomUUID().toString();
+    String hdfsBaseDir = "/tmp/hive-tez-yarn-" + testId;
 
-    Path localScratch = Files.createTempDirectory("hive-29483-local-");
+    var r = cluster.namenodeContainer().execInContainer("hdfs", "dfs", "-mkdir", "-p", hdfsBaseDir + "/warehouse");
+    Assert.assertEquals("hdfs dfs -mkdir -p " + hdfsBaseDir + "/warehouse failed:\n" + r.getStderr(), 0, r.getExitCode());
+    r = cluster.namenodeContainer().execInContainer("hdfs", "dfs", "-mkdir", "-p", hdfsBaseDir + "/scratch");
+    Assert.assertEquals("hdfs dfs -mkdir -p " + hdfsBaseDir + "/scratch failed:\n" + r.getStderr(), 0, r.getExitCode());
+    r = cluster.namenodeContainer().execInContainer("hdfs", "dfs", "-chmod", "-R", "777", hdfsBaseDir);
+    Assert.assertEquals("hdfs dfs -chmod -R 777 " + hdfsBaseDir + " failed:\n" + r.getStderr(), 0, r.getExitCode());
+
+    Path localScratch = Files.createTempDirectory("hive-tez-yarn-local-");
 
     HiveConf conf = new HiveConf();
     URL hiveSite = TestHiveServer2Connectivity.class.getClassLoader().getResource("hive-site-yarn-it.xml");
     URL yarnSite = TestHiveServer2Connectivity.class.getClassLoader().getResource("yarn-site.xml");
-    if (hiveSite != null) conf.addResource(hiveSite);
-    if (yarnSite != null) conf.addResource(yarnSite);
+    if (hiveSite != null) {
+      conf.addResource(hiveSite);
+    }
+    if (yarnSite != null) {
+      conf.addResource(yarnSite);
+    }
 
     conf.set("fs.defaultFS", hdfsUri);
-    conf.set("hive.metastore.warehouse.dir", hdfsUri + "/tmp/hive-29483/warehouse");
-    conf.set(HiveConf.ConfVars.SCRATCH_DIR.varname, hdfsUri + "/tmp/hive-29483/scratch");
+    conf.set("hive.metastore.warehouse.dir", hdfsUri + hdfsBaseDir + "/warehouse");
+    conf.set(HiveConf.ConfVars.SCRATCH_DIR.varname, hdfsUri + hdfsBaseDir + "/scratch");
     conf.set(HiveConf.ConfVars.LOCAL_SCRATCH_DIR.varname, localScratch.toAbsolutePath().toString());
 
     conf.set("javax.jdo.option.ConnectionURL",
