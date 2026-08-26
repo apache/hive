@@ -90,9 +90,9 @@ import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
 import org.apache.calcite.rel.metadata.JaninoRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
-import org.apache.calcite.rel.rules.CoreRules;
 import org.apache.calcite.rel.rules.FilterMergeRule;
 import org.apache.calcite.rel.rules.JoinToMultiJoinRule;
+import org.apache.calcite.rel.rules.LoptOptimizeJoinRule;
 import org.apache.calcite.rel.rules.ProjectMergeRule;
 import org.apache.calcite.rel.rules.ProjectRemoveRule;
 import org.apache.calcite.rel.type.RelDataType;
@@ -2213,7 +2213,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           rules.toArray(new RelOptRule[0]));
       // Join reordering
       generatePartialProgram(program, false, HepMatchOrder.BOTTOM_UP,
-          new JoinToMultiJoinRule(HiveJoin.class), CoreRules.MULTI_JOIN_OPTIMIZE);
+          new JoinToMultiJoinRule(HiveJoin.class), new LoptOptimizeJoinRule(HiveRelFactories.HIVE_BUILDER));
 
       RelNode calciteOptimizedPlan;
       try {
