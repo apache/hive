@@ -242,13 +242,11 @@ public class SerializationUtilities {
 
     @Override
     public com.esotericsoftware.kryo.kryo5.Registration getRegistration(Class type) {
-      // If this instance deserializes a payload that a remote client controls (e.g.
-      // PartitionExpressionForMetastore at a remote HMS) or that a client can persist (e.g. a
-      // table property copied into the job conf), the first class encountered during
-      // deserialization must be compatible with the expected root type, and every class in the
-      // stream must pass the allowlist check. Kryo is otherwise willing to instantiate any
-      // classpath class named by the payload (registrationRequired=false plus
-      // StdInstantiatorStrategy), which turns these payloads into a
+      // If this instance deserializes a payload that a remote client controls (e.g. PartitionExpressionForMetastore at
+      // a remote HMS) or that a client can persist (e.g. a table property copied into the job conf), the first class
+      // encountered during deserialization must be compatible with the expected root type, and every class in the
+      // stream must pass the allowlist check. Kryo is otherwise willing to instantiate any classpath class named by the
+      // payload (registrationRequired=false plus StdInstantiatorStrategy), which turns these payloads into a
       // deserialization-of-untrusted-data primitive.
       if (untrustedRootType != null) {
         if (classCounter == 0 && !untrustedRootType.isAssignableFrom(type)) {
@@ -282,12 +280,11 @@ public class SerializationUtilities {
   }
 
   /**
-   * Package prefixes that classes read from an untrusted Kryo payload may come from. These cover
-   * everything a legitimate serialized expression ({@link ExprNodeDesc} graph) or search argument
-   * (SearchArgumentImpl graph) contains: expression descriptors and plan literals, builtin and
-   * installed UDFs, type infos and object inspectors, Hive/Hadoop value types, and plain JDK
-   * value/collection classes. Known gadget carriers (commons-collections, beanutils,
-   * xalan/TemplatesImpl, ...) all live outside these prefixes.
+   * Package prefixes that classes read from an untrusted Kryo payload may come from. These cover everything a
+   * legitimate serialized expression ({@link ExprNodeDesc} graph) or search argument (SearchArgumentImpl graph)
+   * contains: expression descriptors and plan literals, builtin and installed UDFs, type infos and object inspectors,
+   * Hive/Hadoop value types, and plain JDK value/collection classes. Known gadget carriers (commons-collections,
+   * beanutils, xalan/TemplatesImpl, ...) all live outside these prefixes.
    */
   private static final String[] UNTRUSTED_ALLOWED_PACKAGE_PREFIXES = new String[] {
       "java.lang.",
@@ -304,14 +301,15 @@ public class SerializationUtilities {
   };
 
   /**
-   * Classes that are never acceptable in an untrusted payload even though they pass the package
-   * allowlist: reflect()/reflect2() invoke arbitrary methods on arbitrary classes, so a
-   * pre-instantiated instance arriving in a client-supplied expression is an
-   * arbitrary-code-execution primitive for whoever evaluates the expression.
+   * Classes that are never acceptable in an untrusted payload even though they pass the package allowlist.
+   * GenericUDFReflect, GenericUDFReflect2, and GenericUDFInFile are typically disallowed in a secure environment.
+   * {@link org.apache.hadoop.hive.ql.security.authorization.plugin.SettableConfigUpdater}
    */
   private static final Set<String> UNTRUSTED_DENIED_CLASS_NAMES = new HashSet<>(Arrays.asList(
       "org.apache.hadoop.hive.ql.udf.generic.GenericUDFReflect",
-      "org.apache.hadoop.hive.ql.udf.generic.GenericUDFReflect2"));
+      "org.apache.hadoop.hive.ql.udf.generic.GenericUDFReflect2",
+      "org.apache.hadoop.hive.ql.udf.generic.GenericUDFInFile"
+  ));
 
   @VisibleForTesting
   static boolean isAllowedForUntrustedDeserialization(Class<?> type) {

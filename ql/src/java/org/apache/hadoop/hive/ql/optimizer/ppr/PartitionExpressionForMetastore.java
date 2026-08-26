@@ -117,8 +117,8 @@ public class PartitionExpressionForMetastore implements PartitionExpressionProxy
     } catch (Exception ex) {
       LOG.error("Failed to deserialize the expression, fall back to deserializeUntrustedObjectFromKryo", ex);
       try {
-        // The fallback must use the same untrusted-payload restrictions as the primary path:
-        // these bytes come straight from a Thrift client.
+        // The fallback must use the same untrusted-payload restrictions as the primary path: these bytes come straight
+        // from a Thrift client.
         expr = SerializationUtilities.deserializeUntrustedObjectFromKryo(exprBytes, ExprNodeGenericFuncDesc.class);
       } catch (Exception e) {
         LOG.error("Failed to deserialize the expression", e);
@@ -134,11 +134,10 @@ public class PartitionExpressionForMetastore implements PartitionExpressionProxy
   }
 
   /**
-   * Rejects client-supplied expression graphs that would execute arbitrary code when the
-   * metastore stringifies or evaluates them. The Kryo-level class allowlist already blocks
-   * reflect()/reflect2(); a {@link GenericUDFBridge} instance is legitimate (it wraps builtin
-   * old-style UDFs like year()), but it instantiates whatever class name its
-   * {@code udfClassName} field carries, so that name must resolve to a real {@link UDF}.
+   * Rejects client-supplied expression graphs that would execute arbitrary code when the metastore stringifies or
+   * evaluates them. The Kryo-level class allowlist already blocks reflect/reflect2/java_method/in_file; a
+   * {@link GenericUDFBridge} instance is legitimate (it wraps builtin old-style UDFs like year()), but it instantiates
+   * whatever class name its {@code udfClassName} field carries, so that name must resolve to a real {@link UDF}.
    */
   private void validateDeserializedExpr(ExprNodeDesc expr) throws MetaException {
     if (expr instanceof ExprNodeGenericFuncDesc) {
