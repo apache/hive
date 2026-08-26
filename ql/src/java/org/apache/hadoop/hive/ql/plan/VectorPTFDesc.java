@@ -473,19 +473,20 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     return ArrayUtils.toPrimitive(streamingEvaluatorNums.toArray(new Integer[0]));
   }
 
+  /**
+   * Returns whether every evaluator can process the batch immediately via
+   * {@link org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFGroupBatches
+   * #evaluateStreamingGroupBatch} without buffering the partition.
+   *
+   * <p>See {@link VectorPTFEvaluatorBase} for evaluator categories and flag semantics.
+   */
   public static boolean getAllEvaluatorsAreStreaming(VectorPTFEvaluatorBase[] evaluators) {
     for (VectorPTFEvaluatorBase evaluator : evaluators) {
-      if (!isPurelyStreamingEvaluator(evaluator)) {
+      if (!evaluator.streamsResult() || evaluator.isGroupAggregatedStreamingEvaluator()) {
         return false;
       }
     }
     return true;
-  }
-
-  private static boolean isPurelyStreamingEvaluator(VectorPTFEvaluatorBase evaluator) {
-    return evaluator.streamsResult()
-        && !evaluator.isGroupAggregatedStreamingEvaluator()
-        && !evaluator.needPartitionSize();
   }
 
   public TypeInfo[] getReducerBatchTypeInfos() {

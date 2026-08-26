@@ -29,18 +29,15 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 
 /**
- * This class evaluates cume_dist() for a PTF partition.
- * Unlike rank(), cume_dist needs the total partition row count, group row
- * count, so it cannot produce a group's
- * result while the group is still streaming in. It is therefore a peer group
- * aggregated streaming evaluator
- * (see {@link VectorPTFEvaluatorBase#isGroupAggregatedStreamingEvaluator()}): a
- * first pass over the
- * buffered group sizes precomputes each peer group's value via
- * {@link #addStreamingGroupResult(int)}
- * (after {@link #setPartitionSize(int)} has been called), and the regular
- * streaming pass then just
- * populates the precomputed values into the output column.
+ * Evaluates {@code cume_dist()} as a <b>group-aggregated streaming</b> evaluator — the third
+ * of three evaluator categories (see {@link VectorPTFEvaluatorBase}).
+ *
+ * <p>It is both <b>buffered</b> and <b>streaming</b>: the operator buffers the full partition
+ * before any output ({@link #isGroupAggregatedStreamingEvaluator()} {@code == true}), then
+ * writes results per batch into column vectors on forward ({@link #streamsResult()}
+ * {@code == true}). Peer-group values are precomputed in {@link #addStreamingGroupResult(int)}
+ * after {@link #setPartitionSize(int)}, then {@link #evaluateGroupBatch} fills the output column
+ * as buffered batches are replayed.
  */
 public class VectorPTFEvaluatorCumeDist extends VectorPTFEvaluatorBase {
 
@@ -55,11 +52,6 @@ public class VectorPTFEvaluatorCumeDist extends VectorPTFEvaluatorBase {
   public VectorPTFEvaluatorCumeDist(WindowFrameDef windowFrameDef, int outputColumnNum) {
     super(windowFrameDef, outputColumnNum);
     resetEvaluator();
-  }
-
-  @Override
-  public boolean needPartitionSize() {
-    return true;
   }
 
   @Override
