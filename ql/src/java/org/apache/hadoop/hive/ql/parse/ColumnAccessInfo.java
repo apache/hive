@@ -99,9 +99,7 @@ public class ColumnAccessInfo {
     if (other == null) {
       return;
     }
-    for (Map.Entry<String, ColumnAccess> entry : other.tableToColumnAccessMap.entries()) {
-      tableToColumnAccessMap.put(entry.getKey(), entry.getValue());
-    }
+    tableToColumnAccessMap.putAll(other.tableToColumnAccessMap);
   }
 
   /**
