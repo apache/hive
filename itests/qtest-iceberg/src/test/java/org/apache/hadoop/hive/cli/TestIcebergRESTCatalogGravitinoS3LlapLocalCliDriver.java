@@ -73,12 +73,12 @@ import java.util.List;
  * {@code .withCopyFileToContainer} (config + H2 driver JAR).</p>
  */
 @RunWith(Parameterized.class)
-public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
+public class TestIcebergRESTCatalogGravitinoS3LlapLocalCliDriver {
 
   private static final CliAdapter CLI_ADAPTER =
-      new CliConfigs.TestIcebergRESTCatalogGravitinoLlapLocalCliDriver().getCliAdapter();
+      new CliConfigs.TestIcebergRESTCatalogGravitinoS3LlapLocalCliDriver().getCliAdapter();
 
-  private static final Logger LOG = LoggerFactory.getLogger(TestIcebergRESTCatalogGravitinoLlapLocalCliDriver.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TestIcebergRESTCatalogGravitinoS3LlapLocalCliDriver.class);
 
   private static final String CATALOG_NAME = "ice01";
   private static final long GRAVITINO_STARTUP_TIMEOUT_MINUTES = 5L;
@@ -116,7 +116,7 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
   @Rule
   public final TestRule cliTestRule = CLI_ADAPTER.buildTestRule();
 
-  public TestIcebergRESTCatalogGravitinoLlapLocalCliDriver(String name, File qfile) {
+  public TestIcebergRESTCatalogGravitinoS3LlapLocalCliDriver(String name, File qfile) {
     this.name = name;
     this.qfile = qfile;
   }
@@ -306,7 +306,7 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
    */
   private void prepareGravitinoConfig() throws IOException {
     String content;
-    try (InputStream in = TestIcebergRESTCatalogGravitinoLlapLocalCliDriver.class.getClassLoader()
+    try (InputStream in = TestIcebergRESTCatalogGravitinoS3LlapLocalCliDriver.class.getClassLoader()
         .getResourceAsStream(GRAVITINO_S3_CONF_TEMPLATE)) {
       if (in == null) {
         throw new IOException("Resource not found: " + GRAVITINO_S3_CONF_TEMPLATE);
