@@ -617,6 +617,10 @@ public abstract class HadoopThriftAuthBridge {
          assert useProxy;
          trans = ugiTransport.getWrapped();
        }
+       // Unwrap TMessageSizeTransport if present (added for Thrift 0.24 compat)
+       if (trans instanceof TMessageSizeTransport) {
+         trans = ((TMessageSizeTransport) trans).getWrapped();
+       }
        if (!(trans instanceof TSaslServerTransport)) {
          throw new TException("Unexpected non-SASL transport " + trans.getClass());
        }
@@ -626,7 +630,11 @@ public abstract class HadoopThriftAuthBridge {
        LOG.debug("Sasl Server AUTH ID: {}", authId);
        String endUser = authId;
 
-       Socket socket = ((TSocket)(saslTrans.getUnderlyingTransport())).getSocket();
+       TTransport underlying = saslTrans.getUnderlyingTransport();
+       if (underlying instanceof TMessageSizeTransport) {
+         underlying = ((TMessageSizeTransport) underlying).getWrapped();
+       }
+       Socket socket = ((TSocket) underlying).getSocket();
        remoteAddress.set(socket.getInetAddress());
 
        String mechanismName = saslServer.getMechanismName();
@@ -740,7 +748,12 @@ public abstract class HadoopThriftAuthBridge {
         if (result == null) {
           throw new TTransportException(cause);
         }
-        return result;
+        try {
+          return new TMessageSizeTransport(result);
+        } catch (TTransportException e) {
+          LOG.warn("Failed to wrap server transport with TMessageSizeTransport", e);
+          return result;
+        }
       }
     }
   }
