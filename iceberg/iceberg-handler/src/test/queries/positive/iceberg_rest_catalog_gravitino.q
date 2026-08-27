@@ -3,10 +3,14 @@
 --! qt:replace:/(\s+neededVirtualColumns:\s)(.*)/$1#Masked#/
 -- Mask random uuid
 --! qt:replace:/(\s+'uuid'=')\S+('\s*)/$1#Masked#$2/
--- Mask Iceberg metadata file name (sequence id + UUID) in show create table
---! qt:replace:/('metadata_location'=')[^']+(')/$1#Masked#$2/
--- Mask metadata_location path in describe formatted ('|' delimiter: regex contains s3:// so '/' breaks QTestReplaceHandler).
---! qt:replace:|(metadata_location)(\s+)(s3://\S+)|$1$2#Masked#|
+-- Mask provider-specific URI prefix; keep shared warehouse path (QTestReplaceHandler is per-line).
+--! qt:replace:|('metadata_location'=')[a-z][a-z0-9+.-]*://[^']*?(/warehouse/[^']+)(')|$1#MASKED#$2$3|
+-- Mask metadata json file name inside metadata_location paths.
+--! qt:replace:|(/metadata/)[^' \t]+(\.metadata\.json)|$1#Masked#$2|
+-- Mask metadata_location path in describe formatted ('|' delimiter avoids '/' in scheme breaking QTestReplaceHandler).
+--! qt:replace:|(metadata_location)(\s+)[a-z][a-z0-9+.-]*://[^\t]*?(/warehouse/\S+)|$1$2#MASKED#$3|
+-- Mask table LOCATION line in show create table (s3://, wasb://, abfss://, etc.).
+--! qt:replace:|(\s*')[a-z][a-z0-9+.-]*://[^']*?(/warehouse/[^']+)(')|$1#MASKED#$2$3|
 -- Mask random uuid
 --! qt:replace:/(\s+uuid\s+)\S+(\s*)/$1#Masked#$2/
 -- Mask a random snapshot id
@@ -25,13 +29,13 @@
 --! qt:replace:/(\S\"iceberg-version\\\":\\\")(\w+\s\w+\s\d+\.\d+\.\d+\s\(\w+\s\w+\))(\\\")/$1#Masked#$3/
 
 set hive.stats.autogather=false;
-set metastore.client.impl=org.apache.iceberg.hive.client.HiveRESTCatalogClient;
+set metastore.client.impl=org.apache.iceberg.hive.rest.catalog.client.HiveRESTCatalogClient;
 set metastore.catalog.default=ice01;
 set iceberg.catalog.ice01.type=rest;
 set iceberg.catalog.ice01.header.X-Iceberg-Access-Delegation=vended-credentials;
 
---! REST URI, OAuth, MinIO + Gravitino S3 warehouse / credential vending, and host S3A are set in
---! TestIcebergRESTCatalogGravitinoLlapLocalCliDriver.
+--! REST URI, OAuth, Gravitino warehouse / credential vending, and host FileSystem wiring are set in
+--! TestIcebergRESTCatalogGravitino*LlapLocalCliDriver (S3, ADLS, or GCS).
 
 create database ice_rest;
 use ice_rest;

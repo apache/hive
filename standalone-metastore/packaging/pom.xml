@@ -162,7 +162,8 @@
                   </environmentVariables>
                   <arguments>
                     <argument>src/docker/build.sh</argument>
-                    <argument>-hadoop ${hadoop.version}</argument>
+                    <argument>-hadoop</argument>
+                    <argument>${hadoop.version}</argument>
                   </arguments>
                 </configuration>
               </execution>

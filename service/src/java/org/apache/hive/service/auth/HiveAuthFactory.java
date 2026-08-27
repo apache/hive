@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hive.service.auth;
 
@@ -257,8 +258,7 @@ public class HiveAuthFactory {
     try {
       delegationTokenManager.cancelDelegationToken(delegationToken);
     } catch (IOException e) {
-      throw new HiveSQLException(
-          "Error canceling delegation token " + delegationToken, "08S01", e);
+      throw new HiveSQLException(delegationTokenErrorMessage("canceling"), "08S01", e);
     }
   }
 
@@ -270,8 +270,7 @@ public class HiveAuthFactory {
     try {
       delegationTokenManager.renewDelegationToken(delegationToken);
     } catch (IOException e) {
-      throw new HiveSQLException(
-          "Error renewing delegation token " + delegationToken, "08S01", e);
+      throw new HiveSQLException(delegationTokenErrorMessage("renewing"), "08S01", e);
     }
   }
 
@@ -283,7 +282,7 @@ public class HiveAuthFactory {
     try {
       return delegationTokenManager.verifyDelegationToken(delegationToken);
     } catch (IOException e) {
-      String msg =  "Error verifying delegation token " + delegationToken;
+      String msg = delegationTokenErrorMessage("verifying");
       LOG.error(msg, e);
       throw new HiveSQLException(msg, "08S01", e);
     }
@@ -297,9 +296,12 @@ public class HiveAuthFactory {
     try {
       return delegationTokenManager.getUserFromToken(delegationToken);
     } catch (IOException e) {
-      throw new HiveSQLException(
-          "Error extracting user from delegation token " + delegationToken, "08S01", e);
+      throw new HiveSQLException(delegationTokenErrorMessage("extracting user from"), "08S01", e);
     }
+  }
+
+  private static String delegationTokenErrorMessage(String operation) {
+    return "Error " + operation + " delegation token";
   }
 
   public static void verifyProxyAccess(String realUser, String proxyUser, String ipAddress,

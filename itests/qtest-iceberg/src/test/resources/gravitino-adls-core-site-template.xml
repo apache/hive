@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!--
+  Hadoop FS settings for Gravitino Iceberg REST (1.0.0) on Azurite WASB.
+  Gravitino shares Azurite's network namespace so DevelopmentStorageAccount (127.0.0.1:10000) works.
+-->
+<configuration>
+  <property>
+    <name>fs.wasb.impl</name>
+    <value>org.apache.hadoop.fs.azure.NativeAzureFileSystem</value>
+  </property>
+  <property>
+    <name>fs.wasbs.impl</name>
+    <value>org.apache.hadoop.fs.azure.NativeAzureFileSystem$Secure</value>
+  </property>
+  <property>
+    <name>fs.AbstractFileSystem.wasb.impl</name>
+    <value>org.apache.hadoop.fs.azure.Wasb</value>
+  </property>
+  <property>
+    <name>fs.azure</name>
+    <value>org.apache.hadoop.fs.azure.NativeAzureFileSystem</value>
+  </property>
+  <property>
+    <name>fs.azure.storage.emulator.account.name</name>
+    <value>ACCOUNT.blob.core.windows.net</value>
+  </property>
+  <property>
+    <name>fs.azure.account.key.ACCOUNT.blob.core.windows.net</name>
+    <value>ACCOUNT_KEY</value>
+  </property>
+</configuration>

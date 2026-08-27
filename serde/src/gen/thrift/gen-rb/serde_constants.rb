@@ -93,6 +93,8 @@ UNION_TYPE_NAME = %q"uniontype"
 
 VARIANT_TYPE_NAME = %q"variant"
 
+UNKNOWN_TYPE_NAME = %q"unknown"
+
 LIST_COLUMNS = %q"columns"
 
 LIST_COLUMN_TYPES = %q"columns.types"

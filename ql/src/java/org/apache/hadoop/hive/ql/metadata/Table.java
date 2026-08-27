@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.metadata;
@@ -1462,16 +1463,21 @@ public class Table implements Serializable {
     List<VirtualColumn> virtualColumns = new ArrayList<>();
     if (!isNonNative()) {
       virtualColumns.addAll(VirtualColumn.getRegistry());
+      return virtualColumns;
     }
-    if (isNonNative() && AcidUtils.isNonNativeAcidTable(this)) {
+    if (AcidUtils.isNonNativeAcidTable(this)) {
       virtualColumns.addAll(getStorageHandler().acidVirtualColumns());
     }
-    if (isNonNative() && getStorageHandler().areSnapshotsSupported() &&
-        isBlank(getMetaTable())) {
+    if (!isBlank(getMetaTable())) {
+      return virtualColumns;
+    }
+    if (hasNonNativePartitionSupport()) {
+      virtualColumns.add(VirtualColumn.PARTITION_NAME);
+    }
+    if (getStorageHandler().areSnapshotsSupported()) {
       virtualColumns.add(VirtualColumn.SNAPSHOT_ID);
     }
-    if (isNonNative() && getStorageHandler().supportsRowLineage(getTTable().getParameters()) &&
-        isBlank(getMetaTable())) {
+    if (getStorageHandler().supportsRowLineage(getTTable().getParameters())) {
       virtualColumns.add(VirtualColumn.ROW_LINEAGE_ID);
       virtualColumns.add(VirtualColumn.LAST_UPDATED_SEQUENCE_NUMBER);
     }

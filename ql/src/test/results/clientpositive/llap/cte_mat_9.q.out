@@ -76,6 +76,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@b1
 PREHOOK: Input: default@b2
 PREHOOK: Input: default@cte_mat_9_a
+PREHOOK: Input: default@cte_mat_9_b
 #### A masked pattern was here ####
 POSTHOOK: query: explain with a0 AS (
   select id, 'a0' as tag from cte_mat_9_a
@@ -108,6 +109,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@b1
 POSTHOOK: Input: default@b2
 POSTHOOK: Input: default@cte_mat_9_a
+POSTHOOK: Input: default@cte_mat_9_b
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

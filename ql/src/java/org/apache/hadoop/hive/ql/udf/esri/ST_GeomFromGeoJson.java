@@ -9,15 +9,15 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.ogc.OGCGeometry;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,8 +60,8 @@ public class ST_GeomFromGeoJson extends GenericUDF {
     }
 
     try {
-      OGCGeometry ogcGeom = OGCGeometry.fromGeoJson(json);
-      return GeometryUtils.geometryToEsriShapeBytesWritable(ogcGeom);
+      Geometry geom = GeometryUtils.geoJsonReader().read(json);
+      return GeometryUtils.geometryToEsriShapeBytesWritable(geom);
     } catch (Exception e) {
       LogUtils.Log_InvalidText(LOG, json);
     }
@@ -109,4 +110,8 @@ public class ST_GeomFromGeoJson extends GenericUDF {
     return GeometryUtils.geometryTransportObjectInspector;
   }
 
+  @Override
+  public void close() {
+    GeometryUtils.cleanup();
+  }
 }

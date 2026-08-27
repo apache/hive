@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.parse;
@@ -1406,7 +1407,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     qb.rewriteCTEToSubq(cteAlias, cteName, cteQBExpr);
   }
 
-  private final CTEClause rootClause = new CTEClause(null, null, null);
+  final CTEClause rootClause = new CTEClause(null, null, null);
 
   @Override
   public List<Task<?>> getAllRootTasks() {
@@ -1421,10 +1422,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   public Set<ReadEntity> getAllInputs() {
-    Set<ReadEntity> readEntities = new HashSet<ReadEntity>(getInputs());
+    Set<ReadEntity> readEntities = new LinkedHashSet<>(getInputs());
     for (CTEClause cte : rootClause.asExecutionOrder()) {
       if (cte.source != null) {
-        readEntities.addAll(cte.source.getInputs());
+        readEntities.addAll(cte.source.getAllInputs());
       }
     }
     return readEntities;
@@ -1435,7 +1436,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Set<WriteEntity> writeEntities = new HashSet<WriteEntity>(getOutputs());
     for (CTEClause cte : rootClause.asExecutionOrder()) {
       if (cte.source != null) {
-        writeEntities.addAll(cte.source.getOutputs());
+        writeEntities.addAll(cte.source.getAllOutputs());
       }
     }
     return writeEntities;
@@ -1595,9 +1596,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     LOG.info("{} will be materialized into {}", cteName, location);
     cte.source = analyzer;
-
+    
     ctx.addMaterializedTable(cteName, table, getMaterializedTableStats(analyzer.getSinkOp()));
-
     return table;
   }
 
@@ -2472,6 +2472,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (qb.getParseInfo().isAnalyzeCommand()) {
         // allow partial partition specification for nonscan since noscan is fast.
         TableSpec ts = new TableSpec(db, conf, (ASTNode) ast.getChild(0), true, this.noscan);
+        // basic statistics of non-native partitioned tables are maintained incrementally for all
+        // partitions as a whole, so a partition-scoped ANALYZE cannot be honored
+        validateUnsupportedPartitionClause(tab, ts.specType != SpecType.TABLE_ONLY);
+
         if (ts.specType == SpecType.DYNAMIC_PARTITION) { // dynamic partitions
           try {
             ts.partitions = db.getPartitionsByNames(ts.tableHandle, ts.partSpec);
@@ -4733,6 +4737,52 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return false;
   }
 
+  /**
+   * Helper method to parse the excluded columns from an EXCLUDE AST node. Returns an unmodifiable
+   * set to ensure the caller cannot accidentally mutate the result.
+   */
+  private Set<ColumnInfo> processExcludeColumns(
+      ASTNode excludeNode, String starTabAlias, RowResolver inputRR) throws SemanticException {
+    Set<ColumnInfo> localExcluded = new HashSet<>();
+    for (int e = 0; e < excludeNode.getChildCount(); e++) {
+      String excludeColName = unescapeIdentifier(excludeNode.getChild(e).getText()).toLowerCase();
+      ColumnInfo colInfo = inputRR.get(starTabAlias, excludeColName);
+      if (colInfo != null) {
+        localExcluded.add(colInfo);
+      }
+    }
+    return Collections.unmodifiableSet(localExcluded);
+  }
+
+  protected record ExcludeResult(String tableAlias, Set<ColumnInfo> excludedColumns) {}
+
+  /**
+   * Parses a TOK_ALLCOLREF node (e.g. `*` or `t.* EXCLUDE (a)`) to extract the table alias and the
+   * set of columns to be excluded.
+   */
+  protected ExcludeResult processAllColRefAndExclude(ASTNode expr, RowResolver inputRR)
+      throws SemanticException {
+
+    String starTabAlias = null;
+
+    // Zero-allocation initialization for queries that don't use EXCLUDE.
+    Set<ColumnInfo> excludedColumns = Set.of();
+
+    if (expr.getChildren() != null) {
+      for (Node childNode : expr.getChildren()) {
+        ASTNode child = (ASTNode) childNode;
+        switch (child.getType()) {
+          case HiveParser.TOK_TABNAME -> starTabAlias = getUnescapedName(child).toLowerCase();
+          case HiveParser.TOK_TABCOLNAME ->
+              excludedColumns = processExcludeColumns(child, starTabAlias, inputRR);
+          default ->
+              throw new SemanticException(
+                  "Unexpected node type in TOK_ALLCOLREF: " + child.getType());
+        }
+      }
+    }
+    return new ExcludeResult(starTabAlias, excludedColumns);
+  }
 
   private Operator<?> genSelectPlan(String dest, QB qb, Operator<?> input,
                                     Operator<?> inputForSelectStar) throws SemanticException {
@@ -4910,9 +4960,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // The real expression
       if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
         int initPos = pos;
-        pos = genExprNodeDescRegex(".*", expr.getChildCount() == 0 ? null
-                : getUnescapedName((ASTNode) expr.getChild(0)).toLowerCase(),
-            expr, colList, null, inputRR, starRR, pos, out_rwsch, qb.getAliases(), false);
+
+        ExcludeResult excludeResult = processAllColRefAndExclude(expr, inputRR);
+        String starTabAlias = excludeResult.tableAlias();
+        Set<ColumnInfo> excludeCols = excludeResult.excludedColumns();
+        if (excludeCols.isEmpty()) {
+          excludeCols = null;
+        }
+
+        pos = genExprNodeDescRegex(".*", starTabAlias,
+            expr, colList, excludeCols, inputRR, starRR, pos, out_rwsch, qb.getAliases(), false);
         if (unparseTranslator.isEnabled()) {
           offset += pos - initPos - 1;
         }
@@ -13383,7 +13440,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               || HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_SCANCOLS)) {
         ColumnAccessAnalyzer columnAccessAnalyzer = new ColumnAccessAnalyzer(pCtx);
         // view column access info is carried by this.getColumnAccessInfo().
-        setColumnAccessInfo(columnAccessAnalyzer.analyzeColumnAccess(this.getColumnAccessInfo()));
+        setColumnAccessInfo(columnAccessAnalyzer.analyzeColumnAccess(this));
       }
     }
     perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.LOGICAL_OPTIMIZATION);
@@ -13422,7 +13479,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // 11. put accessed columns to readEntity
     if (HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_SCANCOLS)) {
-      putAccessedColumnsToReadEntity(inputs, columnAccessInfo);
+      putAccessedColumnsToReadEntity(getAllInputs(), columnAccessInfo);
     }
 
     if (isCacheEnabled && lookupInfo != null) {
@@ -15284,7 +15341,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private QueryResultsCache.QueryInfo createCacheQueryInfoForQuery(QueryResultsCache.LookupInfo lookupInfo) {
     long queryTime = SessionState.get().getQueryCurrentTimestamp().toEpochMilli();
     return new QueryResultsCache.QueryInfo(queryTime, lookupInfo, queryState.getHiveOperation(),
-        resultSchema, getTableAccessInfo(), getColumnAccessInfo(), inputs);
+        resultSchema, getTableAccessInfo(), getColumnAccessInfo(), getAllInputs());
   }
 
   /**

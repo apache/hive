@@ -9,20 +9,21 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.udf.esri;
-
-import com.esri.core.geometry.ogc.OGCPoint;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.udf.esri.GeometryUtils.OGCType;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.BytesWritable;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Point;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,12 +56,15 @@ public class ST_DistanceSphere extends ST_GeometryAccessor {
       return null;
     }
 
-    OGCPoint point1 = (OGCPoint) GeometryUtils.geometryFromEsriShape(geometryref1);
-    OGCPoint point2 = (OGCPoint) GeometryUtils.geometryFromEsriShape(geometryref2);
-    if (point1 == null || point2 == null) {
+    Geometry geom1 = GeometryUtils.geometryFromEsriShape(geometryref1);
+    Geometry geom2 = GeometryUtils.geometryFromEsriShape(geometryref2);
+    if (geom1 == null || geom2 == null) {
       LogUtils.Log_ArgumentsNull(LOG);
       return null;
     }
+
+    Point point1 = (Point) geom1;
+    Point point2 = (Point) geom2;
 
     try {
       resultDouble.set(Haversine.distanceMeters(point1, point2));

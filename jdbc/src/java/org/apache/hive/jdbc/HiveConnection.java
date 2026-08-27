@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hive.jdbc;
@@ -163,6 +164,7 @@ import java.util.function.Supplier;
  */
 public class HiveConnection implements java.sql.Connection {
   private static final Logger LOG = LoggerFactory.getLogger(HiveConnection.class);
+
   private String jdbcUriString;
   private String host;
   private int port;
@@ -396,18 +398,7 @@ public class HiveConnection implements java.sql.Connection {
         executeInitSql();
       }
     } else {
-      long retryInterval = 1000L;
-      try {
-        String strRetries = sessConfMap.get(JdbcConnectionParams.RETRIES);
-        if (StringUtils.isNotBlank(strRetries)) {
-          maxRetries = Integer.parseInt(strRetries);
-        }
-        String strRetryInterval = sessConfMap.get(JdbcConnectionParams.RETRY_INTERVAL);
-        if(StringUtils.isNotBlank(strRetryInterval)){
-          retryInterval = Long.parseLong(strRetryInterval);
-        }
-      } catch(NumberFormatException e) { // Ignore the exception
-      }
+      long retryInterval = getRetryIntervalMillis();
 
       for (int numRetries = 0;;) {
         try {
@@ -467,6 +458,27 @@ public class HiveConnection implements java.sql.Connection {
 
     // Wrap the client with a thread-safe proxy to serialize the RPC calls
     client = newSynchronizedClient(client);
+  }
+
+  /**
+   * Gets {@code retries} and {@code retryInterval} from the session configuration, updating
+   * {@link #maxRetries} as a side-effect, and returns the interval in milliseconds (default 1000).
+   * Extracted from the constructor to keep its length within Sonar's 150-line limit.
+   */
+  private long getRetryIntervalMillis() {
+    long retryInterval = 1000L;
+    try {
+      String strRetries = sessConfMap.get(JdbcConnectionParams.RETRIES);
+      if (StringUtils.isNotBlank(strRetries)) {
+        maxRetries = Integer.parseInt(strRetries);
+      }
+      String strRetryInterval = sessConfMap.get(JdbcConnectionParams.RETRY_INTERVAL);
+      if (StringUtils.isNotBlank(strRetryInterval)) {
+        retryInterval = Long.parseLong(strRetryInterval);
+      }
+    } catch (NumberFormatException e) { // Ignore — bad values are silently skipped
+    }
+    return retryInterval;
   }
 
   private void executeInitSql() throws SQLException {

@@ -9,20 +9,20 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.ogc.OGCGeometry;
-import com.esri.core.geometry.ogc.OGCLineString;
-import com.esri.core.geometry.ogc.OGCPolygon;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Polygon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,8 +52,8 @@ public class ST_InteriorRingN extends ST_GeometryProcessing {
       return null;
     }
 
-    OGCGeometry ogcGeometry = GeometryUtils.geometryFromEsriShape(geomref);
-    if (ogcGeometry == null) {
+    Geometry geom = GeometryUtils.geometryFromEsriShape(geomref);
+    if (geom == null) {
       LogUtils.Log_ArgumentsNull(LOG);
       return null;
     }
@@ -61,8 +61,7 @@ public class ST_InteriorRingN extends ST_GeometryProcessing {
     int idx = index.get() - 1;  // 1-based UI, 0-based engine
     if (GeometryUtils.getType(geomref) == GeometryUtils.OGCType.ST_POLYGON) {
       try {
-        OGCLineString hole = ((OGCPolygon) (ogcGeometry)).interiorRingN(idx);
-        return GeometryUtils.geometryToEsriShapeBytesWritable(hole);
+        return GeometryUtils.geometryToEsriShapeBytesWritable(((Polygon) geom).getInteriorRingN(idx));
       } catch (Exception e) {
         LogUtils.Log_InternalError(LOG, "ST_InteriorRingN: " + e);
         return null;

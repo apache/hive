@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.cli.control;
 
@@ -155,46 +156,6 @@ public class CliConfigs {
     }
   }
 
-  public static class MiniDruidCliConfig extends AbstractCliConfig {
-    public MiniDruidCliConfig() {
-      super(CoreCliDriver.class);
-      try {
-        setQueryDir("ql/src/test/queries/clientpositive");
-
-        includesFrom(testConfigProps, "druid.query.files");
-
-        setResultsDir("ql/src/test/results/clientpositive/druid");
-        setLogDir("itests/qtest/target/tmp/log");
-
-        setInitScript("q_test_druid_init.sql");
-        setCleanupScript("q_test_cleanup_druid.sql");
-        setHiveConfDir("data/conf/llap");
-        setClusterType(MiniClusterType.DRUID);
-      } catch (Exception e) {
-        throw new RuntimeException("can't construct cliconfig", e);
-      }
-    }
-  }
-
-  public static class MiniDruidKafkaCliConfig extends AbstractCliConfig {
-    public MiniDruidKafkaCliConfig() {
-      super(CoreCliDriver.class);
-      try {
-        setQueryDir("ql/src/test/queries/clientpositive");
-        includesFrom(testConfigProps, "druid.kafka.query.files");
-        setResultsDir("ql/src/test/results/clientpositive/druid");
-        setLogDir("itests/qtest/target/tmp/log");
-
-        setInitScript("q_test_druid_init.sql");
-        setCleanupScript("q_test_cleanup_druid.sql");
-        setHiveConfDir("data/conf/llap");
-        setClusterType(MiniClusterType.DRUID_KAFKA);
-      } catch (Exception e) {
-        throw new RuntimeException("can't construct cliconfig", e);
-      }
-    }
-  }
-
   public static class MiniKafkaCliConfig extends AbstractCliConfig {
     public MiniKafkaCliConfig() {
       super(CoreCliDriver.class);
@@ -223,8 +184,6 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "minillap.query.files");
         excludesFrom(testConfigProps, "minitez.query.files");
         excludesFrom(testConfigProps, "encrypted.query.files");
-        excludesFrom(testConfigProps, "druid.query.files");
-        excludesFrom(testConfigProps, "druid.kafka.query.files");
         excludesFrom(testConfigProps, "hive.kafka.query.files");
         excludesFrom(testConfigProps, "erasurecoding.only.query.files");
         excludesFrom(testConfigProps, "beeline.positive.include");
@@ -617,27 +576,6 @@ public class CliConfigs {
     }
   }
 
-  public static class MiniDruidLlapLocalCliConfig extends AbstractCliConfig {
-    public MiniDruidLlapLocalCliConfig() {
-      super(CoreCliDriver.class);
-      try {
-        setQueryDir("ql/src/test/queries/clientpositive");
-
-        includesFrom(testConfigProps, "druid.llap.local.query.files");
-
-        setResultsDir("ql/src/test/results/clientpositive/druid");
-        setLogDir("itests/qtest/target/tmp/log");
-
-        setInitScript("q_test_druid_init.sql");
-        setCleanupScript("q_test_cleanup_druid.sql");
-        setHiveConfDir("data/conf/llap");
-        setClusterType(MiniClusterType.DRUID_LOCAL);
-      } catch (Exception e) {
-        throw new RuntimeException("can't construct cliconfig", e);
-      }
-    }
-  }
-
   /**
    * The CliConfig implementation for Kudu.
    */
@@ -690,7 +628,7 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "iceberg.llap.only.query.files");
         excludesFrom(testConfigProps, "iceberg.llap.query.compactor.files");
         excludesFrom(testConfigProps, "iceberg.llap.query.rest.hms.files");
-        excludesFrom(testConfigProps, "iceberg.llap.query.rest.gravitino.files");
+        excludesFrom(testConfigProps, "iceberg.llap.query.rest.gravitino.s3.files");
 
         setResultsDir("iceberg/iceberg-handler/src/test/results/positive");
         setLogDir("itests/qtest/target/qfile-results/iceberg-handler/positive");
@@ -766,13 +704,57 @@ public class CliConfigs {
     }
   }
 
-  public static class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver extends AbstractCliConfig {
+  public static class TestIcebergRESTCatalogGravitinoS3LlapLocalCliDriver extends AbstractCliConfig {
 
-    public TestIcebergRESTCatalogGravitinoLlapLocalCliDriver() {
+    public TestIcebergRESTCatalogGravitinoS3LlapLocalCliDriver() {
       super(CoreCliDriver.class);
       try {
         setQueryDir("iceberg/iceberg-handler/src/test/queries/positive");
-        includesFrom(testConfigProps, "iceberg.llap.query.rest.gravitino.files");
+        includesFrom(testConfigProps, "iceberg.llap.query.rest.gravitino.s3.files");
+
+        setResultsDir("iceberg/iceberg-handler/src/test/results/positive/llap");
+        setLogDir("itests/qtest/target/qfile-results/iceberg-handler/positive");
+
+        setInitScript("q_test_init_tez.sql");
+        setCleanupScript("q_test_cleanup_tez.sql");
+
+        setHiveConfDir("data/conf/iceberg/llap");
+        setClusterType(MiniClusterType.LLAP_LOCAL);
+      } catch (Exception e) {
+        throw new RuntimeException("can't contruct cliconfig", e);
+      }
+    }
+  }
+
+  public static class TestIcebergRESTCatalogGravitinoAdlsLlapLocalCliDriver extends AbstractCliConfig {
+
+    public TestIcebergRESTCatalogGravitinoAdlsLlapLocalCliDriver() {
+      super(CoreCliDriver.class);
+      try {
+        setQueryDir("iceberg/iceberg-handler/src/test/queries/positive");
+        includesFrom(testConfigProps, "iceberg.llap.query.rest.gravitino.adls.files");
+
+        setResultsDir("iceberg/iceberg-handler/src/test/results/positive/llap");
+        setLogDir("itests/qtest/target/qfile-results/iceberg-handler/positive");
+
+        setInitScript("q_test_init_tez.sql");
+        setCleanupScript("q_test_cleanup_tez.sql");
+
+        setHiveConfDir("data/conf/iceberg/llap");
+        setClusterType(MiniClusterType.LLAP_LOCAL);
+      } catch (Exception e) {
+        throw new RuntimeException("can't contruct cliconfig", e);
+      }
+    }
+  }
+
+  public static class TestIcebergRESTCatalogGravitinoGcsLlapLocalCliDriver extends AbstractCliConfig {
+
+    public TestIcebergRESTCatalogGravitinoGcsLlapLocalCliDriver() {
+      super(CoreCliDriver.class);
+      try {
+        setQueryDir("iceberg/iceberg-handler/src/test/queries/positive");
+        includesFrom(testConfigProps, "iceberg.llap.query.rest.gravitino.gcs.files");
 
         setResultsDir("iceberg/iceberg-handler/src/test/results/positive/llap");
         setLogDir("itests/qtest/target/qfile-results/iceberg-handler/positive");

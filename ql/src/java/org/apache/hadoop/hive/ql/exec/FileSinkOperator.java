@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.exec;
@@ -1620,7 +1621,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           Utilities.FILE_OP_LOGGER.trace("jobCloseOp using specPath " + specPath);
         }
         if (!conf.isMmTable() && !conf.isDirectInsert()) {
-          Utilities.mvFileToFinalPath(specPath, unionSuffix, hconf, success, LOG, dpCtx, conf, reporter);
+          Utilities.mvFileToFinalPath(specPath, unionSuffix, hconf, success, dpCtx, conf, reporter);
         } else {
           int dpLevels = dpCtx == null ? 0 : dpCtx.getNumDPCols(),
               lbLevels = lbCtx == null ? 0 : lbCtx.calculateListBucketingLevel();

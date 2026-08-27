@@ -9,20 +9,19 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.udf.esri.serde;
 
-import com.esri.core.geometry.Geometry;
-import com.esri.core.geometry.MapGeometry;
-import com.esri.core.geometry.Point;
-import com.esri.core.geometry.SpatialReference;
-import com.esri.core.geometry.ogc.OGCGeometry;
 import org.apache.hadoop.hive.ql.udf.esri.GeometryUtils;
+
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Point;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
@@ -42,6 +41,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 public abstract class JsonSerDeTestingBase {
+
+  private final static double EPSILON = 1e-9;
 
   protected void addWritable(ArrayList<Object> stuff, boolean item) {
     stuff.add(new BooleanWritable(item));
@@ -100,19 +101,16 @@ public abstract class JsonSerDeTestingBase {
   }
 
   protected void addWritable(ArrayList<Object> stuff, Geometry geom) {
-    addWritable(stuff, geom, null);
-  }
-
-  protected void addWritable(ArrayList<Object> stuff, MapGeometry geom) {
-    addWritable(stuff, geom.getGeometry(), geom.getSpatialReference());
-  }
-
-  protected void addWritable(ArrayList<Object> stuff, Geometry geom, SpatialReference sref) {
-    stuff.add(GeometryUtils.geometryToEsriShapeBytesWritable(OGCGeometry.createFromEsriGeometry(geom, sref)));
+    stuff.add(GeometryUtils.geometryToEsriShapeBytesWritable(geom));
   }
 
   protected void ckPoint(Point refPt, BytesWritable fieldData) {
-    Assert.assertEquals(refPt, GeometryUtils.geometryFromEsriShape(fieldData).getEsriGeometry());
+    Geometry geom = GeometryUtils.geometryFromEsriShape(fieldData);
+    Assert.assertNotNull("Geometry must not be null!", geom);
+    Assert.assertTrue("Expected a Point geometry!", geom instanceof Point);
+    Point actualPt = (Point) geom;
+    Assert.assertEquals("X coordinate differs!", refPt.getX(), actualPt.getX(), EPSILON);
+    Assert.assertEquals("Y coordinate differs!", refPt.getY(), actualPt.getY(), EPSILON);
   }
 
   protected long epochFromWritable(Object dwHive) throws Exception {

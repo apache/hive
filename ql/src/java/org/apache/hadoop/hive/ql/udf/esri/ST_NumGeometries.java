@@ -9,21 +9,19 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.ogc.OGCGeometry;
-import com.esri.core.geometry.ogc.OGCMultiLineString;
-import com.esri.core.geometry.ogc.OGCMultiPoint;
-import com.esri.core.geometry.ogc.OGCMultiPolygon;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
+import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,8 +41,8 @@ public class ST_NumGeometries extends ST_GeometryAccessor {
       return null;
     }
 
-    OGCGeometry ogcGeometry = GeometryUtils.geometryFromEsriShape(geomref);
-    if (ogcGeometry == null) {
+    Geometry geom = GeometryUtils.geometryFromEsriShape(geomref);
+    if (geom == null) {
       LogUtils.Log_ArgumentsNull(LOG);
       return null;
     }
@@ -61,18 +59,10 @@ public class ST_NumGeometries extends ST_GeometryAccessor {
       case ST_POLYGON:
         LogUtils.Log_InvalidType(LOG, GeometryUtils.OGCType.ST_MULTIPOLYGON, ogcType);
         return null;
-      case ST_MULTIPOINT:
-        resultInt.set(((OGCMultiPoint) ogcGeometry).numGeometries());
-        break;
-      case ST_MULTILINESTRING:
-        resultInt.set(((OGCMultiLineString) ogcGeometry).numGeometries());
-        break;
-      case ST_MULTIPOLYGON:
-        resultInt.set(((OGCMultiPolygon) ogcGeometry).numGeometries());
+      default:
+        resultInt.set(geom.getNumGeometries());
         break;
       }
-    } catch (ClassCastException cce) {  // single vs Multi geometry type
-      resultInt.set(1);
     } catch (Exception e) {
       LogUtils.Log_InternalError(LOG, "ST_NumGeometries: " + e);
       return null;

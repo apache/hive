@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.metadata;
@@ -70,7 +71,6 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
-import org.apache.hadoop.hive.ql.stats.Partish;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
@@ -248,19 +248,19 @@ public interface HiveStorageHandler extends Configurable {
   /**
    * Returns basic statistics (numRows, numFiles, totalSize) calculated by the underlying storage handler
    * implementation.
-   * @param partish table/partition wrapper object
+   * @param hmsTable table object
    * @return map of basic statistics
    */
-  default Map<String, String> getBasicStatistics(Partish partish) {
+  default Map<String, String> getBasicStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     return null;
   }
 
   /**
-   * Compute basic statistics (numRows, numFiles, totalSize) for the given table/partition.
-   * @param partish table/partition wrapper object
+   * Compute basic statistics (numRows, numFiles, totalSize) for the given table.
+   * @param hmsTable table object
    * @return map of basic statistics
    */
-  default Map<String, String> computeBasicStatistics(Partish partish) {
+  default Map<String, String> computeBasicStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     return null;
   }
 
@@ -309,10 +309,22 @@ public interface HiveStorageHandler extends Configurable {
    * @param colNames list of column names
    * @param partNames list of partition names
    * @return AggrStats object
-  */ 
-  default AggrStats getAggrColStatsFor(org.apache.hadoop.hive.ql.metadata.Table table, List<String> colNames, 
+  */
+  default AggrStats getAggrColStatsFor(org.apache.hadoop.hive.ql.metadata.Table table, List<String> colNames,
         List<String> partNames) throws MetaException {
     return null;
+  }
+
+  /**
+   * Fetches basic statistics (numRows, numFiles, totalSize) for the supplied partitions in a single batch.
+   * @param hmsTable table object
+   * @param partNames list of partition names
+   * @return map of partition name to basic statistics, omitting partitions that have none;
+   *         empty if the handler does not provide them
+   */
+  default Map<String, Map<String, String>> getAggrBasicStatsFor(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+      List<String> partNames) {
+    return Map.of();
   }
 
   /**
@@ -344,26 +356,27 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   /**
-   * Check if the storage handler can answer a few queries like count(1) purely using statistics.
-   * @param partish table/partition wrapper object
-   * @return true if the storage handler can answer query using statistics
+   * Returns the row count of the table, letting queries like count(1) be answered from statistics.
+   * @param hmsTable table object
+   * @return the row count, or null if it cannot be determined exactly
    */
-  default boolean canComputeQueryUsingStats(Partish partish) {
-    return false;
+  default Long getRowCount(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    return null;
   }
 
   /**
-   * Check if the storage handler can answer a few queries like count(1) purely using statistics.
-   * @param table table wrapper object
-   *
-   * @deprecated since 4.0.1, will be removed in 5.0.0,
-   * use {@link #canComputeQueryUsingStats(Partish)} instead.
+   * Returns the row count of the given partitions, omitting the ones whose count cannot be determined
+   * exactly, e.g. because they are covered by delete files.
+   * @param hmsTable table object
+   * @param partNames list of partition names
+   * @return map of partition name to row count, empty if the handler cannot determine partition
+   *         row counts at all, e.g. when some rows do not belong to any partition
    */
-  @Deprecated
-  default boolean canComputeQueryUsingStats(org.apache.hadoop.hive.ql.metadata.Table table) {
-    return canComputeQueryUsingStats(Partish.buildFor(table));
+  default Map<String, Long> getRowCount(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+      List<String> partNames) {
+    return Map.of();
   }
-  
+
   /**
    *
    * Gets the storage format descriptor to be used for temp table for LOAD data.
@@ -887,6 +900,15 @@ public interface HiveStorageHandler extends Configurable {
   default boolean canUseTruncate(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Map<String, String> partitionSpec)
       throws SemanticException {
     return true;
+  }
+
+  /**
+   * Validates that partition compaction can resolve a unique partition spec for the given partition name.
+   * @param hmsTable table metadata stored in Hive Metastore
+   * @param partitionName fully qualified partition name
+   */
+  default void validateCompactionPartition(org.apache.hadoop.hive.ql.metadata.Table hmsTable, String partitionName)
+      throws HiveException {
   }
 
   /**

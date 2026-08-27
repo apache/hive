@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.optimizer;
 
@@ -51,9 +52,11 @@ import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
+import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -88,7 +91,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
-import java.util.stream.Collectors;
 
 
 /** There is a set of queries which can be answered entirely from statistics stored in metastore.
@@ -933,29 +935,60 @@ public class StatsOptimizer extends Transform {
     }
 
     private Long getRowCnt(TableScanOperator tsOp, Table tbl) throws HiveException {
-      long rowCnt = 0L;
+      if (tbl.isNonNative()) {
+        return getRowCntFromStorageHandler(tsOp, tbl);
+      }
       final List<Partish> partishList;
-      if (tbl.isPartitioned() && StatsUtils.checkCanProvidePartitionStats(tbl)) {
+      if (tbl.isPartitioned()) {
         partishList = pctx.getPrunedPartitions(tsOp.getConf().getAlias(), tsOp).getPartitions().stream()
           .map(Partish::buildFor)
-          .collect(Collectors.toList());
+          .toList();
       } else {
         partishList = Lists.newArrayList(Partish.buildFor(tbl));
       }
+      long rowCnt = 0L;
       for (Partish partish : partishList) {
         Map<String, String> basicStats = partish.getPartParameters();
-        if (tbl.isNonNative()) {
-          if (!tbl.getStorageHandler().canComputeQueryUsingStats(partish)) {
-            return null;
-          }
-          basicStats = tbl.getStorageHandler().getBasicStatistics(partish);
-        } else if (!StatsUtils.areBasicStatsUptoDateForQueryAnswering(partish.getTable(), partish.getPartParameters())) {
+        if (!StatsUtils.areBasicStatsUptoDateForQueryAnswering(partish.getTable(), basicStats)) {
           return null;
         }
-        long partRowCnt = Long.parseLong(basicStats.get(StatsSetupConst.ROW_COUNT));
-        rowCnt += partRowCnt;
+        rowCnt += Long.parseLong(basicStats.get(StatsSetupConst.ROW_COUNT));
       }
       return rowCnt;
+    }
+
+    private Long getRowCntFromStorageHandler(TableScanOperator tsOp, Table tbl) throws HiveException {
+      if (tbl.getMetaTable() != null) {
+        // metadata table scans cannot be answered from the data table's statistics
+        return null;
+      }
+      HiveStorageHandler storageHandler = tbl.getStorageHandler();
+      if (tbl.isPartitioned()) {
+        PrunedPartitionList prunedList = pctx.getPrunedPartitions(tsOp.getConf().getAlias(), tsOp);
+        if (!prunedList.getReferredPartCols().isEmpty()) {
+          // a partition predicate may have pruned the list to a subset, so only the
+          // per-partition statistics can answer exactly
+          if (!StatsUtils.checkCanProvidePartitionStats(tbl)) {
+            return null;
+          }
+          List<String> partNames = prunedList.getPartitions().stream()
+              .map(Partition::getName)
+              .toList();
+          if (partNames.isEmpty()) {
+            // the predicate matched nothing the scan would read
+            return 0L;
+          }
+          Map<String, Long> rowCounts = storageHandler.getRowCount(tbl, partNames);
+          if (rowCounts.size() != partNames.size()) {
+            // the rewrite substitutes a constant, so it needs an exact count for every partition
+            return null;
+          }
+          return rowCounts.values().stream().mapToLong(Long::longValue).sum();
+        }
+      }
+      // unpruned or unpartitioned: the table-level statistics are exactly the aggregate of every
+      // partition - answered without reading the partition stats file
+      return storageHandler.getRowCount(tbl);
     }
   }
 }

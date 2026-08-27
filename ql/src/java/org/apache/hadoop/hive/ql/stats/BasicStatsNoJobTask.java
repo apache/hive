@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.stats;
@@ -174,17 +175,22 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
     public void run() {
       try {
         Table table = partish.getTable();
-        Map<String, String> parameters;
-        Map<String, String> basicStatistics = table.getStorageHandler().getBasicStatistics(partish);
         if (partish.getPartition() != null) {
-          parameters = partish.getPartParameters();
-          result = new Partition(table, partish.getPartition().getTPartition());
-        } else {
-          parameters = table.getParameters();
-          result = new Table(table.getTTable());
+          // the storage handler maintains the statistics of all partitions as a whole; a partition-scoped
+          // ANALYZE is rejected at compile time (ErrorMsg.ANALYZE_PARTITION_NON_NATIVE)
+          throw new IllegalStateException("Partition-scoped statistics collection is not supported for "
+              + table.getFullyQualifiedName());
         }
-        parameters.putAll(basicStatistics);
-        StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.TRUE);
+        Map<String, String> parameters = table.getParameters();
+        // computes and publishes the statistics the storage handler maintains (e.g. the Iceberg
+        // partition stats file) before reading them back: ANALYZE catches up on writes that
+        // skipped the auto-gathering (a no-op when the statistics are already current)
+        Map<String, String> basicStatistics = table.getStorageHandler().computeBasicStatistics(table);
+        result = new Table(table.getTTable());
+        if (basicStatistics != null) {
+          parameters.putAll(basicStatistics);
+          StatsSetupConst.setBasicStatsState(parameters, StatsSetupConst.TRUE);
+        }
 
         String who = (partish.getPartition() == null) ? ("table " + partish.getTable().getFullyQualifiedName())
                 : ("partition " + partish.getPartition().getName());

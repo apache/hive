@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
@@ -23,7 +24,7 @@ import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
 import static java.lang.Math.toRadians;
 
-import com.esri.core.geometry.ogc.OGCPoint;
+import org.locationtech.jts.geom.Point;
 
 // Class is based on Apache Sedona code:
 // https://github.com/apache/sedona/blob/eee44b509624d9e4022a6dd40d9b07d72a369a20/common/src/main/java/org/apache/sedona/common/sphere/Haversine.java#L43
@@ -56,11 +57,11 @@ public final class Haversine {
     return distance(lon1, lat1, lon2, lat2, AVG_EARTH_RADIUS_METERS);
   }
 
-  public static double distanceMeters(OGCPoint point1, OGCPoint point2) {
-    double lon1 = point1.X();
-    double lat1 = point1.Y();
-    double lon2 = point2.X();
-    double lat2 = point2.Y();
+  public static double distanceMeters(Point point1, Point point2) {
+    double lon1 = point1.getX();
+    double lat1 = point1.getY();
+    double lon2 = point2.getX();
+    double lat2 = point2.getY();
     return distanceMeters(lon1, lat1, lon2, lat2);
   }
 }

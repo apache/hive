@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.exec;
@@ -118,6 +119,48 @@ public class ParsedOutputFileNameTest {
     Assert.assertTrue(p.isCopyFile());
     Assert.assertEquals(".snappy.orc", p.getSuffix());
     Assert.assertEquals("tmp_(prefix)00001_02_copy_4", p.makeFilenameWithCopyIndex(4));
+  }
+
+  /**
+   * On filesystems without atomic rename-if-absent semantics (S3 etc.), the copy suffix
+   * carries a 16-hex per-query uniqueness tag instead of the numeric counter, so concurrent
+   * writers rename to distinct destination keys.
+   */
+  @Test
+  public void testUniquenessTagAsCopySuffix() throws Exception {
+    ParsedOutputFileName p = ParsedOutputFileName.parse("000001_0_copy_abcd1234deadbeef");
+    Assert.assertTrue(p.matches());
+    Assert.assertEquals("000001", p.getTaskId());
+    Assert.assertEquals("0", p.getAttemptId());
+    Assert.assertEquals("abcd1234deadbeef", p.getCopyIndex());
+    Assert.assertTrue(p.isCopyFile());
+    Assert.assertNull(p.getSuffix());
+    // Numeric-index renaming (used by legacy code paths) still works and replaces the tag.
+    Assert.assertEquals("000001_0_copy_3", p.makeFilenameWithCopyIndex(3));
+  }
+
+  @Test
+  public void testUniquenessTagAsCopySuffixWithExtension() throws Exception {
+    ParsedOutputFileName p = ParsedOutputFileName.parse("000001_0_copy_abcd1234deadbeef.snappy.orc");
+    Assert.assertTrue(p.matches());
+    Assert.assertEquals("000001", p.getTaskId());
+    Assert.assertEquals("0", p.getAttemptId());
+    Assert.assertEquals("abcd1234deadbeef", p.getCopyIndex());
+    Assert.assertTrue(p.isCopyFile());
+    Assert.assertEquals(".snappy.orc", p.getSuffix());
+    Assert.assertEquals("000001_0_copy_3", p.makeFilenameWithCopyIndex(3));
+  }
+
+  /**
+   * The copy-index group must reject shapes that are neither a 1..6 digit counter nor an
+   * exactly-16-hex tag (e.g. non-hex characters, or a numeric tag longer than 6 digits).
+   */
+  @Test
+  public void testUniquenessTagShapeIsStrict() {
+    // 15 chars — matches neither branch.
+    Assert.assertNull(ParsedOutputFileName.parse("000001_0_copy_abcd1234deadbee").getCopyIndex());
+    // Non-hex character in a 16-char position.
+    Assert.assertNull(ParsedOutputFileName.parse("000001_0_copy_abcd1234deadbeez").getCopyIndex());
   }
 
   @Test

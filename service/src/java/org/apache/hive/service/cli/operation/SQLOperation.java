@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hive.service.cli.operation;
@@ -177,8 +178,19 @@ public class SQLOperation extends ExecuteStatementOperation {
         timeoutExecutor = Executors.newSingleThreadScheduledExecutor();
         timeoutExecutor.schedule(() -> {
           try {
+            // The query may have already finished, failed, or been cancelled before this task
+            // fires (the executor is only shut down when the operation is closed). Skip in that
+            // case so we don't overwrite a real result/exception with a spurious timeout message.
+            if (getState().isTerminal()) {
+              return null;
+            }
             final String queryId = queryState.getQueryId();
             log.info("Query timed out after: {} seconds. Cancelling the execution now: {}", queryTimeout, queryId);
+            setOperationException(new HiveSQLException(
+                "Query timed out after " + queryTimeout + " seconds",
+                "HYT00",
+                0,
+                queryId));
             SQLOperation.this.cancel(OperationState.TIMEDOUT);
           } catch (HiveSQLException e) {
             log.error("Error cancelling the query after timeout: {} seconds", queryTimeout, e);

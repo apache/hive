@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -94,6 +94,9 @@ public class HMSCatalogFactory {
       // multiple HMS instances, we need a unique cache key.
       properties.put(CatalogProperties.CLIENT_POOL_CACHE_KEYS, String.format("conf:%s", SERVLET_ID_KEY));
     }
+    if (MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.ICEBERG_CATALOG_UNIQUE_TABLE_LOCATION)) {
+      properties.put(CatalogProperties.UNIQUE_TABLE_LOCATION, "true");
+    }
     final HiveCatalog hiveCatalog = new org.apache.iceberg.hive.HiveCatalog();
     hiveCatalog.setConf(configuration);
     final String catalogName = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.CATALOG_DEFAULT);
@@ -113,8 +116,10 @@ public class HMSCatalogFactory {
     List<String> scopes = Collections.singletonList("catalog");
     ServletSecurity security = new ServletSecurity(AuthType.fromString(authType), configuration, req -> scopes);
     String catalogName = MetastoreConf.getVar(configuration, ConfVars.CATALOG_DEFAULT);
+    IcebergAuthorizer icebergAuthorizer = new IcebergAuthorizer(configuration);
     List<IcebergMetricsReporter> reporters = createReporters();
-    return security.proxy(new HMSCatalogServlet(new HMSCatalogAdapter(catalogName, catalog, reporters)));
+    var adapter = new HMSCatalogAdapter(catalogName, catalog, icebergAuthorizer, reporters);
+    return security.proxy(new HMSCatalogServlet(adapter));
   }
 
   private List<IcebergMetricsReporter> createReporters() {

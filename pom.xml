@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
 
       http://www.apache.org/licenses/LICENSE-2.0
 
@@ -35,7 +39,6 @@
     <module>cli</module>
     <module>common</module>
     <module>contrib</module>
-    <module>druid-handler</module>
     <module>hbase-handler</module>
     <module>jdbc-handler</module>
     <module>hcatalog</module>
@@ -112,8 +115,10 @@
     <antlr4.version>4.9.3</antlr4.version>
     <apache-directory-server.version>2.0.0-M24</apache-directory-server.version>
     <avro.version>1.12.0</avro.version>
-    <bcprov-jdk18on.version>1.82</bcprov-jdk18on.version>
-    <calcite.version>1.33.0</calcite.version>
+    <awaitility.version>4.2.1</awaitility.version>
+    <azure-storage-file-datalake.version>12.22.0</azure-storage-file-datalake.version>
+    <bcprov-jdk18on.version>1.84</bcprov-jdk18on.version>
+    <calcite.version>1.42.0</calcite.version>
     <datanucleus-api-jdo.version>6.0.5</datanucleus-api-jdo.version>
     <datanucleus-core.version>6.0.11</datanucleus-core.version>
     <datanucleus-jdo.version>3.2.0-release</datanucleus-jdo.version>
@@ -134,9 +139,9 @@
     <derby.version>10.17.1.0</derby.version>
     <dropwizard.version>3.1.0</dropwizard.version>
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2</dropwizard-metrics-hadoop-metrics2-reporter.version>
-    <druid.version>0.17.1</druid.version>
     <esri.version>2.2.4</esri.version>
     <flatbuffers.version>1.12.0</flatbuffers.version>
+    <jts.version>1.20.0</jts.version>
     <guava.version>22.0</guava.version>
     <groovy.version>2.4.21</groovy.version>
     <h2database.version>2.2.220</h2database.version>
@@ -145,18 +150,20 @@
     <hamcrest.version>1.3</hamcrest.version>
     <hbase.version>2.5.6-hadoop3</hbase.version>
     <hppc.version>0.7.2</hppc.version>
-    <graalvm.version>23.0.8</graalvm.version>
+    <graalvm.version>25.1.3</graalvm.version>
     <!-- required for logging test to avoid including hbase which pulls disruptor transitively -->
     <disruptor.version>3.3.7</disruptor.version>
     <hikaricp.version>4.0.3</hikaricp.version>
     <!-- httpcomponents are not always in version sync -->
     <httpcomponents.client.version>4.5.13</httpcomponents.client.version>
     <httpcomponents.core.version>4.4.13</httpcomponents.core.version>
+    <!-- Upgrade roaringbit version whenever upgrading iceberg version -->
+    <iceberg.version>1.11.0</iceberg.version>
     <immutables.version>2.9.2</immutables.version>
     <httpcomponents5.core.version>5.3.4</httpcomponents5.core.version>
     <httpcomponents5.client.version>5.5</httpcomponents5.client.version>
     <ivy.version>2.5.2</ivy.version>
-    <jackson.version>2.18.6</jackson.version>
+    <jackson.version>2.21.5</jackson.version>
     <jamon.plugin.version>2.3.4</jamon.plugin.version>
     <jamon-runtime.version>2.4.1</jamon-runtime.version>
     <javax-servlet.version>3.1.0</javax-servlet.version>
@@ -164,8 +171,7 @@
     <jettison.version>1.5.4</jettison.version>
     <jetty.version>9.4.57.v20241219</jetty.version>
     <jersey.version>1.19.4</jersey.version>
-    <!-- HIVE-28992: only upgrade to newer than 3.25.0 if you tested the prompt -->
-    <jline.version>3.25.0</jline.version>
+    <jline.version>3.30.16</jline.version>
     <jms.version>2.0.2</jms.version>
     <joda.version>2.13.0</joda.version>
     <jodd.version>6.0.0</jodd.version>
@@ -180,7 +186,7 @@
     <!-- Leaving libfb303 at 0.9.3 regardless of libthrift: As per THRIFT-4613 The Apache Thrift project does not publish items related to fb303 at this point -->
     <libfb303.version>0.9.3</libfb303.version>
     <libthrift.version>0.16.0</libthrift.version>
-    <log4j2.version>2.25.3</log4j2.version>
+    <log4j2.version>2.25.4</log4j2.version>
     <mariadb.version>2.5.0</mariadb.version>
     <mssql.version>6.2.1.jre8</mssql.version>
     <mysql.version>8.2.0</mysql.version>
@@ -193,8 +199,6 @@
     <mockito-inline.version>5.2.0</mockito-inline.version>
     <mina.version>2.0.0-M5</mina.version>
     <netty.version>4.1.127.Final</netty.version>
-    <netty3.version>3.10.5.Final</netty3.version>
-    <!-- used by druid storage handler -->
     <pac4j-saml.version>4.5.8</pac4j-saml.version>
     <paranamer.version>2.8</paranamer.version>
     <parquet.version>1.16.0</parquet.version>
@@ -294,6 +298,11 @@
             <artifactId>secretsmanager</artifactId>
           </exclusion>
         </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>com.azure</groupId>
+        <artifactId>azure-storage-file-datalake</artifactId>
+        <version>${azure-storage-file-datalake.version}</version>
       </dependency>
       <dependency>
         <groupId>com.esotericsoftware.kryo</groupId>
@@ -430,7 +439,17 @@
       </dependency>
       <dependency>
         <groupId>org.graalvm.js</groupId>
-        <artifactId>js</artifactId>
+        <artifactId>js-language</artifactId>
+        <version>${graalvm.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.graalvm.sdk</groupId>
+        <artifactId>graal-sdk</artifactId>
+        <version>${graalvm.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.graalvm.truffle</groupId>
+        <artifactId>truffle-runtime</artifactId>
         <version>${graalvm.version}</version>
       </dependency>
       <dependency>
@@ -534,6 +553,11 @@
         <version>${ST4.version}</version>
       </dependency>
       <dependency>
+        <groupId>org.awaitility</groupId>
+        <artifactId>awaitility</artifactId>
+        <version>${awaitility.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-compress</artifactId>
         <version>${commons-compress.version}</version>
@@ -635,11 +659,6 @@
       <dependency>
         <groupId>org.apache.calcite</groupId>
         <artifactId>calcite-linq4j</artifactId>
-        <version>${calcite.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.calcite</groupId>
-        <artifactId>calcite-druid</artifactId>
         <version>${calcite.version}</version>
       </dependency>
       <dependency>

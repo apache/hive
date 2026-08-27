@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.conf;
 
@@ -122,6 +123,25 @@ public class TestHiveConf {
     Assert.assertEquals(TimeUnit.MICROSECONDS, HiveConf.unitFor("usecs", null));
     Assert.assertEquals(TimeUnit.NANOSECONDS, HiveConf.unitFor("ns", null));
     Assert.assertEquals(TimeUnit.NANOSECONDS, HiveConf.unitFor("nsecs", null));
+  }
+
+  @Test
+  public void testReplCmRetainTimeUnit() {
+    HiveConf conf = new HiveConf();
+
+    // The default (240h) is 10 days. Guards against accidentally changing the default duration.
+    Assert.assertEquals(10, conf.getTimeVar(ConfVars.REPL_CM_RETAIN, TimeUnit.DAYS));
+    Assert.assertEquals(240, conf.getTimeVar(ConfVars.REPL_CM_RETAIN, TimeUnit.HOURS));
+
+    // A unit-less value is interpreted in hours, matching the metastore counterpart
+    // metastore.repl.cm.retain, which uses a HOURS base unit.
+    Assert.assertEquals(TimeUnit.HOURS, HiveConf.getDefaultTimeUnit(ConfVars.REPL_CM_RETAIN));
+    conf.setVar(ConfVars.REPL_CM_RETAIN, "10");
+    Assert.assertEquals(10, conf.getTimeVar(ConfVars.REPL_CM_RETAIN, TimeUnit.HOURS));
+
+    // An explicit unit suffix is still honoured.
+    conf.setVar(ConfVars.REPL_CM_RETAIN, "10d");
+    Assert.assertEquals(10, conf.getTimeVar(ConfVars.REPL_CM_RETAIN, TimeUnit.DAYS));
   }
 
   @Test

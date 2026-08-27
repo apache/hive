@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
@@ -38,21 +39,8 @@ public class StringLTrimColScalar extends StringTrimColScalarBase {
    */
   protected void func(BytesColumnVector outV, byte[][] vector, int[] start, int[] length,
       int batchIndex) {
-    byte[] bytes = vector[batchIndex];
-    final int startIndex = start[batchIndex];
-
-    // Skip past blank characters.
-    final int end = startIndex + length[batchIndex];
-    int index = startIndex;
-    while(index < end && shouldTrim(bytes[index])) {
-      index++;
-    }
-
-    final int resultLength = end - index;
-    if (resultLength == 0) {
-      outV.setVal(batchIndex, EMPTY_BYTES, 0, 0);
-      return;
-    }
-    outV.setVal(batchIndex, bytes, index, resultLength);
+    byte[] trimChars = getTrimChars();
+    trimLeft(outV, vector[batchIndex], start[batchIndex], length[batchIndex],
+        trimChars, 0, trimChars.length, batchIndex);
   }
 }

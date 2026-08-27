@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
       http://www.apache.org/licenses/LICENSE-2.0
+
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,15 +31,12 @@
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
     <path.to.iceberg.root>.</path.to.iceberg.root>
-    <!-- Upgrade roaringbit version in parent pom.xml whenever upgrading iceberg version -->
-    <iceberg.version>1.10.1</iceberg.version>
     <kryo-shaded.version>4.0.3</kryo-shaded.version>
     <iceberg.mockito-core.version>5.2.0</iceberg.mockito-core.version>
     <iceberg.avro.version>1.12.0</iceberg.avro.version>
     <spotless.maven.plugin.version>2.44.4</spotless.maven.plugin.version>
     <google.errorprone.version>2.29.2</google.errorprone.version>
     <assertj.version>3.27.3</assertj.version>
-    <awaitility.version>4.2.1</awaitility.version>
     <immutables.value.version>2.10.0</immutables.value.version>
     <validate.skip>false</validate.skip>
     <caffeine.version>2.9.3</caffeine.version>
@@ -43,6 +46,7 @@
     <module>patched-iceberg-core</module>
     <module>iceberg-shading</module>
     <module>iceberg-catalog</module>
+    <module>iceberg-rest-catalog-client</module>
     <module>iceberg-handler</module>
   </modules>
   <dependencies>
@@ -98,6 +102,11 @@
       <dependency>
         <groupId>org.apache.hive</groupId>
         <artifactId>hive-iceberg-catalog</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hive</groupId>
+        <artifactId>hive-iceberg-rest-catalog-client</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
@@ -200,11 +209,6 @@
         <groupId>org.assertj</groupId>
         <artifactId>assertj-core</artifactId>
         <version>${assertj.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.awaitility</groupId>
-        <artifactId>awaitility</artifactId>
-        <version>${awaitility.version}</version>
       </dependency>
       <dependency>
         <groupId>com.esotericsoftware</groupId>

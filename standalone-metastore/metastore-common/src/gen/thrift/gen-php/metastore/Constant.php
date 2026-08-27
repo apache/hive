@@ -50,7 +50,6 @@ final class Constant extends \Thrift\Type\TConstant
     static protected $NO_AUTO_COMPACT;
     static protected $TABLE_TRANSACTIONAL_PROPERTIES;
     static protected $TABLE_BUCKETING_VERSION;
-    static protected $DRUID_CONFIG_PREFIX;
     static protected $JDBC_CONFIG_PREFIX;
     static protected $TABLE_IS_CTAS;
     static protected $TABLE_IS_CTLT;
@@ -221,11 +220,6 @@ final class Constant extends \Thrift\Type\TConstant
     protected static function init_TABLE_BUCKETING_VERSION()
     {
         return "bucketing_version";
-    }
-
-    protected static function init_DRUID_CONFIG_PREFIX()
-    {
-        return "druid.";
     }
 
     protected static function init_JDBC_CONFIG_PREFIX()

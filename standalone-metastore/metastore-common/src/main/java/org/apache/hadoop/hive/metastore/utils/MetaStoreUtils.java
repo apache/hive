@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.metastore.utils;
 
@@ -743,9 +744,8 @@ public class MetaStoreUtils {
         String key = param.getKey();
         if (schema.get(key) != null &&
             ((key.equals(cols) || key.equals(colTypes) || key.equals(parts) ||
-                // Skip Druid and JDBC properties which are used in respective SerDes,
+                // Skip JDBC properties which are used in respective SerDes,
                 // since they are also updated after SerDeInfo properties are copied.
-                key.startsWith(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.DRUID_CONFIG_PREFIX) ||
                 key.startsWith(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.JDBC_CONFIG_PREFIX)))) {
           continue;
         }

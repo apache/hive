@@ -6,14 +6,15 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.metastore.conf;
 
@@ -652,6 +653,16 @@ public class MetastoreConf {
         "hive.txn.acid.metrics.delta.pct.threshold", 0.01f,
         "Percentage (fractional) size of the delta files relative to the base directory. Deltas smaller than this threshold " +
             "count as small deltas. Default 0.01 = 1%.)"),
+    METASTORE_JDBC_SLOW_QUERY_THRESHOLD("metastore.jdbc.execution.logSlowQueriesThreshold", "metastore.jdbc.execution.logSlowQueriesThreshold",
+        3000, TimeUnit.MILLISECONDS, "Log the slow jdbc query that Metastore has been waiting for the result beyond the threshold(ms), " +
+        "should turn on the metastore.profile.jdbc.execution first"),
+    METASTORE_PROFILE_JDBC_EXECUTION("metastore.profile.jdbc.execution", "metastore.profile.jdbc.execution", false,
+        "Turn on to profile JDBC executions at the statement layer (slow-query logging, per-query metrics\n" +
+            "about metastore.jdbc.profile.thrift.apis, and aggregate JDBC summaries for Thrift APIs )."),
+    METASTORE_PROFILE_JDBC_THRIFT_APIS("metastore.jdbc.profile.thrift.apis", "metastore.jdbc.profile.thrift.apis",
+        "get_table_req,get_database_req",
+        "Thrift API method names for which to record the per-query metrics.\n" +
+            "Per-query slow detection applies to all JDBC executions while profiling is on."),
     COMPACTOR_INITIATOR_ON("metastore.compactor.initiator.on", "hive.compactor.initiator.on", true,
         "Whether to run the initiator thread on this metastore instance or not.\n" +
             "Set this to true on one instance of the Thrift metastore service as part of turning\n" +
@@ -1961,6 +1972,10 @@ public class MetastoreConf {
         "hive.metastore.iceberg.catalog.cache.expiry", -1,
         "HMS Iceberg Catalog cache expiry."
     ),
+    ICEBERG_CATALOG_UNIQUE_TABLE_LOCATION("metastore.iceberg.catalog.unique.table.location",
+        "hive.metastore.iceberg.catalog.unique.table.location", false,
+        "Whether the HMS Iceberg REST catalog should assign a unique storage location for each new table."
+    ),
     ICEBERG_CATALOG_METRICS_REPORTERS("metastore.iceberg.catalog.metrics.reporters",
         "hive.metastore.iceberg.catalog.metrics.reporters", "org.apache.iceberg.rest.metrics.LoggingMetricsReporter",
         "A comma separated list of custom Iceberg Metrics Reporting plugins."
@@ -2003,8 +2018,12 @@ public class MetastoreConf {
             + "e.g. javax.net.ssl.trustStore=/tmp/truststore,javax.net.ssl.trustStorePassword=pwd.\n " +
             "If both this and the metastore.dbaccess.ssl.* properties are set, then the latter properties \n" +
             "will overwrite what was set in the deprecated property."),
-    METASTORE_NUM_STRIPED_TABLE_LOCKS("metastore.num.striped.table.locks", "hive.metastore.num.striped.table.locks", 32,
-        "Number of striped locks available to provide exclusive operation support for critical table operations like add_partitions."),
+    METASTORE_NUM_STRIPED_TABLE_LOCKS(
+        "metastore.num.striped.table.locks", "hive.metastore.num.striped.table.locks", 65536,
+        "Number of striped locks available to provide exclusive operation support for critical table "
+            + "operations like add_partitions.\n The locks are lazily allocated and weakly referenced "
+            + "so unused stripes will not impose memory cost.\n A larger value reduces the probability of "
+            + "hash-collision-induced false contention between unrelated tables."),
     COLSTATS_RETAIN_ON_COLUMN_REMOVAL("metastore.colstats.retain.on.column.removal",
         "hive.metastore.colstats.retain.on.column.removal", true,
         "Whether to retain column statistics during column removals in partitioned tables - disabling this "

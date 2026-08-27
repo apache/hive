@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
 
       http://www.apache.org/licenses/LICENSE-2.0
 
@@ -87,8 +91,9 @@
     <guava.version>22.0</guava.version>
     <hadoop.version>3.4.2</hadoop.version>
     <hikaricp.version>4.0.3</hikaricp.version>
-    <jackson.version>2.18.6</jackson.version>
-    <jexl.version>3.3</jexl.version>
+    <iceberg.version>1.11.0</iceberg.version>
+    <jexl.version>3.7.0</jexl.version>
+    <jackson.version>2.21.5</jackson.version>
     <javolution.version>5.5.1</javolution.version>
     <junit.version>4.13.2</junit.version>
     <junit.jupiter.version>5.13.3</junit.jupiter.version>
@@ -96,7 +101,7 @@
     <junit.platform.version>1.13.3</junit.platform.version>
     <libfb303.version>0.9.3</libfb303.version>
     <libthrift.version>0.16.0</libthrift.version>
-    <log4j2.version>2.25.3</log4j2.version>
+    <log4j2.version>2.25.4</log4j2.version>
     <mockito-core.version>5.17.0</mockito-core.version>
     <orc.version>2.1.2</orc.version>
     <protobuf.version>3.25.5</protobuf.version>
@@ -106,8 +111,7 @@
     <io.grpc.version>1.72.0</io.grpc.version>
     <sqlline.version>1.9.0</sqlline.version>
     <netty.version>4.1.127.Final</netty.version>
-    <!-- HIVE-28992: only upgrade to newer than 3.25.0 if you tested the prompt -->
-    <jline.version>3.25.0</jline.version>
+    <jline.version>3.30.16</jline.version>
     <ST4.version>4.0.4</ST4.version>
     <storage-api.version>4.3.0-SNAPSHOT</storage-api.version>
     <beanutils.version>1.9.4</beanutils.version>

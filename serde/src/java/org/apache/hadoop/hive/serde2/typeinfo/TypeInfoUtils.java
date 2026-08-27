@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.serde2.typeinfo;
 
@@ -296,6 +297,14 @@ public final class TypeInfoUtils {
       return Character.isLetterOrDigit(c) || c == '_' || c == '.' || c == ' ' || c == '$';
     }
 
+    private static Token createToken(String typeInfoString, int start, int end) {
+      Token t = new Token();
+      t.position = start;
+      t.text = typeInfoString.substring(start, end).trim();
+      t.isType = isTypeChar(typeInfoString.charAt(start));
+      return t;
+    }
+
     /**
      * Tokenize the typeInfoString. The rule is simple: all consecutive
      * alphadigits and '_', '.' are in one token, and all other characters are
@@ -333,17 +342,14 @@ public final class TypeInfoUtils {
         if (end == typeInfoString.length()
             || !isTypeChar(typeInfoString.charAt(end - 1))
             || !isTypeChar(typeInfoString.charAt(end))) {
-          Token t = new Token();
-          t.position = begin;
-          t.text = typeInfoString.substring(begin, end).trim();
-          t.isType = isTypeChar(typeInfoString.charAt(begin));
-          tokens.add(t);
+          tokens.add(createToken(typeInfoString, begin, end));
           begin = end;
         }
         end++;
       }
       return tokens;
     }
+
 
     public TypeInfoParser(String typeInfoString) {
       this.typeInfoString = typeInfoString;
@@ -446,6 +452,31 @@ public final class TypeInfoUtils {
       return params.toArray(new String[params.size()]);
     }
 
+    private static boolean isStructFieldNameEnd(Token t) {
+      return t == null || t.text.equals(":") || t.text.equals(">") || t.text.equals(",");
+    }
+
+    /**
+     * A struct field name can be split across multiple tokens, e.g. an Iceberg
+     * partition column name like "gpa_!@#$%^&amp;*()" is tokenized as "gpa_", "!",
+     * "@", ... since only letters/digits/'_'/'.'/' '/'$' form a single token.
+     * Consume tokens until the next structural delimiter: ":" ends the name,
+     * while ">" or "," with nothing consumed means there was no name (end of
+     * struct, or a trailing separator before the close).
+     */
+    private String parseStructFieldName() {
+      StringBuilder fieldName = new StringBuilder();
+      for (Token next = peek(); !isStructFieldNameEnd(next); next = peek()) {
+        fieldName.append(next.text);
+        iToken++;
+      }
+      if (fieldName.isEmpty()) {
+        expect(">");
+        return null;
+      }
+      return fieldName.toString();
+    }
+
     private TypeInfo parseType() {
 
       Token t = expect("type");
@@ -543,11 +574,11 @@ public final class TypeInfoUtils {
               break;
             }
           }
-          Token name = expect("name",">");
-          if (name.text.equals(">")) {
+          String fieldName = parseStructFieldName();
+          if (fieldName == null) {
             break;
           }
-          fieldNames.add(name.text);
+          fieldNames.add(fieldName);
           expect(":");
           fieldTypeInfos.add(parseType());
         } while (true);

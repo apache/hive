@@ -9,21 +9,22 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.ogc.OGCGeometry;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
+import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +38,7 @@ import java.util.List;
         + "  SELECT _FUNC_(array(1, 1, 1, 2, 2, 2, 2, 1), array(3, 3, 3, 4, 4, 4, 4, 3)) from src LIMIT 1;\n"
         + "  SELECT _FUNC_('multipolygon (((0 0, 0 1, 1 0, 0 0)), ((2 2, 2 3, 3 2, 2 2)))') from src LIMIT 1;")
 //@HivePdkUnitTests(
-//	cases = { 
+//	cases = {
 //		@HivePdkUnitTest(
 //			query = "select st_asjson(st_multipolygon(array(1, 1, 1, 2, 2, 2, 2, 1), array(3, 3, 3, 4, 4, 4, 4, 3))) from onerow;",
 //			result = "{\"rings\":[[[1.0,1.0],[1.0,2.0],[2.0,2.0],[2.0,1.0],[1.0,1.0]],[[3.0,3.0],[3.0,4.0],[4.0,4.0],[4.0,3.0],[3.0,3.0]]]}"
@@ -101,10 +102,9 @@ public class ST_MultiPolygon extends ST_Geometry {
   public BytesWritable evaluate(Text wkwrap) throws UDFArgumentException {
     String wkt = wkwrap.toString();
     try {
-      OGCGeometry ogcObj = OGCGeometry.fromText(wkt);
-      ogcObj.setSpatialReference(null);
-      if (ogcObj.geometryType().equals("MultiPolygon")) {
-        return GeometryUtils.geometryToEsriShapeBytesWritable(ogcObj);
+      Geometry geom = GeometryUtils.wktReader().read(wkt);
+      if (geom.getGeometryType().equals("MultiPolygon")) {
+        return GeometryUtils.geometryToEsriShapeBytesWritable(geom);
       } else {
         LogUtils.Log_InvalidType(LOG, GeometryUtils.OGCType.ST_MULTIPOLYGON, GeometryUtils.OGCType.UNKNOWN);
         return null;

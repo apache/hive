@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
@@ -388,8 +389,8 @@ public class TestHivePointLookupOptimizerRule {
     RexNode condition = filter.getCondition();
     System.out.println(condition);
     assertEquals("IN($1, " +
-                    "_UTF-16LE'AAA111':VARCHAR(30) CHARACTER SET \"UTF-16LE\", " +
-                    "_UTF-16LE'BBB222':VARCHAR(30) CHARACTER SET \"UTF-16LE\")",
+                    "'AAA111':VARCHAR(30) CHARACTER SET \"UTF-16LE\", " +
+                    "'BBB222':VARCHAR(30) CHARACTER SET \"UTF-16LE\")",
             condition.toString());
   }
 
@@ -489,8 +490,8 @@ public class TestHivePointLookupOptimizerRule {
     RexNode condition = filter.getCondition();
     System.out.println(condition);
     assertEquals("IN($1, " +
-                    "_UTF-16LE'AAA111':VARCHAR(30) CHARACTER SET \"UTF-16LE\", " +
-                    "_UTF-16LE'BBB222':VARCHAR(30) CHARACTER SET \"UTF-16LE\")",
+                    "'AAA111':VARCHAR(30) CHARACTER SET \"UTF-16LE\", " +
+                    "'BBB222':VARCHAR(30) CHARACTER SET \"UTF-16LE\")",
             condition.toString());
   }
 
@@ -519,7 +520,7 @@ public class TestHivePointLookupOptimizerRule {
     HiveFilter filter = (HiveFilter) optimizedRelNode;
     RexNode condition = filter.getCondition();
     System.out.println(condition);
-    assertEquals("IN($1, 10000:DECIMAL(19, 5), 11000:DECIMAL(19, 5))", condition.toString());
+    assertEquals("IN($1, 10000.00000:DECIMAL(19, 5), 11000.00000:DECIMAL(19, 5))", condition.toString());
   }
 
   @Test

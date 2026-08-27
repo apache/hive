@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.parse;
@@ -40,7 +41,10 @@ public class PrunedPartitionList {
   /** Partitions that either satisfy the partition criteria, or may satisfy it. */
   private final Set<Partition> partitions;
 
-  /** partition columns referred by pruner expr */
+  /**
+   * Partition columns referred by the pruner expr; empty when no partition predicate narrowed the list,
+   * or when the predicate was constant false - the list is empty in that case as well.
+   */
   private final List<String> referred;
 
   /** Whether there are partitions in the list that may or may not satisfy the criteria. */

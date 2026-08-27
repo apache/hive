@@ -9,17 +9,17 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.hadoop.hive.ql.udf.esri;
 
-import com.esri.core.geometry.OperatorEquals;
-import com.esri.core.geometry.OperatorSimpleRelation;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.locationtech.jts.geom.Geometry;
 
 @Description(name = "ST_Equals",
     value = "_FUNC_(geometry1, geometry2) - return true if geometry1 equals geometry2",
@@ -29,8 +29,8 @@ import org.apache.hadoop.hive.ql.exec.Description;
     extends ST_GeometryRelational {
 
   @Override
-  protected OperatorSimpleRelation getRelationOperator() {
-    return OperatorEquals.local();
+  protected boolean executeRelation(Geometry geom1, Geometry geom2) {
+    return geom1.equalsTopo(geom2);
   }
 
   @Override

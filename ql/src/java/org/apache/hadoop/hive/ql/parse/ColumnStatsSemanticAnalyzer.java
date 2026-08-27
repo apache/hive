@@ -9,11 +9,12 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.hadoop.hive.ql.parse;
@@ -629,6 +630,11 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       originalTree = ast;
       boolean isPartitionStats = AnalyzeCommandUtils.isPartitionLevelStats(ast) 
           || StatsUtils.isPartitionStats(tbl, conf);
+      // a partition-scoped column statistics ANALYZE cannot be honored for non-native tables: the stats
+      // of all partitions are rewritten as a whole, so it would drop every other partition's statistics
+      // (table-level ANALYZE of a partitioned table still computes all partitions - only the explicit
+      // partition spec is rejected; the auto-gather path merges instead and stays unaffected)
+      validateUnsupportedPartitionClause(tbl, AnalyzeCommandUtils.isPartitionLevelStats(ast));
       
       Map<Integer, List<TransformSpec>> partTransformSpecs = Collections.singletonMap(-1, null);
       Map<String, String> partSpec = (isPartitionStats) ?

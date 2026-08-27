@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
 
       http://www.apache.org/licenses/LICENSE-2.0
 
@@ -26,7 +30,6 @@
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
     <wiremock-jre8.version>2.32.0</wiremock-jre8.version>
-    <iceberg.version>1.10.1</iceberg.version>
     <assertj.version>3.27.3</assertj.version>
   </properties>
   <modules>
@@ -43,7 +46,6 @@
     <module>hive-jmh</module>
     <module>hive-unit-hadoop2</module>
     <module>hive-minikdc</module>
-    <module>qtest-druid</module>
     <module>qtest-kudu</module>
     <module>qtest-iceberg</module>
     <module>test-docker</module>
@@ -225,22 +227,6 @@
       <dependency>
         <groupId>org.apache.hive</groupId>
         <artifactId>hive-it-util</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.hive</groupId>
-        <artifactId>hive-druid-handler</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.hive</groupId>
-        <artifactId>hive-druid-handler</artifactId>
-        <version>${project.version}</version>
-        <classifier>tests</classifier>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.hive</groupId>
-        <artifactId>hive-it-druid</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
