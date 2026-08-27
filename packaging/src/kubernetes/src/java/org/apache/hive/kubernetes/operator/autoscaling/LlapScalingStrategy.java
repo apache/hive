@@ -109,7 +109,7 @@ public class LlapScalingStrategy implements ScalingStrategy {
     // HS2 has sessions (passed activation gate above) but either
     // 1. there is no tezAM running, so LLAP running any work is zombie if any.
     // 2. there are tezAMs running, but no tasks running or pending.
-    if(tezAmMetrics.isEmpty() || (totalPending + totalLLAPLoad) == 0) {
+    if (tezAmMetrics.isEmpty() || (totalPending + totalLLAPLoad) == 0) {
       return Math.max(1, autoscaling.minReplicas());
     }
 
