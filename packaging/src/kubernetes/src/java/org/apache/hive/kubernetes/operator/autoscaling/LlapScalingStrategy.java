@@ -109,7 +109,6 @@ public class LlapScalingStrategy implements ScalingStrategy {
     }
 
     double capacityPerDaemon = Math.max(1.0, totalLLAPCapacity / podMetrics.size());
-    double freeLLAPCapacity = totalLLAPCapacity - totalLLAPLoad;
     double avgLLAPLoadPercent = totalLLAPCapacity > 0 ? (totalLLAPLoad / totalLLAPCapacity) * 100.00 : 0.0;
 
     double totalClusterLoad = totalPending + totalLLAPLoad;
@@ -122,8 +121,7 @@ public class LlapScalingStrategy implements ScalingStrategy {
 
     // Scale-up: pending load share of total load exceeds threshold
     // Scale-down: no pending work AND daemon load below threshold
-    if ((pendingLoadPercent >= scaleUpThreshold && totalPending > freeLLAPCapacity) ||
-        (totalPending == 0 && avgLLAPLoadPercent <= scaleDownThreshold)) {
+    if (pendingLoadPercent >= scaleUpThreshold || (totalPending == 0 && avgLLAPLoadPercent <= scaleDownThreshold)) {
       int desired = (int) Math.ceil(totalClusterLoad / capacityPerDaemon);
       if (LOG.isDebugEnabled()) {
         LOG.debug("[llap-{}] totalClusterLoad={}, capacityPerDaemon={}, pendingLoadPercent={}, avgLLAPLoadPercent={}",
