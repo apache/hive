@@ -108,6 +108,16 @@ public class TestYarnQueueMetricsCollector {
   }
 
   /**
+   * Awaits the first refresh poll and asserts it happened. Use before shutting down a
+   * collector whose per-test stubs are consumed only by the refresh thread.
+   */
+  private void awaitFirstPoll() {
+    waitForInvocationCount(mockYarnClient, 1, WAIT_TIMEOUT_MS);
+    assertTrue("Refresh task should have polled YARN",
+        mockingDetails(mockYarnClient).getInvocations().size() >= 1);
+  }
+
+  /**
    * Configures mock objects with standard happy-path values.
    * Called from {@code @Before} so all tests start with a consistent baseline.
    * Stubs are lenient so tests that don't exercise these mocks don't fail with
@@ -175,9 +185,7 @@ public class TestYarnQueueMetricsCollector {
       // The pre-first-poll state (also a null snapshot) is not deterministically observable,
       // as the refresh task runs with no initial delay; await the poll so the null asserted
       // below is attributable to the stubbed null QueueInfo, not to "no poll yet".
-      waitForInvocationCount(mockYarnClient, 1, WAIT_TIMEOUT_MS);
-      assertTrue("Refresh task should have polled YARN",
-          mockingDetails(mockYarnClient).getInvocations().size() >= 1);
+      awaitFirstPoll();
       assertNull("Snapshot should be null for nonexistent queue", collector.getLatestSnapshot());
     } finally {
       collector.shutdown();
@@ -244,9 +252,7 @@ public class TestYarnQueueMetricsCollector {
 
     YarnQueueMetricsCollector collector = newCollector(mockYarnClient, "default", 10000, "test-query-5");
     try {
-      waitForInvocationCount(mockYarnClient, 1, WAIT_TIMEOUT_MS);
-      assertTrue("Refresh task should have polled YARN",
-          mockingDetails(mockYarnClient).getInvocations().size() >= 1);
+      awaitFirstPoll();
       assertNull("Snapshot should be null after exception", collector.getLatestSnapshot());
     } finally {
       collector.shutdown();
@@ -311,9 +317,7 @@ public class TestYarnQueueMetricsCollector {
 
     YarnQueueMetricsCollector collector = newCollector(mockYarnClient, "default", 10000, "init-fail-query");
     try {
-      waitForInvocationCount(mockYarnClient, 1, WAIT_TIMEOUT_MS);
-      assertTrue("Refresh task should have polled YARN",
-          mockingDetails(mockYarnClient).getInvocations().size() >= 1);
+      awaitFirstPoll();
       assertNull("Snapshot should be null after init failure", collector.getLatestSnapshot());
     } finally {
       collector.shutdown();
