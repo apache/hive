@@ -32,7 +32,8 @@ import org.slf4j.LoggerFactory;
  * For Scale-Down: Running Load across all LLAP pods should be below the threshold.
  * desired = ceil(totalClusterLoad / capacityPerDaemon)
  * <p>
- * Activation gate: only scale if HS2 has open sessions & TezAMs are running DAGs (prevents zombie scaling).
+ * Activation gate: only scale if HS2 has open sessions, TezAM metrics are present &
+ * cluster has load (prevents zombie scaling).
  */
 public class LlapScalingStrategy implements ScalingStrategy {
 
@@ -97,7 +98,11 @@ public class LlapScalingStrategy implements ScalingStrategy {
       double queued = pm.metrics().getOrDefault(METRIC_QUEUED, 0.0);
       double configured = pm.metrics().getOrDefault(METRIC_CONFIGURED, 0.0);
       double available = pm.metrics().getOrDefault(METRIC_AVAILABLE, 0.0);
-      totalLLAPCapacity += pm.metrics().getOrDefault(METRIC_MAX_FREE_SLOTS_CONFIGURED, 0.0);
+      double capacity = pm.metrics().getOrDefault(METRIC_MAX_FREE_SLOTS_CONFIGURED, 0.0);
+      if (capacity <= 0) {
+        capacity = configured;
+      }
+      totalLLAPCapacity += capacity;
       totalLLAPLoad += queued + configured - available;
     }
 
