@@ -774,7 +774,14 @@ public class MetaStoreDirectSql {
       PartitionFilterGenerator.FilterType type =
           PartitionFilterGenerator.FilterType.fromType(colType);
       if (type == PartitionFilterGenerator.FilterType.Date) {
-      	tableValue = dbType.toDate(tableValue);
+        // See LeafNode.visit for the full Derby-specific rationale
+        // (DERBY-6358, https://issues.apache.org/jira/browse/DERBY-6358): the cast is pulled
+        // past the CASE guards and applied to rows that would have been filtered, throwing on
+        // any non-date value in PARTITION_KEY_VALS. ISO-date lexicographic order matches date
+        // order, so ordering on the raw varchar is equivalent.
+        if (!dbType.isDERBY()) {
+          tableValue = dbType.toDate(tableValue);
+        }
       } else if (type == PartitionFilterGenerator.FilterType.Timestamp) {
         tableValue = dbType.toTimestamp(tableValue);
       } else if (type == PartitionFilterGenerator.FilterType.Integral) {
@@ -1687,7 +1694,16 @@ public class MetaStoreDirectSql {
         if (colType == FilterType.Integral) {
           tableValue = "cast(" + tableValue + " as decimal(21,0))";
         } else if (colType == FilterType.Date) {
-        	tableValue = dbType.toDate(tableValue);
+          if (dbType.isDERBY()) {
+            // DERBY-6358 (https://issues.apache.org/jira/browse/DERBY-6358, open since 2013):
+            // Hive stores DATE partition values as normalized "yyyy-MM-dd" strings (see
+            // MetaStoreUtils.normalizeDate applied to nodeValue above and to the partition path
+            // segment on write), and lexicographic order on this format matches date order for
+            // every relational operator we support. Compare varchar-to-varchar and skip the
+            // cast — there is nothing left for Derby's optimizer to hoist.
+          } else {
+            tableValue = dbType.toDate(tableValue);
+          }
         } else if (colType == FilterType.Timestamp) {
           tableValue = dbType.toTimestamp(tableValue);
         }
