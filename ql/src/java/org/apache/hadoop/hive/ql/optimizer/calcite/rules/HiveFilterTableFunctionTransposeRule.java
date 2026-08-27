@@ -42,9 +42,7 @@ import java.util.Set;
 
 /**
  * Rule to transpose Filter and TableFunctionScan RelNodes.
- * This rule's code has diverged from Calcite's FilterTableFunctionTransposeRule.
  */
-// TODO could this be reconciled with Calcite's rule?
 public class HiveFilterTableFunctionTransposeRule extends RelOptRule {
 
   public static final HiveFilterTableFunctionTransposeRule INSTANCE =
