@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.hooks.URIResolverHook;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
+import org.apache.hadoop.hive.metastore.security.TMessageSizeTransport;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.utils.FilterUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
@@ -528,6 +529,20 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     return transport;
   }
 
+  private TTransport wrapWithMessageSizeTransport(TTransport transport) {
+    int maxThriftMessageSize = (int) MetastoreConf.getSizeVar(
+        conf, MetastoreConf.ConfVars.THRIFT_METASTORE_CLIENT_MAX_MESSAGE_SIZE);
+    if (maxThriftMessageSize > 0) {
+      try {
+        return new TMessageSizeTransport(transport);
+      } catch (TTransportException e) {
+        LOG.warn("Failed to wrap transport {} with TMessageSizeTransport, max message size may not be enforced",
+            transport.getClass().getName(), e);
+      }
+    }
+    return transport;
+  }
+
   private Map<String, String> getAdditionalHeaders() {
     Map<String, String> headers = new HashMap<>();
     String keyValuePairs = MetastoreConf.getVar(conf,
@@ -673,7 +688,7 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
       }
     }
     LOG.debug("Created thrift binary client for URI: " + store);
-    return configureThriftMaxMessageSize(binaryTransport);
+    return wrapWithMessageSizeTransport(configureThriftMaxMessageSize(binaryTransport));
   }
 
   private void open() throws MetaException {
