@@ -35,6 +35,7 @@ import org.apache.hive.service.rpc.thrift.TFetchOrientation;
 import org.apache.hive.service.rpc.thrift.TFetchResultsReq;
 import org.apache.hive.service.rpc.thrift.TFetchResultsResp;
 import org.apache.hive.service.rpc.thrift.TGetOperationStatusReq;
+import org.apache.hive.service.rpc.thrift.TStatus;
 import org.apache.hive.service.rpc.thrift.TGetOperationStatusResp;
 import org.apache.hive.service.rpc.thrift.TGetQueryIdReq;
 import org.apache.hive.service.rpc.thrift.TOperationHandle;
@@ -124,6 +125,8 @@ public class HiveStatement implements java.sql.Statement {
 
   private int queryTimeout = 0;
 
+  private String lastSql;
+
   private Optional<InPlaceUpdateStream> inPlaceUpdateStream;
 
   public HiveStatement(HiveConnection connection, TCLIService.Iface client,
@@ -207,7 +210,11 @@ public class HiveStatement implements java.sql.Statement {
         }
       }
     } catch (SQLException e) {
-      throw e;
+      if (connection.isPersistableSession() && isInvalidOperationHandleError(e)) {
+        LOG.warn("Ignoring Invalid OperationHandle during close after failover: {}", e.getMessage());
+      } else {
+        throw e;
+      }
     } catch (TApplicationException tae) {
       String errorMsg = "Failed to close statement";
       if (tae.getType() == TApplicationException.BAD_SEQUENCE_ID) {
@@ -217,7 +224,12 @@ public class HiveStatement implements java.sql.Statement {
       }
       throw new SQLException(errorMsg, "08S01", tae);
     } catch (Exception e) {
-      throw new SQLException("Failed to close statement", "08S01", e);
+      if (connection.isPersistableSession()) {
+        LOG.warn("Ignoring close failure for persistable session (server unreachable): {}",
+            e.getMessage());
+      } else {
+        throw new SQLException("Failed to close statement", "08S01", e);
+      }
     } finally {
       stmtHandle = Optional.empty();
     }
@@ -230,13 +242,24 @@ public class HiveStatement implements java.sql.Statement {
    * @return true, if the response from server contains "Invalid OperationHandle"
    */
   private boolean checkInvalidOperationHandle(TCloseOperationResp closeResp) {
-    List<String> messages = closeResp.getStatus().getInfoMessages();
-    if (messages != null && messages.size() > 0) {
+    TStatus status = closeResp.getStatus();
+    if (status == null) {
+      return false;
+    }
+    if (status.isSetErrorMessage()) {
+      String errorMsg = status.getErrorMessage();
+      if (errorMsg.contains("Invalid OperationHandle") || errorMsg.contains("Operation does not exist")) {
+        LOG.warn("Ignoring benign close operation error: {}", errorMsg);
+        return true;
+      }
+    }
+    List<String> messages = status.getInfoMessages();
+    if (messages != null && !messages.isEmpty()) {
       /*
        * Here we need to handle 2 different cases, which can happen in CLIService.closeOperation, which actually does:
        * sessionManager.getOperationManager().getOperation(opHandle).getParentSession().closeOperation(opHandle);
        */
-      String message = messages.get(0);
+      String message = messages.getFirst();
       if (message.contains("Invalid OperationHandle")) {
         /*
          * This happens when the first request properly removes the operation handle, then second request arrives, calls
@@ -255,7 +278,6 @@ public class HiveStatement implements java.sql.Statement {
         return true;
       }
     }
-
     return false;
   }
 
@@ -348,6 +370,7 @@ public class HiveStatement implements java.sql.Statement {
     checkConnection("execute");
 
     reInitState();
+    this.lastSql = sql;
 
     TExecuteStatementReq execReq = new TExecuteStatementReq(sessHandle, sql);
     /**
@@ -489,7 +512,7 @@ public class HiveStatement implements java.sql.Statement {
   TGetOperationStatusResp waitForOperationToComplete() throws SQLException {
     TGetOperationStatusResp statusResp = null;
 
-    final TGetOperationStatusReq statusReq = new TGetOperationStatusReq(stmtHandle.get());
+    TGetOperationStatusReq statusReq = new TGetOperationStatusReq(stmtHandle.get());
     boolean progressUpdates = inPlaceUpdateStream.isPresent();
     statusReq.setGetProgressUpdate(progressUpdates);
 
@@ -498,6 +521,9 @@ public class HiveStatement implements java.sql.Statement {
     }
 
     LOG.debug("Waiting on operation to complete: Polling operation status");
+
+    int failoverRetries = 0;
+    int maxFailoverRetries = connection.getNumRetries();
 
     do {
       try {
@@ -513,8 +539,32 @@ public class HiveStatement implements java.sql.Statement {
         LOG.debug("Status response: {}", statusResp);
         processOperationStatusResponse(statusResp);
       } catch (SQLException e) {
+        if (connection.isPersistableSession() && lastSql != null
+            && failoverRetries < maxFailoverRetries
+            && (isInvalidOperationHandleError(e) || isRetriableExecutionError(e))) {
+          failoverRetries++;
+          LOG.info("Operation lost after failover, reconnecting and re-executing (attempt {} of {}): {}",
+              failoverRetries, maxFailoverRetries, lastSql, e);
+          retryAfterFailover();
+          statusReq = new TGetOperationStatusReq(stmtHandle.get());
+          statusReq.setGetProgressUpdate(progressUpdates);
+          continue;
+        }
         isLogBeingGenerated = false;
         throw e;
+      } catch (TException e) {
+        if (connection.isPersistableSession() && lastSql != null
+            && failoverRetries < maxFailoverRetries && isTransportError(e)) {
+          failoverRetries++;
+          LOG.info("Connection lost while polling operation status, reconnecting and re-executing "
+              + "(attempt {} of {}): {}", failoverRetries, maxFailoverRetries, lastSql);
+          retryAfterFailover();
+          statusReq = new TGetOperationStatusReq(stmtHandle.get());
+          statusReq.setGetProgressUpdate(progressUpdates);
+          continue;
+        }
+        isLogBeingGenerated = false;
+        throw new SQLException("Failed to wait for operation to complete", "08S01", e);
       } catch (Exception e) {
         isLogBeingGenerated = false;
         throw new SQLException("Failed to wait for operation to complete", "08S01", e);
@@ -526,6 +576,49 @@ public class HiveStatement implements java.sql.Statement {
     }
     return statusResp;
   }
+
+  /**
+   * Reconnects to HS2 and re-submits the last SQL after session failover.
+   * Only used when the in-flight operation handle is lost (HS2 crash / reconnect).
+   */
+  private void retryAfterFailover() throws SQLException {
+    try {
+      connection.reconnect();
+      client = connection.getClient();
+    } catch (SQLException e) {
+      LOG.error("Failed to reconnect after failover", e);
+      throw e;
+    }
+    stmtHandle = Optional.empty();
+    runAsyncOnServer(lastSql);
+  }
+
+  private static boolean isInvalidOperationHandleError(SQLException e) {
+    String msg = e.getMessage();
+    return msg != null && msg.contains("Invalid OperationHandle");
+  }
+
+  private static boolean isRetriableExecutionError(SQLException e) {
+    String msg = e.getMessage();
+    return msg != null && msg.contains("Execution Error");
+  }
+
+  private static boolean isTransportError(Throwable t) {
+    while (t != null) {
+      String name = t.getClass().getName();
+      if (name.contains("NoHttpResponseException")
+          || name.contains("SocketException")
+          || name.contains("ConnectException")
+          || name.contains("TTransportException")
+          || name.contains("SSLException")
+          || name.contains("ConnectionClosedException")) {
+        return true;
+      }
+      t = t.getCause();
+    }
+    return false;
+  }
+
 
   private void checkConnection(String action) throws SQLException {
     if (isClosed) {

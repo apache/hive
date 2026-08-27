@@ -312,8 +312,15 @@ public class HiveConnection implements java.sql.Connection {
   }
 
   boolean isPersistableSession() {
-    String fetchStrategy = connParams.getHiveConfs().get(
-        Utils.JdbcConnectionParams.HIVE_CONF_PREFIX + ConfVars.HIVE_SERVER2_SESSION_STATE_STORE_FETCH_STRATEGY.varname);
+    String varname = ConfVars.HIVE_SERVER2_SESSION_STATE_STORE_FETCH_STRATEGY.varname;
+    String prefixedKey = Utils.JdbcConnectionParams.HIVE_CONF_PREFIX + varname;
+    String fetchStrategy = connParams.getHiveConfs().get(prefixedKey);
+    if (fetchStrategy == null) {
+      fetchStrategy = connParams.getHiveConfs().get(varname);
+    }
+    if (fetchStrategy == null) {
+      fetchStrategy = connParams.getSessionVars().get(prefixedKey);
+    }
     return fetchStrategy != null && !"NEVER".equalsIgnoreCase(fetchStrategy);
   }
 
