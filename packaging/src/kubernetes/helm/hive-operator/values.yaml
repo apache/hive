@@ -200,7 +200,7 @@ cluster:
     autoscaling:
       enabled: false
       minReplicas: 0
-      scaleUpThreshold: 70
+      scaleUpThreshold: 80
       scaleDownThreshold: 20
       scaleUpStabilizationSeconds: 60
       scaleDownStabilizationSeconds: 900

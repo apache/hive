@@ -580,7 +580,7 @@ cluster:
     autoscaling:
       enabled: true
       minReplicas: 2
-      scaleUpThreshold: 70
+      scaleUpThreshold: 80
       scaleDownThreshold: 20
 
   - name: analytics
@@ -1188,7 +1188,7 @@ cluster:
     autoscaling:
       enabled: true
       # minReplicas: 0        # default — scale to zero when no sessions target this cluster
-      # scaleUpThreshold: 70  # default — pending load percent of total cluster load triggers scale-up
+      # scaleUpThreshold: 80  # default — pending load percent of total cluster load triggers scale-up
       # scaleDownThreshold: 20 # default — avg daemon utilization percent triggering scale-down
       # scaleUpStabilizationSeconds: 60   # default — scale-up window
       # scaleDownStabilizationSeconds: 900 # default — scale-down window (long — scaling down destroys cache)
@@ -1409,7 +1409,7 @@ and a paired TezAM Deployment (when `tezAm.enabled: true`).
 | `cluster.llapClusters[].extraVolumeMounts` | `[]` | Additional volume mounts for LLAP containers |
 | `cluster.llapClusters[].autoscaling.enabled` | `false` | Enable per-cluster autoscaling |
 | `cluster.llapClusters[].autoscaling.minReplicas` | `0` | Min replicas (0 = scale to zero) |
-| `cluster.llapClusters[].autoscaling.scaleUpThreshold` | `70` | Pending load percent of total cluster load for scale-up |
+| `cluster.llapClusters[].autoscaling.scaleUpThreshold` | `80` | Pending load percent of total cluster load for scale-up |
 | `cluster.llapClusters[].autoscaling.scaleDownThreshold` | `20` | Avg daemon utilization percent for scale-down |
 
 HS2 routes sessions to LLAP clusters server-side based on user/group identity:
@@ -1452,7 +1452,7 @@ controls shared settings (enabled flag, scratch PVC). Per-LLAP TezAM settings
 |-------|---------|-------------|
 | `cluster.<component>.autoscaling.enabled` | `false` | Enable operator-driven autoscaling for this component |
 | `cluster.<component>.autoscaling.minReplicas` | `0` | Floor replica count. 0 enables scale-to-zero (LLAP, TezAM only; HS2 minimum is 1) |
-| `cluster.<component>.autoscaling.scaleUpThreshold` | `100` (HS2/HMS), `70` (LLAP) | Metric threshold per pod triggering scale-up (sessions for HS2, API rate for HMS, pending load percent for LLAP). TezAM scales 1:1 with demand (no threshold). |
+| `cluster.<component>.autoscaling.scaleUpThreshold` | `100` (HS2/HMS), `80` (LLAP) | Metric threshold per pod triggering scale-up (sessions for HS2, API rate for HMS, pending load percent for LLAP). TezAM scales 1:1 with demand (no threshold). |
 | `cluster.<component>.autoscaling.scaleDownThreshold` | `20` (LLAP) | Average daemon utilization percent below which LLAP scale-down triggers |
 | `cluster.<component>.autoscaling.scaleUpStabilizationSeconds` | `60` | Stabilization window for scale-up decisions (prevents flapping) |
 | `cluster.<component>.autoscaling.scaleDownStabilizationSeconds` | `300-900` | Stabilization window for scale-down decisions (also acts as cooldown between consecutive scale-downs) |
