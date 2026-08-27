@@ -112,6 +112,9 @@ public class TestYarnQueueMetricsCollector {
    * Called from {@code @Before} so all tests start with a consistent baseline.
    * Stubs are lenient so tests that don't exercise these mocks don't fail with
    * UnnecessaryStubbingException.
+   * Conversely, a per-test (strict) stub consumed only by the async refresh thread must be
+   * awaited ({@code waitForInvocationCount}/{@code waitForSnapshot}) before the collector is
+   * shut down, or the stub can go unused and strict-stub validation fails the whole class.
    */
   private void setupHappyPathMocks() throws Exception {
     lenient().when(mockQueueStats.getAllocatedMemoryMB()).thenReturn(1024L);
@@ -169,6 +172,12 @@ public class TestYarnQueueMetricsCollector {
 
     YarnQueueMetricsCollector collector = newCollector(mockYarnClient, "nonexistent", 10000, "test-query-2");
     try {
+      // The pre-first-poll state (also a null snapshot) is not deterministically observable,
+      // as the refresh task runs with no initial delay; await the poll so the null asserted
+      // below is attributable to the stubbed null QueueInfo, not to "no poll yet".
+      waitForInvocationCount(mockYarnClient, 1, WAIT_TIMEOUT_MS);
+      assertTrue("Refresh task should have polled YARN",
+          mockingDetails(mockYarnClient).getInvocations().size() >= 1);
       assertNull("Snapshot should be null for nonexistent queue", collector.getLatestSnapshot());
     } finally {
       collector.shutdown();
@@ -221,9 +230,7 @@ public class TestYarnQueueMetricsCollector {
   }
 
   @Test
-  public void testShutdownIdempotency() throws Exception {
-    when(mockYarnClient.getQueueInfo("default")).thenReturn(mockQueueInfo);
-
+  public void testShutdownIdempotency() {
     YarnQueueMetricsCollector collector = newCollector(mockYarnClient, "default", 10000, "test-query-4");
     collector.shutdown();
     collector.shutdown(); // second call must be safe
@@ -237,6 +244,9 @@ public class TestYarnQueueMetricsCollector {
 
     YarnQueueMetricsCollector collector = newCollector(mockYarnClient, "default", 10000, "test-query-5");
     try {
+      waitForInvocationCount(mockYarnClient, 1, WAIT_TIMEOUT_MS);
+      assertTrue("Refresh task should have polled YARN",
+          mockingDetails(mockYarnClient).getInvocations().size() >= 1);
       assertNull("Snapshot should be null after exception", collector.getLatestSnapshot());
     } finally {
       collector.shutdown();
@@ -244,11 +254,7 @@ public class TestYarnQueueMetricsCollector {
   }
 
   @Test
-  public void testQueueNameRetrieval() throws Exception {
-    when(mockYarnClient.getQueueInfo(anyString())).thenReturn(mockQueueInfo);
-    when(mockQueueInfo.getQueueStatistics()).thenReturn(null);
-    when(mockQueueInfo.getCapacity()).thenReturn(0.5f);
-
+  public void testQueueNameRetrieval() {
     YarnQueueMetricsCollector collector = newCollector(mockYarnClient, "production", 10000, "test-query-6");
     try {
       assertEquals("Queue name should match", "production", collector.getQueueName());
@@ -305,6 +311,9 @@ public class TestYarnQueueMetricsCollector {
 
     YarnQueueMetricsCollector collector = newCollector(mockYarnClient, "default", 10000, "init-fail-query");
     try {
+      waitForInvocationCount(mockYarnClient, 1, WAIT_TIMEOUT_MS);
+      assertTrue("Refresh task should have polled YARN",
+          mockingDetails(mockYarnClient).getInvocations().size() >= 1);
       assertNull("Snapshot should be null after init failure", collector.getLatestSnapshot());
     } finally {
       collector.shutdown();
