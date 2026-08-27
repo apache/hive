@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector.ptf;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
@@ -35,7 +36,7 @@ import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
  * <p>It is both <b>buffered</b> and <b>streaming</b>: the operator buffers the full partition
  * before any output ({@link #isGroupAggregatedStreamingEvaluator()} {@code == true}), then
  * writes results per batch into column vectors on forward ({@link #streamsResult()}
- * {@code == true}). Peer-group values are precomputed in {@link #addStreamingGroupResult(int)}
+ * {@code == true}). Peer-group values are precomputed in {@link #addStreamingGroupResults}
  * after {@link #setPartitionSize(int)}, then {@link #evaluateGroupBatch} fills the output column
  * as buffered batches are replayed.
  */
@@ -47,7 +48,6 @@ public class VectorPTFEvaluatorCumeDist extends VectorPTFEvaluatorBase {
    * (one per group at its last batch).
    */
   private final Deque<Double> groupResults = new ArrayDeque<>();
-  private int rowPosition;
 
   public VectorPTFEvaluatorCumeDist(WindowFrameDef windowFrameDef, int outputColumnNum) {
     super(windowFrameDef, outputColumnNum);
@@ -60,12 +60,16 @@ public class VectorPTFEvaluatorCumeDist extends VectorPTFEvaluatorBase {
   }
 
   @Override
-  public void addStreamingGroupResult(int groupRowCount) throws HiveException {
+  public void addStreamingGroupResults(List<Integer> groupRowCounts) throws HiveException {
     if (partitionSize <= 0) {
       throw new HiveException("Partition size must be set before precomputing cume_dist");
     }
-    rowPosition += groupRowCount;
-    groupResults.addLast(((double) rowPosition) / partitionSize);
+    groupResults.clear();
+    int rowPosition = 0;
+    for (int groupRowCount : groupRowCounts) {
+      rowPosition += groupRowCount;
+      groupResults.addLast((double) rowPosition / partitionSize);
+    }
   }
 
   @Override
@@ -98,7 +102,6 @@ public class VectorPTFEvaluatorCumeDist extends VectorPTFEvaluatorBase {
 
   @Override
   public void resetEvaluator() {
-    rowPosition = 0;
     partitionSize = -1;
     groupResults.clear();
   }

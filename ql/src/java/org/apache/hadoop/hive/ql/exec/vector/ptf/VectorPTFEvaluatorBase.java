@@ -19,6 +19,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.ptf;
 
+import java.util.List;
+
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
@@ -222,7 +224,7 @@ public abstract class VectorPTFEvaluatorBase {
   /**
    * Aggregates per peer group result using group row count.
    */
-  public void addStreamingGroupResult(int groupRowCount) throws HiveException {
+  public void addStreamingGroupResults(List<Integer> groupRowCounts) throws HiveException {
     throw new HiveException(
         "No streaming group result precomputation for " + this.getClass().getName());
   }
