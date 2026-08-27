@@ -140,31 +140,35 @@ public class PartitionExpressionForMetastore implements PartitionExpressionProxy
    * whatever class name its {@code udfClassName} field carries, so that name must resolve to a real {@link UDF}.
    */
   private void validateDeserializedExpr(ExprNodeDesc expr) throws MetaException {
-    if (expr instanceof ExprNodeGenericFuncDesc) {
-      GenericUDF genericUDF = ((ExprNodeGenericFuncDesc) expr).getGenericUDF();
-      if (genericUDF instanceof GenericUDFBridge) {
-        String udfClassName = ((GenericUDFBridge) genericUDF).getUdfClassName();
-        Class<?> udfClass;
-        try {
-          udfClass = Class.forName(udfClassName, false, Thread.currentThread().getContextClassLoader());
-        } catch (ClassNotFoundException | LinkageError e) {
-          throw new MetaException("Unknown UDF class in partition filter expression: " + udfClassName);
-        }
-        if (!UDF.class.isAssignableFrom(udfClass)) {
-          throw new MetaException("Class in partition filter expression is not a UDF: " + udfClassName);
-        }
-      }
-      if (genericUDF instanceof GenericUDFMacro) {
-        // a macro body is an expression graph of its own
-        ExprNodeDesc body = ((GenericUDFMacro) genericUDF).getBody();
-        if (body != null) {
-          validateDeserializedExpr(body);
-        }
-      }
+    if (expr instanceof ExprNodeGenericFuncDesc exprNodeGenericFuncDesc) {
+      validateDeserializedExprNodeGenericFuncDesc(exprNodeGenericFuncDesc);
     }
     if (expr.getChildren() != null) {
       for (ExprNodeDesc child : expr.getChildren()) {
         validateDeserializedExpr(child);
+      }
+    }
+  }
+
+  private void validateDeserializedExprNodeGenericFuncDesc(ExprNodeGenericFuncDesc expr) throws MetaException {
+    GenericUDF genericUDF = expr.getGenericUDF();
+    if (genericUDF instanceof GenericUDFBridge genericUDFBridge) {
+      String udfClassName = genericUDFBridge.getUdfClassName();
+      Class<?> udfClass;
+      try {
+        udfClass = Class.forName(udfClassName, false, Thread.currentThread().getContextClassLoader());
+      } catch (ClassNotFoundException | LinkageError e) {
+        throw new MetaException("Unknown UDF class in partition filter expression: " + udfClassName);
+      }
+      if (!UDF.class.isAssignableFrom(udfClass)) {
+        throw new MetaException("Class in partition filter expression is not a UDF: " + udfClassName);
+      }
+    }
+    if (genericUDF instanceof GenericUDFMacro genericUDFMacro) {
+      // a macro body is an expression graph of its own
+      ExprNodeDesc body = genericUDFMacro.getBody();
+      if (body != null) {
+        validateDeserializedExpr(body);
       }
     }
   }
