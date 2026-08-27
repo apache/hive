@@ -780,8 +780,8 @@ public class SessionManager extends CompositeService {
         }
       });
     } catch (RuntimeException e) {
-      if (e.getCause() instanceof HiveSQLException) {
-        throw (HiveSQLException) e.getCause();
+      if (e.getCause() instanceof HiveSQLException hivesqlexception) {
+        throw hivesqlexception;
       }
       throw e;
     } finally {

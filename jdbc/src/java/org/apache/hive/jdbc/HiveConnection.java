@@ -307,7 +307,6 @@ public class HiveConnection implements java.sql.Connection {
     this.fetchThreads = hiveConnection.fetchThreads;
   }
 
-  @VisibleForTesting
   protected int getNumRetries() {
     return maxRetries;
   }

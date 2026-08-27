@@ -837,7 +837,7 @@ public class HiveSessionImpl implements HiveSession {
 
   public HiveSessionSnapshot captureSnapshot() {
     return PersistableSessionUtils.captureSnapshot(sessionHandle, username, ipAddress,
-        sessionState, sessionConf, getProtocolVersion(), creationTime, lastAccessTime);
+        sessionState, getProtocolVersion(), creationTime, lastAccessTime);
   }
 
   @Override

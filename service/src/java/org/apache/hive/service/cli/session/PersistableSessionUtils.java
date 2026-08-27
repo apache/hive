@@ -31,7 +31,6 @@ import java.util.regex.Pattern;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -163,10 +162,8 @@ public final class PersistableSessionUtils {
   /**
    * Captures the current session state into a snapshot DTO.
    */
-  public static HiveSessionSnapshot captureSnapshot(SessionHandle sessionHandle,
-      String username, String ipAddress, SessionState sessionState,
-      HiveConf sessionConf, TProtocolVersion protocol,
-      long creationTime, long lastAccessTime) {
+  public static HiveSessionSnapshot captureSnapshot(SessionHandle sessionHandle, String username, String ipAddress,
+      SessionState sessionState, TProtocolVersion protocol, long creationTime, long lastAccessTime) {
     List<String> jars = new ArrayList<>();
     List<String> files = new ArrayList<>();
     if (sessionState != null) {
