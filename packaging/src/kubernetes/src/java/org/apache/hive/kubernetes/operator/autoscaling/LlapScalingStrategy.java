@@ -117,7 +117,7 @@ public class LlapScalingStrategy implements ScalingStrategy {
     double avgLLAPLoadPercent = totalLLAPCapacity > 0 ? (totalLLAPLoad / totalLLAPCapacity) * 100.00 : 0.0;
 
     double totalClusterLoad = totalPending + totalLLAPLoad;
-    double pendingLoadPercent = totalClusterLoad > 0 ? (totalPending / totalClusterLoad) * 100.0 : 0.0;
+    double pendingLoadPercent = (totalPending / totalClusterLoad) * 100.0;
 
     int scaleUpThreshold = autoscaling.scaleUpThreshold();
     int scaleDownThreshold = autoscaling.scaleDownThreshold();
