@@ -4452,11 +4452,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
             ColumnInfo colInfo = new ColumnInfo(SemanticAnalyzer.getColumnInternalName(pos),
                 TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(typeInfo),
                 tabAlias, false);
-            if (expression instanceof RexInputRef) {
+            if (expression instanceof RexInputRef inputRef) {
               // Carry the HIVE-29580 marker through this projection. Only expression-map
               // resolutions (the DISTINCT * rewrite's synthesized references) reach here with a
               // marked source; user-written ones already failed checkAmbiguousName in genRexNode.
-              ColumnInfo sourceColInfo = inputRR.getColumnInfos().get(((RexInputRef) expression).getIndex());
+              ColumnInfo sourceColInfo = inputRR.getColumnInfos().get(inputRef.getIndex());
               colInfo.setAmbiguousName(sourceColInfo.hasAmbiguousName());
             }
             outputRR.put(tabAlias, colAlias, colInfo);
