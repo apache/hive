@@ -70,7 +70,7 @@ public class LlapScalingStrategy implements ScalingStrategy {
       // HS2 scrape returned no data but LLAP is running — hold current state
       LOG.debug("[llap] HS2 scrape returned no pods; preserving LLAP (has {} running pods)", podMetrics.size());
       lastMetric = 0;
-      return Math.max(1, autoscaling.minReplicas());
+      return podMetrics.size();
     }
     if (sessionsDetected == null || !sessionsDetected) {
       LOG.debug("[llap] HS2 has no open sessions, scaling to minReplicas");
