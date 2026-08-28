@@ -1677,7 +1677,8 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
         // We couldn't do SQL filter pushdown. Get names via normal means.
         List<String> partNames = new LinkedList<>();
         hasUnknownPartitions.set(getPartitionNamesPrunedByExprNoTxn(
-            catName, dbName, tblName, partitionKeys, expr, args.getDefaultPartName(), (short) args.getMax(), partNames));
+            catName, dbName, tblName, partitionKeys, expr, args.getDefaultPartName(),
+            (short) args.getMax(), partNames));
         GetPartitionsArgs newArgs = new GetPartitionsArgs.GetPartitionsArgsBuilder(args).partNames(partNames).build();
         return getDirectSql().getPartitionsViaPartNames(catName, dbName, tblName, newArgs);
       }
@@ -1788,7 +1789,8 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
    * @param result The resulting names.
    * @return Whether the result contains any unknown partitions.
    */
-  private boolean getPartitionNamesPrunedByExprNoTxn(String catName, String dbName, String tblName, List<FieldSchema> partColumns, byte[] expr,
+  private boolean getPartitionNamesPrunedByExprNoTxn(String catName, String dbName, String tblName,
+      List<FieldSchema> partColumns, byte[] expr,
       String defaultPartName, short maxParts, List<String> result) throws MetaException {
     result.addAll(getPartitionNamesNoTxn(catName, dbName, tblName, (short) -1));
     return prunePartitionNamesByExpr(catName, dbName, tblName, result,
@@ -2045,7 +2047,8 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
 
       @Override
       protected boolean canUseDirectSql() throws MetaException {
-        return getDirectSql().generateSqlFilterForPushdown(catName, dbName, tblName, partitionKeys, tree, null, filter);
+        return getDirectSql().generateSqlFilterForPushdown(catName, dbName, tblName, partitionKeys,
+            tree, null, filter);
       }
 
       @Override
@@ -2100,8 +2103,8 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
           // if the filter mode is BY_EXPR initialize the filter and generate the expression tree
           // if there are more than one filter string we AND them together
           initExpressionTree();
-          return getDirectSql().generateSqlFilterForPushdown(table.getCatName(), table.getDbName(), table.getTableName(),
-              table.getPartitionKeys(), tree, null, filter);
+          return getDirectSql().generateSqlFilterForPushdown(table.getCatName(), table.getDbName(),
+              table.getTableName(), table.getPartitionKeys(), tree, null, filter);
         }
         // BY_VALUES and BY_NAMES are always supported
         return true;
@@ -2357,7 +2360,8 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
   }
 
   @Override
-  public int getNumPartitionsByFilter(TableName tableName, String filter) throws MetaException, NoSuchObjectException {
+  public int getNumPartitionsByFilter(TableName tableName, String filter)
+      throws MetaException, NoSuchObjectException {
     final ExpressionTree exprTree = org.apache.commons.lang3.StringUtils.isNotEmpty(filter)
         ? PartFilterExprUtil.parseFilterTree(filter) : ExpressionTree.EMPTY_TREE;
 
@@ -2377,7 +2381,8 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
 
       @Override
       protected boolean canUseDirectSql() throws MetaException {
-        return getDirectSql().generateSqlFilterForPushdown(catName, dbName, tblName, partitionKeys, exprTree, null, filter);
+        return getDirectSql().generateSqlFilterForPushdown(catName, dbName, tblName, partitionKeys,
+            exprTree, null, filter);
       }
 
       @Override
@@ -2391,7 +2396,8 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
     }.run(false);
   }
 
-  private Integer getNumPartitionsViaOrmFilter(String catName, String dbName, String tblName, ExpressionTree tree, boolean isValidatedFilter, List<FieldSchema> partitionKeys)
+  private Integer getNumPartitionsViaOrmFilter(String catName, String dbName, String tblName, ExpressionTree tree,
+      boolean isValidatedFilter, List<FieldSchema> partitionKeys)
       throws MetaException {
     Map<String, Object> params = new HashMap<>();
     String jdoFilter = makeQueryFilterString(catName, dbName, tblName, tree,
@@ -2846,7 +2852,8 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
   @Override
   public long updateParameterWithExpectedValue(Table table, String key, String expectedValue, String newValue)
       throws MetaException, NoSuchObjectException {
-    return new GetHelper<TableName, Long>(this, new TableName(table.getCatName(), table.getDbName(), table.getTableName())) {
+    return new GetHelper<TableName, Long>(this,
+        new TableName(table.getCatName(), table.getDbName(), table.getTableName())) {
       @Override
       protected String describeResult() {
         return "Affected rows";
@@ -3103,8 +3110,8 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
         msd.getLocation(), msd.getInputFormat(), msd.getOutputFormat(), msd
         .isCompressed(), msd.getNumBuckets(),
         (!isAcidTable) ? convertToSerDeInfo(msd.getSerDeInfo(), conf, true)
-            : new SerDeInfo(msd.getSerDeInfo().getName(), msd.getSerDeInfo().getSerializationLib(), Collections.emptyMap()),
-        bucList , orderList, sdParams);
+            : new SerDeInfo(msd.getSerDeInfo().getName(), msd.getSerDeInfo().getSerializationLib(),
+            Collections.emptyMap()), bucList , orderList, sdParams);
     if (!isAcidTable) {
       skewedInfo = new SkewedInfo(convertList(msd.getSkewedColNames()),
           convertToSkewedValues(msd.getSkewedColValues()),
