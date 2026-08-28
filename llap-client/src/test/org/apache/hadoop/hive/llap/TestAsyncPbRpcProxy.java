@@ -30,13 +30,16 @@ import java.util.Map;
 
 import com.google.protobuf.Message;
 import org.apache.commons.lang3.mutable.MutableInt;
-import org.apache.hadoop.hive.llap.LlapNodeId;
 import org.apache.hadoop.hive.llap.tez.LlapProtocolClientProxy;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class TestAsyncPbRpcProxy {
+
+  private static final Logger LOG = LoggerFactory.getLogger(TestAsyncPbRpcProxy.class);
 
   /**
    * Front-loads one-time initialization (Mockito mock generation, classloading, log4j2
@@ -48,7 +51,7 @@ class TestAsyncPbRpcProxy {
   static void warmUp() {
     mock(Message.class);
     mock(LlapProtocolClientProxy.ExecuteRequestCallback.class);
-    org.slf4j.LoggerFactory.getLogger(TestAsyncPbRpcProxy.class).info("warm-up");
+    LOG.info("warm-up");
     new RequestManagerForTest(1);
     LlapNodeId.getInstance("warmup-host", 1025);
   }
