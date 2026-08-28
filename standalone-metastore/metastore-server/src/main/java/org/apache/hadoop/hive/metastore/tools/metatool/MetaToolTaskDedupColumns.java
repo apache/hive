@@ -19,9 +19,13 @@
 
 package org.apache.hadoop.hive.metastore.tools.metatool;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.hadoop.hive.metastore.Deadline;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.tools.MetaToolObjectStore;
 
 class MetaToolTaskDedupColumns extends MetaToolTask {
@@ -55,20 +59,38 @@ class MetaToolTaskDedupColumns extends MetaToolTask {
       daemon.setDaemon(true);
       daemon.start();
     }
-    MetaToolObjectStore.DedupColumnsResult result;
+    MetaToolObjectStore.DedupColumnsResult result = null;
+    long timeoutMs = getCl().getDedupColumnsTimeoutSeconds() != null ?
+        getCl().getDedupColumnsTimeoutSeconds() * 1000L :
+        MetastoreConf.getTimeVar(getObjectStore().getConf(), MetastoreConf.ConfVars.DEDUP_COLUMNS_TIMEOUT,
+            TimeUnit.MILLISECONDS);
+    Deadline.registerIfNot(timeoutMs);
+    boolean timerStarted = false;
     try {
+      timerStarted = Deadline.startTimer("dedupColumns");
       result = getObjectStore().dedupColumns(catalogFilter, dbFilter, tableFilter, progress, isDryRun, isVerbose);
-      printSummary(result, isDryRun, isVerbose);
+    } catch (MetaException ignored) {
+      // Deadline.check throws MetaException when timeout, ignore this exception so we can print
+      // the result has been done so far.
     } finally {
       if (daemon != null) {
         stopped.set(true);
         daemon.interrupt();
       }
+      if (timerStarted) {
+        try {
+          Deadline.stopTimer();
+        } catch (MetaException ignored) {
+        }
+      }
     }
 
-    if (result.getException() != null) {
-      throw new IllegalStateException("HiveMetaTool: failed to de-duplicate column descriptors for all tables",
-          result.getException());
+    if (result != null) {
+      printSummary(result, isDryRun, isVerbose);
+      if (result.getException() != null) {
+        throw new IllegalStateException("HiveMetaTool: failed to de-duplicate column descriptors for all tables",
+            result.getException());
+      }
     }
   }
 

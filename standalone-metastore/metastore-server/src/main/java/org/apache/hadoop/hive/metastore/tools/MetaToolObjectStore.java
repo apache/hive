@@ -1018,7 +1018,7 @@ public class MetaToolObjectStore extends ObjectStore {
   }
 
   public DedupColumnsResult dedupColumns(String catalogFilter, String dbFilter, String tableFilter,
-      AtomicReference<String> progress, boolean isDryRun, boolean isVerbose) {
+      AtomicReference<String> progress, boolean isDryRun, boolean isVerbose) throws MetaException {
     return new ColumnDeduplicator(this.createRawStoreBundle(), progress, isDryRun, isVerbose)
         .run(catalogFilter, dbFilter, tableFilter);
   }
