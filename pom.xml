@@ -273,7 +273,7 @@
         <enabled>false</enabled>
       </snapshots>
     </repository>
-    <!-- Just for testing Apache Calcite Snapshot -->
+    <!-- Just for testing Apache Calcite Snapshot (locally)
     <repository>
       <id>apache.snapshots</id>
       <name>Apache Snapshots</name>
@@ -286,6 +286,7 @@
         <updatePolicy>daily</updatePolicy>
       </snapshots>
     </repository>
+    -->
   </repositories>
   <dependencyManagement>
     <dependencies>
