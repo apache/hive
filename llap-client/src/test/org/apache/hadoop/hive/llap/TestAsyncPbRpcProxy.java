@@ -36,7 +36,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
-public class TestAsyncPbRpcProxy {
+class TestAsyncPbRpcProxy {
 
   /**
    * Front-loads one-time initialization (Mockito mock generation, classloading, log4j2
