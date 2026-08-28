@@ -57,6 +57,7 @@ import org.apache.iceberg.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 /**
  * Writes the column statistics an ANALYZE, or a write told to compute them, produced as the
  * table's statistics file, per the policy the write's facts resolve to: replacing the stored file,
@@ -264,8 +265,8 @@ public final class IcebergColStatsWriter {
       // was computed stands on its own
       return;
     }
-    Predicate<String> upToDate = IcebergStoredStats.upToDateColStats(tbl, snapshot, statsOldSrc, conf, false);
-
+    Predicate<String> upToDate =
+        IcebergStoredStats.upToDateColStats(tbl, snapshot, statsOldSrc, conf, false);
     try (PuffinReader reader = Puffin.read(tbl.io().newInputFile(statsOldSrc.path()))
         .withFileSize(statsOldSrc.fileSizeInBytes())
         .withFooterSize(statsOldSrc.fileFooterSizeInBytes())
