@@ -20,6 +20,7 @@
 package org.apache.hadoop.hive.metastore.tools;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.hadoop.hive.metastore.Deadline;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -68,12 +69,14 @@ final class ColumnDeduplicator {
     this.isVerbose = isVerbose;
   }
 
-  MetaToolObjectStore.DedupColumnsResult run(String catalogFilter, String dbFilter, String tableFilter) {
+  MetaToolObjectStore.DedupColumnsResult run(String catalogFilter, String dbFilter, String tableFilter)
+      throws MetaException {
     List<TableInfo> tables = findPartitionedTables(catalogFilter, dbFilter, tableFilter);
     MetaToolObjectStore.DedupColumnsResult result = new MetaToolObjectStore.DedupColumnsResult(tables.size());
 
     long start = System.currentTimeMillis();
     for (int i = 0; i < tables.size() && result.getException() == null; i++) {
+      Deadline.checkTimeout();
       boolean committed = false;
       TableInfo table = tables.get(i);
       store.openTransaction();

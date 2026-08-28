@@ -151,6 +151,25 @@ public class TestHiveMetaToolCommandLine {
     cl = new HiveMetaToolCommandLine(new String[] {"-dedupColumns"});
     assertTrue(cl.isDedupColumns());
     assertEquals(0, cl.getDedupColumnsParams().length);
+
+    cl = new HiveMetaToolCommandLine(new String[] {"-dedupColumns", "-timeout", "3600"});
+    assertEquals(Long.valueOf(3600L), cl.getDedupColumnsTimeoutSeconds());
+  }
+
+  @Test
+  public void testTimeoutNotAllowed() throws ParseException {
+    exception.expect(IllegalArgumentException.class);
+    exception.expectMessage("-timeout may be used only for the -dedupColumns command");
+
+    new HiveMetaToolCommandLine(new String[] {"-listFSRoot", "-timeout", "60"});
+  }
+
+  @Test
+  public void testInvalidTimeout() throws ParseException {
+    exception.expect(IllegalArgumentException.class);
+    exception.expectMessage("HiveMetaTool:-timeout must be a positive number of seconds");
+
+    new HiveMetaToolCommandLine(new String[] {"-dedupColumns", "-timeout", "0"});
   }
 
   @Test
