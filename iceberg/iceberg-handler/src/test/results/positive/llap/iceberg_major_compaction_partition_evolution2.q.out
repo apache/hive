@@ -62,11 +62,35 @@ POSTHOOK: query: insert into ice_orc VALUES ('fn4','ln4', 1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: ice_comp@ice_orc
-PREHOOK: query: delete from ice_orc where last_name in ('ln3', 'ln4')
+PREHOOK: query: insert into ice_orc VALUES ('fn5','ln5', 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: ice_comp@ice_orc
+POSTHOOK: query: insert into ice_orc VALUES ('fn5','ln5', 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: ice_comp@ice_orc
+PREHOOK: query: insert into ice_orc VALUES ('fn6','ln6', 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: ice_comp@ice_orc
+POSTHOOK: query: insert into ice_orc VALUES ('fn6','ln6', 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: ice_comp@ice_orc
+PREHOOK: query: insert into ice_orc VALUES ('fn7','ln7', 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: ice_comp@ice_orc
+POSTHOOK: query: insert into ice_orc VALUES ('fn7','ln7', 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: ice_comp@ice_orc
+PREHOOK: query: delete from ice_orc where last_name in ('ln6', 'ln7')
 PREHOOK: type: QUERY
 PREHOOK: Input: ice_comp@ice_orc
 #### A masked pattern was here ####
-POSTHOOK: query: delete from ice_orc where last_name in ('ln3', 'ln4')
+POSTHOOK: query: delete from ice_orc where last_name in ('ln6', 'ln7')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: ice_comp@ice_orc
 #### A masked pattern was here ####
@@ -77,30 +101,6 @@ POSTHOOK: query: alter table ice_orc set partition spec(dept_id)
 POSTHOOK: type: ALTERTABLE_SETPARTSPEC
 POSTHOOK: Input: ice_comp@ice_orc
 POSTHOOK: Output: ice_comp@ice_orc
-PREHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn5','ln5')
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: ice_comp@ice_orc@dept_id=2
-POSTHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn5','ln5')
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: ice_comp@ice_orc@dept_id=2
-PREHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn6','ln6')
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: ice_comp@ice_orc@dept_id=2
-POSTHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn6','ln6')
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: ice_comp@ice_orc@dept_id=2
-PREHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn7','ln7')
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-PREHOOK: Output: ice_comp@ice_orc@dept_id=2
-POSTHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn7','ln7')
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: ice_comp@ice_orc@dept_id=2
 PREHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn8','ln8')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -109,11 +109,59 @@ POSTHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn8','ln8')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: ice_comp@ice_orc@dept_id=2
-PREHOOK: query: delete from ice_orc where last_name in ('ln7', 'ln8')
+PREHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn9','ln9')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: ice_comp@ice_orc@dept_id=2
+POSTHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn9','ln9')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: ice_comp@ice_orc@dept_id=2
+PREHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn10','ln10')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: ice_comp@ice_orc@dept_id=2
+POSTHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn10','ln10')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: ice_comp@ice_orc@dept_id=2
+PREHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn11','ln11')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: ice_comp@ice_orc@dept_id=2
+POSTHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn11','ln11')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: ice_comp@ice_orc@dept_id=2
+PREHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn12','ln12')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: ice_comp@ice_orc@dept_id=2
+POSTHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn12','ln12')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: ice_comp@ice_orc@dept_id=2
+PREHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn13','ln13')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: ice_comp@ice_orc@dept_id=2
+POSTHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn13','ln13')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: ice_comp@ice_orc@dept_id=2
+PREHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn14','ln14')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: ice_comp@ice_orc@dept_id=2
+POSTHOOK: query: insert into ice_orc PARTITION(dept_id=2) VALUES ('fn14','ln14')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: ice_comp@ice_orc@dept_id=2
+PREHOOK: query: delete from ice_orc where last_name in ('ln13', 'ln14')
 PREHOOK: type: QUERY
 PREHOOK: Input: ice_comp@ice_orc
 #### A masked pattern was here ####
-POSTHOOK: query: delete from ice_orc where last_name in ('ln7', 'ln8')
+POSTHOOK: query: delete from ice_orc where last_name in ('ln13', 'ln14')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: ice_comp@ice_orc
 #### A masked pattern was here ####
@@ -126,9 +174,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: ice_comp@ice_orc
 #### A masked pattern was here ####
 fn1	ln1	1
+fn10	ln10	2
+fn11	ln11	2
+fn12	ln12	2
 fn2	ln2	1
-fn5	ln5	2
-fn6	ln6	2
+fn3	ln3	1
+fn4	ln4	1
+fn5	ln5	1
+fn8	ln8	2
+fn9	ln9	2
 PREHOOK: query: describe formatted ice_orc
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: ice_comp@ice_orc
@@ -160,18 +214,18 @@ Table Parameters:
 	compactor.threshold.target.size	1500                
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"dept_id\",\"required\":false,\"type\":\"long\"}]}
 	current-snapshot-id 	#Masked#
-	current-snapshot-summary	{\"manifests-created\":\"2\",\"manifests-kept\":\"3\",\"manifests-replaced\":\"2\",\"deleted-data-files\":\"2\",\"deleted-records\":\"2\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"4\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"4\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-summary	{\"manifests-created\":\"2\",\"manifests-kept\":\"6\",\"manifests-replaced\":\"2\",\"deleted-data-files\":\"2\",\"deleted-records\":\"2\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"10\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"10\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"dept_id\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1000}]}
 	format-version      	2                   
 #### A masked pattern was here ####
-	numFiles            	4                   
-	numRows             	4                   
+	numFiles            	10                  
+	numRows             	10                  
 	parquet.compression 	zstd                
 #### A masked pattern was here ####
 	rawDataSize         	0                   
 	serialization.format	1                   
-	snapshot-count      	10                  
+	snapshot-count      	16                  
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
 	totalSize           	#Masked#
@@ -211,9 +265,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: ice_comp@ice_orc
 #### A masked pattern was here ####
 fn1	ln1	1
+fn10	ln10	2
+fn11	ln11	2
+fn12	ln12	2
 fn2	ln2	1
-fn5	ln5	2
-fn6	ln6	2
+fn3	ln3	1
+fn4	ln4	1
+fn5	ln5	1
+fn8	ln8	2
+fn9	ln9	2
 PREHOOK: query: describe formatted ice_orc
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: ice_comp@ice_orc
@@ -245,19 +305,19 @@ Table Parameters:
 	compactor.threshold.target.size	1500                
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"dept_id\",\"required\":false,\"type\":\"long\"}]}
 	current-snapshot-id 	#Masked#
-	current-snapshot-summary	{\"manifests-created\":\"2\",\"manifests-kept\":\"1\",\"manifests-replaced\":\"1\",\"added-data-files\":\"1\",\"deleted-data-files\":\"2\",\"added-records\":\"2\",\"deleted-records\":\"2\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"2\",\"total-records\":\"4\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"2\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-summary	{\"manifests-created\":\"2\",\"manifests-kept\":\"1\",\"manifests-replaced\":\"1\",\"added-data-files\":\"1\",\"deleted-data-files\":\"5\",\"added-records\":\"5\",\"deleted-records\":\"5\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"2\",\"total-records\":\"10\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"2\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"dept_id\",\"transform\":\"identity\",\"source-id\":3,\"field-id\":1000}]}
 	format-version      	2                   
 #### A masked pattern was here ####
 	numFiles            	2                   
 	numPartitions       	2                   
-	numRows             	4                   
+	numRows             	10                  
 	parquet.compression 	zstd                
 #### A masked pattern was here ####
 	rawDataSize         	0                   
 	serialization.format	1                   
-	snapshot-count      	12                  
+	snapshot-count      	18                  
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
 	totalSize           	#Masked#
@@ -289,19 +349,59 @@ POSTHOOK: query: alter table ice_orc set partition spec()
 POSTHOOK: type: ALTERTABLE_SETPARTSPEC
 POSTHOOK: Input: ice_comp@ice_orc
 POSTHOOK: Output: ice_comp@ice_orc
-PREHOOK: query: insert into ice_orc VALUES ('fn9','ln9', 3)
+PREHOOK: query: insert into ice_orc VALUES ('fn15','ln15', 3)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: ice_comp@ice_orc
-POSTHOOK: query: insert into ice_orc VALUES ('fn9','ln9', 3)
+POSTHOOK: query: insert into ice_orc VALUES ('fn15','ln15', 3)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: ice_comp@ice_orc
-PREHOOK: query: insert into ice_orc VALUES ('fn10','ln10', 3)
+PREHOOK: query: insert into ice_orc VALUES ('fn16','ln16', 3)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: ice_comp@ice_orc
-POSTHOOK: query: insert into ice_orc VALUES ('fn10','ln10', 3)
+POSTHOOK: query: insert into ice_orc VALUES ('fn16','ln16', 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: ice_comp@ice_orc
+PREHOOK: query: insert into ice_orc VALUES ('fn17','ln17', 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: ice_comp@ice_orc
+POSTHOOK: query: insert into ice_orc VALUES ('fn17','ln17', 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: ice_comp@ice_orc
+PREHOOK: query: insert into ice_orc VALUES ('fn18','ln18', 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: ice_comp@ice_orc
+POSTHOOK: query: insert into ice_orc VALUES ('fn18','ln18', 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: ice_comp@ice_orc
+PREHOOK: query: insert into ice_orc VALUES ('fn19','ln19', 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: ice_comp@ice_orc
+POSTHOOK: query: insert into ice_orc VALUES ('fn19','ln19', 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: ice_comp@ice_orc
+PREHOOK: query: insert into ice_orc VALUES ('fn20','ln20', 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: ice_comp@ice_orc
+POSTHOOK: query: insert into ice_orc VALUES ('fn20','ln20', 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: ice_comp@ice_orc
+PREHOOK: query: insert into ice_orc VALUES ('fn21','ln21', 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: ice_comp@ice_orc
+POSTHOOK: query: insert into ice_orc VALUES ('fn21','ln21', 3)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: ice_comp@ice_orc
@@ -314,11 +414,22 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: ice_comp@ice_orc
 #### A masked pattern was here ####
 fn1	ln1	1
-fn10	ln10	3
+fn10	ln10	2
+fn11	ln11	2
+fn12	ln12	2
+fn15	ln15	3
+fn16	ln16	3
+fn17	ln17	3
+fn18	ln18	3
+fn19	ln19	3
 fn2	ln2	1
-fn5	ln5	2
-fn6	ln6	2
-fn9	ln9	3
+fn20	ln20	3
+fn21	ln21	3
+fn3	ln3	1
+fn4	ln4	1
+fn5	ln5	1
+fn8	ln8	2
+fn9	ln9	2
 PREHOOK: query: describe formatted ice_orc
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: ice_comp@ice_orc
@@ -343,17 +454,17 @@ Table Parameters:
 	compactor.threshold.target.size	1500                
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"dept_id\",\"required\":false,\"type\":\"long\"}]}
 	current-snapshot-id 	#Masked#
-	current-snapshot-summary	{\"manifests-created\":\"1\",\"manifests-kept\":\"2\",\"manifests-replaced\":\"0\",\"added-data-files\":\"1\",\"added-records\":\"1\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"6\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"4\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-summary	{\"manifests-created\":\"1\",\"manifests-kept\":\"7\",\"manifests-replaced\":\"0\",\"added-data-files\":\"1\",\"added-records\":\"1\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"17\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"9\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	format-version      	2                   
 #### A masked pattern was here ####
-	numFiles            	4                   
-	numRows             	6                   
+	numFiles            	9                   
+	numRows             	17                  
 	parquet.compression 	zstd                
 #### A masked pattern was here ####
 	rawDataSize         	0                   
 	serialization.format	1                   
-	snapshot-count      	14                  
+	snapshot-count      	25                  
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
 	totalSize           	#Masked#
@@ -388,11 +499,22 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: ice_comp@ice_orc
 #### A masked pattern was here ####
 fn1	ln1	1
-fn10	ln10	3
+fn10	ln10	2
+fn11	ln11	2
+fn12	ln12	2
+fn15	ln15	3
+fn16	ln16	3
+fn17	ln17	3
+fn18	ln18	3
+fn19	ln19	3
 fn2	ln2	1
-fn5	ln5	2
-fn6	ln6	2
-fn9	ln9	3
+fn20	ln20	3
+fn21	ln21	3
+fn3	ln3	1
+fn4	ln4	1
+fn5	ln5	1
+fn8	ln8	2
+fn9	ln9	2
 PREHOOK: query: describe formatted ice_orc
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: ice_comp@ice_orc
@@ -417,17 +539,17 @@ Table Parameters:
 	compactor.threshold.target.size	1500                
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"dept_id\",\"required\":false,\"type\":\"long\"}]}
 	current-snapshot-id 	#Masked#
-	current-snapshot-summary	{\"manifests-created\":\"4\",\"manifests-kept\":\"0\",\"manifests-replaced\":\"3\",\"added-data-files\":\"1\",\"deleted-data-files\":\"4\",\"added-records\":\"6\",\"deleted-records\":\"6\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"3\",\"total-records\":\"6\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"1\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-summary	{\"manifests-created\":\"9\",\"manifests-kept\":\"0\",\"manifests-replaced\":\"8\",\"added-data-files\":\"1\",\"deleted-data-files\":\"9\",\"added-records\":\"17\",\"deleted-records\":\"17\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"3\",\"total-records\":\"17\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"1\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
 	current-snapshot-timestamp-ms	#Masked#       
 	format-version      	2                   
 #### A masked pattern was here ####
 	numFiles            	1                   
-	numRows             	6                   
+	numRows             	17                  
 	parquet.compression 	zstd                
 #### A masked pattern was here ####
 	rawDataSize         	0                   
 	serialization.format	1                   
-	snapshot-count      	15                  
+	snapshot-count      	26                  
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
 	totalSize           	#Masked#
