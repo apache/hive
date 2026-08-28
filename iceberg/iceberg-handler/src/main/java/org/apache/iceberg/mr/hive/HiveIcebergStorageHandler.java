@@ -724,6 +724,17 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   }
 
   @Override
+  public boolean areColumnStatsUptoDate(org.apache.hadoop.hive.ql.metadata.Table hmsTable, List<String> colNames) {
+    if (canSetColStatistics(hmsTable)) {
+      return IcebergStoredStats.colStatsAccurate(hmsTable, colNames, conf);
+    }
+    // the metastore holds them, and its single row describes the current table: a scan of a
+    // branch, a tag, a point in time or a metadata table is not described by it
+    return hmsTable.getQualifier().isEmpty() &&
+        StatsSetupConst.areColumnStatsUptoDate(hmsTable.getParameters(), colNames);
+  }
+
+  @Override
   public boolean setColStatistics(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
       Iterator<ColumnStatistics> colStats) {
     Table tbl = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
@@ -812,12 +823,17 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       return new AggrStats(aggregated, partNames.size());
     }
 
+    Set<String> columns = Sets.newHashSet(colNames);
     Map<String, List<ColumnStatisticsObj>> statsByPart = IcebergColStatsReader.readPart(table, statsFile,
         partition -> partitions.contains(partition) && upToDate.test(partition),
-        Sets.newHashSet(colNames), conf);
+        // an ask as wide as the schema narrows nothing, so it reads each blob whole
+        columns.size() == table.schema().columns().size() ? null : columns, conf);
 
     List<ColumnStatistics> partStats = Lists.newArrayList();
     statsByPart.forEach((partition, statsObjs) -> {
+      // a whole-blob read decodes every stored entry, and a carried blob may hold entries under
+      // names the schema no longer has: only the asked columns may count toward the ask
+      statsObjs.removeIf(obj -> !columns.contains(obj.getColName()));
       // the metastore counts a partition as found only when it has every column asked about
       if (statsObjs.size() == colNames.size()) {
         ColumnStatisticsDesc statsDesc =
@@ -841,7 +857,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     if (hmsTable.getMetaTable() != null) {
       return null;
     }
-    return getStatsSource().equals(HiveMetaHook.ICEBERG) || hmsTable.getSnapshotRef() != null ?
+    return getStatsSource().equals(HiveMetaHook.ICEBERG) || !hmsTable.getQualifier().isEmpty() ?
         snapshotRowCount(hmsTable) : metastoreRowCount(hmsTable);
   }
 
@@ -877,6 +893,14 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     if (partNames.stream().anyMatch(DummyPartition::isVoid)) {
       // rows that belong to no partition are never pruned, so their count may include rows the predicate
       // does not select
+      return Map.of();
+    }
+    // an equality delete under an unpartitioned spec applies to every data file, so no partition's
+    // entry accounts for it. By spec, not the void name: a dropped field leaves a void transform
+    boolean globalDeletes = getOrCachePartitionStats(table, snapshot).values().stream()
+        .anyMatch(stats -> table.specs().get(stats.specId()).isUnpartitioned() &&
+            stats.equalityDeleteRecordCount() > 0);
+    if (globalDeletes) {
       return Map.of();
     }
     Map<String, Long> rowCounts = Maps.newHashMapWithExpectedSize(partNames.size());

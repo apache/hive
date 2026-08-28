@@ -57,6 +57,7 @@ import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataFiles;
 import org.apache.iceberg.DataOperations;
+import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.GenericBlobMetadata;
@@ -68,8 +69,10 @@ import org.apache.iceberg.StatisticsFile;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.data.Record;
 import org.apache.iceberg.hadoop.ConfigProperties;
 import org.apache.iceberg.io.CloseableIterable;
+import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.mr.hive.stats.IcebergColStatsReader;
 import org.apache.iceberg.mr.hive.stats.IcebergColStatsWriter;
 import org.apache.iceberg.mr.hive.stats.IcebergPartitionStatsReader;
@@ -97,6 +100,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+
 
 /**
  * Tests verifying correct statistics generation behaviour on Iceberg tables triggered by: ANALYZE queries, inserts,
@@ -1211,6 +1215,41 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
   }
 
   @Test
+  public void testAGlobalDeleteRefusesEveryPartitionsRowCount() throws Exception {
+    // an equality delete written under the unpartitioned spec - as a foreign engine writes it -
+    // applies to the rows of every partition, while the statistics bookkeep it under the
+    // partition of no value: no partition's own entry accounts for it
+    assumeParquetHiveCatalogIceberg();
+    Assume.assumeTrue("equality deletes need format v2", formatVersion >= 2);
+
+    TableIdentifier identifier = TableIdentifier.of("default", "customers_global_delete");
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
+    testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of(), formatVersion);
+    Table tbl = testTables.loadTable(identifier);
+    tbl.updateSpec().addField("last_name").commit();
+    shell.executeStatement(testTables.getInsertQuery(
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, identifier, false));
+
+    HiveIcebergStorageHandler handler = storageHandler();
+    List<String> partNames = partitionNames(handler, hmsTable(identifier));
+    Assert.assertEquals("with no delete live, every partition's count is served",
+        partNames.size(), handler.getRowCount(hmsTable(identifier), partNames).size());
+
+    tbl.refresh();
+    List<Record> toDelete = TestHelper.RecordsBuilder
+        .newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA).add(0L, "Alice", "Brown").build();
+    DeleteFile deleteFile = HiveIcebergTestUtils.createEqualityDeleteFile(tbl, tbl.specs().get(0),
+        "global-eq-delete", ImmutableList.of("customer_id"), fileFormat, toDelete);
+    tbl.newRowDelta().addDeletes(deleteFile).commit();
+    // a write of Hive's own publishes the partition statistics that carry the delete
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (5, 'Eve', 'Green')");
+
+    Assert.assertTrue("a delete of no partition refuses every partition's count",
+        handler.getRowCount(hmsTable(identifier), partitionNames(handler, hmsTable(identifier))).isEmpty());
+  }
+
+  @Test
   public void testAnalyzePartitionSpecRejected() {
     assumeParquetHiveCatalogIceberg();
 
@@ -2019,7 +2058,18 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
 
     shell.executeStatement("INSERT INTO " + identifier + " VALUES (2, 5)");
 
-    // the file holds no half-truth for v: the increment's entry was not promoted
+    org.apache.hadoop.hive.ql.metadata.Table hmsTable = hmsTable(identifier);
+    HiveIcebergStorageHandler handler = storageHandler();
+    Assert.assertTrue("the analyzed column, completed by the increment, still answers",
+        handler.areColumnStatsUptoDate(hmsTable, List.of("id")));
+    Assert.assertFalse("a column the stored file never described must not answer",
+        handler.areColumnStatsUptoDate(hmsTable, List.of("v")));
+    // asked of several at once it answers for all of them or for none
+    Assert.assertFalse("one column short of an answer leaves the ask unanswered",
+        handler.areColumnStatsUptoDate(hmsTable, List.of("id", "v")));
+    Assert.assertTrue("and a repeated ask of the answered one still answers",
+        handler.areColumnStatsUptoDate(hmsTable, List.of("id", "id")));
+    // the file itself holds no half-truth for v: the increment's entry was not promoted
     List<ColumnStatisticsObj> stored = readCurrentColStats(identifier).getFirst().getStatsObj();
     Assert.assertEquals(List.of("id"), stored.stream().map(ColumnStatisticsObj::getColName).toList());
   }
@@ -2088,6 +2138,32 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
         storageHandler().setColStatistics(hmsTable, List.of(nothing).iterator()));
     Assert.assertTrue("and what was stored before it still is",
         hasColStatsForCurrentSnapshot(identifier));
+  }
+
+  @Test
+  public void testTimeTravelIsNeverAnsweredFromTheMetastoreRow() {
+    // the metastore's single row describes the current snapshot; a scan of an older one must
+    // read its own snapshot whatever the statistics source says
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "orders_time_travel_stats");
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier + " (id bigint) STORED BY ICEBERG STORED AS PARQUET");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1), (5)");
+    long oldSnapshot = testTables.loadTable(identifier).currentSnapshot().snapshotId();
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (7), (9), (11)");
+
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_ICEBERG_STATS_SOURCE.varname, "metastore");
+    try {
+      org.apache.hadoop.hive.ql.metadata.Table asOf = hmsTable(identifier);
+      asOf.setAsOfVersion(String.valueOf(oldSnapshot));
+      Assert.assertEquals("the scan reads two rows, however the table now holds five",
+          Long.valueOf(2), storageHandler().getRowCount(asOf));
+      Assert.assertFalse("the metastore's row must not answer for a point in time",
+          storageHandler().areColumnStatsUptoDate(asOf, List.of("id")));
+    } finally {
+      shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_ICEBERG_STATS_SOURCE.varname, "iceberg");
+    }
   }
 
   @Test
@@ -2256,39 +2332,30 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
   }
 
   @Test
-  public void aWholeTableReadTakesNoPerPartitionFile() throws Exception {
-    // statistics are served at the granularity the session keeps them at. A file holding
-    // partitions states them, and what it folds from them states the table only while it holds
-    // every one - so a whole-table read passes it by rather than answer from part of a table
+  public void testACarriedEntryOfARenamedColumnCannotAnswerForTheNewName() throws Exception {
+    // ANALYZE full table -> rename a column, which moves no snapshot -> ANALYZE one partition.
+    // The other partition's entry is carried under the old name and holds as many columns as
+    // the ask, so it must be refused by identity, not by count.
     assumeParquetHiveCatalogIceberg();
 
-    TableIdentifier identifier = TableIdentifier.of("default", "orders_two_granularities");
+    TableIdentifier identifier = TableIdentifier.of("default", "orders_renamed_column");
     shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
-    HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL, false);
-    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier + " (id bigint, p string) " +
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier + " (id bigint, val bigint, p string) " +
         "PARTITIONED BY SPEC (p) STORED BY ICEBERG STORED AS PARQUET TBLPROPERTIES ('format-version'='2')");
-    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, 'a'), (7, 'b')");
-    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
-    Assert.assertFalse("whole-table numbers were stored and nothing has happened since",
-        storageHandler().getColStatistics(hmsTable(identifier), ImmutableList.of("id")).isEmpty());
-
-    // the same table gathered per partition: the file at the current snapshot holds partitions
-    HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL, true);
-    shell.executeStatement("INSERT INTO " + identifier + " VALUES (9, 'c')");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, 100, 'a'), (7, 7, 'b')");
     shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
 
-    HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL, false);
-    Assert.assertTrue("a whole-table read is not answered from the partitions of a later gather",
-        storageHandler().getColStatistics(hmsTable(identifier), ImmutableList.of("id")).isEmpty());
+    List<String> partNames = ImmutableList.of("p=a", "p=b");
+    Assert.assertEquals("both partitions carry every column asked about", 2,
+        storageHandler().getAggrColStatsFor(hmsTable(identifier), ImmutableList.of("id", "val", "p"), partNames)
+            .getPartsFound());
 
-    // and the partitions still answer for themselves, at the granularity they were kept at
-    HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL, true);
-    AggrStats aggrStats = storageHandler().getAggrColStatsFor(hmsTable(identifier),
-        ImmutableList.of("id"), ImmutableList.of("p=a", "p=b", "p=c"));
-    Assert.assertEquals("every partition the ask names", 3, aggrStats.getPartsFound());
-    LongColumnStatsData stats = aggrStats.getColStats().getFirst().getStatsData().getLongStats();
-    Assert.assertEquals("the least value of every partition", 1L, stats.getLowValue());
-    Assert.assertEquals("and the greatest", 9L, stats.getHighValue());
+    shell.executeStatement("ALTER TABLE " + identifier + " CHANGE COLUMN val val2 bigint");
+    shell.executeStatement("ANALYZE TABLE " + identifier + " PARTITION (p = 'b') COMPUTE STATISTICS FOR COLUMNS");
+
+    AggrStats aggrStats = storageHandler().getAggrColStatsFor(
+        hmsTable(identifier), ImmutableList.of("id", "val2", "p"), partNames);
+    Assert.assertEquals("the carried entry holds no column of the asked name", 1, aggrStats.getPartsFound());
   }
 
   @Test
@@ -2348,6 +2415,42 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
         hmsTable(identifier), ImmutableList.of("id"), ImmutableList.of("p=a", "p=b", "p=c"));
     Assert.assertNotEquals("the fold covers two of the three asked about, so it cannot answer for all",
         3, aggrStats.getPartsFound());
+  }
+
+  @Test
+  public void aWholeTableReadTakesNoPerPartitionFile() throws Exception {
+    // statistics are served at the granularity the session keeps them at. A file holding
+    // partitions states them, and what it folds from them states the table only while it holds
+    // every one - so a whole-table read passes it by rather than answer from part of a table
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "orders_two_granularities");
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
+    HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL, false);
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier + " (id bigint, p string) " +
+        "PARTITIONED BY SPEC (p) STORED BY ICEBERG STORED AS PARQUET TBLPROPERTIES ('format-version'='2')");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, 'a'), (7, 'b')");
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+    Assert.assertFalse("whole-table numbers were stored and nothing has happened since",
+        storageHandler().getColStatistics(hmsTable(identifier), ImmutableList.of("id")).isEmpty());
+
+    // the same table gathered per partition: the file at the current snapshot holds partitions
+    HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL, true);
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (9, 'c')");
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+
+    HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL, false);
+    Assert.assertTrue("a whole-table read is not answered from the partitions of a later gather",
+        storageHandler().getColStatistics(hmsTable(identifier), ImmutableList.of("id")).isEmpty());
+
+    // and the partitions still answer for themselves, at the granularity they were kept at
+    HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL, true);
+    AggrStats aggrStats = storageHandler().getAggrColStatsFor(hmsTable(identifier),
+        ImmutableList.of("id"), ImmutableList.of("p=a", "p=b", "p=c"));
+    Assert.assertEquals("every partition the ask names", 3, aggrStats.getPartsFound());
+    LongColumnStatsData stats = aggrStats.getColStats().getFirst().getStatsData().getLongStats();
+    Assert.assertEquals("the least value of every partition", 1L, stats.getLowValue());
+    Assert.assertEquals("and the greatest", 9L, stats.getHighValue());
   }
 
   @Test
