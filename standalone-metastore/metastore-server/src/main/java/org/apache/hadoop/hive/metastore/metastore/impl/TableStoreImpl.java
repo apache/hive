@@ -1845,7 +1845,7 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
     String dbname = normalizeIdentifier(tableName.getDb());
     String name = normalizeIdentifier(tableName.getTable());
     AtomicReference<MColumnDescriptor> oldCd = new AtomicReference<>();
-    MTable table = this.getMTable(catName, dbname, name);
+    MTable table = this.getMTable(new_part.getCatName(), new_part.getDbName(), new_part.getTableName());
     MPartition oldp = getMPartition(catName, dbname, name, part_vals, table);
     Partition result = alterPartitionNoTxn(catName, dbname, name, oldp, new_part, queryValidWriteIds, oldCd, table);
     removeUnusedColumnDescriptor(oldCd.get());
