@@ -174,7 +174,9 @@ public class TableStoreImpl extends RawStoreBundle implements TableStore {
     MTable tbl = getMTable(catName, dbName, tableName);
     pm.retrieve(tbl);
     if (tbl != null) {
-      materializedView = TableType.MATERIALIZED_VIEW.toString().equals(tbl.getTableType());
+      materializedView = TableType.MATERIALIZED_VIEW.toString().equals(tbl.getTableType())
+        || TableType.EXTERNAL_MATERIALIZED_VIEW.toString().equals(tbl.getTableType());
+
       // first remove all the grants
       List<MTablePrivilege> tabGrants = listAllTableGrants(catName, dbName, tableName);
       if (CollectionUtils.isNotEmpty(tabGrants)) {
