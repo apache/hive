@@ -342,14 +342,10 @@ public class NotificationStoreImpl extends RawStoreBundle implements Notificatio
     Long result = 0L;
     long fromEventId = rqst.getFromEventId();
     String inputDbName = rqst.getDbName();
-    String catName = rqst.isSetCatName() ? rqst.getCatName() : getDefaultCatalog(conf);
+    String catName = rqst.isSetCatName() ? normalizeIdentifier(rqst.getCatName()) : getDefaultCatalog(conf);
     long toEventId;
     String paramSpecs;
     List<Object> paramVals = new ArrayList<>();
-
-    // We store a catalog name in lower case in metastore and also use the same way everywhere in
-    // hive.
-    assert catName.equals(catName.toLowerCase());
 
     // Build the query to count events, part by part
     String queryStr = "select count(eventId) from " + MNotificationLog.class.getName();
@@ -367,8 +363,7 @@ public class NotificationStoreImpl extends RawStoreBundle implements Notificatio
       // counted.
       queryStr = queryStr + " && (dbName == inputDbName || dbName == null)";
       paramSpecs = paramSpecs + ", java.lang.String inputDbName";
-      // We store a database name in lower case in metastore.
-      paramVals.add(inputDbName.toLowerCase());
+      paramVals.add(normalizeIdentifier(inputDbName));
     }
 
     // catName could be NULL in case of transaction related events, which also need to be
@@ -388,7 +383,7 @@ public class NotificationStoreImpl extends RawStoreBundle implements Notificatio
     if (rqst.isSetTableNames() && !rqst.getTableNames().isEmpty()) {
       queryStr = queryStr + " && (";
       for (String tableName : rqst.getTableNames()) {
-        paramVals.add(tableName.toLowerCase());
+        paramVals.add(normalizeIdentifier(tableName));
         queryStr = queryStr + "tableName == tableName" + paramVals.size() + " || ";
         paramSpecs = paramSpecs + ", java.lang.String tableName" + paramVals.size();
       }

@@ -483,7 +483,6 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
     validateTableCols(table, colNames);
 
     List<MTableColumnStatistics> result = Collections.emptyList();
-    Query query = pm.newQuery(MTableColumnStatistics.class);
     result =
         Batchable.runBatched(batchSize, colNames, new Batchable<String, MTableColumnStatistics>() {
           @Override
@@ -504,6 +503,7 @@ public class ColStatsStoreImpl extends RawStoreBundle implements ColStatsStore {
               params[i + 4] = input.get(i);
             }
             filter.append(")");
+            Query query = pm.newQuery(MTableColumnStatistics.class);
             query.setFilter(filter.toString());
             query.declareParameters(paramStr.toString());
             List<MTableColumnStatistics> paritial = (List<MTableColumnStatistics>) query.executeWithArray(params);
