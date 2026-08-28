@@ -1,0 +1,827 @@
+PREHOOK: query: create external table ice_part_stats (id bigint, p string)
+    partitioned by spec (p)
+stored by iceberg tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_part_stats
+POSTHOOK: query: create external table ice_part_stats (id bigint, p string)
+    partitioned by spec (p)
+stored by iceberg tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_part_stats
+PREHOOK: query: insert into ice_part_stats values (1, 'a'), (9, 'a'), (7, 'b'), (3, 'c')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_part_stats
+POSTHOOK: query: insert into ice_part_stats values (1, 'a'), (9, 'a'), (7, 'b'), (3, 'c')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_part_stats
+PREHOOK: query: analyze table ice_part_stats compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@ice_part_stats
+PREHOOK: Output: default@ice_part_stats
+PREHOOK: Output: default@ice_part_stats@p=a
+PREHOOK: Output: default@ice_part_stats@p=b
+PREHOOK: Output: default@ice_part_stats@p=c
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: analyze table ice_part_stats compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@ice_part_stats
+POSTHOOK: Output: default@ice_part_stats
+POSTHOOK: Output: default@ice_part_stats@p=a
+POSTHOOK: Output: default@ice_part_stats@p=b
+POSTHOOK: Output: default@ice_part_stats@p=c
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: explain
+select max(id) from ice_part_stats where p = 'a'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_part_stats
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select max(id) from ice_part_stats where p = 'a'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_part_stats
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select max(id) from ice_part_stats where p = 'a'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_part_stats
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select max(id) from ice_part_stats where p = 'a'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_part_stats
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+9
+PREHOOK: query: insert into ice_part_stats values (11, 'a')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_part_stats
+POSTHOOK: query: insert into ice_part_stats values (11, 'a')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_part_stats
+PREHOOK: query: explain
+select id from ice_part_stats where p in ('a', 'b')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_part_stats
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select id from ice_part_stats where p in ('a', 'b')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_part_stats
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_part_stats
+                  filterExpr: (p) IN ('a', 'b') (type: boolean)
+                  Statistics: Num rows: 4 Data size: #Masked# Basic stats: COMPLETE Column stats: PARTIAL
+                  Select Operator
+                    expressions: id (type: bigint)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 4 Data size: #Masked# Basic stats: COMPLETE Column stats: PARTIAL
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 4 Data size: #Masked# Basic stats: COMPLETE Column stats: PARTIAL
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+select max(id) from ice_part_stats where p = 'a'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_part_stats
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select max(id) from ice_part_stats where p = 'a'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_part_stats
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_part_stats
+                  filterExpr: (p = 'a') (type: boolean)
+                  Statistics: Num rows: 3 Data size: #Masked# Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: id (type: bigint)
+                    outputColumnNames: id
+                    Statistics: Num rows: 3 Data size: #Masked# Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: max(id)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: #Masked# Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: #Masked# Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: #Masked# Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: #Masked# Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select max(id) from ice_part_stats where p = 'a'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_part_stats
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select max(id) from ice_part_stats where p = 'a'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_part_stats
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+11
+PREHOOK: query: explain
+select max(id) from ice_part_stats where p = 'b'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_part_stats
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select max(id) from ice_part_stats where p = 'b'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_part_stats
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select max(id) from ice_part_stats where p = 'b'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_part_stats
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select max(id) from ice_part_stats where p = 'b'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_part_stats
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+7
+PREHOOK: query: analyze table ice_part_stats partition (p = 'a') compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@ice_part_stats
+PREHOOK: Output: default@ice_part_stats
+PREHOOK: Output: default@ice_part_stats@p=a
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: analyze table ice_part_stats partition (p = 'a') compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@ice_part_stats
+POSTHOOK: Output: default@ice_part_stats
+POSTHOOK: Output: default@ice_part_stats@p=a
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: explain
+select max(id) from ice_part_stats where p = 'a'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_part_stats
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select max(id) from ice_part_stats where p = 'a'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_part_stats
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select max(id) from ice_part_stats where p = 'a'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_part_stats
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select max(id) from ice_part_stats where p = 'a'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_part_stats
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+11
+PREHOOK: query: explain
+select max(id) from ice_part_stats where p = 'b'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_part_stats
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select max(id) from ice_part_stats where p = 'b'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_part_stats
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select max(id) from ice_part_stats where p = 'b'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_part_stats
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select max(id) from ice_part_stats where p = 'b'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_part_stats
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+7
+PREHOOK: query: explain
+select count(id) from ice_part_stats where p = 'b'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_part_stats
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select count(id) from ice_part_stats where p = 'b'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_part_stats
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(id) from ice_part_stats where p = 'b'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_part_stats
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(id) from ice_part_stats where p = 'b'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_part_stats
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+PREHOOK: query: explain
+select max(id) from ice_part_stats where p in ('a', 'b')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_part_stats
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select max(id) from ice_part_stats where p in ('a', 'b')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_part_stats
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select max(id) from ice_part_stats where p in ('a', 'b')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_part_stats
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select max(id) from ice_part_stats where p in ('a', 'b')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_part_stats
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+11
+PREHOOK: query: drop table ice_part_stats
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_part_stats
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_part_stats
+POSTHOOK: query: drop table ice_part_stats
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_part_stats
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_part_stats
+PREHOOK: query: create external table ice_unpart (id bigint)
+stored by iceberg tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_unpart
+POSTHOOK: query: create external table ice_unpart (id bigint)
+stored by iceberg tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_unpart
+PREHOOK: query: insert into ice_unpart values (1), (5), (9)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_unpart
+POSTHOOK: query: insert into ice_unpart values (1), (5), (9)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_unpart
+PREHOOK: query: analyze table ice_unpart compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@ice_unpart
+PREHOOK: Output: default@ice_unpart
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: analyze table ice_unpart compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@ice_unpart
+POSTHOOK: Output: default@ice_unpart
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: explain
+select max(id) from ice_unpart
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_unpart
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select max(id) from ice_unpart
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_unpart
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select max(id) from ice_unpart
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_unpart
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select max(id) from ice_unpart
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_unpart
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+9
+PREHOOK: query: insert into ice_unpart values (11)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_unpart
+POSTHOOK: query: insert into ice_unpart values (11)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_unpart
+PREHOOK: query: explain
+select max(id) from ice_unpart
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_unpart
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select max(id) from ice_unpart
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_unpart
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select max(id) from ice_unpart
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_unpart
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select max(id) from ice_unpart
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_unpart
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+11
+PREHOOK: query: insert into ice_unpart values (20)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_unpart
+POSTHOOK: query: insert into ice_unpart values (20)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_unpart
+PREHOOK: query: explain
+select max(id) from ice_unpart
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_unpart
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select max(id) from ice_unpart
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_unpart
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_unpart
+                  Statistics: Num rows: 5 Data size: #Masked# Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: id (type: bigint)
+                    outputColumnNames: id
+                    Statistics: Num rows: 5 Data size: #Masked# Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: max(id)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: #Masked# Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: #Masked# Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: #Masked# Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: #Masked# Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select max(id) from ice_unpart
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_unpart
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select max(id) from ice_unpart
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_unpart
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+20
+PREHOOK: query: drop table ice_unpart
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_unpart
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_unpart
+POSTHOOK: query: drop table ice_unpart
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_unpart
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_unpart
+PREHOOK: query: create external table ice_tbl_level (id bigint, p string)
+    partitioned by spec (p)
+stored by iceberg tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_tbl_level
+POSTHOOK: query: create external table ice_tbl_level (id bigint, p string)
+    partitioned by spec (p)
+stored by iceberg tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_tbl_level
+PREHOOK: query: insert into ice_tbl_level values (1, 'a'), (9, 'a'), (7, 'b')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_tbl_level
+POSTHOOK: query: insert into ice_tbl_level values (1, 'a'), (9, 'a'), (7, 'b')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_tbl_level
+PREHOOK: query: analyze table ice_tbl_level compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@ice_tbl_level
+PREHOOK: Output: default@ice_tbl_level
+PREHOOK: Output: default@ice_tbl_level@p=a
+PREHOOK: Output: default@ice_tbl_level@p=b
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: analyze table ice_tbl_level compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@ice_tbl_level
+POSTHOOK: Output: default@ice_tbl_level
+POSTHOOK: Output: default@ice_tbl_level@p=a
+POSTHOOK: Output: default@ice_tbl_level@p=b
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: explain
+select max(id) from ice_tbl_level
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_tbl_level
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select max(id) from ice_tbl_level
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_tbl_level
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select max(id) from ice_tbl_level
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_tbl_level
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select max(id) from ice_tbl_level
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_tbl_level
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+9
+PREHOOK: query: explain
+select count(id) from ice_tbl_level
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_tbl_level
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select count(id) from ice_tbl_level
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_tbl_level
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(id) from ice_tbl_level
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_tbl_level
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(id) from ice_tbl_level
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_tbl_level
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3
+PREHOOK: query: explain
+select max(id) from ice_tbl_level where p = 'a'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_tbl_level
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select max(id) from ice_tbl_level where p = 'a'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_tbl_level
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_tbl_level
+                  filterExpr: (p = 'a') (type: boolean)
+                  Statistics: Num rows: 2 Data size: #Masked# Basic stats: COMPLETE Column stats: PARTIAL
+                  Select Operator
+                    expressions: id (type: bigint)
+                    outputColumnNames: id
+                    Statistics: Num rows: 2 Data size: #Masked# Basic stats: COMPLETE Column stats: PARTIAL
+                    Group By Operator
+                      aggregations: max(id)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: #Masked# Basic stats: COMPLETE Column stats: PARTIAL
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: #Masked# Basic stats: COMPLETE Column stats: PARTIAL
+                        value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: #Masked# Basic stats: COMPLETE Column stats: PARTIAL
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: #Masked# Basic stats: COMPLETE Column stats: PARTIAL
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select max(id) from ice_tbl_level where p = 'a'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_tbl_level
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select max(id) from ice_tbl_level where p = 'a'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_tbl_level
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+9
+PREHOOK: query: drop table ice_tbl_level
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_tbl_level
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_tbl_level
+POSTHOOK: query: drop table ice_tbl_level
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_tbl_level
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_tbl_level
+PREHOOK: query: create external table ice_part_stats_hms (id bigint, p string)
+    partitioned by spec (p)
+stored by iceberg tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_part_stats_hms
+POSTHOOK: query: create external table ice_part_stats_hms (id bigint, p string)
+    partitioned by spec (p)
+stored by iceberg tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_part_stats_hms
+PREHOOK: query: insert into ice_part_stats_hms values (1, 'a'), (9, 'a'), (7, 'b')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_part_stats_hms
+POSTHOOK: query: insert into ice_part_stats_hms values (1, 'a'), (9, 'a'), (7, 'b')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_part_stats_hms
+PREHOOK: query: explain
+select max(id) from ice_part_stats_hms where p = 'a'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_part_stats_hms
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain
+select max(id) from ice_part_stats_hms where p = 'a'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_part_stats_hms
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_part_stats_hms
+                  filterExpr: (p = 'a') (type: boolean)
+                  Statistics: Num rows: 3 Data size: #Masked# Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: id (type: bigint)
+                    outputColumnNames: id
+                    Statistics: Num rows: 3 Data size: #Masked# Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: max(id)
+                      minReductionHashAggr: 0.6666666
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: #Masked# Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: #Masked# Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+            Execution mode: vectorized
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: #Masked# Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: #Masked# Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select max(id) from ice_part_stats_hms where p = 'a'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_part_stats_hms
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select max(id) from ice_part_stats_hms where p = 'a'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_part_stats_hms
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+9
+PREHOOK: query: drop table ice_part_stats_hms
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_part_stats_hms
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_part_stats_hms
+POSTHOOK: query: drop table ice_part_stats_hms
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_part_stats_hms
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_part_stats_hms
