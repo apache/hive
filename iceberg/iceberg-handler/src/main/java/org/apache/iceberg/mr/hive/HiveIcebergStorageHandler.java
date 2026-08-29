@@ -185,6 +185,7 @@ import org.apache.iceberg.mr.hive.actions.HiveIcebergDeleteOrphanFiles;
 import org.apache.iceberg.mr.hive.plan.IcebergBucketFunction;
 import org.apache.iceberg.mr.hive.stats.IcebergColStatsReader;
 import org.apache.iceberg.mr.hive.stats.IcebergColStatsWriter;
+import org.apache.iceberg.mr.hive.stats.IcebergManifestColStats;
 import org.apache.iceberg.mr.hive.stats.IcebergPartitionStatsReader;
 import org.apache.iceberg.mr.hive.stats.IcebergStoredStats;
 import org.apache.iceberg.mr.hive.udf.GenericUDFIcebergZorder;
@@ -768,6 +769,17 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       return Lists.newArrayList();
     }
     return IcebergColStatsReader.read(table, snapshot.snapshotId(), colNames, conf);
+  }
+
+  @Override
+  public List<ColumnStatisticsObj> computeAggrColStatsFor(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+      List<String> colNames, List<String> partNames) {
+    if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_ICEBERG_STATS_USE_MANIFESTS)) {
+      return Collections.emptyList();
+    }
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    return IcebergManifestColStats.computeColStats(
+        table, IcebergTableUtil.getTableSnapshot(table, hmsTable), colNames, partNames);
   }
 
   @Override

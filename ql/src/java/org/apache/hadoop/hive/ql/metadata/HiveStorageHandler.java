@@ -295,6 +295,26 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   /**
+   * Column statistics for the partitions a scan reads, worked out from what the storage already
+   * records rather than read back from a gather. What a handler can answer it serves here; what
+   * it cannot, it leaves out.
+   *
+   * <p>{@link #computeBasicStatistics} works its answer out and stores it; this works its answer
+   * out and stores nothing, so what it returns is all it leaves behind. A caller treats the result
+   * as partial and answers no query from it, since the storage describes the rows it holds and not
+   * the rows a statement asked about.
+   *
+   * @param table table object
+   * @param colNames the columns asked about
+   * @param partNames the partitions the scan reads
+   * @return list of ColumnStatisticsObj objects, empty where the handler answers none
+   */
+  default List<ColumnStatisticsObj> computeAggrColStatsFor(org.apache.hadoop.hive.ql.metadata.Table table,
+      List<String> colNames, List<String> partNames) {
+    return Collections.emptyList();
+  }
+
+  /**
    * Returns column statistics (upper/lower bounds, number of Null/NaN values, NDVs, histogram).
    * @param table table object
    *

@@ -21,6 +21,7 @@ package org.apache.iceberg.mr.hive.stats;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -39,6 +40,7 @@ import org.apache.iceberg.StatisticsFile;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.mr.hive.IcebergTableUtil;
 import org.apache.iceberg.relocated.com.google.common.collect.Iterables;
+import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,6 +113,15 @@ public final class IcebergStoredStats {
    */
   private static StatisticsFile colStatsFileOf(Table table, long snapshotId, boolean partitionLevel,
       Predicate<Snapshot> last) {
+    return statsFileOf(table, snapshotId, stats -> holdsHiveColStats(stats, partitionLevel), last);
+  }
+
+  /**
+   * The newest statistics file the given test admits, at the snapshot or at an ancestor of it, up
+   * to the one {@code last} names.
+   */
+  private static StatisticsFile statsFileOf(Table table, long snapshotId,
+      Predicate<StatisticsFile> holds, Predicate<Snapshot> last) {
     if (table.statisticsFiles().isEmpty()) {
       return null;
     }
@@ -119,7 +130,7 @@ public final class IcebergStoredStats {
       long walked = snapshot.snapshotId();
       StatisticsFile statsFile = table.statisticsFiles().stream()
           .filter(stats -> stats.snapshotId() == walked)
-          .filter(stats -> holdsHiveColStats(stats, partitionLevel))
+          .filter(holds)
           .findAny().orElse(null);
       if (statsFile != null) {
         return statsFile;
@@ -149,6 +160,35 @@ public final class IcebergStoredStats {
     return !holdsPartitions && stats.blobMetadata().stream().anyMatch(
         metadata -> IcebergColStatsWriter.HIVE_COL_STATS_BLOB_V1.equals(metadata.type()) ||
             IcebergColStatsWriter.LEGACY_COL_STATS_BLOB.equals(metadata.type()));
+  }
+
+  /**
+   * The distinct count each column's blob states for the snapshot, from the newest file that still
+   * describes it. A blob states one whatever wrote it: Hive's own, and the sketch blobs Iceberg's
+   * statistics are written as, name it the same way, so a table another engine analyzed is read
+   * here too. Nothing is opened - the counts travel in the metadata that names the blobs.
+   */
+  public static Map<Integer, Long> readStatedNdvs(Table table, long snapshotId) {
+    StatisticsFile statsFile = statsFileOf(table, snapshotId, IcebergStoredStats::statesNdv,
+        snapshot -> !DataOperations.REPLACE.equals(snapshot.operation()));
+    if (statsFile == null) {
+      return Map.of();
+    }
+    Map<Integer, Long> ndvs = Maps.newHashMap();
+    for (org.apache.iceberg.BlobMetadata blob : statsFile.blobMetadata()) {
+      if (blob.properties().containsKey(IcebergColStatsWriter.PARTITION_FIELD) || blob.fields().size() != 1) {
+        continue;
+      }
+      IcebergColStatsProperties.ndv(blob).ifPresent(ndv -> ndvs.put(blob.fields().get(0), ndv));
+    }
+    return ndvs;
+  }
+
+  /** Whether any of the file's table-level blobs states a distinct count. */
+  private static boolean statesNdv(StatisticsFile stats) {
+    return stats.blobMetadata().stream()
+        .anyMatch(blob -> !blob.properties().containsKey(IcebergColStatsWriter.PARTITION_FIELD) &&
+            IcebergColStatsProperties.ndv(blob).isPresent());
   }
 
   /**

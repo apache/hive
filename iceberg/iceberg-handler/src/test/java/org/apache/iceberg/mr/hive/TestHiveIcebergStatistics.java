@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.iceberg.AssertHelpers;
+import org.apache.iceberg.BlobMetadata;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataFiles;
 import org.apache.iceberg.DataOperations;
@@ -70,8 +71,10 @@ import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.hadoop.ConfigProperties;
 import org.apache.iceberg.io.CloseableIterable;
+import org.apache.iceberg.mr.hive.stats.IcebergColStatsProperties;
 import org.apache.iceberg.mr.hive.stats.IcebergColStatsReader;
 import org.apache.iceberg.mr.hive.stats.IcebergColStatsWriter;
+import org.apache.iceberg.mr.hive.stats.IcebergManifestColStats;
 import org.apache.iceberg.mr.hive.stats.IcebergPartitionStatsReader;
 import org.apache.iceberg.mr.hive.stats.IcebergStoredStats;
 import org.apache.iceberg.mr.hive.test.TestTables;
@@ -1131,6 +1134,279 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
   }
 
   @Test
+  public void testATableLevelBlobStatesItsDistinctCountWithoutBeingOpened() {
+    // the distinct count is stated in the table metadata, so a read takes it without opening the
+    // statistics file
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "orders_stated_counts");
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL.varname, false);
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier +
+        " (id bigint) STORED BY ICEBERG STORED AS PARQUET");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1), (5), (5), (NULL)");
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+
+    Table table = testTables.loadTable(identifier);
+    StatisticsFile statsFile = IcebergStoredStats.getColStatsFile(table, table.currentSnapshot().snapshotId(), false);
+    BlobMetadata blob = statsFile.blobMetadata().stream()
+        .filter(metadata -> metadata.fields().contains(table.schema().findField("id").fieldId()))
+        .findFirst().orElseThrow();
+
+    Assert.assertEquals("two values were distinct", 2, IcebergColStatsProperties.ndv(blob).orElse(-1));
+
+    // what the metadata states is what the entry itself holds
+    List<ColumnStatisticsObj> stored = IcebergColStatsReader.read(
+        table, table.currentSnapshot().snapshotId(), null, true);
+    ColumnStatisticsObj statsObj = stored.getFirst();
+    Assert.assertEquals(statsObj.getStatsData().getLongStats().getNumDVs(),
+        IcebergColStatsProperties.ndv(blob).getAsLong());
+  }
+
+  @Test
+  public void manifestBoundsDescribeTheScanWhereTableLevelOnesDescribeEveryPartition() {
+    // the case the manifest path exists for: a column whose values are disjoint across partitions.
+    // The table's own statistics bound it over every partition, so a scan pruned to one of them is
+    // handed a range it mostly cannot contain; the manifests bound the files the scan actually reads
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "orders_disjoint_ranges");
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_ICEBERG_STATS_USE_MANIFESTS.varname, true);
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL.varname, false);
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier + " (val bigint, p string) " +
+        "PARTITIONED BY SPEC (p) STORED BY ICEBERG STORED AS PARQUET TBLPROPERTIES ('format-version'='2')");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, 'a'), (10, 'a')");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (9000, 'b'), (10000, 'b')");
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+
+    org.apache.hadoop.hive.ql.metadata.Table hmsTable = hmsTable(identifier);
+
+    List<ColumnStatisticsObj> whole = storageHandler().getColStatistics(hmsTable, ImmutableList.of("val"));
+    LongColumnStatsData tableWide = whole.getFirst().getStatsData().getLongStats();
+    Assert.assertEquals("the table's own statistics span every partition", 1L, tableWide.getLowValue());
+    Assert.assertEquals(10000L, tableWide.getHighValue());
+
+    List<ColumnStatisticsObj> pruned = storageHandler().computeAggrColStatsFor(
+        hmsTable, ImmutableList.of("val"), ImmutableList.of("p=b"));
+    Assert.assertEquals("the manifests answer for the scan", 1, pruned.size());
+    LongColumnStatsData scanned = pruned.getFirst().getStatsData().getLongStats();
+    Assert.assertEquals("bounded by the files the scan reads, not by the other partition",
+        9000L, scanned.getLowValue());
+    Assert.assertEquals(10000L, scanned.getHighValue());
+  }
+
+  @Test
+  public void theBoundsOfTheScanAreWhatAFilterIsThenEstimatedFrom() {
+    // the bounds are not the answer, they are what the filter calculator re-estimates from: a
+    // predicate outside the partition the scan reads is unsatisfiable, and only per-scan bounds
+    // say so - the table's own bounds span every partition and make it look half selective
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "orders_filter_base");
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_ICEBERG_STATS_USE_MANIFESTS.varname, true);
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL.varname, false);
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier + " (val bigint, p string) " +
+        "PARTITIONED BY SPEC (p) STORED BY ICEBERG STORED AS PARQUET TBLPROPERTIES ('format-version'='2')");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, 'a'), (10, 'a')");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (9000, 'b'), (10000, 'b')");
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+
+    org.apache.hadoop.hive.ql.metadata.Table hmsTable = hmsTable(identifier);
+    LongColumnStatsData scanned = storageHandler()
+        .computeAggrColStatsFor(hmsTable, ImmutableList.of("val"), ImmutableList.of("p=b"))
+        .getFirst().getStatsData().getLongStats();
+
+    // val < 5000 selects nothing of p=b, and the bounds the scan is handed are what says so
+    Assert.assertTrue("the predicate falls below everything the scan can hold",
+        5000L < scanned.getLowValue());
+    // whereas the table's own bounds put the predicate in the middle of the range
+    LongColumnStatsData wholeTable = storageHandler()
+        .getColStatistics(hmsTable, ImmutableList.of("val")).getFirst().getStatsData().getLongStats();
+    Assert.assertTrue("the table's bounds make the same predicate look satisfiable",
+        5000L > wholeTable.getLowValue() && 5000L < wholeTable.getHighValue());
+  }
+
+  @Test
+  public void testTheManifestsStateTheBoundsOfEachPartition() {
+    // no statement gathers these and no file stores them: every write records them per file, and
+    // a scan reads those manifests to plan itself
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "orders_manifest_bounds");
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, false);
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier + " (id bigint, name string, p string) " +
+        "PARTITIONED BY SPEC (p) STORED BY ICEBERG STORED AS PARQUET TBLPROPERTIES ('format-version'='2')");
+    shell.executeStatement("INSERT INTO " + identifier +
+        " VALUES (1, 'a', 'x'), (5, 'b', 'x'), (NULL, 'c', 'x'), (7, 'd', 'y')");
+
+    Table table = testTables.loadTable(identifier);
+    int id = table.schema().findField("id").fieldId();
+    int name = table.schema().findField("name").fieldId();
+    Assert.assertTrue("no delete removes a row the files still count",
+        IcebergManifestColStats.readBounds(
+            table, table.currentSnapshot(), partition -> true, Set.of(id, name)).accountsForEveryRow());
+    // asking about one partition is asking with a filter that admits only it
+    java.util.function.Function<String, Map<Integer, IcebergManifestColStats.ColumnBounds>> stated =
+        partName -> IcebergManifestColStats.readBounds(
+            table, table.currentSnapshot(), partName::equals, Set.of(id, name)).columns();
+
+    IcebergManifestColStats.ColumnBounds first = stated.apply("p=x").get(id);
+    Assert.assertEquals("the least value written to the partition", 1L, first.min());
+    Assert.assertEquals("the greatest value written to the partition", 5L, first.max());
+    Assert.assertEquals(1L, first.numNulls());
+    Assert.assertTrue("every file stated its count", first.numNullsStated());
+
+    IcebergManifestColStats.ColumnBounds second = stated.apply("p=y").get(id);
+    Assert.assertEquals(7L, second.min());
+    Assert.assertEquals(7L, second.max());
+    Assert.assertEquals(0L, second.numNulls());
+
+    // a string is stored truncated, so its bounds are not read, while its count still is
+    IcebergManifestColStats.ColumnBounds names = stated.apply("p=x").get(name);
+    Assert.assertNull("a truncated bound is no measurement", names.min());
+    Assert.assertNull(names.max());
+    Assert.assertEquals(0L, names.numNulls());
+  }
+
+  @Test
+  public void aColumnPartitionedByIdentityIsBoundedByThePartitionItself() {
+    // a file of such a partition holds one value for the column throughout, so the partition
+    // states the bounds exactly - and states them even where the file recorded no metrics of its
+    // own, which Iceberg stops inferring past its hundredth column
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "orders_identity_bounds");
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, false);
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier + " (id bigint, p bigint) " +
+        "PARTITIONED BY SPEC (p) STORED BY ICEBERG STORED AS PARQUET " +
+        "TBLPROPERTIES ('format-version'='2', 'write.metadata.metrics.column.p'='none')");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, 10), (5, 10), (7, 20)");
+
+    Table table = testTables.loadTable(identifier);
+    int partCol = table.schema().findField("p").fieldId();
+    java.util.function.Function<String, Map<Integer, IcebergManifestColStats.ColumnBounds>> stated =
+        partName -> IcebergManifestColStats.readBounds(
+            table, table.currentSnapshot(), partName::equals, Set.of(partCol)).columns();
+
+    IcebergManifestColStats.ColumnBounds first = stated.apply("p=10").get(partCol);
+    Assert.assertEquals("the partition is the value, however little the file recorded", 10L, first.min());
+    Assert.assertEquals(10L, first.max());
+    Assert.assertEquals("a partition of its own value holds no null of it", 0L, first.numNulls());
+    Assert.assertTrue("and that count is stated, not merely summed", first.numNullsStated());
+
+    IcebergManifestColStats.ColumnBounds second = stated.apply("p=20").get(partCol);
+    Assert.assertEquals(20L, second.min());
+    Assert.assertEquals(20L, second.max());
+  }
+
+  @Test
+  public void thePlannerIsServedIdentityPartitionBoundsEvenWhereNoFileRecordedThem() {
+    // the path a planner actually takes: computeAggrColStatsFor over the partitions a scan reads.
+    // The partition column records no metrics of its own, so only the partition value can bound it
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "orders_identity_served");
+    // the manifest path is opt-in, and the fold only serves a column whose distinct count the
+    // table's own statistics state, which is what a table-level gather stores
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_ICEBERG_STATS_USE_MANIFESTS.varname, true);
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL.varname, false);
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier + " (id bigint, p bigint) " +
+        "PARTITIONED BY SPEC (p) STORED BY ICEBERG STORED AS PARQUET " +
+        "TBLPROPERTIES ('format-version'='2', 'write.metadata.metrics.column.p'='none')");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, 10), (5, 10), (7, 20)");
+    // the manifests bound the columns; a distinct count has to come from a gather
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+
+    org.apache.hadoop.hive.ql.metadata.Table hmsTable = hmsTable(identifier);
+    List<ColumnStatisticsObj> served = storageHandler().computeAggrColStatsFor(
+        hmsTable, ImmutableList.of("p"), ImmutableList.of("p=10", "p=20"));
+
+    Assert.assertEquals("the planner is served the partition column", 1, served.size());
+    LongColumnStatsData stats = served.get(0).getStatsData().getLongStats();
+    Assert.assertEquals("the least partition the scan reads", 10L, stats.getLowValue());
+    Assert.assertEquals("the greatest partition the scan reads", 20L, stats.getHighValue());
+    Assert.assertEquals(0L, stats.getNumNulls());
+  }
+
+  @Test
+  public void anIdentityPartitionOfNullsCountsThemWithoutUnboundingTheRest() {
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "orders_identity_nulls");
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, false);
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier + " (id bigint, p bigint) " +
+        "PARTITIONED BY SPEC (p) STORED BY ICEBERG STORED AS PARQUET TBLPROPERTIES ('format-version'='2')");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, 10), (5, NULL), (7, NULL)");
+
+    Table table = testTables.loadTable(identifier);
+    int partCol = table.schema().findField("p").fieldId();
+    IcebergManifestColStats.ColumnBounds bounds = IcebergManifestColStats.readBounds(
+        table, table.currentSnapshot(), partition -> true, Set.of(partCol)).columns().get(partCol);
+
+    Assert.assertEquals("both rows of the null partition are null for the column", 2L, bounds.numNulls());
+    Assert.assertTrue("and a null partition states its count exactly", bounds.numNullsStated());
+    Assert.assertEquals("while the partition that has a value still bounds the column", 10L, bounds.min());
+    Assert.assertEquals(10L, bounds.max());
+  }
+
+  @Test
+  public void nothingIsServedFromTheManifestsOnceADeleteRemovesARowTheyStillCount() {
+    // the data files count rows a delete has removed, so their null count describes more rows than
+    // the scan returns - and a planner reading it as measured folds a predicate on those rows away
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "orders_manifest_deleted");
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_ICEBERG_STATS_USE_MANIFESTS.varname, true);
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL.varname, false);
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier + " (id bigint, p bigint) " +
+        "PARTITIONED BY SPEC (p) STORED BY ICEBERG STORED AS PARQUET TBLPROPERTIES ('format-version'='2')");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, 10), (5, 10), (7, 20)");
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+
+    org.apache.hadoop.hive.ql.metadata.Table hmsTable = hmsTable(identifier);
+    Assert.assertFalse("the manifests answer while every row they count is still read",
+        storageHandler().computeAggrColStatsFor(
+            hmsTable, ImmutableList.of("p"), ImmutableList.of("p=10", "p=20")).isEmpty());
+
+    shell.executeStatement("DELETE FROM " + identifier + " WHERE id = 1");
+
+    Assert.assertTrue("and state nothing once a delete removes one of them",
+        storageHandler().computeAggrColStatsFor(
+            hmsTable(identifier), ImmutableList.of("p"), ImmutableList.of("p=10", "p=20")).isEmpty());
+  }
+
+  @Test
+  public void aBucketedTableIsServedEveryPartitionTheAskNames() {
+    // nothing can be pushed to the store for a bucket, since it names what a value maps to rather
+    // than the value. The scan must then admit everything and the fold keep what was asked for -
+    // an expression built from a transform it cannot express would lose partitions silently
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "orders_bucket_served");
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_ICEBERG_STATS_USE_MANIFESTS.varname, true);
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL.varname, false);
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier + " (id bigint, p bigint) " +
+        "PARTITIONED BY SPEC (bucket(4, p)) STORED BY ICEBERG STORED AS PARQUET " +
+        "TBLPROPERTIES ('format-version'='2')");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (10, 1), (20, 2), (30, 3)");
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+
+    // the bucket names the ask carries are whatever the writes produced
+    Table table = testTables.loadTable(identifier);
+    List<String> buckets = IcebergManifestColStats.readBounds(
+            table, table.currentSnapshot(), partition -> true, Set.of(
+                table.schema().findField("id").fieldId())).columns().isEmpty() ?
+        ImmutableList.of() : partitionNamesOf(table);
+    List<ColumnStatisticsObj> served = storageHandler().computeAggrColStatsFor(
+        hmsTable(identifier), ImmutableList.of("id"), buckets);
+
+    Assert.assertEquals("the bucketed table answers for the column", 1, served.size());
+    LongColumnStatsData stats = served.getFirst().getStatsData().getLongStats();
+    Assert.assertEquals("every bucket the ask named is folded", 10L, stats.getLowValue());
+    Assert.assertEquals(30L, stats.getHighValue());
+  }
+
+  @Test
   public void anAskCoveringEveryPartitionIsAnsweredFromWhatWasFolded() throws MetaException {
     // reading every partition is asking what the table holds, which the file already states from
     // the same partitions - and asking about a subset still merges the partitions themselves
@@ -1157,6 +1433,116 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     LongColumnStatsData one = some.getColStats().getFirst().getStatsData().getLongStats();
     Assert.assertEquals("a subset is not the fold", 1L, one.getLowValue());
     Assert.assertEquals(1L, one.getHighValue());
+  }
+
+  @Test
+  public void aPartitionThatIsNotANumberBoundsNothing() {
+    // NaN is never stored as a bound, and it would win every comparison it entered, so a partition
+    // of it must refuse the bounds exactly as a file recording one does
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "orders_identity_nan");
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, false);
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier + " (id bigint, d double) " +
+        "PARTITIONED BY SPEC (d) STORED BY ICEBERG STORED AS PARQUET TBLPROPERTIES ('format-version'='2')");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, 5.0), (2, cast('NaN' as double))");
+
+    Table table = testTables.loadTable(identifier);
+    int partCol = table.schema().findField("d").fieldId();
+    IcebergManifestColStats.ColumnBounds bounds = IcebergManifestColStats.readBounds(
+        table, table.currentSnapshot(), partition -> true, Set.of(partCol)).columns().get(partCol);
+
+    Assert.assertNull("a partition that is not a number bounds nothing", bounds.min());
+    Assert.assertNull(bounds.max());
+  }
+
+  @Test
+  public void aColumnPartitionedByBucketIsStillBoundedByWhatTheFilesRecord() {
+    // bucket states what a value maps to, not the value, so it bounds nothing of the column and
+    // the merge over the files must still be what answers
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "orders_bucket_bounds");
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, false);
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier + " (id bigint, p bigint) " +
+        "PARTITIONED BY SPEC (bucket(4, p)) STORED BY ICEBERG STORED AS PARQUET " +
+        "TBLPROPERTIES ('format-version'='2')");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, 10), (5, 10), (7, 20)");
+
+    Table table = testTables.loadTable(identifier);
+    int partCol = table.schema().findField("p").fieldId();
+    IcebergManifestColStats.ColumnBounds bounds = IcebergManifestColStats.readBounds(
+        table, table.currentSnapshot(), partition -> true, Set.of(partCol)).columns().get(partCol);
+
+    // a bucket names what a value maps to, never the value, so the bounds are the files' own
+    Assert.assertEquals("the least value written, not a bucket number", 10L, bounds.min());
+    Assert.assertEquals(20L, bounds.max());
+  }
+
+  @Test
+  public void testWhatTheManifestsStateStopsAccountingForEveryRowOnceARowIsDeleted() {
+    // a delete removes rows the data files still count, so what they state bounds more rows than
+    // the scan reads, and the planner is told by treating it as partial
+    assumeParquetHiveCatalogIceberg();
+    Assume.assumeTrue("row level deletes need format v2", formatVersion >= 2);
+
+    TableIdentifier identifier = TableIdentifier.of("default", "orders_manifest_deleted");
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, false);
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier + " (id bigint, p string) " +
+        "PARTITIONED BY SPEC (p) STORED BY ICEBERG STORED AS PARQUET TBLPROPERTIES ('format-version'='2')");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, 'x'), (5, 'x')");
+
+    Table table = testTables.loadTable(identifier);
+    int id = table.schema().findField("id").fieldId();
+    Assert.assertTrue(IcebergManifestColStats.readBounds(
+        table, table.currentSnapshot(), partition -> true, Set.of(id)).accountsForEveryRow());
+
+    shell.executeStatement("DELETE FROM " + identifier + " WHERE id = 1");
+    table.refresh();
+
+    Assert.assertFalse("a row the files still count is gone", IcebergManifestColStats.readBounds(
+        table, table.currentSnapshot(), partition -> true, Set.of(id)).accountsForEveryRow());
+  }
+
+  @Test
+  public void testTheDistinctCountAnotherEnginesBlobStatesIsReadWhenHiveStoredNone() throws IOException {
+    // Iceberg's own statistics are sketch blobs that state their estimate the way Hive's do, so a
+    // table another engine analyzed is read here without Hive having analyzed it
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "orders_foreign_ndv");
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, false);
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier +
+        " (id bigint) STORED BY ICEBERG STORED AS PARQUET");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1), (5)");
+
+    Table table = testTables.loadTable(identifier);
+    int id = table.schema().findField("id").fieldId();
+    long snapshotId = table.currentSnapshot().snapshotId();
+    Assert.assertTrue("Hive stored none of its own",
+        IcebergStoredStats.readStatedNdvs(table, snapshotId).isEmpty());
+
+    String path = table.location() + "/stats/foreign-" + UUID.randomUUID();
+    StatisticsFile statsFile;
+    try (PuffinWriter writer = Puffin.write(table.io().newOutputFile(path)).createdBy("another engine").build()) {
+      writer.add(new Blob("apache-datasketches-theta-v1", ImmutableList.of(id), snapshotId,
+          table.currentSnapshot().sequenceNumber(), ByteBuffer.wrap(new byte[] {1}),
+          PuffinCompressionCodec.NONE, ImmutableMap.of("ndv", "7")));
+      writer.finish();
+      statsFile = new GenericStatisticsFile(snapshotId, path, writer.fileSize(), writer.footerSize(),
+          writer.writtenBlobsMetadata().stream().map(GenericBlobMetadata::from).toList());
+    }
+    table.updateStatistics().setStatistics(statsFile).commit();
+    table.refresh();
+
+    Assert.assertEquals("the estimate travels in the metadata, so nothing is opened to read it",
+        Long.valueOf(7), IcebergStoredStats.readStatedNdvs(table, table.currentSnapshot().snapshotId()).get(id));
+
+    // what is NOT read from it: the stored-statistics path knows only Hive's own blobs, so a
+    // table another engine analyzed still answers nothing there. Pinned so that changing it is
+    // a decision rather than a drift
+    Assert.assertTrue("another engine's estimate does not reach the stored-statistics path",
+        storageHandler().getColStatistics(hmsTable(identifier), ImmutableList.of("id")).isEmpty());
   }
 
   @Test
@@ -1208,6 +1594,73 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     Assert.assertEquals(5L, read.getFirst().getStatsData().getLongStats().getHighValue());
     Assert.assertTrue("the vector a merge would need is still there",
         read.getFirst().getStatsData().getLongStats().isSetBitVectors());
+  }
+
+  @Test
+  public void testAnEstimateOverSeveralColumnsIsNotReadAsAnyOneColumnsEstimate() {
+    // a distinct count over a set of columns counts the tuples, not the values of either column,
+    // so it belongs to neither and is left where it is
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "orders_foreign_ndv_pair");
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, false);
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier +
+        " (id bigint, region string) STORED BY ICEBERG STORED AS PARQUET");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, 'x'), (5, 'y')");
+
+    Table table = testTables.loadTable(identifier);
+    int id = table.schema().findField("id").fieldId();
+    int region = table.schema().findField("region").fieldId();
+    long snapshotId = table.currentSnapshot().snapshotId();
+
+    String path = table.location() + "/stats/foreign-pair-" + UUID.randomUUID();
+    StatisticsFile statsFile;
+    try (PuffinWriter writer = Puffin.write(table.io().newOutputFile(path)).createdBy("another engine").build()) {
+      writer.add(new Blob("apache-datasketches-theta-v1", ImmutableList.of(id, region), snapshotId,
+          table.currentSnapshot().sequenceNumber(), ByteBuffer.wrap(new byte[] {1}),
+          PuffinCompressionCodec.NONE, ImmutableMap.of("ndv", "7")));
+      writer.finish();
+      statsFile = new GenericStatisticsFile(snapshotId, path, writer.fileSize(), writer.footerSize(),
+          writer.writtenBlobsMetadata().stream().map(GenericBlobMetadata::from).toList());
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+    table.updateStatistics().setStatistics(statsFile).commit();
+    table.refresh();
+
+    Assert.assertTrue("the count of the pair is the count of neither",
+        IcebergStoredStats.readStatedNdvs(table, table.currentSnapshot().snapshotId()).isEmpty());
+  }
+
+  @Test
+  public void testWhatIsStatedDescribesThePartitionsAskedAboutRatherThanTheWholeTable() {
+    // the whole table's statistics are one truth for every partition: what the manifests state
+    // bounds the partitions a scan reads, which is what the planner asked about
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "orders_stated_bounds");
+    // deriving them at all is the handler's own to allow, and it is off unless asked for
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_ICEBERG_STATS_USE_MANIFESTS.varname, true);
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL.varname, false);
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier + " (id bigint, p string) " +
+        "PARTITIONED BY SPEC (p) STORED BY ICEBERG STORED AS PARQUET");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, 'x'), (100, 'y')");
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+
+    org.apache.hadoop.hive.ql.metadata.Table hmsTable = hmsTable(identifier);
+    List<ColumnStatisticsObj> wholeTable = storageHandler().getColStatistics(hmsTable, ImmutableList.of("id"));
+    Assert.assertEquals("the stored statistics hold every partition's rows",
+        100L, wholeTable.getFirst().getStatsData().getLongStats().getHighValue());
+
+    List<ColumnStatisticsObj> stated =
+        storageHandler().computeAggrColStatsFor(hmsTable, ImmutableList.of("id"), ImmutableList.of("p=x"));
+    Assert.assertEquals(1, stated.size());
+    LongColumnStatsData idStats = stated.getFirst().getStatsData().getLongStats();
+    Assert.assertEquals("only the partition asked about is bounded", 1L, idStats.getHighValue());
+    Assert.assertEquals(1L, idStats.getLowValue());
+    Assert.assertEquals("the manifests state how many rows held no value", 0L, idStats.getNumNulls());
+    Assert.assertTrue("the distinct count comes from the stored statistics", idStats.getNumDVs() > 0);
   }
 
   @Test
@@ -2394,6 +2847,30 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
   }
 
   @Test
+  public void aPartitionNameNoTransformReadsBackConstrainsNothing() {
+    // a month renders as 2020-01 and an hour as 2020-01-01-00, neither of which the int the
+    // transform results in reads back: the scan plans wider rather than failing to compile
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "orders_month_partitioned");
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_ICEBERG_STATS_USE_MANIFESTS.varname, true);
+    HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL, false);
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier + " (id bigint, ts timestamp) " +
+        "PARTITIONED BY SPEC (month(ts)) STORED BY ICEBERG STORED AS PARQUET " +
+        "TBLPROPERTIES ('format-version'='2')");
+    shell.executeStatement("INSERT INTO " + identifier +
+        " VALUES (1, cast('2020-01-15 00:00:00' as timestamp)), (9, cast('2020-02-15 00:00:00' as timestamp))");
+    shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+
+    List<ColumnStatisticsObj> served = storageHandler().computeAggrColStatsFor(
+        hmsTable(identifier), ImmutableList.of("id"), ImmutableList.of("ts_month=2020-01"));
+    Assert.assertEquals("the partition the ask names is read, and only it is folded", 1, served.size());
+    LongColumnStatsData stats = served.getFirst().getStatsData().getLongStats();
+    Assert.assertEquals("the one row that month holds", 1L, stats.getLowValue());
+    Assert.assertEquals(1L, stats.getHighValue());
+  }
+
+  @Test
   public void testRowPreservingCommitsDoNotSpendTheSnapshotLookback() {
     // the lookback bounds manifest reads, and a commit that moves no rows costs none of it
     assumeParquetHiveCatalogIceberg();
@@ -2758,6 +3235,21 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
         .findFirst().orElseThrow();
   }
 
+  /** Every partition the table's current files sit in, named the way the fold names them. */
+  private static List<String> partitionNamesOf(Table icebergTable) {
+    Set<String> names = new java.util.LinkedHashSet<>();
+    try (org.apache.iceberg.io.CloseableIterable<org.apache.iceberg.FileScanTask> tasks =
+        icebergTable.newScan().planFiles()) {
+      for (org.apache.iceberg.FileScanTask task : tasks) {
+        names.add(IcebergTableUtil.toPartitionName(task.spec(),
+            IcebergTableUtil.toPartitionData(task.partition(), task.spec().partitionType())));
+      }
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+    return List.copyOf(names);
+  }
+
   private List<String> colStatsPartNames(TableIdentifier identifier) {
     Table icebergTable = testTables.loadTable(identifier);
     List<ColumnStatistics> colStats =
@@ -3056,6 +3548,24 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
         hmsTable(identifier), ImmutableList.of("id"), ImmutableList.of("p=x", "p=y")));
 
     Assert.assertEquals("three in one partition and two in the other, four between them", 4L, merged);
+  }
+
+  @Test
+  public void testTheHandlerDerivesNothingUnlessItIsAskedTo() {
+    // whether a storage answers from what it records is the storage's own to say, so the engine
+    // asks and the handler declines
+    assumeParquetHiveCatalogIceberg();
+
+    TableIdentifier identifier = TableIdentifier.of("default", "orders_no_derive");
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_ICEBERG_STATS_USE_MANIFESTS.varname, false);
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_ICEBERG_STATS_COLLECT_PART_LEVEL.varname, false);
+    shell.executeStatement("CREATE EXTERNAL TABLE " + identifier + " (id bigint, p string) " +
+        "PARTITIONED BY SPEC (p) STORED BY ICEBERG STORED AS PARQUET");
+    shell.executeStatement("INSERT INTO " + identifier + " VALUES (1, 'x'), (100, 'y')");
+
+    Assert.assertTrue("it answers none where it was not asked to",
+        storageHandler().computeAggrColStatsFor(hmsTable(identifier), ImmutableList.of("id"),
+            ImmutableList.of("p=x")).isEmpty());
   }
 
   private static long ndvOf(AggrStats stats) {

@@ -31,6 +31,7 @@ import java.util.Objects;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -394,10 +395,19 @@ public class StatsUtils {
       if (needColStats) {
 
         if (table.isNonNative() && !isPartitionStats(table, conf)) {
-          // the table maintains table-level column statistics only, so they answer for a scan of
-          // any part of it, on top of the partition-derived basic statistics
+          // the table maintains table-level column statistics only: serve them over the pruned
+          // set, on top of the partition-derived basic statistics
           List<ColStatistics> colStats =
-              getTableColumnStats(table, neededColumns, colStatsCache, fetchColStats);
+              computeAggrColumnStats(table, neededColumns, partList, conf, fetchColStats);
+          if (colStats.size() < neededColumns.size()) {
+            // the pruned set answers for the columns it can - a type whose bounds are not read
+            // states nothing there - and the table's own statistics answer for the rest, which
+            // are measurements rather than an estimate of them
+            Set<String> served = colStats.stream().map(ColStatistics::getColumnName).collect(Collectors.toSet());
+            List<String> unserved = neededColumns.stream().filter(col -> !served.contains(col)).toList();
+            colStats = new ArrayList<>(colStats);
+            colStats.addAll(getTableColumnStats(table, unserved, colStatsCache, fetchColStats));
+          }
           if (estimateStats) {
             colStats = estimateStatsForMissingCols(neededColumns, colStats, conf, nr, schema);
           }
@@ -1118,6 +1128,28 @@ public class StatsUtils {
       }
     }
     return stats;
+  }
+
+  /**
+   * What the storage itself records about the partitions a scan reads, computed rather than
+   * gathered. They describe those partitions rather than every one, which the whole table's do
+   * not, and the caller leaves the state partial as it does for any scan of part of a table.
+   * Whether a storage answers at all is the storage's own to decide.
+   */
+  private static List<ColStatistics> computeAggrColumnStats(Table table, List<String> neededColumns,
+      PrunedPartitionList partList, HiveConf conf, boolean fetchColStats) {
+    if (!fetchColStats || partList == null || partList.getReferredPartCols().isEmpty() ||
+        partList.hasUnknownPartitions()) {
+      return Collections.emptyList();
+    }
+    List<String> partNames = partList.getNotDeniedPartns().stream()
+        .map(Partition::getName)
+        .toList();
+    if (partNames.isEmpty()) {
+      return Collections.emptyList();
+    }
+    return convertColStats(
+        table.getStorageHandler().computeAggrColStatsFor(table, neededColumns, partNames));
   }
 
   private static List<ColStatistics> convertColStats(List<ColumnStatisticsObj> colStats) {
