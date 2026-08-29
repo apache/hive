@@ -2142,6 +2142,14 @@ public class HiveConf extends Configuration {
         "prunes hard, which is what these are for, and stops paying where it does not: a scan\n" +
         "reading every partition of a wide table moves more than the table-level statistics would,\n" +
         "however few columns it wants."),
+    HIVE_ICEBERG_STATS_USE_MANIFESTS("hive.iceberg.stats.use.manifests", false,
+        "Whether the column statistics of a scan that reads part of an Iceberg table may be taken\n" +
+        "from what the table's own manifests state about the files it reads - the bounds and the\n" +
+        "null count every write records - rather than from the statistics stored for the whole\n" +
+        "table. They describe the partitions read rather than every partition, but they are bounds\n" +
+        "rather than measurements and account for no delete, so a plan is estimated from them and\n" +
+        "no query is answered from them. The count of distinct values still comes from the stored\n" +
+        "statistics, and without one nothing is served."),
     HIVE_ICEBERG_STATS_MAX_SNAPSHOT_LOOKBACK("hive.iceberg.stats.max.snapshot.lookback", 20,
         "How many snapshots a read of per partition column statistics walks back through to tell\n" +
         "which partitions the writes since have changed. Each one costs reading the manifests it\n" +

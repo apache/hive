@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.OptionalLong;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.iceberg.BlobMetadata;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 
 /**
@@ -50,6 +51,11 @@ public final class IcebergColStatsProperties {
     return properties.build();
   }
 
+  /** The distinct count the blob states, absent when it states none. */
+  public static OptionalLong ndv(BlobMetadata blob) {
+    return asLong(blob.properties().get(NDV));
+  }
+
   /** A boolean holds its own counts and a binary has no distinct count to state. */
   private static OptionalLong numDVs(ColumnStatisticsData data) {
     return switch (data.getSetField()) {
@@ -63,4 +69,15 @@ public final class IcebergColStatsProperties {
     };
   }
 
+  private static OptionalLong asLong(String stated) {
+    if (stated == null) {
+      return OptionalLong.empty();
+    }
+    try {
+      return OptionalLong.of(Long.parseLong(stated));
+    } catch (NumberFormatException e) {
+      // another writer's property, or a damaged one: the blob still holds the entry itself
+      return OptionalLong.empty();
+    }
+  }
 }
