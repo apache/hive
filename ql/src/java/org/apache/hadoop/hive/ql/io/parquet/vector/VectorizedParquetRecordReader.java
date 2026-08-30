@@ -58,13 +58,21 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.parquet.ParquetRuntimeException;
 import org.apache.parquet.column.ColumnDescriptor;
+import org.apache.parquet.HadoopReadOptions;
+import org.apache.parquet.ParquetReadOptions;
+import org.apache.parquet.filter2.compat.FilterCompat;
+import org.apache.parquet.filter2.compat.RowGroupFilter;
+import org.apache.parquet.filter2.predicate.FilterPredicate;
+import org.apache.parquet.filter2.predicate.Operators;
 import org.apache.parquet.column.page.PageReadStore;
 import org.apache.parquet.format.converter.ParquetMetadataConverter.MetadataFilter;
 import org.apache.parquet.hadoop.ParquetFileReader;
+import org.apache.parquet.hadoop.ParquetInputFormat;
 import org.apache.parquet.hadoop.ParquetInputSplit;
 import org.apache.parquet.hadoop.metadata.BlockMetaData;
 import org.apache.parquet.hadoop.metadata.ColumnChunkMetaData;
 import org.apache.parquet.hadoop.metadata.ColumnPath;
+import org.apache.parquet.hadoop.metadata.FileMetaData;
 import org.apache.parquet.hadoop.metadata.ParquetMetadata;
 import org.apache.parquet.hadoop.util.HadoopStreams;
 import org.apache.parquet.io.InputFile;
@@ -79,12 +87,15 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.ZoneId;
+import com.google.common.annotations.VisibleForTesting;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
@@ -281,6 +292,176 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     Path path = wrapPathForCache(filePath, cacheKey, configuration, blocks, cacheTag);
     this.reader = new ParquetFileReader(
       configuration, parquetMetadata.getFileMetaData(), path, blocks, requestedSchema.getColumns());
+  }
+
+  /**
+   * Prunes the row groups of this split with the pushed down predicate.
+   *
+   * <p>Statistics come from the footer, which is already in memory. Bloom filters live in the data file and
+   * need an open reader.
+   */
+  @Override
+  protected List<BlockMetaData> filterRowGroups(FilterCompat.Filter filter, List<BlockMetaData> splitGroup,
+      FileMetaData fileMetaData) throws IOException {
+    List<BlockMetaData> statsFiltered = super.filterRowGroups(filter, splitGroup, fileMetaData);
+    if (statsFiltered.isEmpty() || !jobConf.getBoolean(ParquetInputFormat.BLOOM_FILTERING_ENABLED, true)) {
+      return statsFiltered;
+    }
+    BloomFilterPlan plan = bloomFilterPlan(filter);
+    if (!plan.canPrune()) {
+      return statsFiltered;
+    }
+    SortedMap<Long, Integer> ranges = bloomFilterRanges(plan.columnsRead(), statsFiltered);
+    if (ranges != null && ranges.isEmpty()) {
+      return statsFiltered;
+    }
+    if (ranges == null && isCacheOnlyRead()) {
+      // the filters cannot be served from the cache, and the file may not be read to get them
+      return statsFiltered;
+    }
+
+    Map<Long, MemoryBufferOrBuffers> cached = null;
+    try {
+      cached = (ranges == null) ? null : cachedBloomFilters(ranges);
+      try (ParquetFileReader bloomFilterReader = openBloomFilterReader(fileMetaData, statsFiltered, ranges,
+          cached)) {
+        return RowGroupFilter.filterRowGroups(
+            Collections.singletonList(RowGroupFilter.FilterLevel.BLOOMFILTER), filter, statsFiltered,
+            bloomFilterReader);
+      }
+    } catch (Exception e) {
+      if (isCacheOnlyRead()) {
+        // a miss is the answer the caller asked for, as it is of every other read this mode makes
+        throw e;
+      }
+      // the row groups these would have dropped are read instead, which costs time and not correctness
+      LOG.warn("Skipping the bloom filters of " + filePath + ", reading the row groups statistics kept", e);
+      return statsFiltered;
+    } finally {
+      if (cached != null) {
+        cached.values().forEach(metadataCache::decRefBuffer);
+      }
+    }
+  }
+
+  /**
+   * A reader over the bloom filters this predicate needs, served from the LLAP metadata cache where there
+   * is one and read from the file where there is not.
+   */
+  private ParquetFileReader openBloomFilterReader(FileMetaData fileMetaData, List<BlockMetaData> blocks,
+      SortedMap<Long, Integer> ranges, Map<Long, MemoryBufferOrBuffers> cached) throws IOException {
+    ParquetMetadata metadata = new ParquetMetadata(fileMetaData, blocks);
+    // Without a record filter: parquet filters row groups in the constructor otherwise, reading every
+    // bloom filter a second time and seeking to chunks that are not among the cached ranges.
+    ParquetReadOptions options = HadoopReadOptions.builder(jobConf, filePath)
+        .withRecordFilter(FilterCompat.NOOP).build();
+    if (cached == null) {
+      return new ParquetFileReader(jobConf, filePath, metadata, options);
+    }
+    List<ParquetFilterDataFromCache.Range> cachedRanges = new ArrayList<>(ranges.size());
+    for (Map.Entry<Long, Integer> range : ranges.entrySet()) {
+      cachedRanges.add(new ParquetFilterDataFromCache.Range(range.getKey(), range.getValue(),
+          cached.get(range.getKey())));
+    }
+    ParquetFilterDataFromCache input = new ParquetFilterDataFromCache(cachedRanges, filePath, jobConf);
+    return ParquetFileReader.open(input, metadata, options, input);
+  }
+
+  private Map<Long, MemoryBufferOrBuffers> cachedBloomFilters(SortedMap<Long, Integer> ranges)
+      throws IOException {
+    if (cacheKey == null || metadataCache == null) {
+      return null;
+    }
+    return LlapProxy.getIo().getParquetBloomFilterBuffersFromCache(filePath, jobConf, cacheKey, ranges);
+  }
+
+  /**
+   * The bloom filters of these row groups that the predicate could prune on, as offset to length. Empty
+   * when none of the usable columns carries one, so the level can be skipped. Null when one records no
+   * length, as files written before Parquet stored it do: those are read from the file rather than cached.
+   */
+  @VisibleForTesting
+  static SortedMap<Long, Integer> bloomFilterRanges(Set<ColumnPath> columns, List<BlockMetaData> blocks) {
+    SortedMap<Long, Integer> ranges = new TreeMap<>();
+    for (BlockMetaData block : blocks) {
+      for (ColumnChunkMetaData column : block.getColumns()) {
+        // The path is tested first because reading the offset of an encrypted chunk decrypts its metadata,
+        // which throws when the query holds no key for that column.
+        if (!columns.contains(column.getPath())) {
+          continue;
+        }
+        long offset = column.getBloomFilterOffset();
+        if (offset <= 0) {
+          continue;
+        }
+        int length = column.getBloomFilterLength();
+        if (length <= 0) {
+          return null;
+        }
+        ranges.put(offset, length);
+      }
+    }
+    return ranges;
+  }
+
+  /**
+   * What the bloom filter level can do with a predicate: the columns Parquet may read a filter for, and
+   * whether dropping a row group is possible at all. The two differ, and conflating them leaves a read
+   * unserved: an OR only drops a row group when both of its sides do, but BloomFilterImpl still reads the
+   * filter of a side that can prune, so its column has to be fetched even when the OR itself cannot prune.
+   */
+  record BloomFilterPlan(Set<ColumnPath> columnsRead, boolean canPrune) {
+    private static final BloomFilterPlan NONE = new BloomFilterPlan(Set.of(), false);
+  }
+
+  static BloomFilterPlan bloomFilterPlan(FilterCompat.Filter filter) {
+    if (!(filter instanceof FilterCompat.FilterPredicateCompat predicateFilter)) {
+      return BloomFilterPlan.NONE;
+    }
+    Set<ColumnPath> columnsRead = new HashSet<>();
+    boolean canPrune = prunesWithBloomFilter(predicateFilter.getFilterPredicate(), columnsRead);
+    return new BloomFilterPlan(columnsRead, canPrune);
+  }
+
+  /**
+   * Answers whether this predicate can drop a row group, adding the columns Parquet reads a filter for.
+   * A bloom filter only proves a value absent, so it serves equality and set membership and nothing else.
+   */
+  private static boolean prunesWithBloomFilter(FilterPredicate predicate, Set<ColumnPath> columnsRead) {
+    switch (predicate) {
+      // eq(col, null) asks for nulls, which a bloom filter says nothing about
+      case Operators.Eq<?> eq -> {
+        if (eq.getValue() == null) {
+          return false;
+        }
+        columnsRead.add(eq.getColumn().getColumnPath());
+        return true;
+      }
+      case Operators.In<?> in -> {
+        columnsRead.add(in.getColumn().getColumnPath());
+        return true;
+      }
+      // both sides are walked whatever they answer, since a side that can prune has its filter read
+      // even where the node above it cannot
+      case Operators.And and -> {
+        boolean left = prunesWithBloomFilter(and.getLeft(), columnsRead);
+        boolean right = prunesWithBloomFilter(and.getRight(), columnsRead);
+        return left || right;
+      }
+      case Operators.Or or -> {
+        boolean left = prunesWithBloomFilter(or.getLeft(), columnsRead);
+        boolean right = prunesWithBloomFilter(or.getRight(), columnsRead);
+        return left && right;
+      }
+      default -> {
+        return false;
+      }
+    }
+  }
+
+  private boolean isCacheOnlyRead() {
+    return cacheKey != null && metadataCache != null
+        && HiveConf.getBoolVar(jobConf, HiveConf.ConfVars.LLAP_IO_CACHE_ONLY);
   }
 
   private Path wrapPathForCache(Path path, Object fileKey, JobConf configuration,
