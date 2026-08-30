@@ -20,6 +20,10 @@
 package org.apache.hadoop.hive.llap.io.api.impl;
 
 import java.io.IOException;
+import java.util.TreeMap;
+import java.util.SortedMap;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -93,6 +97,7 @@ import org.apache.hadoop.hive.ql.io.orc.encoded.IoTrace;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
 import org.apache.hadoop.hive.ql.io.parquet.vector.ParquetFooterInputFromCache;
+import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.io.NullWritable;
@@ -137,7 +142,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   private final boolean useLowLevelCache;
   private ObjectName buddyAllocatorMXBean;
   private final Allocator allocator;
-  private final FileMetadataCache fileMetadataCache;
+  private final MetadataCache fileMetadataCache;
   private final LowLevelCache dataCache;
   private final SerDeLowLevelCacheImpl serdeCache;
   private final BufferUsageManager bufferManager;
@@ -509,7 +514,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
     @Override
     public OrcTail getTailFromCache(Path path, Configuration jobConf, CacheTag tag, Object fileKey)
         throws IOException {
-      return OrcEncodedDataReader.getOrcTailForPath(path, jobConf, tag, daemonConf, (MetadataCache) fileMetadataCache, fileKey);
+      return OrcEncodedDataReader.getOrcTailForPath(path, jobConf, tag, daemonConf, fileMetadataCache, fileKey);
     }
 
     @Override
@@ -606,6 +611,55 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
           return footerData;
         } finally {
           fileMetadataCache.decRefBuffer(footerData);
+        }
+      }
+    }
+
+    @Override
+    public Map<Long, MemoryBufferOrBuffers> getBloomFilterBuffersFromCache(Path path, JobConf conf,
+        Object fileKey, SortedMap<Long, Integer> ranges) throws IOException {
+
+      Preconditions.checkNotNull(fileMetadataCache, "Metadata cache must not be null");
+      if (fileKey == null || ranges.isEmpty()) {
+        return null;
+      }
+
+      Map<Long, MemoryBufferOrBuffers> bloomFilters = new HashMap<>(ranges.size());
+      SortedMap<Long, Integer> missing = new TreeMap<>();
+      boolean done = false;
+      try {
+        for (Map.Entry<Long, Integer> range : ranges.entrySet()) {
+          MemoryBufferOrBuffers cached = fileMetadataCache.getParquetBloomFilters(fileKey, range.getKey());
+          if (cached != null) {
+            LOG.debug("Serving {} bytes of bloom filter at {} for {} from cache", range.getValue(),
+                range.getKey(), fileKey);
+            bloomFilters.put(range.getKey(), cached);
+          } else {
+            missing.put(range.getKey(), range.getValue());
+          }
+        }
+        if (!missing.isEmpty()) {
+          throwIfCacheOnlyRead(HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_CACHE_ONLY));
+          CacheTag tag = VectorizedParquetRecordReader.cacheTagOfParquetFile(path, daemonConf, conf);
+          final FileSystem fs = path.getFileSystem(conf);
+          // One open serves every filter this reader is missing.
+          try (SeekableInputStream stream = HadoopStreams.wrap(fs.open(path))) {
+            for (Map.Entry<Long, Integer> range : missing.entrySet()) {
+              stream.seek(range.getKey());
+              LOG.debug("Caching {} bytes of bloom filter at {} for {}", range.getValue(), range.getKey(),
+                  fileKey);
+              // Note: we don't pass in isStopped here - this is not on an IO thread.
+              bloomFilters.put(range.getKey(), fileMetadataCache.putParquetBloomFilters(fileKey,
+                  range.getKey(), range.getValue(), stream, tag, null));
+            }
+          }
+        }
+        done = true;
+        return bloomFilters;
+      } finally {
+        if (!done) {
+          // Nothing will read these, so do not leave them locked for the life of the daemon.
+          bloomFilters.values().forEach(fileMetadataCache::decRefBuffer);
         }
       }
     }
