@@ -402,9 +402,10 @@ public class HiveConf extends Configuration {
         "Turn on ChangeManager, so delete files will go to cmrootdir."),
     REPL_CM_DIR("hive.repl.cmrootdir","/user/${system:user.name}/cmroot/",
         "Root dir for ChangeManager, used for deleted files."),
-    REPL_CM_RETAIN("hive.repl.cm.retain","10d",
-        new TimeValidator(TimeUnit.DAYS),
-        "Time to retain removed files in cmrootdir."),
+    REPL_CM_RETAIN("hive.repl.cm.retain","240h",
+        new TimeValidator(TimeUnit.HOURS),
+        "Time to retain removed files in cmrootdir. A unit-less value is interpreted in hours, "
+            + "matching the metastore counterpart metastore.repl.cm.retain. Default is 240h (10 days)."),
     REPL_CM_ENCRYPTED_DIR("hive.repl.cm.encryptionzone.rootdir", ".cmroot",
             "Root dir for ChangeManager if encryption zones are enabled, used for deleted files."),
     REPL_CM_FALLBACK_NONENCRYPTED_DIR("hive.repl.cm.nonencryptionzone.rootdir",
@@ -3543,7 +3544,7 @@ public class HiveConf extends Configuration {
         "session in background when running CLI with Tez, allowing CLI to be available earlier. " +
         "If hive.cli.tez.initialize.session is set to false, this value is ignored."),
 
-    HIVE_DISABLE_UNSAFE_EXTERNALTABLE_OPERATIONS("hive.disable.unsafe.external.table.operations", true,
+    HIVE_DISABLE_UNSAFE_EXTERNALTABLE_OPERATIONS("hive.disable.unsafe.external.table.operations", false,
         "Whether to disable certain optimizations and operations on external tables," +
         " on the assumption that data changes by external applications may have negative effects" +
         " on these operations."),
@@ -3941,6 +3942,15 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_TEZ_QUEUE_ACCESS_CHECK("hive.server2.tez.queue.access.check", false,
         "Whether to check user access to explicitly specified YARN queues. " +
           "yarn.resourcemanager.webapp.address must be configured to use this."),
+    HIVE_TEZ_QUEUE_METRICS_REFRESH_INTERVAL("hive.tez.queue.metrics.refresh.interval", "0s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Interval for refreshing YARN queue resource metrics during Tez query execution. " +
+        "When set to a positive value (e.g. 10s), displays real-time memory, vCore, capacity " +
+        "and application metrics for the YARN queue being used. " +
+        "Set to 0 or negative to disable. Minimum effective value is 1 second."),
+    HIVE_SERVER2_TEZ_QUEUE_METRICS_REFRESH_THREADS("hive.server2.tez.queue.metrics.refresh.threads", 4,
+        "Number of threads in the scheduled thread pool for refreshing YARN queue metrics. " +
+        "This pool is used by HiveServer2 to periodically collect queue resource information from YARN RM."),
     HIVE_SERVER2_TEZ_SESSION_LIFETIME("hive.server2.tez.session.lifetime", "162h",
         new TimeValidator(TimeUnit.HOURS),
         "The lifetime of the Tez sessions launched by HS2 when default sessions are enabled.\n" +
@@ -5537,6 +5547,23 @@ public class HiveConf extends Configuration {
         + ",s3.access-key-id"
         + ",s3.secret-access-key"
         + ",s3.session-token"
+        // Iceberg FileIO vended credential keys (GCS, ADLS, OSS)
+        + ",gcs.oauth2.token"
+        + ",adls.auth.shared-key.account.key"
+        + ",adls.sas-token."
+        + ",adls.token"
+        + ",client.access-key-id"
+        + ",client.access-key-secret"
+        + ",client.security-token"
+        + ",oss-access-key-id"
+        + ",oss-secret-access-key"
+        + ",oss.security-token"
+        // Hadoop connector keys materialized from vended credentials (ADLS, OSS)
+        + ",fs.azure.account.key."
+        + ",fs.azure.sas.fixed.token."
+        + ",fs.oss.accessKeyId"
+        + ",fs.oss.accessKeySecret"
+        + ",fs.oss.securityToken"
         + ",dfs.adls.oauth2.credential"
         + ",fs.adl.oauth2.credential"
         + ",fs.azure.account.oauth2.client.secret"

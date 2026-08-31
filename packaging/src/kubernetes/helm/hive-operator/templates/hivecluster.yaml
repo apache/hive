@@ -157,6 +157,7 @@ spec:
       enabled: true
       minReplicas: {{ .autoscaling.minReplicas }}
       scaleUpThreshold: {{ .autoscaling.scaleUpThreshold }}
+      scaleDownThreshold: {{ .autoscaling.scaleDownThreshold }}
       scaleUpStabilizationSeconds: {{ .autoscaling.scaleUpStabilizationSeconds }}
       scaleDownStabilizationSeconds: {{ .autoscaling.scaleDownStabilizationSeconds }}
       gracePeriodSeconds: {{ .autoscaling.gracePeriodSeconds }}

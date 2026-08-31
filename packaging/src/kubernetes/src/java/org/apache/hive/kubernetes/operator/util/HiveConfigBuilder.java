@@ -204,6 +204,12 @@ public final class HiveConfigBuilder {
     if (spec.tezAm().configOverrides() != null) {
       tezProps.putAll(spec.tezAm().configOverrides());
     }
+
+    // Disable Infinite locality Delay when LLAP Auto-scaling is enabled, as they are mutually exclusive.
+    if (llap != null && llap.isEnabled() && llap.autoscaling().isEnabled() &&
+        ConfigUtils.getTimeMs(tezProps, ConfigUtils.HIVE_LLAP_TASK_SCHEDULER_LOCALITY_DELAY_KEY, 0) == -1) {
+      tezProps.put(ConfigUtils.HIVE_LLAP_TASK_SCHEDULER_LOCALITY_DELAY_KEY, "0ms");
+    }
     return tezProps;
   }
 

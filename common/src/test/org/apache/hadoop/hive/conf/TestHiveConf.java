@@ -126,6 +126,25 @@ public class TestHiveConf {
   }
 
   @Test
+  public void testReplCmRetainTimeUnit() {
+    HiveConf conf = new HiveConf();
+
+    // The default (240h) is 10 days. Guards against accidentally changing the default duration.
+    Assert.assertEquals(10, conf.getTimeVar(ConfVars.REPL_CM_RETAIN, TimeUnit.DAYS));
+    Assert.assertEquals(240, conf.getTimeVar(ConfVars.REPL_CM_RETAIN, TimeUnit.HOURS));
+
+    // A unit-less value is interpreted in hours, matching the metastore counterpart
+    // metastore.repl.cm.retain, which uses a HOURS base unit.
+    Assert.assertEquals(TimeUnit.HOURS, HiveConf.getDefaultTimeUnit(ConfVars.REPL_CM_RETAIN));
+    conf.setVar(ConfVars.REPL_CM_RETAIN, "10");
+    Assert.assertEquals(10, conf.getTimeVar(ConfVars.REPL_CM_RETAIN, TimeUnit.HOURS));
+
+    // An explicit unit suffix is still honoured.
+    conf.setVar(ConfVars.REPL_CM_RETAIN, "10d");
+    Assert.assertEquals(10, conf.getTimeVar(ConfVars.REPL_CM_RETAIN, TimeUnit.DAYS));
+  }
+
+  @Test
   public void testToSizeBytes() throws Exception {
     Assert.assertEquals(1L, HiveConf.toSizeBytes("1b"));
     Assert.assertEquals(1L, HiveConf.toSizeBytes("1bytes"));

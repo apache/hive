@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.iceberg.FileFormat;
+import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.TableIdentifier;
@@ -284,5 +285,21 @@ public class TestHiveIcebergSelects extends HiveIcebergStorageHandlerWithEngineB
     for (int i = 0; i < table.history().size(); ++i) {
       Assert.assertEquals(table.history().get(i).snapshotId(), history.get(i)[0]);
     }
+  }
+
+  @Test
+  public void testFilterOnPartitionName() {
+    // PARTITION__NAME is materialized by the reader and is not a field of the Iceberg schema, so a
+    // predicate on it must not be pushed down to Iceberg
+    TableIdentifier identifier = TableIdentifier.of("default", "part_name_filter");
+    testTables.createTable(shell, identifier.name(),
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA).identity("last_name").build(),
+        fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+
+    List<Object[]> rows = shell.executeStatement(
+        "SELECT customer_id FROM " + identifier.name() +
+            " WHERE PARTITION__NAME = 'last_name=Brown' AND customer_id = 0");
+    Assert.assertEquals(1, rows.size());
   }
 }

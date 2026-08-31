@@ -2252,6 +2252,11 @@ public class SessionState implements ISessionAuthState {
       public double progressedPercentage() {
         return percentage;
       }
+
+      @Override
+      public String queueMetrics() {
+        return "";
+      }
     };
   }
 

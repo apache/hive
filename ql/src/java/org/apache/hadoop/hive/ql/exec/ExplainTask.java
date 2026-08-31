@@ -666,7 +666,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     HiveOperation operation = queryState.getHiveOperation();
 
     JSONObject object = new JSONObject(new LinkedHashMap<>());
-    Object jsonInput = toJson("INPUTS", toString(analyzer.getInputs()), out, work);
+    Object jsonInput = toJson("INPUTS", toString(analyzer.getAllInputs()), out, work);
     if (work.isFormatted()) {
       object.put("INPUTS", jsonInput);
     }

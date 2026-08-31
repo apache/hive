@@ -363,7 +363,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
             hiveAuthFactory, req.getDelegationToken());
         resp.setStatus(OK_STATUS);
       } catch (HiveSQLException e) {
-        LOG.error("Failed to cancel delegation token [request: {}]", req, e);
+        LOG.error("Failed to cancel delegation token for session {}", req.getSessionHandle(), e);
         resp.setStatus(HiveSQLException.toTStatus(e));
       }
     }
@@ -382,7 +382,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
             hiveAuthFactory, req.getDelegationToken());
         resp.setStatus(OK_STATUS);
       } catch (HiveSQLException e) {
-        LOG.error("Failed to renew delegation token [request: {}]", e);
+        LOG.error("Failed to renew delegation token for session {}", req.getSessionHandle(), e);
         resp.setStatus(HiveSQLException.toTStatus(e));
       }
     }
@@ -814,14 +814,18 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       }
       TJobExecutionStatus executionStatus =
           mapper.forStatus(progressUpdate.status);
-      resp.setProgressUpdateResponse(new TProgressUpdateResp(
+      TProgressUpdateResp tProgressUpdateResp = new TProgressUpdateResp(
           progressUpdate.headers(),
           progressUpdate.rows(),
           progressUpdate.progressedPercentage,
           executionStatus,
           progressUpdate.footerSummary,
           progressUpdate.startTimeMillis
-      ));
+      );
+      if (progressUpdate.queueMetrics() != null && !progressUpdate.queueMetrics().isEmpty()) {
+        tProgressUpdateResp.setQueueMetrics(progressUpdate.queueMetrics());
+      }
+      resp.setProgressUpdateResponse(tProgressUpdateResp);
       if (opException != null) {
         resp.setSqlState(opException.getSQLState());
         resp.setErrorCode(opException.getErrorCode());
