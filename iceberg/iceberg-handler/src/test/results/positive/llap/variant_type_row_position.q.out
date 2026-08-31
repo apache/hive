@@ -46,14 +46,14 @@ WHERE variant_get(data, '$.tier', 'string') = 'gold' AND id < 205
 ORDER BY id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@variant_row_position
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT id, variant_row_position.ROW__POSITION
 FROM variant_row_position
 WHERE variant_get(data, '$.tier', 'string') = 'gold' AND id < 205
 ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@variant_row_position
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 200	200
 201	201
 202	202
@@ -66,7 +66,7 @@ FROM variant_row_position
 WHERE variant_get(data, '$.tier', 'string') = 'gold'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@variant_row_position
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT min(variant_row_position.ROW__POSITION) AS first_gold_position,
        max(variant_row_position.ROW__POSITION) AS last_gold_position,
        count(*) AS gold_rows
@@ -74,7 +74,7 @@ FROM variant_row_position
 WHERE variant_get(data, '$.tier', 'string') = 'gold'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@variant_row_position
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 200	399	200
 PREHOOK: query: drop table variant_row_position
 PREHOOK: type: DROPTABLE
@@ -137,7 +137,7 @@ FROM variant_row_position_split
 WHERE variant_get(data, '$.tier', 'string') = 'gold'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@variant_row_position_split
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT min(variant_row_position_split.ROW__POSITION) AS first_gold_position,
        max(variant_row_position_split.ROW__POSITION) AS last_gold_position,
        count(*) AS gold_rows
@@ -145,7 +145,7 @@ FROM variant_row_position_split
 WHERE variant_get(data, '$.tier', 'string') = 'gold'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@variant_row_position_split
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 200	399	200
 PREHOOK: query: drop table variant_row_position_split
 PREHOOK: type: DROPTABLE
@@ -214,20 +214,20 @@ POSTHOOK: Output: default@variant_row_position_del
 PREHOOK: query: SELECT count(*) AS rows_left, min(id) AS lowest_id, max(id) AS highest_id FROM variant_row_position_del
 PREHOOK: type: QUERY
 PREHOOK: Input: default@variant_row_position_del
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT count(*) AS rows_left, min(id) AS lowest_id, max(id) AS highest_id FROM variant_row_position_del
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@variant_row_position_del
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 395	0	399
 PREHOOK: query: SELECT id FROM variant_row_position_del WHERE id BETWEEN 197 AND 208 ORDER BY id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@variant_row_position_del
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT id FROM variant_row_position_del WHERE id BETWEEN 197 AND 208 ORDER BY id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@variant_row_position_del
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 197
 198
 199

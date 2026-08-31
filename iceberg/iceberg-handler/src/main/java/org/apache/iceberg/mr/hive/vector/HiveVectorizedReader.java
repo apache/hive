@@ -267,10 +267,8 @@ public class HiveVectorizedReader {
     ParquetMetadata parquetMetadata = HiveParquetUtil.readFooter(task.file(), io, job, footerData);
     MessageType fileSchema = parquetMetadata.getFileMetaData().getSchema();
     // The reader keeps the file's own footer, so row positions and scan statistics still describe the
-    // file. Row groups variant pruning ruled out are named separately; null means read them all.
-    inputFormat.setMetadata(parquetMetadata);
-
-    inputFormat.setIncludedRowGroups(
+    // file. Row groups variant pruning ruled out are named alongside it; null means read them all.
+    inputFormat.setMetadata(parquetMetadata,
         VariantParquetFilters.pickRowGroups(fileSchema, residual, parquetMetadata.getBlocks()));
 
     MessageType typeWithIds = null;

@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.ToIntFunction;
@@ -139,11 +140,11 @@ final class ParquetVariantRecordReader
     // If the underlying Hive Parquet reader already computed row-group filtering (e.g. from SARG),
     // we must use the exact same blocks to keep this reader aligned with the delegate.
     if (delegate instanceof ParquetRecordReaderBase parquetDelegate) {
+      // The delegate's answer is the whole answer, including when it holds none: an empty list means it
+      // filtered every row group out, and null means it found none to read at all. Falling back to the
+      // split's own row groups would read one the delegate has already ruled out.
       List<BlockMetaData> filteredBlocks = parquetDelegate.getFilteredBlocks();
-      // Treat an empty list as authoritative (delegate filtered out all row groups).
-      if (filteredBlocks != null) {
-        return filteredBlocks;
-      }
+      return filteredBlocks != null ? filteredBlocks : Collections.emptyList();
     }
     // Fallback: compute blocks from split boundaries
     List<BlockMetaData> splitBlocks = Lists.newArrayList();

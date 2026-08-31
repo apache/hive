@@ -94,6 +94,10 @@ public final class VariantParquetFilters {
     return new ResolvedVariantFilter(predicate, visitor.fallbackValueColumns());
   }
 
+  /**
+   * Which of these row groups a VARIANT predicate could match, one flag each, or null when the predicate
+   * says nothing about them and every row group is to be read.
+   */
   public static boolean[] pickRowGroups(
       MessageType fileSchema, Expression filter, List<BlockMetaData> rowGroups) {
     if (fileSchema == null || filter == null || rowGroups == null || rowGroups.isEmpty()) {

@@ -260,8 +260,14 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     for (BlockMetaData block : parquetMetadata.getBlocks()) {
       if (offsets.contains(block.getStartingPos())) {
         // Parquet records where each row group's first row sits in the file, so the position is read
-        // rather than counted up, and stays right whatever subset of row groups this split reads.
-        rowGroupNumToRowPos.put(blockIndex++, block.getRowIndexOffset());
+        // rather than counted up, and stays right whatever subset of row groups this split reads. The
+        // footer readers all fill it in; -1 is Parquet's marker for a footer that did not.
+        long rowIndexOffset = block.getRowIndexOffset();
+        if (rowIndexOffset < 0) {
+          throw new IOException("Parquet footer for " + filePath + " has no row index offset for the row "
+              + "group at " + block.getStartingPos() + "; cannot determine row positions");
+        }
+        rowGroupNumToRowPos.put(blockIndex++, rowIndexOffset);
         blocks.add(block);
       }
     }

@@ -61,16 +61,18 @@ public class VectorizedParquetInputFormat
         inputSplit, jobConf, metadataCache, dataCache, cacheConf, metadata, initialDefaults, includedRowGroups);
   }
 
-  public void setMetadata(ParquetMetadata metadata) throws IOException {
-    this.metadata = metadata;
-  }
-
   /**
-   * Restricts the reader to these of the file's row groups, by footer index, for a caller that has already
-   * ruled some out with a filter Parquet cannot express. The footer given to {@link #setMetadata} stays the
-   * file's own, so row positions remain absolute.
+   * The footer to read the file by, and which of its row groups to read: one flag each by footer index, or
+   * null for all of them. A caller passes a subset when it has ruled row groups out with a filter Parquet
+   * cannot express. The footer stays the file's own either way, so row positions remain absolute.
    */
-  public void setIncludedRowGroups(boolean[] includedRowGroups) {
+  public void setMetadata(ParquetMetadata metadata, boolean[] includedRowGroups) throws IOException {
+    if (metadata != null && includedRowGroups != null
+        && includedRowGroups.length != metadata.getBlocks().size()) {
+      throw new IOException("Got " + includedRowGroups.length + " row group flags for a footer of "
+          + metadata.getBlocks().size() + " row groups");
+    }
+    this.metadata = metadata;
     this.includedRowGroups = includedRowGroups;
   }
 
