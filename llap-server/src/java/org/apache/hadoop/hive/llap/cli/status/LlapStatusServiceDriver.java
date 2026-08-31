@@ -244,8 +244,11 @@ public class LlapStatusServiceDriver {
         return ret;
       }
 
+      if (appStatusBuilder.getState() == State.APP_NOT_FOUND) {
+        return ExitCode.SUCCESS;
+      }
+
       if (NO_YARN_SERVICE_INFO_STATES.contains(appStatusBuilder.getState())) {
-        updateRunningThresholdAchieved(appStatusBuilder, cl.getRunningNodesThreshold());
         return ExitCode.SUCCESS;
       }
 
@@ -420,15 +423,10 @@ public class LlapStatusServiceDriver {
 
   /**
    * Populate additional information for containers from the LLAP registry. Must be invoked
-   * after YARN Service status and diagnostics.
+   * after YARN Service status and diagnostics when {@code registryOnly} is false.
    * @return an ExitCode. An ExitCode other than ExitCode.SUCCESS implies future progress not possible
    * @throws LlapStatusCliException
    */
-  private ExitCode populateAppStatusFromLlapRegistry(AppStatusBuilder appStatusBuilder, long watchTimeoutMs)
-      throws LlapStatusCliException {
-    return populateAppStatusFromLlapRegistry(appStatusBuilder, watchTimeoutMs, false);
-  }
-
   private ExitCode populateAppStatusFromLlapRegistry(AppStatusBuilder appStatusBuilder, long watchTimeoutMs,
       boolean registryOnly) throws LlapStatusCliException {
 

@@ -139,8 +139,8 @@
             container = document.createElement('div');
 
             if (boolOpt.showImage && boolOpt.img && boolOpt.img.true && boolOpt.img.false
-                && ('' + boolOpt.img.true).startsWith('/static/')
-                && ('' + boolOpt.img.false).startsWith('/static/')) {
+                && ('' + boolOpt.img.true).indexOf('/static/') === 0
+                && ('' + boolOpt.img.false).indexOf('/static/') === 0) {
                 var img = document.createElement('img');
                 img.setAttribute('class', BOOL_IMAGE);
 
@@ -440,8 +440,8 @@
 
             if(boolOptions.showImage){
                 if(!boolOptions.img || !boolOptions.img.true || !boolOptions.img.false
-                    || !('' + boolOptions.img.true).startsWith('/static/')
-                    || !('' + boolOptions.img.false).startsWith('/static/')){
+                    || ('' + boolOptions.img.true).indexOf('/static/') !== 0
+                    || ('' + boolOptions.img.false).indexOf('/static/') !== 0){
                     boolOptions.showImage = false;
                 }
             }
