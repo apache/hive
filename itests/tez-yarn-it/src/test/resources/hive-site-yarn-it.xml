@@ -60,4 +60,63 @@
     <value>4</value>
   </property>
 
+  <!-- HDFS client must use the container hostname so the host JVM resolves DataNode addresses
+       through the custom hosts file rather than via the raw IP returned by HDFS. -->
+  <property>
+    <name>dfs.client.use.datanode.hostname</name>
+    <value>true</value>
+  </property>
+  <property>
+    <name>hive.stats.autogather</name>
+    <value>false</value>
+  </property>
+  <property>
+    <name>hive.stats.column.autogather</name>
+    <value>false</value>
+  </property>
+
+  <!-- YARN ResourceManager coordinates — "resourcemanager" is the Docker network alias. -->
+  <property>
+    <name>yarn.resourcemanager.hostname</name>
+    <value>resourcemanager</value>
+  </property>
+  <property>
+    <name>yarn.resourcemanager.address</name>
+    <value>resourcemanager:8032</value>
+  </property>
+  <property>
+    <name>yarn.resourcemanager.webapp.address</name>
+    <value>resourcemanager:8088</value>
+  </property>
+  <property>
+    <name>tez.use.cluster.hadoop-libs</name>
+    <value>true</value>
+  </property>
+  <property>
+    <name>tez.lib.uris.classpath</name>
+    <value>$PWD/tez/*</value>
+  </property>
+  <property>
+    <name>hive.server2.tez.initialize.default.sessions</name>
+    <value>false</value>
+  </property>
+  <property>
+    <name>hive.server2.tez.sessions.per.default.queue</name>
+    <value>0</value>
+  </property>
+
+  <!-- HiveServer2 transport settings. -->
+  <property>
+    <name>hive.server2.thrift.bind.host</name>
+    <value>localhost</value>
+  </property>
+  <property>
+    <name>hive.server2.transport.mode</name>
+    <value>binary</value>
+  </property>
+  <property>
+    <name>hive.server2.authentication</name>
+    <value>NOSASL</value>
+  </property>
+
 </configuration>
