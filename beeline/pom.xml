@@ -75,8 +75,9 @@
       <!--
         Since the compile-time hive-jdbc dependency contains Utils.java,
         which directly imports HiveSQLException from hive-service,
-        hive-service is also required at runtime and should therefore be declared as a compile-time dependency.
-        -->
+        hive-service is also required at runtime and should therefore be
+        declared as a compile-time dependency.
+      -->
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-service</artifactId>
       <version>${project.version}</version>
@@ -89,16 +90,16 @@
     </dependency>
     <!-- inter-project -->
     <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+    </dependency>
+    <dependency>
       <groupId>commons-cli</groupId>
       <artifactId>commons-cli</artifactId>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-core</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jline</groupId>
@@ -374,14 +375,10 @@
                     <property name="installer.input" value="${project.build.directory}/installer-input"/>
                     <delete dir="${installer.input}" quiet="true"/>
                     <mkdir dir="${installer.input}"/>
-                    <copy file="${project.build.directory}/beeline-standalone.jar"
-                          todir="${installer.input}"/>
-                    <copy file="${project.build.directory}/generated-resources/LICENSE"
-                          todir="${installer.input}"/>
-                    <copy file="${project.basedir}/../NOTICE"
-                          todir="${installer.input}"/>
-                    <copy file="${project.basedir}/src/license/licenses.xml"
-                          todir="${installer.input}"/>
+                    <copy file="${project.build.directory}/beeline-standalone.jar" todir="${installer.input}"/>
+                    <copy file="${project.build.directory}/generated-resources/LICENSE" todir="${installer.input}"/>
+                    <copy file="${project.basedir}/../NOTICE" todir="${installer.input}"/>
+                    <copy file="${project.basedir}/src/license/licenses.xml" todir="${installer.input}"/>
                     <mkdir dir="${installer.input}/licenses"/>
                     <copy todir="${installer.input}/licenses">
                       <fileset dir="${project.build.directory}/generated-resources/licenses"/>
