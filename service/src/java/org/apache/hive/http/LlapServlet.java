@@ -104,6 +104,7 @@ public class LlapServlet extends HttpServlet {
           driver.outputJson(writer);
         } else {
           response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+          response.setHeader(HttpConstants.CACHE_CONTROL, "no-store");
         }
 
       } finally {
