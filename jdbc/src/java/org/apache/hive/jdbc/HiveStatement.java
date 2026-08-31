@@ -544,7 +544,7 @@ public class HiveStatement implements java.sql.Statement {
             && (isInvalidOperationHandleError(e) || isRetriableExecutionError(e))) {
           failoverRetries++;
           LOG.info("Operation lost after failover, reconnecting and re-executing (attempt {} of {}): {}",
-              failoverRetries, maxFailoverRetries, lastSql, e);
+              failoverRetries, maxFailoverRetries, lastSql);
           retryAfterFailover();
           statusReq = new TGetOperationStatusReq(stmtHandle.get());
           statusReq.setGetProgressUpdate(progressUpdates);
