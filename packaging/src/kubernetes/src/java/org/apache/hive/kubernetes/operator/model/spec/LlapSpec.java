@@ -81,7 +81,7 @@ public record LlapSpec(
     public LlapTezAmSpec {
       replicas = replicas != null ? replicas : 1;
       autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
-          false, 0, 0, 60, 600, 120, 10, 0, 0, null);
+          false, 0, 0, 0, 60, 600, 120, 10, 0, 0, null);
     }
   }
 
@@ -102,7 +102,7 @@ public record LlapSpec(
     extraVolumes = extraVolumes != null ? extraVolumes : List.of();
     extraVolumeMounts = extraVolumeMounts != null ? extraVolumeMounts : List.of();
     autoscaling = autoscaling != null ? autoscaling : new AutoscalingSpec(
-        false, 0, 1, 60, 900, 600, 10, 0, 0, null);
+        false, 0, 1, 20, 60, 900, 600, 10, 0, 0, null);
     tezAm = tezAm != null ? tezAm : new LlapTezAmSpec(null, null);
   }
 

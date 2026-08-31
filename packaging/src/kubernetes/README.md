@@ -580,7 +580,8 @@ cluster:
     autoscaling:
       enabled: true
       minReplicas: 2
-      scaleUpThreshold: 2
+      scaleUpThreshold: 80
+      scaleDownThreshold: 20
 
   - name: analytics
     enabled: true
@@ -744,7 +745,7 @@ When `autoscaling.enabled: true` is set for a component, the operator:
     - HS2: deregisters from ZK, drains open sessions, kills JVM    
     - HMS: kills JVM (stateless HTTP — no drain needed)             
     - LLAP: waits until all executors become idle, kills JVM        
-    - TezAM: no drain (DAGAppMaster does not expose JMX metrics)            
+    - TezAM: deregisters from ZK, drains running DAG, kills JVM   
  5. terminationGracePeriodSeconds = gracePeriodSeconds (safety cap) 
  6. Pod terminates immediately once drain completes (does NOT wait  
     the full grace period — it's only the upper safety bound)
@@ -762,14 +763,14 @@ The autoscaling system uses three independent timing controls:
 | Timer | Config Field | Default | Purpose |
 |-------|-------------|---------|---------|
 | **Metrics scrape interval** | `metricsScrapeIntervalSeconds` | `10` | How often the operator scrapes JMX Exporter `/metrics` on each pod. This is the **biggest bottleneck** for autoscaling reaction time. |
-| **Scale-up stabilization** | `scaleUpStabilizationSeconds` | `60` | Window: picks the highest recommendation within this period before scaling up. Prevents flapping when metrics oscillate. Set to `0` for LLAP and TezAM (reactive dependents). |
+| **Scale-up stabilization** | `scaleUpStabilizationSeconds` | `60` | Window: picks the highest recommendation within this period before scaling up. Prevents flapping when metrics oscillate. Set to `0` for LLAP and TezAM (reactive dependents). LLAP picks the lowest recommendation to prevent over-scaling due to momentary Reducer Burst. |
 | **Scale-down stabilization** | `scaleDownStabilizationSeconds` | `300-900` | Window: picks the most conservative (highest) recommendation within this period before scaling down. Also acts as the cooldown between consecutive scale-downs — no separate cooldown needed. |
 
 **How they interact:**
 - Load spike detected → operator scrapes metrics within `metricsScrapeIntervalSeconds` → waits `scaleUpStabilizationSeconds` then scales up
 - Load drops → operator waits `scaleDownStabilizationSeconds` (stabilization window must confirm low demand consistently) then scales down
 
-**Tuning reaction time:** With defaults (`metricsScrapeIntervalSeconds: 10`, `scaleUpStabilizationSeconds: 0` for LLAP/TezAM), scale-up latency is ~10-20s (one scrape cycle). For HS2 with `scaleUpStabilizationSeconds: 60`, expect ~70s.
+**Tuning reaction time:** With defaults (`metricsScrapeIntervalSeconds: 10`, `scaleUpStabilizationSeconds: 60`), expect ~70s for stabilized scale-up.
 
 ### Per-Component Scaling Logic
 
@@ -777,7 +778,7 @@ The autoscaling system uses three independent timing controls:
 |-----------|-----------------|------------|------------|
 | **HiveServer2** | `max(ceil(sessions / threshold), cpu_desired)` | Sessions drop to 0 AND CPU below threshold → scale to minReplicas | `hs2_open_sessions`, `jvm_process_cpu_load` |
 | **Metastore** | `max(ceil(api_rate / threshold), cpu_desired)` | Rate drops to 0 AND CPU below threshold → scale to minReplicas | `api_*_total`, `jvm_process_cpu_load` |
-| **LLAP** | `ceil(avg(queued + configured - available) / scaleUpThreshold)` | All executors idle + no HS2 sessions | `hadoop_llapdaemon_executor*` |
+| **LLAP** | `ceil(totalClusterLoad / capacityPerDaemon)` when pending load is above threshold | No TezAM pending tasks AND avg daemon load is below threshold | `hadoop_llapdaemon_executor*`, `tez_am_pending_tasks` |
 | **Tez AM** | `max(sum(hs2_open_sessions), count(HS2_pods) * sessions_per_queue)` | All HS2 sessions closed | `hs2_open_sessions` (from HS2 pods) |
 
 **TezAM Scaling Model:** TezAM uses demand-driven scaling with two formulas (max wins):
@@ -1092,8 +1093,8 @@ status:
 ```
 
 **Applicability:** CPU-based scaling only applies to HS2 and HMS. LLAP and TezAM
-do not use CPU as a scaling signal (LLAP scales on busy executor slots which already
-correlates with CPU; TezAM is demand-based from HS2 session count).
+do not use CPU as a scaling signal (LLAP scales on combined TezAM pending tasks
+and daemon busy slots; TezAM is demand-based from HS2 session count).
 
 ---
 
@@ -1187,7 +1188,8 @@ cluster:
     autoscaling:
       enabled: true
       # minReplicas: 0        # default — scale to zero when no sessions target this cluster
-      # scaleUpThreshold: 1   # default — total busy slots (queued+running) triggering scale-up
+      # scaleUpThreshold: 80  # default — pending load percent of total cluster load triggers scale-up
+      # scaleDownThreshold: 20 # default — avg daemon utilization percent triggering scale-down
       # scaleUpStabilizationSeconds: 60   # default — scale-up window
       # scaleDownStabilizationSeconds: 900 # default — scale-down window (long — scaling down destroys cache)
       # gracePeriodSeconds: 600 # default — 10 min drain for in-flight fragments
@@ -1224,8 +1226,8 @@ When autoscaling is enabled, the operator automatically:
 |-----------|---------|---------|
 | **HiveServer2** | `hs2_open_sessions`, `jvm_process_cpu_load` | Session count for primary scaling + CPU for secondary scaling signal |
 | **Metastore** | `api_*_total`, `jvm_process_cpu_load` | API call counters (operator computes request rate from deltas) + CPU for secondary scaling signal |
-| **LLAP** | `hadoop_llapdaemon_executornumqueuedrequests`, `hadoop_llapdaemon_executornumexecutorsconfigured`, `hadoop_llapdaemon_executornumexecutorsavailable` | Total busy slots = queued + configured - available |
-| **Tez AM** | N/A (scales on HS2 metrics) | TezAM scaling is demand-driven from `hs2_open_sessions` — no TezAM-specific metrics needed |
+| **LLAP** | `hadoop_llapdaemon_executornumqueuedrequests`, `hadoop_llapdaemon_executornumexecutorsconfigured`, `hadoop_llapdaemon_executornumexecutorsavailable`, `hadoop_llapdaemon_executormaxfreeslotsconfigured` | Daemon busy slots and capacity; combined with TezAM pending tasks for scaling |
+| **Tez AM** | `tez_am_pending_tasks`, `tez_am_dag_running` | Pending task count drives LLAP scale-up; DAG status ranks idle AMs for cost-based scale-down |
 
 ### Enabling Autoscaling — Example
 
@@ -1248,7 +1250,7 @@ cluster:
       scaleUpThreshold: 75      # API requests/sec threshold
 ```
 
-> **Note:** LLAP scales on total busy slots (queued + running executors).
+> **Note:** LLAP scales based on combined TezAM pending tasks and daemon busy slots.
 > TezAM scales on demand — the number of active HS2 pods multiplied by
 > `hive.server2.tez.sessions.per.default.queue` (default 1).
 
@@ -1260,6 +1262,7 @@ cluster:
 | `cluster.<component>.autoscaling.enabled` | `false` | Enable operator-driven autoscaling |
 | `cluster.<component>.autoscaling.minReplicas` | `1` (HS2/HMS), `0` (LLAP/TezAM) | Minimum replica count. Set to 0 for scale-to-zero (LLAP, TezAM only; HS2 minimum is 1) |
 | `cluster.<component>.autoscaling.scaleUpThreshold` | varies | Metric threshold triggering scale-up |
+| `cluster.<component>.autoscaling.scaleDownThreshold` | `20` (LLAP only) | Average daemon utilization percent below which LLAP scale-down triggers |
 | `cluster.<component>.autoscaling.scaleUpStabilizationSeconds` | `60` | Stabilization window for scale-up (picks highest recommendation in window) |
 | `cluster.<component>.autoscaling.scaleDownStabilizationSeconds` | `300-900` | Stabilization window for scale-down (picks most conservative recommendation in window). Also acts as cooldown between consecutive scale-downs. |
 | `cluster.<component>.autoscaling.gracePeriodSeconds` | `3600` | Safety cap: max drain time before forced termination. Pod exits immediately once drain completes. |
@@ -1406,7 +1409,8 @@ and a paired TezAM Deployment (when `tezAm.enabled: true`).
 | `cluster.llapClusters[].extraVolumeMounts` | `[]` | Additional volume mounts for LLAP containers |
 | `cluster.llapClusters[].autoscaling.enabled` | `false` | Enable per-cluster autoscaling |
 | `cluster.llapClusters[].autoscaling.minReplicas` | `0` | Min replicas (0 = scale to zero) |
-| `cluster.llapClusters[].autoscaling.scaleUpThreshold` | `1` | Busy-slot threshold for scale-up |
+| `cluster.llapClusters[].autoscaling.scaleUpThreshold` | `80` | Pending load percent of total cluster load for scale-up |
+| `cluster.llapClusters[].autoscaling.scaleDownThreshold` | `20` | Avg daemon utilization percent for scale-down |
 
 HS2 routes sessions to LLAP clusters server-side based on user/group identity:
 
@@ -1448,7 +1452,8 @@ controls shared settings (enabled flag, scratch PVC). Per-LLAP TezAM settings
 |-------|---------|-------------|
 | `cluster.<component>.autoscaling.enabled` | `false` | Enable operator-driven autoscaling for this component |
 | `cluster.<component>.autoscaling.minReplicas` | `0` | Floor replica count. 0 enables scale-to-zero (LLAP, TezAM only; HS2 minimum is 1) |
-| `cluster.<component>.autoscaling.scaleUpThreshold` | `100` (HS2/HMS), `10` (LLAP) | Metric threshold per pod triggering scale-up (sessions for HS2, connections for HMS, busy slots for LLAP). TezAM scales 1:1 with demand (no threshold). |
+| `cluster.<component>.autoscaling.scaleUpThreshold` | `100` (HS2/HMS), `80` (LLAP) | Metric threshold per pod triggering scale-up (sessions for HS2, API rate for HMS, pending load percent for LLAP). TezAM scales 1:1 with demand (no threshold). |
+| `cluster.<component>.autoscaling.scaleDownThreshold` | `20` (LLAP) | Average daemon utilization percent below which LLAP scale-down triggers |
 | `cluster.<component>.autoscaling.scaleUpStabilizationSeconds` | `60` | Stabilization window for scale-up decisions (prevents flapping) |
 | `cluster.<component>.autoscaling.scaleDownStabilizationSeconds` | `300-900` | Stabilization window for scale-down decisions (also acts as cooldown between consecutive scale-downs) |
 | `cluster.<component>.autoscaling.gracePeriodSeconds` | `3600` | Safety cap (seconds) — pod terminates immediately once drain completes, this is only the upper bound |

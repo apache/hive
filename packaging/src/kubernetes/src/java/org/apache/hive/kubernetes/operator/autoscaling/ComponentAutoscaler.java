@@ -94,8 +94,13 @@ public class ComponentAutoscaler {
 
     int target;
     if (clamped > currentReplicas) {
-      // Scale up: use stabilized max (highest recommendation in window — don't under-scale)
-      target = scaleUpWindow.stabilizedMax();
+      if (component.startsWith(ConfigUtils.COMPONENT_LLAP + "-")) {
+        // HS2 sessions activation gate scales up the LLAP pods to atleast 1
+        // in presence of sessions. Avoid stabilizedMin in this start-up case.
+        target = currentReplicas == 0 ? clamped : scaleUpWindow.stabilizedMin();
+      } else {
+        target = scaleUpWindow.stabilizedMax();
+      }
     } else if (clamped < currentReplicas) {
       // Scale down: use stabilized max (highest/most conservative recommendation in window —
       // prevents premature scale-down, matches HPA selectPolicy: Max behavior).

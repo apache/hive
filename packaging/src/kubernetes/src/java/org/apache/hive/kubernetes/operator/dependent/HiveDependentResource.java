@@ -854,13 +854,20 @@ public abstract class HiveDependentResource<R extends HasMetadata,
       sb.append("- pattern: '").append(llapBean).append("ExecutorNumExecutors'\n");
       sb.append("  name: hadoop_llapdaemon_executornumexecutors\n");
       sb.append("  type: GAUGE\n");
+      sb.append("- pattern: '").append(llapBean).append("ExecutorMaxFreeSlotsConfigured'\n");
+      sb.append("  name: hadoop_llapdaemon_executormaxfreeslotsconfigured\n");
+      sb.append("  type: GAUGE\n");
       break;
     case ConfigUtils.COMPONENT_TEZAM:
       // LlapMetricsSystem registers beans under LlapTaskScheduler service
       // SchedulerDagStatus tracks if the AM is running a dag or is idle so exported as GAUGE.
+      // SchedulerPendingTaskCount tracks currently waiting tasks in the AM to be scheduled.
       String schedulerBean = "Hadoop<service=LlapTaskScheduler, name=LlapTaskSchedulerMetrics.+><>";
       sb.append("- pattern: '").append(schedulerBean).append("SchedulerDagStatus'\n");
       sb.append("  name: tez_am_dag_running\n");
+      sb.append("  type: GAUGE\n");
+      sb.append("- pattern: '").append(schedulerBean).append("SchedulerPendingTaskCount'\n");
+      sb.append("  name: tez_am_pending_tasks\n");
       sb.append("  type: GAUGE\n");
       break;
     default:
