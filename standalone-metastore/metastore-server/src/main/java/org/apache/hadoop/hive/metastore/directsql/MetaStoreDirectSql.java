@@ -757,11 +757,16 @@ public class MetaStoreDirectSql {
     for (Object[] orderSpec: orderSpecs) {
       int partColIndex = (int)orderSpec[0];
       String orderAlias = "ODR" + (i++);
+      String colType = partitionKeys.get(partColIndex).getType();
+      PartitionFilterGenerator.FilterType type =
+          PartitionFilterGenerator.FilterType.fromType(colType);
+
       String tableValue, tableAlias;
       if (joins.get(partColIndex) == null) {
         tableAlias = "ORDER"  + partColIndex;
         joins.set(partColIndex, "inner join " + PARTITION_KEY_VALS + " \"" + tableAlias
-            + "\" on \""  + tableAlias + "\".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\""
+            + "\"" + PartitionFilterGenerator.derbyDateNoHoistHint(dbType, type)
+            + " on \""  + tableAlias + "\".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\""
             + " and \"" + tableAlias + "\".\"INTEGER_IDX\" = " + partColIndex);
         tableValue = " \"" + tableAlias + "\".\"PART_KEY_VAL\" ";
       } else {
@@ -770,18 +775,13 @@ public class MetaStoreDirectSql {
       }
 
       String tableColumn = tableValue;
-      String colType = partitionKeys.get(partColIndex).getType();
-      PartitionFilterGenerator.FilterType type =
-          PartitionFilterGenerator.FilterType.fromType(colType);
       if (type == PartitionFilterGenerator.FilterType.Date) {
-        // See LeafNode.visit for the full Derby-specific rationale
-        // (DERBY-6358, https://issues.apache.org/jira/browse/DERBY-6358): the cast is pulled
-        // past the CASE guards and applied to rows that would have been filtered, throwing on
-        // any non-date value in PARTITION_KEY_VALS. ISO-date lexicographic order matches date
-        // order, so ordering on the raw varchar is equivalent.
-        if (!dbType.isDERBY()) {
-          tableValue = dbType.toDate(tableValue);
-        }
+        // The Derby hoist that DERBY-6358 would produce is prevented by the
+        // --DERBY-PROPERTIES hint injected on the join above (see
+        // PartitionFilterGenerator.derbyDateNoHoistHint); the cast itself stays
+        // unconditional so partition values with a time component (e.g. written by
+        // Pig) still normalize to their date part.
+        tableValue = dbType.toDate(tableValue);
       } else if (type == PartitionFilterGenerator.FilterType.Timestamp) {
         tableValue = dbType.toTimestamp(tableValue);
       } else if (type == PartitionFilterGenerator.FilterType.Integral) {
@@ -1502,6 +1502,38 @@ public class MetaStoreDirectSql {
     }
 
     /**
+     * Optimizer hint to attach to the {@code PARTITION_KEY_VALS} join for a DATE
+     * partition column on Derby.
+     *
+     * <p>DERBY-6358 (https://issues.apache.org/jira/browse/DERBY-6358, open since 2013):
+     * Derby's optimizer can hoist a CAST inside a CASE past the CASE guards, applying
+     * the cast to rows the guards should have filtered out. In our metastore SQL the
+     * hoisted CAST is {@link DatabaseProduct#toDate}, and it blows up whenever a
+     * non-date value lives in {@code PARTITION_KEY_VALS} — the
+     * {@code __HIVE_DEFAULT_PARTITION__} sentinel for a NULL date, or the
+     * {@code "yyyy-MM-dd HH:mm:ss"} strings engines like Pig write into a DATE
+     * partition column (see the PART_NAME LIKE workaround below).
+     *
+     * <p>The hint forces a nested-loop join with no index on {@code PARTITION_KEY_VALS},
+     * which keeps Derby on a plan shape where the CAST stays inside the CASE — there is
+     * no scan or index qualifier for it to be pushed down onto. Non-Derby dialects
+     * treat the {@code --DERBY-PROPERTIES} text as an ordinary SQL comment and ignore it.
+     *
+     * <p>Only worth applying when the join is against a DATE partition column — the sole
+     * type where {@link DatabaseProduct#toDate} injects the CAST that triggers the hoist.
+     *
+     * @return the hint text (with leading space and trailing newline so the {@code --}
+     *     comment terminates before the {@code ON} clause), or an empty string when
+     *     the workaround is not needed.
+     */
+    private static String derbyDateNoHoistHint(DatabaseProduct dbType, FilterType colType) {
+      if (dbType.isDERBY() && colType == FilterType.Date) {
+        return " --DERBY-PROPERTIES joinStrategy=NESTEDLOOP, index=NULL\n";
+      }
+      return "";
+    }
+
+    /**
      * Generate the ANSI SQL92 filter for the given expression tree
      * @param catName catalog name
      * @param dbName db name
@@ -1678,7 +1710,8 @@ public class MetaStoreDirectSql {
       }
       if (joins.get(partColIndex) == null) {
         joins.set(partColIndex, "inner join " + PARTITION_KEY_VALS + " \"FILTER" + partColIndex
-            + "\" on \"FILTER"  + partColIndex + "\".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\""
+            + "\"" + derbyDateNoHoistHint(dbType, colType)
+            + " on \"FILTER"  + partColIndex + "\".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\""
             + " and \"FILTER" + partColIndex + "\".\"INTEGER_IDX\" = " + partColIndex);
       }
 
@@ -1694,16 +1727,13 @@ public class MetaStoreDirectSql {
         if (colType == FilterType.Integral) {
           tableValue = "cast(" + tableValue + " as decimal(21,0))";
         } else if (colType == FilterType.Date) {
-          if (dbType.isDERBY()) {
-            // DERBY-6358 (https://issues.apache.org/jira/browse/DERBY-6358, open since 2013):
-            // Hive stores DATE partition values as normalized "yyyy-MM-dd" strings (see
-            // MetaStoreUtils.normalizeDate applied to nodeValue above and to the partition path
-            // segment on write), and lexicographic order on this format matches date order for
-            // every relational operator we support. Compare varchar-to-varchar and skip the
-            // cast — there is nothing left for Derby's optimizer to hoist.
-          } else {
-            tableValue = dbType.toDate(tableValue);
-          }
+          // The DATE cast strips any time component in a partition value written by
+          // engines like Pig ("2016-07-14 15:10:15") — see the PART_NAME LIKE workaround
+          // below that pairs with it. On Derby the same CAST is what DERBY-6358 hoists;
+          // we keep it correct here and inject a --DERBY-PROPERTIES hint on the join
+          // above (see derbyDateNoHoistHint) to steer Derby onto a plan shape where
+          // the hoist cannot happen.
+          tableValue = dbType.toDate(tableValue);
         } else if (colType == FilterType.Timestamp) {
           tableValue = dbType.toTimestamp(tableValue);
         }
