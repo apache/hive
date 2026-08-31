@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.io.RowPositionAwareVectorizedRecordReader;
 import org.apache.hadoop.hive.ql.io.parquet.ParquetRecordReaderBase;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.JobConf;
@@ -52,7 +53,8 @@ import org.apache.parquet.hadoop.metadata.ParquetMetadata;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.Type;
 
-final class ParquetVariantRecordReader implements RecordReader<NullWritable, VectorizedRowBatch> {
+final class ParquetVariantRecordReader
+    implements RecordReader<NullWritable, VectorizedRowBatch>, RowPositionAwareVectorizedRecordReader {
 
   private static final String INVALID_VARIANT_STRUCT = "Invalid Variant struct for column ";
 
@@ -152,6 +154,20 @@ final class ParquetVariantRecordReader implements RecordReader<NullWritable, Vec
       }
     }
     return splitBlocks;
+  }
+
+  /**
+   * Row positions come from the reader this wraps. Without this the wrapper hides the delegate's
+   * {@link RowPositionAwareVectorizedRecordReader}, and every row of a VARIANT table is handed the unknown
+   * position marker instead - which ROW__POSITION, row lineage and positional deletes all rely on.
+   */
+  @Override
+  public long getRowNumber() throws IOException {
+    if (delegate instanceof RowPositionAwareVectorizedRecordReader positionAware) {
+      return positionAware.getRowNumber();
+    }
+    throw new UnsupportedOperationException(
+        "The reader under " + delegate.getClass().getName() + " cannot report row positions");
   }
 
   @Override

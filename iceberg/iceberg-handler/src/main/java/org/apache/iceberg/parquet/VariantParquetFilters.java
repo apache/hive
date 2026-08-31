@@ -41,7 +41,6 @@ import org.apache.parquet.filter2.predicate.Operators;
 import org.apache.parquet.hadoop.metadata.BlockMetaData;
 import org.apache.parquet.hadoop.metadata.ColumnChunkMetaData;
 import org.apache.parquet.hadoop.metadata.ColumnPath;
-import org.apache.parquet.hadoop.metadata.ParquetMetadata;
 import org.apache.parquet.io.api.Binary;
 import org.apache.parquet.schema.GroupType;
 import org.apache.parquet.schema.LogicalTypeAnnotation.StringLogicalTypeAnnotation;
@@ -95,7 +94,7 @@ public final class VariantParquetFilters {
     return new ResolvedVariantFilter(predicate, visitor.fallbackValueColumns());
   }
 
-  public static boolean[] variantRowGroupMayMatch(
+  public static boolean[] pickRowGroups(
       MessageType fileSchema, Expression filter, List<BlockMetaData> rowGroups) {
     if (fileSchema == null || filter == null || rowGroups == null || rowGroups.isEmpty()) {
       return null;
@@ -133,54 +132,6 @@ public final class VariantParquetFilters {
       }
     }
     return false;
-  }
-
-  private static List<BlockMetaData> pruneVariantRowGroups(
-      MessageType fileSchema, Expression filter, List<BlockMetaData> rowGroups) {
-    boolean[] mayMatch = variantRowGroupMayMatch(fileSchema, filter, rowGroups);
-    if (mayMatch == null) {
-      return rowGroups;
-    }
-
-    List<BlockMetaData> kept = Lists.newArrayListWithCapacity(rowGroups.size());
-    for (int i = 0; i < rowGroups.size(); i++) {
-      if (mayMatch[i]) {
-        kept.add(rowGroups.get(i));
-      }
-    }
-
-    return kept.size() == rowGroups.size() ? rowGroups : kept;
-  }
-
-  /** Returns Parquet metadata with row groups pruned using best-effort VARIANT pruning. */
-  public static ParquetMetadata pruneVariantRowGroups(
-      ParquetMetadata parquetMetadata, MessageType fileSchema, Expression filter) {
-    if (parquetMetadata == null || filter == null) {
-      return parquetMetadata;
-    }
-
-    List<BlockMetaData> rowGroups = parquetMetadata.getBlocks();
-    if (rowGroups == null || rowGroups.isEmpty()) {
-      return parquetMetadata;
-    }
-
-    MessageType schema = fileSchema;
-    if (schema == null) {
-      if (parquetMetadata.getFileMetaData() == null) {
-        return parquetMetadata;
-      }
-      schema = parquetMetadata.getFileMetaData().getSchema();
-    }
-    if (schema == null) {
-      return parquetMetadata;
-    }
-
-    List<BlockMetaData> kept = pruneVariantRowGroups(schema, filter, rowGroups);
-    if (kept == rowGroups || parquetMetadata.getFileMetaData() == null) {
-      return parquetMetadata;
-    }
-
-    return new ParquetMetadata(parquetMetadata.getFileMetaData(), kept);
   }
 
   private static boolean isColumnAllNull(ColumnChunkMetaData meta) {

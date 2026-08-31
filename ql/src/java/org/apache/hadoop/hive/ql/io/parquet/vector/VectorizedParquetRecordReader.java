@@ -107,6 +107,9 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   protected MessageType requestedSchema;
   private List<String> columnNamesList;
   private List<TypeInfo> columnTypesList;
+  /** Which of the file's row groups to read, by footer index, or null to read every one. */
+  private boolean[] includedRowGroups;
+
   private VectorizedRowBatchCtx rbCtx;
   private Object[] partitionValues;
   private boolean addPartitionCols = true;
@@ -160,8 +163,15 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   public VectorizedParquetRecordReader(InputSplit oldInputSplit, JobConf conf, FileMetadataCache metadataCache,
       DataCache dataCache, Configuration cacheConf, ParquetMetadata parquetMetadata,
       Map<String, Object> initialDefaults) throws IOException {
+    this(oldInputSplit, conf, metadataCache, dataCache, cacheConf, parquetMetadata, initialDefaults, null);
+  }
+
+  public VectorizedParquetRecordReader(InputSplit oldInputSplit, JobConf conf, FileMetadataCache metadataCache,
+      DataCache dataCache, Configuration cacheConf, ParquetMetadata parquetMetadata,
+      Map<String, Object> initialDefaults, boolean[] includedRowGroups) throws IOException {
     super(conf, oldInputSplit);
     try {
+      this.includedRowGroups = includedRowGroups;
       this.metadataCache = metadataCache;
       this.cache = dataCache;
       this.cacheConf = cacheConf;
@@ -205,6 +215,11 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     this(oldInputSplit, conf, metadataCache, dataCache, cacheConf, null, null);
   }
 
+  @Override
+  protected boolean includeRowGroup(int rowGroupIndex) {
+    return includedRowGroups == null || includedRowGroups[rowGroupIndex];
+  }
+
   private void initPartitionValues(FileSplit fileSplit, JobConf conf) throws IOException {
      int partitionColumnCount = rbCtx.getPartitionColumnCount();
      if (partitionColumnCount > 0) {
@@ -241,14 +256,14 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       offsets.add(offset);
     }
     blocks = new ArrayList<>();
-    long allRowsInFile = 0;
     int blockIndex = 0;
     for (BlockMetaData block : parquetMetadata.getBlocks()) {
       if (offsets.contains(block.getStartingPos())) {
-        rowGroupNumToRowPos.put(blockIndex++, allRowsInFile);
+        // Parquet records where each row group's first row sits in the file, so the position is read
+        // rather than counted up, and stays right whatever subset of row groups this split reads.
+        rowGroupNumToRowPos.put(blockIndex++, block.getRowIndexOffset());
         blocks.add(block);
       }
-      allRowsInFile += block.getRowCount();
     }
     // verify we found them all
     if (blocks.size() != rowGroupOffsets.length) {

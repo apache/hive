@@ -46,6 +46,7 @@ public class VectorizedParquetInputFormat
   private DataCache dataCache = null;
   private Configuration cacheConf = null;
   private ParquetMetadata metadata;
+  private boolean[] includedRowGroups;
   private Map<String, Object> initialDefaults;
 
   public VectorizedParquetInputFormat() {
@@ -57,11 +58,20 @@ public class VectorizedParquetInputFormat
     JobConf jobConf,
     Reporter reporter) throws IOException {
     return new VectorizedParquetRecordReader(
-        inputSplit, jobConf, metadataCache, dataCache, cacheConf, metadata, initialDefaults);
+        inputSplit, jobConf, metadataCache, dataCache, cacheConf, metadata, initialDefaults, includedRowGroups);
   }
 
   public void setMetadata(ParquetMetadata metadata) throws IOException {
     this.metadata = metadata;
+  }
+
+  /**
+   * Restricts the reader to these of the file's row groups, by footer index, for a caller that has already
+   * ruled some out with a filter Parquet cannot express. The footer given to {@link #setMetadata} stays the
+   * file's own, so row positions remain absolute.
+   */
+  public void setIncludedRowGroups(boolean[] includedRowGroups) {
+    this.includedRowGroups = includedRowGroups;
   }
 
   public void seInitialColumnDefaults(Map<String, Object> initialDefaults) {
