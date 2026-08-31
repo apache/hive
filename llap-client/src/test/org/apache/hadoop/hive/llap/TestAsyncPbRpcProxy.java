@@ -27,6 +27,7 @@ import static org.mockito.Mockito.mock;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import com.google.protobuf.Message;
 import org.apache.commons.lang3.mutable.MutableInt;
@@ -47,7 +48,7 @@ class TestAsyncPbRpcProxy {
    * indicates a starved executor, not a test bug (HIVE-26089).
    */
   @BeforeAll
-  @Timeout(value = 60, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
+  @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
   static void warmUp() {
     mock(Message.class);
     mock(LlapProtocolClientProxy.ExecuteRequestCallback.class);
@@ -57,7 +58,7 @@ class TestAsyncPbRpcProxy {
   }
 
   @Test
-  @Timeout(value = 5, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
+  @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
   void testMultipleNodes() throws Exception {
     RequestManagerForTest requestManager = new RequestManagerForTest(1);
 
@@ -87,7 +88,7 @@ class TestAsyncPbRpcProxy {
   }
 
   @Test
-  @Timeout(value = 5, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
+  @Timeout(value = 5000, unit = TimeUnit.MILLISECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
   void testSingleInvocationPerNode() throws Exception {
     RequestManagerForTest requestManager = new RequestManagerForTest(1);
 
