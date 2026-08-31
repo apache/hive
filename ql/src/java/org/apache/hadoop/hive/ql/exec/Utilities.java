@@ -5178,7 +5178,7 @@ public final class Utilities {
       return identifier;
     }
     String inner = identifier.substring(1, identifier.length() - 1);
-    // A literal quote char inside a quoted identifier is escaped by doubling it.
+    // A use of the closing char inside the table name is escaped by doubling it.
     return inner.replace(String.valueOf(closing) + closing, String.valueOf(closing));
   }
 }

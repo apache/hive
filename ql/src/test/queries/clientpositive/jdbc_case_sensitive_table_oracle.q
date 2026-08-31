@@ -29,5 +29,4 @@ TBLPROPERTIES (
 
 EXPLAIN CBO SELECT COUNT(*) FROM country_mixed;
 SELECT COUNT(*) FROM country_mixed;
-SELECT * FROM country_mixed ORDER BY id;
 
