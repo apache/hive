@@ -19,6 +19,7 @@
 package org.apache.hive.storage.jdbc;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -113,18 +114,24 @@ public class JdbcStorageHandler implements HiveStorageHandler {
       tableProperties.get(JdbcStorageConfig.DATABASE_TYPE.getPropertyName()));
     String hostUrl = DatabaseType.METASTORE == dbType ?
       "jdbc:metastore://" : tableProperties.get(Constants.JDBC_URL);
-    // Encode only the auth-resource path segment to keep URI construction valid; this does not
-    // alter the JDBC URL used by the driver for actual query execution.
-    String tableName = encodeIdentifierForAuth(tableProperties.get(Constants.JDBC_TABLE));
-    return new URI(hostUrl + "/" + tableName);
+    String tableIdentifier = tableProperties.get(Constants.JDBC_TABLE);
+    if (tableIdentifier == null) {
+      throw new URISyntaxException(hostUrl, "Missing required table property: " + Constants.JDBC_TABLE);
+    }
+    // Encode only the table name to keep URI construction valid; the URI is not used in the
+    // JDBC URL, but as an identifier stored in the HMS.
+    String tableName = encodeIdentifierForAuth(tableIdentifier);
+    return buildAuthorizationUri(hostUrl, tableName);
   }
 
   private static String encodeIdentifierForAuth(String identifier) {
     String physical = unquoteJdbcIdentifier(identifier);
-    if (physical == null) {
-      return null;
-    }
     return URLEncoder.encode(physical, StandardCharsets.UTF_8);
+  }
+
+  private static URI buildAuthorizationUri(String hostUrl, String tableName) throws URISyntaxException {
+    String separator = hostUrl.endsWith(Path.SEPARATOR) ? "" : Path.SEPARATOR;
+    return new URI(hostUrl + separator + tableName);
   }
 
   @Override

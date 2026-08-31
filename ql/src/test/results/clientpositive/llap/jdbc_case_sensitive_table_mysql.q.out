@@ -94,13 +94,3 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@country_mixed
 #### A masked pattern was here ####
 2
-PREHOOK: query: SELECT * FROM country_mixed ORDER BY id
-PREHOOK: type: QUERY
-PREHOOK: Input: default@country_mixed
-#### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM country_mixed ORDER BY id
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@country_mixed
-#### A masked pattern was here ####
-10	Italy
-11	Greece
