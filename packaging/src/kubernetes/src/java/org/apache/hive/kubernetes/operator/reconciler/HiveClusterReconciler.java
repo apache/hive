@@ -704,10 +704,13 @@ public class HiveClusterReconciler
     if (llapManaged != null && llapManaged == 0) {
       return 0;
     }
-    if (llapSpec.autoscaling().isEnabled() && llapManaged == null) {
-      // First reconcile, LLAP starts at minReplicas (likely 0) — TezAM matches
-      return llapSpec.autoscaling().minReplicas() > 0
-          ? tezAmSpec.replicas() : 0;
+    if (llapSpec.autoscaling().isEnabled() && llapManaged == null
+        && llapSpec.autoscaling().minReplicas() == 0) {
+      // First reconcile before autoscaler runs: LLAP starts at 0, so TezAM stays down too.
+      return 0;
+    }
+    if (tezAmSpec.autoscaling().isEnabled()) {
+      return tezAmSpec.autoscaling().minReplicas();
     }
     return tezAmSpec.replicas();
   }

@@ -987,7 +987,11 @@
                             "input": 8,
                             "name": "$8"
                           }
-                        ]
+                        ],
+                        "type": {
+                          "type": "INTEGER",
+                          "nullable": true
+                        }
                       }
                     ],
                     "type": {

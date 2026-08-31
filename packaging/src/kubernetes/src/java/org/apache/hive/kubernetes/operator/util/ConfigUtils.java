@@ -141,6 +141,8 @@ public final class ConfigUtils {
   public static final String HIVE_LLAP_DAEMON_UMBILICAL_PORT_KEY = "hive.llap.daemon.umbilical.port";
   public static final String HIVE_LLAP_DAEMON_UMBILICAL_PORT_DEFAULT = "0";
 
+  public static final String HIVE_LLAP_TASK_SCHEDULER_LOCALITY_DELAY_KEY = "hive.llap.task.scheduler.locality.delay";
+
   public static final String METASTORE_SERVER_TRANSPORT_MODE_KEY = "metastore.server.thrift.transport.mode";
   public static final String METASTORE_SERVER_TRANSPORT_MODE_DEFAULT = "http";
 

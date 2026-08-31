@@ -23,18 +23,31 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.IntStream;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.yarn.api.records.LocalResource;
+import org.apache.hadoop.yarn.client.api.YarnClient;
+import org.apache.tez.client.TezClient;
 import org.apache.tez.dag.api.TezException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.mockito.Mockito.mock;
 
 public class TestTezSessionState {
   private static final Logger LOG = LoggerFactory.getLogger(TestTezSessionState.class.getName());
@@ -134,5 +147,112 @@ public class TestTezSessionState {
     };
 
     sessionStateForTest.open(resources);
+  }
+
+  /**
+   * Tests that YarnClient is NOT initialized when queue metrics are disabled (default: interval=0).
+   * This ensures zero overhead when the feature is disabled.
+   */
+  @Test
+  public void testYarnClientNotInitializedWhenMetricsDisabled() {
+    SessionState ss = createSessionState();
+    HiveConf hiveConf = ss.getConf();
+    
+    // Default config: queue metrics disabled (interval = 0)
+    Assert.assertEquals("Default interval should be 0 (disabled)",
+        0, HiveConf.getTimeVar(hiveConf, HiveConf.ConfVars.HIVE_TEZ_QUEUE_METRICS_REFRESH_INTERVAL,
+            TimeUnit.MILLISECONDS));
+
+    TezSessionState sessionState = new TezSessionState(ss.getSessionId(), hiveConf);
+    
+    sessionState.setTezClient(mock(TezClient.class));
+
+    // getYarnClient() should return null when metrics disabled
+    Assert.assertNull("YarnClient should not be initialized when queue metrics are disabled",
+        sessionState.getYarnClient());
+  }
+
+  /**
+   * Tests that YarnClient IS lazily initialized when queue metrics are enabled.
+   * This ensures the client is created only when needed.
+   */
+  @Test
+  public void testYarnClientLazilyInitializedWhenMetricsEnabled() {
+    SessionState ss = createSessionState();
+    HiveConf hiveConf = ss.getConf();
+    
+    // Enable queue metrics with a positive interval
+    hiveConf.setTimeVar(HiveConf.ConfVars.HIVE_TEZ_QUEUE_METRICS_REFRESH_INTERVAL, 10, TimeUnit.SECONDS);
+
+    TezSessionState sessionState = new TezSessionState(ss.getSessionId(), hiveConf);
+    
+    sessionState.setTezClient(mock(TezClient.class));
+
+    // First call to getYarnClient() should initialize it
+    YarnClient yarnClient = sessionState.getYarnClient();
+    Assert.assertNotNull("YarnClient should be initialized when queue metrics are enabled", yarnClient);
+    
+    // Second call should return the same instance
+    Assert.assertSame("Should return the same YarnClient instance", yarnClient, sessionState.getYarnClient());
+  }
+
+  /**
+   * Tests that YarnClient is not initialized when TezClient is null,
+   * even if queue metrics are enabled.
+   */
+  @Test
+  public void testYarnClientNotInitializedWhenTezClientNull() {
+    SessionState ss = createSessionState();
+    HiveConf hiveConf = ss.getConf();
+    
+    // Enable queue metrics
+    hiveConf.setTimeVar(HiveConf.ConfVars.HIVE_TEZ_QUEUE_METRICS_REFRESH_INTERVAL, 10, TimeUnit.SECONDS);
+
+    TezSessionState sessionState = new TezSessionState(ss.getSessionId(), hiveConf);
+    
+    // Don't set TezClient (session is null)
+
+    // getYarnClient() should return null when TezClient is not set
+    Assert.assertNull("YarnClient should not be initialized when TezClient is null",
+        sessionState.getYarnClient());
+  }
+
+  /**
+   * Tests the thread-safety of lazy YarnClient initialization with concurrent calls.
+   */
+  @Test
+  public void testYarnClientLazyInitializationThreadSafety() throws Exception {
+    SessionState ss = createSessionState();
+    HiveConf hiveConf = ss.getConf();
+
+    // Enable queue metrics
+    hiveConf.setTimeVar(HiveConf.ConfVars.HIVE_TEZ_QUEUE_METRICS_REFRESH_INTERVAL, 10, TimeUnit.SECONDS);
+
+    TezSessionState sessionState = new TezSessionState(ss.getSessionId(), hiveConf);
+    sessionState.setTezClient(mock(TezClient.class));
+
+    int threadCount = 10;
+    ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+    CountDownLatch start = new CountDownLatch(1);
+
+    try {
+      List<Future<YarnClient>> futures = IntStream.range(0, threadCount)
+          .mapToObj(i -> executor.submit(() -> {
+            start.await();
+            return sessionState.getYarnClient();
+          }))
+          .toList();
+
+      start.countDown();
+
+      YarnClient firstClient = futures.getFirst().get();
+      assertNotNull("YarnClient should be initialized", firstClient);
+
+      for (Future<YarnClient> future : futures) {
+        assertSame("All threads should get the same YarnClient instance", firstClient, future.get());
+      }
+    } finally {
+      executor.shutdownNow();
+    }
   }
 }

@@ -140,8 +140,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
       }
     }
 
-    this.projectedSchema =
-        projectedSchema(conf, serDeProperties.getProperty(Catalogs.NAME), tableSchema, jobConf);
+    this.projectedSchema = projectedSchema(conf, serDeProperties, tableSchema, jobConf);
 
     if (!IcebergTableUtil.isFanoutEnabled(serDeProperties::getProperty)) {
       // ClusteredWriter requires that records are ordered by partition keys.
@@ -156,9 +155,11 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     }
   }
 
-  private static Schema projectedSchema(Configuration conf, String tableName, Schema tableSchema,
-      Map<String, String> jobConf) {
+  private static Schema projectedSchema(Configuration conf, Properties serDeProperties,
+      Schema tableSchema, Map<String, String> jobConf) {
+    String tableName = serDeProperties.getProperty(Catalogs.NAME);
     Context.Operation operation = HiveCustomStorageHandlerUtils.getWriteOperation(conf::get, tableName);
+
     if (operation == null) {
       jobConf.put(InputFormatConfig.CASE_SENSITIVE, "false");
       String[] selectedColumns = ColumnProjectionUtils.getReadColumnNames(conf);
@@ -180,11 +181,15 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     }
     boolean isCOW = IcebergTableUtil.isCopyOnWriteMode(operation, conf::get);
     if (isCOW) {
-      return getSchemaWithRowLineage(IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns()), conf);
+      return getSchemaWithRowLineage(
+          IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns(), false), conf);
     }
     switch (operation) {
       case DELETE:
-        return IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns());
+        boolean isMergeTask = HiveCustomStorageHandlerUtils.isMergeTaskEnabled(
+            key -> serDeProperties.getProperty(key, conf.get(key)),
+            tableName);
+        return IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns(), isMergeTask);
       case UPDATE:
         return IcebergAcidUtil.createSerdeSchemaForUpdate(tableSchema.columns());
       case OTHER:

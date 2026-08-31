@@ -28,6 +28,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
+import java.util.LinkedHashSet;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Function;
@@ -2952,7 +2953,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // NOTE: Table logical schema = Non Partition Cols + Partition Cols +
         // Virtual Cols
 
-        // 3.1 Add Column info for non partion cols (Object Inspector fields)
+        // 3.1 Add Column info for cols (Object Inspector fields)
         final Deserializer deserializer = tabMetaData.getDeserializer();
         StructObjectInspector rowObjectInspector = (StructObjectInspector) deserializer
             .getObjectInspector();
@@ -2960,42 +2961,64 @@ public class CalcitePlanner extends SemanticAnalyzer {
         deserializer.handleJobLevelConfiguration(conf);
 
         List<? extends StructField> fields = rowObjectInspector.getAllStructFieldRefs();
-        ColumnInfo colInfo;
-        String colName;
-        ArrayList<ColumnInfo> cInfoLst = new ArrayList<>();
-
         final NotNullConstraint nnc = tabMetaData.getNotNullConstraint();
         final PrimaryKeyInfo pkc = tabMetaData.getPrimaryKeyInfo();
 
-        for (StructField structField : fields) {
-          colName = structField.getFieldName();
-          colInfo = new ColumnInfo(
-                  structField.getFieldName(),
-                  TypeInfoUtils.getTypeInfoFromObjectInspector(structField.getFieldObjectInspector()),
-                  isNullable(colName, nnc, pkc), tableAlias, false);
-          colInfo.setSkewedCol(isSkewedCol(tableAlias, qb, colName));
-          rr.put(tableAlias, colName, colInfo);
-          cInfoLst.add(colInfo);
-        }
-        // TODO: Fix this
-        ArrayList<ColumnInfo> nonPartitionColumns = new ArrayList<ColumnInfo>(cInfoLst);
-        ArrayList<ColumnInfo> partitionColumns = new ArrayList<ColumnInfo>();
+        int allColCount = tabMetaData.getAllCols().size();
+        List<ColumnInfo> colInfoList = new ArrayList<>(Collections.nCopies(allColCount, null));
 
         // 3.2 Add column info corresponding to partition columns
+        // Normally, the column names in a schema should be unique, but in the case of Iceberg v1 tables,
+        // updating the partition spec doesn't remove the existing partition keys, so we can end up with a
+        // partition spec containing multiple columns with the same name.
+        Set<ColumnInfo> partitionColumnSet = LinkedHashSet.newLinkedHashSet(tabMetaData.getPartCols().size());
+        Set<String> nonIdentityPartitionColumnNames = Collections.emptySet();
+        if (tabMetaData.hasNonNativePartitionSupport()) {
+          nonIdentityPartitionColumnNames = tabMetaData.getStorageHandler().getPartitionTransformSpec(tabMetaData)
+              .stream()
+              .filter(transformSpec -> transformSpec.getTransformType() != TransformSpec.TransformType.IDENTITY)
+              .map(TransformSpec::getColumnName)
+              .collect(Collectors.toSet());
+        }
+        Set<String> partitionColNames = HashSet.newHashSet(
+            tabMetaData.getPartCols().size() - nonIdentityPartitionColumnNames.size());
+
         for (FieldSchema partCol : tabMetaData.getPartCols()) {
-          if (tabMetaData.hasNonNativePartitionSupport()) {
-            break;
+          String colName = partCol.getName();
+          if (nonIdentityPartitionColumnNames.contains(colName)) {
+            continue;
           }
-          colName = partCol.getName();
-          colInfo = new ColumnInfo(colName,
-                  TypeInfoFactory.getPrimitiveTypeInfo(partCol.getType()),
-                  isNullable(colName, nnc, pkc), tableAlias, true);
-          rr.put(tableAlias, colName, colInfo);
-          cInfoLst.add(colInfo);
-          partitionColumns.add(colInfo);
+
+          partitionColNames.add(colName);
+
+          ColumnInfo colInfo = new ColumnInfo(colName,
+              TypeInfoFactory.getPrimitiveTypeInfo(partCol.getType()),
+              isNullable(colName, nnc, pkc), tableAlias, true);
+          colInfoList.set(tabMetaData.getColumnIndexByName(colName), colInfo);
+          partitionColumnSet.add(colInfo);
         }
 
-        final TableType tableType = obtainTableType(tabMetaData);
+        List<ColumnInfo> partitionColumns = List.copyOf(partitionColumnSet);
+
+        List<ColumnInfo> nonPartitionColumns = new ArrayList<>(fields.size());
+        for (StructField structField : fields) {
+          String colName = structField.getFieldName();
+          if (partitionColNames.contains(colName)) {
+            continue;
+          }
+
+          ColumnInfo colInfo = new ColumnInfo(
+              structField.getFieldName(),
+              TypeInfoUtils.getTypeInfoFromObjectInspector(structField.getFieldObjectInspector()),
+              isNullable(colName, nnc, pkc), tableAlias, false);
+          colInfo.setSkewedCol(isSkewedCol(tableAlias, qb, colName));
+          colInfoList.set(tabMetaData.getColumnIndexByName(colName), colInfo);
+          nonPartitionColumns.add(colInfo);
+        }
+
+        for (ColumnInfo colInfo : colInfoList) {
+          rr.put(tableAlias, colInfo.getInternalName(), colInfo);
+        }
 
         // 3.3 Add column info corresponding to virtual columns
         List<VirtualColumn> virtualCols = tabMetaData.getVirtualColumns();
@@ -3008,6 +3031,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             );
 
         // 4. Build operator
+        final TableType tableType = obtainTableType(tabMetaData);
         Map<String, String> tabPropsFromQuery = qb.getTabPropsForAlias(tableAlias);
         HiveTableScan.HiveTableScanTrait tableScanTrait = HiveTableScan.HiveTableScanTrait.from(tabPropsFromQuery);
         RelOptHiveTable optTable;
@@ -4367,8 +4391,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
           // 6.4 Build ExprNode corresponding to colums
           if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
-            pos = genRexNodeRegex(".*",
-                expr.getChildCount() == 0 ? null : getUnescapedName((ASTNode) expr.getChild(0)).toLowerCase(),
+            // Parse SELECT * EXCLUDE columns and pass them to the Calcite engine for exclusion
+            ExcludeResult excludeResult = processAllColRefAndExclude(expr, inputRR);
+            String starTabAlias = excludeResult.tableAlias();
+            excludedColumns.addAll(excludeResult.excludedColumns());
+            pos = genRexNodeRegex(".*", starTabAlias,
                 expr, columnList, excludedColumns, inputRR, starRR, pos, outputRR, qb.getAliases(), true);
           } else if (expr.getType() == HiveParser.TOK_TABLE_OR_COL
                   && !hasAsClause

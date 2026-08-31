@@ -2194,6 +2194,7 @@ class TProgressUpdateResp
   STATUS = 4
   FOOTERSUMMARY = 5
   STARTTIME = 6
+  QUEUEMETRICS = 7
 
   FIELDS = {
     HEADERNAMES => {:type => ::Thrift::Types::LIST, :name => 'headerNames', :element => {:type => ::Thrift::Types::STRING}},
@@ -2201,7 +2202,8 @@ class TProgressUpdateResp
     PROGRESSEDPERCENTAGE => {:type => ::Thrift::Types::DOUBLE, :name => 'progressedPercentage'},
     STATUS => {:type => ::Thrift::Types::I32, :name => 'status', :enum_class => ::TJobExecutionStatus},
     FOOTERSUMMARY => {:type => ::Thrift::Types::STRING, :name => 'footerSummary'},
-    STARTTIME => {:type => ::Thrift::Types::I64, :name => 'startTime'}
+    STARTTIME => {:type => ::Thrift::Types::I64, :name => 'startTime'},
+    QUEUEMETRICS => {:type => ::Thrift::Types::STRING, :name => 'queueMetrics', :optional => true}
   }
 
   def struct_fields; FIELDS; end

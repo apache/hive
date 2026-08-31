@@ -1650,7 +1650,7 @@ public abstract class BaseSemanticAnalyzer {
 
   public boolean isRequiresOpenTransaction() {
     return hasTransactionalInQuery() || getAcidDdlDesc() != null ||
-      Stream.of(getInputs(), getOutputs()).flatMap(Collection::stream)
+      Stream.of(getAllInputs(), getOutputs()).flatMap(Collection::stream)
         .filter(entity -> entity.getType() == Entity.Type.TABLE || entity.getType() == Entity.Type.PARTITION)
         .flatMap(entity -> {
           Table tbl = entity.getTable();

@@ -58,7 +58,7 @@ class HiveIcebergDeleteWriter extends HiveIcebergWriterBase {
   @Override
   public void write(Writable row) throws IOException {
     Record rec = ((Container<Record>) row).get();
-    PositionDelete<Record> positionDelete = IcebergAcidUtil.getPositionDelete(rec, rowDataTemplate);
+    PositionDelete<Record> positionDelete = IcebergAcidUtil.getPositionDelete(rec, rowDataTemplate, isMergeTask);
     int specId = IcebergAcidUtil.parseSpecId(rec);
     PartitionKey partitionKey = isMergeTask ? IcebergAcidUtil.parsePartitionKey(rec) :
         partition(positionDelete.row(), specId);

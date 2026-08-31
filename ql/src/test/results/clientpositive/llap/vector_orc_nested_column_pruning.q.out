@@ -1505,7 +1505,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2
-                  filterExpr: (s1.f6 is not null and (not s2.f8.f9)) (type: boolean)
+                  filterExpr: ((not s2.f8.f9) and s1.f6 is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1513,8 +1513,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 9:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 3:int) -> 9:int), SelectColumnIsFalse(col 11:boolean)(children: VectorUDFStructField(col 10:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>, col 0:int)(children: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 10:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>) -> 11:boolean))
-                    predicate: (s1.f6 is not null and (not s2.f8.f9)) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsFalse(col 10:boolean)(children: VectorUDFStructField(col 9:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>, col 0:int)(children: VectorUDFStructField(col 2:struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>, col 1:int) -> 9:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>) -> 10:boolean), SelectColumnIsNotNull(col 11:int)(children: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 3:int) -> 11:int))
+                    predicate: ((not s2.f8.f9) and s1.f6 is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: s1 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>), s2 (type: struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>)
@@ -1531,7 +1531,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0.f6 (type: int)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
-                            keyExpressions: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 3:int) -> 9:int
+                            keyExpressions: VectorUDFStructField(col 1:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, col 3:int) -> 10:int
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 1 Data size: 1468 Basic stats: COMPLETE Column stats: NONE

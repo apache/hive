@@ -345,7 +345,7 @@ public class RexNodeConverter {
           || (udf instanceof GenericUDFToMap)
           || (udf instanceof GenericUDFToArray)
           || (udf instanceof GenericUDFToStruct)) {
-        castExpr = rexBuilder.makeAbstractCast(returnType, childRexNodeLst.get(0));
+        castExpr = rexBuilder.makeAbstractCast(returnType, childRexNodeLst.get(0), false);
       }
     }
 
