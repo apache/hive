@@ -158,9 +158,10 @@ public class HiveIcebergSerDe extends AbstractSerDe {
   private static Schema projectedSchema(Configuration conf, Properties serDeProperties,
       Schema tableSchema, Map<String, String> jobConf) {
     String tableName = serDeProperties.getProperty(Catalogs.NAME);
-    Context.Operation operation = HiveCustomStorageHandlerUtils.getWriteOperation(conf::get, tableName);
+    Context.Operation writeOperation = HiveCustomStorageHandlerUtils.getWriteOperation(conf::get, tableName);
+    Context.Operation statementOperation = HiveCustomStorageHandlerUtils.getStatementOperation(conf::get, tableName);
 
-    if (operation == null) {
+    if (writeOperation == null) {
       jobConf.put(InputFormatConfig.CASE_SENSITIVE, "false");
       String[] selectedColumns = ColumnProjectionUtils.getReadColumnNames(conf);
       // When same table is joined multiple times, it is possible some selected columns are duplicated,
@@ -179,12 +180,13 @@ public class HiveIcebergSerDe extends AbstractSerDe {
         return projectedSchema;
       }
     }
-    boolean isCOW = IcebergTableUtil.isCopyOnWriteMode(operation, conf::get);
+    boolean isCOW = IcebergTableUtil.isCopyOnWriteMode(
+        statementOperation != null ? statementOperation : writeOperation, conf::get);
     if (isCOW) {
       return getSchemaWithRowLineage(
           IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns(), false), conf);
     }
-    switch (operation) {
+    switch (writeOperation) {
       case DELETE:
         boolean isMergeTask = HiveCustomStorageHandlerUtils.isMergeTaskEnabled(
             key -> serDeProperties.getProperty(key, conf.get(key)),
@@ -195,7 +197,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
       case OTHER:
         return getSchemaWithRowLineage(tableSchema, conf);
       default:
-        throw new IllegalArgumentException("Unsupported operation " + operation);
+        throw new IllegalArgumentException("Unsupported operation " + writeOperation);
     }
   }
 
