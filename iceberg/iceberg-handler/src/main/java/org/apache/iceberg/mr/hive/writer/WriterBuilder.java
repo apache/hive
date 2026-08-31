@@ -73,7 +73,7 @@ public class WriterBuilder {
   private TaskAttemptID attemptID;
   private String queryId;
   private Operation operation;
-  private boolean isMergeStatement;
+  private final Operation statementOperation;
 
   // A task may write multiple output files using multiple writers. Each of them must have a unique operationId.
   private static AtomicInteger operationNum = new AtomicInteger(0);
@@ -88,7 +88,7 @@ public class WriterBuilder {
     this.tableName = ops.apply(Catalogs.NAME);
     this.context = new Context(table.properties(), ops, tableName);
     this.operation = HiveCustomStorageHandlerUtils.getWriteOperation(ops, tableName);
-    this.isMergeStatement = HiveCustomStorageHandlerUtils.isMergeStatement(ops, tableName);
+    this.statementOperation = HiveCustomStorageHandlerUtils.getStatementOperation(ops, tableName);
     this.rewritableDeletes = () -> rewritableDeletes(ops);
   }
 
@@ -140,7 +140,8 @@ public class WriterBuilder {
     HiveIcebergWriter writer;
     boolean isCOW =
         IcebergTableUtil.isCopyOnWriteMode(
-            isMergeStatement ? Operation.MERGE : operation, table.properties()::getOrDefault);
+            statementOperation != null ? statementOperation : operation,
+            table.properties()::getOrDefault);
 
     if (isCOW) {
       writer = new HiveIcebergCopyOnWriteRecordWriter(table, writerFactory, dataFileFactory, shouldAddRowLineageColumns,
