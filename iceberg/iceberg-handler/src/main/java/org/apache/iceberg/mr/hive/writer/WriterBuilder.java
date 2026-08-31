@@ -72,7 +72,7 @@ public class WriterBuilder {
   private final String tableName;
   private TaskAttemptID attemptID;
   private String queryId;
-  private Operation operation;
+  private Operation writeOperation;
   private final Operation statementOperation;
 
   // A task may write multiple output files using multiple writers. Each of them must have a unique operationId.
@@ -87,7 +87,7 @@ public class WriterBuilder {
     this.table = table;
     this.tableName = ops.apply(Catalogs.NAME);
     this.context = new Context(table.properties(), ops, tableName);
-    this.operation = HiveCustomStorageHandlerUtils.getWriteOperation(ops, tableName);
+    this.writeOperation = HiveCustomStorageHandlerUtils.getWriteOperation(ops, tableName);
     this.statementOperation = HiveCustomStorageHandlerUtils.getStatementOperation(ops, tableName);
     this.rewritableDeletes = () -> rewritableDeletes(ops);
   }
@@ -107,8 +107,8 @@ public class WriterBuilder {
   }
 
   // Test-only
-  public WriterBuilder operation(Operation newOperation) {
-    this.operation = newOperation;
+  public WriterBuilder writeOperation(Operation newWriteOperation) {
+    this.writeOperation = newWriteOperation;
     return this;
   }
 
@@ -140,14 +140,14 @@ public class WriterBuilder {
     HiveIcebergWriter writer;
     boolean isCOW =
         IcebergTableUtil.isCopyOnWriteMode(
-            statementOperation != null ? statementOperation : operation,
+            statementOperation != null ? statementOperation : writeOperation,
             table.properties()::getOrDefault);
 
     if (isCOW) {
       writer = new HiveIcebergCopyOnWriteRecordWriter(table, writerFactory, dataFileFactory, shouldAddRowLineageColumns,
           context);
     } else {
-      writer = switch (operation) {
+      writer = switch (writeOperation) {
         case DELETE ->
             new HiveIcebergDeleteWriter(table, rewritableDeletes.get(), writerFactory, deleteFileFactory, context);
         case OTHER ->
@@ -155,7 +155,7 @@ public class WriterBuilder {
         default ->
             // Update and Merge should be split to inserts and deletes
             throw new IllegalArgumentException("Unsupported operation when creating IcebergRecordWriter: " +
-                operation.name());
+                writeOperation.name());
       };
     }
 
