@@ -162,6 +162,7 @@ public class HMSCatalogAdapter implements Closeable {
     private final Map<Integer, String> variables;
     private final Class<? extends RESTRequest> requestClass;
     private final String resourcePath;
+    private final boolean hasPrefix;
 
     Route(HTTPMethod method, String pattern) {
       this(method, pattern, null);
@@ -173,6 +174,7 @@ public class HMSCatalogAdapter implements Closeable {
         Class<? extends RESTRequest> requestClass) {
       this.method = method;
       this.resourcePath = pattern;
+      this.hasPrefix = pattern.contains("{prefix}");
 
       // parse the pattern into requirements and variables
       List<String> parts =
@@ -189,26 +191,60 @@ public class HMSCatalogAdapter implements Closeable {
       }
 
       this.requestClass = requestClass;
-
       this.requiredLength = parts.size();
       this.requirements = requirementsBuilder.build();
       this.variables = variablesBuilder.build();
     }
 
+    /**
+     * Shift index to skip the prefix.
+     */
+    private int mappedIndex(int baseIndex, int offset) {
+      return (offset > 0 && baseIndex >= 1) ? baseIndex + offset : baseIndex;
+    }
+
     private boolean matches(HTTPMethod requestMethod, List<String> requestPath) {
-      return method == requestMethod
-          && requiredLength == requestPath.size()
-          && requirements.entrySet().stream()
-          .allMatch(
-              requirement ->
-                  requirement
-                      .getValue()
-                      .equalsIgnoreCase(requestPath.get(requirement.getKey())));
+      if (method != requestMethod) {
+        return false;
+      }
+
+      int size = requestPath.size();
+      // Calculate the size of the optional prefix by checking how much the path expanded.
+      // For a multi-segment prefix like 'catalogs/my_catalog', offset will be 2.
+      int offset = size - requiredLength;
+
+      // If the path is too short, or too long but the route doesn't support a prefix, reject.
+      if (offset < 0 || (offset > 0 && !hasPrefix)) {
+        return false;
+      }
+
+      for (Map.Entry<Integer, String> requirement : requirements.entrySet()) {
+        if (!requirement.getValue().equalsIgnoreCase(requestPath.get(mappedIndex(requirement.getKey(), offset)))) {
+          return false;
+        }
+      }
+      return true;
     }
 
     private Map<String, String> variables(List<String> requestPath) {
       ImmutableMap.Builder<String, String> vars = ImmutableMap.builder();
-      variables.forEach((key, value) -> vars.put(value, requestPath.get(key)));
+      int offset = requestPath.size() - requiredLength;
+      for (Map.Entry<Integer, String> var : variables.entrySet()) {
+        vars.put(var.getValue(), requestPath.get(mappedIndex(var.getKey(), offset)));
+      }
+
+      /*
+       * Rejoin the multi-segment prefix back into a single string.
+       *
+       * Note: The HMS backend currently ignores this 'prefix' variable (it relies on
+       * the single configured HiveCatalog). However, because the /v1/config endpoint
+       * advertises {prefix} in its routes, we must gracefully parse and absorb it here
+       * to prevent path length mismatches from strict Iceberg REST clients.
+       */
+      if (offset > 0) {
+        String prefixValue = String.join("/", requestPath.subList(1, 1 + offset));
+        vars.put("prefix", prefixValue);
+      }
       return vars.build();
     }
 
@@ -434,91 +470,38 @@ public class HMSCatalogAdapter implements Closeable {
     // only commit if validations passed previously
     transactions.forEach(Transaction::commitTransaction);
   }
-  
-  @SuppressWarnings({"MethodLength", "unchecked"})
+
+  @SuppressWarnings({"unchecked"})
   private <T extends RESTResponse> T handleRequest(
       Route route, Map<String, String> vars, Object body) {
-    switch (route) {
-      case CONFIG:
-        return (T) config();
-
-      case LIST_NAMESPACES:
-        return (T) listNamespaces(vars);
-
-      case CREATE_NAMESPACE:
-        return (T) createNamespace(body);
-
-      case NAMESPACE_EXISTS:
-        return (T) namespaceExists(vars);
-
-      case LOAD_NAMESPACE:
-        return (T) loadNamespace(vars);
-
-      case DROP_NAMESPACE:
-        return (T) dropNamespace(vars);
-
-      case UPDATE_NAMESPACE:
-        return (T) updateNamespace(vars, body);
-
-      case LIST_TABLES:
-        return (T) listTables(vars);
-
-      case CREATE_TABLE:
-        return (T) createTable(vars, body);
-
-      case DROP_TABLE:
-        return (T) dropTable(vars);
-
-      case TABLE_EXISTS:
-        return (T) tableExists(vars);
-
-      case LOAD_TABLE:
-        return (T) loadTable(vars);
-
-      case REGISTER_TABLE:
-        return (T) registerTable(vars, body);
-
-      case UPDATE_TABLE:
-        return (T) updateTable(vars, body);
-
-      case RENAME_TABLE:
-        return (T) renameTable(body);
-
-      case REPORT_METRICS:
-        return (T) reportMetrics(vars, body);
-
-      case COMMIT_TRANSACTION:
-        return (T) commitTransaction(body);
-        
-      case LIST_VIEWS:
-        return (T) listViews(vars);
-
-      case CREATE_VIEW:
-          return (T) createView(vars, body);
-
-      case VIEW_EXISTS:
-        return (T) viewExists(vars);
-
-      case LOAD_VIEW:
-        return (T) loadView(vars);
-
-      case UPDATE_VIEW:
-        return (T) updateView(vars, body);
-        
-      case RENAME_VIEW:
-        return (T) renameView(body);
-        
-      case DROP_VIEW:
-        return (T) dropView(vars);
-
-      case REGISTER_VIEW:
-        return (T) registerView(vars, body);
-
-      default:
-    }
-    return null;
+    return (T) switch (route) {
+      case CONFIG -> config();
+      case LIST_NAMESPACES -> listNamespaces(vars);
+      case CREATE_NAMESPACE -> createNamespace(body);
+      case NAMESPACE_EXISTS -> namespaceExists(vars);
+      case LOAD_NAMESPACE -> loadNamespace(vars);
+      case DROP_NAMESPACE -> dropNamespace(vars);
+      case UPDATE_NAMESPACE -> updateNamespace(vars, body);
+      case LIST_TABLES -> listTables(vars);
+      case CREATE_TABLE -> createTable(vars, body);
+      case DROP_TABLE -> dropTable(vars);
+      case TABLE_EXISTS -> tableExists(vars);
+      case LOAD_TABLE -> loadTable(vars);
+      case REGISTER_TABLE -> registerTable(vars, body);
+      case UPDATE_TABLE -> updateTable(vars, body);
+      case RENAME_TABLE -> renameTable(body);
+      case REPORT_METRICS -> reportMetrics(vars, body);
+      case COMMIT_TRANSACTION -> commitTransaction(body);
+      case LIST_VIEWS -> listViews(vars);
+      case CREATE_VIEW -> createView(vars, body);
+      case VIEW_EXISTS -> viewExists(vars);
+      case LOAD_VIEW -> loadView(vars);
+      case UPDATE_VIEW -> updateView(vars, body);
+      case RENAME_VIEW -> renameView(body);
+      case DROP_VIEW -> dropView(vars);
+      case REGISTER_VIEW -> registerView(vars, body);
+    };
   }
-
 
   <T extends RESTResponse> T execute(
       HTTPMethod method,
