@@ -19,10 +19,14 @@
 package org.apache.hadoop.hive.llap.io.encoded;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Properties;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.io.decode.EncodedDataConsumer;
@@ -30,13 +34,20 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.orc.WriterImpl;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
+import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.serde2.MultiDelimitSerDe;
+import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
+import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hive.common.util.FixedSizedObjectPool;
 import org.apache.orc.impl.SchemaEvolution;
 
 import org.junit.Test;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mock;
@@ -143,6 +154,70 @@ public class TestVectorDeserializeOrcWriter {
     reflectSetValue(orcWriter, "queue", writeOpQueue);
     reflectSetValue(orcWriter, "isAsync", true);
     return orcWriter;
+  }
+
+  // --- createSerdeParams: MultiDelimit routing → fieldDelimMulti wiring -----
+
+  private static LazySerDeParameters invokeCreateSerdeParams(Properties tblProps,
+      Deserializer serDe) throws Exception {
+    Method m = VectorDeserializeOrcWriter.class.getDeclaredMethod(
+        "createSerdeParams", Configuration.class, Properties.class, Deserializer.class);
+    m.setAccessible(true);
+    return (LazySerDeParameters) m.invoke(null, new Configuration(false), tblProps, serDe);
+  }
+
+  /**
+   * When routing sees a MultiDelimitSerDe with a multi-byte field.delim, the
+   * LazySerDeParameters we hand to LazySimpleDeserializeRead must carry the
+   * raw delimiter bytes — that's the signal the reader uses to switch to its
+   * multi-byte scan branch (and hence keep the row on the vectorized LLAP
+   * fast path instead of falling back to DeserializerOrcWriter).
+   */
+  @Test
+  public void testCreateSerdeParamsMultiDelimSetsFieldDelimMulti() throws Exception {
+    Properties tblProps = new Properties();
+    tblProps.setProperty(serdeConstants.FIELD_DELIM, "~|");
+    tblProps.setProperty(serdeConstants.SERIALIZATION_FORMAT, "~|");
+    tblProps.setProperty(serdeConstants.LIST_COLUMNS, "a,b");
+    tblProps.setProperty(serdeConstants.LIST_COLUMN_TYPES, "string:string");
+
+    LazySerDeParameters params = invokeCreateSerdeParams(tblProps, new MultiDelimitSerDe());
+    assertArrayEquals("~|".getBytes(StandardCharsets.UTF_8), params.getFieldDelimMulti());
+  }
+
+  /**
+   * A LazySimpleSerDe table must NEVER opt into the multi-byte scan branch,
+   * even if someone shoved a >1-byte value into field.delim — the slow path
+   * silently truncates to a single byte, and diverging here would produce
+   * different results between fast and slow paths for the same table.
+   */
+  @Test
+  public void testCreateSerdeParamsLazySimpleNeverSetsFieldDelimMulti() throws Exception {
+    Properties tblProps = new Properties();
+    tblProps.setProperty(serdeConstants.FIELD_DELIM, "~|");
+    tblProps.setProperty(serdeConstants.SERIALIZATION_FORMAT, "~|");
+    tblProps.setProperty(serdeConstants.LIST_COLUMNS, "a,b");
+    tblProps.setProperty(serdeConstants.LIST_COLUMN_TYPES, "string:string");
+
+    LazySerDeParameters params = invokeCreateSerdeParams(tblProps, new LazySimpleSerDe());
+    assertNull(params.getFieldDelimMulti());
+  }
+
+  /**
+   * A MultiDelimit table whose field.delim is only one byte still takes the
+   * specialized single-byte fast path — setFieldDelimMulti drops sub-2-byte
+   * values, so separators[0] remains the source of truth.
+   */
+  @Test
+  public void testCreateSerdeParamsMultiDelimWithSingleByteFallsThrough() throws Exception {
+    Properties tblProps = new Properties();
+    tblProps.setProperty(serdeConstants.FIELD_DELIM, "|");
+    tblProps.setProperty(serdeConstants.SERIALIZATION_FORMAT, "|");
+    tblProps.setProperty(serdeConstants.LIST_COLUMNS, "a,b");
+    tblProps.setProperty(serdeConstants.LIST_COLUMN_TYPES, "string:string");
+
+    LazySerDeParameters params = invokeCreateSerdeParams(tblProps, new MultiDelimitSerDe());
+    assertNull(params.getFieldDelimMulti());
   }
 
   private static EncodedDataConsumer createBlankEncodedDataConsumer() {

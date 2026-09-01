@@ -1,0 +1,577 @@
+PREHOOK: query: DROP TABLE IF EXISTS lazy_simple_llap
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS lazy_simple_llap
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS lazy_simple_comma_llap
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS lazy_simple_comma_llap
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS lazy_simple_escape_llap
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS lazy_simple_escape_llap
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS multi_delim_llap
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS multi_delim_llap
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS multi_delim_escape_llap
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS multi_delim_escape_llap
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE TABLE lazy_simple_llap(id INT, name STRING, val INT)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@lazy_simple_llap
+POSTHOOK: query: CREATE TABLE lazy_simple_llap(id INT, name STRING, val INT)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@lazy_simple_llap
+PREHOOK: query: DESCRIBE FORMATTED lazy_simple_llap
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@lazy_simple_llap
+POSTHOOK: query: DESCRIBE FORMATTED lazy_simple_llap
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@lazy_simple_llap
+# col_name            	data_type           	comment             
+id                  	int                 	                    
+name                	string              	                    
+val                 	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\",\"name\":\"true\",\"val\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	field.delim         	|                   
+	serialization.format	|                   
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/single_delim.txt'
+  INTO TABLE lazy_simple_llap
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@lazy_simple_llap
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/single_delim.txt'
+  INTO TABLE lazy_simple_llap
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@lazy_simple_llap
+PREHOOK: query: SELECT * FROM lazy_simple_llap
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lazy_simple_llap
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM lazy_simple_llap
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lazy_simple_llap
+#### A masked pattern was here ####
+1	alpha	100
+2	beta	200
+3	gamma	300
+4	delta	400
+5		500
+6	epsilon	600
+PREHOOK: query: SELECT COUNT(*) FROM lazy_simple_llap
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lazy_simple_llap
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM lazy_simple_llap
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lazy_simple_llap
+#### A masked pattern was here ####
+6
+PREHOOK: query: SELECT SUM(val) FROM lazy_simple_llap
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lazy_simple_llap
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(val) FROM lazy_simple_llap
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lazy_simple_llap
+#### A masked pattern was here ####
+2100
+PREHOOK: query: SELECT COUNT(*) FROM lazy_simple_llap WHERE name IS NULL OR name = ''
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lazy_simple_llap
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM lazy_simple_llap WHERE name IS NULL OR name = ''
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lazy_simple_llap
+#### A masked pattern was here ####
+1
+PREHOOK: query: CREATE TABLE lazy_simple_comma_llap(id INT, name STRING, val INT)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@lazy_simple_comma_llap
+POSTHOOK: query: CREATE TABLE lazy_simple_comma_llap(id INT, name STRING, val INT)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@lazy_simple_comma_llap
+PREHOOK: query: DESCRIBE FORMATTED lazy_simple_comma_llap
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@lazy_simple_comma_llap
+POSTHOOK: query: DESCRIBE FORMATTED lazy_simple_comma_llap
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@lazy_simple_comma_llap
+# col_name            	data_type           	comment             
+id                  	int                 	                    
+name                	string              	                    
+val                 	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\",\"name\":\"true\",\"val\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	field.delim         	,                   
+	serialization.format	,                   
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/single_delim_comma.txt'
+  INTO TABLE lazy_simple_comma_llap
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@lazy_simple_comma_llap
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/single_delim_comma.txt'
+  INTO TABLE lazy_simple_comma_llap
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@lazy_simple_comma_llap
+PREHOOK: query: SELECT * FROM lazy_simple_comma_llap
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lazy_simple_comma_llap
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM lazy_simple_comma_llap
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lazy_simple_comma_llap
+#### A masked pattern was here ####
+1	alpha	100
+2	beta	200
+3	gamma	300
+4	delta	400
+5		500
+6	epsilon	600
+PREHOOK: query: SELECT COUNT(*) FROM lazy_simple_comma_llap
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lazy_simple_comma_llap
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM lazy_simple_comma_llap
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lazy_simple_comma_llap
+#### A masked pattern was here ####
+6
+PREHOOK: query: SELECT SUM(val) FROM lazy_simple_comma_llap
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lazy_simple_comma_llap
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(val) FROM lazy_simple_comma_llap
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lazy_simple_comma_llap
+#### A masked pattern was here ####
+2100
+PREHOOK: query: CREATE TABLE lazy_simple_escape_llap(id INT, name STRING, val INT)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+WITH SERDEPROPERTIES ('field.delim'='|', 'escape.delim'='\\')
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@lazy_simple_escape_llap
+POSTHOOK: query: CREATE TABLE lazy_simple_escape_llap(id INT, name STRING, val INT)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+WITH SERDEPROPERTIES ('field.delim'='|', 'escape.delim'='\\')
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@lazy_simple_escape_llap
+PREHOOK: query: DESCRIBE FORMATTED lazy_simple_escape_llap
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@lazy_simple_escape_llap
+POSTHOOK: query: DESCRIBE FORMATTED lazy_simple_escape_llap
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@lazy_simple_escape_llap
+# col_name            	data_type           	comment             
+id                  	int                 	                    
+name                	string              	                    
+val                 	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\",\"name\":\"true\",\"val\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	escape.delim        	\\                  
+	field.delim         	|                   
+	serialization.format	1                   
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/single_delim_escape.txt'
+  INTO TABLE lazy_simple_escape_llap
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@lazy_simple_escape_llap
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/single_delim_escape.txt'
+  INTO TABLE lazy_simple_escape_llap
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@lazy_simple_escape_llap
+PREHOOK: query: SELECT * FROM lazy_simple_escape_llap
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lazy_simple_escape_llap
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM lazy_simple_escape_llap
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lazy_simple_escape_llap
+#### A masked pattern was here ####
+1	alpha|inner	100
+2	beta	200
+3	gamma|more|pipes	300
+4	delta	400
+5		500
+6	epsilon	600
+PREHOOK: query: SELECT COUNT(*) FROM lazy_simple_escape_llap
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lazy_simple_escape_llap
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM lazy_simple_escape_llap
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lazy_simple_escape_llap
+#### A masked pattern was here ####
+6
+PREHOOK: query: SELECT SUM(val) FROM lazy_simple_escape_llap
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lazy_simple_escape_llap
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(val) FROM lazy_simple_escape_llap
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lazy_simple_escape_llap
+#### A masked pattern was here ####
+2100
+PREHOOK: query: SELECT id, name FROM lazy_simple_escape_llap WHERE name LIKE '%|%'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lazy_simple_escape_llap
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT id, name FROM lazy_simple_escape_llap WHERE name LIKE '%|%'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lazy_simple_escape_llap
+#### A masked pattern was here ####
+1	alpha|inner
+3	gamma|more|pipes
+PREHOOK: query: CREATE TABLE multi_delim_llap(id INT, name STRING, val INT)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.MultiDelimitSerDe'
+WITH SERDEPROPERTIES ('field.delim'='~|')
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multi_delim_llap
+POSTHOOK: query: CREATE TABLE multi_delim_llap(id INT, name STRING, val INT)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.MultiDelimitSerDe'
+WITH SERDEPROPERTIES ('field.delim'='~|')
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multi_delim_llap
+PREHOOK: query: DESCRIBE FORMATTED multi_delim_llap
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@multi_delim_llap
+POSTHOOK: query: DESCRIBE FORMATTED multi_delim_llap
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@multi_delim_llap
+# col_name            	data_type           	comment             
+id                  	int                 	from deserializer   
+name                	string              	from deserializer   
+val                 	int                 	from deserializer   
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\",\"name\":\"true\",\"val\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.MultiDelimitSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	field.delim         	~|                  
+	serialization.format	1                   
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/multi_delim.txt'
+  INTO TABLE multi_delim_llap
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@multi_delim_llap
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/multi_delim.txt'
+  INTO TABLE multi_delim_llap
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@multi_delim_llap
+PREHOOK: query: SELECT * FROM multi_delim_llap
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multi_delim_llap
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM multi_delim_llap
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multi_delim_llap
+#### A masked pattern was here ####
+1	alpha	100
+2	beta	200
+3	gamma	300
+4	delta	400
+5		500
+6	epsilon	600
+PREHOOK: query: SELECT COUNT(*) FROM multi_delim_llap
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multi_delim_llap
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM multi_delim_llap
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multi_delim_llap
+#### A masked pattern was here ####
+6
+PREHOOK: query: SELECT SUM(val) FROM multi_delim_llap
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multi_delim_llap
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(val) FROM multi_delim_llap
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multi_delim_llap
+#### A masked pattern was here ####
+2100
+PREHOOK: query: SELECT COUNT(*) FROM (
+  SELECT id, name, val FROM lazy_simple_llap
+  EXCEPT
+  SELECT id, name, val FROM multi_delim_llap
+) diff1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lazy_simple_llap
+PREHOOK: Input: default@multi_delim_llap
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM (
+  SELECT id, name, val FROM lazy_simple_llap
+  EXCEPT
+  SELECT id, name, val FROM multi_delim_llap
+) diff1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lazy_simple_llap
+POSTHOOK: Input: default@multi_delim_llap
+#### A masked pattern was here ####
+0
+PREHOOK: query: SELECT COUNT(*) FROM (
+  SELECT id, name, val FROM multi_delim_llap
+  EXCEPT
+  SELECT id, name, val FROM lazy_simple_llap
+) diff2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lazy_simple_llap
+PREHOOK: Input: default@multi_delim_llap
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM (
+  SELECT id, name, val FROM multi_delim_llap
+  EXCEPT
+  SELECT id, name, val FROM lazy_simple_llap
+) diff2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lazy_simple_llap
+POSTHOOK: Input: default@multi_delim_llap
+#### A masked pattern was here ####
+0
+PREHOOK: query: CREATE TABLE multi_delim_escape_llap(id INT, name STRING, val INT)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.MultiDelimitSerDe'
+WITH SERDEPROPERTIES ('field.delim'='~|', 'escape.delim'='\\')
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multi_delim_escape_llap
+POSTHOOK: query: CREATE TABLE multi_delim_escape_llap(id INT, name STRING, val INT)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.MultiDelimitSerDe'
+WITH SERDEPROPERTIES ('field.delim'='~|', 'escape.delim'='\\')
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multi_delim_escape_llap
+PREHOOK: query: DESCRIBE FORMATTED multi_delim_escape_llap
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@multi_delim_escape_llap
+POSTHOOK: query: DESCRIBE FORMATTED multi_delim_escape_llap
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@multi_delim_escape_llap
+# col_name            	data_type           	comment             
+id                  	int                 	from deserializer   
+name                	string              	from deserializer   
+val                 	int                 	from deserializer   
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\",\"name\":\"true\",\"val\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.MultiDelimitSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	escape.delim        	\\                  
+	field.delim         	~|                  
+	serialization.format	1                   
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/multi_delim.txt'
+  INTO TABLE multi_delim_escape_llap
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@multi_delim_escape_llap
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/multi_delim.txt'
+  INTO TABLE multi_delim_escape_llap
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@multi_delim_escape_llap
+PREHOOK: query: SELECT COUNT(*) FROM multi_delim_escape_llap
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multi_delim_escape_llap
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM multi_delim_escape_llap
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multi_delim_escape_llap
+#### A masked pattern was here ####
+6
+PREHOOK: query: DROP TABLE lazy_simple_llap
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@lazy_simple_llap
+PREHOOK: Output: database:default
+PREHOOK: Output: default@lazy_simple_llap
+POSTHOOK: query: DROP TABLE lazy_simple_llap
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@lazy_simple_llap
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@lazy_simple_llap
+PREHOOK: query: DROP TABLE lazy_simple_comma_llap
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@lazy_simple_comma_llap
+PREHOOK: Output: database:default
+PREHOOK: Output: default@lazy_simple_comma_llap
+POSTHOOK: query: DROP TABLE lazy_simple_comma_llap
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@lazy_simple_comma_llap
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@lazy_simple_comma_llap
+PREHOOK: query: DROP TABLE lazy_simple_escape_llap
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@lazy_simple_escape_llap
+PREHOOK: Output: database:default
+PREHOOK: Output: default@lazy_simple_escape_llap
+POSTHOOK: query: DROP TABLE lazy_simple_escape_llap
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@lazy_simple_escape_llap
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@lazy_simple_escape_llap
+PREHOOK: query: DROP TABLE multi_delim_llap
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@multi_delim_llap
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multi_delim_llap
+POSTHOOK: query: DROP TABLE multi_delim_llap
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@multi_delim_llap
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multi_delim_llap
+PREHOOK: query: DROP TABLE multi_delim_escape_llap
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@multi_delim_escape_llap
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multi_delim_escape_llap
+POSTHOOK: query: DROP TABLE multi_delim_escape_llap
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@multi_delim_escape_llap
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multi_delim_escape_llap

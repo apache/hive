@@ -71,6 +71,29 @@ import com.google.common.base.Preconditions;
  * Some type values are by reference to either bytes in the deserialization buffer or to
  * other type specific buffers.  So, those references are only valid until the next time set is
  * called.
+ *
+ * <h3>Multi-byte top-level field delimiter</h3>
+ * By default this reader assumes a single-byte top-level FIELD_DELIM and runs a specialized
+ * byte-at-a-time hot loop against {@code separators[0]} — the LazySimpleSerDe fast path.
+ *
+ * A multi-byte top-level delimiter (e.g. MultiDelimitSerDe's {@code ~|}) is supported when, and
+ * only when, the caller opts in via
+ * {@link org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters#setFieldDelimMulti(byte[])} on
+ * the {@code LazySerDeParameters} passed to the constructor. In that mode {@code topLevelParse()}
+ * takes a separate multi-byte scan branch and the specialized single-byte loop is not entered.
+ *
+ * Restrictions when opting into the multi-byte branch:
+ * <ul>
+ *   <li>only the <em>top-level</em> field delimiter is multi-byte — nested COLLECTION_DELIM /
+ *       MAPKEY_DELIM remain single-byte;</li>
+ *   <li>ESCAPE_CHAR is rejected at construction (see {@code MultiDelimitSerDe.parseMultiDelimit}
+ *       which itself ignores escape at the top level — enabling both here would silently
+ *       diverge from the slow path);</li>
+ *   <li>LAST_COLUMN_TAKES_REST is not honoured on this path (the LLAP router bails to
+ *       DeserializerOrcWriter before we get here).</li>
+ * </ul>
+ * When {@code setFieldDelimMulti} is not called (or the value is shorter than 2 bytes), the
+ * single-byte fast path is unchanged.
  */
 public final class LazySimpleDeserializeRead extends DeserializeRead {
   public static final Logger LOG = LoggerFactory.getLogger(LazySimpleDeserializeRead.class.getName());
@@ -198,6 +221,18 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
   private int[] startPositions;
 
   private final byte[] separators;
+  // Multi-byte top-level field delimiter (e.g. MultiDelimitSerDe's `~|`).
+  // null in the common single-byte case, in which case `separators[0]` is used
+  // and the row-scan hot loop keeps its per-byte specialization. Non-null only
+  // when the caller (LLAP's VectorDeserializeOrcWriter for MultiDelimitSerDe)
+  // explicitly opted in via LazySerDeParameters.setFieldDelimMulti.
+  private final byte[] fieldDelimMulti;
+  // Byte length "charged" to a top-level separator: 1 for the single-byte fast
+  // path, delim.length for multi-byte. Baked into (a) the Arrays.fill sentinel
+  // for missing/trailing fields and (b) the "length = next.start - this.start
+  // - sepLen" arithmetic in readField and getDetailedReadPositionString, so
+  // both paths share the same downstream code.
+  private final int topLevelSeparatorLen;
   private final boolean isEscaped;
   private final byte escapeChar;
   private final int[] escapeCounts;
@@ -336,11 +371,23 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
     startPositions = new int[count + 1];
 
     this.separators = lazyParams.getSeparators();
+    this.fieldDelimMulti = lazyParams.getFieldDelimMulti();
+    this.topLevelSeparatorLen = (fieldDelimMulti == null) ? 1 : fieldDelimMulti.length;
 
     isEscaped = lazyParams.isEscaped();
     if (isEscaped) {
       escapeChar = lazyParams.getEscapeChar();
       escapeCounts = new int[count];
+      // Multi-byte field delimiters with escape sequences are not implemented
+      // in this fast path — the escape/separator interaction would diverge
+      // from MultiDelimitSerDe's own row-based parser, which ignores escapes
+      // for the top-level delim. Callers (VectorDeserializeOrcWriter) route
+      // this combination to the DeserializerOrcWriter slow path instead.
+      if (fieldDelimMulti != null) {
+        throw new RuntimeException(
+            "Multi-byte field delimiter combined with escape.delim is not "
+                + "supported in the vectorized fast path.");
+      }
     } else {
       escapeChar = (byte) 0;
       escapeCounts = null;
@@ -402,12 +449,29 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
       sb.append(" at field start position ");
       sb.append(startPositions[currentTopLevelFieldIndex]);
       int currentFieldLength = startPositions[currentTopLevelFieldIndex + 1] -
-          startPositions[currentTopLevelFieldIndex] - 1;
+          startPositions[currentTopLevelFieldIndex] - topLevelSeparatorLen;
       sb.append(" for field length ");
       sb.append(currentFieldLength);
     }
 
     return sb.toString();
+  }
+
+  /**
+   * Bytes at {@code buf[off..off+dlen)} equal to {@code delim[0..dlen)}?
+   *
+   * Caller has already checked {@code buf[off] == delim[0]}, so we start at
+   * index 1 — this is only ever invoked when the first byte matched, which
+   * keeps the multi-byte hot loop from paying for a tail compare on every
+   * mismatching input byte.
+   */
+  private static boolean matchesAt(byte[] buf, int off, byte[] delim, int dlen) {
+    for (int i = 1; i < dlen; i++) {
+      if (buf[off + i] != delim[i]) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
@@ -432,20 +496,54 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
      * Optimize the loops by pulling special end cases and global decisions like isEscaped out!
      */
     if (!isEscaped) {
-      while (fieldByteEnd < end) {
-        if (bytes[fieldByteEnd] == separator) {
-          startPositions[fieldId++] = fieldByteBegin;
-          if (fieldId == fieldCount) {
-            break;
+      if (fieldDelimMulti == null) {
+        // Single-byte fast path — hot on every row of a LazySimple table.
+        while (fieldByteEnd < end) {
+          if (bytes[fieldByteEnd] == separator) {
+            startPositions[fieldId++] = fieldByteBegin;
+            if (fieldId == fieldCount) {
+              break;
+            }
+            fieldByteBegin = ++fieldByteEnd;
+          } else {
+            fieldByteEnd++;
           }
-          fieldByteBegin = ++fieldByteEnd;
-        } else {
-          fieldByteEnd++;
         }
-      }
-      // End serves as final separator.
-      if (fieldByteEnd == end && fieldId < fieldCount) {
-        startPositions[fieldId++] = fieldByteBegin;
+        // End serves as final separator.
+        if (fieldByteEnd == end && fieldId < fieldCount) {
+          startPositions[fieldId++] = fieldByteBegin;
+        }
+      } else {
+        // Multi-byte top-level delimiter (MultiDelimitSerDe path). We keep the
+        // "test the first byte, then verify the tail" idiom so the mismatching-
+        // byte case still costs a single load+compare — the tail memcmp only
+        // fires on a first-byte hit.
+        final byte[] delim = this.fieldDelimMulti;
+        final int dlen = delim.length;
+        final byte first = delim[0];
+        final int scanEnd = end - dlen;   // last index at which a full delim can start
+        while (fieldByteEnd <= scanEnd) {
+          if (bytes[fieldByteEnd] == first && matchesAt(bytes, fieldByteEnd, delim, dlen)) {
+            startPositions[fieldId++] = fieldByteBegin;
+            if (fieldId == fieldCount) {
+              // Malformed row with more delims than expected: leave fieldByteEnd
+              // where it is (matching single-byte-path semantics) and stop.
+              break;
+            }
+            fieldByteEnd += dlen;
+            fieldByteBegin = fieldByteEnd;
+          } else {
+            fieldByteEnd++;
+          }
+        }
+        // No trailing delim (single-byte parses "end as final separator" here).
+        // If we still owe fields, the remainder from fieldByteBegin..end is the
+        // last field; fast-forward fieldByteEnd so the Arrays.fill sentinel and
+        // isEndOfInputReached below both see the row as fully consumed.
+        if (fieldId < fieldCount) {
+          fieldByteEnd = end;
+          startPositions[fieldId++] = fieldByteBegin;
+        }
       }
     } else {
       final byte escapeChar = this.escapeChar;
@@ -497,7 +595,11 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
       // For missing fields, their starting positions will all be the same,
       // which will make their lengths to be -1 and uncheckedGetField will
       // return these fields as NULLs.
-      Arrays.fill(startPositions, fieldId, startPositions.length, fieldByteEnd + 1);
+      // Charge the actual separator width (1 byte for LazySimple, delim.length
+      // for the multi-byte MultiDelimit path) so the "length = next - this -
+      // sepLen" arithmetic used by readField comes out right in both cases.
+      Arrays.fill(startPositions, fieldId, startPositions.length,
+          fieldByteEnd + topLevelSeparatorLen);
     }
 
     isEndOfInputReached = (fieldByteEnd == end);
@@ -639,7 +741,7 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
     currentTopLevelFieldIndex = fieldIndex;
 
     currentFieldStart = startPositions[fieldIndex];
-    currentFieldLength = startPositions[fieldIndex + 1] - startPositions[fieldIndex] - 1;
+    currentFieldLength = startPositions[fieldIndex + 1] - startPositions[fieldIndex] - topLevelSeparatorLen;
     currentEscapeCount = (isEscaped ? escapeCounts[fieldIndex] : 0);
  
     return doReadField(fields[fieldIndex]);
