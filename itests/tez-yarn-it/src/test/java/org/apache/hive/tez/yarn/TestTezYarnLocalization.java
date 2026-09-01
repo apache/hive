@@ -26,7 +26,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Container;
+import org.testcontainers.containers.ContainerState;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -55,10 +56,10 @@ public class TestTezYarnLocalization {
 
   @BeforeClass
   public static void startAll() throws Exception {
-    cluster = new TezYarnClusterContainer(true);
+    cluster = new TezYarnClusterContainer();
     cluster.start();
 
-    GenericContainer<?> nn = cluster.namenodeContainer();
+    ContainerState nn = cluster.namenodeContainer();
     var r = nn.execInContainer("hdfs", "dfs", "-mkdir", "-p", "/tmp");
     Assert.assertEquals("hdfs dfs -mkdir -p /tmp failed:\n" + r.getStderr(), 0, r.getExitCode());
     r = nn.execInContainer("hdfs", "dfs", "-chmod", "-R", "777", "/tmp");
@@ -113,9 +114,7 @@ public class TestTezYarnLocalization {
         stmt.execute("CREATE TABLE IF NOT EXISTS tez_loc_test (id INT) STORED AS ORC");
         stmt.execute("CREATE TABLE IF NOT EXISTS tez_source (id INT) STORED AS ORC");
 
-        // TODO: INSERT INTO t VALUES (...) cannot be used here: Hive stages literal values as a
-        //   local temp file (file://<host>/dummy_path) that the Tez AM, running inside the Docker
-        //   container, cannot reach. Use SELECT over an HDFS-backed table instead.
+        // INSERT ... VALUES fails here: Hive stages literals on the host; the Tez AM in Docker cannot read file:// paths.
         stmt.execute("INSERT INTO tez_loc_test SELECT count(*) FROM tez_source");
 
         try (ResultSet rs = stmt.executeQuery("SELECT id FROM tez_loc_test")) {
@@ -134,13 +133,8 @@ public class TestTezYarnLocalization {
     verifyHiveExecJarLocalizedInNm();
   }
 
-  /**
-   * Asserts that {@code hive-exec.jar} was staged to HDFS by
-   * {@code TezSessionState.buildCommonLocalResources()} (localization step 1).
-   * The jar is placed under {@code HIVE_USER_INSTALL_DIR} ({@value #HDFS_ROOT}/user-install/).
-   */
   private static void verifyHiveExecJarOnHdfs() throws IOException, InterruptedException {
-    GenericContainer.ExecResult r = cluster.namenodeContainer().execInContainer(
+    Container.ExecResult r = cluster.namenodeContainer().execInContainer(
         "hdfs", "dfs", "-find", HDFS_ROOT + "/user-install", "-name", "hive-exec-*.jar");
     LOG.info("HDFS hive-exec.jar search in {}/user-install: {}",
         HDFS_ROOT, r.getStdout().trim().isEmpty() ? "(none found)" : r.getStdout().trim());
@@ -150,13 +144,8 @@ public class TestTezYarnLocalization {
         r.getStdout().trim().isEmpty());
   }
 
-  /**
-   * Asserts that {@code hive-exec.jar} was localized by YARN into the NodeManager container's
-   * local filesystem (localization step 2).
-   * After a Tez job completes the jar remains in the NM's localization cache under {@code /tmp}.
-   */
   private static void verifyHiveExecJarLocalizedInNm() throws IOException, InterruptedException {
-    GenericContainer.ExecResult r = cluster.nodeManagerContainer().execInContainer(
+    Container.ExecResult r = cluster.nodeManagerContainer().execInContainer(
         "bash", "-c", "find /tmp -name 'hive-exec-*.jar' 2>/dev/null | head -5");
     LOG.info("NodeManager hive-exec.jar localization check: {}",
         r.getStdout().trim().isEmpty() ? "(none found)" : r.getStdout().trim());
@@ -192,7 +181,7 @@ public class TestTezYarnLocalization {
 
   private static void dumpNmCommand(String label, String bashCommand) {
     try {
-      GenericContainer.ExecResult r =
+      Container.ExecResult r =
           cluster.nodeManagerContainer().execInContainer("bash", "-c", bashCommand);
       String out = r.getStdout();
       LOG.info("===== NM: {} =====\n{}", label, out.isEmpty() ? "(no output found)" : out);
@@ -242,8 +231,8 @@ public class TestTezYarnLocalization {
 
   private static void verifyTezYarnAppExists() {
     try {
-      GenericContainer<?> rm = cluster.resourceManagerContainer();
-      GenericContainer.ExecResult result = rm.execInContainer(
+      ContainerState rm = cluster.resourceManagerContainer();
+      Container.ExecResult result = rm.execInContainer(
           "yarn", "application", "-list", "-appTypes", "TEZ", "-appStates", "ALL");
       String out = result.getStdout();
       LOG.info("YARN application list (TEZ, ALL states):\n{}", out);

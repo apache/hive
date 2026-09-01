@@ -23,17 +23,15 @@ import org.apache.hive.service.server.HiveServer2;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Container;
+import org.testcontainers.containers.ContainerState;
 
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-/**
- * Starts a full HDFS + YARN + HiveServer2 cluster backed by Docker containers
- * and keeps it running until the process is interrupted. Useful for manual testing with Beeline
- * without restarting the cluster between queries.
- */
+/** Keep-alive HDFS + YARN + HiveServer2 cluster for manual Beeline testing.
+ *  Enable with -Dtez.yarn.cluster.run=true. */
 public class StartTezYarnCluster {
 
   private static final Logger LOG = LoggerFactory.getLogger(StartTezYarnCluster.class);
@@ -49,7 +47,7 @@ public class StartTezYarnCluster {
       return;
     }
 
-    TezYarnClusterContainer cluster = new TezYarnClusterContainer(true);
+    TezYarnClusterContainer cluster = new TezYarnClusterContainer();
     cluster.start();
 
     setupHdfs(cluster.namenodeContainer());
@@ -80,7 +78,7 @@ public class StartTezYarnCluster {
     Thread.currentThread().join();
   }
 
-  private static void setupHdfs(GenericContainer<?> nn) throws Exception {
+  private static void setupHdfs(ContainerState nn) throws Exception {
     String[] dirs = {
         "/tmp",
         HDFS_ROOT + "/warehouse",
@@ -88,13 +86,13 @@ public class StartTezYarnCluster {
         HDFS_ROOT + "/user-install"
     };
     for (String dir : dirs) {
-      GenericContainer.ExecResult r = nn.execInContainer("hdfs", "dfs", "-mkdir", "-p", dir);
+      Container.ExecResult r = nn.execInContainer("hdfs", "dfs", "-mkdir", "-p", dir);
       if (r.getExitCode() != 0) {
         throw new IllegalStateException("hdfs dfs -mkdir -p " + dir + " failed:\n" + r.getStderr());
       }
     }
     for (String dir : new String[]{"/tmp", HDFS_ROOT}) {
-      GenericContainer.ExecResult r = nn.execInContainer("hdfs", "dfs", "-chmod", "-R", "777", dir);
+      Container.ExecResult r = nn.execInContainer("hdfs", "dfs", "-chmod", "-R", "777", dir);
       if (r.getExitCode() != 0) {
         throw new IllegalStateException("hdfs dfs -chmod -R 777 " + dir + " failed:\n" + r.getStderr());
       }
