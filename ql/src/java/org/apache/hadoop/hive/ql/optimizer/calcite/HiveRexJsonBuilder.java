@@ -18,6 +18,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
+import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
@@ -29,7 +30,7 @@ import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory;
  */
 class HiveRexJsonBuilder extends RexBuilder {
   HiveRexJsonBuilder() {
-    super(new HiveTypeFactory());
+    super(new JavaTypeFactoryImpl(new HiveTypeSystemImpl()));
   }
 
   @Override
