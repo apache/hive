@@ -18,11 +18,9 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
-import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.externalize.RelJson;
 import org.apache.calcite.rel.externalize.RelJsonWriter;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.util.ImmutableBitSet;
@@ -38,21 +36,6 @@ import org.slf4j.LoggerFactory;
 public class HiveRelJsonImpl extends RelJsonWriter {
 
   protected static final Logger LOG = LoggerFactory.getLogger(HiveRelJsonImpl.class);
-
-  //~ Constructors -------------------------------------------------------------
-
-  public HiveRelJsonImpl() {
-    super();
-
-    // Upgrade to Calcite 1.23.0 to remove this
-    try {
-      final Field fieldRelJson = RelJsonWriter.class.getDeclaredField("relJson");
-      fieldRelJson.setAccessible(true);
-      fieldRelJson.set(this, new RelJson(jsonBuilder));
-    } catch (IllegalAccessException | NoSuchFieldException e) {
-      throw new RuntimeException(e);
-    }
-  }
 
   //~ Methods ------------------------------------------------------------------
 
