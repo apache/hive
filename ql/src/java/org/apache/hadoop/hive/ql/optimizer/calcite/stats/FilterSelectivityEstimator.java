@@ -484,19 +484,261 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     }
 
     final List<ColStatistics> colStats = scan.getColStat(Collections.singletonList(inputRefIndex));
-    if (colStats.isEmpty() || !isHistogramAvailable(colStats.get(0))) {
+    if (colStats.isEmpty()) {
       return defaultSelectivity.get();
     }
 
-    final KllFloatsSketch kll = KllFloatsSketch.heapify(Memory.wrap(colStats.get(0).getHistogram()));
-    double rawSelectivity = rangedSelectivity(kll, boundaries);
-    if (inverseBool) {
-      // when inverseBool == true, this is a NOT_BETWEEN and selectivity must be inverted
-      // if there's a cast, the inversion is with respect to its codomain (range of the values of the cast)
-      double typeRangeSelectivity = rangedSelectivity(kll, typeRange);
-      rawSelectivity = typeRangeSelectivity - rawSelectivity;
+    final ColStatistics cs = colStats.get(0);
+    if (isHistogramAvailable(cs)) {
+      final KllFloatsSketch kll = KllFloatsSketch.heapify(Memory.wrap(cs.getHistogram()));
+      double rawSelectivity = rangedSelectivity(kll, boundaries);
+      if (inverseBool) {
+        // when inverseBool == true, this is a NOT_BETWEEN and selectivity must be inverted
+        // if there's a cast, the inversion is with respect to its codomain (range of the values of the cast)
+        double typeRangeSelectivity = rangedSelectivity(kll, typeRange);
+        rawSelectivity = typeRangeSelectivity - rawSelectivity;
+      }
+      return scaleSelectivityToNullableValues(kll, rawSelectivity, scan);
     }
-    return scaleSelectivityToNullableValues(kll, rawSelectivity, scan);
+
+    if (isUniformWithinRangeEnabled() && hasUsableMinMax(cs)) {
+      RelDataType columnType = scan.getRowType().getFieldList().get(inputRefIndex).getType();
+      Double uniformSelectivity = computeUniformRangeSelectivity(cs, boundaries, scan, inverseBool, typeRange,
+          columnType);
+      if (uniformSelectivity != null) {
+        return uniformSelectivity;
+      }
+    }
+
+    return defaultSelectivity.get();
+  }
+
+  private boolean isUniformWithinRangeEnabled() {
+    HiveConfPlannerContext ctx =
+        childRel.getCluster().getPlanner().getContext().unwrap(HiveConfPlannerContext.class);
+    return ctx == null || ctx.isUniformWithinRange();
+  }
+
+  private static boolean hasUsableMinMax(ColStatistics cs) {
+    ColStatistics.Range range = cs.getRange();
+    return range != null && range.minValue != null && range.maxValue != null;
+  }
+
+  /**
+   * Converts column MIN/MAX statistics into the same numeric space used by {@link #extractLiteral}.
+   * DATE column stats from HMS are stored as days since epoch; literals use epoch seconds.
+   */
+  private static Optional<float[]> convertColRangeToFloatBounds(ColStatistics cs, RelDataType columnType) {
+    ColStatistics.Range range = cs.getRange();
+    if (range == null || range.minValue == null || range.maxValue == null) {
+      return Optional.empty();
+    }
+    final float min;
+    final float max;
+    switch (columnType.getSqlTypeName()) {
+    case DATE:
+      min = range.minValue.longValue() * 86400L;
+      max = range.maxValue.longValue() * 86400L;
+      break;
+    case TIMESTAMP:
+      min = range.minValue.longValue();
+      max = range.maxValue.longValue();
+      break;
+    case TINYINT:
+      min = range.minValue.byteValue();
+      max = range.maxValue.byteValue();
+      break;
+    case SMALLINT:
+      min = range.minValue.shortValue();
+      max = range.maxValue.shortValue();
+      break;
+    case INTEGER:
+      min = range.minValue.intValue();
+      max = range.maxValue.intValue();
+      break;
+    case BIGINT:
+      min = range.minValue.longValue();
+      max = range.maxValue.longValue();
+      break;
+    case FLOAT:
+      min = range.minValue.floatValue();
+      max = range.maxValue.floatValue();
+      break;
+    case DOUBLE:
+      min = (float) range.minValue.doubleValue();
+      max = (float) range.maxValue.doubleValue();
+      break;
+    case DECIMAL:
+      min = new BigDecimal(range.minValue.toString()).floatValue();
+      max = new BigDecimal(range.maxValue.toString()).floatValue();
+      break;
+    default:
+      return Optional.empty();
+    }
+    return Optional.of(new float[] { min, max });
+  }
+
+  private Double computeUniformRangeSelectivity(ColStatistics cs, Range<Float> boundaries, HiveTableScan scan,
+      boolean inverseBool, Range<Float> typeRange, RelDataType columnType) {
+    Optional<float[]> minMax = convertColRangeToFloatBounds(cs, columnType);
+    if (minMax.isEmpty()) {
+      return null;
+    }
+    float min = minMax.get()[0];
+    float max = minMax.get()[1];
+
+    float lowerInfinite = Float.NEGATIVE_INFINITY;
+    float upperInfinite = Float.POSITIVE_INFINITY;
+    boolean isOneSidedUpper = Float.compare(boundaries.lowerEndpoint(), lowerInfinite) == 0
+        && Float.compare(boundaries.upperEndpoint(), upperInfinite) != 0;
+    boolean isOneSidedLower = Float.compare(boundaries.upperEndpoint(), upperInfinite) == 0
+        && Float.compare(boundaries.lowerEndpoint(), lowerInfinite) != 0;
+
+    double rawSelectivity;
+    if (isOneSidedUpper) {
+      rawSelectivity = computeOneSidedUniformSelectivity(min, max, boundaries.upperEndpoint(), true,
+          BoundType.CLOSED.equals(boundaries.upperBoundType()));
+    } else if (isOneSidedLower) {
+      rawSelectivity = computeOneSidedUniformSelectivity(min, max, boundaries.lowerEndpoint(), false,
+          BoundType.CLOSED.equals(boundaries.lowerBoundType()));
+    } else {
+      rawSelectivity = computeTwoSidedUniformSelectivity(min, max, boundaries, inverseBool, typeRange);
+    }
+
+    if (rawSelectivity < 0 || Double.isNaN(rawSelectivity) || Double.isInfinite(rawSelectivity)) {
+      return null;
+    }
+    return scaleSelectivityForNulls(cs, Math.min(1.0, Math.max(0.0, rawSelectivity)), scan);
+  }
+
+  /**
+   * Mirrors {@code StatsRulesProcFactory.EvaluateComparatorWithRange} semantics for one-sided predicates.
+   */
+  private static double computeOneSidedUniformSelectivity(float min, float max, float value, boolean upperBound,
+      boolean closedBound) {
+    Optional<Double> earlyReturn = applyOneSidedEarlyReturn(min, max, value, upperBound, closedBound);
+    if (earlyReturn.isPresent()) {
+      return earlyReturn.get();
+    }
+    float domainWidth = max - min;
+    if (domainWidth <= 0) {
+      return 0;
+    }
+    if (upperBound) {
+      return (value - min) / domainWidth;
+    }
+    return (max - value) / domainWidth;
+  }
+
+  private static Optional<Double> applyOneSidedEarlyReturn(float min, float max, float value, boolean upperBound,
+      boolean closedBound) {
+    if (upperBound) {
+      if (max < value || (Float.compare(max, value) == 0 && closedBound)) {
+        return Optional.of(1.0);
+      }
+      if (min > value || (Float.compare(min, value) == 0 && !closedBound)) {
+        return Optional.of(0.0);
+      }
+    } else {
+      if (min > value || (Float.compare(min, value) == 0 && closedBound)) {
+        return Optional.of(1.0);
+      }
+      if (max < value || (Float.compare(max, value) == 0 && !closedBound)) {
+        return Optional.of(0.0);
+      }
+    }
+    return Optional.empty();
+  }
+
+  private static double computeTwoSidedUniformSelectivity(float min, float max, Range<Float> boundaries,
+      boolean inverseBool, Range<Float> typeRange) {
+    if (Float.compare(min, max) == 0) {
+      double betweenSelectivity = isPointInClosedRange(boundaries, min) ? 1.0 : 0.0;
+      return inverseBool ? 1.0 - betweenSelectivity : betweenSelectivity;
+    }
+
+    Range<Float> domain = Range.closedOpen(min, Math.nextUp(max));
+    Range<Float> predicateRange = convertRangeToClosedOpen(boundaries);
+
+    if (inverseBool) {
+      Range<Float> universe = domain;
+      if (typeRange != null) {
+        Range<Float> typeRangeClosedOpen = convertRangeToClosedOpen(typeRange);
+        universe = intersectClosedOpenRanges(domain, typeRangeClosedOpen);
+        if (universe == null) {
+          return 0;
+        }
+      }
+      float universeWidth = rangeWidth(universe);
+      if (universeWidth <= 0) {
+        return 0;
+      }
+      Range<Float> betweenIntersect = intersectClosedOpenRanges(universe, predicateRange);
+      float betweenWidth = betweenIntersect == null ? 0 : rangeWidth(betweenIntersect);
+      return 1.0 - betweenWidth / universeWidth;
+    }
+
+    Range<Float> intersect = intersectClosedOpenRanges(domain, predicateRange);
+    float overlapWidth = intersect == null ? 0 : rangeWidth(intersect);
+    float domainWidth = max - min;
+    if (domainWidth <= 0) {
+      return 0;
+    }
+    return overlapWidth / domainWidth;
+  }
+
+  private static boolean isPointInClosedRange(Range<Float> boundaries, float point) {
+    if (boundaries.isEmpty()) {
+      return false;
+    }
+    float lower = boundaries.lowerEndpoint();
+    float upper = boundaries.upperEndpoint();
+    boolean lowerOk = BoundType.CLOSED.equals(boundaries.lowerBoundType())
+        ? Float.compare(point, lower) >= 0
+        : Float.compare(point, lower) > 0;
+    boolean upperOk = BoundType.CLOSED.equals(boundaries.upperBoundType())
+        ? Float.compare(point, upper) <= 0
+        : Float.compare(point, upper) < 0;
+    return lowerOk && upperOk;
+  }
+
+  private static Range<Float> intersectClosedOpenRanges(Range<Float> left, Range<Float> right) {
+    if (!left.isConnected(right)) {
+      return null;
+    }
+    Range<Float> intersection = left.intersection(right);
+    if (intersection.isEmpty()) {
+      return null;
+    }
+    return intersection;
+  }
+
+  private static float rangeWidth(Range<Float> range) {
+    if (range == null || range.isEmpty()) {
+      return 0;
+    }
+    float width = range.upperEndpoint() - range.lowerEndpoint();
+    return Math.max(width, 0);
+  }
+
+  /**
+   * Adjust selectivity to account for NULL values, consistent with {@link #scaleSelectivityToNullableValues}.
+   * Unknown null count ({@code numNulls < 0}) is treated as zero nulls.
+   */
+  private static double scaleSelectivityForNulls(ColStatistics cs, double rawSelectivity, HiveTableScan scan) {
+    if (scan.getTable() == null) {
+      return rawSelectivity;
+    }
+    double rowCount = scan.getTable().getRowCount();
+    if (rowCount <= 0) {
+      return rawSelectivity;
+    }
+    long numNulls = cs.getNumNulls();
+    if (numNulls < 0) {
+      numNulls = 0;
+    }
+    double nonNullRows = Math.max(rowCount - numNulls, 0);
+    return nonNullRows * rawSelectivity / rowCount;
   }
 
   /**
