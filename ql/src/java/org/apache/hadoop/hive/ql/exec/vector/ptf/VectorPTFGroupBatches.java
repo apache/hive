@@ -486,7 +486,7 @@ public class VectorPTFGroupBatches extends PTFPartition {
       return;
     }
     List<Integer> groupRowCounts =
-        Collections.unmodifiableList(new ArrayList<>(aggregatedGroupRowCounts));
+        Collections.unmodifiableList(aggregatedGroupRowCounts);
     for (VectorPTFEvaluatorBase evaluator : evaluators) {
       if (evaluator.isGroupAggregatedStreamingEvaluator()) {
         evaluator.addStreamingGroupResults(groupRowCounts);
