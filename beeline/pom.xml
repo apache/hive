@@ -62,16 +62,6 @@
       </exclusions>
     </dependency>
     <dependency>
-      <!--
-        Only used by schematool/HiveSchemaTool.java, a separate entry point
-        from BeeLine.main() invoked via the schematool shell scripts. Scoped
-        as `provided` so its heavy transitives (DataNucleus, Jetty, HikariCP,
-        commons-dbcp2, jackson-databind, hadoop-hdfs, hadoop-distcp,
-        hadoop-mapreduce-client-core, orc-core, ...) are not bundled into
-        beeline-standalone.jar. Classes remain available at compile time;
-        running schematool requires these classes to be supplied separately
-        on the runtime classpath.
-      -->
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-standalone-metastore-server</artifactId>
       <version>${standalone-metastore.version}</version>
@@ -367,22 +357,7 @@
                       <!-- Output: arch-specific subdirectory so x64 and arm64 coexist -->
                       <arg value="--dest"/>
                       <arg value="${project.build.directory}/apache-hive-beeline-${project.version}/${installer.arch}"/>
-                      <!--
-                        Without the add-modules flag below, jpackage's own module-detection
-                        scan of the shaded jar trips over unreachable JNA/OSGi/Windows-only
-                        code paths (from bundled dnsjava, snappy, etc.) and falls back to
-                        bundling nearly the full default JDK image (about 63 modules, about
-                        147MB runtime). This list is the actual closure BeeLine needs,
-                        derived via: jdeps -&#45;print-module-deps -&#45;ignore-missing-deps
-                        -&#45;multi-release 21 beeline-standalone.jar
-                        Re-run that command and update this list if the jar's dependencies
-                        change materially. The jlink-options flag below trims the resulting
-                        runtime further: strip debug symbols, man pages, headers, and native
-                        commands (jpackage supplies its own native launcher, so the
-                        runtime's own bin/java etc. are dead weight), and maximize jimage
-                        compression. Combined effect: about 147MB runtime shrinks to about
-                        47MB (measured on macOS arm64).
-                      -->
+                      <!-- Reduces the size of the output artifact -->
                       <arg value="--add-modules"/>
                       <arg value="java.base,java.compiler,java.desktop,java.instrument,java.prefs,java.rmi,java.scripting,java.security.jgss,java.security.sasl,java.sql.rowset,jdk.httpserver,jdk.jfr,jdk.management,jdk.security.auth,jdk.unsupported"/>
                       <arg value="--jlink-options"/>
