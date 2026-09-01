@@ -171,10 +171,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n2
-                  filterExpr: ((ROW__ID.writeid > 1L) and (c > 10) and a is not null) (type: boolean)
+                  filterExpr: ((c > 10) and (ROW__ID.writeid <= 1L) is not true and a is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((ROW__ID.writeid > 1L) and (c > 10) and a is not null) (type: boolean)
+                    predicate: ((c > 10) and (ROW__ID.writeid <= 1L) is not true and a is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: a (type: int), d (type: int)
