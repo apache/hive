@@ -29,6 +29,7 @@
   <name>Hive Integration - Tez on YARN localization tests</name>
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
+    <run.tez.yarn.tests>false</run.tez.yarn.tests>
   </properties>
   <dependencies>
     <dependency>
@@ -130,7 +131,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>3.6.1</version>
         <executions>
           <execution>
             <id>stage-tez-framework-jars</id>
@@ -213,7 +213,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <!-- Tests are opt-in: activate the tez-yarn profile to run them. -->
+          <!-- Opt-in: -Ptez-yarn or -Drun.tez.yarn.tests=true -->
           <skipTests>true</skipTests>
           <!-- Resolve docker-network hostnames (namenode, resourcemanager, …) to 127.0.0.1
                so HDFS URIs embedded in Tez LocalResources are reachable from both the host JVM
@@ -226,6 +226,15 @@
   <profiles>
     <profile>
       <id>tez-yarn</id>
+      <activation>
+        <property>
+          <name>run.tez.yarn.tests</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <properties>
+        <run.tez.yarn.tests>true</run.tez.yarn.tests>
+      </properties>
       <build>
         <plugins>
           <plugin>
