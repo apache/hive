@@ -285,7 +285,17 @@ public class HMSCatalogAdapter implements Closeable {
     } else {
       namespace = Namespace.empty();
     }
-    return castResponse(ListNamespacesResponse.class, CatalogHandlers.listNamespaces(asNamespaceCatalog, namespace));
+    String pageToken = PropertyUtil.propertyAsString(vars, "pageToken", null);
+    String pageSize = PropertyUtil.propertyAsString(vars, "pageSize", null);
+    if (pageSize != null) {
+      return castResponse(
+          ListNamespacesResponse.class,
+          CatalogHandlers.listNamespaces(asNamespaceCatalog, namespace, pageToken, pageSize));
+    } else {
+      return castResponse(
+          ListNamespacesResponse.class,
+          CatalogHandlers.listNamespaces(asNamespaceCatalog, namespace));
+    }
   }
 
   private CreateNamespaceResponse createNamespace(Object body) {
@@ -322,7 +332,15 @@ public class HMSCatalogAdapter implements Closeable {
 
   private ListTablesResponse listTables(Map<String, String> vars) {
     Namespace namespace = namespaceFromPathVars(vars);
-    return castResponse(ListTablesResponse.class, CatalogHandlers.listTables(catalog, namespace));
+    String pageToken = PropertyUtil.propertyAsString(vars, "pageToken", null);
+    String pageSize = PropertyUtil.propertyAsString(vars, "pageSize", null);
+    if (pageSize != null) {
+      return castResponse(
+          ListTablesResponse.class,
+          CatalogHandlers.listTables(catalog, namespace, pageToken, pageSize));
+    } else {
+      return castResponse(ListTablesResponse.class, CatalogHandlers.listTables(catalog, namespace));
+    }
   }
 
   private LoadTableResponse createTable(Map<String, String> vars, Object body) {
