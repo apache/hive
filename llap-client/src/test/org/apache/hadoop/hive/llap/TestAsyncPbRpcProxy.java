@@ -35,26 +35,26 @@ import org.apache.hadoop.hive.llap.tez.LlapProtocolClientProxy;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 class TestAsyncPbRpcProxy {
 
-  private static final Logger LOG = LoggerFactory.getLogger(TestAsyncPbRpcProxy.class);
-
   /**
-   * Front-loads one-time initialization (Mockito mock generation, classloading, log4j2
-   * setup) so the per-test timeouts guard only the code under test. A timeout here
-   * indicates a starved executor, not a test bug (HIVE-26089).
+   * Front-loads one-time initialization (Mockito, log4j2 (transitively), classloading) that would
+   * otherwise happen inside the first test's timeout window. A timeout here indicates a
+   * starved executor, not a test bug (HIVE-26089).
    */
   @BeforeAll
   @Timeout(value = 60000, unit = TimeUnit.MILLISECONDS, threadMode = Timeout.ThreadMode.SEPARATE_THREAD)
   static void warmUp() {
+    // Initializes Mockito (agent attach, mock-class generation). Mock classes are
+    // generated and cached per type, so warm both types the tests use.
     mock(Message.class);
     mock(LlapProtocolClientProxy.ExecuteRequestCallback.class);
-    LOG.info("warm-up");
+    // Loads the RequestManager class hierarchy. Also initializes log4j2, because the
+    // constructor touches a logger (via AsyncResponseHandler).
     new RequestManagerForTest(1);
-    LlapNodeId.getInstance("warmup-host", 1025);
+    // Loads the request classes and LlapNodeId, including its Guava cache.
+    new CallableRequestForTest(LlapNodeId.getInstance("warmup-host", 0), null, null);
   }
 
   @Test
@@ -135,7 +135,7 @@ class TestAsyncPbRpcProxy {
     int numSubmissionsCounters = 0;
     private Map<LlapNodeId, MutableInt> numInvocationsPerNode = new HashMap<>();
 
-    public RequestManagerForTest(int numThreads) {
+    RequestManagerForTest(int numThreads) {
       super(numThreads, 1);
     }
 
