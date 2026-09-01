@@ -51,7 +51,6 @@ stmt :
      | collect_stats_stmt
      | close_stmt
      | cmp_stmt
-     | copy_from_local_stmt
      | copy_stmt
      | commit_stmt
      | create_database_stmt
@@ -640,17 +639,9 @@ cmp_stmt :              // CMP statement
 cmp_source :
       (table_name where_clause? | T_OPEN_P select_stmt T_CLOSE_P) (T_AT qident)?
      ;
-     
-copy_from_local_stmt :  // COPY FROM LOCAL statement
-       T_COPY T_FROM T_LOCAL copy_source (T_COMMA copy_source)* T_TO copy_target copy_file_option*
-     ;
-     
+
 copy_stmt :             // COPY statement
        T_COPY (table_name | T_OPEN_P select_stmt T_CLOSE_P) T_TO T_HDFS? copy_target copy_option*
-     ;
-     
-copy_source :
-       (file_name | expr) 
      ;
 
 copy_target :
@@ -664,12 +655,6 @@ copy_option :
      | T_SQLINSERT qident
      ;
 
-copy_file_option :
-       T_DELETE
-     | T_IGNORE
-     | T_OVERWRITE
-     ;
-     
 commit_stmt :           // COMMIT statement
        T_COMMIT T_WORK?
      ;
