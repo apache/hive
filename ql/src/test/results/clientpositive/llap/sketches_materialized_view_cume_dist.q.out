@@ -544,19 +544,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: sketch_input
-                  filterExpr: (ROW__ID.writeid > 1L) (type: boolean)
+                  filterExpr: (ROW__ID.writeid <= 1L) is not true (type: boolean)
                   Statistics: Num rows: 44 Data size: 3916 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (ROW__ID.writeid > 1L) (type: boolean)
-                    Statistics: Num rows: 14 Data size: 1246 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: (ROW__ID.writeid <= 1L) is not true (type: boolean)
+                    Statistics: Num rows: 22 Data size: 1958 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: category (type: char(1)), UDFToFloat(id) (type: float)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 14 Data size: 1246 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 22 Data size: 1958 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: ds_kll_sketch(_col1)
                         keys: _col0 (type: char(1))
-                        minReductionHashAggr: 0.85714287
+                        minReductionHashAggr: 0.9090909
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 2 Data size: 458 Basic stats: COMPLETE Column stats: COMPLETE
