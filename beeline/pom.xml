@@ -41,11 +41,6 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-metastore</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
       <artifactId>hive-shims</artifactId>
       <version>${project.version}</version>
       <exclusions>
@@ -67,9 +62,20 @@
       </exclusions>
     </dependency>
     <dependency>
+      <!--
+        Only used by schematool/HiveSchemaTool.java, a separate entry point
+        from BeeLine.main() invoked via the schematool shell scripts. Scoped
+        as `provided` so its heavy transitives (DataNucleus, Jetty, HikariCP,
+        commons-dbcp2, jackson-databind, hadoop-hdfs, hadoop-distcp,
+        hadoop-mapreduce-client-core, orc-core, ...) are not bundled into
+        beeline-standalone.jar. Classes remain available at compile time;
+        running schematool requires these classes to be supplied separately
+        on the runtime classpath.
+      -->
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-standalone-metastore-server</artifactId>
       <version>${standalone-metastore.version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <!--
@@ -133,11 +139,78 @@
           <groupId>log4j</groupId>
           <artifactId>log4j</artifactId>
         </exclusion>
+        <!-- kerby/kerberos auth chain pulled in transitively via hadoop-auth; beeline
+             does not exercise hadoop-common's Kerberos/UGI code paths -->
+        <exclusion>
+          <groupId>org.apache.kerby</groupId>
+          <artifactId>kerb-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.kerby</groupId>
+          <artifactId>kerb-util</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.kerby</groupId>
+          <artifactId>kerby-config</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.kerby</groupId>
+          <artifactId>kerb-crypto</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.kerby</groupId>
+          <artifactId>kerby-pkix</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.kerby</groupId>
+          <artifactId>kerby-asn1</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.kerby</groupId>
+          <artifactId>kerby-util</artifactId>
+        </exclusion>
+        <!-- avro is only used by hadoop-common's optional SequenceFile/serialization
+             helpers, not by Configuration/FileSystem/Path/IOUtils/ExitUtil -->
+        <exclusion>
+          <groupId>org.apache.avro</groupId>
+          <artifactId>avro</artifactId>
+        </exclusion>
+        <!-- ZooKeeper client (curator) is unused; beeline does not talk to ZK
+             through hadoop-common -->
+        <exclusion>
+          <groupId>org.apache.curator</groupId>
+          <artifactId>curator-client</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.curator</groupId>
+          <artifactId>curator-recipes</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.curator</groupId>
+          <artifactId>curator-framework</artifactId>
+        </exclusion>
+        <!-- htrace tracing hooks; not exercised by beeline's thin usage -->
+        <exclusion>
+          <groupId>org.apache.htrace</groupId>
+          <artifactId>htrace-core4</artifactId>
+        </exclusion>
+        <!-- jsch (SFTP/SSH) backs hadoop-common's SFTPFileSystem, which beeline
+             never instantiates -->
+        <exclusion>
+          <groupId>com.jcraft</groupId>
+          <artifactId>jsch</artifactId>
+        </exclusion>
+        <!-- commons-net (FTP client) backs hadoop-common's FTPFileSystem, unused -->
+        <exclusion>
+          <groupId>commons-net</groupId>
+          <artifactId>commons-net</artifactId>
+        </exclusion>
+        <!-- re2j is only used by hadoop-common's optional regex path matching -->
+        <exclusion>
+          <groupId>com.google.re2j</groupId>
+          <artifactId>re2j</artifactId>
+        </exclusion>
       </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.thrift</groupId>
-      <artifactId>libthrift</artifactId>
     </dependency>
     <dependency>
       <groupId>net.sf.supercsv</groupId>
@@ -243,7 +316,7 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <optional>true</optional>
+      <scope>test</scope>
     </dependency>
   </dependencies>
   <profiles>
@@ -294,6 +367,26 @@
                       <!-- Output: arch-specific subdirectory so x64 and arm64 coexist -->
                       <arg value="--dest"/>
                       <arg value="${project.build.directory}/apache-hive-beeline-${project.version}/${installer.arch}"/>
+                      <!--
+                        Without the add-modules flag below, jpackage's own module-detection
+                        scan of the shaded jar trips over unreachable JNA/OSGi/Windows-only
+                        code paths (from bundled dnsjava, snappy, etc.) and falls back to
+                        bundling nearly the full default JDK image (about 63 modules, about
+                        147MB runtime). This list is the actual closure BeeLine needs,
+                        derived via: jdeps -&#45;print-module-deps -&#45;ignore-missing-deps
+                        -&#45;multi-release 21 beeline-standalone.jar
+                        Re-run that command and update this list if the jar's dependencies
+                        change materially. The jlink-options flag below trims the resulting
+                        runtime further: strip debug symbols, man pages, headers, and native
+                        commands (jpackage supplies its own native launcher, so the
+                        runtime's own bin/java etc. are dead weight), and maximize jimage
+                        compression. Combined effect: about 147MB runtime shrinks to about
+                        47MB (measured on macOS arm64).
+                      -->
+                      <arg value="--add-modules"/>
+                      <arg value="java.base,java.compiler,java.desktop,java.instrument,java.prefs,java.rmi,java.scripting,java.security.jgss,java.security.sasl,java.sql.rowset,jdk.httpserver,jdk.jfr,jdk.management,jdk.security.auth,jdk.unsupported"/>
+                      <arg value="--jlink-options"/>
+                      <arg value="--strip-debug --no-man-pages --no-header-files --strip-native-commands --compress=zip-9"/>
                       <arg line="${jpackage.platform.args}"/>
                       <!--
                         jpackage picks the native format automatically:
