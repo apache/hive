@@ -204,7 +204,7 @@ public class CliConfigs {
     }
   }
 
-  public static class MiniLlapLocalPostgresJdbcCliConfig extends AbstractCliConfig implements JdbcCliConfig {
+  public static class MiniLlapLocalPostgresJdbcCliConfig extends AbstractCliConfig {
     private final QTestDatabaseHandler.DatabaseType databaseType;
     private final String jdbcInitScript;
     private final String externalTablesInitScript;
@@ -219,25 +219,43 @@ public class CliConfigs {
         setQueryDir("ql/src/test/queries/clientpositive/perf");
         setLogDir("itests/qtest/target/qfile-results/clientpositive/jdbc/postgres");
         setResultsDir("ql/src/test/results/clientpositive/jdbc/postgres");
-        setHiveConfDir("data/conf/jdbc");
+        setHiveConfDir("data/conf/llap");
         setClusterType(MiniClusterType.LLAP_LOCAL);
+        setCustomConfigValueMap(createConfVarsStringMap());
         excludesFrom(testConfigProps, "jdbc.disabled.query.files");
+        // Run CBO plans only
+        includeCboQueryFiles();
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
     }
 
-    @Override
+    private void includeCboQueryFiles() {
+      File[] cboQueryFiles = new File(getQueryDirectory())
+          .listFiles((dir, name) -> name.startsWith("cbo") && name.endsWith(".q"));
+      if (cboQueryFiles != null) {
+        for (File f : cboQueryFiles) {
+          includeQuery(f.getName());
+        }
+      }
+    }
+
+    private static Map<HiveConf.ConfVars, String> createConfVarsStringMap() {
+      Map<HiveConf.ConfVars, String> conf = new HashMap<>();
+      conf.put(HiveConf.ConfVars.PRE_EXEC_HOOKS, "");
+      conf.put(HiveConf.ConfVars.POST_EXEC_HOOKS, "");
+      conf.put(HiveConf.ConfVars.HIVE_CTE_MATERIALIZE_THRESHOLD, "-1");
+      return conf;
+    }
+
     public QTestDatabaseHandler.DatabaseType getDatabaseType() {
       return databaseType;
     }
 
-    @Override
     public String getJdbcInitScript() {
       return jdbcInitScript;
     }
 
-    @Override
     public String getExternalTablesInitScript() {
       return externalTablesInitScript;
     }

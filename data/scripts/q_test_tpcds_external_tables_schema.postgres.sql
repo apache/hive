@@ -35,9 +35,9 @@ STORED BY
 TBLPROPERTIES (                                    
     "hive.sql.database.type" = "POSTGRES",
     "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
-    "hive.sql.dbcp.username" = "qtestuser",
-    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qtestDB.jdbc.url}",
+    "hive.sql.dbcp.username" = "${system:hive.test.database.qtestDB.jdbc.username}",
+    "hive.sql.dbcp.password" = "${system:hive.test.database.qtestDB.jdbc.password}",
     "hive.sql.table" = "call_center"
 );
 
@@ -56,9 +56,9 @@ STORED BY
 TBLPROPERTIES (                                    
     "hive.sql.database.type" = "POSTGRES",
     "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
-    "hive.sql.dbcp.username" = "qtestuser",
-    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qtestDB.jdbc.url}",
+    "hive.sql.dbcp.username" = "${system:hive.test.database.qtestDB.jdbc.username}",
+    "hive.sql.dbcp.password" = "${system:hive.test.database.qtestDB.jdbc.password}",
     "hive.sql.table" = "catalog_page"
 );
 
@@ -95,9 +95,9 @@ STORED BY
 TBLPROPERTIES (                                    
     "hive.sql.database.type" = "POSTGRES",
     "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
-    "hive.sql.dbcp.username" = "qtestuser",
-    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qtestDB.jdbc.url}",
+    "hive.sql.dbcp.username" = "${system:hive.test.database.qtestDB.jdbc.username}",
+    "hive.sql.dbcp.password" = "${system:hive.test.database.qtestDB.jdbc.password}",
     "hive.sql.table" = "catalog_returns"
 );
 
@@ -141,9 +141,9 @@ STORED BY
 TBLPROPERTIES (                                    
     "hive.sql.database.type" = "POSTGRES",
     "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
-    "hive.sql.dbcp.username" = "qtestuser",
-    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qtestDB.jdbc.url}",
+    "hive.sql.dbcp.username" = "${system:hive.test.database.qtestDB.jdbc.username}",
+    "hive.sql.dbcp.password" = "${system:hive.test.database.qtestDB.jdbc.password}",
     "hive.sql.table" = "catalog_sales"
 );
 
@@ -171,9 +171,9 @@ STORED BY
 TBLPROPERTIES (                                    
     "hive.sql.database.type" = "POSTGRES",
     "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
-    "hive.sql.dbcp.username" = "qtestuser",
-    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qtestDB.jdbc.url}",
+    "hive.sql.dbcp.username" = "${system:hive.test.database.qtestDB.jdbc.username}",
+    "hive.sql.dbcp.password" = "${system:hive.test.database.qtestDB.jdbc.password}",
     "hive.sql.table" = "customer"
 );
 
@@ -196,9 +196,9 @@ STORED BY
 TBLPROPERTIES (                                    
     "hive.sql.database.type" = "POSTGRES",
     "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
-    "hive.sql.dbcp.username" = "qtestuser",
-    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qtestDB.jdbc.url}",
+    "hive.sql.dbcp.username" = "${system:hive.test.database.qtestDB.jdbc.username}",
+    "hive.sql.dbcp.password" = "${system:hive.test.database.qtestDB.jdbc.password}",
     "hive.sql.table" = "customer_address"
 );
 
@@ -217,9 +217,9 @@ STORED BY
 TBLPROPERTIES (                                    
     "hive.sql.database.type" = "POSTGRES",
     "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
-    "hive.sql.dbcp.username" = "qtestuser",
-    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qtestDB.jdbc.url}",
+    "hive.sql.dbcp.username" = "${system:hive.test.database.qtestDB.jdbc.username}",
+    "hive.sql.dbcp.password" = "${system:hive.test.database.qtestDB.jdbc.password}",
     "hive.sql.table" = "customer_demographics"
 );
 
@@ -257,9 +257,9 @@ STORED BY
 TBLPROPERTIES (                                    
     "hive.sql.database.type" = "POSTGRES",
     "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
-    "hive.sql.dbcp.username" = "qtestuser",
-    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qtestDB.jdbc.url}",
+    "hive.sql.dbcp.username" = "${system:hive.test.database.qtestDB.jdbc.username}",
+    "hive.sql.dbcp.password" = "${system:hive.test.database.qtestDB.jdbc.password}",
     "hive.sql.table" = "date_dim"
 );
 
@@ -274,9 +274,9 @@ STORED BY
 TBLPROPERTIES (                                    
     "hive.sql.database.type" = "POSTGRES",
     "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
-    "hive.sql.dbcp.username" = "qtestuser",
-    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qtestDB.jdbc.url}",
+    "hive.sql.dbcp.username" = "${system:hive.test.database.qtestDB.jdbc.username}",
+    "hive.sql.dbcp.password" = "${system:hive.test.database.qtestDB.jdbc.password}",
     "hive.sql.table" = "household_demographics"
 );
 
@@ -289,9 +289,9 @@ STORED BY
 TBLPROPERTIES (                                    
     "hive.sql.database.type" = "POSTGRES",
     "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
-    "hive.sql.dbcp.username" = "qtestuser",
-    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qtestDB.jdbc.url}",
+    "hive.sql.dbcp.username" = "${system:hive.test.database.qtestDB.jdbc.username}",
+    "hive.sql.dbcp.password" = "${system:hive.test.database.qtestDB.jdbc.password}",
     "hive.sql.table" = "income_band"
 );
 
@@ -305,9 +305,9 @@ STORED BY
 TBLPROPERTIES (                                    
     "hive.sql.database.type" = "POSTGRES",
     "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
-    "hive.sql.dbcp.username" = "qtestuser",
-    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qtestDB.jdbc.url}",
+    "hive.sql.dbcp.username" = "${system:hive.test.database.qtestDB.jdbc.username}",
+    "hive.sql.dbcp.password" = "${system:hive.test.database.qtestDB.jdbc.password}",
     "hive.sql.table" = "inventory"
 );
 
@@ -339,9 +339,9 @@ STORED BY
 TBLPROPERTIES (                                    
     "hive.sql.database.type" = "POSTGRES",
     "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
-    "hive.sql.dbcp.username" = "qtestuser",
-    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qtestDB.jdbc.url}",
+    "hive.sql.dbcp.username" = "${system:hive.test.database.qtestDB.jdbc.username}",
+    "hive.sql.dbcp.password" = "${system:hive.test.database.qtestDB.jdbc.password}",
     "hive.sql.table" = "item"
 );
 
@@ -370,9 +370,9 @@ STORED BY
 TBLPROPERTIES (                                    
     "hive.sql.database.type" = "POSTGRES",
     "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
-    "hive.sql.dbcp.username" = "qtestuser",
-    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qtestDB.jdbc.url}",
+    "hive.sql.dbcp.username" = "${system:hive.test.database.qtestDB.jdbc.username}",
+    "hive.sql.dbcp.password" = "${system:hive.test.database.qtestDB.jdbc.password}",
     "hive.sql.table" = "promotion"
 );
 
@@ -385,9 +385,9 @@ STORED BY
 TBLPROPERTIES (                                    
     "hive.sql.database.type" = "POSTGRES",
     "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
-    "hive.sql.dbcp.username" = "qtestuser",
-    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qtestDB.jdbc.url}",
+    "hive.sql.dbcp.username" = "${system:hive.test.database.qtestDB.jdbc.username}",
+    "hive.sql.dbcp.password" = "${system:hive.test.database.qtestDB.jdbc.password}",
     "hive.sql.table" = "reason"
 );
 
@@ -403,9 +403,9 @@ STORED BY
 TBLPROPERTIES (                                    
     "hive.sql.database.type" = "POSTGRES",
     "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
-    "hive.sql.dbcp.username" = "qtestuser",
-    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qtestDB.jdbc.url}",
+    "hive.sql.dbcp.username" = "${system:hive.test.database.qtestDB.jdbc.username}",
+    "hive.sql.dbcp.password" = "${system:hive.test.database.qtestDB.jdbc.password}",
     "hive.sql.table" = "ship_mode"
 );
 
@@ -444,9 +444,9 @@ STORED BY
 TBLPROPERTIES (                                    
     "hive.sql.database.type" = "POSTGRES",
     "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
-    "hive.sql.dbcp.username" = "qtestuser",
-    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qtestDB.jdbc.url}",
+    "hive.sql.dbcp.username" = "${system:hive.test.database.qtestDB.jdbc.username}",
+    "hive.sql.dbcp.password" = "${system:hive.test.database.qtestDB.jdbc.password}",
     "hive.sql.table" = "store"
 );
 
@@ -476,9 +476,9 @@ STORED BY
 TBLPROPERTIES (                                    
     "hive.sql.database.type" = "POSTGRES",
     "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
-    "hive.sql.dbcp.username" = "qtestuser",
-    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qtestDB.jdbc.url}",
+    "hive.sql.dbcp.username" = "${system:hive.test.database.qtestDB.jdbc.username}",
+    "hive.sql.dbcp.password" = "${system:hive.test.database.qtestDB.jdbc.password}",
     "hive.sql.table" = "store_returns"
 );
 
@@ -511,9 +511,9 @@ STORED BY
 TBLPROPERTIES (                                    
     "hive.sql.database.type" = "POSTGRES",
     "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
-    "hive.sql.dbcp.username" = "qtestuser",
-    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qtestDB.jdbc.url}",
+    "hive.sql.dbcp.username" = "${system:hive.test.database.qtestDB.jdbc.username}",
+    "hive.sql.dbcp.password" = "${system:hive.test.database.qtestDB.jdbc.password}",
     "hive.sql.table" = "store_sales"
 );
 
@@ -533,9 +533,9 @@ STORED BY
 TBLPROPERTIES (                                    
     "hive.sql.database.type" = "POSTGRES",
     "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
-    "hive.sql.dbcp.username" = "qtestuser",
-    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qtestDB.jdbc.url}",
+    "hive.sql.dbcp.username" = "${system:hive.test.database.qtestDB.jdbc.username}",
+    "hive.sql.dbcp.password" = "${system:hive.test.database.qtestDB.jdbc.password}",
     "hive.sql.table" = "time_dim"
 );
 
@@ -559,9 +559,9 @@ STORED BY
 TBLPROPERTIES (                                    
     "hive.sql.database.type" = "POSTGRES",
     "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
-    "hive.sql.dbcp.username" = "qtestuser",
-    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qtestDB.jdbc.url}",
+    "hive.sql.dbcp.username" = "${system:hive.test.database.qtestDB.jdbc.username}",
+    "hive.sql.dbcp.password" = "${system:hive.test.database.qtestDB.jdbc.password}",
     "hive.sql.table" = "warehouse"
 );
 
@@ -585,9 +585,9 @@ STORED BY
 TBLPROPERTIES (                                    
     "hive.sql.database.type" = "POSTGRES",
     "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
-    "hive.sql.dbcp.username" = "qtestuser",
-    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qtestDB.jdbc.url}",
+    "hive.sql.dbcp.username" = "${system:hive.test.database.qtestDB.jdbc.username}",
+    "hive.sql.dbcp.password" = "${system:hive.test.database.qtestDB.jdbc.password}",
     "hive.sql.table" = "web_page"
 );
 
@@ -621,9 +621,9 @@ STORED BY
 TBLPROPERTIES (                                    
     "hive.sql.database.type" = "POSTGRES",
     "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
-    "hive.sql.dbcp.username" = "qtestuser",
-    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qtestDB.jdbc.url}",
+    "hive.sql.dbcp.username" = "${system:hive.test.database.qtestDB.jdbc.username}",
+    "hive.sql.dbcp.password" = "${system:hive.test.database.qtestDB.jdbc.password}",
     "hive.sql.table" = "web_returns"
 );
 
@@ -667,9 +667,9 @@ STORED BY
 TBLPROPERTIES (                                    
     "hive.sql.database.type" = "POSTGRES",
     "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
-    "hive.sql.dbcp.username" = "qtestuser",
-    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qtestDB.jdbc.url}",
+    "hive.sql.dbcp.username" = "${system:hive.test.database.qtestDB.jdbc.username}",
+    "hive.sql.dbcp.password" = "${system:hive.test.database.qtestDB.jdbc.password}",
     "hive.sql.table" = "web_sales"
 );
 
@@ -705,8 +705,8 @@ STORED BY
 TBLPROPERTIES (                                    
     "hive.sql.database.type" = "POSTGRES",
     "hive.sql.jdbc.driver" = "org.postgresql.Driver",
-    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qtestDB",
-    "hive.sql.dbcp.username" = "qtestuser",
-    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qtestDB.jdbc.url}",
+    "hive.sql.dbcp.username" = "${system:hive.test.database.qtestDB.jdbc.username}",
+    "hive.sql.dbcp.password" = "${system:hive.test.database.qtestDB.jdbc.password}",
     "hive.sql.table" = "web_site"
 );

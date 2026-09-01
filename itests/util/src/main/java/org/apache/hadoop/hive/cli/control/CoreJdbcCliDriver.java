@@ -47,7 +47,7 @@ public class CoreJdbcCliDriver extends CoreCliDriver {
   public void beforeClass() throws Exception {
     super.beforeClass();
 
-    if (cliConfig instanceof JdbcCliConfig jc) {
+    if (cliConfig instanceof CliConfigs.MiniLlapLocalPostgresJdbcCliConfig jc) {
       LOG.info("Launching docker container, running jdbc init script...");
       Path scriptFile = Paths.get(
           QTestUtil.getScriptsDir(getQt().getConf()) + File.separator + jc.getJdbcInitScript()
@@ -64,7 +64,7 @@ public class CoreJdbcCliDriver extends CoreCliDriver {
   @Before
   public void setUp() throws Exception {
     super.setUp();
-    if (!externalTablesCreated && cliConfig instanceof JdbcCliConfig jc) {
+    if (!externalTablesCreated && cliConfig instanceof CliConfigs.MiniLlapLocalPostgresJdbcCliConfig jc) {
       LOG.info("Running init script for external tables...");
       File scriptFile = new File(
           QTestUtil.getScriptsDir(getQt().getConf()) + File.separator +
