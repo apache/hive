@@ -66,6 +66,7 @@ import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -1188,6 +1189,13 @@ public class TestFilterSelectivityEstimator {
         REX_BUILDER.getTypeFactory().createSqlType(SqlTypeName.TIMESTAMP));
   }
 
+  private static RexLiteral literalDate(String date) {
+    GregorianCalendar calendar =
+        GregorianCalendar.from(LocalDate.parse(date).atStartOfDay(ZoneOffset.UTC));
+    return (RexLiteral) REX_BUILDER.makeLiteral(calendar,
+        REX_BUILDER.getTypeFactory().createSqlType(SqlTypeName.DATE), true);
+  }
+
   private RexNode literalFloat(float f) {
     return REX_BUILDER.makeLiteral(f, type(SqlTypeName.FLOAT));
   }
@@ -1201,5 +1209,185 @@ public class TestFilterSelectivityEstimator {
 
   private static long timestamp(String timestamp) {
     return timestampMillis(timestamp) / 1000;
+  }
+
+  private static final int INTEGER_FIELD_INDEX = 6; // f_integer
+  private static final int DATE_FIELD_INDEX = 9; // f_date
+
+  private void setupMinMaxNoHistogram(float min, float max) {
+    setupMinMaxNoHistogram(min, max, 0);
+  }
+
+  private void setupMinMaxNoHistogram(float min, float max, long numNulls) {
+    stats = new ColStatistics();
+    stats.setHistogram(null);
+    stats.setRange(min, max);
+    stats.setNumNulls(numNulls);
+    currentInputRef = REX_BUILDER.makeInputRef(scan, INTEGER_FIELD_INDEX);
+    doReturn(Collections.singletonList(stats)).when(tableMock)
+        .getColStat(Collections.singletonList(INTEGER_FIELD_INDEX));
+  }
+
+  private RelNode createScanWithPlanner(HiveConf conf) {
+    RelOptPlanner planner = CalcitePlanner.createPlanner(conf);
+    RelOptCluster cluster = RelOptCluster.create(planner, REX_BUILDER);
+    RelBuilder relBuilder = HiveRelFactories.HIVE_BUILDER.create(cluster, schemaMock);
+    HiveTableScan tableScan =
+        new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), tableMock, "table", null, false, false);
+    return relBuilder.push(tableScan).build();
+  }
+
+  @Test
+  public void testComparisonMinMaxNoHistogram() {
+    setupMinMaxNoHistogram(0, 100);
+    RexNode int50 = REX_BUILDER.makeLiteral(50, TYPE_FACTORY.createSqlType(INTEGER), true);
+    RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN_OR_EQUAL, currentInputRef, int50);
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0.5, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComparisonMinMaxNoHistogramNoRange() {
+    stats = new ColStatistics();
+    stats.setHistogram(null);
+    currentInputRef = REX_BUILDER.makeInputRef(scan, INTEGER_FIELD_INDEX);
+    doReturn(Collections.singletonList(stats)).when(tableMock)
+        .getColStat(Collections.singletonList(INTEGER_FIELD_INDEX));
+    RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN, currentInputRef, int3);
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0.3333333333333333, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComparisonDateMinMaxNoHistogram() {
+    long minDays = LocalDate.parse("2020-11-01").toEpochDay();
+    long maxDays = LocalDate.parse("2020-11-07").toEpochDay();
+    stats = new ColStatistics();
+    stats.setHistogram(null);
+    stats.setRange(minDays, maxDays);
+    currentInputRef = REX_BUILDER.makeInputRef(scan, DATE_FIELD_INDEX);
+    doReturn(Collections.singletonList(stats)).when(tableMock)
+        .getColStat(Collections.singletonList(DATE_FIELD_INDEX));
+    RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN_OR_EQUAL, currentInputRef,
+        literalDate("2020-11-04"));
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0.5, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testHistogramPreferredOverMinMax() {
+    doReturn(Collections.singletonList(stats)).when(tableMock)
+        .getColStat(Collections.singletonList(0));
+    stats.setRange(0, 100);
+    RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN, inputRef0, int3);
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0.6153846153846154, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testBetweenMinMaxNoHistogram() {
+    setupMinMaxNoHistogram(0, 100);
+    RexNode int20 = REX_BUILDER.makeLiteral(20, TYPE_FACTORY.createSqlType(INTEGER), true);
+    RexNode int40 = REX_BUILDER.makeLiteral(40, TYPE_FACTORY.createSqlType(INTEGER), true);
+    RexNode filter = REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolFalse, currentInputRef, int20, int40);
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0.2, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testNotBetweenMinMaxNoHistogram() {
+    setupMinMaxNoHistogram(0, 100);
+    RexNode int20 = REX_BUILDER.makeLiteral(20, TYPE_FACTORY.createSqlType(INTEGER), true);
+    RexNode int40 = REX_BUILDER.makeLiteral(40, TYPE_FACTORY.createSqlType(INTEGER), true);
+    RexNode filter = REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolTrue, currentInputRef, int20, int40);
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0.8, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComparisonMinMaxBelowMin() {
+    setupMinMaxNoHistogram(0, 100);
+    RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN, currentInputRef, int0);
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComparisonMinMaxAboveMax() {
+    setupMinMaxNoHistogram(0, 100);
+    RexNode int150 = REX_BUILDER.makeLiteral(150, TYPE_FACTORY.createSqlType(INTEGER), true);
+    RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.GREATER_THAN, currentInputRef, int150);
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComparisonMinMaxLessThanOrEqualMax() {
+    setupMinMaxNoHistogram(0, 100);
+    RexNode int100 = REX_BUILDER.makeLiteral(100, TYPE_FACTORY.createSqlType(INTEGER), true);
+    RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN_OR_EQUAL, currentInputRef, int100);
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(1, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComparisonMinMaxGreaterThanOrEqualMin() {
+    setupMinMaxNoHistogram(0, 100);
+    RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.GREATER_THAN_OR_EQUAL, currentInputRef, int0);
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(1, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComparisonMinMaxWhenMinEqualsMaxLessThanOrEqual() {
+    setupMinMaxNoHistogram(5, 5);
+    RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN_OR_EQUAL, currentInputRef, int5);
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(1, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComparisonMinMaxWhenMinEqualsMaxLessThan() {
+    setupMinMaxNoHistogram(5, 5);
+    RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN, currentInputRef, int5);
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComparisonMinMaxWithNulls() {
+    setupMinMaxNoHistogram(0, 100, 2);
+    doReturn((double) 20).when(tableMock).getRowCount();
+    RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN_OR_EQUAL, currentInputRef, int5);
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0.045, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testComparisonMinMaxUniformFlagDisabled() {
+    setupMinMaxNoHistogram(0, 100);
+    HiveConf conf = new HiveConf();
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_RANGE_SELECTIVITY_UNIFORM_DISTRIBUTION, false);
+    RelNode localScan = createScanWithPlanner(conf);
+    RexNode localInputRef = REX_BUILDER.makeInputRef(localScan, INTEGER_FIELD_INDEX);
+    doReturn(Collections.singletonList(stats)).when(tableMock)
+        .getColStat(Collections.singletonList(INTEGER_FIELD_INDEX));
+    RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN_OR_EQUAL, localInputRef, int5);
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(localScan, mq);
+    Assert.assertEquals(0.3333333333333333, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testSearchTwoSidedMinMaxNoHistogram() {
+    setupMinMaxNoHistogram(0, 100);
+    RexNode int20 = REX_BUILDER.makeLiteral(20, TYPE_FACTORY.createSqlType(INTEGER), true);
+    RexNode int40 = REX_BUILDER.makeLiteral(40, TYPE_FACTORY.createSqlType(INTEGER), true);
+    RexNode filter = REX_BUILDER.makeCall(SqlStdOperatorTable.AND,
+        REX_BUILDER.makeCall(SqlStdOperatorTable.GREATER_THAN_OR_EQUAL, currentInputRef, int20),
+        REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN_OR_EQUAL, currentInputRef, int40));
+    filter = simplify(filter);
+    Assert.assertEquals(SqlKind.SEARCH, filter.getKind());
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(0.2, estimator.estimateSelectivity(filter), DELTA);
   }
 }
