@@ -20,8 +20,10 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -58,6 +60,7 @@ import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorLongLastValue
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorLongMax;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorLongMin;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorLongSum;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorPercentRank;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorRank;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorRowNumber;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorStreamingDecimalAvg;
@@ -93,6 +96,7 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     ROW_NUMBER,
     RANK,
     DENSE_RANK,
+    PERCENT_RANK, 
     CUME_DIST,
     MIN,
     MAX,
@@ -132,6 +136,11 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     treeSet.addAll(supportedFunctionsMap.keySet());
     supportedFunctionNames.addAll(treeSet);
   }
+
+  // functions that don't care about input columns.
+  public static final Set<SupportedFunctionType> COLUMN_AGNOSTIC_FUNCTIONS = 
+    EnumSet.of(SupportedFunctionType.RANK, SupportedFunctionType.DENSE_RANK,
+      SupportedFunctionType.PERCENT_RANK, SupportedFunctionType.CUME_DIST);
 
   private TypeInfo[] reducerBatchTypeInfos;
   private DataTypePhysicalVariation[] reducerBatchDataTypePhysicalVariations;
@@ -203,6 +212,9 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
       break;
     case DENSE_RANK:
       evaluator = new VectorPTFEvaluatorDenseRank(windowFrameDef, outputColumnNum);
+      break;
+    case PERCENT_RANK:
+      evaluator = new VectorPTFEvaluatorPercentRank(windowFrameDef, outputColumnNum);
       break;
     case CUME_DIST:
       evaluator = new VectorPTFEvaluatorCumeDist(windowFrameDef, outputColumnNum);

@@ -4323,7 +4323,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), VALUE._col1 (type: int), KEY.reducesinkkey0 (type: float)

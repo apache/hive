@@ -10,6 +10,11 @@ set hive.auto.convert.join=false;
 -- 9. Test Windowing Functions
 -- SORT_QUERY_RESULTS
 
+-- Vector PTF does not buffer PARTITION BY columns (constant within a partition). When a partition
+-- column is also a window-function argument (e.g. sum(c_float) OVER (PARTITION BY c_float)),
+-- input-column remapping is wrong and can cause ClassCastException. Use non-vector PTF until fixed.
+set hive.vectorized.execution.ptf.enabled=false;
+
 select count(c_int) over() from cbo_t1;
 select count(c_int) over(partition by c_float order by key), sum(c_float) over(partition by c_float order by key), max(c_int) over(partition by c_float order by key), min(c_int) over(partition by c_float order by key), row_number() over(partition by c_float order by key) as rn, rank() over(partition by c_float order by key), dense_rank() over(partition by c_float order by key), round(percent_rank() over(partition by c_float order by key), 2), lead(c_int, 2, c_int) over(partition by c_float order by key), lag(c_float, 2, c_float) over(partition by c_float order by key) from cbo_t1 order by rn;
 select * from (select count(c_int) over(partition by c_float order by key), sum(c_float) over(partition by c_float order by key), max(c_int) over(partition by c_float order by key), min(c_int) over(partition by c_float order by key), row_number() over(partition by c_float order by key) as rn, rank() over(partition by c_float order by key), dense_rank() over(partition by c_float order by key), round(percent_rank() over(partition by c_float order by key),2), lead(c_int, 2, c_int) over(partition by c_float   order by key  ), lag(c_float, 2, c_float) over(partition by c_float   order by key) from cbo_t1 order by rn) cbo_t1;
