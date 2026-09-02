@@ -177,12 +177,21 @@ public class HiveRowIsDeletedPropagator implements ReflectiveVisitor {
   //      HiveJoin(condition=[=($0, $8)], joinType=[inner], algorithm=[none], cost=[not available])
   // Check the filter condition and collect operands of OR expressions referencing only one column
   public RelNode visit(HiveFilter filter, Context context) {
-    RexNode condition = filter.getCondition();
+    // CALCITE-7636 changed the compensation predicate produced by the MV rewrite from
+    //   OR(<(N, $t1.writeid), <(N, $t2.writeid))
+    // (i.e. the DeMorgan-expanded form of NOT(AND(<=($t1.writeid, N), <=($t2.writeid, N))))
+    // to the nullable-aware semantically equivalent
+    //   IS_NOT_TRUE(AND(<=($t1.writeid, N), <=($t2.writeid, N))).
+    // The logic below extracts per-column predicates either directly (single table changed)
+    // or from the operands of a top-level OR (multiple tables changed). Normalize the new
+    // IS_NOT_TRUE shape back into that OR-of-per-column-predicates shape so downstream code
+    // is agnostic to which Calcite version produced the plan.
+    RexNode condition = normalizeCompensationPredicate(filter.getCondition());
 
     // The condition might be a single predicate on the rowId (if only one table changed)
-    RexInputRef rexInputRef = findPossibleRowIdRef(filter.getCondition());
+    RexInputRef rexInputRef = findPossibleRowIdRef(condition);
     if (rexInputRef != null) {
-      context.rowIdPredicates.put(rexInputRef.getIndex(), filter.getCondition());
+      context.rowIdPredicates.put(rexInputRef.getIndex(), condition);
       return visitChild(filter, 0, filter.getInput(0), context);
     }
 
@@ -190,7 +199,7 @@ public class HiveRowIsDeletedPropagator implements ReflectiveVisitor {
       return visitChild(filter, 0, filter.getInput(0), context);
     }
 
-    for (RexNode operand : ((RexCall)condition).operands) {
+    for (RexNode operand : ((RexCall) condition).operands) {
       RexInputRef inputRef = findPossibleRowIdRef(operand);
       if (inputRef != null) {
         context.rowIdPredicates.put(inputRef.getIndex(), operand);
@@ -198,6 +207,25 @@ public class HiveRowIsDeletedPropagator implements ReflectiveVisitor {
     }
 
     return visitChild(filter, 0, filter.getInput(0), context);
+  }
+
+  // Convert IS_NOT_TRUE(AND(a, b, ...)) into OR(IS_NOT_TRUE(a), IS_NOT_TRUE(b), ...) and leave.
+  // This DeMorgan-style rewrite is null-safe under three-valued logic.
+  private RexNode normalizeCompensationPredicate(RexNode condition) {
+    if (!condition.isA(SqlKind.IS_NOT_TRUE)) {
+      return condition;
+    }
+    RexBuilder rexBuilder = relBuilder.getRexBuilder();
+    RexNode inner = ((RexCall) condition).operands.get(0);
+    if (!inner.isA(SqlKind.AND)) {
+      // Single-column IS_NOT_TRUE(x) — leave as is; findPossibleRowIdRef still recognizes it.
+      return condition;
+    }
+    List<RexNode> disjuncts = new ArrayList<>(((RexCall) inner).operands.size());
+    for (RexNode op : ((RexCall) inner).operands) {
+      disjuncts.add(rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_TRUE, op));
+    }
+    return rexBuilder.makeCall(SqlStdOperatorTable.OR, disjuncts);
   }
 
   private RexInputRef findPossibleRowIdRef(RexNode operand) {
