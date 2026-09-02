@@ -225,7 +225,8 @@ public class ExprNodeDescUtils {
    * The method is equivalent to calling: {@code and(Arrays.asList(e1, e2))}
    * </p>
    */
-  public static ExprNodeGenericFuncDesc and(ExprNodeDesc e1, ExprNodeDesc e2) {
+  // TODO rql
+  public static ExprNodeGenericFuncDesc /* ExprNodeDesc */ and(ExprNodeDesc e1, ExprNodeDesc e2) {
     return and(Arrays.asList(e1, e2));
   }
 
@@ -237,11 +238,18 @@ public class ExprNodeDescUtils {
    * </pre>
    * TODO: Replace mergePredicates ?
    */
-  public static ExprNodeGenericFuncDesc and(List<ExprNodeDesc> exps) {
+  // TODO rql
+  public static ExprNodeGenericFuncDesc /* ExprNodeDesc */ and(List<ExprNodeDesc> exps) {
     List<ExprNodeDesc> flatExps = new ArrayList<>();
     for (ExprNodeDesc e : exps) {
       split(e, flatExps);
     }
+    // Flattening/deduplication may collapse the operand list; AND/OR require at least
+    // two operands (GenericUDFOPAnd#initialize enforces this), so unwrap trivial cases.
+    // TODO rql
+    /* if (flatExps.size() == 1) {
+      return flatExps.get(0);
+    } */
     return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, new GenericUDFOPAnd(), "and", flatExps);
   }
 
@@ -252,10 +260,15 @@ public class ExprNodeDescUtils {
    * Output: OR(AND(A, B), C, D, E, F)
    * </pre>
    */
-  public static ExprNodeGenericFuncDesc or(List<ExprNodeDesc> exps) {
+  public static ExprNodeDesc or(List<ExprNodeDesc> exps) {
     List<ExprNodeDesc> flatExps = new ArrayList<>();
     for (ExprNodeDesc e : exps) {
       split(e, flatExps, FunctionRegistry::isOpOr);
+    }
+    // Flattening/deduplication may collapse the operand list; AND/OR require at least
+    // two operands (GenericUDFOPOr#initialize enforces this), so unwrap trivial cases.
+    if (flatExps.size() == 1) {
+      return flatExps.get(0);
     }
     return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, new GenericUDFOPOr(), "or", flatExps);
   }
