@@ -1,13 +1,13 @@
-Warning: Shuffle Join MERGEJOIN[317][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 4' is a cross product
-Warning: Shuffle Join MERGEJOIN[323][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 12' is a cross product
-Warning: Shuffle Join MERGEJOIN[329][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 15' is a cross product
+Warning: Shuffle Join MERGEJOIN[515][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[521][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 12' is a cross product
+Warning: Shuffle Join MERGEJOIN[527][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 15' is a cross product
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], fetch=[100])
   HiveProject(channel=[$0], i_brand_id=[$1], i_class_id=[$2], i_category_id=[$3], _c4=[$4], _c5=[$5])
     HiveAggregate(group=[{0, 1, 2, 3}], groups=[[{0, 1, 2, 3}, {0, 1, 2}, {0, 1}, {0}, {}]], agg#0=[sum($4)], agg#1=[sum($5)])
       HiveProject(channel=[$0], i_brand_id=[$1], i_class_id=[$2], i_category_id=[$3], sales=[$4], number_sales=[$5])
         HiveUnion(all=[true])
-          HiveProject(channel=[_UTF-16LE'store':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], i_brand_id=[$0], i_class_id=[$1], i_category_id=[$2], sales=[$3], number_sales=[$4])
+          HiveProject(channel=['store':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], i_brand_id=[$0], i_class_id=[$1], i_category_id=[$2], sales=[$3], number_sales=[$4])
             HiveJoin(condition=[>($3, $5)], joinType=[inner], algorithm=[none], cost=[not available])
               HiveProject($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3], $f4=[$4])
                 HiveFilter(condition=[IS NOT NULL($3)])
@@ -156,7 +156,7 @@ HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], dir0=[ASC], dir1=[
                                           JdbcFilter(condition=[AND(BETWEEN(false, $1, 1998, 2000), IS NOT NULL($0))])
                                             JdbcProject(d_date_sk=[$0], d_year=[$6])
                                               JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-          HiveProject(channel=[_UTF-16LE'catalog':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], i_brand_id=[$0], i_class_id=[$1], i_category_id=[$2], sales=[$3], number_sales=[$4])
+          HiveProject(channel=['catalog':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], i_brand_id=[$0], i_class_id=[$1], i_category_id=[$2], sales=[$3], number_sales=[$4])
             HiveJoin(condition=[>($3, $5)], joinType=[inner], algorithm=[none], cost=[not available])
               HiveProject($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3], $f4=[$4])
                 HiveFilter(condition=[IS NOT NULL($3)])
@@ -305,7 +305,7 @@ HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], dir0=[ASC], dir1=[
                                           JdbcFilter(condition=[AND(BETWEEN(false, $1, 1998, 2000), IS NOT NULL($0))])
                                             JdbcProject(d_date_sk=[$0], d_year=[$6])
                                               JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-          HiveProject(channel=[_UTF-16LE'web':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], i_brand_id=[$0], i_class_id=[$1], i_category_id=[$2], sales=[$3], number_sales=[$4])
+          HiveProject(channel=['web':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], i_brand_id=[$0], i_class_id=[$1], i_category_id=[$2], sales=[$3], number_sales=[$4])
             HiveJoin(condition=[>($3, $5)], joinType=[inner], algorithm=[none], cost=[not available])
               HiveProject($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3], $f4=[$4])
                 HiveFilter(condition=[IS NOT NULL($3)])

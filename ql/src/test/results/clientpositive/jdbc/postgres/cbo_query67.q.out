@@ -10,7 +10,7 @@ HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=
                 JdbcJoin(condition=[=($1, $10)], joinType=[inner])
                   JdbcJoin(condition=[=($0, $6)], joinType=[inner])
                     JdbcJoin(condition=[=($2, $4)], joinType=[inner])
-                      JdbcProject(ss_sold_date_sk=[$0], ss_item_sk=[$1], ss_store_sk=[$2], $f8=[CASE(AND(IS NOT NULL($4), IS NOT NULL(CAST($3):DECIMAL(10, 0))), *($4, CAST($3):DECIMAL(10, 0)), 0:DECIMAL(18, 2))])
+                      JdbcProject(ss_sold_date_sk=[$0], ss_item_sk=[$1], ss_store_sk=[$2], $f8=[CASE(AND(IS NOT NULL($4), IS NOT NULL($3)), *($4, CAST($3):DECIMAL(10, 0)), 0.00:DECIMAL(18, 2))])
                         JdbcFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($2), IS NOT NULL($1))])
                           JdbcProject(ss_sold_date_sk=[$0], ss_item_sk=[$2], ss_store_sk=[$7], ss_quantity=[$10], ss_sales_price=[$13])
                             JdbcHiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])

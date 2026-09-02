@@ -55,7 +55,7 @@ HiveProject(brand_id=[$0], brand=[$1], t_hour=[$2], t_minute=[$3], ext_price=[$4
           HiveProject(t_time_sk=[$0], t_hour=[$1], t_minute=[$2])
             HiveJdbcConverter(convention=[JDBC.POSTGRES])
               JdbcProject(t_time_sk=[$0], t_hour=[$1], t_minute=[$2])
-                JdbcFilter(condition=[AND(IN($3, _UTF-16LE'breakfast':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'dinner':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IS NOT NULL($0))])
+                JdbcFilter(condition=[AND(IN($3, 'breakfast':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 'dinner':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IS NOT NULL($0))])
                   JdbcProject(t_time_sk=[$0], t_hour=[$3], t_minute=[$4], t_meal_time=[$9])
                     JdbcHiveTableScan(table=[[default, time_dim]], table:alias=[time_dim])
 

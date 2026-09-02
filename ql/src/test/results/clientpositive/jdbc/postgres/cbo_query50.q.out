@@ -4,7 +4,7 @@ HiveProject(s_store_name=[$0], s_company_id=[$1], s_street_number=[$2], s_street
     HiveJdbcConverter(convention=[JDBC.POSTGRES])
       JdbcSort(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=[$5], sort6=[$6], sort7=[$7], sort8=[$8], sort9=[$9], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], dir5=[ASC], dir6=[ASC], dir7=[ASC], dir8=[ASC], dir9=[ASC], fetch=[100])
         JdbcAggregate(group=[{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}], agg#0=[sum($10)], agg#1=[sum($11)], agg#2=[sum($12)], agg#3=[sum($13)], agg#4=[sum($14)])
-          JdbcProject($f0=[$12], $f1=[$13], $f2=[$14], $f3=[$15], $f4=[$16], $f5=[$17], $f6=[$18], $f7=[$19], $f8=[$20], $f9=[$21], $f10=[CASE(<=(-($6, $0), 30), 1, 0)], $f11=[CASE(AND(>(-($6, $0), 30), <=(-($6, $0), 60)), 1, 0)], $f12=[CASE(AND(>(-($6, $0), 60), <=(-($6, $0), 90)), 1, 0)], $f13=[CASE(AND(>(-($6, $0), 90), <=(-($6, $0), 120)), 1, 0)], $f14=[CASE(>(-($6, $0), 120), 1, 0)])
+          JdbcProject($f0=[$12], $f1=[$13], $f2=[$14], $f3=[$15], $f4=[$16], $f5=[$17], $f6=[$18], $f7=[$19], $f8=[$20], $f9=[$21], $f10=[CASE(<=(-($6, $0), 30), 1, 0)], $f11=[CAST(CASE(AND(>(-($6, $0), 30), <=(-($6, $0), 60)), 1, 0)):INTEGER], $f12=[CAST(CASE(AND(>(-($6, $0), 60), <=(-($6, $0), 90)), 1, 0)):INTEGER], $f13=[CAST(CASE(AND(>(-($6, $0), 90), <=(-($6, $0), 120)), 1, 0)):INTEGER], $f14=[CASE(>(-($6, $0), 120), 1, 0)])
             JdbcJoin(condition=[=($3, $11)], joinType=[inner])
               JdbcJoin(condition=[AND(=($4, $9), =($1, $7), =($2, $8))], joinType=[inner])
                 JdbcJoin(condition=[=($0, $5)], joinType=[inner])

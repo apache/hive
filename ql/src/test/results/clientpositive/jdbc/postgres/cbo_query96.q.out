@@ -19,7 +19,7 @@ HiveProject(_c0=[$0])
                 JdbcProject(t_time_sk=[$0], t_hour=[$3], t_minute=[$4])
                   JdbcHiveTableScan(table=[[default, time_dim]], table:alias=[time_dim])
           JdbcProject(s_store_sk=[$0])
-            JdbcFilter(condition=[AND(=($1, _UTF-16LE'ese'), IS NOT NULL($0))])
+            JdbcFilter(condition=[AND(=($1, 'ese'), IS NOT NULL($0))])
               JdbcProject(s_store_sk=[$0], s_store_name=[$5])
                 JdbcHiveTableScan(table=[[default, store]], table:alias=[store])
 

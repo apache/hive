@@ -1,7 +1,7 @@
 CBO PLAN:
 HiveProject(ss_sold_year=[CAST(2000):INTEGER], ss_item_sk=[$0], ss_customer_sk=[$1], ratio=[$2], store_qty=[$3], store_wholesale_cost=[$4], store_sales_price=[$5], other_chan_qty=[$6], other_chan_wholesale_cost=[$7], other_chan_sales_price=[$8])
   HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$9], sort3=[$10], sort4=[$11], sort5=[$6], sort6=[$7], sort7=[$8], sort8=[$12], dir0=[ASC], dir1=[ASC], dir2=[DESC], dir3=[DESC], dir4=[DESC], dir5=[ASC], dir6=[ASC], dir7=[ASC], dir8=[ASC], fetch=[100])
-    HiveProject(ss_item_sk=[$0], ss_customer_sk=[$1], ratio=[round(/(CAST($2):DOUBLE, CAST(CASE(AND($12, IS NOT NULL($7)), +($7, $11), 1:BIGINT)):DOUBLE), 2)], store_qty=[$2], store_wholesale_cost=[$3], store_sales_price=[$4], other_chan_qty=[+(CASE(IS NOT NULL($7), $7, 0:BIGINT), $13)], other_chan_wholesale_cost=[+(CASE(IS NOT NULL($8), $8, 0:DECIMAL(17, 2)), $14)], other_chan_sales_price=[+(CASE(IS NOT NULL($9), $9, 0:DECIMAL(17, 2)), $15)], ss_qty=[$2], ss_wc=[$3], ss_sp=[$4], (tok_function round (/ (tok_table_or_col ss_qty) (tok_function coalesce (+ (tok_table_or_col ws_qty) (tok_table_or_col cs_qty)) 1)) 2)=[round(/(CAST($2):DOUBLE, CAST(CASE(AND($12, IS NOT NULL($7)), +($7, $11), 1:BIGINT)):DOUBLE), 2)])
+    HiveProject(ss_item_sk=[$0], ss_customer_sk=[$1], ratio=[round(/(CAST($2):DOUBLE, CAST(CASE(AND($12, IS NOT NULL($7)), +($7, $11), 1:BIGINT)):DOUBLE), 2)], store_qty=[$2], store_wholesale_cost=[$3], store_sales_price=[$4], other_chan_qty=[+(CASE(IS NOT NULL($7), $7, 0:BIGINT), $13)], other_chan_wholesale_cost=[+(CASE(IS NOT NULL($8), $8, 0.00:DECIMAL(17, 2)), $14)], other_chan_sales_price=[+(CASE(IS NOT NULL($9), $9, 0.00:DECIMAL(17, 2)), $15)], ss_qty=[$2], ss_wc=[$3], ss_sp=[$4], (tok_function round (/ (tok_table_or_col ss_qty) (tok_function coalesce (+ (tok_table_or_col ws_qty) (tok_table_or_col cs_qty)) 1)) 2)=[round(/(CAST($2):DOUBLE, CAST(CASE(AND($12, IS NOT NULL($7)), +($7, $11), 1:BIGINT)):DOUBLE), 2)])
       HiveJoin(condition=[=($10, $1)], joinType=[inner], algorithm=[none], cost=[not available])
         HiveJoin(condition=[AND(=($6, $1), =($5, $0))], joinType=[inner], algorithm=[none], cost=[not available])
           HiveProject(ss_item_sk=[$0], ss_customer_sk=[$1], $f2=[$2], $f3=[$3], $f4=[$4])
@@ -47,7 +47,7 @@ HiveProject(ss_sold_year=[CAST(2000):INTEGER], ss_item_sk=[$0], ss_customer_sk=[
                         JdbcFilter(condition=[AND(=($1, 2000), IS NOT NULL($0))])
                           JdbcProject(d_date_sk=[$0], d_year=[$6])
                             JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-        HiveProject($f2=[$1], $f3=[$2], EXPR$0=[IS NOT NULL($2)], EXPR$1=[CASE(IS NOT NULL($2), $2, 0:BIGINT)], EXPR$2=[CASE(IS NOT NULL($3), $3, 0:DECIMAL(17, 2))], EXPR$3=[CASE(IS NOT NULL($4), $4, 0:DECIMAL(17, 2))])
+        HiveProject($f2=[$1], $f3=[$2], EXPR$0=[IS NOT NULL($2)], EXPR$1=[CASE(IS NOT NULL($2), $2, 0:BIGINT)], EXPR$2=[CASE(IS NOT NULL($3), $3, 0.00:DECIMAL(17, 2))], EXPR$3=[CASE(IS NOT NULL($4), $4, 0.00:DECIMAL(17, 2))])
           HiveFilter(condition=[>($2, 0)])
             HiveProject(cs_item_sk=[$1], cs_bill_customer_sk=[$0], $f2=[$2], $f3=[$3], $f4=[$4])
               HiveAggregate(group=[{1, 2}], agg#0=[sum($3)], agg#1=[sum($4)], agg#2=[sum($5)])

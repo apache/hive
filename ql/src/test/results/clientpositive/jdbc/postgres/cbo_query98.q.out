@@ -16,7 +16,7 @@ HiveProject(i_item_desc=[$0], i_category=[$1], i_class=[$2], i_current_price=[$3
                     JdbcProject(d_date_sk=[$0], d_date=[$2])
                       JdbcHiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
               JdbcProject(i_item_sk=[$0], i_item_id=[$1], i_item_desc=[$2], i_current_price=[$3], i_class=[$4], i_category=[$5])
-                JdbcFilter(condition=[AND(IN($5, _UTF-16LE'Books':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Jewelry':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Sports':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IS NOT NULL($0))])
+                JdbcFilter(condition=[AND(IN($5, 'Books':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 'Jewelry':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 'Sports':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IS NOT NULL($0))])
                   JdbcProject(i_item_sk=[$0], i_item_id=[$1], i_item_desc=[$4], i_current_price=[$5], i_class=[$10], i_category=[$12])
                     JdbcHiveTableScan(table=[[default, item]], table:alias=[item])
 

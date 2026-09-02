@@ -1,6 +1,6 @@
-Warning: Shuffle Join MERGEJOIN[68][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-Warning: Shuffle Join MERGEJOIN[70][tables = [$hdt$_3, $hdt$_4]] in Stage 'Reducer 12' is a cross product
-Warning: Shuffle Join MERGEJOIN[71][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[89][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[88][tables = [$hdt$_3, $hdt$_4]] in Stage 'Reducer 12' is a cross product
+Warning: Shuffle Join MERGEJOIN[91][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
   HiveProject(segment=[$0], num_customers=[$1], segment_base=[*($0, 50)])
@@ -84,7 +84,7 @@ HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
                                   JdbcProject(ws_sold_date_sk=[$0], ws_item_sk=[$3], ws_bill_customer_sk=[$4])
                                     JdbcHiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
                           JdbcProject(i_item_sk=[$0])
-                            JdbcFilter(condition=[AND(=($2, _UTF-16LE'Jewelry'), =($1, _UTF-16LE'consignment'), IS NOT NULL($0))])
+                            JdbcFilter(condition=[AND(=($2, 'Jewelry'), =($1, 'consignment'), IS NOT NULL($0))])
                               JdbcProject(i_item_sk=[$0], i_class=[$10], i_category=[$12])
                                 JdbcHiveTableScan(table=[[default, item]], table:alias=[item])
                         JdbcProject(d_date_sk=[$0])

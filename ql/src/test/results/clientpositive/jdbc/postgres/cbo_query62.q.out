@@ -9,7 +9,7 @@ HiveProject(_c0=[$0], sm_type=[$1], web_name=[$2], 30 days=[$3], 31-60 days=[$4]
               HiveProject(ws_ship_date_sk=[$0], ws_web_site_sk=[$1], ws_ship_mode_sk=[$2], ws_warehouse_sk=[$3], $f3=[$4], $f4=[$5], $f5=[$6], $f6=[$7], $f7=[$8], d_date_sk=[$9])
                 HiveJdbcConverter(convention=[JDBC.POSTGRES])
                   JdbcJoin(condition=[=($0, $9)], joinType=[inner])
-                    JdbcProject(ws_ship_date_sk=[$1], ws_web_site_sk=[$2], ws_ship_mode_sk=[$3], ws_warehouse_sk=[$4], $f3=[CASE(<=(-($1, $0), 30), 1, 0)], $f4=[CASE(AND(>(-($1, $0), 30), <=(-($1, $0), 60)), 1, 0)], $f5=[CASE(AND(>(-($1, $0), 60), <=(-($1, $0), 90)), 1, 0)], $f6=[CASE(AND(>(-($1, $0), 90), <=(-($1, $0), 120)), 1, 0)], $f7=[CASE(>(-($1, $0), 120), 1, 0)])
+                    JdbcProject(ws_ship_date_sk=[$1], ws_web_site_sk=[$2], ws_ship_mode_sk=[$3], ws_warehouse_sk=[$4], $f3=[CASE(<=(-($1, $0), 30), 1, 0)], $f4=[CAST(CASE(AND(>(-($1, $0), 30), <=(-($1, $0), 60)), 1, 0)):INTEGER], $f5=[CAST(CASE(AND(>(-($1, $0), 60), <=(-($1, $0), 90)), 1, 0)):INTEGER], $f6=[CAST(CASE(AND(>(-($1, $0), 90), <=(-($1, $0), 120)), 1, 0)):INTEGER], $f7=[CASE(>(-($1, $0), 120), 1, 0)])
                       JdbcFilter(condition=[AND(IS NOT NULL($4), IS NOT NULL($3), IS NOT NULL($2), IS NOT NULL($1))])
                         JdbcProject(ws_sold_date_sk=[$0], ws_ship_date_sk=[$2], ws_web_site_sk=[$13], ws_ship_mode_sk=[$14], ws_warehouse_sk=[$15])
                           JdbcHiveTableScan(table=[[default, web_sales]], table:alias=[web_sales])
