@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDecimalLastVa
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDecimalMax;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDecimalMin;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDecimalSum;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorCumeDist;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDenseRank;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDoubleAvg;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDoubleCountDistinct;
@@ -92,6 +93,7 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     ROW_NUMBER,
     RANK,
     DENSE_RANK,
+    CUME_DIST,
     MIN,
     MAX,
     SUM,
@@ -201,6 +203,9 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
       break;
     case DENSE_RANK:
       evaluator = new VectorPTFEvaluatorDenseRank(windowFrameDef, outputColumnNum);
+      break;
+    case CUME_DIST:
+      evaluator = new VectorPTFEvaluatorCumeDist(windowFrameDef, outputColumnNum);
       break;
     case MIN:
       switch (columnVectorType) {
@@ -466,6 +471,22 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
       }
     }
     return ArrayUtils.toPrimitive(streamingEvaluatorNums.toArray(new Integer[0]));
+  }
+
+  /**
+   * Returns whether every evaluator can process the batch immediately via
+   * {@link org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFGroupBatches
+   * #evaluateStreamingGroupBatch} without buffering the partition.
+   *
+   * <p>See {@link VectorPTFEvaluatorBase} for evaluator categories and flag semantics.
+   */
+  public static boolean getAllEvaluatorsAreStreaming(VectorPTFEvaluatorBase[] evaluators) {
+    for (VectorPTFEvaluatorBase evaluator : evaluators) {
+      if (!evaluator.streamsResult() || evaluator.isGroupAggregatedStreamingEvaluator()) {
+        return false;
+      }
+    }
+    return true;
   }
 
   public TypeInfo[] getReducerBatchTypeInfos() {

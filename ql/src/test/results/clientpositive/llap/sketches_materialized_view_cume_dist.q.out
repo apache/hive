@@ -236,7 +236,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: int)
