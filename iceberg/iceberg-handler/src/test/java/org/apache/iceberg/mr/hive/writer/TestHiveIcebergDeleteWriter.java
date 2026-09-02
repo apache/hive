@@ -105,6 +105,6 @@ public class TestHiveIcebergDeleteWriter extends HiveIcebergWriterTestBase {
   }
 
   private HiveIcebergWriter deleteWriter() {
-    return writerBuilder.writeOperation(Context.Operation.DELETE).build();
+    return writerBuilder.operation(Context.Operation.DELETE).build();
   }
 }
