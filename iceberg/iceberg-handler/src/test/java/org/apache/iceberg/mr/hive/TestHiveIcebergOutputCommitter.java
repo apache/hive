@@ -276,7 +276,7 @@ public class TestHiveIcebergOutputCommitter {
       HiveIcebergWriter testWriter = WriterBuilder.builderFor(table, conf::get)
           .attemptID(TezUtil.taskAttemptWrapper(taskId))
           .queryId("Q_ID")
-          .writeOperation(Context.Operation.OTHER)
+          .operation(Context.Operation.OTHER)
           .build();
 
       Container<Record> container = new Container<>();

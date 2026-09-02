@@ -25,9 +25,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.metadata.RowLineageUtils;
 import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
@@ -158,10 +159,10 @@ public class HiveIcebergSerDe extends AbstractSerDe {
   private static Schema projectedSchema(Configuration conf, Properties serDeProperties,
       Schema tableSchema, Map<String, String> jobConf) {
     String tableName = serDeProperties.getProperty(Catalogs.NAME);
-    Context.Operation writeOperation = HiveCustomStorageHandlerUtils.getWriteOperation(conf::get, tableName);
-    Context.Operation statementOperation = HiveCustomStorageHandlerUtils.getStatementOperation(conf::get, tableName);
+    Operation operation = HiveCustomStorageHandlerUtils.getWriteOperation(conf::get, tableName);
+    Operation statementOperation = HiveCustomStorageHandlerUtils.getStatementOperation(conf::get, tableName);
 
-    if (writeOperation == null) {
+    if (operation == null) {
       jobConf.put(InputFormatConfig.CASE_SENSITIVE, "false");
       String[] selectedColumns = ColumnProjectionUtils.getReadColumnNames(conf);
       // When same table is joined multiple times, it is possible some selected columns are duplicated,
@@ -180,13 +181,16 @@ public class HiveIcebergSerDe extends AbstractSerDe {
         return projectedSchema;
       }
     }
-    boolean isCOW = IcebergTableUtil.isCopyOnWriteMode(
-        statementOperation != null ? statementOperation : writeOperation, conf::get);
+    // 'statementOperation' represents the operation determined during query compilation (e.g. MERGE)
+    // 'operation' represents the local execution branch (e.g. INSERT or DELETE)
+    // We must use the top-level statement to correctly resolve table properties (e.g. write.merge.mode)
+    Operation op = ObjectUtils.defaultIfNull(statementOperation, operation);
+    boolean isCOW = IcebergTableUtil.isCopyOnWriteMode(op, conf::get);
     if (isCOW) {
       return getSchemaWithRowLineage(
           IcebergAcidUtil.createSerdeSchemaForDelete(tableSchema.columns(), false), conf);
     }
-    switch (writeOperation) {
+    switch (operation) {
       case DELETE:
         boolean isMergeTask = HiveCustomStorageHandlerUtils.isMergeTaskEnabled(
             key -> serDeProperties.getProperty(key, conf.get(key)),
@@ -197,7 +201,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
       case OTHER:
         return getSchemaWithRowLineage(tableSchema, conf);
       default:
-        throw new IllegalArgumentException("Unsupported operation " + writeOperation);
+        throw new IllegalArgumentException("Unsupported operation " + operation);
     }
   }
 

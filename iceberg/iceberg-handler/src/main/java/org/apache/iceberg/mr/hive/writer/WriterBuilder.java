@@ -72,7 +72,7 @@ public class WriterBuilder {
   private final String tableName;
   private TaskAttemptID attemptID;
   private String queryId;
-  private Operation writeOperation;
+  private Operation operation;
   private final Operation statementOperation;
 
   // A task may write multiple output files using multiple writers. Each of them must have a unique operationId.
@@ -87,7 +87,7 @@ public class WriterBuilder {
     this.table = table;
     this.tableName = ops.apply(Catalogs.NAME);
     this.context = new Context(table.properties(), ops, tableName);
-    this.writeOperation = HiveCustomStorageHandlerUtils.getWriteOperation(ops, tableName);
+    this.operation = HiveCustomStorageHandlerUtils.getWriteOperation(ops, tableName);
     this.statementOperation = HiveCustomStorageHandlerUtils.getStatementOperation(ops, tableName);
     this.rewritableDeletes = () -> rewritableDeletes(ops);
   }
@@ -107,8 +107,8 @@ public class WriterBuilder {
   }
 
   // Test-only
-  public WriterBuilder writeOperation(Operation newWriteOperation) {
-    this.writeOperation = newWriteOperation;
+  public WriterBuilder operation(Operation newOperation) {
+    this.operation = newOperation;
     return this;
   }
 
@@ -138,16 +138,17 @@ public class WriterBuilder {
         .build();
 
     HiveIcebergWriter writer;
-    boolean isCOW =
-        IcebergTableUtil.isCopyOnWriteMode(
-            statementOperation != null ? statementOperation : writeOperation,
-            table.properties()::getOrDefault);
+    // 'statementOperation' represents the operation determined during query compilation (e.g. MERGE)
+    // 'operation' represents the local execution branch (e.g. INSERT or DELETE)
+    // We must use the top-level statement to correctly resolve table properties (e.g. write.merge.mode)
+    Operation op = ObjectUtils.defaultIfNull(statementOperation, operation);
+    boolean isCOW = IcebergTableUtil.isCopyOnWriteMode(op, table.properties()::getOrDefault);
 
     if (isCOW) {
       writer = new HiveIcebergCopyOnWriteRecordWriter(table, writerFactory, dataFileFactory, shouldAddRowLineageColumns,
           context);
     } else {
-      writer = switch (writeOperation) {
+      writer = switch (operation) {
         case DELETE ->
             new HiveIcebergDeleteWriter(table, rewritableDeletes.get(), writerFactory, deleteFileFactory, context);
         case OTHER ->
@@ -155,7 +156,7 @@ public class WriterBuilder {
         default ->
             // Update and Merge should be split to inserts and deletes
             throw new IllegalArgumentException("Unsupported operation when creating IcebergRecordWriter: " +
-                writeOperation.name());
+                operation.name());
       };
     }
 
