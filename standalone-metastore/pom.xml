@@ -100,7 +100,7 @@
     <junit.vintage.version>5.13.3</junit.vintage.version>
     <junit.platform.version>1.13.3</junit.platform.version>
     <libfb303.version>0.9.3</libfb303.version>
-    <libthrift.version>0.16.0</libthrift.version>
+    <libthrift.version>0.24.0</libthrift.version>
     <log4j2.version>2.25.4</log4j2.version>
     <mockito-core.version>5.17.0</mockito-core.version>
     <orc.version>2.1.2</orc.version>
