@@ -209,7 +209,6 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
       } else if (
           "iceberg".equals(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_ICEBERG_MATERIALIZEDVIEW_METADATA_LOCATION)) &&
             (
-              "MATERIALIZED_VIEW".equals(hmsTable.getTableType()) ||
               "EXTERNAL_MATERIALIZED_VIEW".equals(hmsTable.getTableType())
             )
       ) {
