@@ -1,0 +1,210 @@
+PREHOOK: query: CREATE EXTERNAL TABLE country_bob (id int, name varchar(20))
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "POSTGRES",
+    "hive.sql.jdbc.driver" = "org.postgresql.Driver",
+    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qdb",
+    "hive.sql.dbcp.username" = "qtestuser",
+    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.schema" = "bob",
+    "hive.sql.table" = "country")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@country_bob
+POSTHOOK: query: CREATE EXTERNAL TABLE country_bob (id int, name varchar(20))
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "POSTGRES",
+    "hive.sql.jdbc.driver" = "org.postgresql.Driver",
+    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qdb",
+    "hive.sql.dbcp.username" = "qtestuser",
+    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.schema" = "bob",
+    "hive.sql.table" = "country")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@country_bob
+PREHOOK: query: CREATE EXTERNAL TABLE country_alice (id int, name varchar(20))
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "POSTGRES",
+    "hive.sql.jdbc.driver" = "org.postgresql.Driver",
+    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qdb",
+    "hive.sql.dbcp.username" = "qtestuser",
+    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.schema" = "alice",
+    "hive.sql.table" = "country")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@country_alice
+POSTHOOK: query: CREATE EXTERNAL TABLE country_alice (id int, name varchar(20))
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "POSTGRES",
+    "hive.sql.jdbc.driver" = "org.postgresql.Driver",
+    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qdb",
+    "hive.sql.dbcp.username" = "qtestuser",
+    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.schema" = "alice",
+    "hive.sql.table" = "country")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@country_alice
+PREHOOK: query: EXPLAIN CBO
+WITH cross_items AS (
+  SELECT id
+  FROM (
+    SELECT id FROM country_bob
+    INTERSECT
+    SELECT id FROM country_alice
+    INTERSECT
+    SELECT id FROM country_bob
+  ) x
+)
+SELECT channel, cnt
+FROM (
+  SELECT 'a' channel, COUNT(*) cnt
+  FROM country_bob
+  WHERE id IN (SELECT id FROM cross_items)
+  UNION ALL
+  SELECT 'b' channel, COUNT(*) cnt
+  FROM country_alice
+  WHERE id IN (SELECT id FROM cross_items)
+  UNION ALL
+  SELECT 'c' channel, COUNT(*) cnt
+  FROM country_bob
+  WHERE id IN (SELECT id FROM cross_items)
+) y
+ORDER BY channel
+PREHOOK: type: QUERY
+PREHOOK: Input: default@country_alice
+PREHOOK: Input: default@country_bob
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+WITH cross_items AS (
+  SELECT id
+  FROM (
+    SELECT id FROM country_bob
+    INTERSECT
+    SELECT id FROM country_alice
+    INTERSECT
+    SELECT id FROM country_bob
+  ) x
+)
+SELECT channel, cnt
+FROM (
+  SELECT 'a' channel, COUNT(*) cnt
+  FROM country_bob
+  WHERE id IN (SELECT id FROM cross_items)
+  UNION ALL
+  SELECT 'b' channel, COUNT(*) cnt
+  FROM country_alice
+  WHERE id IN (SELECT id FROM cross_items)
+  UNION ALL
+  SELECT 'c' channel, COUNT(*) cnt
+  FROM country_bob
+  WHERE id IN (SELECT id FROM cross_items)
+) y
+ORDER BY channel
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@country_alice
+POSTHOOK: Input: default@country_bob
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(sort0=[$0], dir0=[ASC])
+  HiveProject(channel=[$0], cnt=[$1])
+    HiveUnion(all=[true])
+      HiveProject(channel=['a':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], cnt=[$0])
+        HiveAggregate(group=[{}], agg#0=[count()])
+          HiveSemiJoin(condition=[=($0, $1)], joinType=[semi])
+            HiveProject(id=[$0])
+              HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                JdbcFilter(condition=[IS NOT NULL($0)])
+                  JdbcProject(id=[$0])
+                    JdbcHiveTableScan(table=[[default, country_bob]], table:alias=[country_bob])
+            HiveProject($f0=[$0])
+              HiveFilter(condition=[=($1, 3)])
+                HiveAggregate(group=[{0}], agg#0=[count($1)])
+                  HiveProject(id=[$0], $f1=[$1])
+                    HiveUnion(all=[true])
+                      HiveProject(id=[$0], $f1=[$1])
+                        HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                          JdbcAggregate(group=[{0}], agg#0=[count()])
+                            JdbcFilter(condition=[IS NOT NULL($0)])
+                              JdbcProject(id=[$0])
+                                JdbcHiveTableScan(table=[[default, country_bob]], table:alias=[country_bob])
+                      HiveProject(id=[$0], $f1=[$1])
+                        HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                          JdbcAggregate(group=[{0}], agg#0=[count()])
+                            JdbcFilter(condition=[IS NOT NULL($0)])
+                              JdbcProject(id=[$0])
+                                JdbcHiveTableScan(table=[[default, country_alice]], table:alias=[country_alice])
+                      HiveProject(id=[$0], $f1=[$1])
+                        HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                          JdbcAggregate(group=[{0}], agg#0=[count()])
+                            JdbcFilter(condition=[IS NOT NULL($0)])
+                              JdbcProject(id=[$0])
+                                JdbcHiveTableScan(table=[[default, country_bob]], table:alias=[country_bob])
+      HiveProject(channel=['b':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], cnt=[$0])
+        HiveAggregate(group=[{}], agg#0=[count()])
+          HiveSemiJoin(condition=[=($0, $1)], joinType=[semi])
+            HiveProject(id=[$0])
+              HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                JdbcFilter(condition=[IS NOT NULL($0)])
+                  JdbcProject(id=[$0])
+                    JdbcHiveTableScan(table=[[default, country_alice]], table:alias=[country_alice])
+            HiveProject($f0=[$0])
+              HiveFilter(condition=[=($1, 3)])
+                HiveAggregate(group=[{0}], agg#0=[count($1)])
+                  HiveProject(id=[$0], $f1=[$1])
+                    HiveUnion(all=[true])
+                      HiveProject(id=[$0], $f1=[$1])
+                        HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                          JdbcAggregate(group=[{0}], agg#0=[count()])
+                            JdbcFilter(condition=[IS NOT NULL($0)])
+                              JdbcProject(id=[$0])
+                                JdbcHiveTableScan(table=[[default, country_bob]], table:alias=[country_bob])
+                      HiveProject(id=[$0], $f1=[$1])
+                        HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                          JdbcAggregate(group=[{0}], agg#0=[count()])
+                            JdbcFilter(condition=[IS NOT NULL($0)])
+                              JdbcProject(id=[$0])
+                                JdbcHiveTableScan(table=[[default, country_alice]], table:alias=[country_alice])
+                      HiveProject(id=[$0], $f1=[$1])
+                        HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                          JdbcAggregate(group=[{0}], agg#0=[count()])
+                            JdbcFilter(condition=[IS NOT NULL($0)])
+                              JdbcProject(id=[$0])
+                                JdbcHiveTableScan(table=[[default, country_bob]], table:alias=[country_bob])
+      HiveProject(channel=['c':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], cnt=[$0])
+        HiveAggregate(group=[{}], agg#0=[count()])
+          HiveSemiJoin(condition=[=($0, $1)], joinType=[semi])
+            HiveProject(id=[$0])
+              HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                JdbcFilter(condition=[IS NOT NULL($0)])
+                  JdbcProject(id=[$0])
+                    JdbcHiveTableScan(table=[[default, country_bob]], table:alias=[country_bob])
+            HiveProject($f0=[$0])
+              HiveFilter(condition=[=($1, 3)])
+                HiveAggregate(group=[{0}], agg#0=[count($1)])
+                  HiveProject(id=[$0], $f1=[$1])
+                    HiveUnion(all=[true])
+                      HiveProject(id=[$0], $f1=[$1])
+                        HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                          JdbcAggregate(group=[{0}], agg#0=[count()])
+                            JdbcFilter(condition=[IS NOT NULL($0)])
+                              JdbcProject(id=[$0])
+                                JdbcHiveTableScan(table=[[default, country_bob]], table:alias=[country_bob])
+                      HiveProject(id=[$0], $f1=[$1])
+                        HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                          JdbcAggregate(group=[{0}], agg#0=[count()])
+                            JdbcFilter(condition=[IS NOT NULL($0)])
+                              JdbcProject(id=[$0])
+                                JdbcHiveTableScan(table=[[default, country_alice]], table:alias=[country_alice])
+                      HiveProject(id=[$0], $f1=[$1])
+                        HiveJdbcConverter(convention=[JDBC.POSTGRES])
+                          JdbcAggregate(group=[{0}], agg#0=[count()])
+                            JdbcFilter(condition=[IS NOT NULL($0)])
+                              JdbcProject(id=[$0])
+                                JdbcHiveTableScan(table=[[default, country_bob]], table:alias=[country_bob])
+
