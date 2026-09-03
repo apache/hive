@@ -28,10 +28,11 @@ import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
-import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
@@ -69,9 +70,12 @@ public class ShowTableStatusAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
+    Table table = getTable(dbName, tableNames, true);
+    inputs.add(new ReadEntity(table));
+
     if (partitionSpec != null) {
       // validate that partition exists
-      PartitionUtils.getPartition(db, getTable(HiveTableName.of(tableNames)), partitionSpec, true);
+      PartitionUtils.getPartition(db, table, partitionSpec, true);
     }
 
     ShowTableStatusDesc desc = new ShowTableStatusDesc(ctx.getResFile(), dbName, tableNames, partitionSpec);
